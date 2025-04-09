@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Hill View School</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="background">
+    <div class="container">
+        <h1>Hill View</h1>
+        <p class="tagline">Excellence in Education</p>
+        
+        <div class="login-buttons">
+            <a href="{{ url_for('admin_login') }}" class="btn">
+                Admin (Headteacher)
+            </a>
+            <a href="{{ url_for('teacher_login') }}" class="btn btn-secondary">
+                Teachers
+            </a>
+        </div>
+        
+        <div class="form-footer">
+            <p>&copy; 2025 Hill View School. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Dashboard - Hill View School</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">Hill View School</a>
+        <ul class="navbar-nav">
+            <li class="nav-item"><a href="#" class="nav-link">Dashboard</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Reports</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Help</a></li>
+            <li class="nav-item"><a href="{{ url_for('index') }}" class="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container" style="max-width: var(--container-lg); margin-top: 80px;">
+        <h1 class="text-center mb-4">Teacher Dashboard</h1>
+
+        <div class="dashboard-card">
+            <div class="card-header">
+                <span>Upload Class Marks</span>
+                <small>Complete all fields to process marks</small>
+            </div>
+
+            <form id="upload-form" method="POST" class="login-form">
+                <div class="form-group">
+                    <label for="education_level">Education Level</label>
+                    <select id="education_level" name="education_level" required onchange="updateSubjects()">
+                        <option value="">Select Education Level</option>
+                        <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>Lower Primary</option>
+                        <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>Upper Primary</option>
+                        <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>Junior Secondary</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Select Subject</option>
+                        {% if education_level %}
+                            {% if education_level == 'lower_primary' %}
+                                {% for subject_option in ['Indigenous Language', 'Kiswahili', 'Mathematics', 'English', 'Religious Education', 'Environmental Activities', 'Creative Activities'] %}
+                                    <option value="{{ subject_option }}" {% if subject == subject_option %}selected{% endif %}>{{ subject_option }}</option>
+                                {% endfor %}
+                            {% elif education_level == 'upper_primary' %}
+                                {% for subject_option in ['English', 'Mathematics', 'Kiswahili', 'Religious Education', 'Agriculture and Nutrition', 'Social Studies', 'Creative Arts', 'Science and Technology'] %}
+                                    <option value="{{ subject_option }}" {% if subject == subject_option %}selected{% endif %}>{{ subject_option }}</option>
+                                {% endfor %}
+                            {% elif education_level == 'junior_secondary' %}
+                                {% for subject_option in ['Social Studies and Life Skills', 'Agriculture and Home Science', 'Integrated Science and Health Education', 'Pre-Technical Studies', 'Visual Arts', 'Mathematics', 'English', 'Kiswahili', 'Religious Education'] %}
+                                    <option value="{{ subject_option }}" {% if subject == subject_option %}selected{% endif %}>{{ subject_option }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        {% endif %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="term">Term</label>
+                    <select id="term" name="term" required>
+                        <option value="">Select Term</option>
+                        <option value="term_1" {% if term == 'term_1' %}selected{% endif %}>Term 1</option>
+                        <option value="term_2" {% if term == 'term_2' %}selected{% endif %}>Term 2</option>
+                        <option value="term_3" {% if term == 'term_3' %}selected{% endif %}>Term 3</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="assessment_type">Assessment Type</label>
+                    <select id="assessment_type" name="assessment_type" required>
+                        <option value="">Select Assessment Type</option>
+                        <option value="opener" {% if assessment_type == 'opener' %}selected{% endif %}>Opener Assessment</option>
+                        <option value="midterm" {% if assessment_type == 'midterm' %}selected{% endif %}>Midterm Assessment</option>
+                        <option value="endterm" {% if assessment_type == 'endterm' %}selected{% endif %}>Endterm Assessment</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="total_marks">Total Marks (Out Of)</label>
+                    <input type="number" id="total_marks" name="total_marks" min="1" value="{{ total_marks if total_marks else '' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="grade">Grade</label>
+                    <select id="grade" name="grade" required onchange="onGradeChange()">
+                        <option value="">Select Grade</option>
+                        {% for grade_option in grades %}
+                        <option value="{{ grade_option }}" {% if grade == grade_option %}selected{% endif %}>{{ grade_option }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="stream">Stream</label>
+                    <select id="stream" name="stream" required>
+                        <option value="">Select Stream</option>
+                        {% if grade %}
+                            {% for stream_letter in ['B', 'G', 'Y'] %}
+                            <option value="{{ grade }}{{ stream_letter }}" {% if stream == grade ~ stream_letter %}selected{% endif %}>{{ grade }}{{ stream_letter }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+
+                <div class="form-group" style="grid-column: span 2; text-align: center;">
+                    <button type="submit" class="btn" id="fetch-pupils-btn">Upload Marks</button>
+                </div>
+            </form>
+
+            {% if show_students %}
+            <div id="pupils-list" class="pupils-list">
+                <h3>Enter Marks for Grade {{ grade }} Stream {{ stream }}</h3>
+                <form method="POST" class="login-form">
+                    <!-- Hidden fields to pass the form data again -->
+                    <input type="hidden" name="education_level" value="{{ education_level }}">
+                    <input type="hidden" name="subject" value="{{ subject }}">
+                    <input type="hidden" name="grade" value="{{ grade }}">
+                    <input type="hidden" name="stream" value="{{ stream }}">
+                    <input type="hidden" name="term" value="{{ term }}">
+                    <input type="hidden" name="assessment_type" value="{{ assessment_type }}">
+                    <input type="hidden" name="total_marks" value="{{ total_marks }}">
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Marks (Out of {{ total_marks }})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student }}</td>
+                                <td>
+                                    <input type="number" name="mark_{{ student.replace(' ', '_') }}" min="0" max="{{ total_marks }}" required>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button type="submit" name="submit_marks" value="1" class="btn">Submit Marks</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-card mt-4">
+            <div class="card-header">
+                <span>Recent Reports</span>
+                <a href="#" class="btn-outline">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Grade</th>
+                            <th>Stream</th>
+                            <th>Subject</th>
+                            <th>Assessment</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Placeholder: Real data will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dashboard-card mt-4">
+            <div class="card-header">Quick Stats</div>
+            <div class="stats-container">
+                <!-- Placeholder: Real stats will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 Hill View School - All Rights Reserved</p>
+    </footer>
+</body>
+</html>

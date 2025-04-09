@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report - Hill View School</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container" style="max-width: var(--container-lg); margin-top: 40px;">
+        <h1 class="text-center mb-4">Marks Report</h1>
+        <div class="dashboard-card">
+            <div class="card-header">
+                <span>Grade {{ grade }} Stream {{ stream }} - {{ subject }} ({{ assessment_type }})</span>
+            </div>
+            <p><strong>Education Level:</strong> {{ education_level }}</p>
+            <p><strong>Term:</strong> {{ term }}</p>
+            <p><strong>Total Marks:</strong> {{ total_marks }}</p>
+            <p><strong>Mean Score:</strong> {{ mean_score | round(2) }}</p>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td>{{ row[1] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ url_for('generate_pdf', grade=grade, stream=stream) }}" class="btn">Download PDF</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 Hill View School - All Rights Reserved</p>
+    </footer>
+</body>
+</html>

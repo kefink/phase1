@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Headteacher Dashboard - Hill View School</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="#" class="navbar-brand">Hill View School</a>
+    <ul class="navbar-nav">
+      <li><a href="#" class="nav-link">Dashboard</a></li>
+      <li><a href="#" class="nav-link">Reports</a></li>
+      <li><a href="#" class="nav-link">Staff</a></li>
+      <li><a href="#" class="nav-link">Settings</a></li>
+      <li><a href="{{ url_for('index') }}" class="logout-btn">Logout</a></li>
+    </ul>
+  </nav>
+
+  <!-- Page Content -->
+  <main class="container mt-5 no-print" style="padding-top: 5rem; max-width: var(--container-lg); margin: 0 auto;">
+
+    <!-- Heading -->
+    <h1 class="mb-4 text-left">School Performance Dashboard</h1>
+
+    <!-- Performance Overview -->
+    <div class="dashboard-card">
+      <div class="card-header">Performance Overview</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Grade/Stream</th>
+            <th>Mean Score</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in data %}
+          <tr>
+            <td>{{ row.grade }}</td>
+            <td>{{ row.mean }}</td>
+            <td>
+              <a href="#" class="btn btn-sm">View Details</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Stats and Quick Actions -->
+    <div class="mt-5" style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
+
+      <!-- Statistics -->
+      <div class="dashboard-card" style="flex: 1 1 300px;">
+        <div class="card-header">School Statistics</div>
+        <div>
+          <p><strong>Total Students:</strong> 520</p>
+          <p><strong>Total Teachers:</strong> 35</p>
+          <p><strong>Average Performance:</strong> 67.5%</p>
+          <p><strong>Top Performing Class:</strong> 4G</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="dashboard-card" style="flex: 1 1 300px;">
+        <div class="card-header">Quick Actions</div>
+        <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+          <a href="#" class="btn">Generate School Report</a>
+          <a href="#" class="btn btn-secondary">View Teacher Performance</a>
+          <a href="#" class="btn btn-secondary">Manage Classes</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>
