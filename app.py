@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 
 app = Flask(__name__)
@@ -87,8 +88,8 @@ students_data = {
     }
 }
 
-# Store submitted marks temporarily (for MVP, replace with database later)
-submitted_marks = []
+# Store submitted marks and report data globally
+report_data = {}
 
 @app.route("/")
 def index():
@@ -120,58 +121,91 @@ def teacher_login():
 
 @app.route("/teacher", methods=["GET", "POST"])
 def teacher():
-    # List of grades (1-9)
     grades = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-    
+
     if request.method == "POST":
-        print("POST request received in /teacher route")
-        
-        # Retrieve form data
-        education_level = request.form.get("education_level", "")
-        subject = request.form.get("subject", "")
-        grade = request.form.get("grade", "")
-        stream = request.form.get("stream", "")
-        term = request.form.get("term", "")
-        assessment_type = request.form.get("assessment_type", "")
-        total_marks = int(request.form.get("total_marks", 0))  # Convert to integer, default 0
+        # Add debugging
+        print("POST request received")
+        print("Form data:", request.form)
 
-        print(f"Form data: education_level={education_level}, subject={subject}, grade={grade}, stream={stream}, term={term}, assessment_type={assessment_type}, total_marks={total_marks}")
+        # Check if this is the initial form submission
+        if "upload_marks" in request.form:
+            print("Processing upload_marks submission")
+            education_level = request.form.get("education_level")
+            subject = request.form.get("subject")
+            grade = request.form.get("grade")
+            stream = request.form.get("stream")
+            term = request.form.get("term")
+            assessment_type = request.form.get("assessment_type")
+            total_marks = int(request.form.get("total_marks", 0))
 
-        # Extract the stream letter (e.g., "7B" -> "B")
-        stream_letter = stream[len(grade):] if stream.startswith(grade) else stream
-        print(f"Extracted stream letter: {stream_letter}")
+            print(f"Selected grade: {grade}, stream: {stream}")
 
-        # Get the list of students for the selected grade and stream
-        students = students_data.get(grade, {}).get(stream_letter, [])
-        print(f"Students retrieved: {len(students)}")
+            # Extract stream letter (e.g., "9G" -> "G")
+            stream_letter = stream[-1] if stream else ''
+            print(f"Stream letter: {stream_letter}")
 
-        # Check if marks are being submitted
-        if "submit_marks" in request.form:
-            print("Submit Marks button clicked")
+            # Get students for selected grade and stream
+            students = students_data.get(grade, {}).get(stream_letter, [])
+            print(f"Found {len(students)} students")
+
+            # DEBUG: Print first few students to verify data
+            if students:
+                print("Sample students:", students[:3])
+
+            return render_template(
+                "teacher.html",
+                grades=grades,
+                students=students,
+                education_level=education_level,
+                subject=subject,
+                grade=grade,
+                stream=stream,
+                term=term,
+                assessment_type=assessment_type,
+                total_marks=total_marks,
+                show_students=True  # Make sure this is True!
+            )
+
+        # The rest of your function remains the same
+        elif "submit_marks" in request.form:
+            # Process marks submission
+            education_level = request.form.get("education_level")
+            subject = request.form.get("subject")
+            grade = request.form.get("grade")
+            stream = request.form.get("stream")
+            term = request.form.get("term")
+            assessment_type = request.form.get("assessment_type")
+            total_marks = int(request.form.get("total_marks", 0))
+
+            # Process marks for each student
             marks_data = []
+            stream_letter = stream[-1] if stream else ''
+            students = students_data.get(grade, {}).get(stream_letter, [])
+
             for student in students:
                 mark_key = f"mark_{student.replace(' ', '_')}"
-                if mark_key in request.form and request.form[mark_key]:
-                    try:
-                        mark = int(request.form[mark_key])
-                        marks_data.append([student, mark])
-                    except ValueError:
-                        print(f"Invalid mark value for {student}")
-            
+                mark = request.form.get(mark_key, 0)
+                if mark and str(mark).isdigit():
+                    marks_data.append([student, int(mark)])
+
             # Calculate mean score
-            if marks_data:
-                total_marks_sum = sum([mark[1] for mark in marks_data])
-                mean_score = total_marks_sum / len(marks_data)
-            else:
-                mean_score = 0
+            mean_score = sum(mark[1] for mark in marks_data) / len(marks_data) if marks_data else 0
 
-            print(f"Marks data: {len(marks_data)} records, Mean score: {mean_score}")
+            # Store marks and metadata for report generation
+            global report_data
+            report_data = {
+                "marks_data": marks_data,
+                "mean_score": mean_score,
+                "education_level": education_level,
+                "subject": subject,
+                "grade": grade,
+                "stream": stream,
+                "term": term,
+                "assessment_type": assessment_type,
+                "total_marks": total_marks
+            }
 
-            # Store the marks for report generation
-            submitted_marks.clear()
-            submitted_marks.extend(marks_data)
-
-            # Render the report template with the submitted data
             return render_template(
                 "report.html",
                 data=marks_data,
@@ -184,30 +218,30 @@ def teacher():
                 assessment_type=assessment_type,
                 total_marks=total_marks
             )
-        else:
-            # This is the "Upload Marks" button - show students for mark entry
-            print("Upload Marks button clicked - showing students list")
-            return render_template(
-                "teacher.html",
-                grades=grades,
-                students=students,
-                education_level=education_level,
-                subject=subject,
-                grade=grade,
-                stream=stream,
-                term=term,
-                assessment_type=assessment_type,
-                total_marks=total_marks,
-                show_students=True
-            )
-    
-    # Initial render of the teacher dashboard
-    print("Initial render of teacher.html")
+
+    # Add a diagnostic test route
     return render_template("teacher.html", grades=grades, show_students=False)
+
+# Add this diagnostic route
+@app.route("/test_students/<grade>/<stream_letter>")
+def test_students(grade, stream_letter):
+    students = students_data.get(grade, {}).get(stream_letter, [])
+    return render_template(
+        "teacher.html",
+        grades=["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        students=students,
+        education_level="test",
+        subject="test",
+        grade=grade,
+        stream=f"{grade}{stream_letter}",
+        term="test",
+        assessment_type="test",
+        total_marks=100,
+        show_students=True
+    )
 
 @app.route("/headteacher")
 def headteacher():
-    # Dummy data for demo
     dashboard_data = [
         {"grade": "8B", "mean": 65},
         {"grade": "8G", "mean": 70},
@@ -216,16 +250,46 @@ def headteacher():
 
 @app.route("/generate_pdf/<grade>/<stream>")
 def generate_pdf(grade, stream):
-    # Generate PDF with the submitted marks
+    # Check if we have data for this report
+    if not report_data or report_data.get("grade") != grade or report_data.get("stream") != stream:
+        return "No data available for this report. Please submit marks first.", 404
+    
     pdf_file = f"report_{grade}_{stream}.pdf"
     doc = SimpleDocTemplate(pdf_file, pagesize=letter)
     elements = []
-
-    # Create table data
-    data = [["Name", "Marks"]] + submitted_marks
-    table = Table(data)
     
-    # Style the table
+    # Get styles for text formatting
+    styles = getSampleStyleSheet()
+    title_style = styles['Heading1']
+    subtitle_style = styles['Heading2']
+    normal_style = styles['Normal']
+    
+    # Extract data from report_data
+    marks_data = report_data.get("marks_data", [])
+    mean_score = report_data.get("mean_score", 0)
+    education_level = report_data.get("education_level", "")
+    subject = report_data.get("subject", "")
+    term = report_data.get("term", "")
+    assessment_type = report_data.get("assessment_type", "")
+    total_marks = report_data.get("total_marks", 0)
+    
+    # Add title and school information
+    elements.append(Paragraph("Hill View School", title_style))
+    elements.append(Paragraph(f"Grade {grade} Stream {stream} - {subject} Report", subtitle_style))
+    elements.append(Spacer(1, 12))
+    
+    # Add metadata
+    elements.append(Paragraph(f"Education Level: {education_level}", normal_style))
+    elements.append(Paragraph(f"Term: {term}", normal_style))
+    elements.append(Paragraph(f"Assessment Type: {assessment_type}", normal_style))
+    elements.append(Paragraph(f"Total Marks: {total_marks}", normal_style))
+    elements.append(Paragraph(f"Mean Score: {mean_score:.2f}", normal_style))
+    elements.append(Spacer(1, 24))
+    
+    # Create table with student data
+    data = [["Student Name", "Marks"]] + marks_data
+    table = Table(data)
+
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -236,7 +300,7 @@ def generate_pdf(grade, stream):
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
     ]))
-    
+
     elements.append(table)
     doc.build(elements)
     return send_file(pdf_file, as_attachment=True)
