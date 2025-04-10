@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Dynamic stream loading based on grade
+  // Dynamic stream loading based on grade with student update functionality
   const gradeSelect = document.getElementById("grade");
   if (gradeSelect) {
     gradeSelect.addEventListener("change", function () {
@@ -126,6 +126,56 @@ document.addEventListener("DOMContentLoaded", function () {
           streamSelect.appendChild(option);
         });
       }
+    });
+  }
+
+  // NEW: Add stream change handler to update student list
+  const streamSelect = document.getElementById("stream");
+  if (streamSelect) {
+    streamSelect.addEventListener("change", function () {
+      console.log("Stream changed to:", this.value);
+
+      // Only proceed if we have a valid stream selection
+      if (!this.value) return;
+
+      // Get the grade and stream
+      const grade = document.getElementById("grade").value;
+      const stream = this.value;
+      const streamLetter = stream.slice(-1); // Get last character (B, G or Y)
+
+      // Collect form data to preserve other selections
+      const formData = new FormData();
+      formData.append(
+        "education_level",
+        document.getElementById("education_level").value
+      );
+      formData.append("subject", document.getElementById("subject").value);
+      formData.append("grade", grade);
+      formData.append("stream", stream);
+      formData.append("term", document.getElementById("term").value);
+      formData.append(
+        "assessment_type",
+        document.getElementById("assessment_type").value
+      );
+      formData.append(
+        "total_marks",
+        document.getElementById("total_marks").value
+      );
+      formData.append("upload_marks", "1"); // Trigger the student list display
+
+      // Submit the form to reload with updated student list
+      const form = document.getElementById("upload-form");
+
+      // Create a temporary submit button to trigger the form submission
+      const tempButton = document.createElement("button");
+      tempButton.type = "submit";
+      tempButton.name = "upload_marks";
+      tempButton.value = "1";
+      tempButton.style.display = "none";
+
+      form.appendChild(tempButton);
+      tempButton.click();
+      form.removeChild(tempButton);
     });
   }
 
