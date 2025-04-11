@@ -7,38 +7,61 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container" style="max-width: var(--container-lg); margin-top: 40px;">
-        <h1 class="text-center mb-4">Marks Report</h1>
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">Hill View School</a>
+        <ul class="navbar-nav">
+            <li class="nav-item"><a href="{{ url_for('teacher') }}" class="nav-link">Dashboard</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Reports</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Help</a></li>
+            <li class="nav-item"><a href="{{ url_for('index') }}" class="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container" style="max-width: var(--container-lg); margin-top: 80px;">
         <div class="dashboard-card">
             <div class="card-header">
-                <span>Grade {{ grade }} Stream {{ stream }} - {{ subject }} ({{ assessment_type }})</span>
+                <span>Report: {{ subject }} - Grade {{ grade }} Stream {{ stream }}</span>
+                <small>{{ education_level }} | {{ term|replace('_', ' ')|title }} | {{ assessment_type|title }}</small>
             </div>
-            <p><strong>Education Level:</strong> {{ education_level }}</p>
-            <p><strong>Term:</strong> {{ term }}</p>
-            <p><strong>Total Marks:</strong> {{ total_marks }}</p>
-            <p><strong>Mean Score:</strong> {{ mean_score | round(2) }}</p>
+
+            <div class="report-summary">
+                <div>
+                    <strong>Subject:</strong> {{ subject }}
+                </div>
+                <div>
+                    <strong>Total Marks:</strong> {{ total_marks }}
+                </div>
+                <div>
+                    <strong>Mean Score:</strong> {{ "%.2f"|format(mean_score) }}
+                </div>
+            </div>
 
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
                             <th>Student Name</th>
-                            <th>Marks</th>
+                            <th>Marks (Out of {{ total_marks }})</th>
+                            <th>Percentage</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row in data %}
+                        {% for student, mark in data %}
                         <tr>
-                            <td>{{ row[0] }}</td>
-                            <td>{{ row[1] }}</td>
+                            <td>{{ student }}</td>
+                            <td>{{ mark }}</td>
+                            <td>{{ "%.1f"|format((mark / total_marks) * 100) }}%</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
 
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="{{ url_for('generate_pdf', grade=grade, stream=stream) }}" class="btn">Download PDF</a>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('generate_pdf', grade=grade, stream=stream, subject=subject) }}" class="btn"></a>
+                    Download PDF Report
+                </a>
+                <p>Click above to download a PDF copy of this report.</p>
             </div>
         </div>
     </div>
