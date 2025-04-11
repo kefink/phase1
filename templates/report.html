@@ -32,7 +32,7 @@
                     <strong>Total Marks:</strong> {{ total_marks }}
                 </div>
                 <div>
-                    <strong>Mean Score:</strong> {{ "%.2f"|format(mean_score) }}
+                    <strong>Mean Score:</strong> {{ "%.2f"|format(mean_score) }} ({{ "%.1f"|format(mean_percentage) }}%)
                 </div>
             </div>
 
@@ -46,11 +46,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for student, mark in data %}
+                        {% for item in data %}
                         <tr>
-                            <td>{{ student }}</td>
-                            <td>{{ mark }}</td>
-                            <td>{{ "%.1f"|format((mark / total_marks) * 100) }}%</td>
+                            <td>{{ item[0] }}</td>
+                            <td>{{ item[1] }}</td>
+                            <td>{{ item[2] }}%</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -58,7 +58,7 @@
             </div>
 
             <div class="text-center mt-4">
-                <a href="{{ url_for('generate_pdf', grade=grade, stream=stream, subject=subject) }}" class="btn"></a>
+                <a href="{{ url_for('generate_pdf', grade=grade, stream=stream, subject=subject) }}" class="btn">
                     Download PDF Report
                 </a>
                 <p>Click above to download a PDF copy of this report.</p>

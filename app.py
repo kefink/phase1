@@ -227,7 +227,10 @@ def teacher():
                         if mark_value and mark_value.isdigit():
                             mark = int(mark_value)
                             if 0 <= mark <= total_marks:
-                                marks_data.append([student, mark])
+                                # Calculate percentage
+                                percentage = (mark / total_marks) * 100
+                                # Store both raw mark and percentage
+                                marks_data.append([student, mark, round(percentage, 1)])
                                 any_marks_submitted = True
                             else:
                                 error_message = f"Invalid mark for {student}. Must be between 0 and {total_marks}."
@@ -239,14 +242,16 @@ def teacher():
                     if any_marks_submitted and not error_message:
                         # Calculate mean score
                         mean_score = sum(mark[1] for mark in marks_data) / len(marks_data) if marks_data else 0
+                        mean_percentage = (mean_score / total_marks) * 100 if total_marks > 0 else 0
 
                         # Create a unique key for this report that includes the subject
                         report_key = f"{grade}_{stream_letter}_{subject.replace(' ', '_')}"
 
                         # Store report data using the unique key
                         reports_data[report_key] = {
-                            "marks_data": marks_data,
+                            "marks_data": marks_data,  # Now includes [student, mark, percentage]
                             "mean_score": mean_score,
+                            "mean_percentage": mean_percentage,
                             "education_level": education_level,
                             "education_level_display": education_level_names.get(education_level, education_level),
                             "subject": subject,
@@ -266,6 +271,7 @@ def teacher():
                             "report.html",
                             data=marks_data,
                             mean_score=mean_score,
+                            mean_percentage=mean_percentage,
                             education_level=education_level_names.get(education_level, education_level),
                             subject=subject,
                             grade=grade,
@@ -339,6 +345,7 @@ def generate_pdf(grade, stream, subject):
     # Extract data from report_data
     marks_data = report_data.get("marks_data", [])
     mean_score = report_data.get("mean_score", 0)
+    mean_percentage = report_data.get("mean_percentage", 0)
     education_level = report_data.get("education_level_display", "")
     subject = report_data.get("subject", "")
     term = report_data.get("term", "")
@@ -355,11 +362,14 @@ def generate_pdf(grade, stream, subject):
     elements.append(Paragraph(f"Term: {term}", normal_style))
     elements.append(Paragraph(f"Assessment Type: {assessment_type}", normal_style))
     elements.append(Paragraph(f"Total Marks: {total_marks}", normal_style))
-    elements.append(Paragraph(f"Mean Score: {mean_score:.2f}", normal_style))
+    elements.append(Paragraph(f"Mean Score: {mean_score:.2f} ({mean_percentage:.1f}%)", normal_style))
     elements.append(Spacer(1, 24))
 
     # Create table with student data
-    data = [["Student Name", "Marks"]] + marks_data
+    data = [["Student Name", "Marks", "Percentage (%)"]]
+    for student_record in marks_data:
+        data.append([student_record[0], student_record[1], f"{student_record[2]}%"])
+    
     table = Table(data)
 
     table.setStyle(TableStyle([

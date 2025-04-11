@@ -159,6 +159,7 @@
                             <tr>
                                 <th>Student Name</th>
                                 <th>Marks (Out of {{ total_marks }})</th>
+                                <th>Percentage</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -166,8 +167,10 @@
                             <tr>
                                 <td>{{ student }}</td>
                                 <td>
-                                    <input type="number" name="mark_{{ student.replace(' ', '_') }}" min="0" max="{{ total_marks }}" required>
+                                    <input type="number" name="mark_{{ student.replace(' ', '_') }}" min="0" max="{{ total_marks }}" required 
+                                           oninput="updatePercentage(this)">
                                 </td>
+                                <td class="percentage-cell" id="percentage_{{ student.replace(' ', '_') }}">0%</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -205,102 +208,117 @@
                 </table>
             </div>
         </div>
-    <div class="dashboard-card mt-4">
-        <div class="card-header">Quick Stats</div>
-        <div class="stats-container">
-            <!-- Placeholder: Real stats will be dynamically added here -->
+        <div class="dashboard-card mt-4">
+            <div class="card-header">Quick Stats</div>
+            <div class="stats-container">
+                <!-- Placeholder: Real stats will be dynamically added here -->
+            </div>
         </div>
+
+        <!-- Conditional Download PDF Report Section -->
+        {% if show_download_button %}
+        <div class="text-center mt-4">
+            <a href="{{ url_for('generate_pdf', grade=grade, stream=stream, subject=subject) }}" class="btn">
+                Download PDF Report
+            </a>
+            <p>Click above to download a PDF copy of this report.</p>
+        </div>
+        {% endif %}
     </div>
 
-    <!-- Conditional Download PDF Report Section -->
-    {% if show_download_button %}
-<div class="text-center mt-4">
-    <a href="{{ url_for('generate_pdf', grade=grade, stream=stream, subject=subject) }}" class="btn">
-        Download PDF Report
-    </a>
-    <p>Click above to download a PDF copy of this report.</p>
-</div>
-{% endif %}
-</div>
+    <footer>
+        <p>© 2025 Hill View School - All Rights Reserved</p>
+    </footer>
 
-<footer>
-    <p>© 2025 Hill View School - All Rights Reserved</p>
-</footer>
-
-<script>
-    // Function to update subject options based on education level
-    function updateSubjects() {
-        const educationLevel = document.getElementById('education_level').value;
-        const subjectSelect = document.getElementById('subject');
-        
-        // Clear existing options
-        subjectSelect.innerHTML = '<option value="">Select Subject</option>';
-        
-        if (educationLevel === 'lower_primary') {
-            const subjects = ['Indigenous Language', 'Kiswahili', 'Mathematics', 'English', 'Religious Education', 'Environmental Activities', 'Creative Activities'];
-            subjects.forEach(subject => {
-                const option = document.createElement('option');
-                option.value = subject;
-                option.textContent = subject;
-                subjectSelect.appendChild(option);
-            });
-        } else if (educationLevel === 'upper_primary') {
-            const subjects = ['English', 'Mathematics', 'Kiswahili', 'Religious Education', 'Agriculture and Nutrition', 'Social Studies', 'Creative Arts', 'Science and Technology'];
-            subjects.forEach(subject => {
-                const option = document.createElement('option');
-                option.value = subject;
-                option.textContent = subject;
-                subjectSelect.appendChild(option);
-            });
-        } else if (educationLevel === 'junior_secondary') {
-            const subjects = ['Social Studies and Life Skills', 'Agriculture and Home Science', 'Integrated Science and Health Education', 'Pre-Technical Studies', 'Visual Arts', 'Mathematics', 'English', 'Kiswahili', 'Religious Education'];
-            subjects.forEach(subject => {
-                const option = document.createElement('option');
-                option.value = subject;
-                option.textContent = subject;
-                subjectSelect.appendChild(option);
-            });
+    <script>
+        // Function to update subject options based on education level
+        function updateSubjects() {
+            const educationLevel = document.getElementById('education_level').value;
+            const subjectSelect = document.getElementById('subject');
+            
+            // Clear existing options
+            subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+            
+            if (educationLevel === 'lower_primary') {
+                const subjects = ['Indigenous Language', 'Kiswahili', 'Mathematics', 'English', 'Religious Education', 'Environmental Activities', 'Creative Activities'];
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                });
+            } else if (educationLevel === 'upper_primary') {
+                const subjects = ['English', 'Mathematics', 'Kiswahili', 'Religious Education', 'Agriculture and Nutrition', 'Social Studies', 'Creative Arts', 'Science and Technology'];
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                });
+            } else if (educationLevel === 'junior_secondary') {
+                const subjects = ['Social Studies and Life Skills', 'Agriculture and Home Science', 'Integrated Science and Health Education', 'Pre-Technical Studies', 'Visual Arts', 'Mathematics', 'English', 'Kiswahili', 'Religious Education'];
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                });
+            }
         }
-    }
 
-    // Function to update stream options based on selected grade
-    function updateStreams() {
-        const grade = document.getElementById('grade').value;
-        const streamSelect = document.getElementById('stream');
-        
-        // Clear existing options
-        streamSelect.innerHTML = '<option value="">Select Stream</option>';
-        
-        if (grade) {
-            const streams = ['B', 'G', 'Y'];
-            streams.forEach(streamLetter => {
-                const option = document.createElement('option');
-                option.value = grade + streamLetter;
-                option.textContent = grade + streamLetter;
-                streamSelect.appendChild(option);
-            });
+        // Function to update stream options based on selected grade
+        function updateStreams() {
+            const grade = document.getElementById('grade').value;
+            const streamSelect = document.getElementById('stream');
+            
+            // Clear existing options
+            streamSelect.innerHTML = '<option value="">Select Stream</option>';
+            
+            if (grade) {
+                const streams = ['B', 'G', 'Y'];
+                streams.forEach(streamLetter => {
+                    const option = document.createElement('option');
+                    option.value = grade + streamLetter;
+                    option.textContent = grade + streamLetter;
+                    streamSelect.appendChild(option);
+                });
+            }
         }
-    }
 
-    // Add this to help with debugging
-    function showDebug(message) {
-        const debugDiv = document.getElementById('debug-info');
-        const debugContent = document.getElementById('debug-content');
-        debugContent.innerHTML += message + '<br>';
-        debugDiv.style.display = 'block';
-    }
+        // Function to update percentage in real-time as marks are entered
+        function updatePercentage(inputElement) {
+            const totalMarks = parseInt(document.getElementsByName('total_marks')[0].value);
+            const mark = parseInt(inputElement.value) || 0;
+            const percentage = (mark / totalMarks) * 100;
+            
+            // Find the corresponding percentage cell
+            const studentId = inputElement.name.replace('mark_', '');
+            const percentageCell = document.getElementById(`percentage_${studentId}`);
+            
+            if (percentageCell) {
+                percentageCell.textContent = percentage.toFixed(1) + '%';
+            }
+        }
 
-    // Check if students are loaded properly
-    document.addEventListener('DOMContentLoaded', function() {
-        {% if show_students %}
-            showDebug('Students should be displayed. Count: {{ students|length }}');
-            {% if students|length == 0 %}
-                showDebug('WARNING: No students available!');
+        // Add this to help with debugging
+        function showDebug(message) {
+            const debugDiv = document.getElementById('debug-info');
+            const debugContent = document.getElementById('debug-content');
+            debugContent.innerHTML += message + '<br>';
+            debugDiv.style.display = 'block';
+        }
+
+        // Check if students are loaded properly
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if show_students %}
+                showDebug('Students should be displayed. Count: {{ students|length }}');
+                {% if students|length == 0 %}
+                    showDebug('WARNING: No students available!');
+                {% endif %}
+            {% else %}
+                showDebug('Student display is not enabled (show_students=false)');
             {% endif %}
-        {% else %}
-            showDebug('Student display is not enabled (show_students=false)');
-        {% endif %}
-    });
-</script>
+        });
+    </script>
 </body>
 </html>
