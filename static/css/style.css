@@ -99,6 +99,14 @@ body {
     padding: 0 var(--space-md);
 }
 
+/* Updated container style to support max-width: 90% in classteacher.html */
+.container[style*="max-width: 90%"] {
+    width: 100%;
+    max-width: 90%;
+    margin: 80px auto 60px; /* Top margin for navbar, bottom margin for footer */
+    padding: 0 var(--space-md);
+}
+
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
     margin-bottom: var(--space-lg);
@@ -567,6 +575,7 @@ footer {
         max-width: 100%;
     }
 }
+
 .performance-summary {
     margin: 20px 0;
     padding: 15px;
@@ -612,4 +621,64 @@ footer {
 .below {
     background-color: rgba(220, 53, 69, 0.1);
     border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* New Rules for Horizontal Scrolling and Table Styling in classteacher.html */
+
+/* Ensure the pupils-list container allows horizontal scrolling */
+.pupils-list {
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent table content from wrapping */
+}
+
+/* Style the table wrapper for scrolling */
+.table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+/* Style the table to ensure it doesn’t shrink and allows scrolling */
+.pupils-list table {
+    width: 100%;
+    min-width: 1200px; /* Set a minimum width to ensure the table is wide enough for all columns */
+    border-collapse: collapse;
+}
+
+/* Style table headers and cells for better readability */
+.pupils-list th,
+.pupils-list td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid var(--color-medium-gray);
+}
+
+/* Style the table headers specifically for pupils-list */
+.pupils-list th {
+    background-color: var(--color-forest-green);
+    color: var(--color-white);
+    font-weight: 600;
+}
+
+/* Style the percentage cells */
+.percentage-cell {
+    font-size: 0.9em;
+    color: var(--color-text-dark);
+}
+
+/* Ensure the dashboard card supports the wider layout */
+.dashboard-card {
+    width: 100%;
+    overflow-x: auto; /* Additional safeguard for scrolling */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .pupils-list table {
+        min-width: 800px; /* Smaller width for mobile */
+    }
+    .pupils-list th,
+    .pupils-list td {
+        padding: 5px; /* Reduce padding on smaller screens */
+        font-size: 0.9em;
+    }
 }
