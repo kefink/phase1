@@ -192,20 +192,46 @@
             </div>
         </div>
 
-        <!-- Conditional Download PDF Report Section -->
+        <!-- Conditional Download and Preview Class PDF Report Section -->
         {% if show_download_button %}
         <div class="text-center mt-4">
+            <a href="{{ url_for('preview_class_report', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}" class="btn" style="background-color: #007BFF; margin-right: 10px;">
+                Preview Class Report
+            </a>
             <a href="{{ url_for('generate_class_pdf', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}" class="btn">
                 Download Class PDF Report
             </a>
-            <p>Click above to download a PDF copy of the class report.</p>
+            <p>Click above to preview or download a PDF copy of the class report.</p>
         </div>
         {% endif %}
 
-        <!-- Conditional Download All Individual Reports Section -->
+        <!-- Conditional Individual Reports Section -->
         {% if show_individual_report_button %}
         <div class="text-center mt-4">
-            <a href="{{ url_for('generate_all_individual_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}" class="btn">
+            <h3>Individual Learner Reports</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student }}</td>
+                            <td>
+                                <a href="{{ url_for('preview_individual_report', grade=grade, stream=stream, term=term, assessment_type=assessment_type, student_name=student) }}" class="btn" style="background-color: #007BFF;">
+                                    Preview Report
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{{ url_for('generate_all_individual_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}" class="btn mt-3">
                 Download All Individual Reports
             </a>
             <p>Click above to download a ZIP file containing individual reports for all learners.</p>

@@ -19,7 +19,7 @@ users = {
     "classteacher1": "class123"
 }
 
-# Complete student data for all grades
+# Complete student data for all grades (unchanged)
 students_data = {
     "1": {
         "B": [f"Student {i} Grade 1B" for i in range(1, 16)],
@@ -192,7 +192,7 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
     normal_style = styles['Normal']
     heading3_style = styles['Heading3']
 
-    # Header
+    # Header (matching preview report)
     title_style.alignment = 1  # Center align
     subtitle_style.alignment = 1
     normal_style.alignment = 1
@@ -203,7 +203,7 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
     elements.append(Paragraph(f"ACADEMIC REPORT TERM {term.replace('_', ' ').upper()} 2025", subtitle_style))
     elements.append(Spacer(1, 12))
 
-    # Student Details
+    # Student Details (matching preview report)
     normal_style.alignment = 0  # Left align
     student_name_upper = student_name.upper()
     admission_no = f"HS{grade}{stream_letter}{str(class_data.index(student_data) + 1).zfill(3)}"  # Example: HS8B001
@@ -223,14 +223,13 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
     elements.append(Paragraph(f"Total Points: {total_points}", normal_style))
     elements.append(Spacer(1, 12))
 
-    # Performance Table
-    headers = ["Subjects", "Entrance", "Mid Term", "End Term", "Avg.", "Grade", "Points", "Subject Remarks"]
+    # Performance Table (remove Grade and Points columns, remove TBD from remarks)
+    headers = ["Subjects", "Entrance", "Mid Term", "End Term", "Avg.", "Subject Remarks"]
     data = [headers]
     for subject in subjects:
         mark = student_data['marks'].get(subject, 0)
         avg = mark  # Since we only have one set of marks, average = end term mark
         percentage = (mark / total_marks) * 100 if total_marks > 0 else 0
-        grade, points = get_grade_and_points(avg)
         performance = get_performance_category(percentage)
         data.append([
             subject.upper(),
@@ -238,9 +237,7 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
             "",  # Mid Term
             str(int(mark)),  # End Term
             str(int(avg)),  # Average
-            grade,
-            str(points),
-            f"{performance} (TBD)"  # Subject Remarks with placeholder teacher initials
+            f"{performance}"  # Subject Remarks (removed " (TBD)")
         ])
 
     # Add Totals row
@@ -250,9 +247,7 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
         "",  # Mid Term
         str(int(total)),  # End Term
         str(int(total)),  # Average
-        mean_grade,
-        str(mean_points),
-        ""
+        ""  # No remarks for totals
     ])
 
     table = Table(data)
@@ -271,17 +266,19 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
     table.setStyle(TableStyle(table_style))
     elements.append(table)
 
-    # Remarks and Signatures
+    # Remarks and Signatures (matching preview report)
     elements.append(Spacer(1, 20))
-    elements.append(Paragraph("Class Teacher's Remarks: Well done! With continued focus and consistency, you have the potential to achieve even more.", normal_style))
+    elements.append(Paragraph("Class Teacher's Remarks:", heading3_style))
+    elements.append(Paragraph("Well done! With continued focus and consistency, you have the potential to achieve even more.", normal_style))
     elements.append(Paragraph("Class Teacher: Moses Barasa", normal_style))
     elements.append(Spacer(1, 12))
-    elements.append(Paragraph("Head Teacher's Remarks: Great progress! Your growing confidence is evident - keep practicing, and you'll excel even further.", normal_style))
+    elements.append(Paragraph("Head Teacher's Remarks:", heading3_style))
+    elements.append(Paragraph("Great progress! Your growing confidence is evident - keep practicing, and you'll excel even further.", normal_style))
     elements.append(Paragraph("Head Teacher Name: Mr. Paul Mwangi", normal_style))
     elements.append(Paragraph("Head Teacher Signature: ____________________", normal_style))
     elements.append(Paragraph("Next Term Begins on: TBD", normal_style))
 
-    # Footer
+    # Footer (matching preview report)
     elements.append(Spacer(1, 20))
     footer_style = styles['Normal']
     footer_style.alignment = 1  # Center align
@@ -881,6 +878,117 @@ def generate_class_pdf(grade, stream, term, assessment_type):
     # Generate PDF
     doc.build(elements)
     return send_file(pdf_file, as_attachment=True)
+
+@app.route("/preview_class_report/<grade>/<stream>/<term>/<assessment_type>")
+def preview_class_report(grade, stream, term, assessment_type):
+    stream_letter = stream[-1] if stream else ''
+    report_key = f"{grade}_{stream_letter}_class_report_{term}_{assessment_type}"
+    
+    if report_key not in reports_data:
+        return "No data available for this report. Please submit marks first.", 404
+
+    report_data = reports_data[report_key]
+    class_data = report_data.get("class_data", [])
+    stats = report_data.get("stats", {})
+    education_level = report_data.get("education_level_display", "")
+    term = report_data.get("term", "")
+    assessment_type = report_data.get("assessment_type", "")
+    total_marks = report_data.get("total_marks", 0)
+    subjects = report_data.get("subjects", [])
+
+    # Define subject abbreviations
+    subject_abbreviations = {
+        "Mathematics": "MATH",
+        "English": "ENG",
+        "Kiswahili": "KISW",
+        "Integrated Science and Health Education": "ISHE",
+        "Agriculture": "AGR",
+        "Pre-Technical Studies": "PTS",
+        "Visual Arts": "VA",
+        "Religious Education": "RE",
+        "Social Studies": "SS"
+    }
+
+    # Map subjects to their abbreviations
+    abbreviated_subjects = [subject_abbreviations.get(subject, subject[:4].upper()) for subject in subjects]
+
+    return render_template(
+        "preview_class_report.html",
+        class_data=class_data,
+        stats=stats,
+        education_level=education_level,
+        grade=grade,
+        stream=stream,
+        term=term,
+        assessment_type=assessment_type,
+        total_marks=total_marks,
+        subjects=subjects,
+        abbreviated_subjects=abbreviated_subjects,
+        current_date=datetime.now().strftime("%Y-%m-%d")
+    )
+
+@app.route("/preview_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>")
+def preview_individual_report(grade, stream, term, assessment_type, student_name):
+    stream_letter = stream[-1] if stream else ''
+    report_key = f"{grade}_{stream_letter}_class_report_{term}_{assessment_type}"
+    
+    if report_key not in reports_data:
+        return "No data available for this report. Please submit marks first.", 404
+
+    report_data = reports_data[report_key]
+    class_data = report_data.get("class_data", [])
+    student_data = next((data for data in class_data if data['student'].lower() == student_name.lower()), None)
+    
+    if not student_data:
+        return f"No data available for student {student_name}.", 404
+
+    education_level = report_data.get("education_level_display", "")
+    total_marks = report_data.get("total_marks", 0)
+    subjects = report_data.get("subjects", [])
+
+    # Calculate summary stats
+    total = student_data['total_marks']
+    avg_percentage = student_data['average_percentage']
+    mean_grade, mean_points = get_grade_and_points(avg_percentage)
+    total_possible_marks = len(subjects) * total_marks
+    total_points = sum(get_grade_and_points(student_data['marks'].get(subject, 0))[1] for subject in subjects)
+
+    # Prepare table data (remove grade and points, and TBD from remarks)
+    table_data = []
+    for subject in subjects:
+        mark = student_data['marks'].get(subject, 0)
+        avg = mark  # Since we only have one set of marks, average = end term mark
+        percentage = (mark / total_marks) * 100 if total_marks > 0 else 0
+        performance = get_performance_category(percentage)
+        table_data.append({
+            'subject': subject.upper(),
+            'entrance': "",
+            'mid_term': "",
+            'end_term': int(mark),
+            'avg': int(avg),
+            'remarks': f"{performance}"  # Removed " (TBD)"
+        })
+
+    return render_template(
+        "preview_individual_report.html",
+        student_data=student_data,
+        education_level=education_level,
+        grade=grade,
+        stream=stream,
+        term=term,
+        assessment_type=assessment_type,
+        total_marks=total_marks,
+        subjects=subjects,
+        total=total,
+        avg_percentage=avg_percentage,
+        mean_grade=mean_grade,
+        mean_points=mean_points,
+        total_possible_marks=total_possible_marks,
+        total_points=total_points,
+        table_data=table_data,
+        admission_no=f"HS{grade}{stream_letter}{str(class_data.index(student_data) + 1).zfill(3)}",
+        current_date=datetime.now().strftime("%Y-%m-%d")
+    )
 
 @app.route("/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type>")
 def generate_all_individual_reports(grade, stream, term, assessment_type):
