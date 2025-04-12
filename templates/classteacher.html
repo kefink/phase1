@@ -201,6 +201,16 @@
             <p>Click above to download a PDF copy of the class report.</p>
         </div>
         {% endif %}
+
+        <!-- Conditional Download All Individual Reports Section -->
+        {% if show_individual_report_button %}
+        <div class="text-center mt-4">
+            <a href="{{ url_for('generate_all_individual_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}" class="btn">
+                Download All Individual Reports
+            </a>
+            <p>Click above to download a ZIP file containing individual reports for all learners.</p>
+        </div>
+        {% endif %}
     </div>
 
     <footer>

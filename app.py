@@ -5,6 +5,9 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from datetime import datetime
 from collections import defaultdict
+import os
+import zipfile
+from io import BytesIO
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -137,12 +140,159 @@ def get_performance_category(percentage):
     else:
         return "B.E"  # Below Expectation
 
+def get_grade_and_points(average):
+    """Determine grade and points based on average mark (out of 100)"""
+    if average >= 80:
+        return "A", 12
+    elif average >= 75:
+        return "A-", 11
+    elif average >= 70:
+        return "B+", 10
+    elif average >= 65:
+        return "B", 9
+    elif average >= 60:
+        return "B-", 8
+    elif average >= 55:
+        return "C+", 7
+    elif average >= 50:
+        return "C", 6
+    elif average >= 45:
+        return "C-", 5
+    elif average >= 40:
+        return "D+", 4
+    elif average >= 35:
+        return "D", 3
+    elif average >= 30:
+        return "D-", 2
+    else:
+        return "E", 1
+
 def get_performance_summary(marks_data):
     """Count students in each performance level"""
     summary = defaultdict(int)
     for student in marks_data:
         summary[student[3]] += 1
     return dict(summary)
+
+def generate_individual_report_pdf(grade, stream, term, assessment_type, student_name, class_data, education_level, total_marks, subjects):
+    """Generate a PDF report for a single student and return the file path"""
+    stream_letter = stream[-1] if stream else ''
+    student_data = next((data for data in class_data if data['student'].lower() == student_name.lower()), None)
+    
+    if not student_data:
+        return None
+
+    pdf_file = f"individual_report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf"
+    doc = SimpleDocTemplate(pdf_file, pagesize=letter)
+    elements = []
+
+    styles = getSampleStyleSheet()
+    title_style = styles['Heading1']
+    subtitle_style = styles['Heading2']
+    normal_style = styles['Normal']
+    heading3_style = styles['Heading3']
+
+    # Header
+    title_style.alignment = 1  # Center align
+    subtitle_style.alignment = 1
+    normal_style.alignment = 1
+    elements.append(Paragraph("HILL VIEW SCHOOL", title_style))
+    elements.append(Paragraph("P.O. Box 12345 - 00100, Nairobi, Kenya", normal_style))
+    elements.append(Paragraph("Tel: 0712345678", normal_style))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"ACADEMIC REPORT TERM {term.replace('_', ' ').upper()} 2025", subtitle_style))
+    elements.append(Spacer(1, 12))
+
+    # Student Details
+    normal_style.alignment = 0  # Left align
+    student_name_upper = student_name.upper()
+    admission_no = f"HS{grade}{stream_letter}{str(class_data.index(student_data) + 1).zfill(3)}"  # Example: HS8B001
+    elements.append(Paragraph(f"{student_name_upper}  ADM NO.: {admission_no}", normal_style))
+    elements.append(Paragraph(f"Grade {grade} {education_level} {stream}", normal_style))
+
+    # Calculate summary stats
+    total = student_data['total_marks']
+    avg_percentage = student_data['average_percentage']
+    mean_grade, mean_points = get_grade_and_points(avg_percentage)
+    total_possible_marks = len(subjects) * total_marks
+    total_points = sum(get_grade_and_points(student_data['marks'].get(subject, 0))[1] for subject in subjects)
+
+    elements.append(Paragraph(f"MEAN GRADE: {mean_grade}", normal_style))
+    elements.append(Paragraph(f"Mean Points: {mean_points}  Total Marks: {int(total)} out of: {total_possible_marks}", normal_style))
+    elements.append(Paragraph(f"Mean Mark: {avg_percentage:.2f}%", normal_style))
+    elements.append(Paragraph(f"Total Points: {total_points}", normal_style))
+    elements.append(Spacer(1, 12))
+
+    # Performance Table
+    headers = ["Subjects", "Entrance", "Mid Term", "End Term", "Avg.", "Grade", "Points", "Subject Remarks"]
+    data = [headers]
+    for subject in subjects:
+        mark = student_data['marks'].get(subject, 0)
+        avg = mark  # Since we only have one set of marks, average = end term mark
+        percentage = (mark / total_marks) * 100 if total_marks > 0 else 0
+        grade, points = get_grade_and_points(avg)
+        performance = get_performance_category(percentage)
+        data.append([
+            subject.upper(),
+            "",  # Entrance
+            "",  # Mid Term
+            str(int(mark)),  # End Term
+            str(int(avg)),  # Average
+            grade,
+            str(points),
+            f"{performance} (TBD)"  # Subject Remarks with placeholder teacher initials
+        ])
+
+    # Add Totals row
+    data.append([
+        "Totals",
+        "",  # Entrance
+        "",  # Mid Term
+        str(int(total)),  # End Term
+        str(int(total)),  # Average
+        mean_grade,
+        str(mean_points),
+        ""
+    ])
+
+    table = Table(data)
+    table_style = [
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]
+    table.setStyle(TableStyle(table_style))
+    elements.append(table)
+
+    # Remarks and Signatures
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph("Class Teacher's Remarks: Well done! With continued focus and consistency, you have the potential to achieve even more.", normal_style))
+    elements.append(Paragraph("Class Teacher: Moses Barasa", normal_style))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("Head Teacher's Remarks: Great progress! Your growing confidence is evident - keep practicing, and you'll excel even further.", normal_style))
+    elements.append(Paragraph("Head Teacher Name: Mr. Paul Mwangi", normal_style))
+    elements.append(Paragraph("Head Teacher Signature: ____________________", normal_style))
+    elements.append(Paragraph("Next Term Begins on: TBD", normal_style))
+
+    # Footer
+    elements.append(Spacer(1, 20))
+    footer_style = styles['Normal']
+    footer_style.alignment = 1  # Center align
+    footer_style.fontSize = 8
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    elements.append(Paragraph(f"Generated on: {current_date}", footer_style))
+    elements.append(Paragraph("Hillview School powered by CbcTeachkit", footer_style))
+
+    # Generate PDF
+    doc.build(elements)
+    return pdf_file
 
 @app.route("/")
 def index():
@@ -336,6 +486,7 @@ def classteacher():
     assessment_type = ""
     total_marks = 0
     show_download_button = False
+    show_individual_report_button = False
     report_key = None
     subjects = []
     stats = None
@@ -469,16 +620,19 @@ def classteacher():
                         }
 
                         show_download_button = True
+                        show_individual_report_button = True
 
     if grade and stream and len(stream) > 0:
         stream_letter = stream[-1]
         report_key = f"{grade}_{stream_letter}_class_report_{term}_{assessment_type}"
         if report_key in reports_data:
             show_download_button = True
+            show_individual_report_button = True
             stats = reports_data[report_key]["stats"]
             class_data = reports_data[report_key]["class_data"]
             subjects = reports_data[report_key]["subjects"]
             total_marks = reports_data[report_key]["total_marks"]
+            students = [student_data['student'] for student_data in class_data]
 
     return render_template(
         "classteacher.html",
@@ -493,6 +647,7 @@ def classteacher():
         show_students=show_students,
         error_message=error_message,
         show_download_button=show_download_button,
+        show_individual_report_button=show_individual_report_button,
         subjects=subjects,
         stats=stats,
         class_data=class_data
@@ -726,6 +881,44 @@ def generate_class_pdf(grade, stream, term, assessment_type):
     # Generate PDF
     doc.build(elements)
     return send_file(pdf_file, as_attachment=True)
+
+@app.route("/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type>")
+def generate_all_individual_reports(grade, stream, term, assessment_type):
+    stream_letter = stream[-1] if stream else ''
+    report_key = f"{grade}_{stream_letter}_class_report_{term}_{assessment_type}"
+    
+    if report_key not in reports_data:
+        return "No data available for this report. Please submit marks first.", 404
+
+    report_data = reports_data[report_key]
+    class_data = report_data.get("class_data", [])
+    education_level = report_data.get("education_level_display", "")
+    total_marks = report_data.get("total_marks", 0)
+    subjects = report_data.get("subjects", [])
+
+    if not class_data:
+        return "No student data available for this class.", 404
+
+    # Create a ZIP file in memory
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for student_data in class_data:
+            student_name = student_data['student']
+            pdf_file = generate_individual_report_pdf(
+                grade, stream, term, assessment_type, student_name,
+                class_data, education_level, total_marks, subjects
+            )
+            if pdf_file and os.path.exists(pdf_file):
+                zip_file.write(pdf_file, os.path.basename(pdf_file))
+                os.remove(pdf_file)  # Clean up the temporary PDF file
+
+    zip_buffer.seek(0)
+    return send_file(
+        zip_buffer,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name=f"individual_reports_{grade}_{stream}_{term}_{assessment_type}.zip"
+    )
 
 @app.route("/logout")
 def logout():
