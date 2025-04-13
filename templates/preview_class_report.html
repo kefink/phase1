@@ -13,7 +13,7 @@
             background-color: #f4f4f4;
         }
         .report-container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
             background-color: white;
             padding: 20px;
@@ -33,18 +33,17 @@
             font-size: 16px;
             color: #555;
         }
-        .table-wrapper {
-            overflow-x: auto;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            table-layout: auto;
         }
         th, td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
+            white-space: nowrap;
         }
         th {
             background-color: #4CAF50;
@@ -54,14 +53,14 @@
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        .summary {
+        .stats {
             margin-top: 20px;
         }
-        .summary h3 {
-            font-size: 18px;
+        .stats h3 {
+            font-size: 16px;
             color: #333;
         }
-        .summary p {
+        .stats p {
             margin: 5px 0;
             font-size: 14px;
         }
@@ -94,45 +93,43 @@
             <p>STREAM: {{ stream }}  TERM: {{ term.replace('_', ' ').upper() }}  ASSESSMENT: {{ assessment_type.upper() }}</p>
         </div>
 
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>S/N</th>
-                        <th>STUDENT NAME</th>
-                        {% for subject in abbreviated_subjects %}
-                        <th>{{ subject }}</th>
-                        {% endfor %}
-                        <th>TOTAL</th>
-                        <th>AVG %</th>
-                        <th>GRD</th>
-                        <th>RANK</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for idx, student_data in enumerate(class_data, 1) %}
-                    <tr>
-                        <td>{{ idx }}</td>
-                        <td>{{ student_data.student.upper() }}</td>
-                        {% for subject in subjects %}
-                        <td>{{ student_data.marks.get(subject, 0) | int }}</td>
-                        {% endfor %}
-                        <td>{{ student_data.total_marks | int }}</td>
-                        <td>{{ student_data.average_percentage | round(0) }}%</td>
-                        <td>{{ get_performance_category(student_data.average_percentage) }}</td>
-                        <td>{{ student_data.rank }}</td>
-                    </tr>
+        <table>
+            <thead>
+                <tr>
+                    <th>S/N</th>
+                    <th>STUDENT NAME</th>
+                    {% for abbr in abbreviated_subjects %}
+                    <th>{{ abbr }}</th>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                    <th>TOTAL</th>
+                    <th>AVG %</th>
+                    <th>GRD</th>
+                    <th>RANK</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student_data in class_data %}
+                <tr>
+                    <td>{{ student_data.index }}</td> <!-- Use the precomputed index -->
+                    <td>{{ student_data.student.upper() }}</td>
+                    {% for subject in subjects %}
+                    <td>{{ student_data.marks.get(subject, 0) | int }}</td>
+                    {% endfor %}
+                    <td>{{ student_data.total_marks | int }}</td>
+                    <td>{{ student_data.average_percentage | round(0) }}%</td>
+                    <td>{{ student_data.performance_category }}</td> <!-- Use precomputed performance category -->
+                    <td>{{ student_data.rank }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-        <div class="summary">
+        <div class="stats">
             <h3>Performance Summary:</h3>
-            <p>E.E (Exceeding Expectation, ≥75%): {{ stats.get('exceeding', 0) }} learners</p>
-            <p>M.E (Meeting Expectation, 50-74%): {{ stats.get('meeting', 0) }} learners</p>
-            <p>A.E (Approaching Expectation, 30-49%): {{ stats.get('approaching', 0) }} learners</p>
-            <p>B.E (Below Expectation, <30%): {{ stats.get('below', 0) }} learners</p>
+            <p>E.E (Exceeding Expectation, ≥75%): {{ stats.exceeding }} learners</p>
+            <p>M.E (Meeting Expectation, 50-74%): {{ stats.meeting }} learners</p>
+            <p>A.E (Approaching Expectation, 30-49%): {{ stats.approaching }} learners</p>
+            <p>B.E (Below Expectation, <30%): {{ stats.below }} learners</p>
         </div>
 
         <div class="footer">

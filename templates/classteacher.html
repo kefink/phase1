@@ -28,16 +28,6 @@
     <div class="container" style="max-width: 90%; margin-top: 80px;">
         <h1 class="text-center mb-4">Class Teacher Dashboard</h1>
 
-        <!-- Debug information - You can remove this after fixing the issue -->
-        <div style="background-color: #ffe; padding: 5px; margin: 5px; border: 1px solid #aa0;">
-            Debug: show_students = {{ show_students|default('False') }}<br>
-            {% if show_students %}
-                Grade: {{ grade }}<br>
-                Stream: {{ stream }}<br>
-                Students count: {{ students|default([])|length }}
-            {% endif %}
-        </div>
-
         <div class="dashboard-card">
             <div class="card-header">
                 <span>Upload Class Marks (All Subjects)</span>
@@ -47,13 +37,6 @@
             {% if not show_students %}
             <!-- Initial form to select grade and class -->
             <form id="upload-form" method="POST" action="{{ url_for('classteacher') }}" class="login-form">
-                <!-- Add this right after the form starts, before your form fields -->
-                <div style="background-color: #fff3cd; padding: 10px; margin-bottom: 15px; border-radius: 5px; display: none;" id="debug-info">
-                    <h4>Debug Information:</h4>
-                    <div id="debug-content"></div>
-                    <button type="button" onclick="document.getElementById('debug-info').style.display='none'">Hide</button>
-                </div>
-
                 <div class="form-group">
                     <label for="education_level">Education Level</label>
                     <select id="education_level" name="education_level" required onchange="updateSubjects()">
@@ -294,26 +277,6 @@
                 percentageCell.textContent = percentage.toFixed(1) + '%';
             }
         }
-
-        // Add this to help with debugging
-        function showDebug(message) {
-            const debugDiv = document.getElementById('debug-info');
-            const debugContent = document.getElementById('debug-content');
-            debugContent.innerHTML += message + '<br>';
-            debugDiv.style.display = 'block';
-        }
-
-        // Check if students are loaded properly
-        document.addEventListener('DOMContentLoaded', function() {
-            {% if show_students %}
-                showDebug('Students should be displayed. Count: {{ students|length }}');
-                {% if students|length == 0 %}
-                    showDebug('WARNING: No students available!');
-                {% endif %}
-            {% else %}
-                showDebug('Student display is not enabled (show_students=false)');
-            {% endif %}
-        });
     </script>
 </body>
 </html>

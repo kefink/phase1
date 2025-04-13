@@ -32,11 +32,12 @@
     <!-- Performance Overview -->
     <div class="dashboard-card">
       <div class="card-header">Performance Overview</div>
+      {% if data %}
       <table>
         <thead>
           <tr>
             <th>Grade/Stream</th>
-            <th>Mean Score</th>
+            <th>Mean Score (%)</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -52,6 +53,9 @@
           {% endfor %}
         </tbody>
       </table>
+      {% else %}
+      <p>No class reports have been submitted yet.</p>
+      {% endif %}
     </div>
 
     <!-- Stats and Quick Actions -->

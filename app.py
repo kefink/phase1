@@ -192,21 +192,16 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
     normal_style = styles['Normal']
     heading3_style = styles['Heading3']
 
-    # Header (matching preview report)
-    title_style.alignment = 1  # Center align
-    subtitle_style.alignment = 1
-    normal_style.alignment = 1
+    # Header
     elements.append(Paragraph("HILL VIEW SCHOOL", title_style))
-    elements.append(Paragraph("P.O. Box 12345 - 00100, Nairobi, Kenya", normal_style))
-    elements.append(Paragraph("Tel: 0712345678", normal_style))
-    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("P.O. Box 12345 - 00100, Nairobi, Kenya", subtitle_style))
+    elements.append(Paragraph("Tel: 0712345678", subtitle_style))
     elements.append(Paragraph(f"ACADEMIC REPORT TERM {term.replace('_', ' ').upper()} 2025", subtitle_style))
     elements.append(Spacer(1, 12))
 
-    # Student Details (matching preview report)
-    normal_style.alignment = 0  # Left align
+    # Student Details
     student_name_upper = student_name.upper()
-    admission_no = f"HS{grade}{stream_letter}{str(class_data.index(student_data) + 1).zfill(3)}"  # Example: HS8B001
+    admission_no = f"HS{grade}{stream_letter}{str(class_data.index(student_data) + 1).zfill(3)}"
     elements.append(Paragraph(f"{student_name_upper}  ADM NO.: {admission_no}", normal_style))
     elements.append(Paragraph(f"Grade {grade} {education_level} {stream}", normal_style))
 
@@ -223,7 +218,7 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
     elements.append(Paragraph(f"Total Points: {total_points}", normal_style))
     elements.append(Spacer(1, 12))
 
-    # Performance Table (remove Grade and Points columns, remove TBD from remarks)
+    # Performance Table
     headers = ["Subjects", "Entrance", "Mid Term", "End Term", "Avg.", "Subject Remarks"]
     data = [headers]
     for subject in subjects:
@@ -237,7 +232,7 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
             "",  # Mid Term
             str(int(mark)),  # End Term
             str(int(avg)),  # Average
-            f"{performance}"  # Subject Remarks (removed " (TBD)")
+            f"{performance}"
         ])
 
     # Add Totals row
@@ -247,7 +242,7 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
         "",  # Mid Term
         str(int(total)),  # End Term
         str(int(total)),  # Average
-        ""  # No remarks for totals
+        ""
     ])
 
     table = Table(data)
@@ -256,18 +251,16 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
         ('BACKGROUND', (0, 1), (-1, -1), colors.white),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('FONTSIZE', (0, 1), (-1, -1), 8),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # Retain fix for previous error
     ]
+
     table.setStyle(TableStyle(table_style))
     elements.append(table)
 
-    # Remarks and Signatures (matching preview report)
-    elements.append(Spacer(1, 20))
+    # Remarks and Signatures
+    elements.append(Spacer(1, 12))
     elements.append(Paragraph("Class Teacher's Remarks:", heading3_style))
     elements.append(Paragraph("Well done! With continued focus and consistency, you have the potential to achieve even more.", normal_style))
     elements.append(Paragraph("Class Teacher: Moses Barasa", normal_style))
@@ -278,11 +271,10 @@ def generate_individual_report_pdf(grade, stream, term, assessment_type, student
     elements.append(Paragraph("Head Teacher Signature: ____________________", normal_style))
     elements.append(Paragraph("Next Term Begins on: TBD", normal_style))
 
-    # Footer (matching preview report)
-    elements.append(Spacer(1, 20))
+    # Footer
+    elements.append(Spacer(1, 12))
     footer_style = styles['Normal']
-    footer_style.alignment = 1  # Center align
-    footer_style.fontSize = 8
+    footer_style.alignment = 1  # Center
     current_date = datetime.now().strftime("%Y-%m-%d")
     elements.append(Paragraph(f"Generated on: {current_date}", footer_style))
     elements.append(Paragraph("Hillview School powered by CbcTeachkit", footer_style))
@@ -654,10 +646,38 @@ def classteacher():
 def headteacher():
     if 'username' not in session or session['role'] != 'headteacher':
         return redirect(url_for('admin_login'))
-    dashboard_data = [
-        {"grade": "8B", "mean": 65},
-        {"grade": "8G", "mean": 70},
-    ]
+
+    # Compute mean scores for each class from reports_data
+    dashboard_data = []
+    for report_key, report_data in reports_data.items():
+        # Check if the report is a class report (not a subject-specific report)
+        if "class_report" not in report_key:
+            continue
+
+        # Extract grade and stream from the report key (e.g., "8_B_class_report_term_1_endterm")
+        parts = report_key.split("_")
+        if len(parts) < 2:
+            continue
+        grade = parts[0]  # e.g., "8"
+        stream_letter = parts[1]  # e.g., "B"
+        grade_stream = f"{grade}{stream_letter}"  # e.g., "8B"
+
+        # Get the class_data from the report
+        class_data = report_data.get("class_data", [])
+        if not class_data:
+            continue
+
+        # Calculate the mean score for the class (average of all students' average_percentage)
+        total_avg_percentage = sum(student['average_percentage'] for student in class_data)
+        mean_score = total_avg_percentage / len(class_data) if class_data else 0
+        mean_score = round(mean_score, 1)  # Round to 1 decimal place
+
+        # Add to dashboard_data for the Performance Overview table
+        dashboard_data.append({"grade": grade_stream, "mean": mean_score})
+
+    # Sort dashboard_data by grade/stream for better readability
+    dashboard_data.sort(key=lambda x: x["grade"])
+
     return render_template("headteacher.html", data=dashboard_data)
 
 @app.route("/generate_pdf/<grade>/<stream>/<subject>")
@@ -912,9 +932,18 @@ def preview_class_report(grade, stream, term, assessment_type):
     # Map subjects to their abbreviations
     abbreviated_subjects = [subject_abbreviations.get(subject, subject[:4].upper()) for subject in subjects]
 
+    # Add index and performance category to class_data for use in the template
+    indexed_class_data = []
+    for idx, student_data in enumerate(class_data, 1):
+        student_data_copy = student_data.copy()
+        student_data_copy['index'] = idx
+        # Compute the performance category
+        student_data_copy['performance_category'] = get_performance_category(student_data['average_percentage'])
+        indexed_class_data.append(student_data_copy)
+
     return render_template(
         "preview_class_report.html",
-        class_data=class_data,
+        class_data=indexed_class_data,
         stats=stats,
         education_level=education_level,
         grade=grade,
