@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Assignments - Hillview School</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <style>
+      .education-level-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+
+      .education-level-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .add-level-btn {
+        background-color: #4a6741;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .remove-level-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+      }
+
+      .assignment-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .assignment-section {
+        margin-bottom: 15px;
+      }
+
+      .subject-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .class-teacher-option {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+      }
+
+      .template-section {
+        display: none;
+      }
+
+      .assignment-summary {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f0f7ff;
+      }
+
+      .summary-item {
+        margin-bottom: 5px;
+        padding: 5px;
+        border-bottom: 1px solid #eee;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="manage-container">
+        <header class="page-header">
+          <h1>Teacher Assignments</h1>
+          <div class="nav-links">
+            <a href="{{ url_for('classteacher.manage_teachers') }}"
+              >Back to Manage Teachers</a
+            >
+            |
+            <a href="{{ url_for('classteacher.dashboard') }}"
+              >Back to Dashboard</a
+            >
+            |
+            <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+          </div>
+        </header>
+
+        <!-- Message container for notifications -->
+        <div id="message-container">
+          {% if error_message %}
+          <div class="message message-error">{{ error_message }}</div>
+          {% endif %} {% if success_message %}
+          <div class="message message-success">{{ success_message }}</div>
+          {% endif %}
+        </div>
+
+        <div class="forms-grid">
+          <!-- Teacher Selection Form -->
+          <div class="form-card">
+            <h2>Bulk Subject Assignment</h2>
+            <p>
+              Assign multiple subjects to a teacher across different education
+              levels.
+            </p>
+
+            <form
+              id="bulk-assignment-form"
+              method="POST"
+              action="{{ url_for('bulk_assignments.bulk_assign_subjects_new') }}"
+            >
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
+
+              <!-- Teacher Selection -->
+              <div class="form-group">
+                <label for="teacher_id">Select Teacher:</label>
+                <select
+                  name="teacher_id"
+                  id="teacher_id"
+                  class="form-control"
+                  required
+                >
+                  <option value="">-- Select Teacher --</option>
+                  {% for teacher in teachers %}
+                  <option value="{{ teacher.id }}">
+                    {{ teacher.username }}
+                  </option>
+                  {% endfor %}
+                </select>
+                <p style="margin-top: 5px; font-size: 0.9em; color: #666">
+                  Note: To add a new teacher, use the "Add New Teacher" form on
+                  the Manage Teachers page.
+                </p>
+              </div>
+
+              <!-- Education Level Sections Container -->
+              <div id="education-levels-container">
+                <!-- First education level section (always present) -->
+                <div class="education-level-section" id="level-section-1">
+                  <div class="education-level-header">
+                    <h3>Education Level 1</h3>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="education_level_1"
+                      >Select Education Level:</label
+                    >
+                    <select
+                      name="education_level_1"
+                      id="education_level_1"
+                      class="education-level-select form-control"
+                      onchange="updateSubjects(1)"
+                      required
+                    >
+                      <option value="">-- Select Education Level --</option>
+                      <option value="lower_primary">
+                        Lower Primary (Grades 1-3)
+                      </option>
+                      <option value="upper_primary">
+                        Upper Primary (Grades 4-6)
+                      </option>
+                      <option value="junior_secondary">
+                        Junior Secondary (Grades 7-9)
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="assignment-grid">
+                    <div class="assignment-section">
+                      <div class="form-group">
+                        <label for="grade_id_1">Select Grade:</label>
+                        <select
+                          name="grade_id_1"
+                          id="grade_id_1"
+                          class="grade-select form-control"
+                          onchange="updateStreams(1)"
+                          required
+                        >
+                          <option value="">-- Select Grade --</option>
+                          <!-- Will be populated based on education level -->
+                        </select>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="stream_id_1"
+                          >Select Stream (Optional):</label
+                        >
+                        <select
+                          name="stream_id_1"
+                          id="stream_id_1"
+                          class="stream-select form-control"
+                        >
+                          <option value="">-- All Streams --</option>
+                          <!-- Will be populated based on grade -->
+                        </select>
+                      </div>
+
+                      <div class="class-teacher-option">
+                        <label>
+                          <input
+                            type="checkbox"
+                            name="is_class_teacher_1"
+                            id="is_class_teacher_1"
+                            value="1"
+                          />
+                          Designate as Class Teacher
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="assignment-section">
+                      <div class="form-group">
+                        <label for="subjects_1"
+                          >Subjects (Hold Ctrl/Cmd to select multiple):</label
+                        >
+                        <select
+                          name="subjects_1[]"
+                          id="subjects-select-1"
+                          class="form-control"
+                          multiple
+                          style="min-height: 150px"
+                        >
+                          <!-- Will be populated based on education level -->
+                          <option disabled>
+                            Please select an education level first
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Add Education Level Button -->
+              <div style="margin: 20px 0">
+                <button
+                  type="button"
+                  class="add-level-btn"
+                  onclick="addEducationLevel()"
+                >
+                  + Add Another Education Level
+                </button>
+              </div>
+
+              <!-- Assignment Summary -->
+              <div
+                class="assignment-summary"
+                id="assignment-summary"
+                style="display: none"
+              >
+                <h3>Assignment Summary</h3>
+                <div id="summary-content">
+                  <!-- Will be populated via JavaScript -->
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div style="margin-top: 20px">
+                <button
+                  type="submit"
+                  class="manage-btn"
+                  style="background-color: #4a6741"
+                >
+                  Assign Subjects
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Tips Section -->
+          <div class="form-card">
+            <h2>Assignment Tips</h2>
+            <div class="tips-content">
+              <p>Here are some tips for bulk assigning subjects to teachers:</p>
+              <ul>
+                <li>
+                  Start by selecting the education level (Lower Primary, Upper
+                  Primary, or Junior Secondary)
+                </li>
+                <li>Then select the grade and stream (if applicable)</li>
+                <li>
+                  Choose the subjects the teacher will teach at this level
+                </li>
+                <li>
+                  You can add multiple education levels for teachers who teach
+                  across different levels
+                </li>
+                <li>
+                  Check the "Designate as Class Teacher" option if the teacher
+                  is the class teacher for the selected grade/stream
+                </li>
+                <li>
+                  Only one teacher can be designated as the class teacher for a
+                  specific stream
+                </li>
+                <li>
+                  If no stream is selected, the assignment applies to all
+                  streams in the grade
+                </li>
+                <li>
+                  You can create a new teacher directly from this form if needed
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Template for additional education level sections -->
+    <div class="template-section" id="level-section-template">
+      <div class="education-level-section">
+        <div class="education-level-header">
+          <h3>Education Level {LEVEL_NUM}</h3>
+          <button
+            type="button"
+            class="remove-level-btn"
+            onclick="removeEducationLevel({LEVEL_NUM})"
+          >
+            Remove
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label for="education_level_{LEVEL_NUM}"
+            >Select Education Level:</label
+          >
+          <select
+            name="education_level_{LEVEL_NUM}"
+            id="education_level_{LEVEL_NUM}"
+            class="education-level-select form-control"
+            onchange="updateSubjects({LEVEL_NUM})"
+            required
+          >
+            <option value="">-- Select Education Level --</option>
+            <option value="lower_primary">Lower Primary (Grades 1-3)</option>
+            <option value="upper_primary">Upper Primary (Grades 4-6)</option>
+            <option value="junior_secondary">
+              Junior Secondary (Grades 7-9)
+            </option>
+          </select>
+        </div>
+
+        <div class="assignment-grid">
+          <div class="assignment-section">
+            <div class="form-group">
+              <label for="grade_id_{LEVEL_NUM}">Select Grade:</label>
+              <select
+                name="grade_id_{LEVEL_NUM}"
+                id="grade_id_{LEVEL_NUM}"
+                class="grade-select form-control"
+                onchange="updateStreams({LEVEL_NUM})"
+                required
+              >
+                <option value="">-- Select Grade --</option>
+                <!-- Will be populated based on education level -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="stream_id_{LEVEL_NUM}"
+                >Select Stream (Optional):</label
+              >
+              <select
+                name="stream_id_{LEVEL_NUM}"
+                id="stream_id_{LEVEL_NUM}"
+                class="stream-select form-control"
+              >
+                <option value="">-- All Streams --</option>
+                <!-- Will be populated based on grade -->
+              </select>
+            </div>
+
+            <div class="class-teacher-option">
+              <label>
+                <input
+                  type="checkbox"
+                  name="is_class_teacher_{LEVEL_NUM}"
+                  id="is_class_teacher_{LEVEL_NUM}"
+                  value="1"
+                />
+                Designate as Class Teacher
+              </label>
+            </div>
+          </div>
+
+          <div class="assignment-section">
+            <div class="form-group">
+              <label for="subjects_{LEVEL_NUM}"
+                >Subjects (Hold Ctrl/Cmd to select multiple):</label
+              >
+              <select
+                name="subjects_{LEVEL_NUM}[]"
+                id="subjects-select-{LEVEL_NUM}"
+                class="form-control"
+                multiple
+                style="min-height: 150px"
+              >
+                <!-- Will be populated based on education level -->
+                <option disabled>Please select an education level first</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Global variables
+      let levelCount = 1;
+      const educationLevelGrades = {
+        lower_primary: ["1", "2", "3"],
+        upper_primary: ["4", "5", "6"],
+        junior_secondary: ["7", "8", "9"],
+      };
+
+      // Function to toggle new teacher fields
+      function toggleNewTeacherFields() {
+        const newTeacherFields = document.getElementById("new-teacher-fields");
+        const teacherSelect = document.getElementById("teacher_id");
+        const createNewTeacher =
+          document.getElementById("create_new_teacher").checked;
+
+        if (createNewTeacher) {
+          newTeacherFields.style.display = "block";
+          teacherSelect.disabled = true;
+          teacherSelect.required = false;
+
+          // Make new teacher fields required
+          document.getElementById("username").required = true;
+          document.getElementById("password").required = true;
+          document.getElementById("role").required = true;
+        } else {
+          newTeacherFields.style.display = "none";
+          teacherSelect.disabled = false;
+          teacherSelect.required = true;
+
+          // Make new teacher fields not required
+          document.getElementById("username").required = false;
+          document.getElementById("password").required = false;
+          document.getElementById("role").required = false;
+        }
+      }
+
+      // Function to add another education level section
+      function addEducationLevel() {
+        levelCount++;
+
+        // Get the template and replace placeholders
+        const template = document.getElementById(
+          "level-section-template"
+        ).innerHTML;
+        const newSection = template.replace(/{LEVEL_NUM}/g, levelCount);
+
+        // Create a container for the new section
+        const container = document.createElement("div");
+        container.id = `level-section-${levelCount}`;
+        container.innerHTML = newSection;
+
+        // Add to the container
+        document
+          .getElementById("education-levels-container")
+          .appendChild(container);
+
+        // Update the form's hidden input to track the number of levels
+        if (!document.getElementById("level_count")) {
+          const levelCountInput = document.createElement("input");
+          levelCountInput.type = "hidden";
+          levelCountInput.id = "level_count";
+          levelCountInput.name = "level_count";
+          levelCountInput.value = levelCount;
+          document
+            .getElementById("bulk-assignment-form")
+            .appendChild(levelCountInput);
+        } else {
+          document.getElementById("level_count").value = levelCount;
+        }
+
+        // Update the summary
+        updateAssignmentSummary();
+      }
+
+      // Function to remove an education level section
+      function removeEducationLevel(levelNum) {
+        const section = document.getElementById(`level-section-${levelNum}`);
+        if (section) {
+          section.remove();
+          updateAssignmentSummary();
+        }
+      }
+
+      // Function to update grades based on selected education level
+      function updateSubjects(levelNum) {
+        const educationLevel = document.getElementById(
+          `education_level_${levelNum}`
+        ).value;
+        const subjectsSelect = document.getElementById(
+          `subjects-select-${levelNum}`
+        );
+        const gradeSelect = document.getElementById(`grade_id_${levelNum}`);
+
+        // Clear existing options in grade select
+        gradeSelect.innerHTML = '<option value="">-- Select Grade --</option>';
+
+        // Clear existing options in subjects select
+        subjectsSelect.innerHTML = "";
+
+        if (!educationLevel) {
+          subjectsSelect.innerHTML =
+            "<option disabled>Please select an education level first</option>";
+          return;
+        }
+
+        // Add grades based on education level
+        const grades = educationLevelGrades[educationLevel] || [];
+        grades.forEach((grade) => {
+          const option = document.createElement("option");
+          option.value = grade;
+          option.textContent = `Grade ${grade}`;
+          gradeSelect.appendChild(option);
+        });
+
+        // Hardcoded subjects for each education level
+        const subjectsByLevel = {
+          lower_primary: [
+            { id: 101, name: "LITERACY ACTIVITIES" },
+            { id: 102, name: "KISWAHILI LANGUAGE ACTIVITIES" },
+            { id: 103, name: "ENGLISH LANGUAGE ACTIVITIES" },
+            { id: 104, name: "MATHEMATICAL ACTIVITIES" },
+            { id: 105, name: "ENVIRONMENTAL ACTIVITIES" },
+            { id: 106, name: "HYGIENE AND NUTRITION ACTIVITIES" },
+            { id: 107, name: "RELIGIOUS EDUCATION ACTIVITIES" },
+            { id: 108, name: "MOVEMENT AND CREATIVE ACTIVITIES" },
+          ],
+          upper_primary: [
+            { id: 201, name: "ENGLISH" },
+            { id: 202, name: "KISWAHILI" },
+            { id: 203, name: "MATHEMATICS" },
+            { id: 204, name: "SCIENCE AND TECHNOLOGY" },
+            { id: 205, name: "SOCIAL STUDIES" },
+            { id: 206, name: "RELIGIOUS EDUCATION" },
+            { id: 207, name: "CREATIVE ARTS" },
+            { id: 208, name: "PHYSICAL AND HEALTH EDUCATION" },
+            { id: 209, name: "AGRICULTURE" },
+          ],
+          junior_secondary: [
+            { id: 301, name: "ENGLISH" },
+            { id: 302, name: "KISWAHILI" },
+            { id: 303, name: "MATHEMATICS" },
+            { id: 304, name: "INTEGRATED SCIENCE" },
+            { id: 305, name: "HEALTH EDUCATION" },
+            { id: 306, name: "PRE-TECHNICAL STUDIES" },
+            { id: 307, name: "SOCIAL STUDIES" },
+            { id: 308, name: "RELIGIOUS EDUCATION" },
+            { id: 309, name: "BUSINESS STUDIES" },
+          ],
+        };
+
+        // Get subjects for the selected education level
+        const subjects = subjectsByLevel[educationLevel] || [];
+
+        if (subjects.length > 0) {
+          subjects.forEach((subject) => {
+            const option = document.createElement("option");
+            option.value = subject.id;
+            option.textContent = subject.name;
+            option.dataset.subject = subject.name;
+            option.dataset.level = levelNum;
+            subjectsSelect.appendChild(option);
+          });
+
+          // Add event listener for changes
+          subjectsSelect.addEventListener("change", updateAssignmentSummary);
+        } else {
+          const option = document.createElement("option");
+          option.disabled = true;
+          option.textContent = "No subjects found for this education level";
+          subjectsSelect.appendChild(option);
+        }
+
+        // Update the summary
+        updateAssignmentSummary();
+      }
+
+      // Function to update streams based on selected grade
+      function updateStreams(levelNum) {
+        const gradeId = document.getElementById(`grade_id_${levelNum}`).value;
+        const streamSelect = document.getElementById(`stream_id_${levelNum}`);
+
+        // Clear existing options
+        streamSelect.innerHTML = '<option value="">-- All Streams --</option>';
+
+        if (!gradeId) {
+          return;
+        }
+
+        console.log(`Updating streams for grade: ${gradeId}`);
+
+        // Hardcoded streams for each grade
+        const streamsByGrade = {
+          1: [
+            { id: 39, name: "B" },
+            { id: 40, name: "G" },
+            { id: 41, name: "Y" },
+          ],
+          2: [
+            { id: 36, name: "B" },
+            { id: 37, name: "G" },
+            { id: 38, name: "Y" },
+          ],
+          3: [
+            { id: 33, name: "B" },
+            { id: 34, name: "G" },
+            { id: 35, name: "Y" },
+          ],
+          4: [
+            { id: 30, name: "B" },
+            { id: 31, name: "G" },
+            { id: 32, name: "Y" },
+          ],
+          5: [
+            { id: 27, name: "B" },
+            { id: 28, name: "G" },
+            { id: 29, name: "Y" },
+          ],
+          6: [
+            { id: 21, name: "B" },
+            { id: 22, name: "G" },
+            { id: 23, name: "Y" },
+          ],
+          7: [
+            { id: 24, name: "B" },
+            { id: 25, name: "G" },
+            { id: 26, name: "Y" },
+          ],
+          8: [
+            { id: 1, name: "B" },
+            { id: 2, name: "Y" },
+            { id: 3, name: "G" },
+          ],
+          9: [
+            { id: 4, name: "B" },
+            { id: 19, name: "G" },
+            { id: 20, name: "Y" },
+          ],
+        };
+
+        // Get streams for the selected grade
+        const streams = streamsByGrade[gradeId] || [];
+
+        if (streams.length > 0) {
+          streams.forEach((stream) => {
+            const option = document.createElement("option");
+            option.value = stream.id;
+            option.textContent = stream.name;
+            streamSelect.appendChild(option);
+          });
+          console.log(`Added ${streams.length} streams for grade ${gradeId}`);
+        } else {
+          console.log(`No streams found for grade ${gradeId}`);
+        }
+
+        // Update the summary
+        updateAssignmentSummary();
+      }
+
+      // Function to update the assignment summary
+      function updateAssignmentSummary() {
+        const summaryDiv = document.getElementById("assignment-summary");
+        const summaryContent = document.getElementById("summary-content");
+
+        // Check if we have any assignments to summarize
+        let hasAssignments = false;
+        let summaryHtml = "";
+
+        // Loop through each education level
+        for (let i = 1; i <= levelCount; i++) {
+          const levelSection = document.getElementById(`level-section-${i}`);
+          if (!levelSection) continue;
+
+          const educationLevelSelect = document.getElementById(
+            `education_level_${i}`
+          );
+          const gradeSelect = document.getElementById(`grade_id_${i}`);
+          const streamSelect = document.getElementById(`stream_id_${i}`);
+          const isClassTeacher = document.getElementById(
+            `is_class_teacher_${i}`
+          );
+
+          if (!educationLevelSelect || !educationLevelSelect.value) continue;
+
+          const educationLevel =
+            educationLevelSelect.options[educationLevelSelect.selectedIndex]
+              .text;
+          const grade = gradeSelect.value ? `Grade ${gradeSelect.value}` : "";
+          const stream = streamSelect.value
+            ? streamSelect.options[streamSelect.selectedIndex].text
+            : "All Streams";
+
+          // Get selected subjects
+          const subjectsSelect = document.getElementById(
+            `subjects-select-${i}`
+          );
+          const selectedOptions = Array.from(subjectsSelect.selectedOptions);
+          const subjects = selectedOptions.map((option) => option.textContent);
+
+          if (grade && subjects.length > 0) {
+            hasAssignments = true;
+
+            summaryHtml += `
+              <div class="summary-item">
+                <strong>${educationLevel}</strong> - ${grade}, ${stream}
+                <br>
+                <strong>Subjects:</strong> ${subjects.join(", ")}
+                ${
+                  isClassTeacher.checked
+                    ? "<br><strong>Class Teacher</strong>"
+                    : ""
+                }
+              </div>
+            `;
+          }
+        }
+
+        if (hasAssignments) {
+          summaryContent.innerHTML = summaryHtml;
+          summaryDiv.style.display = "block";
+        } else {
+          summaryDiv.style.display = "none";
+        }
+      }
+
+      // Initialize the form
+      document.addEventListener("DOMContentLoaded", function () {
+        // Add level count hidden input
+        const levelCountInput = document.createElement("input");
+        levelCountInput.type = "hidden";
+        levelCountInput.id = "level_count";
+        levelCountInput.name = "level_count";
+        levelCountInput.value = levelCount;
+        document
+          .getElementById("bulk-assignment-form")
+          .appendChild(levelCountInput);
+
+        // Auto-hide messages after 5 seconds
+        setTimeout(function () {
+          const messages = document.querySelectorAll(".message");
+          messages.forEach((message) => {
+            message.style.display = "none";
+          });
+        }, 5000);
+      });
+    </script>
+  </body>
+</html>

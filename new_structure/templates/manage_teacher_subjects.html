@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Teacher Subjects - Hillview School</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <style>
+      .action-buttons {
+        display: flex;
+        gap: 5px;
+      }
+      .edit-btn {
+        display: inline-block;
+        padding: 5px 10px;
+        background-color: #4a6741;
+        color: white;
+        text-decoration: none;
+        border-radius: 3px;
+        font-size: 0.8rem;
+      }
+      .edit-btn:hover {
+        background-color: #3a5331;
+      }
+      .delete-btn {
+        padding: 5px 10px;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+      .delete-btn:hover {
+        background-color: #c82333;
+      }
+      .add-btn {
+        padding: 5px 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+      .add-btn:hover {
+        background-color: #218838;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modal-content {
+        background-color: #fff;
+        margin: 10% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 500px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .close:hover {
+        color: #000;
+      }
+      .filter-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+      }
+      .filter-section select {
+        margin-right: 10px;
+        padding: 5px;
+      }
+      .subject-group {
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+      }
+      .subject-group h3 {
+        margin-top: 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+      .checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+      }
+      .checkbox-item input {
+        margin-right: 8px;
+      }
+      .highlight-message {
+        animation: highlight 2s ease-in-out;
+        border: 2px solid #4a6741;
+        box-shadow: 0 0 10px rgba(74, 103, 65, 0.5);
+      }
+      @keyframes highlight {
+        0% {
+          background-color: #4a6741;
+          color: white;
+        }
+        100% {
+          background-color: #d4edda;
+          color: #155724;
+        }
+      }
+      .highlight-row {
+        animation: highlight-row 3s ease-in-out;
+      }
+      @keyframes highlight-row {
+        0% {
+          background-color: #4a6741;
+          color: white;
+        }
+        50% {
+          background-color: #d4edda;
+          color: #155724;
+        }
+        100% {
+          background-color: transparent;
+          color: inherit;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="manage-container">
+        <header class="page-header">
+          <h1>Manage Teacher Subjects: {{ teacher.username }}</h1>
+          <div class="nav-links">
+            <a href="{{ url_for('classteacher.manage_teacher_assignments') }}"
+              >Back to Teacher Assignments</a
+            >
+            |
+            <a href="{{ url_for('classteacher.dashboard') }}"
+              >Back to Dashboard</a
+            >
+            |
+            <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+          </div>
+        </header>
+
+        <!-- Message container for notifications -->
+        <div id="message-container">
+          {% if error_message %}
+          <div class="message message-error">{{ error_message }}</div>
+          {% endif %} {% if success_message %}
+          <div class="message message-success">{{ success_message }}</div>
+          {% endif %} {% if session.get('assignment_success') %}
+          <div class="message message-success highlight-message">
+            {{ session.get('assignment_message') }}
+            <script>
+              // Remove the session variables after displaying
+              window.onload = function () {
+                fetch("/clear_assignment_session", { method: "POST" });
+              };
+            </script>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="manage-section">
+          <h2>Current Subject Assignments</h2>
+
+          <div class="filter-section">
+            <h3>Filter Assignments</h3>
+            <select id="educationLevelFilter" onchange="filterAssignments()">
+              <option value="">All Education Levels</option>
+              <option value="lower_primary">Lower Primary (Grades 1-3)</option>
+              <option value="upper_primary">Upper Primary (Grades 4-6)</option>
+              <option value="junior_secondary">
+                Junior Secondary (Grades 7-9)
+              </option>
+            </select>
+            <select id="gradeFilter" onchange="filterAssignments()">
+              <option value="">All Grades</option>
+              {% for grade in grades %}
+              <option value="{{ grade.id }}">{{ grade.level }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Education Level</th>
+                <th>Grade</th>
+                <th>Stream</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="assignmentsTableBody">
+              {% for assignment in subject_assignments %}
+              <tr
+                data-grade="{{ assignment.grade_id }}"
+                data-education-level="{{ assignment.education_level }}"
+                class="{% if assignment.is_new and session.get('assignment_success') %}highlight-row{% endif %}"
+              >
+                <td>{{ assignment.subject_name }}</td>
+                <td>
+                  {{ assignment.education_level|replace('_', ' ')|title if
+                  assignment.education_level else 'N/A' }}
+                </td>
+                <td>{{ assignment.grade_level }}</td>
+                <td>
+                  {{ assignment.stream_name if assignment.stream_name else 'All
+                  Streams' }}
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <form
+                      method="POST"
+                      action="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=teacher.id) }}"
+                      style="display: inline"
+                      onsubmit="return confirm('Are you sure you want to remove this subject assignment?')"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="{{ assignment.id }}"
+                      />
+                      <button
+                        type="submit"
+                        name="remove_subject"
+                        class="delete-btn"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                    <button
+                      class="edit-btn"
+                      onclick="openChangeSubjectModal('{{ assignment.id }}', '{{ assignment.subject_name }}', '{{ assignment.grade_level }}', '{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}')"
+                    >
+                      Change Subject
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="manage-section">
+          <h2>Add New Subject Assignments</h2>
+          <form
+            method="POST"
+            action="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=teacher.id) }}"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <!-- Education Level Selection -->
+            <div class="form-group">
+              <label for="education_level">Education Level:</label>
+              <select
+                id="education_level"
+                name="education_level"
+                required
+                class="form-control"
+                onchange="updateSubjectsAndGrades()"
+              >
+                <option value="">-- Select Education Level --</option>
+                <option value="lower_primary">
+                  Lower Primary (Grades 1-3)
+                </option>
+                <option value="upper_primary">
+                  Upper Primary (Grades 4-6)
+                </option>
+                <option value="junior_secondary">
+                  Junior Secondary (Grades 7-9)
+                </option>
+              </select>
+            </div>
+
+            <!-- Grade Selection -->
+            <div class="form-group">
+              <label for="grade_id">Grade:</label>
+              <select
+                id="grade_id"
+                name="grade_id"
+                required
+                class="form-control"
+                onchange="updateStreams()"
+              >
+                <option value="">-- Select Grade --</option>
+                {% for grade in grades %}
+                <option
+                  value="{{ grade.id }}"
+                  data-education-level="{% if grade.level in ['Grade 1', 'Grade 2', 'Grade 3'] %}lower_primary{% elif grade.level in ['Grade 4', 'Grade 5', 'Grade 6'] %}upper_primary{% elif grade.level in ['Grade 7', 'Grade 8', 'Grade 9'] %}junior_secondary{% endif %}"
+                >
+                  {{ grade.level }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Stream Selection -->
+            <div class="form-group">
+              <label for="stream_id">Stream (Optional):</label>
+              <select id="stream_id" name="stream_id" class="form-control">
+                <option value="">All Streams</option>
+                <!-- Streams will be populated by JavaScript -->
+              </select>
+            </div>
+
+            <!-- Subject Selection -->
+            <div class="form-group">
+              <label>Subjects:</label>
+              <div id="subjectsContainer">
+                <!-- Subject checkboxes will be populated by JavaScript -->
+                <p>Please select an education level first</p>
+              </div>
+            </div>
+
+            <button type="submit" name="add_subjects" class="btn btn-primary">
+              Add Subject Assignments
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Subject Modal -->
+    <div id="changeSubjectModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeChangeSubjectModal()">&times;</span>
+        <h2>Change Subject Assignment</h2>
+        <form
+          id="changeSubjectForm"
+          method="POST"
+          action="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=teacher.id) }}"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input
+            type="hidden"
+            id="change_assignment_id"
+            name="change_assignment_id"
+          />
+
+          <div class="form-group">
+            <label for="current_assignment">Current Assignment:</label>
+            <input
+              type="text"
+              id="current_assignment"
+              class="form-control"
+              readonly
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="new_subject_id">New Subject:</label>
+            <select
+              id="new_subject_id"
+              name="new_subject_id"
+              required
+              class="form-control"
+            >
+              <option value="">-- Select Subject --</option>
+              {% for subject in subjects %}
+              <option value="{{ subject.id }}">
+                {{ subject.name }} ({{ subject.education_level|replace('_', '
+                ')|title }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <button type="submit" name="change_subject" class="btn btn-primary">
+            Change Subject
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Auto-hide messages after 5 seconds
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+          const messages = document.querySelectorAll(".message");
+          messages.forEach((message) => {
+            message.style.display = "none";
+          });
+        }, 5000);
+
+        // Initialize the form
+        updateSubjectsAndGrades();
+      });
+
+      // Filter assignments
+      function filterAssignments() {
+        const educationLevel = document.getElementById("educationLevelFilter").value;
+        const gradeId = document.getElementById("gradeFilter").value;
+        const rows = document.querySelectorAll("#assignmentsTableBody tr");
+
+        rows.forEach(row => {
+          let showRow = true;
+
+          if (educationLevel && row.dataset.educationLevel !== educationLevel) {
+            showRow = false;
+          }
+
+          if (gradeId && row.dataset.grade !== gradeId) {
+            showRow = false;
+          }
+
+          row.style.display = showRow ? "" : "none";
+        });
+      }
+
+      // Update subjects and grades based on education level
+      function updateSubjectsAndGrades() {
+        const educationLevel = document.getElementById("education_level").value;
+        const gradeSelect = document.getElementById("grade_id");
+        const subjectsContainer = document.getElementById("subjectsContainer");
+
+        // Filter grades by education level
+        Array.from(gradeSelect.options).forEach(option => {
+          if (option.value === "") return; // Skip the placeholder option
+
+          const optionEducationLevel = option.dataset.educationLevel;
+          option.style.display = !educationLevel || optionEducationLevel === educationLevel ? "" : "none";
+        });
+
+        // Reset grade selection if current selection doesn't match education level
+        if (gradeSelect.selectedIndex > 0) {
+          const selectedOption = gradeSelect.options[gradeSelect.selectedIndex];
+          if (selectedOption.dataset.educationLevel !== educationLevel) {
+            gradeSelect.value = "";
+          }
+        }
+
+        // Update subjects based on education level
+        if (!educationLevel) {
+          subjectsContainer.innerHTML = "<p>Please select an education level first</p>";
+          return;
+        }
+
+        // Get subjects for the selected education level
+        const subjects = [
+          {% for subject in subjects %}
+          {
+            id: {{ subject.id }},
+            name: "{{ subject.name }}",
+            educationLevel: "{{ subject.education_level }}"
+          },
+          {% endfor %}
+        ];
+
+        const filteredSubjects = subjects.filter(subject => subject.educationLevel === educationLevel);
+
+        if (filteredSubjects.length === 0) {
+          subjectsContainer.innerHTML = "<p>No subjects found for this education level</p>";
+          return;
+        }
+
+        // Group subjects by education level
+        let html = `<div class="subject-group">
+          <h3>${educationLevel.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} Subjects</h3>
+          <div class="checkbox-group">`;
+
+        filteredSubjects.forEach(subject => {
+          html += `
+            <div class="checkbox-item">
+              <input type="checkbox" id="subject_${subject.id}" name="subject_ids" value="${subject.id}">
+              <label for="subject_${subject.id}">${subject.name}</label>
+            </div>`;
+        });
+
+        html += `</div></div>`;
+
+        subjectsContainer.innerHTML = html;
+
+        // Update streams
+        updateStreams();
+      }
+
+      // Update streams based on grade
+      function updateStreams() {
+        const gradeId = document.getElementById("grade_id").value;
+        const streamSelect = document.getElementById("stream_id");
+
+        // Clear current options except the first one
+        while (streamSelect.options.length > 1) {
+          streamSelect.remove(1);
+        }
+
+        if (!gradeId) return;
+
+        // Get streams for the selected grade
+        const streams = [
+          {% for stream in streams %}
+          {
+            id: {{ stream.id }},
+            name: "{{ stream.name }}",
+            gradeId: {{ stream.grade_id }}
+          },
+          {% endfor %}
+        ];
+
+        const filteredStreams = streams.filter(stream => stream.gradeId == gradeId);
+
+        filteredStreams.forEach(stream => {
+          const option = document.createElement("option");
+          option.value = stream.id;
+          option.textContent = stream.name;
+          streamSelect.appendChild(option);
+        });
+      }
+
+      // Change subject modal functions
+      function openChangeSubjectModal(assignmentId, subject, grade, stream) {
+        document.getElementById("change_assignment_id").value = assignmentId;
+        document.getElementById("current_assignment").value = `${subject} - ${grade} ${stream}`;
+        document.getElementById("changeSubjectModal").style.display = "block";
+      }
+
+      function closeChangeSubjectModal() {
+        document.getElementById("changeSubjectModal").style.display = "none";
+      }
+
+      // Close modal when clicking outside
+      window.onclick = function(event) {
+        if (event.target == document.getElementById("changeSubjectModal")) {
+          closeChangeSubjectModal();
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Subject Assignments - Hillview School</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="manage-container">
+        <header class="page-header">
+          <h1>Teacher Subject Assignments</h1>
+          <div class="nav-links">
+            <a href="{{ url_for('classteacher.manage_teachers') }}"
+              >Back to Manage Teachers</a
+            >
+            |
+            <a href="{{ url_for('classteacher.dashboard') }}"
+              >Back to Dashboard</a
+            >
+            |
+            <a
+              href="{{ url_for('structured_assignments.structured_assignments') }}"
+              >Advanced Assignments</a
+            >
+            |
+            <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+          </div>
+        </header>
+
+        <!-- Message container for notifications -->
+        <div id="message-container">
+          {% if error_message %}
+          <div class="message message-error">{{ error_message }}</div>
+          {% endif %} {% if success_message %}
+          <div class="message message-success">{{ success_message }}</div>
+          {% endif %}
+        </div>
+
+        <div class="forms-grid">
+          <!-- Assignment Form -->
+          <div class="form-card">
+            <h2>Assign Subject to Teacher</h2>
+            <form
+              method="POST"
+              action="{{ url_for('classteacher.assign_subjects') }}"
+              id="assignment-form"
+            >
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
+
+              <div class="form-group">
+                <label for="teacher_id">Select Teacher:</label>
+                <select
+                  name="teacher_id"
+                  id="teacher_id"
+                  class="form-control"
+                  required
+                  onchange="loadTeacherAssignments()"
+                >
+                  <option value="">-- Select Teacher --</option>
+                  {% for teacher in teachers %}
+                  <option value="{{ teacher.id }}">
+                    {{ teacher.username }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="subject_id">Select Subject:</label>
+                <select
+                  name="subject_id"
+                  id="subject_id"
+                  class="form-control"
+                  required
+                >
+                  <option value="">-- Select Subject --</option>
+                  {% for subject in subjects %}
+                  <option value="{{ subject.id }}">
+                    {{ subject.name }} ({{ subject.education_level|replace('_',
+                    ' ')|title }})
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="grade_id">Select Grade:</label>
+                <select
+                  name="grade_id"
+                  id="grade_id"
+                  class="form-control"
+                  required
+                  onchange="updateStreams()"
+                >
+                  <option value="">-- Select Grade --</option>
+                  {% for grade in grades %}
+                  <option value="{{ grade.id }}">{{ grade.level }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="stream_id">Select Stream (Optional):</label>
+                <select name="stream_id" id="stream_id" class="form-control">
+                  <option value="">-- All Streams --</option>
+                  <!-- Populated via JavaScript -->
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="is_class_teacher"
+                    id="is_class_teacher"
+                    value="1"
+                  />
+                  Designate as Class Teacher
+                </label>
+              </div>
+
+              <button type="submit" class="manage-btn">Assign Subject</button>
+            </form>
+
+            <!-- Bulk Assignment Section -->
+            <div
+              class="bulk-assignment"
+              style="
+                margin-top: 20px;
+                border-top: 1px solid #ddd;
+                padding-top: 15px;
+              "
+            >
+              <h3>Bulk Assignment</h3>
+              <p>Assign a teacher to multiple subjects or grades at once:</p>
+
+              <button
+                type="button"
+                class="manage-btn"
+                onclick="showBulkAssignmentModal()"
+                style="background-color: #4a6741"
+              >
+                Open Bulk Assignment
+              </button>
+            </div>
+
+            <!-- Teacher's Current Assignments Summary -->
+            <div
+              id="teacher-assignments-summary"
+              style="
+                margin-top: 20px;
+                display: none;
+                border-top: 1px solid #ddd;
+                padding-top: 15px;
+              "
+            >
+              <h3>Selected Teacher's Assignments</h3>
+              <div id="teacher-assignments-content">
+                <!-- Populated via JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Bulk Assignment Modal -->
+          <div
+            id="bulk-assignment-modal"
+            class="modal"
+            style="
+              display: none;
+              position: fixed;
+              z-index: 1000;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+              background-color: rgba(0, 0, 0, 0.4);
+            "
+          >
+            <div
+              class="modal-content"
+              style="
+                background-color: #fefefe;
+                margin: 10% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+                max-width: 700px;
+                border-radius: 5px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+              "
+            >
+              <span
+                class="close"
+                onclick="closeBulkAssignmentModal()"
+                style="
+                  color: #aaa;
+                  float: right;
+                  font-size: 28px;
+                  font-weight: bold;
+                  cursor: pointer;
+                "
+                >&times;</span
+              >
+              <h2>Bulk Subject Assignment</h2>
+
+              <form
+                id="bulk-assignment-form"
+                method="POST"
+                action="{{ url_for('classteacher.bulk_assign_subjects') }}"
+              >
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{ csrf_token() }}"
+                />
+
+                <div class="form-group">
+                  <label for="bulk_teacher_id">Select Teacher:</label>
+                  <select
+                    name="bulk_teacher_id"
+                    id="bulk_teacher_id"
+                    class="form-control"
+                    required
+                  >
+                    <option value="">-- Select Teacher --</option>
+                    {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}">
+                      {{ teacher.username }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Select Subjects:</label>
+                  <div
+                    class="checkbox-grid"
+                    style="
+                      display: grid;
+                      grid-template-columns: repeat(3, 1fr);
+                      gap: 10px;
+                      margin-top: 10px;
+                    "
+                  >
+                    {% for subject in subjects %}
+                    <label style="display: flex; align-items: center">
+                      <input
+                        type="checkbox"
+                        name="bulk_subjects"
+                        value="{{ subject.id }}"
+                      />
+                      <span style="margin-left: 5px">{{ subject.name }}</span>
+                    </label>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Select Grades:</label>
+                  <div
+                    class="checkbox-grid"
+                    style="
+                      display: grid;
+                      grid-template-columns: repeat(3, 1fr);
+                      gap: 10px;
+                      margin-top: 10px;
+                    "
+                  >
+                    {% for grade in grades %}
+                    <label style="display: flex; align-items: center">
+                      <input
+                        type="checkbox"
+                        name="bulk_grades"
+                        value="{{ grade.id }}"
+                      />
+                      <span style="margin-left: 5px"
+                        >Grade {{ grade.level }}</span
+                      >
+                    </label>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="bulk_is_class_teacher"
+                      value="1"
+                    />
+                    Designate as Class Teacher for selected grades
+                  </label>
+                </div>
+
+                <button
+                  type="submit"
+                  class="manage-btn"
+                  style="background-color: #4a6741"
+                >
+                  Assign Subjects
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- This is the second column for tips -->
+          <div class="form-card">
+            <h2>Assignment Tips</h2>
+            <div class="tips-content">
+              <p>Here are some tips for assigning subjects to teachers:</p>
+              <ul>
+                <li>Each teacher can teach multiple subjects</li>
+                <li>
+                  A subject can be taught by different teachers in different
+                  grades/streams
+                </li>
+                <li>
+                  Only one teacher can be designated as the class teacher for a
+                  specific stream
+                </li>
+                <li>
+                  If no stream is selected, the assignment applies to all
+                  streams in the grade
+                </li>
+                <li>
+                  Class teachers are responsible for overall class management
+                  and reporting
+                </li>
+                <li>Consider teacher workload when making assignments</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Assignments Table -->
+        <div class="students-section">
+          <h2>Current Teacher Assignments</h2>
+          <div id="student-filter">
+            <label for="assignment-search">Search assignments:</label>
+            <input
+              type="text"
+              id="assignment-search"
+              onkeyup="searchAssignments()"
+              placeholder="Type to search..."
+            />
+          </div>
+
+          <div class="table-responsive">
+            <table id="assignments-table">
+              <thead>
+                <tr>
+                  <th>Teacher</th>
+                  <th>Subject</th>
+                  <th>Grade</th>
+                  <th>Stream</th>
+                  <th>Class Teacher</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for assignment in assignments %}
+                <tr>
+                  <td>{{ assignment.teacher.username }}</td>
+                  <td>{{ assignment.subject.name }}</td>
+                  <td>{{ assignment.grade.level }}</td>
+                  <td>
+                    {{ assignment.stream.name if assignment.stream else 'All
+                    Streams' }}
+                  </td>
+                  <td>{{ 'Yes' if assignment.is_class_teacher else 'No' }}</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="{{ url_for('classteacher.remove_assignment') }}"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="{{ assignment.id }}"
+                      />
+                      <button
+                        type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to remove this assignment?');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Function to update streams based on selected grade
+      function updateStreams() {
+        console.log("updateStreams called");
+        const gradeId = document.getElementById("grade_id").value;
+        console.log("Grade ID:", gradeId);
+        const streamSelect = document.getElementById("stream_id");
+
+        // Clear existing options
+        streamSelect.innerHTML = '<option value="">-- All Streams --</option>';
+
+        if (gradeId) {
+          // Fetch streams for the selected grade
+          fetch(`/classteacher/get_grade_streams/${gradeId}`)
+            .then((response) => response.json())
+            .then((data) => {
+              data.streams.forEach((stream) => {
+                const option = document.createElement("option");
+                option.value = stream.id;
+                option.textContent = stream.name;
+                streamSelect.appendChild(option);
+              });
+            })
+            .catch((error) => {
+              console.error("Error fetching streams:", error);
+            });
+        }
+      }
+
+      // Function to load and display a teacher's current assignments
+      function loadTeacherAssignments() {
+        const teacherId = document.getElementById("teacher_id").value;
+        const summaryDiv = document.getElementById(
+          "teacher-assignments-summary"
+        );
+        const contentDiv = document.getElementById(
+          "teacher-assignments-content"
+        );
+
+        if (!teacherId) {
+          summaryDiv.style.display = "none";
+          return;
+        }
+
+        // Show loading message
+        contentDiv.innerHTML = "<p>Loading assignments...</p>";
+        summaryDiv.style.display = "block";
+
+        // Fetch the teacher's assignments
+        fetch(`/classteacher/get_teacher_assignments/${teacherId}`)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.assignments && data.assignments.length > 0) {
+              // Group assignments by grade
+              const assignmentsByGrade = {};
+
+              data.assignments.forEach((assignment) => {
+                const gradeKey = `Grade ${assignment.grade}`;
+                if (!assignmentsByGrade[gradeKey]) {
+                  assignmentsByGrade[gradeKey] = [];
+                }
+                assignmentsByGrade[gradeKey].push(assignment);
+              });
+
+              // Build HTML for assignments
+              let html = '<div class="teacher-assignments-grid">';
+
+              for (const grade in assignmentsByGrade) {
+                html += `<div class="grade-assignments">
+                          <h4>${grade}</h4>
+                          <ul>`;
+
+                assignmentsByGrade[grade].forEach((assignment) => {
+                  const streamInfo = assignment.stream
+                    ? ` (Stream ${assignment.stream})`
+                    : " (All Streams)";
+                  const classTeacherBadge = assignment.is_class_teacher
+                    ? ' <span class="class-teacher-badge" style="background-color: #4a6741; color: white; padding: 2px 5px; border-radius: 3px; font-size: 0.8em;">Class Teacher</span>'
+                    : "";
+
+                  html += `<li>${assignment.subject}${streamInfo}${classTeacherBadge}</li>`;
+                });
+
+                html += `</ul></div>`;
+              }
+
+              html += "</div>";
+              contentDiv.innerHTML = html;
+            } else {
+              contentDiv.innerHTML =
+                "<p>This teacher has no subject assignments yet.</p>";
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching teacher assignments:", error);
+            contentDiv.innerHTML =
+              "<p>Error loading assignments. Please try again.</p>";
+          });
+      }
+
+      // Function to show the bulk assignment modal
+      function showBulkAssignmentModal() {
+        document.getElementById("bulk-assignment-modal").style.display =
+          "block";
+
+        // Pre-fill the teacher if one is already selected in the main form
+        const selectedTeacherId = document.getElementById("teacher_id").value;
+        if (selectedTeacherId) {
+          document.getElementById("bulk_teacher_id").value = selectedTeacherId;
+        }
+      }
+
+      // Function to close the bulk assignment modal
+      function closeBulkAssignmentModal() {
+        document.getElementById("bulk-assignment-modal").style.display = "none";
+      }
+
+      // Function to search assignments
+      function searchAssignments() {
+        const searchValue = document
+          .getElementById("assignment-search")
+          .value.toLowerCase();
+        const rows = document.querySelectorAll("#assignments-table tbody tr");
+
+        rows.forEach((row) => {
+          const teacherName = row.cells[0].textContent.toLowerCase();
+          const subjectName = row.cells[1].textContent.toLowerCase();
+          const gradeName = row.cells[2].textContent.toLowerCase();
+          const streamName = row.cells[3].textContent.toLowerCase();
+
+          if (
+            teacherName.includes(searchValue) ||
+            subjectName.includes(searchValue) ||
+            gradeName.includes(searchValue) ||
+            streamName.includes(searchValue)
+          ) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+      }
+
+      // Function to filter assignments by education level
+      function filterAssignmentsByLevel(level) {
+        const rows = document.querySelectorAll("#assignments-table tbody tr");
+
+        if (level === "all") {
+          rows.forEach((row) => {
+            row.style.display = "";
+          });
+          return;
+        }
+
+        rows.forEach((row) => {
+          const subjectCell = row.cells[1].textContent;
+          if (subjectCell.toLowerCase().includes(level.toLowerCase())) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+      }
+
+      // Close modal when clicking outside of it
+      window.onclick = function (event) {
+        const modal = document.getElementById("bulk-assignment-modal");
+        if (event.target === modal) {
+          modal.style.display = "none";
+        }
+      };
+
+      // Function to auto-hide messages after 5 seconds
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+          const messages = document.querySelectorAll(".message");
+          messages.forEach((message) => {
+            message.style.display = "none";
+          });
+        }, 5000);
+
+        // Add filter buttons for education levels
+        const filterContainer = document.getElementById("student-filter");
+        if (filterContainer) {
+          const filterButtons = document.createElement("div");
+          filterButtons.className = "filter-buttons";
+          filterButtons.style.marginTop = "10px";
+
+          filterButtons.innerHTML = `
+            <span style="margin-right: 10px;">Filter by level: </span>
+            <button type="button" onclick="filterAssignmentsByLevel('all')" class="filter-btn" style="margin-right: 5px; padding: 5px 10px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 3px; cursor: pointer;">All</button>
+            <button type="button" onclick="filterAssignmentsByLevel('lower primary')" class="filter-btn" style="margin-right: 5px; padding: 5px 10px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 3px; cursor: pointer;">Lower Primary</button>
+            <button type="button" onclick="filterAssignmentsByLevel('upper primary')" class="filter-btn" style="margin-right: 5px; padding: 5px 10px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 3px; cursor: pointer;">Upper Primary</button>
+            <button type="button" onclick="filterAssignmentsByLevel('junior secondary')" class="filter-btn" style="padding: 5px 10px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 3px; cursor: pointer;">Junior Secondary</button>
+          `;
+
+          filterContainer.appendChild(filterButtons);
+        }
+      });
+    </script>
+  </body>
+</html>

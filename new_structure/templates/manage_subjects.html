@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Subjects - Hillview School (Class Teacher)</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="manage-container">
+        <header class="page-header">
+          <h1>Manage Subjects</h1>
+          <div class="nav-links">
+            <a href="{{ url_for('classteacher.dashboard') }}"
+              >Back to Dashboard</a
+            >
+            |
+            <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+          </div>
+        </header>
+
+        <!-- Message container for notifications -->
+        <div id="message-container">
+          {% if error_message %}
+          <div class="message message-error">{{ error_message }}</div>
+          {% endif %} {% if success_message %}
+          <div class="message message-success">{{ success_message }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="search-filter-section">
+          <!-- Search Form -->
+          <div class="search-box">
+            <form method="GET" action="{{ url_for('classteacher.manage_subjects') }}" id="search-form">
+              <div class="search-input-group">
+                <input type="text" name="search" id="search-input" placeholder="Search subjects..." value="{{ search_query }}">
+                <input type="hidden" name="education_level" value="{{ current_education_level }}">
+                <button type="submit" class="search-btn">Search</button>
+                {% if search_query %}
+                  <a href="{{ url_for('classteacher.manage_subjects', education_level=current_education_level) }}" class="clear-search-btn">Clear</a>
+                {% endif %}
+              </div>
+            </form>
+          </div>
+
+          <!-- Educational level selector -->
+          <div class="level-selector">
+            <label for="filter_education_level">Filter by Education Level:</label>
+            <form method="GET" action="{{ url_for('classteacher.manage_subjects') }}" id="filter-form">
+              <select id="filter_education_level" name="education_level" onchange="document.getElementById('filter-form').submit()">
+                <option value="">All Levels</option>
+                {% for level in education_levels %}
+                  <option value="{{ level }}" {% if current_education_level == level %}selected{% endif %}>
+                    {{ level|replace('_', ' ')|title }}
+                  </option>
+                {% endfor %}
+              </select>
+              {% if search_query %}
+                <input type="hidden" name="search" value="{{ search_query }}">
+              {% endif %}
+            </form>
+          </div>
+        </div>
+
+        <div class="forms-grid">
+          <!-- Add Subject Form -->
+          <div class="form-card">
+            <h2>Add New Subject</h2>
+            <form
+              method="POST"
+              action="{{ url_for('classteacher.manage_subjects') }}"
+            >
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
+              <div class="form-group">
+                <label for="name">Subject Name:</label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  class="form-control"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="education_level">Education Level:</label>
+                <select
+                  name="education_level"
+                  id="education_level"
+                  class="form-control"
+                  required
+                >
+                  <option value="">Select Education Level</option>
+                  <option value="lower_primary">Lower Primary</option>
+                  <option value="upper_primary">Upper Primary</option>
+                  <option value="junior_secondary">Junior Secondary</option>
+                </select>
+              </div>
+
+              <button type="submit" name="add_subject" class="manage-btn">
+                Add Subject
+              </button>
+            </form>
+          </div>
+
+          <!-- This is the second column for tips -->
+          <div class="form-card">
+            <h2>Subject Management Tips</h2>
+            <div class="tips-content">
+              <p>Here are some tips for managing subjects effectively:</p>
+              <ul>
+                <li>
+                  Ensure each subject has a unique name within its education
+                  level
+                </li>
+                <li>
+                  Before deleting a subject, make sure it's not assigned to any
+                  classes
+                </li>
+                <li>
+                  Use the filter option above to view subjects by education
+                  level
+                </li>
+                <li>
+                  You can search for specific subjects using the search box
+                  below
+                </li>
+                <li>Changes to subjects will affect all associated classes</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subjects Table - improved structure -->
+        <div class="students-section">
+          <h2>Existing Subjects</h2>
+          <div class="subject-actions">
+            <div id="student-filter">
+              <label for="subject-search">Search subjects:</label>
+              <input
+                type="text"
+                id="subject-search"
+                onkeyup="searchSubjects()"
+                placeholder="Type to search..."
+              />
+            </div>
+
+            <!-- Bulk Delete Form -->
+            <form
+              id="bulk-delete-form"
+              method="POST"
+              action="{{ url_for('classteacher.manage_subjects') }}"
+            >
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
+              <input
+                type="hidden"
+                name="action"
+                value="delete_selected_subjects"
+              />
+              <!-- Subject IDs will be added here by JavaScript -->
+              <button
+                type="button"
+                class="delete-btn"
+                onclick="deleteSelectedSubjects()"
+              >
+                Delete Selected Subjects
+              </button>
+            </form>
+          </div>
+
+          <div class="table-responsive">
+            <table id="subjects-table">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      id="select-all"
+                      onclick="toggleSelectAll()"
+                    />
+                  </th>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Education Level</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for subject in subjects %}
+                <tr data-level="{{ subject.education_level }}">
+                  <td>
+                    <input
+                      type="checkbox"
+                      class="subject-checkbox"
+                      value="{{ subject.id }}"
+                    />
+                  </td>
+                  <td>{{ subject.id }}</td>
+                  <td>{{ subject.name }}</td>
+                  <td>{{ subject.education_level }}</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="{{ url_for('classteacher.manage_subjects') }}"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                      />
+                      <input
+                        type="hidden"
+                        name="subject_id"
+                        value="{{ subject.id }}"
+                      />
+                      <button
+                        type="submit"
+                        name="delete_subject"
+                        class="delete-btn"
+                      >
+                        Delete
+                      </button>
+                    </form>
+                    <button
+                      type="button"
+                      class="edit-btn"
+                      onclick="openEditModal('{{ subject.id }}', '{{ subject.name }}', '{{ subject.education_level }}')"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          {% if pagination.pages > 1 %}
+          <div class="pagination-container">
+            <ul class="pagination">
+              {% if pagination.has_prev %}
+                <li><a href="{{ url_for('classteacher.manage_subjects', page=1, education_level=current_education_level, search=search_query) }}">&laquo; First</a></li>
+                <li><a href="{{ url_for('classteacher.manage_subjects', page=pagination.prev_num, education_level=current_education_level, search=search_query) }}">&lsaquo; Previous</a></li>
+              {% else %}
+                <li class="disabled"><span>&laquo; First</span></li>
+                <li class="disabled"><span>&lsaquo; Previous</span></li>
+              {% endif %}
+
+              {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                  {% if page_num == pagination.page %}
+                    <li class="active"><span>{{ page_num }}</span></li>
+                  {% else %}
+                    <li><a href="{{ url_for('classteacher.manage_subjects', page=page_num, education_level=current_education_level, search=search_query) }}">{{ page_num }}</a></li>
+                  {% endif %}
+                {% else %}
+                  <li class="disabled"><span>...</span></li>
+                {% endif %}
+              {% endfor %}
+
+              {% if pagination.has_next %}
+                <li><a href="{{ url_for('classteacher.manage_subjects', page=pagination.next_num, education_level=current_education_level, search=search_query) }}">Next &rsaquo;</a></li>
+                <li><a href="{{ url_for('classteacher.manage_subjects', page=pagination.pages, education_level=current_education_level, search=search_query) }}">Last &raquo;</a></li>
+              {% else %}
+                <li class="disabled"><span>Next &rsaquo;</span></li>
+                <li class="disabled"><span>Last &raquo;</span></li>
+              {% endif %}
+            </ul>
+            <div class="pagination-info">
+              Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} to
+              {{ (pagination.page - 1) * pagination.per_page + subjects|length }} of
+              {{ pagination.total }} subjects
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Subject Modal -->
+    <div id="edit-subject-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <h2>Edit Subject</h2>
+        <form id="edit-subject-form" method="POST" action="{{ url_for('classteacher.manage_subjects') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <input type="hidden" name="action" value="edit_subject">
+          <input type="hidden" name="subject_id" id="edit_subject_id">
+
+          <div class="form-group">
+            <label for="edit_name">Subject Name:</label>
+            <input type="text" name="name" id="edit_name" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="edit_education_level">Education Level:</label>
+            <select name="education_level" id="edit_education_level" class="form-control" required>
+              <option value="">Select Education Level</option>
+              <option value="lower_primary">Lower Primary</option>
+              <option value="upper_primary">Upper Primary</option>
+              <option value="junior_secondary">Junior Secondary</option>
+            </select>
+          </div>
+
+          <button type="submit" class="manage-btn">Update Subject</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // We're now using server-side filtering for education levels
+
+      // Function to search subjects by name
+      function searchSubjects() {
+        const searchValue = document
+          .getElementById("subject-search")
+          .value.toLowerCase();
+        const rows = document.querySelectorAll("#subjects-table tbody tr");
+
+        rows.forEach((row) => {
+          const subjectName = row.cells[1].textContent.toLowerCase();
+          if (subjectName.includes(searchValue)) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+      }
+
+      // Function to toggle all checkboxes
+      function toggleSelectAll() {
+        const selectAllCheckbox = document.getElementById("select-all");
+        const subjectCheckboxes =
+          document.querySelectorAll(".subject-checkbox");
+
+        subjectCheckboxes.forEach((checkbox) => {
+          // Only toggle checkboxes for visible rows (respecting filters)
+          if (checkbox.closest("tr").style.display !== "none") {
+            checkbox.checked = selectAllCheckbox.checked;
+          }
+        });
+      }
+
+      // Function to delete selected subjects
+      function deleteSelectedSubjects() {
+        const selectedSubjects = document.querySelectorAll(
+          ".subject-checkbox:checked"
+        );
+
+        if (selectedSubjects.length === 0) {
+          alert("Please select at least one subject to delete.");
+          return;
+        }
+
+        if (
+          confirm(
+            `Are you sure you want to delete ${selectedSubjects.length} selected subject(s)? This cannot be undone.`
+          )
+        ) {
+          const form = document.getElementById("bulk-delete-form");
+
+          // Remove any existing subject ID inputs
+          document
+            .querySelectorAll('input[name="subject_ids"]')
+            .forEach((input) => {
+              input.remove();
+            });
+
+          // Add the selected subject IDs to the form
+          selectedSubjects.forEach((checkbox) => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "subject_ids";
+            input.value = checkbox.value;
+            form.appendChild(input);
+          });
+
+          // Submit the form
+          form.submit();
+        }
+      }
+
+      // Function to open the edit modal
+      function openEditModal(id, name, educationLevel) {
+        document.getElementById('edit_subject_id').value = id;
+        document.getElementById('edit_name').value = name;
+        document.getElementById('edit_education_level').value = educationLevel;
+
+        const modal = document.getElementById('edit-subject-modal');
+        modal.style.display = 'block';
+      }
+
+      // Function to close the edit modal
+      function closeEditModal() {
+        const modal = document.getElementById('edit-subject-modal');
+        modal.style.display = 'none';
+      }
+
+      // Close the modal when clicking outside of it
+      window.onclick = function(event) {
+        const modal = document.getElementById('edit-subject-modal');
+        if (event.target == modal) {
+          modal.style.display = 'none';
+        }
+      }
+
+      // Function to auto-hide messages after 5 seconds
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+          const messages = document.querySelectorAll(".message");
+          messages.forEach((message) => {
+            message.style.display = "none";
+          });
+        }, 5000);
+      });
+    </script>
+  </body>
+</html>
