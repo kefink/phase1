@@ -8,7 +8,6 @@ from ..extensions import db
 from ..models import Teacher, Subject, Grade, Stream, TeacherSubjectAssignment
 from .classteacher import classteacher_required
 from datetime import datetime
-import json
 
 # Create a blueprint for bulk assignments
 bulk_assignments_bp = Blueprint('bulk_assignments', __name__)
@@ -39,9 +38,10 @@ def bulk_assignments():
         success_message=None
     )
 
-@bulk_assignments_bp.route('/get_subjects_by_level/<education_level>', methods=['GET'])
+@bulk_assignments_bp.route('/get_subjects_by_education_level', methods=['GET'])
 @classteacher_required
-def get_subjects_by_level(education_level):
+def get_subjects_by_education_level():
+    education_level = request.args.get('education_level')
     """API endpoint to get subjects for a specific education level."""
     # Debug
     print(f"Getting subjects for education level: {education_level}")
@@ -85,31 +85,30 @@ def get_subjects_by_level(education_level):
         'subjects': [{'id': subject.id, 'name': subject.name} for subject in subjects]
     })
 
-@bulk_assignments_bp.route('/get_grade_streams_by_level/<grade_level>', methods=['GET'])
+@bulk_assignments_bp.route('/get_streams_by_grade', methods=['GET'])
 @classteacher_required
-def get_grade_streams_by_level(grade_level):
-    """API endpoint to get streams for a grade by grade level."""
+def get_streams_by_grade():
+    """API endpoint to get streams for a grade by grade ID."""
+    grade_id = request.args.get('grade_id')
+
     # Debug
-    print(f"Getting streams for grade level: {grade_level}")
+    print(f"Getting streams for grade ID: {grade_id}")
 
-    # Try different formats for grade level
-    possible_formats = [
-        grade_level,                  # As is (e.g., "1")
-        f"Grade {grade_level}",       # With "Grade " prefix (e.g., "Grade 1")
-        f"grade {grade_level}",       # With lowercase "grade " prefix
-        f"Grade{grade_level}",        # Without space (e.g., "Grade1")
-    ]
+    if not grade_id:
+        print("No grade ID provided")
+        return jsonify({'streams': []})
 
-    grade = None
-    for format in possible_formats:
-        print(f"Trying to find grade with level: {format}")
-        grade = Grade.query.filter_by(level=format).first()
-        if grade:
-            print(f"Found grade with level: {format}")
-            break
+    try:
+        # Convert to integer
+        grade_id = int(grade_id)
+    except ValueError:
+        print(f"Invalid grade ID: {grade_id}")
+        return jsonify({'streams': []})
 
+    # Get the grade
+    grade = Grade.query.get(grade_id)
     if not grade:
-        print(f"No grade found for any format of level: {grade_level}")
+        print(f"No grade found with ID: {grade_id}")
         return jsonify({'streams': []})
 
     print(f"Found grade: {grade.level} (ID: {grade.id})")
@@ -164,6 +163,12 @@ def bulk_assign_subjects_new():
         flash("Teacher not found.", "error")
         return redirect(url_for('classteacher.manage_teachers'))
 
+    # Print all subjects in the database
+    all_subjects = Subject.query.all()
+    print(f"All subjects in database ({len(all_subjects)}):")
+    for s in all_subjects:
+        print(f"  - ID: {s.id}, Name: {s.name}, Education Level: {s.education_level}")
+
     # Check if the table exists and create it if it doesn't
     try:
         TeacherSubjectAssignment.query.first()
@@ -214,9 +219,30 @@ def bulk_assign_subjects_new():
         is_class_teacher = f'is_class_teacher_{level_num}' in request.form
 
         # Get the grade ID from the grade level
+        print(f"Looking for grade with level: {grade_level}")
         grade = Grade.query.filter_by(level=grade_level).first()
         if not grade:
-            continue
+            print(f"ERROR: Grade with level '{grade_level}' not found")
+            # Try to find a grade with a similar level
+            all_grades = Grade.query.all()
+            print(f"All grades in database ({len(all_grades)}):")
+            for g in all_grades:
+                print(f"  - ID: {g.id}, Level: {g.level}")
+
+            # Try to find a grade with the ID directly
+            try:
+                grade_id_int = int(grade_level)
+                grade = Grade.query.get(grade_id_int)
+                if grade:
+                    print(f"Found grade by ID: {grade.level} (ID: {grade.id})")
+                else:
+                    print(f"ERROR: Grade with ID {grade_id_int} not found")
+                    continue
+            except ValueError:
+                print(f"Could not convert grade level '{grade_level}' to integer")
+                continue
+        else:
+            print(f"Found grade by level: {grade.level} (ID: {grade.id})")
 
         grade_id = grade.id
 
@@ -239,64 +265,130 @@ def bulk_assign_subjects_new():
                 continue
 
         # Process each subject
+        print(f"\n*** Processing {len(subject_ids)} subjects: {subject_ids} ***")
+
+        # Debug: Check if subjects exist in the database
+        all_subjects = Subject.query.all()
+        print(f"All subjects in database ({len(all_subjects)}):")
+        for s in all_subjects:
+            print(f"  - ID: {s.id}, Name: {s.name}, Education Level: {s.education_level}")
+
+        # Debug: Check if grade exists
+        grade_obj = Grade.query.get(grade_id)
+        if grade_obj:
+            print(f"Found grade: ID={grade_obj.id}, Level={grade_obj.level}")
+        else:
+            print(f"ERROR: Grade with ID {grade_id} not found")
+
+        # Debug: Check if stream exists
+        if stream_id:
+            print(f"Looking for stream with ID: {stream_id}")
+            stream_obj = Stream.query.get(stream_id)
+            if stream_obj:
+                print(f"Found stream: ID={stream_obj.id}, Name={stream_obj.name}, Grade ID={stream_obj.grade_id}")
+
+                # Check if the stream belongs to the grade
+                if stream_obj.grade_id != grade_id:
+                    print(f"WARNING: Stream {stream_obj.name} (ID: {stream_obj.id}) belongs to grade ID {stream_obj.grade_id}, not grade ID {grade_id}")
+            else:
+                print(f"ERROR: Stream with ID {stream_id} not found")
+
+                # List all streams
+                all_streams = Stream.query.all()
+                print(f"All streams in database ({len(all_streams)}):")
+                for s in all_streams:
+                    print(f"  - ID: {s.id}, Name: {s.name}, Grade ID: {s.grade_id}")
+
+                # Try to find streams for this grade
+                grade_streams = Stream.query.filter_by(grade_id=grade_id).all()
+                if grade_streams:
+                    print(f"Found {len(grade_streams)} streams for grade ID {grade_id}:")
+                    for s in grade_streams:
+                        print(f"  - ID: {s.id}, Name: {s.name}")
+                else:
+                    print(f"No streams found for grade ID {grade_id}")
+
         for subject_id in subject_ids:
+            print(f"\nProcessing subject ID: {subject_id}")
             try:
                 # For hardcoded subject IDs (100+), find or create the subject
                 actual_subject_id = subject_id
-                if int(subject_id) >= 100:  # This is a hardcoded ID
-                    # Extract the name based on the ID range
-                    subject_name = None
-                    education_level = None
+                # Try to convert subject_id to integer
+                try:
+                    subject_id_int = int(subject_id)
+                    print(f"Converted subject ID to integer: {subject_id_int}")
 
-                    if 100 <= int(subject_id) < 200:
-                        # Lower primary subjects
-                        education_level = "lower_primary"
-                        if int(subject_id) == 101: subject_name = "LITERACY ACTIVITIES"
-                        elif int(subject_id) == 102: subject_name = "KISWAHILI LANGUAGE ACTIVITIES"
-                        elif int(subject_id) == 103: subject_name = "ENGLISH LANGUAGE ACTIVITIES"
-                        elif int(subject_id) == 104: subject_name = "MATHEMATICAL ACTIVITIES"
-                        elif int(subject_id) == 105: subject_name = "ENVIRONMENTAL ACTIVITIES"
-                        elif int(subject_id) == 106: subject_name = "HYGIENE AND NUTRITION ACTIVITIES"
-                        elif int(subject_id) == 107: subject_name = "RELIGIOUS EDUCATION ACTIVITIES"
-                        elif int(subject_id) == 108: subject_name = "MOVEMENT AND CREATIVE ACTIVITIES"
+                    if subject_id_int >= 100:  # This is a hardcoded ID
+                        print(f"Using hardcoded subject ID: {subject_id_int}")
+                        # Extract the name based on the ID range
+                        subject_name = None
+                        education_level = None
 
-                    elif 200 <= int(subject_id) < 300:
-                        # Upper primary subjects
-                        education_level = "upper_primary"
-                        if int(subject_id) == 201: subject_name = "ENGLISH"
-                        elif int(subject_id) == 202: subject_name = "KISWAHILI"
-                        elif int(subject_id) == 203: subject_name = "MATHEMATICS"
-                        elif int(subject_id) == 204: subject_name = "SCIENCE AND TECHNOLOGY"
-                        elif int(subject_id) == 205: subject_name = "SOCIAL STUDIES"
-                        elif int(subject_id) == 206: subject_name = "RELIGIOUS EDUCATION"
-                        elif int(subject_id) == 207: subject_name = "CREATIVE ARTS"
-                        elif int(subject_id) == 208: subject_name = "PHYSICAL AND HEALTH EDUCATION"
-                        elif int(subject_id) == 209: subject_name = "AGRICULTURE"
+                        if 100 <= subject_id_int < 200:
+                            # Lower primary subjects
+                            education_level = "lower_primary"
+                            if subject_id_int == 101: subject_name = "LITERACY ACTIVITIES"
+                            elif subject_id_int == 102: subject_name = "KISWAHILI LANGUAGE ACTIVITIES"
+                            elif subject_id_int == 103: subject_name = "ENGLISH LANGUAGE ACTIVITIES"
+                            elif subject_id_int == 104: subject_name = "MATHEMATICAL ACTIVITIES"
+                            elif subject_id_int == 105: subject_name = "ENVIRONMENTAL ACTIVITIES"
+                            elif subject_id_int == 106: subject_name = "HYGIENE AND NUTRITION ACTIVITIES"
+                            elif subject_id_int == 107: subject_name = "RELIGIOUS EDUCATION ACTIVITIES"
+                            elif subject_id_int == 108: subject_name = "MOVEMENT AND CREATIVE ACTIVITIES"
 
-                    elif 300 <= int(subject_id) < 400:
-                        # Junior secondary subjects
-                        education_level = "junior_secondary"
-                        if int(subject_id) == 301: subject_name = "ENGLISH"
-                        elif int(subject_id) == 302: subject_name = "KISWAHILI"
-                        elif int(subject_id) == 303: subject_name = "MATHEMATICS"
-                        elif int(subject_id) == 304: subject_name = "INTEGRATED SCIENCE"
-                        elif int(subject_id) == 305: subject_name = "HEALTH EDUCATION"
-                        elif int(subject_id) == 306: subject_name = "PRE-TECHNICAL STUDIES"
-                        elif int(subject_id) == 307: subject_name = "SOCIAL STUDIES"
-                        elif int(subject_id) == 308: subject_name = "RELIGIOUS EDUCATION"
-                        elif int(subject_id) == 309: subject_name = "BUSINESS STUDIES"
+                        elif 200 <= subject_id_int < 300:
+                            # Upper primary subjects
+                            education_level = "upper_primary"
+                            if subject_id_int == 201: subject_name = "ENGLISH"
+                            elif subject_id_int == 202: subject_name = "KISWAHILI"
+                            elif subject_id_int == 203: subject_name = "MATHEMATICS"
+                            elif subject_id_int == 204: subject_name = "SCIENCE AND TECHNOLOGY"
+                            elif subject_id_int == 205: subject_name = "SOCIAL STUDIES"
+                            elif subject_id_int == 206: subject_name = "RELIGIOUS EDUCATION"
+                            elif subject_id_int == 207: subject_name = "CREATIVE ARTS"
+                            elif subject_id_int == 208: subject_name = "PHYSICAL AND HEALTH EDUCATION"
+                            elif subject_id_int == 209: subject_name = "AGRICULTURE"
 
-                    if subject_name and education_level:
-                        # Check if subject exists
-                        subject = Subject.query.filter_by(name=subject_name, education_level=education_level).first()
-                        if not subject:
-                            # Create the subject
-                            subject = Subject(name=subject_name, education_level=education_level)
-                            db.session.add(subject)
-                            db.session.flush()  # Get the ID without committing
-                            print(f"Created subject: {subject_name} (ID: {subject.id}) for {education_level}")
+                        elif 300 <= subject_id_int < 400:
+                            # Junior secondary subjects
+                            education_level = "junior_secondary"
+                            if subject_id_int == 301: subject_name = "ENGLISH"
+                            elif subject_id_int == 302: subject_name = "KISWAHILI"
+                            elif subject_id_int == 303: subject_name = "MATHEMATICS"
+                            elif subject_id_int == 304: subject_name = "INTEGRATED SCIENCE"
+                            elif subject_id_int == 305: subject_name = "HEALTH EDUCATION"
+                            elif subject_id_int == 306: subject_name = "PRE-TECHNICAL STUDIES"
+                            elif subject_id_int == 307: subject_name = "SOCIAL STUDIES"
+                            elif subject_id_int == 308: subject_name = "RELIGIOUS EDUCATION"
+                            elif subject_id_int == 309: subject_name = "BUSINESS STUDIES"
 
-                        actual_subject_id = subject.id
+                        if subject_name and education_level:
+                            print(f"Looking for subject: {subject_name} ({education_level})")
+                            # Check if subject exists
+                            subject = Subject.query.filter_by(name=subject_name, education_level=education_level).first()
+                            if not subject:
+                                # Create the subject
+                                subject = Subject(name=subject_name, education_level=education_level)
+                                db.session.add(subject)
+                                db.session.flush()  # Get the ID without committing
+                                print(f"Created subject: {subject_name} (ID: {subject.id}) for {education_level}")
+                            else:
+                                print(f"Found existing subject: {subject.name} (ID: {subject.id})")
+
+                            actual_subject_id = subject.id
+                    else:
+                        print(f"Using database subject ID: {subject_id_int}")
+                        # This is a database ID, use it directly
+                        subject_obj = Subject.query.get(subject_id_int)
+                        if subject_obj:
+                            print(f"Found subject in database: {subject_obj.name}")
+                            actual_subject_id = subject_id_int
+                        else:
+                            print(f"Subject with ID {subject_id_int} not found in database")
+                            continue
+                except ValueError:
+                    print(f"Could not convert subject ID to integer: {subject_id}")
+                    continue
 
                 # Check if assignment already exists
                 print(f"Checking if assignment exists: teacher_id={teacher_id}, subject_id={actual_subject_id}, grade_id={grade_id}, stream_id={stream_id}")
@@ -314,25 +406,53 @@ def bulk_assign_subjects_new():
                 else:
                     print(f"Assignment does not exist, creating new one")
 
-                # If this is a class teacher, check if there's already one for this grade/stream
-                if is_class_teacher and stream_id:
-                    print(f"Checking for existing class teacher: grade_id={grade_id}, stream_id={stream_id}")
-                    existing_class_teacher = TeacherSubjectAssignment.query.filter_by(
-                        grade_id=grade_id,
-                        stream_id=stream_id,
-                        is_class_teacher=True
-                    ).first()
+                # If this is a class teacher, perform two checks:
+                # 1. Check if there's already a class teacher for this grade/stream
+                # 2. Check if this teacher is already a class teacher for another grade/stream
+                if is_class_teacher:
+                    # Check 1: Is there already a class teacher for this grade/stream?
+                    if stream_id:
+                        print(f"Checking for existing class teacher: grade_id={grade_id}, stream_id={stream_id}")
+                        existing_class_teacher = TeacherSubjectAssignment.query.filter_by(
+                            grade_id=grade_id,
+                            stream_id=stream_id,
+                            is_class_teacher=True
+                        ).first()
 
-                    if existing_class_teacher:
-                        print(f"Found existing class teacher: {existing_class_teacher}")
-                        if int(existing_class_teacher.teacher_id) != int(teacher_id):
-                            print(f"Conflict: Existing teacher ID {existing_class_teacher.teacher_id} != Current teacher ID {teacher_id}")
+                        if existing_class_teacher:
+                            print(f"Found existing class teacher: {existing_class_teacher}")
+                            if int(existing_class_teacher.teacher_id) != int(teacher_id):
+                                print(f"Conflict: Existing teacher ID {existing_class_teacher.teacher_id} != Current teacher ID {teacher_id}")
+                                flash(f"There is already a class teacher assigned to this class. Please choose a different class or remove the class teacher designation.", "error")
+                                class_teacher_conflicts += 1
+                                continue
+                            else:
+                                print(f"Same teacher, no conflict for this grade/stream")
+                        else:
+                            print(f"No existing class teacher found for this grade/stream")
+
+                    # Check 2: Is this teacher already a class teacher for another grade/stream?
+                    print(f"Checking if teacher {teacher_id} is already a class teacher for another grade/stream")
+                    teacher_class_assignments = TeacherSubjectAssignment.query.filter_by(
+                        teacher_id=teacher_id,
+                        is_class_teacher=True
+                    ).all()
+
+                    if teacher_class_assignments:
+                        for assignment in teacher_class_assignments:
+                            # Skip if it's the same grade and stream we're currently assigning
+                            if assignment.grade_id == grade_id and assignment.stream_id == stream_id:
+                                continue
+
+                            grade_obj = Grade.query.get(assignment.grade_id)
+                            stream_obj = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
+                            grade_name = grade_obj.level if grade_obj else f"Grade ID {assignment.grade_id}"
+                            stream_name = stream_obj.name if stream_obj else "All Streams"
+
+                            print(f"Teacher is already a class teacher for {grade_name} {stream_name}")
+                            flash(f"This teacher is already a class teacher for {grade_name} {stream_name}. A teacher can only be a class teacher for one class.", "error")
                             class_teacher_conflicts += 1
                             continue
-                        else:
-                            print(f"Same teacher, no conflict")
-                    else:
-                        print(f"No existing class teacher found")
 
                 # Create the assignment
                 try:
@@ -342,13 +462,50 @@ def bulk_assign_subjects_new():
                     teacher_obj = Teacher.query.get(teacher_id)
                     if not teacher_obj:
                         print(f"ERROR: Teacher with ID {teacher_id} not found")
+                        # List all teachers in the database
+                        all_teachers = Teacher.query.all()
+                        print(f"All teachers in database ({len(all_teachers)}):")
+                        for t in all_teachers:
+                            print(f"  - ID: {t.id}, Username: {t.username}")
                         continue
 
                     # Check if the subject exists
+                    print(f"Looking for subject with ID {actual_subject_id}")
+
+                    # List all subjects in the database
+                    all_subjects = Subject.query.all()
+                    print(f"All subjects in database ({len(all_subjects)}):")
+                    for s in all_subjects:
+                        print(f"  - ID: {s.id}, Name: {s.name}, Education Level: {s.education_level}")
+
                     subject_obj = Subject.query.get(actual_subject_id)
                     if not subject_obj:
                         print(f"ERROR: Subject with ID {actual_subject_id} not found")
-                        continue
+
+                        # Try to find a subject with a similar ID
+                        try:
+                            # Convert to integer if it's a string
+                            subject_id_int = int(actual_subject_id)
+
+                            # Find subjects with IDs close to the requested ID
+                            similar_subjects = Subject.query.filter(Subject.id >= subject_id_int - 10,
+                                                                  Subject.id <= subject_id_int + 10).all()
+
+                            if similar_subjects:
+                                print(f"Found {len(similar_subjects)} subjects with similar IDs:")
+                                for s in similar_subjects:
+                                    print(f"  - ID: {s.id}, Name: {s.name}, Education Level: {s.education_level}")
+
+                                # Use the first similar subject
+                                actual_subject_id = similar_subjects[0].id
+                                print(f"Using subject with ID {actual_subject_id} instead")
+                                subject_obj = similar_subjects[0]
+                            else:
+                                print("No similar subjects found")
+                                continue
+                        except (ValueError, TypeError):
+                            print(f"Could not convert subject ID '{actual_subject_id}' to integer")
+                            continue
 
                     # Check if the grade exists
                     grade_obj = Grade.query.get(grade_id)
@@ -361,8 +518,45 @@ def bulk_assign_subjects_new():
                         stream_obj = Stream.query.get(stream_id)
                         if not stream_obj:
                             print(f"ERROR: Stream with ID {stream_id} not found")
-                            continue
 
+                            # Try to find streams for this grade
+                            grade_streams = Stream.query.filter_by(grade_id=grade_id).all()
+                            if grade_streams and len(grade_streams) > 0:
+                                # Use the first stream for this grade
+                                stream_obj = grade_streams[0]
+                                stream_id = stream_obj.id
+                                print(f"Using alternative stream: {stream_obj.name} (ID: {stream_obj.id})")
+                            else:
+                                print(f"No streams found for grade ID {grade_id}")
+                                continue
+
+                        # Check if the stream belongs to the grade
+                        if stream_obj.grade_id != grade_id:
+                            print(f"WARNING: Stream {stream_obj.name} (ID: {stream_obj.id}) belongs to grade ID {stream_obj.grade_id}, not grade ID {grade_id}")
+
+                            # Try to find streams for this grade
+                            grade_streams = Stream.query.filter_by(grade_id=grade_id).all()
+                            if grade_streams and len(grade_streams) > 0:
+                                # Use the first stream for this grade
+                                stream_obj = grade_streams[0]
+                                stream_id = stream_obj.id
+                                print(f"Using correct stream for grade: {stream_obj.name} (ID: {stream_obj.id})")
+                            else:
+                                print(f"No streams found for grade ID {grade_id}")
+                                continue
+
+                    # Double-check all objects before creating the assignment
+                    print(f"Final check before creating assignment:")
+                    print(f"  - Teacher: ID={teacher_id}, Username={teacher_obj.username}")
+                    print(f"  - Subject: ID={actual_subject_id}, Name={subject_obj.name}")
+                    print(f"  - Grade: ID={grade_id}, Level={grade_obj.level}")
+                    if stream_id:
+                        print(f"  - Stream: ID={stream_id}, Name={stream_obj.name}")
+                    else:
+                        print(f"  - Stream: None")
+                    print(f"  - Is Class Teacher: {is_class_teacher}")
+
+                    # Create the assignment
                     new_assignment = TeacherSubjectAssignment(
                         teacher_id=teacher_id,
                         subject_id=actual_subject_id,
@@ -389,7 +583,13 @@ def bulk_assign_subjects_new():
         print(f"Successfully committed {assignments_created} new assignments to the database")
 
         # Create a summary message
-        message = f"Created {assignments_created} new assignments for {teacher.username}. "
+        teacher_obj = Teacher.query.get(teacher_id)
+        if teacher_obj:
+            teacher_name = teacher_obj.username
+        else:
+            teacher_name = f"teacher ID {teacher_id}"
+
+        message = f"Created {assignments_created} new assignments for {teacher_name}. "
         if assignments_skipped > 0:
             message += f"Skipped {assignments_skipped} existing assignments. "
         if class_teacher_conflicts > 0:
@@ -405,15 +605,15 @@ def bulk_assign_subjects_new():
         session['assignment_count'] = assignments_created
         session['assignment_timestamp'] = str(datetime.now())
 
-        # Redirect to the manage teacher assignments page to see the results
-        return redirect(url_for('classteacher.manage_teacher_assignments'))
+        # Redirect to the manage teacher subjects page to see the results
+        return redirect(url_for('classteacher.manage_teacher_subjects', teacher_id=teacher_id, highlight=1))
     except Exception as e:
         db.session.rollback()
         print(f"Error committing assignments: {str(e)}")
         flash("Error creating assignments. Please try again.", "error")
 
-    # Redirect to the manage teacher assignments page to see the results
-    return redirect(url_for('classteacher.manage_teacher_assignments'))
+    # Redirect to the bulk assignments page to try again
+    return redirect(url_for('bulk_assignments.bulk_assignments'))
 
 @bulk_assignments_bp.route('/edit_assignment/<int:assignment_id>/<assignment_type>', methods=['GET'])
 @classteacher_required

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Academic Report</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: white;
+        position: relative;
+      }
+      /* Modern Watermark styles */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("{{ logo_url }}");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 50%;
+        opacity: 0.03;
+        z-index: -1;
+        pointer-events: none;
+        filter: grayscale(100%) contrast(0.8);
+        transform: rotate(-5deg);
+      }
+      .report-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        position: relative;
+        z-index: 1;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        color: #333;
+      }
+      .header p {
+        margin: 5px 0;
+        font-size: 16px;
+        color: #555;
+      }
+      .student-details p {
+        margin: 5px 0;
+        font-size: 14px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        background-color: #4caf50;
+        color: white;
+        font-weight: bold;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      .remarks {
+        margin-top: 20px;
+      }
+      .remarks h3 {
+        font-size: 16px;
+        color: #333;
+      }
+      .remarks p {
+        margin: 5px 0;
+        font-size: 14px;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 12px;
+        color: #777;
+      }
+      .logo-container img {
+        max-width: 120px;
+        height: auto;
+      }
+
+      /* Modern Performance indicators styling */
+      .performance-indicators {
+        margin: 25px 0;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: none;
+      }
+      .performance-indicators h3 {
+        margin-top: 0;
+        font-size: 18px;
+        color: #333;
+        margin-bottom: 20px;
+        font-weight: 600;
+        position: relative;
+        padding-bottom: 8px;
+      }
+      .performance-indicators h3:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(to right, #4caf50, #8bc34a);
+        border-radius: 3px;
+      }
+      .performance-chart {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        position: relative;
+      }
+      .chart-label {
+        width: 150px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #444;
+      }
+      .chart-bar {
+        flex-grow: 1;
+        height: 28px;
+        background-color: #edf2f7;
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .chart-fill {
+        height: 100%;
+        background: linear-gradient(to right, #4caf50, #8bc34a);
+        position: absolute;
+        left: 0;
+        top: 0;
+        border-radius: 6px;
+        transition: width 0.5s ease;
+      }
+      /* Performance level indicators */
+      .chart-fill.excellent {
+        background: linear-gradient(to right, #4caf50, #8bc34a);
+      }
+      .chart-fill.good {
+        background: linear-gradient(to right, #8bc34a, #cddc39);
+      }
+      .chart-fill.average {
+        background: linear-gradient(to right, #ffeb3b, #ffc107);
+      }
+      .chart-fill.below-average {
+        background: linear-gradient(to right, #ff9800, #ff5722);
+      }
+      .chart-value {
+        width: 60px;
+        text-align: right;
+        padding-left: 15px;
+        font-weight: 600;
+        font-size: 15px;
+        color: #333;
+      }
+      .chart-average {
+        position: absolute;
+        height: 100%;
+        width: 2px;
+        background-color: #f44336;
+        top: 0;
+        z-index: 2;
+      }
+      .chart-average:after {
+        content: "";
+        position: absolute;
+        top: -5px;
+        left: -4px;
+        width: 10px;
+        height: 10px;
+        background-color: #f44336;
+        border-radius: 50%;
+      }
+      .chart-legend {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 15px;
+        font-size: 12px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-left: 15px;
+        background-color: #fff;
+        padding: 5px 10px;
+        border-radius: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .legend-color {
+        width: 12px;
+        height: 12px;
+        margin-right: 5px;
+        border-radius: 50%;
+      }
+      .legend-student {
+        background: linear-gradient(to right, #4caf50, #8bc34a);
+      }
+      .legend-average {
+        background-color: #f44336;
+      }
+      .performance-summary {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-top: 15px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        font-size: 14px;
+        color: #555;
+        display: flex;
+        justify-content: space-between;
+      }
+      .summary-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .summary-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+      }
+      .summary-label {
+        font-size: 12px;
+        color: #666;
+      }
+
+      /* Print styles */
+      @media print {
+        @page {
+          size: portrait;
+          margin: 1cm;
+        }
+      }
+    </style>
+  </head>
+  <body onload="setTimeout(function() { window.print(); }, 500)">
+    <script>
+      // Hide URL and page title when printing
+      document.title = "Academic Report";
+
+      // Add event listener for after print
+      window.addEventListener("afterprint", function () {
+        // You can add code here if needed after printing
+      });
+    </script>
+    <div class="report-container">
+      <div class="header">
+        <div class="logo-container">
+          <img src="{{ logo_url }}" alt="School Logo" />
+        </div>
+        <h1>KIRIMA PRIMARY SCHOOL</h1>
+        <p>P.O. BOX 123, KIRIMA | TEL: +254 123 456789</p>
+        <p>
+          Email: info@kirimaprimary.ac.ke | Website: www.kirimaprimary.ac.ke
+        </p>
+        <p>
+          ACADEMIC REPORT TERM {{ term.replace('_', ' ').upper() }} {{
+          academic_year|default('2023') }}
+        </p>
+      </div>
+
+      <div class="student-details">
+        <p>{{ student_name.upper() }} ADM NO.: {{ admission_no }}</p>
+        <p>Grade {{ grade }} {{ education_level }} {{ stream }}</p>
+        <p>
+          Mean Points: {{ mean_points }} Total Marks: {{ total | int }} out of:
+          {{ total_possible_marks }}
+        </p>
+        <p>Mean Mark: {{ avg_percentage | round(2) }}%</p>
+        <p>Total Points: {{ total_points }}</p>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Subjects</th>
+            <th>Entrance</th>
+            <th>Mid Term</th>
+            <th>End Term</th>
+            <th>Avg.</th>
+            <th>Subject Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in table_data %}
+          <tr>
+            <td>{{ row.subject }}</td>
+            <td>{{ row.entrance | int }}</td>
+            <td>{{ row.mid_term | int }}</td>
+            <td>{{ row.end_term | int }}</td>
+            <td>{{ row.avg | int }}</td>
+            <td>{{ row.remarks | replace(' (TBD)', '') }}</td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <td>Totals</td>
+            <td></td>
+            <td></td>
+            <td>{{ total | int }}</td>
+            <td>{{ total | int }}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Modern Performance Indicators Section -->
+      <div class="performance-indicators">
+        <h3>Performance Analysis</h3>
+
+        <!-- Performance Summary -->
+        <div class="performance-summary">
+          <div class="summary-item">
+            <div class="summary-value">{{ avg_percentage | round(1) }}%</div>
+            <div class="summary-label">Student Average</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-value">{{ class_average | round(1) }}%</div>
+            <div class="summary-label">Class Average</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-value">{{ class_size }}</div>
+            <div class="summary-label">Class Size</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-value">{{ mean_grade }}</div>
+            <div class="summary-label">Mean Grade</div>
+          </div>
+        </div>
+
+        <!-- Overall Performance -->
+        <div class="performance-chart" style="margin-top: 20px">
+          <div class="chart-label">Overall Performance</div>
+          <div class="chart-bar">
+            {% if avg_percentage >= 75 %}
+            <div
+              class="chart-fill excellent"
+              style="width: {{ avg_percentage }}%;"
+            ></div>
+            {% elif avg_percentage >= 50 %}
+            <div
+              class="chart-fill good"
+              style="width: {{ avg_percentage }}%;"
+            ></div>
+            {% elif avg_percentage >= 30 %}
+            <div
+              class="chart-fill average"
+              style="width: {{ avg_percentage }}%;"
+            ></div>
+            {% else %}
+            <div
+              class="chart-fill below-average"
+              style="width: {{ avg_percentage }}%;"
+            ></div>
+            {% endif %}
+            <div class="chart-average" style="left: {{ class_average }}%"></div>
+          </div>
+          <div class="chart-value">{{ avg_percentage | round(1) }}%</div>
+        </div>
+
+        <!-- Subject Performance -->
+        {% for row in table_data %} {% set percentage = (row.avg / 100) * 100 %}
+        {% set subject_avg = subject_averages.get(row.subject, 50) %} {% set
+        subject_avg_percent = (subject_avg / 100) * 100 %}
+        <div class="performance-chart">
+          <div class="chart-label">{{ row.subject }}</div>
+          <div class="chart-bar">
+            {% if percentage >= 75 %}
+            <div
+              class="chart-fill excellent"
+              style="width: {{ percentage }}%;"
+            ></div>
+            {% elif percentage >= 50 %}
+            <div
+              class="chart-fill good"
+              style="width: {{ percentage }}%;"
+            ></div>
+            {% elif percentage >= 30 %}
+            <div
+              class="chart-fill average"
+              style="width: {{ percentage }}%;"
+            ></div>
+            {% else %}
+            <div
+              class="chart-fill below-average"
+              style="width: {{ percentage }}%;"
+            ></div>
+            {% endif %}
+            <div
+              class="chart-average"
+              style="left: {{ subject_avg_percent }}%"
+            ></div>
+          </div>
+          <div class="chart-value">{{ percentage | round(1) }}%</div>
+        </div>
+        {% endfor %}
+
+        <!-- Legend -->
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-color legend-student"></div>
+            <span>Student's Score</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color legend-average"></div>
+            <span>Class Average</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="remarks">
+        <h3>Class Teacher's Remarks:</h3>
+        <p>
+          Well done! With continued focus and consistency, you have the
+          potential to achieve even more.
+        </p>
+        <p>Class Teacher: Moses Barasa</p>
+        <h3>Head Teacher's Remarks:</h3>
+        <p>
+          Great progress! Your growing confidence is evident - keep practicing,
+          and you'll excel even further.
+        </p>
+        <p>Head Teacher Name: Mr. Paul Mwangi</p>
+        <p>Head Teacher Signature: ____________________</p>
+        <p>Next Term Begins on: TBD</p>
+      </div>
+
+      <div class="footer">
+        <p>Generated on: {{ current_date }}</p>
+        <p>Kirima School powered by CbcTeachkit</p>
+      </div>
+    </div>
+  </body>
+</html>

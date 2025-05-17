@@ -225,19 +225,38 @@ function initGlobalFormFunctions() {
     const formGroup = streamSelect.closest(".form-group");
 
     if (selectedGrade) {
-      const streams = ["B", "G", "Y"];
-      console.log(`Populating streams for grade ${selectedGrade}:`, streams);
+      // Fetch streams from the server
+      fetch(`/classteacher/get_streams_by_level/${selectedGrade}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success && data.streams) {
+            console.log(
+              `Populating streams for grade ${selectedGrade}:`,
+              data.streams
+            );
 
-      // Add the new options
-      streams.forEach((stream) => {
-        const option = document.createElement("option");
-        option.value = `${selectedGrade}${stream}`;
-        option.textContent = `${selectedGrade}${stream}`;
-        streamSelect.appendChild(option);
-      });
+            // Add the new options
+            data.streams.forEach((stream) => {
+              const option = document.createElement("option");
+              option.value = `Stream ${stream.name}`;
+              option.textContent = `Stream ${stream.name}`;
+              streamSelect.appendChild(option);
+            });
 
-      formGroup.classList.add("success");
-      formGroup.classList.remove("error");
+            formGroup.classList.add("success");
+            formGroup.classList.remove("error");
+          } else {
+            console.error(
+              "Error fetching streams:",
+              data.message || "Unknown error"
+            );
+            formGroup.classList.add("error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching streams:", error);
+          formGroup.classList.add("error");
+        });
     } else {
       console.log("No grade selected - clearing streams");
       formGroup.classList.remove("success");

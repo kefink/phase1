@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Reports - Kirima Primary School</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+    <style>
+        .filter-bar {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-label {
+            font-weight: 500;
+            min-width: 80px;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            min-width: 150px;
+        }
+
+        .filter-button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            background-color: #6c757d;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .filter-button:hover {
+            background-color: #5a6268;
+        }
+
+        .report-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .report-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .report-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .report-date {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .report-body {
+            padding: 20px;
+        }
+
+        .report-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-weight: 500;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .edit-btn {
+            background-color: #17a2b8;
+        }
+
+        .view-btn {
+            background-color: #007bff;
+        }
+
+        .print-btn {
+            background-color: #28a745;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .badge-info {
+            background-color: #17a2b8;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            gap: 5px;
+        }
+
+        .page-link {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            color: #007bff;
+            text-decoration: none;
+            transition: all 0.2s;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .page-link:hover {
+            background-color: #f8f9fa;
+        }
+
+        .page-link.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+            font-weight: 500;
+        }
+
+        .page-link.disabled {
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #f8f9fa;
+            border-color: #ddd;
+        }
+
+        .page-ellipsis {
+            padding: 8px 12px;
+            color: #6c757d;
+        }
+
+        .page-info {
+            margin-left: 15px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #343a40;
+        }
+
+        .empty-message {
+            color: #6c757d;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">Kirima Primary School</a>
+        <ul class="navbar-nav">
+            <li class="nav-item"><a href="{{ url_for('classteacher.dashboard') }}" class="nav-link">Dashboard</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Reports</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Help</a></li>
+            <li class="nav-item"><a href="{{ url_for('auth.logout_route') }}" class="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container" style="max-width: 90%; margin-top: 80px;">
+        <h1 class="text-center mb-4">All Reports</h1>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label class="filter-label">Sort by:</label>
+                <select id="sort-select" class="filter-select" onchange="applyFilters()">
+                    <option value="date" {% if sort_by == 'date' %}selected{% endif %}>Date (newest first)</option>
+                    <option value="grade" {% if sort_by == 'grade' %}selected{% endif %}>Grade</option>
+                    <option value="term" {% if sort_by == 'term' %}selected{% endif %}>Term</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Grade:</label>
+                <select id="grade-select" class="filter-select" onchange="applyFilters()">
+                    <option value="">All Grades</option>
+                    {% for grade_option in grades %}
+                    <option value="{{ grade_option }}" {% if filter_grade == grade_option %}selected{% endif %}>{{ grade_option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Term:</label>
+                <select id="term-select" class="filter-select" onchange="applyFilters()">
+                    <option value="">All Terms</option>
+                    {% for term_option in terms %}
+                    <option value="{{ term_option }}" {% if filter_term == term_option %}selected{% endif %}>{{ term_option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Assessment:</label>
+                <select id="assessment-select" class="filter-select" onchange="applyFilters()">
+                    <option value="">All Assessments</option>
+                    {% for assessment_option in assessment_types %}
+                    <option value="{{ assessment_option }}" {% if filter_assessment == assessment_option %}selected{% endif %}>{{ assessment_option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button class="filter-button" onclick="resetFilters()">Reset Filters</button>
+        </div>
+
+        <!-- Reports List -->
+        {% if reports %}
+            {% for report in reports %}
+            <div class="report-card">
+                <div class="report-header">
+                    <h2 class="report-title">{{ report.grade }} {{ report.stream }}</h2>
+                    <span class="report-date">{{ report.date }}</span>
+                </div>
+                <div class="report-body">
+                    <div class="report-info">
+                        <div class="info-item">
+                            <span class="info-label">Term</span>
+                            <span class="info-value">{{ report.term }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Assessment</span>
+                            <span class="info-value">{{ report.assessment_type }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Marks</span>
+                            <span class="info-value">
+                                <span class="badge badge-info">{{ report.mark_count }} marks</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="report-actions">
+                        <a href="{{ url_for('classteacher.edit_class_marks', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn edit-btn">
+                            <i>✏️</i> Edit
+                        </a>
+                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn view-btn">
+                            <i>👁️</i> View
+                        </a>
+                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn print-btn">
+                            <i>🖨️</i> Print
+                        </a>
+                        <button onclick="confirmDeleteReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')" class="action-btn delete-btn">
+                            <i>🗑️</i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination with improved navigation -->
+            {% if total_pages > 1 %}
+            <div class="pagination">
+                {% if has_prev %}
+                <a href="{{ url_for('classteacher.all_reports', page=prev_page, sort=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">Previous</a>
+                {% else %}
+                <span class="page-link disabled">Previous</span>
+                {% endif %}
+
+                <!-- Show page numbers with ellipsis for large page counts -->
+                {% set window_size = 5 %}
+                {% set window_start = [1, page - window_size//2]|max %}
+                {% set window_end = [window_start + window_size - 1, total_pages]|min %}
+
+                {% if window_start > 1 %}
+                <a href="{{ url_for('classteacher.all_reports', page=1, sort=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">1</a>
+                {% if window_start > 2 %}
+                <span class="page-ellipsis">...</span>
+                {% endif %}
+                {% endif %}
+
+                {% for p in range(window_start, window_end + 1) %}
+                <a href="{{ url_for('classteacher.all_reports', page=p, sort=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link {% if p == page %}active{% endif %}">{{ p }}</a>
+                {% endfor %}
+
+                {% if window_end < total_pages %}
+                {% if window_end < total_pages - 1 %}
+                <span class="page-ellipsis">...</span>
+                {% endif %}
+                <a href="{{ url_for('classteacher.all_reports', page=total_pages, sort=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">{{ total_pages }}</a>
+                {% endif %}
+
+                {% if has_next %}
+                <a href="{{ url_for('classteacher.all_reports', page=next_page, sort=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">Next</a>
+                {% else %}
+                <span class="page-link disabled">Next</span>
+                {% endif %}
+
+                <!-- Page info -->
+                <span class="page-info">Page {{ page }} of {{ total_pages }} ({{ total_reports }} reports)</span>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📊</div>
+                <h2 class="empty-title">No Reports Found</h2>
+                <p class="empty-message">There are no reports matching your filter criteria. Try adjusting your filters or upload marks to generate new reports.</p>
+                <a href="{{ url_for('classteacher.dashboard') }}" class="btn mt-3" style="display: inline-block; margin-top: 20px;">Return to Dashboard</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteReportModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p id="deleteReportMessage">Are you sure you want to delete this report? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <form id="deleteReportForm" method="POST" action="">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="button" onclick="closeDeleteReportModal()" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="confirm-delete-btn">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 Kirima Primary School - All Rights Reserved</p>
+    </footer>
+
+    <script>
+        function applyFilters() {
+            const sortBy = document.getElementById('sort-select').value;
+            const gradeFilter = document.getElementById('grade-select').value;
+            const termFilter = document.getElementById('term-select').value;
+            const assessmentFilter = document.getElementById('assessment-select').value;
+
+            let url = '{{ url_for("classteacher.all_reports") }}?';
+
+            if (sortBy) {
+                url += `sort=${sortBy}&`;
+            }
+
+            if (gradeFilter) {
+                url += `filter_grade=${gradeFilter}&`;
+            }
+
+            if (termFilter) {
+                url += `filter_term=${termFilter}&`;
+            }
+
+            if (assessmentFilter) {
+                url += `filter_assessment=${assessmentFilter}&`;
+            }
+
+            // Remove trailing & if present
+            if (url.endsWith('&')) {
+                url = url.slice(0, -1);
+            }
+
+            window.location.href = url;
+        }
+
+        function resetFilters() {
+            window.location.href = '{{ url_for("classteacher.all_reports") }}';
+        }
+
+        function confirmDeleteReport(grade, stream, term, assessmentType) {
+            // Set up the delete form action
+            const deleteForm = document.getElementById('deleteReportForm');
+            deleteForm.action = `/classteacher/delete_marksheet/${grade}/${stream}/${term}/${assessmentType}`;
+
+            // Update the confirmation message
+            const deleteMessage = document.getElementById('deleteReportMessage');
+            deleteMessage.textContent = `Are you sure you want to delete the report for ${grade} ${stream} in ${term} ${assessmentType}? This action cannot be undone.`;
+
+            // Show the modal
+            document.getElementById('deleteReportModal').style.display = 'flex';
+        }
+
+        function closeDeleteReportModal() {
+            document.getElementById('deleteReportModal').style.display = 'none';
+        }
+
+        // Close the modal if the user clicks outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('deleteReportModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

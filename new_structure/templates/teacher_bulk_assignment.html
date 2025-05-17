@@ -428,10 +428,23 @@
     <script>
       // Global variables
       let levelCount = 1;
+      // Map of education levels to grade IDs based on actual database values
       const educationLevelGrades = {
-        lower_primary: ["1", "2", "3"],
-        upper_primary: ["4", "5", "6"],
-        junior_secondary: ["7", "8", "9"],
+        lower_primary: [
+          { id: 3, number: 1 }, // Grade 1 has ID 3
+          { id: 4, number: 2 }, // Grade 2 has ID 4
+          { id: 5, number: 3 }, // Grade 3 has ID 5
+        ],
+        upper_primary: [
+          { id: 6, number: 4 }, // Grade 4 has ID 6
+          { id: 7, number: 5 }, // Grade 5 has ID 7
+          { id: 8, number: 6 }, // Grade 6 has ID 8
+        ],
+        junior_secondary: [
+          { id: 9, number: 7 }, // Grade 7 has ID 9
+          { id: 1, number: 8 }, // Grade 8 has ID 1
+          { id: 2, number: 9 }, // Grade 9 has ID 2
+        ],
       };
 
       // Function to toggle new teacher fields
@@ -535,68 +548,54 @@
         const grades = educationLevelGrades[educationLevel] || [];
         grades.forEach((grade) => {
           const option = document.createElement("option");
-          option.value = grade;
-          option.textContent = `Grade ${grade}`;
+          option.value = grade.id; // Use the grade ID as the value
+          option.textContent = `Grade ${grade.number}`; // Display the grade number
+          option.dataset.gradeNumber = grade.number; // Store the grade number for reference
           gradeSelect.appendChild(option);
         });
 
-        // Hardcoded subjects for each education level
-        const subjectsByLevel = {
-          lower_primary: [
-            { id: 101, name: "LITERACY ACTIVITIES" },
-            { id: 102, name: "KISWAHILI LANGUAGE ACTIVITIES" },
-            { id: 103, name: "ENGLISH LANGUAGE ACTIVITIES" },
-            { id: 104, name: "MATHEMATICAL ACTIVITIES" },
-            { id: 105, name: "ENVIRONMENTAL ACTIVITIES" },
-            { id: 106, name: "HYGIENE AND NUTRITION ACTIVITIES" },
-            { id: 107, name: "RELIGIOUS EDUCATION ACTIVITIES" },
-            { id: 108, name: "MOVEMENT AND CREATIVE ACTIVITIES" },
-          ],
-          upper_primary: [
-            { id: 201, name: "ENGLISH" },
-            { id: 202, name: "KISWAHILI" },
-            { id: 203, name: "MATHEMATICS" },
-            { id: 204, name: "SCIENCE AND TECHNOLOGY" },
-            { id: 205, name: "SOCIAL STUDIES" },
-            { id: 206, name: "RELIGIOUS EDUCATION" },
-            { id: 207, name: "CREATIVE ARTS" },
-            { id: 208, name: "PHYSICAL AND HEALTH EDUCATION" },
-            { id: 209, name: "AGRICULTURE" },
-          ],
-          junior_secondary: [
-            { id: 301, name: "ENGLISH" },
-            { id: 302, name: "KISWAHILI" },
-            { id: 303, name: "MATHEMATICS" },
-            { id: 304, name: "INTEGRATED SCIENCE" },
-            { id: 305, name: "HEALTH EDUCATION" },
-            { id: 306, name: "PRE-TECHNICAL STUDIES" },
-            { id: 307, name: "SOCIAL STUDIES" },
-            { id: 308, name: "RELIGIOUS EDUCATION" },
-            { id: 309, name: "BUSINESS STUDIES" },
-          ],
-        };
+        // Fetch subjects from the server based on education level
+        fetch(
+          `/get_subjects_by_education_level?education_level=${educationLevel}`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            const subjects = data.subjects || [];
 
-        // Get subjects for the selected education level
-        const subjects = subjectsByLevel[educationLevel] || [];
+            if (subjects.length > 0) {
+              subjects.forEach((subject) => {
+                const option = document.createElement("option");
+                option.value = subject.id;
+                option.textContent = subject.name;
+                option.dataset.subject = subject.name;
+                option.dataset.level = levelNum;
+                subjectsSelect.appendChild(option);
+              });
 
-        if (subjects.length > 0) {
-          subjects.forEach((subject) => {
+              // Add event listener for changes
+              subjectsSelect.addEventListener(
+                "change",
+                updateAssignmentSummary
+              );
+            } else {
+              const option = document.createElement("option");
+              option.disabled = true;
+              option.textContent = "No subjects found for this education level";
+              subjectsSelect.appendChild(option);
+            }
+
+            // Update the summary
+            updateAssignmentSummary();
+          })
+          .catch((error) => {
+            console.error("Error fetching subjects:", error);
             const option = document.createElement("option");
-            option.value = subject.id;
-            option.textContent = subject.name;
-            option.dataset.subject = subject.name;
-            option.dataset.level = levelNum;
+            option.disabled = true;
+            option.textContent = "Error loading subjects";
             subjectsSelect.appendChild(option);
           });
 
-          // Add event listener for changes
-          subjectsSelect.addEventListener("change", updateAssignmentSummary);
-        } else {
-          const option = document.createElement("option");
-          option.disabled = true;
-          option.textContent = "No subjects found for this education level";
-          subjectsSelect.appendChild(option);
-        }
+        // Subjects are now loaded dynamically from the server
 
         // Update the summary
         updateAssignmentSummary();
@@ -616,69 +615,36 @@
 
         console.log(`Updating streams for grade: ${gradeId}`);
 
-        // Hardcoded streams for each grade
-        const streamsByGrade = {
-          1: [
-            { id: 39, name: "B" },
-            { id: 40, name: "G" },
-            { id: 41, name: "Y" },
-          ],
-          2: [
-            { id: 36, name: "B" },
-            { id: 37, name: "G" },
-            { id: 38, name: "Y" },
-          ],
-          3: [
-            { id: 33, name: "B" },
-            { id: 34, name: "G" },
-            { id: 35, name: "Y" },
-          ],
-          4: [
-            { id: 30, name: "B" },
-            { id: 31, name: "G" },
-            { id: 32, name: "Y" },
-          ],
-          5: [
-            { id: 27, name: "B" },
-            { id: 28, name: "G" },
-            { id: 29, name: "Y" },
-          ],
-          6: [
-            { id: 21, name: "B" },
-            { id: 22, name: "G" },
-            { id: 23, name: "Y" },
-          ],
-          7: [
-            { id: 24, name: "B" },
-            { id: 25, name: "G" },
-            { id: 26, name: "Y" },
-          ],
-          8: [
-            { id: 1, name: "B" },
-            { id: 2, name: "Y" },
-            { id: 3, name: "G" },
-          ],
-          9: [
-            { id: 4, name: "B" },
-            { id: 19, name: "G" },
-            { id: 20, name: "Y" },
-          ],
-        };
+        // Fetch streams from the server based on grade ID
+        fetch(`/get_streams_by_grade?grade_id=${gradeId}`)
+          .then((response) => response.json())
+          .then((data) => {
+            const streams = data.streams || [];
 
-        // Get streams for the selected grade
-        const streams = streamsByGrade[gradeId] || [];
+            if (streams.length > 0) {
+              streams.forEach((stream) => {
+                const option = document.createElement("option");
+                option.value = stream.id;
+                option.textContent = stream.name;
+                streamSelect.appendChild(option);
+              });
+              console.log(
+                `Added ${streams.length} streams for grade ${gradeId}`
+              );
+            } else {
+              console.log(`No streams found for grade ${gradeId}`);
+            }
 
-        if (streams.length > 0) {
-          streams.forEach((stream) => {
+            // Update the summary
+            updateAssignmentSummary();
+          })
+          .catch((error) => {
+            console.error("Error fetching streams:", error);
             const option = document.createElement("option");
-            option.value = stream.id;
-            option.textContent = stream.name;
+            option.disabled = true;
+            option.textContent = "Error loading streams";
             streamSelect.appendChild(option);
           });
-          console.log(`Added ${streams.length} streams for grade ${gradeId}`);
-        } else {
-          console.log(`No streams found for grade ${gradeId}`);
-        }
 
         // Update the summary
         updateAssignmentSummary();
@@ -712,7 +678,12 @@
           const educationLevel =
             educationLevelSelect.options[educationLevelSelect.selectedIndex]
               .text;
-          const grade = gradeSelect.value ? `Grade ${gradeSelect.value}` : "";
+          // Get the grade number from the selected option's dataset
+          const gradeNumber =
+            gradeSelect.selectedOptions[0]?.dataset?.gradeNumber;
+          const grade = gradeSelect.value
+            ? `Grade ${gradeNumber || gradeSelect.value}`
+            : "";
           const stream = streamSelect.value
             ? streamSelect.options[streamSelect.selectedIndex].text
             : "All Streams";

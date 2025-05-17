@@ -7,8 +7,8 @@ class Config:
     """Base configuration class with settings common to all environments."""
     SECRET_KEY = 'your_secret_key_here'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
-    # Use the same database file path as the original application
+
+    # Use the kirima_primary.db database file in the project root
     basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'kirima_primary.db')
 

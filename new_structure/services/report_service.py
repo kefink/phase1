@@ -2,16 +2,18 @@
 Report generation services for the Hillview School Management System.
 """
 from ..models import Student, Mark, Subject, Stream, Grade, Term, AssessmentType
-from ..utils import get_performance_category, get_grade_and_points, generate_individual_report_pdf
+from ..utils import get_performance_category, get_grade_and_points
 from collections import defaultdict
 import os
 import tempfile
+import pdfkit
 from datetime import datetime
 from reportlab.lib.pagesizes import letter, landscape
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
+from flask import render_template_string
 
 def get_class_report_data(grade, stream, term, assessment_type):
     """
@@ -43,15 +45,34 @@ def get_class_report_data(grade, stream, term, assessment_type):
     # Get the students in the stream
     students = Student.query.filter_by(stream_id=stream_obj.id).all()
 
-    # Get all subjects
-    subjects = Subject.query.all()
+    # Determine education level based on grade
+    grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+    if 1 <= grade_num <= 3:
+        education_level = "lower_primary"
+    elif 4 <= grade_num <= 6:
+        education_level = "upper_primary"
+    elif 7 <= grade_num <= 9:
+        education_level = "junior_secondary"
+    else:
+        education_level = ""
+
+    # Get only subjects for this education level
+    if education_level:
+        subjects = Subject.query.filter_by(education_level=education_level).all()
+    else:
+        # Fallback to all subjects if education level can't be determined
+        subjects = Subject.query.all()
 
     # Prepare class data
     class_data = []
-    total_marks = 0
+    default_total_marks = 100  # Default total marks if not specified
 
     for student in students:
         student_marks = {}
+        student_raw_marks = {}
+        subject_count = 0
+        student_standardized_total = 0
+
         for subject in subjects:
             mark = Mark.query.filter_by(
                 student_id=student.id,
@@ -59,18 +80,43 @@ def get_class_report_data(grade, stream, term, assessment_type):
                 term_id=term_obj.id,
                 assessment_type_id=assessment_type_obj.id
             ).first()
-            student_marks[subject.name] = mark.mark if mark else 0
-            if mark:
-                total_marks = mark.total_marks
 
-        total = sum(student_marks.values())
-        avg_percentage = (total / (len(subjects) * total_marks)) * 100 if total_marks > 0 else 0
+            if mark:
+                # Store the raw mark
+                raw_mark_value = mark.mark
+                student_raw_marks[subject.name] = raw_mark_value
+
+                # Calculate standardized mark (out of 100)
+                total_marks = mark.total_marks if mark.total_marks > 0 else default_total_marks
+                standardized_mark = (raw_mark_value / total_marks) * 100
+
+                # Store the standardized mark
+                student_marks[subject.name] = standardized_mark
+
+                # Add to standardized total for average calculation
+                student_standardized_total += standardized_mark
+                subject_count += 1
+            else:
+                student_marks[subject.name] = 0
+                student_raw_marks[subject.name] = 0
+
+        # Calculate total possible marks based on number of subjects
+        total_possible_marks = len(subjects) * 100  # Always 100 per subject for standardized marks
+
+        # Calculate average only for subjects that have marks
+        if subject_count > 0:
+            avg_percentage = student_standardized_total / subject_count
+        else:
+            avg_percentage = 0
 
         class_data.append({
             'student': student.name,
             'marks': student_marks,
-            'total_marks': total,
-            'average_percentage': avg_percentage
+            'raw_marks': student_raw_marks,
+            'total_marks': student_standardized_total,
+            'total_possible_marks': total_possible_marks,
+            'average_percentage': avg_percentage,
+            'subject_count': subject_count
         })
 
     # Sort by total marks (descending)
@@ -86,9 +132,9 @@ def get_class_report_data(grade, stream, term, assessment_type):
         avg = student_data['average_percentage']
         if avg >= 75:
             stats['exceeding'] += 1
-        elif 50 <= avg < 75:
+        elif 41 <= avg < 75:
             stats['meeting'] += 1
-        elif 30 <= avg < 50:
+        elif 21 <= avg < 41:
             stats['approaching'] += 1
         else:
             stats['below'] += 1
@@ -97,11 +143,142 @@ def get_class_report_data(grade, stream, term, assessment_type):
         "class_data": class_data,
         "stats": stats,
         "subjects": [subject.name for subject in subjects],
-        "total_marks": total_marks,
-        "error": None
+        "total_marks": default_total_marks,  # Using default total marks
+        "error": None,
+        "education_level": education_level
     }
 
-def generate_class_report_pdf(grade, stream, term, assessment_type, class_data, stats, total_marks, subjects):
+
+
+def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, class_data, stats, total_marks, subjects, education_level="", subject_averages=None, class_average=0):
+    """
+    Generate a PDF report for a class using HTML template.
+
+    Args:
+        grade: The grade level
+        stream: The class stream
+        term: The term
+        assessment_type: The assessment type
+        class_data: List of dictionaries containing student data
+        stats: Dictionary containing performance statistics
+        total_marks: The total marks per subject
+        subjects: List of subject names
+        education_level: The education level
+        subject_averages: Dictionary of subject averages
+        class_average: The class average
+
+    Returns:
+        Path to the generated PDF file
+    """
+    try:
+        # Import Flask's render_template_string function
+        from flask import render_template_string
+
+        # First, get the template content
+        with open('new_structure/templates/preview_class_report.html', 'r', encoding='utf-8') as f:
+            template_content = f.read()
+
+        # Add print-specific CSS to the template
+        print_css = """
+        <style>
+        @page {
+            size: landscape;
+            margin: 1cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .action-buttons, .print-controls, .delete-btn, .modal {
+            display: none !important;
+        }
+        </style>
+        """
+        template_content = template_content.replace('</head>', f'{print_css}</head>')
+
+        # Process class_data to ensure it has filtered_marks
+        processed_class_data = []
+        for student_data in class_data:
+            # Create a copy of the student data
+            processed_student = dict(student_data)
+
+            # Ensure filtered_marks exists (copy from marks if needed)
+            if 'filtered_marks' not in processed_student and 'marks' in processed_student:
+                processed_student['filtered_marks'] = processed_student['marks']
+
+            # Ensure filtered_total exists (copy from total_marks if needed)
+            if 'filtered_total' not in processed_student and 'total_marks' in processed_student:
+                processed_student['filtered_total'] = processed_student['total_marks']
+
+            # Ensure filtered_average exists (copy from average_percentage if needed)
+            if 'filtered_average' not in processed_student and 'average_percentage' in processed_student:
+                processed_student['filtered_average'] = processed_student['average_percentage']
+
+            processed_class_data.append(processed_student)
+
+        # Render the template with the data
+        html_content = render_template_string(
+            template_content,
+            grade=grade,
+            stream=stream,
+            term=term,
+            assessment_type=assessment_type,
+            class_data=processed_class_data,
+            stats=stats,
+            total_marks=total_marks,
+            subject_names=subjects,
+            education_level=education_level,
+            subject_averages=subject_averages,
+            class_average=class_average,
+            print_mode=True  # Flag to indicate PDF generation
+        )
+
+        # Generate PDF from HTML
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"class_report_{grade}_{stream}_{term}_{assessment_type}_{timestamp}.pdf"
+
+        # Create a temporary file
+        temp_dir = tempfile.gettempdir()
+        pdf_path = os.path.join(temp_dir, filename)
+
+        # Configure pdfkit options for better formatting
+        options = {
+            'page-size': 'A4',
+            'orientation': 'Landscape',
+            'margin-top': '0.75in',
+            'margin-right': '0.75in',
+            'margin-bottom': '0.75in',
+            'margin-left': '0.75in',
+            'encoding': 'UTF-8',
+            'no-outline': None,
+            'enable-local-file-access': True,  # Enable local file access for images
+            'print-media-type': None
+        }
+
+        # Convert HTML to PDF
+        import pdfkit
+        pdfkit.from_string(html_content, pdf_path, options=options)
+
+        return pdf_path
+    except Exception as e:
+        print(f"Error generating PDF from HTML: {str(e)}")
+        # Fallback to the old PDF generation method
+        return generate_class_report_pdf(
+            grade=grade,
+            stream=stream,
+            term=term,
+            assessment_type=assessment_type,
+            class_data=class_data,
+            stats=stats,
+            total_marks=total_marks,
+            subjects=subjects,
+            education_level=education_level,
+            subject_averages=subject_averages,
+            class_average=class_average
+        )
+
+def generate_class_report_pdf(grade, stream, term, assessment_type, class_data, stats, total_marks, subjects, education_level="", subject_averages=None, class_average=0):
     """
     Generate a PDF report for a class.
 
@@ -114,10 +291,17 @@ def generate_class_report_pdf(grade, stream, term, assessment_type, class_data, 
         stats: Dictionary containing performance statistics
         total_marks: The total marks per subject
         subjects: List of subject names
+        education_level: The education level
+        subject_averages: Dictionary of subject averages
+        class_average: The class average
 
     Returns:
         Path to the generated PDF file
     """
+    # Initialize subject_averages if not provided
+    if subject_averages is None:
+        subject_averages = {}
+
     # Create a temporary file
     temp_dir = tempfile.gettempdir()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -135,105 +319,430 @@ def generate_class_report_pdf(grade, stream, term, assessment_type, class_data, 
 
     # Define styles
     styles = getSampleStyleSheet()
-    title_style = styles["Title"]
-    heading_style = styles["Heading1"]
+
+    # Create custom styles to match the HTML preview
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Title'],
+        fontSize=16,
+        alignment=1,  # Center alignment
+        spaceAfter=6
+    )
+
+    school_name_style = ParagraphStyle(
+        'SchoolName',
+        parent=styles['Title'],
+        fontSize=20,
+        alignment=1,
+        textColor=colors.HexColor('#2c3e50'),
+        spaceAfter=6
+    )
+
+    subtitle_style = ParagraphStyle(
+        'Subtitle',
+        parent=styles['Normal'],
+        fontSize=12,
+        alignment=1,
+        textColor=colors.HexColor('#34495e'),
+        spaceAfter=6
+    )
+
+    report_title_style = ParagraphStyle(
+        'ReportTitle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        alignment=1,
+        textColor=colors.HexColor('#2c3e50'),
+        spaceAfter=10
+    )
+
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#2c3e50'),
+        spaceAfter=6
+    )
+
     normal_style = styles["Normal"]
 
     # Create content
     content = []
 
-    # Add title
-    title = Paragraph(f"Class Report: {grade} {stream} - {term} {assessment_type}", title_style)
-    content.append(title)
-    content.append(Spacer(1, 0.25*inch))
+    # Add school logo
+    from reportlab.platypus import Image
+    try:
+        logo_path = 'new_structure/static/images/kirima_logo.png'
+        logo = Image(logo_path, width=1.5*inch, height=1.5*inch)
+        content.append(logo)
+    except Exception as e:
+        print(f"Error adding logo: {str(e)}")
 
-    # Add date
-    date_text = Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", normal_style)
-    content.append(date_text)
-    content.append(Spacer(1, 0.25*inch))
+    # Add school header (matching the HTML preview)
+    school_name = Paragraph("KIRIMA PRIMARY SCHOOL", school_name_style)
+    content.append(school_name)
 
-    # Add statistics
-    stats_heading = Paragraph("Performance Statistics", heading_style)
-    content.append(stats_heading)
-    content.append(Spacer(1, 0.1*inch))
+    school_address = Paragraph("P.O. BOX 123, KIRIMA | TEL: +254 123 456789", subtitle_style)
+    content.append(school_address)
 
-    stats_data = [
-        ["Performance Level", "Number of Students", "Percentage"],
-        ["Exceeding Expectations (75-100%)", stats["exceeding"], f"{stats['exceeding']/len(class_data)*100:.1f}%" if class_data else "0%"],
-        ["Meeting Expectations (50-74%)", stats["meeting"], f"{stats['meeting']/len(class_data)*100:.1f}%" if class_data else "0%"],
-        ["Approaching Expectations (30-49%)", stats["approaching"], f"{stats['approaching']/len(class_data)*100:.1f}%" if class_data else "0%"],
-        ["Below Expectations (0-29%)", stats["below"], f"{stats['below']/len(class_data)*100:.1f}%" if class_data else "0%"],
-        ["Total", len(class_data), "100%"]
-    ]
+    school_contact = Paragraph("Email: info@kirimaprimary.ac.ke | Website: www.kirimaprimary.ac.ke", subtitle_style)
+    content.append(school_contact)
 
-    stats_table = Table(stats_data, colWidths=[3*inch, 1.5*inch, 1.5*inch])
-    stats_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+    # Add report title
+    clean_grade = grade.replace('Grade ', '')
+    clean_stream = stream.replace('Stream ', '')
+
+    report_title = Paragraph(f"{education_level.upper()} MARKSHEET", report_title_style)
+    content.append(report_title)
+
+    report_details = Paragraph(
+        f"GRADE: {clean_grade} | STREAM: {clean_stream} | " +
+        f"TERM: {term.replace('_', ' ').upper()} | ASSESSMENT: {assessment_type.upper()}",
+        subtitle_style
+    )
+    content.append(report_details)
+    content.append(Spacer(1, 0.2*inch))
+
+    # Prepare table data for student marks
+    # Create header row with abbreviated subject names
+    abbreviated_subjects = []
+    for subject in subjects:
+        # Create abbreviation (first letter of each word)
+        words = subject.split()
+        if len(words) > 1:
+            abbr = ''.join(word[0].upper() for word in words)
+        else:
+            # If single word, use first 3 letters
+            abbr = subject[:3].upper()
+        abbreviated_subjects.append(abbr)
+
+    table_data = [["S/N", "STUDENT NAME"] + abbreviated_subjects + ["TOTAL", "AVG %", "GRD", "RANK"]]
+
+    # Add student data rows
+    for student in class_data:
+        row = [
+            student.get("index", ""),
+            student.get("student", "").upper()
+        ]
+
+        # Add marks for each subject
+        for subject in subjects:
+            row.append(student.get("filtered_marks", {}).get(subject, 0))
+
+        # Add total, average, grade and rank
+        row.append(student.get("filtered_total", 0))
+        row.append(f"{student.get('filtered_average', 0):.0f}%")
+        row.append(student.get("performance_category", ""))
+        row.append(student.get("rank", ""))
+
+        table_data.append(row)
+
+    # Add subject averages row
+    subject_avg_row = ["", "SUBJECT AVERAGES"]
+    for subject in subjects:
+        subject_avg_row.append(subject_averages.get(subject, 0))
+    subject_avg_row.extend(["", "", "", ""])  # Empty cells for total, avg, grade, rank
+    table_data.append(subject_avg_row)
+
+    # Add class average row
+    class_avg_row = ["", "CLASS AVERAGE"]
+    class_avg_row.extend([""] * len(subjects))  # Empty cells for subjects
+    class_avg_row.append(class_average)  # Total average
+
+    # Calculate class average percentage
+    avg_percentage_total = 0
+    avg_student_count = 0
+    for student_data in class_data:
+        if student_data.get('filtered_average', 0) > 0:
+            avg_percentage_total += student_data.get('filtered_average', 0)
+            avg_student_count += 1
+
+    class_avg_percentage = round(avg_percentage_total / avg_student_count, 2) if avg_student_count > 0 else 0
+    class_avg_row.append(f"{class_avg_percentage}%")  # Average percentage
+    class_avg_row.extend(["", ""])  # Empty cells for grade, rank
+    table_data.append(class_avg_row)
+
+    # Calculate column widths based on content
+    col_widths = [0.4*inch, 1.8*inch] + [0.5*inch] * len(subjects) + [0.6*inch, 0.6*inch, 0.5*inch, 0.5*inch]
+
+    # Create the table
+    class_table = Table(table_data, colWidths=col_widths, repeatRows=1)
+
+    # Style the table to match the HTML preview
+    table_style = [
+        # Header row styling
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3498db')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('TOPPADDING', (0, 0), (-1, 0), 8),
+
+        # Grid styling
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+
+        # Alignment for data cells
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # S/N column centered
+        ('ALIGN', (1, 1), (1, -1), 'LEFT'),    # Student name left-aligned
+        ('ALIGN', (2, 1), (-4, -1), 'CENTER'), # Subject marks centered
+        ('ALIGN', (-3, 1), (-1, -1), 'CENTER'), # Total, Avg, Grade, Rank centered
+
+        # Valign all cells to middle
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+
+        # Zebra striping for student rows (using alternating rows)
+        ('BACKGROUND', (0, 1), (-1, -3), colors.HexColor('#f2f7ff')),
+
+        # Subject averages row styling
+        ('BACKGROUND', (0, -2), (-1, -2), colors.HexColor('#eaf2f8')),
+        ('FONTNAME', (0, -2), (-1, -2), 'Helvetica-Bold'),
+        ('BACKGROUND', (0, -2), (1, -2), colors.HexColor('#3498db')),
+        ('TEXTCOLOR', (0, -2), (1, -2), colors.white),
+
+        # Class average row styling
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#d4efdf')),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('BACKGROUND', (0, -1), (1, -1), colors.HexColor('#27ae60')),
+        ('TEXTCOLOR', (0, -1), (1, -1), colors.white),
+
+        # Total column styling
+        ('BACKGROUND', (-4, 1), (-4, -3), colors.HexColor('#eaf2f8')),
+        ('FONTNAME', (-4, 1), (-4, -3), 'Helvetica-Bold'),
+
+        # Average column styling
+        ('TEXTCOLOR', (-3, 1), (-3, -3), colors.HexColor('#2980b9')),
+        ('FONTNAME', (-3, 1), (-3, -3), 'Helvetica-Bold'),
+    ]
+
+    class_table.setStyle(TableStyle(table_style))
+    content.append(class_table)
+    content.append(Spacer(1, 0.25*inch))
+
+    # Add performance summary section
+    summary_title = Paragraph("Performance Summary", heading_style)
+    content.append(summary_title)
+
+    # Create a 2x2 grid for performance statistics
+    stats_data = [
+        [
+            Paragraph(f"<font color='#155724'><b>EE1/EE2 (Exceeding Expectation, ≥75%):</b> {stats['exceeding']} learners</font>", normal_style),
+            Paragraph(f"<font color='#004085'><b>ME1/ME2 (Meeting Expectation, 41-74%):</b> {stats['meeting']} learners</font>", normal_style)
+        ],
+        [
+            Paragraph(f"<font color='#856404'><b>AE1/AE2 (Approaching Expectation, 21-40%):</b> {stats['approaching']} learners</font>", normal_style),
+            Paragraph(f"<font color='#721c24'><b>BE1/BE2 (Below Expectation, &lt;21%):</b> {stats['below']} learners</font>", normal_style)
+        ]
+    ]
+
+    stats_table = Table(stats_data, colWidths=[4*inch, 4*inch])
+    stats_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, 0), colors.HexColor('#d4edda')),
+        ('BACKGROUND', (1, 0), (1, 0), colors.HexColor('#cce5ff')),
+        ('BACKGROUND', (0, 1), (0, 1), colors.HexColor('#fff3cd')),
+        ('BACKGROUND', (1, 1), (1, 1), colors.HexColor('#f8d7da')),
+        ('BOX', (0, 0), (0, 0), 1, colors.HexColor('#c3e6cb')),
+        ('BOX', (1, 0), (1, 0), 1, colors.HexColor('#b8daff')),
+        ('BOX', (0, 1), (0, 1), 1, colors.HexColor('#ffeeba')),
+        ('BOX', (1, 1), (1, 1), 1, colors.HexColor('#f5c6cb')),
+        ('PADDING', (0, 0), (-1, -1), 10),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
     content.append(stats_table)
     content.append(Spacer(1, 0.25*inch))
 
-    # Add class data
-    class_heading = Paragraph("Student Performance", heading_style)
-    content.append(class_heading)
-    content.append(Spacer(1, 0.1*inch))
+    # Add signature section
+    signature_data = [
+        ["Class Teacher", "Deputy Head Teacher", "Head Teacher"],
+        ["", "", ""],
+        ["", "", ""]
+    ]
 
-    # Prepare table data
-    table_data = [["Rank", "Student Name"] + subjects + ["Total", "Average", "Performance"]]
-
-    for student in class_data:
-        row = [
-            student.get("rank", ""),
-            student.get("student", "")
-        ]
-
-        for subject in subjects:
-            row.append(student.get("marks", {}).get(subject, ""))
-
-        row.append(student.get("total_marks", ""))
-        row.append(f"{student.get('average_percentage', 0):.1f}%")
-
-        avg = student.get('average_percentage', 0)
-        performance = "Exceeding" if avg >= 75 else "Meeting" if avg >= 50 else "Approaching" if avg >= 30 else "Below"
-        row.append(performance)
-
-        table_data.append(row)
-
-    # Create the table
-    col_widths = [0.5*inch, 2*inch] + [0.8*inch] * len(subjects) + [0.8*inch, 0.8*inch, 1*inch]
-    class_table = Table(table_data, colWidths=col_widths)
-
-    # Style the table
-    class_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+    signature_table = Table(signature_data, colWidths=[2.8*inch, 2.8*inch, 2.8*inch])
+    signature_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # Rank column centered
-        ('ALIGN', (2, 1), (-3, -1), 'CENTER'),  # Subject marks centered
-        ('ALIGN', (-2, 1), (-2, -1), 'CENTER'),  # Average column centered
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LINEBELOW', (0, 1), (0, 1), 1, colors.black),
+        ('LINEBELOW', (1, 1), (1, 1), 1, colors.black),
+        ('LINEBELOW', (2, 1), (2, 1), 1, colors.black),
+        ('TOPPADDING', (0, 1), (-1, 1), 30),
     ]))
+    content.append(signature_table)
 
-    content.append(class_table)
+    # Add footer
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    footer_text = Paragraph(f"Generated on: {current_date}<br/>Kirima Primary School | Powered by CbcTeachkit", subtitle_style)
+    content.append(Spacer(1, 0.25*inch))
+    content.append(footer_text)
 
     # Build the PDF
     doc.build(content)
 
     return pdf_path
+
+def generate_individual_report_pdf_from_html(student, grade, stream, term, assessment_type, report_data, education_level=""):
+    """
+    Generate a PDF report for an individual student using HTML template.
+
+    Args:
+        student: The student object
+        grade: The grade level
+        stream: The class stream
+        term: The term
+        assessment_type: The assessment type
+        report_data: Dictionary containing student report data
+        education_level: The education level
+
+    Returns:
+        Path to the generated PDF file
+    """
+    try:
+        # Import Flask's render_template_string function
+        from flask import render_template_string
+
+        # First, get the template content
+        with open('new_structure/templates/preview_individual_report.html', 'r', encoding='utf-8') as f:
+            template_content = f.read()
+
+        # Add print-specific CSS to the template
+        print_css = """
+        <style>
+        @page {
+            size: portrait;
+            margin: 1cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .action-buttons, .print-controls {
+            display: none !important;
+        }
+        </style>
+        """
+        template_content = template_content.replace('</head>', f'{print_css}</head>')
+
+        # Get current date for the report
+        current_date = datetime.now().strftime("%Y-%m-%d")
+
+        # Get student marks
+        student_marks = {}
+        total = 0
+        subject_count = 0
+
+        # Find student data in the report data
+        student_data = next((data for data in report_data.get("class_data", []) if data.get("student") == student.name), None)
+
+        if not student_data:
+            return None
+
+        # Calculate mean grade and points
+        avg_percentage = student_data.get("average_percentage", 0)
+        from ..utils import get_grade_and_points
+        mean_grade, mean_points = get_grade_and_points(avg_percentage)
+
+        # Prepare table data for the report
+        table_data = []
+        for subject in report_data.get("subjects", []):
+            mark = student_data.get("marks", {}).get(subject, 0)
+            # For now, we'll use the same mark for all assessment types
+            # In a real implementation, you'd get different marks for different assessment types
+            table_data.append({
+                "subject": subject,
+                "entrance": mark,
+                "mid_term": mark,
+                "end_term": mark,
+                "avg": mark,
+                "remarks": get_performance_remarks(mark, report_data.get("total_marks", 100))
+            })
+
+        # Calculate total marks and points
+        total_marks = student_data.get("total_marks", 0)
+        total_possible_marks = len(report_data.get("subjects", [])) * report_data.get("total_marks", 100)
+        total_points = mean_points * len(report_data.get("subjects", []))
+
+        # Generate admission number if not available
+        admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
+
+        # Get academic year
+        from ..models import Term
+        term_obj = Term.query.filter_by(name=term).first()
+        academic_year = term_obj.academic_year if term_obj and hasattr(term_obj, 'academic_year') and term_obj.academic_year else "2023"
+
+        # Render the template with the data
+        html_content = render_template_string(
+            template_content,
+            student=student,
+            student_data=student_data,
+            grade=grade,
+            stream=stream,
+            term=term,
+            assessment_type=assessment_type,
+            education_level=education_level,
+            current_date=current_date,
+            table_data=table_data,
+            total=total_marks,
+            avg_percentage=avg_percentage,
+            mean_grade=mean_grade,
+            mean_points=mean_points,
+            total_possible_marks=total_possible_marks,
+            total_points=total_points,
+            admission_no=admission_no,
+            academic_year=academic_year
+        )
+
+        # Generate PDF from HTML
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"individual_report_{student.name}_{grade}_{stream}_{term}_{assessment_type}_{timestamp}.pdf"
+
+        # Create a temporary file
+        temp_dir = tempfile.gettempdir()
+        pdf_path = os.path.join(temp_dir, filename)
+
+        # Configure pdfkit options for better formatting
+        options = {
+            'page-size': 'A4',
+            'orientation': 'Portrait',
+            'margin-top': '0.75in',
+            'margin-right': '0.75in',
+            'margin-bottom': '0.75in',
+            'margin-left': '0.75in',
+            'encoding': 'UTF-8',
+            'no-outline': None,
+            'enable-local-file-access': True,  # Enable local file access for images
+            'print-media-type': None
+        }
+
+        # Convert HTML to PDF
+        import pdfkit
+        pdfkit.from_string(html_content, pdf_path, options=options)
+
+        return pdf_path
+    except Exception as e:
+        print(f"Error generating individual PDF from HTML: {str(e)}")
+        return None
+
+def get_performance_remarks(mark, total_marks=100):
+    """Generate performance remarks based on marks."""
+    percentage = (mark / total_marks) * 100 if total_marks > 0 else 0
+
+    if percentage >= 90:
+        return "EE1"  # Exceeding Expectation 1
+    elif percentage >= 75:
+        return "EE2"  # Exceeding Expectation 2
+    elif percentage >= 58:
+        return "ME1"  # Meeting Expectation 1
+    elif percentage >= 41:
+        return "ME2"  # Meeting Expectation 2
+    elif percentage >= 31:
+        return "AE1"  # Approaching Expectation 1
+    elif percentage >= 21:
+        return "AE2"  # Approaching Expectation 2
+    elif percentage >= 11:
+        return "BE1"  # Below Expectation 1
+    else:
+        return "BE2"  # Below Expectation 2
 
 def generate_individual_report(student, grade, stream, term, assessment_type, education_level=""):
     """

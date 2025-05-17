@@ -17,17 +17,5 @@ PERFORMANCE_CATEGORIES = {
     'Below Expectation': (0, 49)
 }
 
-# Assessment types
-ASSESSMENT_TYPES = [
-    'End Term',
-    'Mid Term',
-    'CAT 1',
-    'CAT 2'
-]
-
-# Terms
-TERMS = [
-    'Term 1',
-    'Term 2',
-    'Term 3'
-]
+# Assessment types and terms are now dynamically loaded from the database
+# instead of being hardcoded here

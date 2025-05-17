@@ -29,12 +29,19 @@ class Term(db.Model):
     """Term model representing school terms."""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)  # e.g., Term 1, Term 2
+    academic_year = db.Column(db.String(20), nullable=True)  # e.g., 2023, 2024
+    is_current = db.Column(db.Boolean, default=False)  # Whether this is the current active term
+    start_date = db.Column(db.Date, nullable=True)  # Start date of the term
+    end_date = db.Column(db.Date, nullable=True)  # End date of the term
     marks = db.relationship('Mark', backref='term', lazy=True)
 
 class AssessmentType(db.Model):
     """AssessmentType model representing types of assessments."""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)  # e.g., Mid Term, End Term
+    weight = db.Column(db.Integer, nullable=True)  # Percentage weight in final grade calculation (0-100)
+    group = db.Column(db.String(50), nullable=True)  # Group related assessments (e.g., "Exams", "Projects")
+    show_on_reports = db.Column(db.Boolean, default=True)  # Whether to show this assessment type on reports
     marks = db.relationship('Mark', backref='assessment_type', lazy=True)
 
 class Student(db.Model):
@@ -55,4 +62,5 @@ class Mark(db.Model):
     assessment_type_id = db.Column(db.Integer, db.ForeignKey('assessment_type.id'), nullable=False)
     mark = db.Column(db.Float, nullable=False)
     total_marks = db.Column(db.Float, nullable=False)
+    percentage = db.Column(db.Float, nullable=True)  # Percentage score (0-100)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())

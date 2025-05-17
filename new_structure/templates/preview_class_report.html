@@ -1,141 +1,779 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Class Report Preview - Kirima Primary School</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
     <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+        color: #333;
+      }
+      .report-container {
+        max-width: 100%;
+        margin: 0 auto;
+        background-color: white;
+        padding: 30px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .header:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        height: 2px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          #3498db,
+          transparent
+        );
+      }
+
+      .logo-container {
+        margin-bottom: 10px;
+      }
+
+      .school-logo {
+        max-width: 200px;
+        height: auto;
+      }
+
+      .school-info {
+        text-align: center;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 32px;
+        color: #2c3e50;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        position: relative;
+        display: inline-block;
+      }
+
+      .header h1:before,
+      .header h1:after {
+        content: "★";
+        color: #3498db;
+        font-size: 18px;
+        position: relative;
+        top: -5px;
+        margin: 0 10px;
+      }
+
+      .header p {
+        margin: 8px 0;
+        font-size: 16px;
+        color: #34495e;
+      }
+      .report-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 15px 0 10px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        letter-spacing: 1px;
+      }
+
+      .report-subtitle {
+        font-size: 16px;
+        color: #34495e;
+        margin: 5px 0 15px;
+        background-color: #f8f9fa;
+        padding: 8px 15px;
+        border-radius: 5px;
+        display: inline-block;
+      }
+
+      .report-detail {
+        font-weight: 600;
+        padding: 0 5px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+        table-layout: auto;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+        white-space: nowrap;
+      }
+      th {
+        background-color: #3498db;
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+      }
+      tr:nth-child(even) {
+        background-color: #f2f7ff;
+      }
+      tr:hover {
+        background-color: #e8f4fc;
+      }
+      .student-name {
+        text-align: left;
+        font-weight: 500;
+      }
+      .total-cell {
+        font-weight: bold;
+        background-color: #eaf2f8;
+      }
+      .avg-cell {
+        font-weight: bold;
+        color: #2980b9;
+      }
+      .grade-cell {
+        font-weight: bold;
+      }
+      .rank-cell {
+        font-weight: bold;
+        background-color: #f5f5f5;
+      }
+      .averages-row {
+        background-color: #eaf2f8;
+        font-weight: bold;
+      }
+      .average-label {
+        text-align: center;
+        background-color: #3498db;
+        color: white;
+      }
+      .subject-average,
+      .total-average {
+        background-color: #d6eaf8;
+        color: #2980b9;
+      }
+      .class-average-row {
+        background-color: #d4efdf;
+      }
+      .class-average-row .average-label {
+        background-color: #27ae60;
+      }
+      .empty-cell {
+        background-color: #f9f9f9;
+      }
+      .stats {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border-left: 5px solid #3498db;
+      }
+      .stats h3 {
+        margin-top: 0;
+        color: #2c3e50;
+        font-size: 18px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-top: 15px;
+      }
+      .stat-item {
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .exceeding {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .meeting {
+        background-color: #cce5ff;
+        color: #004085;
+      }
+      .approaching {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+      .below {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      .footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 0.9em;
+        color: #7f8c8d;
+        border-top: 1px solid #ecf0f1;
+        padding-top: 20px;
+      }
+      .signature-section {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 50px;
+        margin-bottom: 30px;
+      }
+      .signature-box {
+        width: 30%;
+        text-align: center;
+      }
+      .signature-line {
+        border-bottom: 1px solid #333;
+        margin-bottom: 5px;
+        height: 40px;
+      }
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .back-btn,
+      .edit-btn,
+      .delete-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+      }
+      .back-btn {
+        background-color: #3498db;
+      }
+      .back-btn:hover {
+        background-color: #2980b9;
+      }
+      .edit-btn {
+        background-color: #27ae60;
+      }
+      .edit-btn:hover {
+        background-color: #219653;
+      }
+      .delete-btn {
+        background-color: #e74c3c;
+      }
+      .delete-btn:hover {
+        background-color: #c0392b;
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 50%;
+        max-width: 500px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .modal-buttons {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+        gap: 10px;
+      }
+      .cancel-btn {
+        background-color: #95a5a6;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .cancel-btn:hover {
+        background-color: #7f8c8d;
+      }
+      .confirm-delete-btn {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .confirm-delete-btn:hover {
+        background-color: #c0392b;
+      }
+
+      /* Print Controls Styles */
+      .print-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 5px solid #3498db;
+        align-items: center;
+      }
+
+      .print-btn,
+      .instructions-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: white;
+      }
+
+      .print-btn {
+        background-color: #3498db;
+      }
+
+      .print-btn:hover {
+        background-color: #2980b9;
+      }
+
+      .instructions-toggle {
+        background-color: #f39c12;
+        margin-left: auto;
+      }
+
+      .instructions-toggle:hover {
+        background-color: #d35400;
+      }
+
+      .print-icon,
+      .info-icon {
+        font-style: normal;
+      }
+
+      .instructions-panel {
+        position: absolute;
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+        width: 350px;
+        right: 20px;
+        margin-top: 10px;
+      }
+
+      .instructions-panel h4 {
+        margin-top: 0;
+        color: #2c3e50;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+      }
+
+      .instructions-panel ol {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .instructions-panel li {
+        margin-bottom: 8px;
+      }
+
+      .print-instructions {
+        position: relative;
+      }
+
+      @media print {
         body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
+          background-color: white;
+          padding: 0;
+          margin: 0;
+          font-size: 12pt;
         }
         .report-container {
-            max-width: 100%;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          box-shadow: none;
+          padding: 0;
+          max-width: 100%;
+          margin: 0;
+        }
+        .action-buttons,
+        .print-controls,
+        .delete-btn,
+        .modal {
+          display: none !important;
         }
         .header {
-            text-align: center;
-            margin-bottom: 20px;
+          margin-bottom: 20px;
         }
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            color: #333;
-        }
-        .header p {
-            margin: 5px 0;
-            font-size: 16px;
-            color: #555;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            table-layout: auto;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-            white-space: nowrap;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-            font-weight: bold;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
+        .school-logo {
+          max-width: 150px;
+          height: auto;
         }
         .stats {
-            margin-top: 20px;
+          background-color: white;
+          border-left: 2px solid #3498db;
+          break-inside: avoid;
         }
-        .stats h3 {
-            font-size: 16px;
-            color: #333;
+        .stat-item {
+          border: 1px solid #ddd;
         }
-        .stats p {
-            margin: 5px 0;
-            font-size: 14px;
+        table {
+          width: 100%;
+          page-break-inside: auto;
+        }
+        tr {
+          page-break-inside: avoid;
+          page-break-after: auto;
+        }
+        thead {
+          display: table-header-group;
+        }
+        tfoot {
+          display: table-footer-group;
+        }
+        .signature-section {
+          break-inside: avoid;
+          break-before: auto;
+          margin-top: 30px;
         }
         .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #777;
+          position: fixed;
+          bottom: 0;
+          width: 100%;
+          text-align: center;
         }
-        .back-btn {
-            display: inline-block;
-            margin-bottom: 20px;
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
+        @page {
+          size: landscape;
+          margin: 1cm;
         }
-        .back-btn:hover {
-            background-color: #0056b3;
-        }
+      }
     </style>
-</head>
-<body>
+    <script>
+      function confirmDelete(grade, stream, term, assessmentType) {
+        // Set up the delete form action
+        const deleteForm = document.getElementById("deleteForm");
+        deleteForm.action = `/classteacher/delete_marksheet/${grade}/${stream}/${term}/${assessmentType}`;
+
+        // Update the confirmation message
+        const deleteMessage = document.getElementById("deleteMessage");
+        deleteMessage.textContent = `Are you sure you want to delete all marks for ${grade} ${stream} in ${term} ${assessmentType}? This action cannot be undone.`;
+
+        // Show the modal
+        const modal = document.getElementById("deleteModal");
+        modal.style.display = "block";
+      }
+
+      function closeModal() {
+        // Hide the modal
+        const modal = document.getElementById("deleteModal");
+        modal.style.display = "none";
+      }
+
+      // Close the modal if the user clicks outside of it
+      window.onclick = function (event) {
+        const modal = document.getElementById("deleteModal");
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+
+      // Function to toggle printing instructions
+      function toggleInstructions() {
+        const instructionsPanel = document.getElementById("instructions-panel");
+        if (instructionsPanel.style.display === "none") {
+          instructionsPanel.style.display = "block";
+        } else {
+          instructionsPanel.style.display = "none";
+        }
+      }
+
+      // Close instructions panel when clicking outside of it
+      document.addEventListener("click", function (event) {
+        const instructionsPanel = document.getElementById("instructions-panel");
+        const instructionsToggle = document.querySelector(
+          ".instructions-toggle"
+        );
+
+        if (
+          instructionsPanel.style.display === "block" &&
+          !instructionsPanel.contains(event.target) &&
+          event.target !== instructionsToggle
+        ) {
+          instructionsPanel.style.display = "none";
+        }
+      });
+    </script>
+  </head>
+  <body>
     <div class="report-container">
-        <a href="{{ url_for('classteacher.dashboard') }}" class="back-btn">Back to Dashboard</a>
-        <div class="header">
-            <h1>KIRIMA PRIMARY SCHOOL</h1>
-            <p>GRADE {{ grade }} - {{ education_level.upper() }} MARKSHEET: AVERAGE SCORE</p>
-            <p>STREAM: {{ stream }}  TERM: {{ term.replace('_', ' ').upper() }}  ASSESSMENT: {{ assessment_type.upper() }}</p>
-        </div>
+      <div class="action-buttons">
+        <a href="{{ url_for('classteacher.dashboard') }}" class="back-btn"
+          >Back to Dashboard</a
+        >
+        <a
+          href="{{ url_for('classteacher.edit_class_marks', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}"
+          class="edit-btn"
+          >Edit Marks</a
+        >
+        <button
+          onclick="confirmDelete('{{ grade }}', '{{ stream }}', '{{ term }}', '{{ assessment_type }}')"
+          class="delete-btn"
+        >
+          Delete Marksheet
+        </button>
+      </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>S/N</th>
-                    <th>STUDENT NAME</th>
-                    {% for abbr in abbreviated_subjects %}
-                    <th>{{ abbr }}</th>
-                    {% endfor %}
-                    <th>TOTAL</th>
-                    <th>AVG %</th>
-                    <th>GRD</th>
-                    <th>RANK</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for student_data in class_data %}
-                <tr>
-                    <td>{{ student_data.index }}</td> <!-- Use the precomputed index -->
-                    <td>{{ student_data.student.upper() }}</td>
-                    {% for subject in subjects %}
-                    <td>{{ student_data.marks.get(subject, 0) | int }}</td>
-                    {% endfor %}
-                    <td>{{ student_data.total_marks | int }}</td>
-                    <td>{{ student_data.average_percentage | round(0) }}%</td>
-                    <td>{{ student_data.performance_category }}</td> <!-- Use precomputed performance category -->
-                    <td>{{ student_data.rank }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <div class="stats">
-            <h3>Performance Summary:</h3>
-            <p>E.E (Exceeding Expectation, ≥75%): {{ stats.exceeding }} learners</p>
-            <p>M.E (Meeting Expectation, 50-74%): {{ stats.meeting }} learners</p>
-            <p>A.E (Approaching Expectation, 30-49%): {{ stats.approaching }} learners</p>
-            <p>B.E (Below Expectation, <30%): {{ stats.below }} learners</p>
+      <!-- Print-Friendly Controls -->
+      <div class="print-controls">
+        <button onclick="window.print()" class="print-btn">
+          <i class="print-icon">🖨️</i> Print Report
+        </button>
+        <a
+          href="{{ url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}"
+          style="
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+          "
+        >
+          <i style="font-style: normal">👨‍👩‍👧‍👦</i> View Individual Reports
+        </a>
+        <div class="print-instructions">
+          <button onclick="toggleInstructions()" class="instructions-toggle">
+            <i class="info-icon">ℹ️</i> Printing Instructions
+          </button>
+          <div
+            id="instructions-panel"
+            class="instructions-panel"
+            style="display: none"
+          >
+            <h4>How to Print/Save This Report:</h4>
+            <ol>
+              <li>
+                Click the <strong>Print Report</strong> button to open your
+                browser's print dialog.
+              </li>
+              <li>
+                Select your printer or choose "Save as PDF" to create a PDF
+                file.
+              </li>
+              <li>
+                For best results, use landscape orientation and enable
+                background colors.
+              </li>
+              <li>Set margins to "Narrow" or "None" for the best layout.</li>
+            </ol>
+          </div>
         </div>
+      </div>
 
-        <div class="footer">
-            <p>Generated on: {{ current_date }}</p>
-            <p>Kirima Primary School powered by CbcTeachkit</p>
+      <!-- Delete Confirmation Modal -->
+      <div id="deleteModal" class="modal">
+        <div class="modal-content">
+          <h3>Confirm Deletion</h3>
+          <p id="deleteMessage">
+            Are you sure you want to delete this marksheet? This action cannot
+            be undone.
+          </p>
+          <div class="modal-buttons">
+            <form id="deleteForm" method="POST" action="">
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
+              <button type="button" onclick="closeModal()" class="cancel-btn">
+                Cancel
+              </button>
+              <button type="submit" class="confirm-delete-btn">Delete</button>
+            </form>
+          </div>
         </div>
+      </div>
+      <div class="header">
+        <div class="logo-container">
+          <img
+            src="{{ url_for('static', filename='images/kirima_logo.png') }}"
+            alt="Kirima Primary School Logo"
+            class="school-logo"
+          />
+        </div>
+        <div class="school-info">
+          <h1>KIRIMA PRIMARY SCHOOL</h1>
+          <p>P.O. BOX 123, KIRIMA | TEL: +254 123 456789</p>
+          <p>
+            Email: info@kirimaprimary.ac.ke | Website: www.kirimaprimary.ac.ke
+          </p>
+        </div>
+        <div class="report-title">{{ education_level.upper() }} MARKSHEET</div>
+        <p class="report-subtitle">
+          <span class="report-detail"
+            >GRADE: {{ grade.replace('Grade ', '') }}</span
+          >
+          |
+          <span class="report-detail"
+            >STREAM: {{ stream.replace('Stream ', '') }}</span
+          >
+          |
+          <span class="report-detail"
+            >TERM: {{ term.replace('_', ' ').upper() }}</span
+          >
+          |
+          <span class="report-detail"
+            >ASSESSMENT: {{ assessment_type.upper() }}</span
+          >
+        </p>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 5%">S/N</th>
+            <th style="width: 20%">STUDENT NAME</th>
+            {% for abbr in abbreviated_subjects %}
+            <th>{{ abbr }}</th>
+            {% endfor %}
+            <th style="width: 8%">TOTAL</th>
+            <th style="width: 8%">AVG %</th>
+            <th style="width: 6%">GRD</th>
+            <th style="width: 6%">RANK</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student_data in class_data %}
+          <tr>
+            <td>{{ student_data.index }}</td>
+            <td class="student-name">{{ student_data.student.upper() }}</td>
+            {% for subject in subject_names %}
+            <td>{{ student_data.filtered_marks.get(subject, 0) | int }}</td>
+            {% endfor %}
+            <td class="total-cell">
+              {{ student_data.filtered_total | int }}/{{
+              student_data.total_possible_marks }}
+            </td>
+            <td class="avg-cell">
+              {{ student_data.filtered_average | round(0) }}%
+            </td>
+            <td class="grade-cell">{{ student_data.performance_category }}</td>
+            <td class="rank-cell">{{ student_data.rank }}</td>
+          </tr>
+          {% endfor %}
+
+          <!-- Subject Averages Row -->
+          <tr class="averages-row">
+            <td colspan="2" class="average-label">SUBJECT AVERAGES</td>
+            {% for subject in subject_names %}
+            <td class="subject-average">
+              {{ subject_averages.get(subject, 0) | round(2) }}
+            </td>
+            {% endfor %}
+            <td colspan="4" class="empty-cell"></td>
+          </tr>
+
+          <!-- Class Average Row -->
+          <tr class="averages-row class-average-row">
+            <td colspan="2" class="average-label">CLASS AVERAGE</td>
+            <td colspan="{{ subject_names|length }}" class="empty-cell"></td>
+
+            <!-- Class Average Total -->
+            <td class="total-average">{{ class_average | round(2) }}</td>
+
+            <!-- Class Average Percentage -->
+            {% set avg_percentage_total = 0 %} {% set avg_student_count = 0 %}
+            {% for student_data in class_data %} {% if
+            student_data.filtered_average > 0 %} {% set avg_percentage_total =
+            avg_percentage_total + student_data.filtered_average %} {% set
+            avg_student_count = avg_student_count + 1 %} {% endif %} {% endfor
+            %}
+            <td class="avg-cell">
+              {% if avg_student_count > 0 %} {{ (avg_percentage_total /
+              avg_student_count) | round(2) }}% {% else %} 0% {% endif %}
+            </td>
+
+            <td colspan="2" class="empty-cell"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="stats">
+        <h3>Performance Summary</h3>
+        <div class="stats-grid">
+          <div class="stat-item exceeding">
+            <strong>EE1/EE2 (Exceeding Expectation, ≥75%):</strong> {{
+            stats.exceeding }} learners
+          </div>
+          <div class="stat-item meeting">
+            <strong>ME1/ME2 (Meeting Expectation, 41-74%):</strong> {{
+            stats.meeting }} learners
+          </div>
+          <div class="stat-item approaching">
+            <strong>AE1/AE2 (Approaching Expectation, 21-40%):</strong> {{
+            stats.approaching }} learners
+          </div>
+          <div class="stat-item below">
+            <strong>BE1/BE2 (Below Expectation, <21%):</strong> {{ stats.below
+            }} learners
+          </div>
+        </div>
+      </div>
+
+      <div class="signature-section">
+        <div class="signature-box">
+          <div class="signature-line"></div>
+          <p>Class Teacher</p>
+        </div>
+        <div class="signature-box">
+          <div class="signature-line"></div>
+          <p>Deputy Head Teacher</p>
+        </div>
+        <div class="signature-box">
+          <div class="signature-line"></div>
+          <p>Head Teacher</p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>Generated on: {{ current_date }}</p>
+        <p>Kirima Primary School | Powered by CbcTeachkit</p>
+      </div>
     </div>
-</body>
+  </body>
 </html>

@@ -412,6 +412,15 @@
                         <input type="file" name="student_file" id="student_file" accept=".csv,.xlsx" required>
                     </div>
                     <p><small>Expected format: <code>name,admission_number,gender</code> (gender is optional)</small></p>
+                    <div class="template-links" style="margin-bottom: 15px;">
+                        <p><strong>Download Template:</strong></p>
+                        <a href="{{ url_for('classteacher.download_student_template', format='xlsx') }}" class="download-btn" style="display: inline-block; margin-right: 10px;">
+                            <i class="fa fa-download"></i> Excel Template
+                        </a>
+                        <a href="{{ url_for('classteacher.download_student_template', format='csv') }}" class="download-btn" style="display: inline-block;">
+                            <i class="fa fa-download"></i> CSV Template
+                        </a>
+                    </div>
                     <button type="submit" class="manage-btn">Upload Students</button>
                 </form>
             </div>

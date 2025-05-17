@@ -5,10 +5,12 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.security import generate_password_hash
 import pandas as pd
 import os
+from io import BytesIO
 from werkzeug.utils import secure_filename
 from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark, Teacher, TeacherSubjectAssignment
 from ..utils.constants import educational_level_mapping
 from ..services import is_authenticated, get_role, get_class_report_data, generate_individual_report, generate_class_report_pdf
+from ..services.report_service import generate_class_report_pdf_from_html, get_performance_remarks
 from ..extensions import db
 from ..utils import get_performance_category
 from functools import wraps
@@ -26,7 +28,7 @@ def classteacher_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@classteacher_bp.route('/')
+@classteacher_bp.route('/', methods=['GET', 'POST'])
 @classteacher_required
 def dashboard():
     """Route for the class teacher dashboard."""
@@ -101,7 +103,7 @@ def dashboard():
     grades_dict = {grade.level: grade.id for grade in Grade.query.all()}
     terms = [term.name for term in Term.query.all()]
     assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
-    streams = [f"Stream {stream.name}" for stream in Stream.query.all()]
+    streams = []  # Empty list - streams will be populated via JavaScript
     subjects = [subject.name for subject in Subject.query.all()]
 
     # Initialize variables
@@ -119,28 +121,406 @@ def dashboard():
     class_data = []
     stats = {}
 
-    # Fetch recent reports
+    # Fetch recent reports with improved sorting and more entries
     recent_reports = []
-    marks = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType).all()
+    # Get the sort parameter from the request, default to date
+    sort_by = request.args.get('sort', 'date')
+    filter_grade = request.args.get('filter_grade', '')
+    filter_term = request.args.get('filter_term', '')
+
+    # Build the query with joins
+    marks_query = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType)
+
+    # Apply filters if provided
+    if filter_grade:
+        marks_query = marks_query.filter(Grade.level == filter_grade)
+    if filter_term:
+        marks_query = marks_query.filter(Term.name == filter_term)
+
+    # Apply sorting
+    if sort_by == 'grade':
+        marks_query = marks_query.order_by(Grade.level)
+    elif sort_by == 'term':
+        marks_query = marks_query.order_by(Term.name)
+    else:  # Default to date
+        marks_query = marks_query.order_by(Mark.created_at.desc())
+
+    # Execute the query
+    marks = marks_query.all()
+
+    # Process the results
     seen_combinations = set()
     for mark in marks:
         combination = (mark.student.stream.grade.level, mark.student.stream.name, mark.term.name, mark.assessment_type.name)
         if combination not in seen_combinations:
             seen_combinations.add(combination)
+            # Get the count of marks for this combination
+            mark_count = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType).filter(
+                Grade.level == mark.student.stream.grade.level,
+                Stream.name == mark.student.stream.name,
+                Term.name == mark.term.name,
+                AssessmentType.name == mark.assessment_type.name
+            ).count()
+
             recent_reports.append({
                 'grade': mark.student.stream.grade.level,
                 'stream': f"Stream {mark.student.stream.name}",
                 'term': mark.term.name,
                 'assessment_type': mark.assessment_type.name,
-                'date': mark.created_at.strftime('%Y-%m-%d') if mark.created_at else 'N/A'
+                'date': mark.created_at.strftime('%Y-%m-%d') if mark.created_at else 'N/A',
+                'mark_count': mark_count,
+                'id': len(recent_reports) + 1  # Add an ID for easier reference
             })
-            if len(recent_reports) >= 5:  # Limit to 5 recent reports
+            if len(recent_reports) >= 10:  # Increased limit to 10 recent reports
                 break
 
     # Handle form submission
     if request.method == "POST":
-        # Process form data here
-        pass
+        # Handle upload marks request
+        if "upload_marks" in request.form:
+            education_level = request.form.get("education_level")
+            grade_level = request.form.get("grade")
+            stream_name = request.form.get("stream")
+            term = request.form.get("term")
+            assessment_type = request.form.get("assessment_type")
+            total_marks = request.form.get("total_marks", type=int, default=0)
+
+            if not all([education_level, grade_level, stream_name, term, assessment_type, total_marks > 0]):
+                error_message = "Please fill in all fields before loading students and subjects"
+            else:
+                # Extract stream letter from "Stream X" format
+                stream_letter = stream_name.replace("Stream ", "") if stream_name.startswith("Stream ") else stream_name
+
+                # Get the stream object
+                stream_obj = Stream.query.join(Grade).filter(Grade.level == grade_level, Stream.name == stream_letter).first()
+
+                if stream_obj:
+                    # Get students for this stream
+                    students = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name).all()
+
+                    # Get subjects for this education level
+                    subjects = [subject.name for subject in Subject.query.filter_by(education_level=education_level).all()]
+
+                    if students and subjects:
+                        show_students = True
+                        show_download_button = False
+                        show_individual_report_button = False
+                    else:
+                        if not students:
+                            error_message = f"No students found for grade {grade_level} stream {stream_letter}"
+                        else:
+                            error_message = f"No subjects found for {education_level}"
+                else:
+                    error_message = f"Stream {stream_letter} not found for grade {grade_level}"
+
+        # Handle submit marks request
+        elif "submit_marks" in request.form:
+            education_level = request.form.get("education_level")
+            grade_level = request.form.get("grade")
+            stream_name = request.form.get("stream")
+            term = request.form.get("term")
+            assessment_type = request.form.get("assessment_type")
+            total_marks = request.form.get("total_marks", type=int, default=0)
+
+            if not all([education_level, grade_level, stream_name, term, assessment_type, total_marks > 0]):
+                error_message = "Missing required information"
+            else:
+                # Extract stream letter from "Stream X" format
+                stream_letter = stream_name.replace("Stream ", "") if stream_name.startswith("Stream ") else stream_name
+
+                # Get the stream, term, and assessment type objects
+                stream_obj = Stream.query.join(Grade).filter(Grade.level == grade_level, Stream.name == stream_letter).first()
+                term_obj = Term.query.filter_by(name=term).first()
+                assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+                if not (stream_obj and term_obj and assessment_type_obj):
+                    error_message = "Invalid stream, term, or assessment type"
+                else:
+                    # Get students for this stream
+                    students = Student.query.filter_by(stream_id=stream_obj.id).all()
+
+                    # Get subjects for this education level
+                    subjects = Subject.query.filter_by(education_level=education_level).all()
+
+                    if not (students and subjects):
+                        error_message = "No students or subjects found"
+                    else:
+                        # Process marks for each student and subject
+                        marks_added = 0
+                        marks_updated = 0
+
+                        for student in students:
+                            for subject in subjects:
+                                # Get the mark value and subject-specific total marks from the form
+                                mark_key = f"mark_{student.name.replace(' ', '_')}_{subject.name.replace(' ', '_')}"
+                                mark_value = request.form.get(mark_key, '')
+
+                                # Get the subject-specific total marks
+                                subject_index = subjects.index(subject)
+                                total_marks_key = f"total_marks_{subject_index}"
+                                subject_total_marks = request.form.get(total_marks_key, type=int, default=total_marks)
+
+                                # Get the percentage value (calculated by JavaScript)
+                                percentage_key = f"percentage_{student.name.replace(' ', '_')}_{subject.name.replace(' ', '_')}"
+                                percentage_value = request.form.get(percentage_key, type=float, default=0.0)
+
+                                if mark_value and mark_value.isdigit():
+                                    mark = int(mark_value)
+                                    if 0 <= mark <= subject_total_marks:
+                                        # Calculate percentage if not provided
+                                        if percentage_value == 0.0 and subject_total_marks > 0:
+                                            percentage_value = (mark / subject_total_marks) * 100
+
+                                        # Check if mark already exists
+                                        existing_mark = Mark.query.filter_by(
+                                            student_id=student.id,
+                                            subject_id=subject.id,
+                                            term_id=term_obj.id,
+                                            assessment_type_id=assessment_type_obj.id
+                                        ).first()
+
+                                        if existing_mark:
+                                            # Update existing mark
+                                            existing_mark.mark = mark
+                                            existing_mark.total_marks = subject_total_marks
+                                            # Store percentage in a field if available
+                                            if hasattr(existing_mark, 'percentage'):
+                                                existing_mark.percentage = percentage_value
+                                            marks_updated += 1
+                                        else:
+                                            # Create new mark
+                                            new_mark = Mark(
+                                                student_id=student.id,
+                                                subject_id=subject.id,
+                                                term_id=term_obj.id,
+                                                assessment_type_id=assessment_type_obj.id,
+                                                mark=mark,
+                                                total_marks=subject_total_marks
+                                            )
+                                            # Store percentage in a field if available
+                                            if hasattr(Mark, 'percentage'):
+                                                new_mark.percentage = percentage_value
+                                            db.session.add(new_mark)
+                                            marks_added += 1
+
+                        # Commit changes to the database
+                        db.session.commit()
+
+                        # Show success message
+                        flash(f"Successfully saved {marks_added} new marks and updated {marks_updated} existing marks.", "success")
+
+                        # Enable download and individual report buttons
+                        show_download_button = True
+                        show_individual_report_button = True
+
+                        # Keep the form values for reference
+                        education_level = education_level
+                        grade = grade_level
+                        stream = stream_name
+                        term = term
+                        assessment_type = assessment_type
+                        total_marks = total_marks
+
+                        # Redirect to the dashboard with success parameters
+                        return redirect(url_for('classteacher.dashboard',
+                                              grade=grade_level,
+                                              stream=stream_name,
+                                              term=term,
+                                              assessment_type=assessment_type,
+                                              show_download=1,
+                                              show_individual=1))
+
+        # Handle bulk upload marks request
+        elif "bulk_upload_marks" in request.form:
+            if 'marks_file' not in request.files:
+                flash("No file selected.", "error")
+                return redirect(url_for('classteacher.dashboard'))
+
+            file = request.files['marks_file']
+
+            if file.filename == '':
+                flash("No file selected.", "error")
+                return redirect(url_for('classteacher.dashboard'))
+
+            # Get form data
+            education_level = request.form.get("education_level")
+            grade_level = request.form.get("grade")
+            stream_name = request.form.get("stream")
+            term = request.form.get("term")
+            assessment_type = request.form.get("assessment_type")
+            total_marks = request.form.get("total_marks", type=int, default=100)
+
+            if not all([education_level, grade_level, stream_name, term, assessment_type]):
+                flash("Please fill in all required fields.", "error")
+                return redirect(url_for('classteacher.dashboard'))
+
+            # Extract stream letter from "Stream X" format
+            stream_letter = stream_name.replace("Stream ", "") if stream_name.startswith("Stream ") else stream_name
+
+            # Get the stream, term, and assessment type objects
+            stream_obj = Stream.query.join(Grade).filter(Grade.level == grade_level, Stream.name == stream_letter).first()
+            term_obj = Term.query.filter_by(name=term).first()
+            assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+            if not (stream_obj and term_obj and assessment_type_obj):
+                flash("Invalid stream, term, or assessment type.", "error")
+                return redirect(url_for('classteacher.dashboard'))
+
+            try:
+                # Check file extension
+                file_ext = os.path.splitext(file.filename)[1].lower()
+
+                if file_ext == '.csv':
+                    df = pd.read_csv(file)
+                elif file_ext in ['.xlsx', '.xls']:
+                    df = pd.read_excel(file)
+                else:
+                    flash("Unsupported file format. Please upload a CSV or Excel file.", "error")
+                    return redirect(url_for('classteacher.dashboard'))
+
+                # Process the file
+                marks_added = 0
+                marks_updated = 0
+                errors = 0
+
+                # Get all students in this stream
+                students = {student.name: student for student in Student.query.filter_by(stream_id=stream_obj.id).all()}
+
+                # Get all subjects for this education level
+                subjects = {subject.name: subject for subject in Subject.query.filter_by(education_level=education_level).all()}
+
+                # Check if we have the required columns
+                if 'Student Name' not in df.columns and 'Admission Number' not in df.columns:
+                    flash("File must contain either 'Student Name' or 'Admission Number' column.", "error")
+                    return redirect(url_for('classteacher.dashboard'))
+
+                # Process each row (student)
+                for _, row in df.iterrows():
+                    # Identify the student
+                    student = None
+
+                    if 'Student Name' in df.columns and row['Student Name'] in students:
+                        student = students[row['Student Name']]
+                    elif 'Admission Number' in df.columns:
+                        # Find student by admission number
+                        student_obj = Student.query.filter_by(
+                            admission_number=str(row['Admission Number']),
+                            stream_id=stream_obj.id
+                        ).first()
+                        if student_obj:
+                            student = student_obj
+
+                    if not student:
+                        errors += 1
+                        continue
+
+                    # Process each subject column
+                    for subject_name in subjects.keys():
+                        if subject_name in df.columns:
+                            mark_value = row[subject_name]
+
+                            # Skip empty or non-numeric values
+                            if pd.isna(mark_value) or not (isinstance(mark_value, (int, float)) or (isinstance(mark_value, str) and mark_value.isdigit())):
+                                continue
+
+                            # Convert to integer
+                            mark = int(float(mark_value))
+
+                            # Validate mark
+                            if 0 <= mark <= total_marks:
+                                # Check if mark already exists
+                                existing_mark = Mark.query.filter_by(
+                                    student_id=student.id,
+                                    subject_id=subjects[subject_name].id,
+                                    term_id=term_obj.id,
+                                    assessment_type_id=assessment_type_obj.id
+                                ).first()
+
+                                if existing_mark:
+                                    # Update existing mark
+                                    existing_mark.mark = mark
+                                    existing_mark.total_marks = total_marks
+                                    marks_updated += 1
+                                else:
+                                    # Create new mark
+                                    new_mark = Mark(
+                                        student_id=student.id,
+                                        subject_id=subjects[subject_name].id,
+                                        term_id=term_obj.id,
+                                        assessment_type_id=assessment_type_obj.id,
+                                        mark=mark,
+                                        total_marks=total_marks
+                                    )
+                                    db.session.add(new_mark)
+                                    marks_added += 1
+                            else:
+                                errors += 1
+
+                # Commit changes to the database
+                db.session.commit()
+
+                # Show success message
+                if marks_added > 0 or marks_updated > 0:
+                    flash(f"Successfully processed {marks_added + marks_updated} marks ({marks_added} new, {marks_updated} updated). {errors} errors encountered.", "success")
+
+                    # Redirect to the dashboard with success parameters
+                    return redirect(url_for('classteacher.dashboard',
+                                          grade=grade_level,
+                                          stream=stream_name,
+                                          term=term,
+                                          assessment_type=assessment_type,
+                                          show_download=1,
+                                          show_individual=1))
+                else:
+                    flash(f"No marks were processed. {errors} errors encountered.", "error")
+                    return redirect(url_for('classteacher.dashboard'))
+
+            except Exception as e:
+                flash(f"Error processing file: {str(e)}", "error")
+                return redirect(url_for('classteacher.dashboard'))
+
+        # Handle generate grade marksheet request
+        elif "generate_stream_marksheet" in request.form or "download_stream_marksheet" in request.form:
+            grade = request.form.get("stream_grade")
+            term = request.form.get("stream_term")
+            assessment_type = request.form.get("stream_assessment_type")
+
+            if not all([grade, term, assessment_type]):
+                flash("Please select grade, term, and assessment type.", "error")
+                return redirect(url_for('classteacher.dashboard'))
+
+            action = "preview" if "generate_stream_marksheet" in request.form else "download"
+
+            # Redirect to the grade marksheet route
+            return redirect(url_for('classteacher.generate_grade_marksheet',
+                                   grade=grade,
+                                   term=term,
+                                   assessment_type=assessment_type,
+                                   action=action))
+
+    # Check if a marksheet was just deleted
+    marksheet_deleted = session.pop('marksheet_deleted', False)
+    deleted_marksheet_info = session.pop('deleted_marksheet_info', None)
+
+    # If a marksheet was deleted, add a special confirmation message
+    if marksheet_deleted and deleted_marksheet_info:
+        grade_info = deleted_marksheet_info.get('grade', '')
+        stream_info = deleted_marksheet_info.get('stream', '')
+        term_info = deleted_marksheet_info.get('term', '')
+        assessment_info = deleted_marksheet_info.get('assessment_type', '')
+        count_info = deleted_marksheet_info.get('count', 0)
+
+        # Add a special confirmation message
+        confirmation_message = f"""
+        <div class="deletion-confirmation">
+            <h3>Marksheet Deleted Successfully</h3>
+            <p>The marksheet for <strong>{grade_info} {stream_info}</strong> in <strong>{term_info} {assessment_info}</strong> has been permanently deleted.</p>
+            <p>A total of <strong>{count_info} marks</strong> were removed from the database.</p>
+            <p>If you need to recreate this marksheet, you will need to enter all the marks again.</p>
+        </div>
+        """
+    else:
+        confirmation_message = ""
 
     # Render the class teacher dashboard
     return render_template(
@@ -166,7 +546,154 @@ def dashboard():
         class_data=class_data,
         recent_reports=recent_reports,
         class_teacher_assignments=class_teacher_assignments,
-        subject_assignments=subject_assignments
+        subject_assignments=subject_assignments,
+        confirmation_message=confirmation_message
+    )
+
+@classteacher_bp.route('/all_reports', methods=['GET'])
+@classteacher_required
+def all_reports():
+    """Route for viewing all reports with advanced filtering and efficient database-level pagination."""
+    # Get filter and sort parameters
+    sort_by = request.args.get('sort', 'date')
+    filter_grade = request.args.get('filter_grade', '')
+    filter_term = request.args.get('filter_term', '')
+    filter_assessment = request.args.get('filter_assessment', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 20  # Number of reports per page
+
+    # Import SQLAlchemy functions for advanced queries
+    from sqlalchemy import func, distinct
+    from sqlalchemy.sql import text
+
+    # Create a subquery to get unique combinations with the most recent date
+    # This uses a Common Table Expression (CTE) approach for better performance
+    subquery = db.session.query(
+        Grade.level.label('grade_level'),
+        Stream.name.label('stream_name'),
+        Term.name.label('term_name'),
+        AssessmentType.name.label('assessment_name'),
+        func.max(Mark.created_at).label('latest_date')
+    ).join(
+        Student, Mark.student_id == Student.id
+    ).join(
+        Stream, Student.stream_id == Stream.id
+    ).join(
+        Grade, Stream.grade_id == Grade.id
+    ).join(
+        Term, Mark.term_id == Term.id
+    ).join(
+        AssessmentType, Mark.assessment_type_id == AssessmentType.id
+    )
+
+    # Apply filters
+    if filter_grade:
+        subquery = subquery.filter(Grade.level == filter_grade)
+    if filter_term:
+        subquery = subquery.filter(Term.name == filter_term)
+    if filter_assessment:
+        subquery = subquery.filter(AssessmentType.name == filter_assessment)
+
+    # Group by the combination fields to get unique combinations
+    subquery = subquery.group_by(
+        Grade.level,
+        Stream.name,
+        Term.name,
+        AssessmentType.name
+    )
+
+    # Apply sorting to the subquery
+    if sort_by == 'grade':
+        subquery = subquery.order_by(Grade.level)
+    elif sort_by == 'term':
+        subquery = subquery.order_by(Term.name)
+    else:  # Default to date
+        subquery = subquery.order_by(func.max(Mark.created_at).desc())
+
+    # Convert to a subquery object
+    subquery = subquery.subquery()
+
+    # Main query to get the report data with counts
+    main_query = db.session.query(
+        subquery.c.grade_level,
+        subquery.c.stream_name,
+        subquery.c.term_name,
+        subquery.c.assessment_name,
+        subquery.c.latest_date,
+        func.count(Mark.id).label('mark_count')
+    ).join(
+        Student, Mark.student_id == Student.id
+    ).join(
+        Stream, Student.stream_id == Stream.id
+    ).join(
+        Grade, Stream.grade_id == Grade.id
+    ).join(
+        Term, Mark.term_id == Term.id
+    ).join(
+        AssessmentType, Mark.assessment_type_id == AssessmentType.id
+    ).filter(
+        Grade.level == subquery.c.grade_level,
+        Stream.name == subquery.c.stream_name,
+        Term.name == subquery.c.term_name,
+        AssessmentType.name == subquery.c.assessment_name
+    ).group_by(
+        subquery.c.grade_level,
+        subquery.c.stream_name,
+        subquery.c.term_name,
+        subquery.c.assessment_name,
+        subquery.c.latest_date
+    )
+
+    # Apply the same sorting to the main query
+    if sort_by == 'grade':
+        main_query = main_query.order_by(subquery.c.grade_level)
+    elif sort_by == 'term':
+        main_query = main_query.order_by(subquery.c.term_name)
+    else:  # Default to date
+        main_query = main_query.order_by(subquery.c.latest_date.desc())
+
+    # Get the total count for pagination
+    total_count = main_query.count()
+
+    # Apply pagination at the database level
+    paginated_query = main_query.paginate(page=page, per_page=per_page, error_out=False)
+
+    # Format the results
+    reports = []
+    for idx, (grade_level, stream_name, term_name, assessment_name, created_at, mark_count) in enumerate(paginated_query.items, start=1):
+        reports.append({
+            'id': (page - 1) * per_page + idx,
+            'grade': grade_level,
+            'stream': f"Stream {stream_name}",
+            'term': term_name,
+            'assessment_type': assessment_name,
+            'date': created_at.strftime('%Y-%m-%d') if created_at else 'N/A',
+            'mark_count': mark_count
+        })
+
+    # Get all grades, terms, and assessment types for the filter dropdowns
+    grades = [grade.level for grade in Grade.query.all()]
+    terms = [term.name for term in Term.query.all()]
+    assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
+
+    return render_template(
+        'all_reports.html',
+        reports=reports,
+        total_reports=total_count,
+        page=page,
+        per_page=per_page,
+        total_pages=paginated_query.pages,
+        has_next=paginated_query.has_next,
+        has_prev=paginated_query.has_prev,
+        next_page=paginated_query.next_num,
+        prev_page=paginated_query.prev_num,
+        grades=grades,
+        terms=terms,
+        assessment_types=assessment_types,
+        sort_by=sort_by,
+        filter_grade=filter_grade,
+        filter_term=filter_term,
+        filter_assessment=filter_assessment
     )
 
 @classteacher_bp.route('/manage_students', methods=['GET', 'POST'])
@@ -545,11 +1072,216 @@ def preview_class_report(grade, stream, term, assessment_type):
         return redirect(url_for('classteacher.dashboard'))
 
     # Get class report data
-    report_data = get_class_report_data(stream_obj.id, term_obj.id, assessment_type_obj.id)
+    report_data = get_class_report_data(grade, stream, term, assessment_type)
 
-    if not report_data:
-        flash(f"No marks found for {grade} Stream {stream[-1]} in {term} {assessment_type}", "error")
+    if not report_data or report_data.get("error"):
+        error_msg = report_data.get("error") if report_data and report_data.get("error") else f"No marks found for {grade} Stream {stream[-1]} in {term} {assessment_type}"
+        flash(error_msg, "error")
         return redirect(url_for('classteacher.dashboard'))
+
+    # Get education level from report_data or determine based on grade
+    if report_data.get("education_level"):
+        education_level_code = report_data.get("education_level")
+        if education_level_code == "lower_primary":
+            education_level = "lower primary"
+        elif education_level_code == "upper_primary":
+            education_level = "upper primary"
+        elif education_level_code == "junior_secondary":
+            education_level = "junior secondary"
+        else:
+            education_level = ""
+    else:
+        # Fallback to determining education level based on grade
+        education_level = ""
+        grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+        if 1 <= grade_num <= 3:
+            education_level = "lower primary"
+        elif 4 <= grade_num <= 6:
+            education_level = "upper primary"
+        elif 7 <= grade_num <= 9:
+            education_level = "junior secondary"
+
+    # Get current date for the report
+    from datetime import datetime
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    # Get the class data from the report
+    class_data = report_data.get("class_data", [])
+
+    # Get subjects for this grade based on education level
+    grade_obj = Grade.query.filter_by(level=grade).first()
+
+    # Get all subjects that have marks for this grade/stream/term/assessment
+    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if grade_obj and stream_obj and term_obj and assessment_type_obj:
+        # Get students in this stream
+        students = Student.query.filter_by(stream_id=stream_obj.id).all()
+        student_ids = [student.id for student in students]
+
+        # First, get subjects for this education level
+        if education_level == "lower primary":
+            education_level_code = "lower_primary"
+        elif education_level == "upper primary":
+            education_level_code = "upper_primary"
+        elif education_level == "junior secondary":
+            education_level_code = "junior_secondary"
+        else:
+            education_level_code = ""
+
+        # Get subjects for this education level
+        if education_level_code:
+            filtered_subjects = Subject.query.filter_by(education_level=education_level_code).all()
+        else:
+            filtered_subjects = Subject.query.all()
+
+        # Get subject IDs for filtering marks
+        filtered_subject_ids = [subject.id for subject in filtered_subjects]
+
+        # Get all marks for these students in this term/assessment for the filtered subjects
+        all_marks = Mark.query.filter(
+            Mark.student_id.in_(student_ids),
+            Mark.subject_id.in_(filtered_subject_ids),
+            Mark.term_id == term_obj.id,
+            Mark.assessment_type_id == assessment_type_obj.id
+        ).all()
+
+        # Get subject names
+        subject_names = [subject.name for subject in filtered_subjects]
+
+        # Create a dictionary of marks by student_id and subject_id for quick lookup
+        marks_dict = {}
+        for mark in all_marks:
+            if mark.student_id not in marks_dict:
+                marks_dict[mark.student_id] = {}
+            marks_dict[mark.student_id][mark.subject_id] = mark.mark
+
+        # Filter class data to only include these subjects
+        for student_data in class_data:
+            student = Student.query.filter_by(name=student_data["student"]).first()
+            if student:
+                # Get marks for this student from the database
+                filtered_marks = {}
+                subject_count = 0
+                total_marks_value = 0
+
+                for subject in filtered_subjects:
+                    if student.id in marks_dict and subject.id in marks_dict[student.id]:
+                        mark_value = marks_dict[student.id][subject.id]
+                        filtered_marks[subject.name] = mark_value
+                        subject_count += 1
+                        total_marks_value += mark_value
+                    else:
+                        filtered_marks[subject.name] = 0
+            else:
+                # Fallback to report data if student not found
+                filtered_marks = {}
+                subject_count = 0
+                total_marks_value = 0
+
+                for subject_name in subject_names:
+                    mark_value = student_data["marks"].get(subject_name, 0)
+                    filtered_marks[subject_name] = mark_value
+                    if mark_value > 0:
+                        subject_count += 1
+                        total_marks_value += mark_value
+
+            student_data["filtered_marks"] = filtered_marks
+            student_data["filtered_total"] = total_marks_value
+
+            # Calculate total possible marks based on number of subjects
+            total_possible = report_data.get("total_marks", 100)
+            total_possible_marks = len(subject_names) * total_possible
+            student_data["total_possible_marks"] = total_possible_marks
+
+            # Recalculate average percentage
+            if subject_count > 0 and total_possible > 0:
+                student_data["filtered_average"] = (total_marks_value / (subject_count * total_possible)) * 100
+            else:
+                student_data["filtered_average"] = 0
+    else:
+        # Use subjects from report data if grade not found
+        subject_names = report_data.get("subjects", [])
+
+    # Create abbreviated subject names for the report header
+    abbreviated_subjects = []
+    for subject in subject_names:
+        words = subject.split()
+        if len(words) > 1:
+            abbreviated = ''.join(word[0].upper() for word in words)
+        else:
+            abbreviated = subject[:3].upper()
+        abbreviated_subjects.append(abbreviated)
+
+    # Sort students by filtered_total in descending order
+    class_data.sort(key=lambda x: x.get("filtered_total", 0), reverse=True)
+
+    # Add performance category and rank to each student's data
+    for i, student_data in enumerate(class_data, 1):
+        student_data["index"] = i
+        student_data["rank"] = i  # Assign rank based on sorted position
+
+        avg = student_data.get("filtered_average", 0)
+        if avg >= 90:
+            student_data["performance_category"] = "EE1"
+        elif avg >= 75:
+            student_data["performance_category"] = "EE2"
+        elif avg >= 58:
+            student_data["performance_category"] = "ME1"
+        elif avg >= 41:
+            student_data["performance_category"] = "ME2"
+        elif avg >= 31:
+            student_data["performance_category"] = "AE1"
+        elif avg >= 21:
+            student_data["performance_category"] = "AE2"
+        elif avg >= 11:
+            student_data["performance_category"] = "BE1"
+        else:
+            student_data["performance_category"] = "BE2"
+
+    # Debug: Print class_data to see what's being passed to the template
+    print("\n\nDEBUG - Class Data:")
+    for student in class_data:
+        print(f"Student: {student['student']}")
+        print(f"Filtered Marks: {student['filtered_marks']}")
+        print(f"Filtered Total: {student['filtered_total']}")
+        print(f"Filtered Average: {student['filtered_average']}")
+        print("---")
+
+    # Debug: Print subject names
+    print("\nDEBUG - Subject Names:", subject_names)
+
+    # Calculate subject averages here in Python code for debugging
+    subject_averages = {}
+    for subject in subject_names:
+        subject_total = 0
+        subject_count = 0
+        for student_data in class_data:
+            mark = student_data['filtered_marks'].get(subject, 0)
+            if mark > 0:
+                subject_total += mark
+                subject_count += 1
+
+        if subject_count > 0:
+            subject_averages[subject] = round(subject_total / subject_count, 2)
+        else:
+            subject_averages[subject] = 0
+
+    # Debug: Print calculated subject averages
+    print("\nDEBUG - Calculated Subject Averages:", subject_averages)
+
+    # Calculate class average
+    class_total = 0
+    student_count = 0
+    for student_data in class_data:
+        if student_data['filtered_total'] > 0:
+            class_total += student_data['filtered_total']
+            student_count += 1
+
+    class_average = round(class_total / student_count, 2) if student_count > 0 else 0
+    print("\nDEBUG - Calculated Class Average:", class_average)
 
     return render_template(
         'preview_class_report.html',
@@ -557,8 +1289,255 @@ def preview_class_report(grade, stream, term, assessment_type):
         stream=stream,
         term=term,
         assessment_type=assessment_type,
-        report_data=report_data
+        report_data=report_data,
+        education_level=education_level,
+        current_date=current_date,
+        subjects=report_data.get("subjects", []),
+        subject_names=subject_names,
+        abbreviated_subjects=abbreviated_subjects,
+        class_data=class_data,
+        stats=report_data.get("stats", {}),
+        subject_averages=subject_averages,  # Pass pre-calculated subject averages
+        class_average=class_average  # Pass pre-calculated class average
     )
+
+@classteacher_bp.route('/edit_class_marks/<grade>/<stream>/<term>/<assessment_type>')
+@classteacher_required
+def edit_class_marks(grade, stream, term, assessment_type):
+    """Route for editing class marks."""
+    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if not (stream_obj and term_obj and assessment_type_obj):
+        flash("Invalid grade, stream, term, or assessment type", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Get class report data
+    report_data = get_class_report_data(grade, stream, term, assessment_type)
+
+    if not report_data or report_data.get("error"):
+        error_msg = report_data.get("error") if report_data and report_data.get("error") else f"No marks found for {grade} Stream {stream[-1]} in {term} {assessment_type}"
+        flash(error_msg, "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Get the class data from the report
+    class_data = report_data.get("class_data", [])
+
+    # Get education level from report_data or determine based on grade
+    if report_data.get("education_level"):
+        education_level_code = report_data.get("education_level")
+        if education_level_code == "lower_primary":
+            education_level = "lower primary"
+        elif education_level_code == "upper_primary":
+            education_level = "upper primary"
+        elif education_level_code == "junior_secondary":
+            education_level = "junior secondary"
+        else:
+            education_level = ""
+    else:
+        # Fallback to determining education level based on grade
+        education_level = ""
+        grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+        if 1 <= grade_num <= 3:
+            education_level = "lower primary"
+        elif 4 <= grade_num <= 6:
+            education_level = "upper primary"
+        elif 7 <= grade_num <= 9:
+            education_level = "junior secondary"
+
+    # Get subjects for this grade based on education level
+    grade_obj = Grade.query.filter_by(level=grade).first()
+    if grade_obj:
+        # Filter subjects by education level
+        if education_level == "lower primary":
+            filtered_subjects = Subject.query.filter_by(education_level="lower_primary").all()
+        elif education_level == "upper primary":
+            filtered_subjects = Subject.query.filter_by(education_level="upper_primary").all()
+        elif education_level == "junior secondary":
+            filtered_subjects = Subject.query.filter_by(education_level="junior_secondary").all()
+        else:
+            filtered_subjects = Subject.query.all()
+
+        # Get subject names and IDs
+        subject_names = [subject.name for subject in filtered_subjects]
+        subject_ids = [subject.id for subject in filtered_subjects]
+    else:
+        # Use subjects from report data if grade not found
+        subject_names = report_data.get("subjects", [])
+        subject_ids = []
+        for subject_name in subject_names:
+            subject = Subject.query.filter_by(name=subject_name).first()
+            if subject:
+                subject_ids.append(subject.id)
+            else:
+                subject_ids.append(0)
+
+    # Get subject total marks from the database
+    subject_total_marks = {}
+    for subject_name, subject_id in zip(subject_names, subject_ids):
+        # Check if any marks exist for this subject to get the total_marks
+        mark = Mark.query.filter_by(
+            subject_id=subject_id,
+            term_id=term_obj.id,
+            assessment_type_id=assessment_type_obj.id
+        ).first()
+
+        if mark:
+            subject_total_marks[subject_name] = mark.total_marks
+        else:
+            # Default to 100 if no marks exist
+            subject_total_marks[subject_name] = 100
+
+    # Get student IDs for the form and fetch actual marks from the database
+    for student_data in class_data:
+        student = Student.query.filter_by(name=student_data["student"]).first()
+        if student:
+            student_data["student_id"] = student.id
+
+            # Get actual marks from the database for this student
+            filtered_marks = {}
+            filtered_raw_marks = {}
+            for subject_name in subject_names:
+                subject = Subject.query.filter_by(name=subject_name).first()
+                if subject:
+                    # Check if mark exists in database
+                    mark = Mark.query.filter_by(
+                        student_id=student.id,
+                        subject_id=subject.id,
+                        term_id=term_obj.id,
+                        assessment_type_id=assessment_type_obj.id
+                    ).first()
+
+                    if mark:
+                        # Store both the standardized mark (out of 100) and the raw mark
+                        total_marks = mark.total_marks if mark.total_marks > 0 else 100
+                        raw_mark = mark.mark
+
+                        # Calculate standardized mark (out of 100)
+                        standardized_mark = (raw_mark / total_marks) * 100
+
+                        filtered_marks[subject_name] = standardized_mark
+                        filtered_raw_marks[subject_name] = raw_mark
+                    else:
+                        # If no mark in database, use the one from report data if available
+                        filtered_marks[subject_name] = student_data["marks"].get(subject_name, 0)
+                        filtered_raw_marks[subject_name] = student_data["marks"].get(subject_name, 0)
+                else:
+                    filtered_marks[subject_name] = student_data["marks"].get(subject_name, 0)
+                    filtered_raw_marks[subject_name] = student_data["marks"].get(subject_name, 0)
+        else:
+            student_data["student_id"] = 0
+            # Filter marks to only include these subjects
+            filtered_marks = {subject: student_data["marks"].get(subject, 0) for subject in subject_names}
+            filtered_raw_marks = {subject: student_data["marks"].get(subject, 0) for subject in subject_names}
+
+        student_data["filtered_marks"] = filtered_marks
+        student_data["filtered_raw_marks"] = filtered_raw_marks
+
+    return render_template(
+        'edit_class_marks.html',
+        grade=grade,
+        stream=stream,
+        term=term,
+        assessment_type=assessment_type,
+        class_data=class_data,
+        subject_names=subject_names,
+        subject_ids=subject_ids,
+        subject_total_marks=subject_total_marks,
+        education_level=education_level
+    )
+
+@classteacher_bp.route('/update_class_marks/<grade>/<stream>/<term>/<assessment_type>', methods=['POST'])
+@classteacher_required
+def update_class_marks(grade, stream, term, assessment_type):
+    """Route for updating class marks."""
+    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if not (stream_obj and term_obj and assessment_type_obj):
+        flash("Invalid grade, stream, term, or assessment type", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Determine education level based on grade
+    education_level = ""
+    grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+    if 1 <= grade_num <= 3:
+        education_level = "lower primary"
+    elif 4 <= grade_num <= 6:
+        education_level = "upper primary"
+    elif 7 <= grade_num <= 9:
+        education_level = "junior secondary"
+
+    # Get subjects for this grade based on education level
+    if education_level == "lower primary":
+        filtered_subjects = Subject.query.filter_by(education_level="lower_primary").all()
+    elif education_level == "upper primary":
+        filtered_subjects = Subject.query.filter_by(education_level="upper_primary").all()
+    elif education_level == "junior secondary":
+        filtered_subjects = Subject.query.filter_by(education_level="junior_secondary").all()
+    else:
+        filtered_subjects = Subject.query.all()
+
+    # Get students in this stream
+    students = Student.query.filter_by(stream_id=stream_obj.id).all()
+
+    # Process form data
+    marks_updated = 0
+    for student in students:
+        for subject in filtered_subjects:
+            mark_key = f"mark_{student.id}_{subject.id}"
+            total_marks_key = f"total_marks_{subject.id}"
+
+            if mark_key in request.form and total_marks_key in request.form:
+                try:
+                    # Get the raw mark and total marks from the form
+                    raw_mark = int(request.form[mark_key])
+                    total_marks = int(request.form[total_marks_key])
+
+                    # Ensure total_marks is not zero to avoid division by zero
+                    if total_marks <= 0:
+                        total_marks = 100
+
+                    # Find existing mark or create new one
+                    mark = Mark.query.filter_by(
+                        student_id=student.id,
+                        subject_id=subject.id,
+                        term_id=term_obj.id,
+                        assessment_type_id=assessment_type_obj.id
+                    ).first()
+
+                    if mark:
+                        # Update existing mark
+                        mark.mark = raw_mark
+                        mark.total_marks = total_marks
+                    else:
+                        # Create new mark
+                        mark = Mark(
+                            student_id=student.id,
+                            subject_id=subject.id,
+                            term_id=term_obj.id,
+                            assessment_type_id=assessment_type_obj.id,
+                            mark=raw_mark,
+                            total_marks=total_marks
+                        )
+                        db.session.add(mark)
+
+                    marks_updated += 1
+                except ValueError:
+                    # Skip invalid values
+                    pass
+
+    # Commit changes to database
+    try:
+        db.session.commit()
+        flash(f"Successfully updated {marks_updated} marks.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating marks: {str(e)}", "error")
+
+    return redirect(url_for('classteacher.dashboard'))
 
 @classteacher_bp.route('/download_class_report/<grade>/<stream>/<term>/<assessment_type>')
 @classteacher_required
@@ -572,8 +1551,76 @@ def download_class_report(grade, stream, term, assessment_type):
         flash("Invalid grade, stream, term, or assessment type", "error")
         return redirect(url_for('classteacher.dashboard'))
 
-    # Generate PDF report
-    pdf_file = generate_class_report_pdf(stream_obj.id, term_obj.id, assessment_type_obj.id)
+    # Get class report data first
+    report_data = get_class_report_data(grade, stream, term, assessment_type)
+
+    if not report_data or report_data.get("error"):
+        error_msg = report_data.get("error") if report_data and report_data.get("error") else f"No marks found for {grade} Stream {stream[-1]} in {term} {assessment_type}"
+        flash(error_msg, "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Get education level from report_data or determine based on grade
+    if report_data.get("education_level"):
+        education_level_code = report_data.get("education_level")
+        if education_level_code == "lower_primary":
+            education_level = "lower primary"
+        elif education_level_code == "upper_primary":
+            education_level = "upper primary"
+        elif education_level_code == "junior_secondary":
+            education_level = "junior secondary"
+        else:
+            education_level = ""
+    else:
+        # Fallback to determining education level based on grade
+        education_level = ""
+        grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+        if 1 <= grade_num <= 3:
+            education_level = "lower primary"
+        elif 4 <= grade_num <= 6:
+            education_level = "upper primary"
+        elif 7 <= grade_num <= 9:
+            education_level = "junior secondary"
+
+    # Calculate subject averages for the PDF
+    subject_averages = {}
+    for subject in report_data["subjects"]:
+        subject_total = 0
+        subject_count = 0
+        for student_data in report_data["class_data"]:
+            mark = student_data['marks'].get(subject, 0)
+            if mark > 0:
+                subject_total += mark
+                subject_count += 1
+
+        if subject_count > 0:
+            subject_averages[subject] = round(subject_total / subject_count, 2)
+        else:
+            subject_averages[subject] = 0
+
+    # Calculate class average for the PDF
+    class_total = 0
+    student_count = 0
+    for student_data in report_data["class_data"]:
+        if student_data['total_marks'] > 0:
+            class_total += student_data['total_marks']
+            student_count += 1
+
+    class_average = round(class_total / student_count, 2) if student_count > 0 else 0
+
+    # Generate PDF report using HTML-to-PDF conversion for better formatting
+    pdf_file = generate_class_report_pdf_from_html(
+        grade,
+        stream,
+        term,
+        assessment_type,
+        report_data["class_data"],
+        report_data["stats"],
+        report_data["total_marks"],
+        report_data["subjects"],
+        education_level,
+        subject_averages,
+        class_average
+    )
 
     if not pdf_file:
         flash(f"Failed to generate report for {grade} Stream {stream[-1]} in {term} {assessment_type}", "error")
@@ -588,9 +1635,154 @@ def download_class_report(grade, stream, term, assessment_type):
         mimetype='application/pdf'
     )
 
+@classteacher_bp.route('/print_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
+@classteacher_required
+def print_individual_report(grade, stream, term, assessment_type, student_name):
+    """Route for printing individual student reports with a clean format."""
+    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if not (stream_obj and term_obj and assessment_type_obj):
+        flash("Invalid grade, stream, term, or assessment type", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    student = Student.query.filter_by(name=student_name, stream_id=stream_obj.id).first()
+    if not student:
+        flash(f"No data available for student {student_name}.", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Get education level based on grade
+    education_level = ""
+    grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+    if 1 <= grade_num <= 3:
+        education_level = "lower primary"
+    elif 4 <= grade_num <= 6:
+        education_level = "upper primary"
+    elif 7 <= grade_num <= 9:
+        education_level = "junior secondary"
+
+    # Get class report data first
+    class_data_result = get_class_report_data(grade, stream, term, assessment_type)
+
+    if class_data_result.get("error"):
+        flash(class_data_result.get("error"), "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Find student data in the class report
+    student_data = None
+    for data in class_data_result["class_data"]:
+        if data["student"] == student.name:
+            student_data = data
+            break
+
+    if not student_data:
+        flash(f"No marks found for {student_name} in {term} {assessment_type}", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Calculate class averages for each subject
+    class_data = class_data_result["class_data"]
+    subjects = class_data_result["subjects"]
+    subject_averages = {}
+
+    for subject in subjects:
+        subject_total = 0
+        subject_count = 0
+        for data in class_data:
+            mark = data.get("marks", {}).get(subject, 0)
+            if mark != 0 and mark != "-":
+                subject_total += mark
+                subject_count += 1
+
+        if subject_count > 0:
+            subject_averages[subject] = round(subject_total / subject_count, 2)
+        else:
+            subject_averages[subject] = 0
+
+    # Calculate overall class average
+    overall_total = 0
+    overall_count = 0
+    for data in class_data:
+        overall_total += data.get("total_marks", 0)
+        overall_count += 1
+
+    class_average = 0
+    if overall_count > 0:
+        class_average = round((overall_total / overall_count) / len(subjects) * 100, 2) if subjects else 0
+
+    # Calculate mean grade and points
+    avg_percentage = student_data.get("average_percentage", 0)
+    from ..utils import get_grade_and_points
+    mean_grade, mean_points = get_grade_and_points(avg_percentage)
+
+    # Prepare table data for the report
+    table_data = []
+    for subject in class_data_result.get("subjects", []):
+        mark = student_data.get("marks", {}).get(subject, 0)
+        # For now, we'll use the same mark for all assessment types
+        table_data.append({
+            "subject": subject,
+            "entrance": mark,
+            "mid_term": mark,
+            "end_term": mark,
+            "avg": mark,
+            "remarks": get_performance_remarks(mark, class_data_result.get("total_marks", 100))
+        })
+
+    # Calculate total marks and points
+    total_marks = student_data.get("total_marks", 0)
+    total_possible_marks = len(class_data_result.get("subjects", [])) * class_data_result.get("total_marks", 100)
+    total_points = mean_points * len(class_data_result.get("subjects", []))
+
+    # Generate admission number if not available
+    admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
+
+    # Get academic year
+    academic_year = term_obj.academic_year if hasattr(term_obj, 'academic_year') and term_obj.academic_year else "2023"
+
+    # Get current date for the report
+    from datetime import datetime
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    # Get logo URL
+    logo_url = url_for('static', filename='images/kirima_logo.png')
+
+    return render_template(
+        'print_individual_report.html',
+        student_name=student.name,
+        grade=grade,
+        stream=stream,
+        term=term,
+        assessment_type=assessment_type,
+        education_level=education_level,
+        current_date=current_date,
+        table_data=table_data,
+        total=total_marks,
+        avg_percentage=avg_percentage,
+        mean_grade=mean_grade,
+        mean_points=mean_points,
+        total_possible_marks=total_possible_marks,
+        total_points=total_points,
+        admission_no=admission_no,
+        academic_year=academic_year,
+        logo_url=logo_url,
+        subject_averages=subject_averages,
+        class_average=class_average,
+        class_size=overall_count
+    )
+
 @classteacher_bp.route('/preview_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
 @classteacher_required
 def preview_individual_report(grade, stream, term, assessment_type, student_name):
+    # Check if this is a print request
+    print_mode = request.args.get('print', '0') == '1'
+    if print_mode:
+        return redirect(url_for('classteacher.print_individual_report',
+                               grade=grade,
+                               stream=stream,
+                               term=term,
+                               assessment_type=assessment_type,
+                               student_name=student_name))
     """Route for previewing individual student reports."""
     stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
@@ -605,21 +1797,276 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
         flash(f"No data available for student {student_name}.", "error")
         return redirect(url_for('classteacher.dashboard'))
 
-    # Generate individual report data
-    report_data = generate_individual_report(student.id, term_obj.id, assessment_type_obj.id)
+    # Get education level based on grade
+    education_level = ""
+    grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+    if 1 <= grade_num <= 3:
+        education_level = "lower primary"
+    elif 4 <= grade_num <= 6:
+        education_level = "upper primary"
+    elif 7 <= grade_num <= 9:
+        education_level = "junior secondary"
 
-    if not report_data:
+    # Get class report data first
+    class_data_result = get_class_report_data(grade, stream, term, assessment_type)
+
+    if class_data_result.get("error"):
+        flash(class_data_result.get("error"), "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Find student data in the class report
+    student_data = None
+    for data in class_data_result["class_data"]:
+        if data["student"] == student.name:
+            student_data = data
+            break
+
+    if not student_data:
         flash(f"No marks found for {student_name} in {term} {assessment_type}", "error")
         return redirect(url_for('classteacher.dashboard'))
+
+    # Calculate mean grade and points
+    avg_percentage = student_data.get("average_percentage", 0)
+    from ..utils import get_grade_and_points
+    mean_grade, mean_points = get_grade_and_points(avg_percentage)
+
+    # Prepare table data for the report
+    table_data = []
+    for subject in class_data_result.get("subjects", []):
+        mark = student_data.get("marks", {}).get(subject, 0)
+        # For now, we'll use the same mark for all assessment types
+        # In a real implementation, you'd get different marks for different assessment types
+        table_data.append({
+            "subject": subject,
+            "entrance": mark,
+            "mid_term": mark,
+            "end_term": mark,
+            "avg": mark,
+            "remarks": get_performance_remarks(mark, class_data_result.get("total_marks", 100))
+        })
+
+    # Calculate total marks and points
+    total_marks = student_data.get("total_marks", 0)
+    total_possible_marks = len(class_data_result.get("subjects", [])) * class_data_result.get("total_marks", 100)
+    total_points = mean_points * len(class_data_result.get("subjects", []))
+
+    # Generate admission number if not available
+    admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
+
+    # Get academic year
+    academic_year = term_obj.academic_year if hasattr(term_obj, 'academic_year') and term_obj.academic_year else "2023"
+
+    # Get current date for the report
+    from datetime import datetime
+    current_date = datetime.now().strftime("%Y-%m-%d")
 
     return render_template(
         'preview_individual_report.html',
         student=student,
+        student_data=student_data,
         grade=grade,
         stream=stream,
         term=term,
         assessment_type=assessment_type,
-        report_data=report_data
+        education_level=education_level,
+        current_date=current_date,
+        table_data=table_data,
+        total=total_marks,
+        avg_percentage=avg_percentage,
+        mean_grade=mean_grade,
+        mean_points=mean_points,
+        total_possible_marks=total_possible_marks,
+        total_points=total_points,
+        admission_no=admission_no,
+        academic_year=academic_year,
+        print_mode=print_mode
+    )
+
+@classteacher_bp.route('/api/check_stream_status/<grade>/<term>/<assessment_type>', methods=['GET'])
+@classteacher_required
+def check_stream_status(grade, term, assessment_type):
+    """API route to check if all streams in a grade have marks for a term and assessment type."""
+    try:
+        # Get the grade object
+        grade_obj = Grade.query.filter_by(level=grade).first()
+
+        if not grade_obj:
+            return jsonify({"success": False, "message": f"Grade {grade} not found", "streams": []})
+
+        # Get the term and assessment type objects
+        term_obj = Term.query.filter_by(name=term).first()
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+        if not term_obj or not assessment_type_obj:
+            return jsonify({"success": False, "message": "Invalid term or assessment type", "streams": []})
+
+        # Get streams for this grade
+        streams = Stream.query.filter_by(grade_id=grade_obj.id).all()
+
+        # Check if each stream has marks for this term and assessment type
+        streams_data = []
+        for stream in streams:
+            # Get students in this stream
+            students = Student.query.filter_by(stream_id=stream.id).all()
+
+            # Check if there are marks for any student in this stream
+            has_report = False
+            if students:
+                for student in students:
+                    mark = Mark.query.filter_by(
+                        student_id=student.id,
+                        term_id=term_obj.id,
+                        assessment_type_id=assessment_type_obj.id
+                    ).first()
+
+                    if mark:
+                        has_report = True
+                        break
+
+            streams_data.append({
+                "id": stream.id,
+                "name": stream.name,
+                "has_report": has_report
+            })
+
+        return jsonify({"success": True, "streams": streams_data})
+    except Exception as e:
+        print(f"Error checking stream status: {str(e)}")
+        return jsonify({"success": False, "message": str(e), "streams": []})
+
+@classteacher_bp.route('/get_streams_by_level/<grade>', methods=['GET'])
+@classteacher_required
+def get_streams_by_level(grade):
+    """API route to get streams for a grade by grade level."""
+    try:
+        # Get the grade object
+        grade_obj = Grade.query.filter_by(level=grade).first()
+
+        if not grade_obj:
+            return jsonify({"success": False, "message": f"Grade {grade} not found", "streams": []})
+
+        # Get streams for this grade
+        streams = Stream.query.filter_by(grade_id=grade_obj.id).all()
+
+        # Format streams for JSON response
+        streams_data = [{"id": stream.id, "name": stream.name} for stream in streams]
+
+        return jsonify({"success": True, "streams": streams_data})
+    except Exception as e:
+        print(f"Error fetching streams: {str(e)}")
+        return jsonify({"success": False, "message": str(e), "streams": []})
+
+@classteacher_bp.route('/download_marks_template', methods=['GET'])
+@classteacher_required
+def download_marks_template():
+    """Route to download the marks upload template."""
+    # Get parameters from the request
+    education_level = request.args.get('education_level', '')
+    grade_level = request.args.get('grade', '')
+    stream_name = request.args.get('stream', '')
+    term = request.args.get('term', '')
+    assessment_type = request.args.get('assessment_type', '')
+    file_format = request.args.get('format', 'xlsx')
+
+    # If specific parameters are provided, generate a customized template
+    if education_level and grade_level and stream_name:
+        # Extract stream letter from "Stream X" format
+        stream_letter = stream_name.replace("Stream ", "") if stream_name.startswith("Stream ") else stream_name[-1]
+
+        # Get the stream object
+        stream_obj = Stream.query.join(Grade).filter(Grade.level == grade_level, Stream.name == stream_letter).first()
+
+        if stream_obj:
+            # Get students for this stream
+            students = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name).all()
+
+            # Get subjects for this education level
+            subjects = [subject.name for subject in Subject.query.filter_by(education_level=education_level).all()]
+
+            if students and subjects:
+                try:
+                    # Import the template generator
+                    from ..static.templates.marks_upload_template import create_marks_upload_template
+
+                    # Get term and assessment type objects
+                    term_obj = Term.query.filter_by(name=term).first()
+                    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+                    # Default total marks value
+                    default_total_marks = 100
+
+                    # Get total marks for each subject
+                    subject_total_marks = {}
+                    for subject_name in subjects:
+                        subject = Subject.query.filter_by(name=subject_name).first()
+                        if subject:
+                            # Check if any marks exist for this subject to get the total_marks
+                            mark = Mark.query.filter_by(
+                                subject_id=subject.id,
+                                term_id=term_obj.id,
+                                assessment_type_id=assessment_type_obj.id
+                            ).first()
+
+                            if mark:
+                                subject_total_marks[subject_name] = mark.total_marks
+                            else:
+                                # Default to default_total_marks if no marks exist
+                                subject_total_marks[subject_name] = default_total_marks
+
+                    # Create a custom template
+                    template_path = create_marks_upload_template(
+                        students=students,
+                        subjects=subjects,
+                        total_marks=default_total_marks,
+                        grade=grade_level,
+                        stream=stream_name,
+                        term=term,
+                        assessment_type=assessment_type,
+                        subject_total_marks=subject_total_marks
+                    )
+
+                    # Return the template file
+                    return send_file(
+                        template_path,
+                        as_attachment=True,
+                        download_name=f"marks_template_{grade_level}_{stream_letter}_{term}_{assessment_type}.xlsx",
+                        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    )
+                except Exception as e:
+                    flash(f"Error creating template: {str(e)}", "error")
+                    return redirect(url_for('classteacher.dashboard'))
+
+    # If no specific parameters or an error occurred, return a generic template
+    template_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        'static',
+        'templates',
+        f"marks_upload_template_example_{education_level if education_level else 'upper_primary'}.{file_format}"
+    )
+
+    # Check if the template file exists
+    if not os.path.exists(template_path):
+        # If not, create it
+        try:
+            from ..static.templates.marks_upload_template import create_empty_marks_template
+            create_empty_marks_template(education_level if education_level else 'upper_primary')
+        except Exception as e:
+            flash(f"Error creating template: {str(e)}", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+    # Set the appropriate mimetype based on the file format
+    if file_format == 'csv':
+        mimetype = 'text/csv'
+        filename = f"marks_template_example_{education_level if education_level else 'general'}.csv"
+    else:
+        mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        filename = f"marks_template_example_{education_level if education_level else 'general'}.xlsx"
+
+    return send_file(
+        template_path,
+        as_attachment=True,
+        download_name=filename,
+        mimetype=mimetype
     )
 
 @classteacher_bp.route('/generate_grade_marksheet/<grade>/<term>/<assessment_type>/<action>')
@@ -660,6 +2107,7 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
             subject_count = 0
 
             # Get marks for each subject
+            student_standardized_total = 0
             for subject in subjects:
                 mark = Mark.query.filter_by(
                     student_id=student.id,
@@ -669,15 +2117,21 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
                 ).first()
 
                 if mark:
+                    # Store the raw mark
                     student_marks[subject.name] = mark.mark
-                    student_total += mark.mark
+
+                    # Calculate standardized mark (out of 100)
+                    total_marks = mark.total_marks if mark.total_marks > 0 else 100
+                    standardized_mark = (mark.mark / total_marks) * 100
+
+                    # Add to standardized total for average calculation
+                    student_standardized_total += standardized_mark
                     subject_count += 1
                 else:
                     student_marks[subject.name] = "-"
 
-            # Calculate average percentage
-            total_marks = 100  # Assuming total marks is 100 for each subject
-            average_percentage = (student_total / (subject_count * total_marks)) * 100 if total_marks and subject_count > 0 else 0
+            # Calculate average percentage (already standardized to 100)
+            average_percentage = student_standardized_total / subject_count if subject_count > 0 else 0
             grade_label = get_performance_category(average_percentage)
 
             # Include stream name with student name for clarity
@@ -697,6 +2151,94 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
     # Sort data by percentage (descending)
     all_data.sort(key=lambda x: x['percentage'], reverse=True)
 
+    # Calculate statistics for the marksheet
+    stream_data = {}
+    subject_totals = {subject.name: 0 for subject in subjects}
+    subject_counts = {subject.name: 0 for subject in subjects}
+    overall_total = 0
+    overall_count = 0
+
+    # Collect statistics for each stream
+    for stream in streams:
+        stream_students = [s for s in all_data if s['name'].endswith(f"({stream.name})")]
+        stream_total = sum(s['total'] for s in stream_students)
+        stream_count = len(stream_students) * len(subjects)  # Total possible marks
+
+        # Calculate stream average
+        stream_average = stream_total / stream_count if stream_count > 0 else 0
+
+        # Calculate subject averages for this stream
+        stream_subject_totals = {subject.name: 0 for subject in subjects}
+        stream_subject_counts = {subject.name: 0 for subject in subjects}
+
+        for student in stream_students:
+            for subject in subjects:
+                mark = student['marks'].get(subject.name)
+                if mark != "-":
+                    stream_subject_totals[subject.name] += mark
+                    stream_subject_counts[subject.name] += 1
+
+                    # Update overall subject totals
+                    subject_totals[subject.name] += mark
+                    subject_counts[subject.name] += 1
+
+                    # Update overall totals
+                    overall_total += mark
+                    overall_count += 1
+
+        # Calculate stream subject averages
+        stream_subject_averages = {}
+        for subject_name in stream_subject_totals:
+            if stream_subject_counts[subject_name] > 0:
+                stream_subject_averages[subject_name] = round(stream_subject_totals[subject_name] / stream_subject_counts[subject_name], 1)
+            else:
+                stream_subject_averages[subject_name] = 0
+
+        # Store stream statistics
+        stream_data[stream.name] = {
+            'total': stream_total,
+            'count': len(stream_students),
+            'average': round(stream_average, 1),
+            'subject_averages': stream_subject_averages
+        }
+
+    # Calculate overall subject averages
+    subject_averages = {}
+    for subject_name in subject_totals:
+        if subject_counts[subject_name] > 0:
+            subject_averages[subject_name] = round(subject_totals[subject_name] / subject_counts[subject_name], 1)
+        else:
+            subject_averages[subject_name] = 0
+
+    # Calculate overall average
+    overall_average = overall_total / overall_count if overall_count > 0 else 0
+
+    # Calculate performance statistics
+    performance_counts = {}
+    for category in ['Excellent', 'Very Good', 'Good', 'Average', 'Below Average', 'Poor']:
+        performance_counts[category] = len([d for d in all_data if d['grade'] == category])
+
+    # Calculate gender statistics
+    gender_counts = {
+        'male': 0,
+        'female': 0,
+        'other': 0
+    }
+
+    # Add rank to each student
+    for i, student_data in enumerate(all_data):
+        student_data['rank'] = i + 1
+
+    # Prepare statistics for the template
+    statistics = {
+        'total_students': len(all_data),
+        'overall_average': round(overall_average, 1),
+        'subject_averages': subject_averages,
+        'stream_data': stream_data,
+        'performance_counts': performance_counts,
+        'gender_counts': gender_counts
+    }
+
     # Handle preview or download action
     if action == 'preview':
         return render_template(
@@ -705,13 +2247,34 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
             term=term,
             assessment_type=assessment_type,
             subjects=subjects,
-            data=all_data
+            data=all_data,
+            statistics=statistics
         )
     elif action == 'download':
-        # Generate PDF and send it
-        # This would be implemented in a service function
-        flash("Download functionality not implemented yet", "warning")
-        return redirect(url_for('classteacher.dashboard'))
+        try:
+            # Import the Excel export service
+            from ..services.excel_export import generate_grade_marksheet_excel
+
+            # Generate Excel file
+            excel_file = generate_grade_marksheet_excel(
+                grade=grade,
+                term=term,
+                assessment_type=assessment_type,
+                subjects=subjects,
+                data=all_data,
+                statistics=statistics
+            )
+
+            # Return the Excel file
+            return send_file(
+                excel_file,
+                as_attachment=True,
+                download_name=f"{grade}_{term}_{assessment_type}_Grade_Marksheet.xlsx",
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+        except Exception as e:
+            flash(f"Error generating Excel file: {str(e)}", "error")
+            return redirect(url_for('classteacher.dashboard'))
     else:
         flash("Invalid action", "error")
         return redirect(url_for('classteacher.dashboard'))
@@ -736,6 +2299,88 @@ def download_grade_marksheet(grade, term, assessment_type):
                            assessment_type=assessment_type,
                            action='download'))
 
+@classteacher_bp.route('/delete_marksheet/<grade>/<stream>/<term>/<assessment_type>', methods=['POST'])
+@classteacher_required
+def delete_marksheet(grade, stream, term, assessment_type):
+    """Route for deleting a class marksheet (all marks for a grade/stream/term/assessment combination)."""
+    try:
+        # Get the stream object
+        stream_letter = stream[-1] if stream.startswith("Stream ") else stream[-1]
+        stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream_letter).first()
+
+        if not stream_obj:
+            flash(f"Stream {stream} not found for grade {grade}", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+        # Get the term and assessment type objects
+        term_obj = Term.query.filter_by(name=term).first()
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+        if not (term_obj and assessment_type_obj):
+            flash("Invalid term or assessment type", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+        # Get all students in this stream
+        students = Student.query.filter_by(stream_id=stream_obj.id).all()
+        student_ids = [student.id for student in students]
+
+        if not student_ids:
+            flash(f"No students found in {grade} Stream {stream_letter}", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+        # Determine education level based on grade
+        grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+        if 1 <= grade_num <= 3:
+            education_level_code = "lower_primary"
+        elif 4 <= grade_num <= 6:
+            education_level_code = "upper_primary"
+        elif 7 <= grade_num <= 9:
+            education_level_code = "junior_secondary"
+        else:
+            education_level_code = ""
+
+        # Get subjects for this education level
+        if education_level_code:
+            subjects = Subject.query.filter_by(education_level=education_level_code).all()
+        else:
+            subjects = Subject.query.all()
+
+        subject_ids = [subject.id for subject in subjects]
+
+        # Delete all marks for these students, subjects, term, and assessment type
+        deleted_count = Mark.query.filter(
+            Mark.student_id.in_(student_ids),
+            Mark.subject_id.in_(subject_ids),
+            Mark.term_id == term_obj.id,
+            Mark.assessment_type_id == assessment_type_obj.id
+        ).delete(synchronize_session=False)
+
+        # Commit the changes
+        db.session.commit()
+
+        # Create a detailed success message
+        if deleted_count > 0:
+            success_message = f"Successfully deleted {deleted_count} marks for {grade} Stream {stream_letter} in {term} {assessment_type}. The marksheet has been completely removed."
+            # Store a session variable to indicate a successful deletion
+            session['marksheet_deleted'] = True
+            session['deleted_marksheet_info'] = {
+                'grade': grade,
+                'stream': stream,
+                'term': term,
+                'assessment_type': assessment_type,
+                'count': deleted_count
+            }
+            flash(success_message, "success")
+        else:
+            flash(f"No marks were found to delete for {grade} Stream {stream_letter} in {term} {assessment_type}.", "info")
+
+        return redirect(url_for('classteacher.dashboard'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting marksheet: {str(e)}", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
 @classteacher_bp.route('/get_streams/<grade_id>', methods=['GET'])
 @classteacher_required
 def get_streams(grade_id):
@@ -748,6 +2393,231 @@ def get_streams(grade_id):
         return jsonify({"error": "Invalid grade ID"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@classteacher_bp.route('/download_student_template', methods=['GET'])
+@classteacher_required
+def download_student_template():
+    """Route to download the student upload template."""
+    file_format = request.args.get('format', 'xlsx')
+
+    if file_format == 'csv':
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'student_upload_template.csv')
+        mimetype = 'text/csv'
+        filename = 'student_upload_template.csv'
+    else:
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'student_upload_template.xlsx')
+        mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        filename = 'student_upload_template.xlsx'
+
+    # Check if the template file exists
+    if not os.path.exists(template_path):
+        # If not, create it
+        try:
+            from ..static.templates.student_upload_template import create_student_upload_template
+            create_student_upload_template()
+        except Exception as e:
+            print(f"Error creating template: {str(e)}")
+            flash("Error creating template file. Please try again.", "error")
+            return redirect(url_for('classteacher.manage_students'))
+
+    return send_file(
+        template_path,
+        as_attachment=True,
+        download_name=filename,
+        mimetype=mimetype
+    )
+
+@classteacher_bp.route('/view_student_reports/<grade>/<stream>/<term>/<assessment_type>')
+@classteacher_required
+def view_student_reports(grade, stream, term, assessment_type):
+    """Route for viewing a list of students with options to view their individual reports."""
+    # Get the stream object
+    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if not (stream_obj and term_obj and assessment_type_obj):
+        flash("Invalid grade, stream, term, or assessment type", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Get pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 20  # Number of students per page
+    search_query = request.args.get('search', '')
+
+    # Get students in this stream with optional search filter
+    query = Student.query.filter_by(stream_id=stream_obj.id)
+    if search_query:
+        query = query.filter(Student.name.ilike(f'%{search_query}%'))
+
+    # Get paginated students
+    students_pagination = query.order_by(Student.name).paginate(page=page, per_page=per_page, error_out=False)
+    students = students_pagination.items
+
+    # Get marks for each student to calculate averages
+    for student in students:
+        marks = Mark.query.filter_by(
+            student_id=student.id,
+            term_id=term_obj.id,
+            assessment_type_id=assessment_type_obj.id
+        ).all()
+
+        if marks:
+            total_marks = sum(mark.mark for mark in marks)
+            total_possible = len(marks) * marks[0].total_marks if marks[0].total_marks else 100
+            student.average = (total_marks / total_possible) * 100 if total_possible > 0 else 0
+        else:
+            student.average = None
+
+    return render_template(
+        'view_student_reports.html',
+        grade=grade,
+        stream=stream,
+        term=term,
+        assessment_type=assessment_type,
+        students=students,
+        page=page,
+        per_page=per_page,
+        total_pages=students_pagination.pages,
+        search_query=search_query
+    )
+
+@classteacher_bp.route('/download_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
+@classteacher_required
+def download_individual_report(grade, stream, term, assessment_type, student_name):
+    """Route for downloading an individual student report as PDF."""
+    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if not (stream_obj and term_obj and assessment_type_obj):
+        flash("Invalid grade, stream, term, or assessment type", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    student = Student.query.filter_by(name=student_name, stream_id=stream_obj.id).first()
+    if not student:
+        flash(f"No data available for student {student_name}.", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Generate individual report data
+    from ..services.report_service import generate_individual_report_pdf_from_html
+
+    # Get education level based on grade
+    education_level = ""
+    grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+    if 1 <= grade_num <= 3:
+        education_level = "lower primary"
+    elif 4 <= grade_num <= 6:
+        education_level = "upper primary"
+    elif 7 <= grade_num <= 9:
+        education_level = "junior secondary"
+
+    # Get report data
+    report_data = generate_individual_report(student, grade, stream, term, assessment_type, education_level)
+
+    # Handle different return types from generate_individual_report
+    if not report_data:
+        flash(f"No marks found for {student_name} in {term} {assessment_type}", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # If report_data is a dictionary with an error message
+    if isinstance(report_data, dict) and report_data.get("error"):
+        flash(report_data.get("error"), "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Generate PDF using the ReportLab-based function instead of HTML-based function
+    # This avoids the dependency on pdfkit which might be causing the issue
+    pdf_file = report_data
+
+    if not pdf_file:
+        flash(f"Failed to generate PDF report for {student_name}", "error")
+        return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
+
+    # Return the PDF file
+    return send_file(
+        pdf_file,
+        as_attachment=True,
+        download_name=f"Individual_Report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf",
+        mimetype='application/pdf'
+    )
+
+@classteacher_bp.route('/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type>')
+@classteacher_required
+def generate_all_individual_reports(grade, stream, term, assessment_type):
+    """Route for generating and downloading all individual reports as a ZIP file."""
+    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if not (stream_obj and term_obj and assessment_type_obj):
+        flash("Invalid grade, stream, term, or assessment type", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Get students in this stream
+    students = Student.query.filter_by(stream_id=stream_obj.id).all()
+
+    if not students:
+        flash(f"No students found for {grade} Stream {stream[-1]}", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Import necessary modules
+    import zipfile
+    import tempfile
+    import os
+    from datetime import datetime
+    from ..services.report_service import generate_individual_report_pdf_from_html
+
+    # Get education level based on grade
+    education_level = ""
+    grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+    if 1 <= grade_num <= 3:
+        education_level = "lower primary"
+    elif 4 <= grade_num <= 6:
+        education_level = "upper primary"
+    elif 7 <= grade_num <= 9:
+        education_level = "junior secondary"
+
+    # Create a temporary directory to store the PDFs
+    temp_dir = tempfile.mkdtemp()
+
+    # Create a ZIP file
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    zip_filename = f"Individual_Reports_{grade}_{stream}_{term}_{assessment_type}_{timestamp}.zip"
+    zip_path = os.path.join(temp_dir, zip_filename)
+
+    # Generate PDFs for each student and add them to the ZIP file
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        for student in students:
+            try:
+                # Generate report data
+                report_data = generate_individual_report(student, grade, stream, term, assessment_type, education_level)
+
+                # Skip if no report data or if it's a dictionary with an error
+                if not report_data:
+                    continue
+
+                if isinstance(report_data, dict) and report_data.get("error"):
+                    continue
+
+                # Generate PDF using the ReportLab-based function instead of HTML-based function
+                # This avoids the dependency on pdfkit which might be causing the issue
+                pdf_file = report_data
+
+                if pdf_file:
+                    # Add PDF to ZIP file
+                    pdf_filename = f"Individual_Report_{grade}_{stream}_{student.name.replace(' ', '_')}.pdf"
+                    zipf.write(pdf_file, pdf_filename)
+            except Exception as e:
+                print(f"Error generating report for {student.name}: {str(e)}")
+                continue
+
+    # Return the ZIP file
+    return send_file(
+        zip_path,
+        as_attachment=True,
+        download_name=zip_filename,
+        mimetype='application/zip'
+    )
 
 @classteacher_bp.route('/download_class_list', methods=['GET'])
 @classteacher_required
@@ -832,6 +2702,190 @@ def download_class_list():
 
     return response
 
+@classteacher_bp.route('/download_subject_template', methods=['GET'])
+@classteacher_required
+def download_subject_template():
+    """Route to download the subject upload template."""
+    file_format = request.args.get('format', 'xlsx')
+
+    if file_format == 'csv':
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'subject_upload_template.csv')
+        mimetype = 'text/csv'
+        filename = 'subject_upload_template.csv'
+    else:
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'subject_upload_template.xlsx')
+        mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        filename = 'subject_upload_template.xlsx'
+
+    # Check if the template file exists
+    if not os.path.exists(template_path):
+        # If not, create it
+        try:
+            from ..static.templates.subject_upload_template import create_subject_upload_template
+            create_subject_upload_template()
+        except Exception as e:
+            print(f"Error creating template: {str(e)}")
+            flash("Error creating template file. Please try again.", "error")
+            return redirect(url_for('classteacher.manage_subjects'))
+
+    return send_file(
+        template_path,
+        as_attachment=True,
+        download_name=filename,
+        mimetype=mimetype
+    )
+
+@classteacher_bp.route('/export_subjects', methods=['GET'])
+@classteacher_required
+def export_subjects():
+    """Route to export all subjects as CSV or Excel."""
+    file_format = request.args.get('format', 'xlsx')
+    education_level = request.args.get('education_level', '')
+
+    # Build the query based on filters
+    subjects_query = Subject.query
+
+    # Apply education level filter if specified
+    if education_level and education_level != 'all':
+        subjects_query = subjects_query.filter_by(education_level=education_level)
+        filename_prefix = f"subjects_{education_level}"
+    else:
+        filename_prefix = "all_subjects"
+
+    # Order by education level and name
+    subjects = subjects_query.order_by(Subject.education_level, Subject.name).all()
+
+    # Create a DataFrame with the subjects
+    data = []
+    for subject in subjects:
+        data.append({
+            'id': subject.id,
+            'name': subject.name,
+            'education_level': subject.education_level
+        })
+
+    df = pd.DataFrame(data)
+
+    # Create a BytesIO object to store the Excel file
+    output = BytesIO()
+
+    if file_format == 'csv':
+        # Write the DataFrame to a CSV file
+        df.to_csv(output, index=False)
+        mimetype = 'text/csv'
+        filename = f"{filename_prefix}.csv"
+    else:
+        # Write the DataFrame to an Excel file
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Subjects', index=False)
+
+            # Get the xlsxwriter workbook and worksheet objects
+            workbook = writer.book
+            worksheet = writer.sheets['Subjects']
+
+            # Add some formatting
+            header_format = workbook.add_format({
+                'bold': True,
+                'text_wrap': True,
+                'valign': 'top',
+                'fg_color': '#D7E4BC',
+                'border': 1
+            })
+
+            # Write the column headers with the defined format
+            for col_num, value in enumerate(df.columns.values):
+                worksheet.write(0, col_num, value, header_format)
+
+            # Set the column widths
+            worksheet.set_column('A:A', 5)  # ID column
+            worksheet.set_column('B:B', 30)  # Name column
+            worksheet.set_column('C:C', 20)  # Education level column
+
+        mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        filename = f"{filename_prefix}.xlsx"
+
+    # Seek to the beginning of the BytesIO object
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=filename,
+        mimetype=mimetype
+    )
+
+@classteacher_bp.route('/bulk_import_subjects', methods=['POST'])
+@classteacher_required
+def bulk_import_subjects():
+    """Route for bulk importing subjects."""
+    if 'subject_file' not in request.files:
+        flash("No file selected.", "error")
+        return redirect(url_for('classteacher.manage_subjects'))
+
+    file = request.files['subject_file']
+
+    if file.filename == '':
+        flash("No file selected.", "error")
+        return redirect(url_for('classteacher.manage_subjects'))
+
+    # Check file extension
+    file_ext = os.path.splitext(file.filename)[1].lower()
+
+    try:
+        # Read the file into a pandas DataFrame
+        if file_ext == '.csv':
+            df = pd.read_csv(file)
+        elif file_ext in ['.xlsx', '.xls']:
+            df = pd.read_excel(file)
+        else:
+            flash("Unsupported file format. Please upload a CSV or Excel file.", "error")
+            return redirect(url_for('classteacher.manage_subjects'))
+
+        # Check if the required columns are present
+        required_columns = ['name', 'education_level']
+        for col in required_columns:
+            if col not in df.columns:
+                flash(f"Missing required column: {col}", "error")
+                return redirect(url_for('classteacher.manage_subjects'))
+
+        # Process the subjects
+        added_count = 0
+        skipped_count = 0
+
+        for _, row in df.iterrows():
+            subject_name = row['name'].strip()
+            education_level = row['education_level'].strip()
+
+            # Validate education level
+            if education_level not in ['lower_primary', 'upper_primary', 'junior_secondary']:
+                skipped_count += 1
+                continue
+
+            # Check if subject already exists
+            existing_subject = Subject.query.filter_by(name=subject_name, education_level=education_level).first()
+            if existing_subject:
+                skipped_count += 1
+                continue
+
+            # Add the new subject
+            new_subject = Subject(name=subject_name, education_level=education_level)
+            db.session.add(new_subject)
+            added_count += 1
+
+        # Commit the changes
+        db.session.commit()
+
+        if added_count > 0:
+            flash(f"Successfully added {added_count} new subject(s). {skipped_count} subject(s) were skipped because they already exist or had invalid data.", "success")
+        else:
+            flash(f"No new subjects were added. {skipped_count} subject(s) were skipped because they already exist or had invalid data.", "info")
+
+        return redirect(url_for('classteacher.manage_subjects'))
+
+    except Exception as e:
+        flash(f"Error processing file: {str(e)}", "error")
+        return redirect(url_for('classteacher.manage_subjects'))
+
 @classteacher_bp.route('/manage_subjects', methods=['GET', 'POST'])
 @classteacher_required
 def manage_subjects():
@@ -866,6 +2920,12 @@ def manage_subjects():
     # Get all unique education levels for the filter dropdown
     all_education_levels = db.session.query(Subject.education_level).distinct().all()
     education_levels = [level[0] for level in all_education_levels if level[0]]
+
+    # Calculate statistics
+    total_subjects = Subject.query.count()
+    lower_primary_count = Subject.query.filter_by(education_level='lower_primary').count()
+    upper_primary_count = Subject.query.filter_by(education_level='upper_primary').count()
+    junior_secondary_count = Subject.query.filter_by(education_level='junior_secondary').count()
 
     if request.method == 'POST':
         action = request.form.get("action")
@@ -961,13 +3021,29 @@ def manage_subjects():
                     else:
                         error_message = f"Could not delete {not_deleted_count} subject(s) because they have marks associated with them."
 
+    # Mark newly added subjects
+    for subject in subjects:
+        subject.is_new = False
+        if request.args.get('highlight') and int(request.args.get('highlight')) == 1:
+            if 'new_subject_ids' in session:
+                if subject.id in session['new_subject_ids']:
+                    subject.is_new = True
+
+    # Clear session data after use
+    if 'new_subject_ids' in session:
+        session.pop('new_subject_ids')
+
     return render_template(
-        'manage_subjects.html',
+        'manage_subjects_improved.html',
         subjects=subjects,
         pagination=pagination,
         education_levels=education_levels,
         current_education_level=education_level,
         search_query=search_query,
+        total_subjects=total_subjects,
+        lower_primary_count=lower_primary_count,
+        upper_primary_count=upper_primary_count,
+        junior_secondary_count=junior_secondary_count,
         error_message=error_message,
         success_message=success_message
     )
@@ -978,6 +3054,8 @@ def manage_grades_streams():
     """Route for managing grades and streams."""
     error_message = None
     success_message = None
+    page = request.args.get('page', 1, type=int)
+    per_page = 10  # Number of grades per page
 
     if request.method == 'POST':
         if "add_grade" in request.form:
@@ -1055,8 +3133,120 @@ def manage_grades_streams():
             else:
                 error_message = "Stream not found."
 
-    grades = Grade.query.all()
-    return render_template("manage_grades_streams.html", grades=grades, error_message=error_message, success_message=success_message)
+    # Get all grades with pagination
+    grades_query = Grade.query
+    grades_page = grades_query.paginate(page=page, per_page=per_page, error_out=False)
+
+    # Get all grades for the form dropdowns (no pagination)
+    all_grades = Grade.query.all()
+
+    # Calculate statistics
+    total_grades = Grade.query.count()
+    total_streams = Stream.query.count()
+    avg_streams_per_grade = total_streams / total_grades if total_grades > 0 else 0
+    total_students = Student.query.count()
+
+    # Add education level to each grade
+    for grade in grades_page.items:
+        grade_num = 0
+        try:
+            # Extract grade number
+            if grade.level.startswith("Grade "):
+                grade_num = int(grade.level[6:])
+            else:
+                # Try to extract just the number
+                grade_num = int(''.join(filter(str.isdigit, grade.level)))
+
+            # Assign education level
+            if 1 <= grade_num <= 3:
+                grade.education_level = "lower_primary"
+            elif 4 <= grade_num <= 6:
+                grade.education_level = "upper_primary"
+            elif 7 <= grade_num <= 9:
+                grade.education_level = "junior_secondary"
+            else:
+                grade.education_level = "unknown"
+        except:
+            grade.education_level = "unknown"
+
+    return render_template(
+        "manage_grades_streams_improved.html",
+        grades=all_grades,
+        grades_page=grades_page,
+        total_grades=total_grades,
+        total_streams=total_streams,
+        avg_streams_per_grade=avg_streams_per_grade,
+        total_students=total_students,
+        error_message=error_message,
+        success_message=success_message
+    )
+
+@classteacher_bp.route('/edit_grade', methods=['POST'])
+@classteacher_required
+def edit_grade():
+    """Route for editing a grade."""
+    grade_id = request.form.get("grade_id")
+    grade_level = request.form.get("grade_level")
+
+    if not grade_id or not grade_level:
+        flash("Missing required information.", "error")
+        return redirect(url_for('classteacher.manage_grades_streams'))
+
+    grade = Grade.query.get(grade_id)
+    if not grade:
+        flash("Grade not found.", "error")
+        return redirect(url_for('classteacher.manage_grades_streams'))
+
+    # Check if another grade with this level already exists
+    existing = Grade.query.filter(Grade.level == grade_level, Grade.id != grade_id).first()
+    if existing:
+        flash(f"Grade '{grade_level}' already exists.", "error")
+        return redirect(url_for('classteacher.manage_grades_streams'))
+
+    old_level = grade.level
+    grade.level = grade_level
+    db.session.commit()
+
+    flash(f"Grade updated from '{old_level}' to '{grade_level}'.", "success")
+    return redirect(url_for('classteacher.manage_grades_streams'))
+
+@classteacher_bp.route('/edit_stream', methods=['POST'])
+@classteacher_required
+def edit_stream():
+    """Route for editing a stream."""
+    stream_id = request.form.get("stream_id")
+    stream_name = request.form.get("stream_name")
+    grade_id = request.form.get("grade_id")
+
+    if not stream_id or not stream_name or not grade_id:
+        flash("Missing required information.", "error")
+        return redirect(url_for('classteacher.manage_grades_streams'))
+
+    stream = Stream.query.get(stream_id)
+    if not stream:
+        flash("Stream not found.", "error")
+        return redirect(url_for('classteacher.manage_grades_streams'))
+
+    grade = Grade.query.get(grade_id)
+    if not grade:
+        flash("Grade not found.", "error")
+        return redirect(url_for('classteacher.manage_grades_streams'))
+
+    # Check if another stream with this name already exists in the selected grade
+    existing = Stream.query.filter(Stream.name == stream_name, Stream.grade_id == grade_id, Stream.id != stream_id).first()
+    if existing:
+        flash(f"Stream '{stream_name}' already exists for Grade {grade.level}.", "error")
+        return redirect(url_for('classteacher.manage_grades_streams'))
+
+    old_name = stream.name
+    old_grade = Grade.query.get(stream.grade_id)
+
+    stream.name = stream_name
+    stream.grade_id = grade_id
+    db.session.commit()
+
+    flash(f"Stream updated from '{old_name}' in {old_grade.level} to '{stream_name}' in {grade.level}.", "success")
+    return redirect(url_for('classteacher.manage_grades_streams'))
 
 @classteacher_bp.route('/manage_teacher_assignments', methods=['GET', 'POST'])
 @classteacher_required
@@ -1079,9 +3269,10 @@ def manage_teacher_assignments():
         current_teacher_id = session.get('teacher_id')
         current_teacher = Teacher.query.get(current_teacher_id)
 
-        # Show all class teacher assignments
-        # This is for the "Manage Teacher Transfers" page where admins need to see all assignments
+        # Only show class teacher assignments for the current teacher
+        # This ensures a teacher only sees their own class teacher assignments
         assignments = TeacherSubjectAssignment.query.filter_by(
+            teacher_id=current_teacher_id,
             is_class_teacher=True
         ).all()
 
@@ -1127,9 +3318,10 @@ def manage_teacher_assignments():
     # Get all subject assignments
     subject_assignments = []
     try:
-        # Show all subject assignments
-        # This is for the "Manage Teacher Transfers" page where admins need to see all assignments
+        # Only show subject assignments for the current teacher
+        # This ensures a teacher only sees their own subject assignments
         assignments = TeacherSubjectAssignment.query.filter_by(
+            teacher_id=current_teacher_id,
             is_class_teacher=False
         ).all()
 
@@ -1280,6 +3472,675 @@ def clear_assignment_session():
     if 'assigned_teacher_id' in session:
         session.pop('assigned_teacher_id', None)
     return '', 204  # No content response
+
+@classteacher_bp.route('/add_term_ajax', methods=['POST'])
+@classteacher_required
+def add_term_ajax():
+    """AJAX route for adding a new term."""
+    term_name = request.form.get("term_name")
+    term_start_date = request.form.get("term_start_date")
+    term_end_date = request.form.get("term_end_date")
+    academic_year = request.form.get("academic_year")
+    is_current_term = "is_current_term" in request.form
+
+    if not term_name:
+        return jsonify({"success": False, "message": "Please fill in the term name."})
+
+    existing_term = Term.query.filter_by(name=term_name).first()
+    if existing_term:
+        return jsonify({"success": False, "message": f"Term '{term_name}' already exists."})
+
+    # Create new term with additional fields if they exist in the model
+    new_term = Term(name=term_name)
+
+    # Add additional fields if they exist in the model
+    if hasattr(Term, 'start_date') and term_start_date:
+        new_term.start_date = term_start_date
+
+    if hasattr(Term, 'end_date') and term_end_date:
+        new_term.end_date = term_end_date
+
+    if hasattr(Term, 'academic_year') and academic_year:
+        new_term.academic_year = academic_year
+
+    if hasattr(Term, 'is_current'):
+        # If setting this term as current, unset any other current terms
+        if is_current_term:
+            current_terms = Term.query.filter_by(is_current=True).all()
+            for term in current_terms:
+                term.is_current = False
+            new_term.is_current = True
+
+    db.session.add(new_term)
+    db.session.commit()
+
+    # Get updated statistics
+    terms = Term.query.all()
+    assessment_types = AssessmentType.query.all()
+    current_term = "None"
+
+    # Find the current term if any
+    for term in terms:
+        if hasattr(term, 'is_current') and term.is_current:
+            current_term = term.name
+            break
+
+    # Prepare term data for JSON response
+    term_data = {
+        "id": new_term.id,
+        "name": new_term.name,
+        "is_current": True if hasattr(new_term, 'is_current') and new_term.is_current else False,
+        "academic_year": new_term.academic_year if hasattr(new_term, 'academic_year') and new_term.academic_year else None
+    }
+
+    # Find the current academic year
+    current_academic_year = "None"
+    for t in terms:
+        if hasattr(t, 'is_current') and t.is_current and hasattr(t, 'academic_year') and t.academic_year:
+            current_academic_year = t.academic_year
+            break
+
+    # If no current term has an academic year, try to get the academic year from any term
+    if current_academic_year == "None":
+        for t in terms:
+            if hasattr(t, 'academic_year') and t.academic_year:
+                current_academic_year = t.academic_year
+                break
+
+    # Prepare statistics for JSON response
+    stats = {
+        "total_terms": len(terms),
+        "total_assessments": len(assessment_types),
+        "current_term": current_term,
+        "current_academic_year": current_academic_year
+    }
+
+    return jsonify({
+        "success": True,
+        "message": f"Term '{term_name}' added successfully!",
+        "term": term_data,
+        "stats": stats
+    })
+
+@classteacher_bp.route('/delete_term_ajax', methods=['POST'])
+@classteacher_required
+def delete_term_ajax():
+    """AJAX route for deleting a term."""
+    term_id = request.form.get("term_id")
+
+    if not term_id:
+        return jsonify({"success": False, "message": "Term ID is required."})
+
+    term = Term.query.get(term_id)
+    if not term:
+        return jsonify({"success": False, "message": "Term not found."})
+
+    # Check if term has marks
+    marks = Mark.query.filter_by(term_id=term.id).all()
+    if marks:
+        return jsonify({"success": False, "message": f"Cannot delete term '{term.name}' because it has marks associated with it."})
+
+    # Store the name for the success message
+    term_name = term.name
+
+    # Delete the term
+    db.session.delete(term)
+    db.session.commit()
+
+    # Get updated statistics
+    terms = Term.query.all()
+    assessment_types = AssessmentType.query.all()
+    current_term = "None"
+
+    # Find the current term if any
+    for term in terms:
+        if hasattr(term, 'is_current') and term.is_current:
+            current_term = term.name
+            break
+
+    # Prepare statistics for JSON response
+    stats = {
+        "total_terms": len(terms),
+        "total_assessments": len(assessment_types),
+        "current_term": current_term
+    }
+
+    return jsonify({
+        "success": True,
+        "message": f"Term '{term_name}' deleted successfully!",
+        "stats": stats
+    })
+
+@classteacher_bp.route('/delete_assessment_ajax', methods=['POST'])
+@classteacher_required
+def delete_assessment_ajax():
+    """AJAX route for deleting an assessment type."""
+    assessment_id = request.form.get("assessment_id")
+
+    if not assessment_id:
+        return jsonify({"success": False, "message": "Assessment ID is required."})
+
+    assessment = AssessmentType.query.get(assessment_id)
+    if not assessment:
+        return jsonify({"success": False, "message": "Assessment type not found."})
+
+    # Check if assessment type has marks
+    marks = Mark.query.filter_by(assessment_type_id=assessment.id).all()
+    if marks:
+        return jsonify({"success": False, "message": f"Cannot delete assessment type '{assessment.name}' because it has marks associated with it."})
+
+    # Store the name for the success message
+    assessment_name = assessment.name
+
+    # Delete the assessment type
+    db.session.delete(assessment)
+    db.session.commit()
+
+    # Get updated statistics
+    terms = Term.query.all()
+    assessment_types = AssessmentType.query.all()
+    current_term = "None"
+
+    # Find the current term if any
+    for term in terms:
+        if hasattr(term, 'is_current') and term.is_current:
+            current_term = term.name
+            break
+
+    # Prepare statistics for JSON response
+    stats = {
+        "total_terms": len(terms),
+        "total_assessments": len(assessment_types),
+        "current_term": current_term
+    }
+
+    return jsonify({
+        "success": True,
+        "message": f"Assessment type '{assessment_name}' deleted successfully!",
+        "stats": stats
+    })
+
+@classteacher_bp.route('/edit_term_ajax', methods=['POST'])
+@classteacher_required
+def edit_term_ajax():
+    """AJAX route for editing a term."""
+    term_id = request.form.get("term_id")
+    term_name = request.form.get("term_name")
+    term_start_date = request.form.get("term_start_date")
+    term_end_date = request.form.get("term_end_date")
+    academic_year = request.form.get("academic_year")
+    is_current_term = "is_current_term" in request.form
+
+    if not term_id or not term_name:
+        return jsonify({"success": False, "message": "Missing required information."})
+
+    term = Term.query.get(term_id)
+    if not term:
+        return jsonify({"success": False, "message": "Term not found."})
+
+    # Check if another term with the same name already exists
+    existing_term = Term.query.filter(
+        Term.name == term_name,
+        Term.id != term.id
+    ).first()
+
+    if existing_term:
+        return jsonify({"success": False, "message": f"Term '{term_name}' already exists."})
+
+    # Update the term
+    term.name = term_name
+
+    # Update additional fields if they exist in the model
+    if hasattr(Term, 'start_date'):
+        term.start_date = term_start_date if term_start_date else None
+
+    if hasattr(Term, 'end_date'):
+        term.end_date = term_end_date if term_end_date else None
+
+    if hasattr(Term, 'academic_year'):
+        term.academic_year = academic_year if academic_year else None
+
+    if hasattr(Term, 'is_current'):
+        # If setting this term as current, unset any other current terms
+        if is_current_term:
+            current_terms = Term.query.filter(Term.id != term.id).all()
+            for t in current_terms:
+                if hasattr(t, 'is_current'):
+                    t.is_current = False
+            term.is_current = True
+        else:
+            term.is_current = False
+
+    db.session.commit()
+
+    # Get updated statistics
+    terms = Term.query.all()
+    assessment_types = AssessmentType.query.all()
+    current_term = "None"
+
+    # Find the current term if any
+    for t in terms:
+        if hasattr(t, 'is_current') and t.is_current:
+            current_term = t.name
+            break
+
+    # Prepare term data for JSON response
+    term_data = {
+        "id": term.id,
+        "name": term.name,
+        "is_current": True if hasattr(term, 'is_current') and term.is_current else False,
+        "academic_year": term.academic_year if hasattr(term, 'academic_year') and term.academic_year else None
+    }
+
+    # Find the current academic year
+    current_academic_year = "None"
+    for t in terms:
+        if hasattr(t, 'is_current') and t.is_current and hasattr(t, 'academic_year') and t.academic_year:
+            current_academic_year = t.academic_year
+            break
+
+    # If no current term has an academic year, try to get the academic year from any term
+    if current_academic_year == "None":
+        for t in terms:
+            if hasattr(t, 'academic_year') and t.academic_year:
+                current_academic_year = t.academic_year
+                break
+
+    # Prepare statistics for JSON response
+    stats = {
+        "total_terms": len(terms),
+        "total_assessments": len(assessment_types),
+        "current_term": current_term,
+        "current_academic_year": current_academic_year
+    }
+
+    return jsonify({
+        "success": True,
+        "message": f"Term '{term_name}' updated successfully!",
+        "term": term_data,
+        "stats": stats
+    })
+
+@classteacher_bp.route('/edit_assessment_ajax', methods=['POST'])
+@classteacher_required
+def edit_assessment_ajax():
+    """AJAX route for editing an assessment type."""
+    assessment_id = request.form.get("assessment_id")
+    assessment_name = request.form.get("assessment_name")
+    assessment_weight = request.form.get("assessment_weight")
+    assessment_group = request.form.get("assessment_group")
+    show_on_reports = "show_on_reports" in request.form
+
+    if not assessment_id or not assessment_name:
+        return jsonify({"success": False, "message": "Missing required information."})
+
+    assessment = AssessmentType.query.get(assessment_id)
+    if not assessment:
+        return jsonify({"success": False, "message": "Assessment type not found."})
+
+    # Check if another assessment with the same name already exists
+    existing_assessment = AssessmentType.query.filter(
+        AssessmentType.name == assessment_name,
+        AssessmentType.id != assessment.id
+    ).first()
+
+    if existing_assessment:
+        return jsonify({"success": False, "message": f"Assessment type '{assessment_name}' already exists."})
+
+    # Update the assessment
+    assessment.name = assessment_name
+
+    # Update additional fields if they exist in the model
+    if hasattr(AssessmentType, 'weight'):
+        assessment.weight = assessment_weight if assessment_weight else None
+
+    if hasattr(AssessmentType, 'group'):
+        assessment.group = assessment_group if assessment_group else None
+
+    if hasattr(AssessmentType, 'show_on_reports'):
+        assessment.show_on_reports = show_on_reports
+
+    db.session.commit()
+
+    # Get updated statistics
+    terms = Term.query.all()
+    assessment_types = AssessmentType.query.all()
+    current_term = "None"
+
+    # Find the current term if any
+    for term in terms:
+        if hasattr(term, 'is_current') and term.is_current:
+            current_term = term.name
+            break
+
+    # Prepare assessment data for JSON response
+    assessment_data = {
+        "id": assessment.id,
+        "name": assessment.name,
+        "weight": assessment.weight if hasattr(assessment, 'weight') and assessment.weight else None
+    }
+
+    # Prepare statistics for JSON response
+    stats = {
+        "total_terms": len(terms),
+        "total_assessments": len(assessment_types),
+        "current_term": current_term
+    }
+
+    return jsonify({
+        "success": True,
+        "message": f"Assessment type '{assessment_name}' updated successfully!",
+        "assessment": assessment_data,
+        "stats": stats
+    })
+
+@classteacher_bp.route('/add_assessment_ajax', methods=['POST'])
+@classteacher_required
+def add_assessment_ajax():
+    """AJAX route for adding a new assessment type."""
+    assessment_name = request.form.get("assessment_name")
+    assessment_weight = request.form.get("assessment_weight")
+    assessment_group = request.form.get("assessment_group")
+    show_on_reports = "show_on_reports" in request.form
+
+    if not assessment_name:
+        return jsonify({"success": False, "message": "Please fill in the assessment type name."})
+
+    existing_assessment = AssessmentType.query.filter_by(name=assessment_name).first()
+    if existing_assessment:
+        return jsonify({"success": False, "message": f"Assessment type '{assessment_name}' already exists."})
+
+    # Create new assessment with additional fields if they exist in the model
+    new_assessment = AssessmentType(name=assessment_name)
+
+    # Add additional fields if they exist in the model
+    if hasattr(AssessmentType, 'weight') and assessment_weight:
+        new_assessment.weight = assessment_weight
+
+    if hasattr(AssessmentType, 'group') and assessment_group:
+        new_assessment.group = assessment_group
+
+    if hasattr(AssessmentType, 'show_on_reports'):
+        new_assessment.show_on_reports = show_on_reports
+
+    db.session.add(new_assessment)
+    db.session.commit()
+
+    # Get updated statistics
+    terms = Term.query.all()
+    assessment_types = AssessmentType.query.all()
+    current_term = "None"
+
+    # Find the current term if any
+    for term in terms:
+        if hasattr(term, 'is_current') and term.is_current:
+            current_term = term.name
+            break
+
+    # Prepare assessment data for JSON response
+    assessment_data = {
+        "id": new_assessment.id,
+        "name": new_assessment.name,
+        "weight": new_assessment.weight if hasattr(new_assessment, 'weight') and new_assessment.weight else None
+    }
+
+    # Prepare statistics for JSON response
+    stats = {
+        "total_terms": len(terms),
+        "total_assessments": len(assessment_types),
+        "current_term": current_term
+    }
+
+    return jsonify({
+        "success": True,
+        "message": f"Assessment type '{assessment_name}' added successfully!",
+        "assessment": assessment_data,
+        "stats": stats
+    })
+
+@classteacher_bp.route('/manage_terms_assessments', methods=['GET', 'POST'])
+@classteacher_required
+def manage_terms_assessments():
+    """Route for managing terms and assessment types."""
+    error_message = None
+    success_message = None
+
+    # Get all terms and assessment types
+    terms = Term.query.order_by(Term.id).all()
+    assessment_types = AssessmentType.query.order_by(AssessmentType.id).all()
+
+    # Set default values for statistics
+    current_academic_year = "None"
+    current_term = "None"
+
+    # Find the current term and academic year if any
+    for term in terms:
+        if hasattr(term, 'is_current') and term.is_current:
+            current_term = term.name
+            if hasattr(term, 'academic_year') and term.academic_year:
+                current_academic_year = term.academic_year
+            break
+
+    # If no current term has an academic year, try to get the academic year from any term
+    if current_academic_year == "None":
+        for term in terms:
+            if hasattr(term, 'academic_year') and term.academic_year:
+                current_academic_year = term.academic_year
+                break
+
+    if request.method == 'POST':
+        action = request.form.get("action")
+
+        if "add_term" in request.form:
+            term_name = request.form.get("term_name")
+            term_start_date = request.form.get("term_start_date")
+            term_end_date = request.form.get("term_end_date")
+            academic_year = request.form.get("academic_year")
+            is_current_term = "is_current_term" in request.form
+
+            if term_name:
+                existing_term = Term.query.filter_by(name=term_name).first()
+                if existing_term:
+                    error_message = f"Term '{term_name}' already exists."
+                else:
+                    # Create new term with additional fields if they exist in the model
+                    new_term = Term(name=term_name)
+
+                    # Add additional fields if they exist in the model
+                    if hasattr(Term, 'start_date') and term_start_date:
+                        new_term.start_date = term_start_date
+
+                    if hasattr(Term, 'end_date') and term_end_date:
+                        new_term.end_date = term_end_date
+
+                    if hasattr(Term, 'academic_year') and academic_year:
+                        new_term.academic_year = academic_year
+
+                    if hasattr(Term, 'is_current'):
+                        # If setting this term as current, unset any other current terms
+                        if is_current_term:
+                            for term in terms:
+                                if hasattr(term, 'is_current'):
+                                    term.is_current = False
+                            new_term.is_current = True
+
+                    db.session.add(new_term)
+                    db.session.commit()
+                    success_message = f"Term '{term_name}' added successfully!"
+            else:
+                error_message = "Please fill in the term name."
+
+        elif "add_assessment" in request.form:
+            assessment_name = request.form.get("assessment_name")
+            assessment_weight = request.form.get("assessment_weight")
+            assessment_group = request.form.get("assessment_group")
+            show_on_reports = "show_on_reports" in request.form
+
+            if assessment_name:
+                existing_assessment = AssessmentType.query.filter_by(name=assessment_name).first()
+                if existing_assessment:
+                    error_message = f"Assessment type '{assessment_name}' already exists."
+                else:
+                    # Create new assessment with additional fields if they exist in the model
+                    new_assessment = AssessmentType(name=assessment_name)
+
+                    # Add additional fields if they exist in the model
+                    if hasattr(AssessmentType, 'weight') and assessment_weight:
+                        new_assessment.weight = assessment_weight
+
+                    if hasattr(AssessmentType, 'group') and assessment_group:
+                        new_assessment.group = assessment_group
+
+                    if hasattr(AssessmentType, 'show_on_reports'):
+                        new_assessment.show_on_reports = show_on_reports
+
+                    db.session.add(new_assessment)
+                    db.session.commit()
+                    success_message = f"Assessment type '{assessment_name}' added successfully!"
+            else:
+                error_message = "Please fill in the assessment type name."
+
+        elif "delete_term" in request.form:
+            term_id = request.form.get("term_id")
+            term = Term.query.get(term_id)
+            if term:
+                # Check if term has marks
+                marks = Mark.query.filter_by(term_id=term.id).all()
+                if marks:
+                    error_message = f"Cannot delete term '{term.name}' because it has marks associated with it."
+                else:
+                    db.session.delete(term)
+                    db.session.commit()
+                    success_message = f"Term '{term.name}' deleted successfully!"
+            else:
+                error_message = "Term not found."
+
+        elif "delete_assessment" in request.form:
+            assessment_id = request.form.get("assessment_id")
+            assessment = AssessmentType.query.get(assessment_id)
+            if assessment:
+                # Check if assessment type has marks
+                marks = Mark.query.filter_by(assessment_type_id=assessment.id).all()
+                if marks:
+                    error_message = f"Cannot delete assessment type '{assessment.name}' because it has marks associated with it."
+                else:
+                    db.session.delete(assessment)
+                    db.session.commit()
+                    success_message = f"Assessment type '{assessment.name}' deleted successfully!"
+            else:
+                error_message = "Assessment type not found."
+
+        elif action == "edit_term":
+            term_id = request.form.get("term_id")
+            term_name = request.form.get("term_name")
+            term_start_date = request.form.get("term_start_date")
+            term_end_date = request.form.get("term_end_date")
+            academic_year = request.form.get("academic_year")
+            is_current_term = "is_current_term" in request.form
+
+            if not term_id or not term_name:
+                error_message = "Missing required information."
+            else:
+                term = Term.query.get(term_id)
+                if not term:
+                    error_message = "Term not found."
+                else:
+                    # Check if another term with the same name already exists
+                    existing_term = Term.query.filter(
+                        Term.name == term_name,
+                        Term.id != term.id
+                    ).first()
+
+                    if existing_term:
+                        error_message = f"Term '{term_name}' already exists."
+                    else:
+                        # Update the term
+                        term.name = term_name
+
+                        # Update additional fields if they exist in the model
+                        if hasattr(Term, 'start_date'):
+                            term.start_date = term_start_date if term_start_date else None
+
+                        if hasattr(Term, 'end_date'):
+                            term.end_date = term_end_date if term_end_date else None
+
+                        if hasattr(Term, 'academic_year'):
+                            term.academic_year = academic_year if academic_year else None
+
+                        if hasattr(Term, 'is_current'):
+                            # If setting this term as current, unset any other current terms
+                            if is_current_term:
+                                for t in terms:
+                                    if hasattr(t, 'is_current'):
+                                        t.is_current = (t.id == term.id)
+                            else:
+                                term.is_current = False
+
+                        db.session.commit()
+                        success_message = f"Term '{term_name}' updated successfully!"
+
+        elif action == "edit_assessment":
+            assessment_id = request.form.get("assessment_id")
+            assessment_name = request.form.get("assessment_name")
+            assessment_weight = request.form.get("assessment_weight")
+            assessment_group = request.form.get("assessment_group")
+            show_on_reports = "show_on_reports" in request.form
+
+            if not assessment_id or not assessment_name:
+                error_message = "Missing required information."
+            else:
+                assessment = AssessmentType.query.get(assessment_id)
+                if not assessment:
+                    error_message = "Assessment type not found."
+                else:
+                    # Check if another assessment with the same name already exists
+                    existing_assessment = AssessmentType.query.filter(
+                        AssessmentType.name == assessment_name,
+                        AssessmentType.id != assessment.id
+                    ).first()
+
+                    if existing_assessment:
+                        error_message = f"Assessment type '{assessment_name}' already exists."
+                    else:
+                        # Update the assessment
+                        assessment.name = assessment_name
+
+                        # Update additional fields if they exist in the model
+                        if hasattr(AssessmentType, 'weight'):
+                            assessment.weight = assessment_weight if assessment_weight else None
+
+                        if hasattr(AssessmentType, 'group'):
+                            assessment.group = assessment_group if assessment_group else None
+
+                        if hasattr(AssessmentType, 'show_on_reports'):
+                            assessment.show_on_reports = show_on_reports
+
+                        db.session.commit()
+                        success_message = f"Assessment type '{assessment_name}' updated successfully!"
+
+    # Add is_current attribute to terms if it doesn't exist in the model
+    for term in terms:
+        if not hasattr(term, 'is_current'):
+            # Check if this is the only term or if it's the latest term
+            if len(terms) == 1 or term.id == max(t.id for t in terms):
+                term.is_current = True
+            else:
+                term.is_current = False
+
+    # Add weight attribute to assessment types if it doesn't exist in the model
+    for assessment in assessment_types:
+        if not hasattr(assessment, 'weight'):
+            assessment.weight = None
+
+    return render_template(
+        'manage_terms_assessments_improved.html',
+        terms=terms,
+        assessment_types=assessment_types,
+        current_academic_year=current_academic_year,
+        current_term=current_term,
+        error_message=error_message,
+        success_message=success_message
+    )
 
 @classteacher_bp.route('/manage_teacher_subjects/<int:teacher_id>', methods=['GET', 'POST'])
 @classteacher_required
@@ -2080,38 +4941,3 @@ def get_teacher_assignments(teacher_id):
         print(f"Error fetching teacher assignments: {str(e)}")
         return jsonify({'error': 'Failed to fetch assignments'}), 500
 
-@classteacher_bp.route('/api/check_stream_status/<grade>/<term>/<assessment_type>')
-@classteacher_required
-def check_stream_status(grade, term, assessment_type):
-    """API endpoint to check if all streams in a grade have reports generated."""
-    grade_obj = Grade.query.filter_by(level=grade).first()
-    if not grade_obj:
-        return jsonify({"error": f"Grade {grade} not found"}), 404
-
-    streams = Stream.query.filter_by(grade_id=grade_obj.id).all()
-    if not streams:
-        return jsonify({"error": f"No streams found for grade {grade}"}), 404
-
-    term_obj = Term.query.filter_by(name=term).first()
-    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
-    if not term_obj or not assessment_type_obj:
-        return jsonify({"error": "Invalid term or assessment type"}), 404
-
-    # Check each stream for marks
-    stream_status = {}
-    for stream in streams:
-        # Check if any marks exist for this stream
-        marks = Mark.query.join(Student).filter(
-            Student.stream_id == stream.id,
-            Mark.term_id == term_obj.id,
-            Mark.assessment_type_id == assessment_type_obj.id
-        ).first()
-
-        stream_status[stream.name] = marks is not None
-
-    return jsonify({
-        "grade": grade,
-        "term": term,
-        "assessment_type": assessment_type,
-        "streams": stream_status
-    })
