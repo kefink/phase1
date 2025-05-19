@@ -83,12 +83,20 @@ def get_class_report_data(grade, stream, term, assessment_type):
 
             if mark:
                 # Store the raw mark
-                raw_mark_value = mark.mark
+                raw_mark_value = mark.raw_mark if hasattr(mark, 'raw_mark') and mark.raw_mark is not None else mark.mark
                 student_raw_marks[subject.name] = raw_mark_value
 
-                # Calculate standardized mark (out of 100)
-                total_marks = mark.total_marks if mark.total_marks > 0 else default_total_marks
-                standardized_mark = (raw_mark_value / total_marks) * 100
+                # Use the percentage value directly if available
+                if hasattr(mark, 'percentage') and mark.percentage is not None:
+                    standardized_mark = mark.percentage
+                else:
+                    # Calculate standardized mark (out of 100)
+                    total_marks = mark.max_raw_mark if hasattr(mark, 'max_raw_mark') and mark.max_raw_mark is not None else (mark.total_marks if mark.total_marks > 0 else default_total_marks)
+                    standardized_mark = (raw_mark_value / total_marks) * 100
+
+                # Ensure standardized mark doesn't exceed 100%
+                if standardized_mark > 100:
+                    standardized_mark = 100.0
 
                 # Store the standardized mark
                 student_marks[subject.name] = standardized_mark

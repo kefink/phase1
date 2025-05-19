@@ -690,7 +690,7 @@
               student_data.total_possible_marks }}
             </td>
             <td class="avg-cell">
-              {{ student_data.filtered_average | round(0) }}%
+              {{ student_data.filtered_average | round(0) }}
             </td>
             <td class="grade-cell">{{ student_data.performance_category }}</td>
             <td class="rank-cell">{{ student_data.rank }}</td>
@@ -725,7 +725,7 @@
             %}
             <td class="avg-cell">
               {% if avg_student_count > 0 %} {{ (avg_percentage_total /
-              avg_student_count) | round(2) }}% {% else %} 0% {% endif %}
+              avg_student_count) | round(2) }} {% else %} 0 {% endif %}
             </td>
 
             <td colspan="2" class="empty-cell"></td>

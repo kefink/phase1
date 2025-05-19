@@ -11,8 +11,15 @@ from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark
 from ..utils.constants import educational_level_mapping
 from ..services import is_authenticated, get_role, get_class_report_data, generate_individual_report, generate_class_report_pdf
 from ..services.report_service import generate_class_report_pdf_from_html, get_performance_remarks
+from ..services.mark_conversion_service import MarkConversionService
 from ..extensions import db
 from ..utils import get_performance_category
+from ..services.cache_service import (
+    cache_marksheet, get_cached_marksheet,
+    cache_report, get_cached_report,
+    cache_pdf, get_cached_pdf,
+    invalidate_cache
+)
 from functools import wraps
 
 # Create a blueprint for class teacher routes
@@ -128,6 +135,10 @@ def dashboard():
     filter_grade = request.args.get('filter_grade', '')
     filter_term = request.args.get('filter_term', '')
 
+    # Check if we should show the download button and individual report button
+    show_download_button = request.args.get('show_download', type=int, default=0) == 1
+    show_individual_report_button = request.args.get('show_individual', type=int, default=0) == 1
+
     # Build the query with joins
     marks_query = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType)
 
@@ -199,7 +210,28 @@ def dashboard():
                     students = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name).all()
 
                     # Get subjects for this education level
-                    subjects = [subject.name for subject in Subject.query.filter_by(education_level=education_level).all()]
+                    all_subjects = Subject.query.filter_by(education_level=education_level).all()
+
+                    # Define core subjects that should appear first
+                    core_subjects = ["Mathematics", "English", "Kiswahili", "Science", "Integrated Science",
+                                    "Science and Technology", "Integrated Science and Health Education"]
+
+                    # Sort subjects with core subjects first
+                    sorted_subjects = []
+
+                    # First add core subjects in the specified order
+                    for core_subject in core_subjects:
+                        for subject in all_subjects:
+                            if subject.name == core_subject or subject.name.upper() == core_subject.upper():
+                                sorted_subjects.append(subject)
+
+                    # Then add remaining subjects alphabetically
+                    remaining_subjects = [s for s in all_subjects if s not in sorted_subjects]
+                    remaining_subjects.sort(key=lambda x: x.name)
+                    sorted_subjects.extend(remaining_subjects)
+
+                    # Extract just the names
+                    subjects = [subject.name for subject in sorted_subjects]
 
                     if students and subjects:
                         show_students = True
@@ -240,7 +272,28 @@ def dashboard():
                     students = Student.query.filter_by(stream_id=stream_obj.id).all()
 
                     # Get subjects for this education level
-                    subjects = Subject.query.filter_by(education_level=education_level).all()
+                    all_subjects = Subject.query.filter_by(education_level=education_level).all()
+
+                    # Define core subjects that should appear first
+                    core_subjects = ["Mathematics", "English", "Kiswahili", "Science", "Integrated Science",
+                                    "Science and Technology", "Integrated Science and Health Education"]
+
+                    # Sort subjects with core subjects first
+                    sorted_subjects = []
+
+                    # First add core subjects in the specified order
+                    for core_subject in core_subjects:
+                        for subject in all_subjects:
+                            if subject.name == core_subject or subject.name.upper() == core_subject.upper():
+                                sorted_subjects.append(subject)
+
+                    # Then add remaining subjects alphabetically
+                    remaining_subjects = [s for s in all_subjects if s not in sorted_subjects]
+                    remaining_subjects.sort(key=lambda x: x.name)
+                    sorted_subjects.extend(remaining_subjects)
+
+                    # Use the sorted subjects
+                    subjects = sorted_subjects
 
                     if not (students and subjects):
                         error_message = "No students or subjects found"
@@ -265,11 +318,14 @@ def dashboard():
                                 percentage_value = request.form.get(percentage_key, type=float, default=0.0)
 
                                 if mark_value and mark_value.isdigit():
-                                    mark = int(mark_value)
-                                    if 0 <= mark <= subject_total_marks:
-                                        # Calculate percentage if not provided
-                                        if percentage_value == 0.0 and subject_total_marks > 0:
-                                            percentage_value = (mark / subject_total_marks) * 100
+                                    try:
+                                        raw_mark = int(mark_value)
+
+                                        # Sanitize the raw mark and total marks to ensure they're within acceptable ranges
+                                        raw_mark, subject_total_marks = MarkConversionService.sanitize_raw_mark(raw_mark, subject_total_marks)
+
+                                        # Calculate percentage using our service
+                                        percentage_value = MarkConversionService.calculate_percentage(raw_mark, subject_total_marks)
 
                                         # Check if mark already exists
                                         existing_mark = Mark.query.filter_by(
@@ -280,31 +336,37 @@ def dashboard():
                                         ).first()
 
                                         if existing_mark:
-                                            # Update existing mark
-                                            existing_mark.mark = mark
-                                            existing_mark.total_marks = subject_total_marks
-                                            # Store percentage in a field if available
-                                            if hasattr(existing_mark, 'percentage'):
-                                                existing_mark.percentage = percentage_value
+                                            # Update existing mark with both old and new field names
+                                            existing_mark.mark = raw_mark  # Old field name
+                                            existing_mark.total_marks = subject_total_marks  # Old field name
+                                            existing_mark.raw_mark = raw_mark  # New field name
+                                            existing_mark.max_raw_mark = subject_total_marks  # New field name
+                                            existing_mark.percentage = percentage_value
                                             marks_updated += 1
                                         else:
-                                            # Create new mark
+                                            # Create new mark with both old and new field names
                                             new_mark = Mark(
                                                 student_id=student.id,
                                                 subject_id=subject.id,
                                                 term_id=term_obj.id,
                                                 assessment_type_id=assessment_type_obj.id,
-                                                mark=mark,
-                                                total_marks=subject_total_marks
+                                                mark=raw_mark,  # Old field name
+                                                total_marks=subject_total_marks,  # Old field name
+                                                raw_mark=raw_mark,  # New field name
+                                                max_raw_mark=subject_total_marks,  # New field name
+                                                percentage=percentage_value
                                             )
-                                            # Store percentage in a field if available
-                                            if hasattr(Mark, 'percentage'):
-                                                new_mark.percentage = percentage_value
                                             db.session.add(new_mark)
                                             marks_added += 1
+                                    except Exception as e:
+                                        print(f"Error processing mark: {e}")
+                                        continue
 
                         # Commit changes to the database
                         db.session.commit()
+
+                        # Invalidate any existing cache for this grade/stream/term/assessment combination
+                        invalidate_cache(grade_level, stream_name, term, assessment_type)
 
                         # Show success message
                         flash(f"Successfully saved {marks_added} new marks and updated {marks_updated} existing marks.", "success")
@@ -387,7 +449,28 @@ def dashboard():
                 students = {student.name: student for student in Student.query.filter_by(stream_id=stream_obj.id).all()}
 
                 # Get all subjects for this education level
-                subjects = {subject.name: subject for subject in Subject.query.filter_by(education_level=education_level).all()}
+                all_subjects = Subject.query.filter_by(education_level=education_level).all()
+
+                # Define core subjects that should appear first
+                core_subjects = ["Mathematics", "English", "Kiswahili", "Science", "Integrated Science",
+                                "Science and Technology", "Integrated Science and Health Education"]
+
+                # Sort subjects with core subjects first
+                sorted_subjects = []
+
+                # First add core subjects in the specified order
+                for core_subject in core_subjects:
+                    for subject in all_subjects:
+                        if subject.name == core_subject or subject.name.upper() == core_subject.upper():
+                            sorted_subjects.append(subject)
+
+                # Then add remaining subjects alphabetically
+                remaining_subjects = [s for s in all_subjects if s not in sorted_subjects]
+                remaining_subjects.sort(key=lambda x: x.name)
+                sorted_subjects.extend(remaining_subjects)
+
+                # Create a dictionary of subject name to subject object
+                subjects = {subject.name: subject for subject in sorted_subjects}
 
                 # Check if we have the required columns
                 if 'Student Name' not in df.columns and 'Admission Number' not in df.columns:
@@ -423,11 +506,16 @@ def dashboard():
                             if pd.isna(mark_value) or not (isinstance(mark_value, (int, float)) or (isinstance(mark_value, str) and mark_value.isdigit())):
                                 continue
 
-                            # Convert to integer
-                            mark = int(float(mark_value))
+                            try:
+                                # Convert to integer
+                                raw_mark = int(float(mark_value))
 
-                            # Validate mark
-                            if 0 <= mark <= total_marks:
+                                # Sanitize the raw mark and total marks to ensure they're within acceptable ranges
+                                raw_mark, sanitized_total_marks = MarkConversionService.sanitize_raw_mark(raw_mark, total_marks)
+
+                                # Calculate percentage using our service
+                                percentage = MarkConversionService.calculate_percentage(raw_mark, sanitized_total_marks)
+
                                 # Check if mark already exists
                                 existing_mark = Mark.query.filter_by(
                                     student_id=student.id,
@@ -437,27 +525,37 @@ def dashboard():
                                 ).first()
 
                                 if existing_mark:
-                                    # Update existing mark
-                                    existing_mark.mark = mark
-                                    existing_mark.total_marks = total_marks
+                                    # Update existing mark with both old and new field names
+                                    existing_mark.mark = raw_mark  # Old field name
+                                    existing_mark.total_marks = sanitized_total_marks  # Old field name
+                                    existing_mark.raw_mark = raw_mark  # New field name
+                                    existing_mark.max_raw_mark = sanitized_total_marks  # New field name
+                                    existing_mark.percentage = percentage
                                     marks_updated += 1
                                 else:
-                                    # Create new mark
+                                    # Create new mark with both old and new field names
                                     new_mark = Mark(
                                         student_id=student.id,
                                         subject_id=subjects[subject_name].id,
                                         term_id=term_obj.id,
                                         assessment_type_id=assessment_type_obj.id,
-                                        mark=mark,
-                                        total_marks=total_marks
+                                        mark=raw_mark,  # Old field name
+                                        total_marks=sanitized_total_marks,  # Old field name
+                                        raw_mark=raw_mark,  # New field name
+                                        max_raw_mark=sanitized_total_marks,  # New field name
+                                        percentage=percentage
                                     )
                                     db.session.add(new_mark)
                                     marks_added += 1
-                            else:
+                            except Exception as e:
+                                print(f"Error processing bulk mark: {e}")
                                 errors += 1
 
                 # Commit changes to the database
                 db.session.commit()
+
+                # Invalidate any existing cache for this grade/stream/term/assessment combination
+                invalidate_cache(grade_level, stream_name, term, assessment_type)
 
                 # Show success message
                 if marks_added > 0 or marks_updated > 0:
@@ -522,6 +620,23 @@ def dashboard():
     else:
         confirmation_message = ""
 
+    # Determine which tab should be active
+    active_tab = "recent-reports"  # Default tab
+
+    # If students are being loaded or marks are being submitted, set the active tab to upload-marks
+    if show_students or "upload_marks" in request.form or "submit_marks" in request.form or "bulk_upload_marks" in request.form:
+        active_tab = "upload-marks"
+        # Store in session that we're showing students
+        session['show_students_tab'] = True
+    # If generating marksheets, set the active tab to generate-marksheet
+    elif "generate_stream_marksheet" in request.form or "download_stream_marksheet" in request.form:
+        active_tab = "generate-marksheet"
+    # Check if we have a tab preference in the session
+    elif session.get('show_students_tab'):
+        active_tab = "upload-marks"
+        # Clear the session preference
+        session.pop('show_students_tab', None)
+
     # Render the class teacher dashboard
     return render_template(
         "classteacher.html",
@@ -547,7 +662,8 @@ def dashboard():
         recent_reports=recent_reports,
         class_teacher_assignments=class_teacher_assignments,
         subject_assignments=subject_assignments,
-        confirmation_message=confirmation_message
+        confirmation_message=confirmation_message,
+        active_tab=active_tab  # Pass the active tab to the template
     )
 
 @classteacher_bp.route('/all_reports', methods=['GET'])
@@ -1156,7 +1272,21 @@ def preview_class_report(grade, stream, term, assessment_type):
         for mark in all_marks:
             if mark.student_id not in marks_dict:
                 marks_dict[mark.student_id] = {}
-            marks_dict[mark.student_id][mark.subject_id] = mark.mark
+
+            # Use percentage if available, otherwise use raw mark
+            if hasattr(mark, 'percentage') and mark.percentage is not None:
+                marks_dict[mark.student_id][mark.subject_id] = mark.percentage
+            else:
+                # Calculate percentage from raw mark
+                raw_mark = mark.raw_mark if hasattr(mark, 'raw_mark') and mark.raw_mark is not None else mark.mark
+                max_raw_mark = mark.max_raw_mark if hasattr(mark, 'max_raw_mark') and mark.max_raw_mark is not None else (mark.total_marks if mark.total_marks > 0 else 100)
+                percentage = (raw_mark / max_raw_mark) * 100
+
+                # Ensure percentage doesn't exceed 100%
+                if percentage > 100:
+                    percentage = 100.0
+
+                marks_dict[mark.student_id][mark.subject_id] = percentage
 
         # Filter class data to only include these subjects
         for student_data in class_data:
@@ -1170,9 +1300,29 @@ def preview_class_report(grade, stream, term, assessment_type):
                 for subject in filtered_subjects:
                     if student.id in marks_dict and subject.id in marks_dict[student.id]:
                         mark_value = marks_dict[student.id][subject.id]
-                        filtered_marks[subject.name] = mark_value
+                        # Convert raw mark to percentage
+                        mark_obj = Mark.query.filter_by(
+                            student_id=student.id,
+                            subject_id=subject.id,
+                            term_id=term_obj.id,
+                            assessment_type_id=assessment_type_obj.id
+                        ).first()
+
+                        if mark_obj and hasattr(mark_obj, 'percentage') and mark_obj.percentage is not None:
+                            # Use the percentage value directly
+                            percentage_value = mark_obj.percentage
+                        else:
+                            # Calculate percentage from raw mark
+                            total_marks = mark_obj.total_marks if mark_obj and mark_obj.total_marks > 0 else 100
+                            percentage_value = (mark_value / total_marks) * 100
+
+                        # Ensure percentage doesn't exceed 100%
+                        if percentage_value > 100:
+                            percentage_value = 100.0
+
+                        filtered_marks[subject.name] = percentage_value
                         subject_count += 1
-                        total_marks_value += mark_value
+                        total_marks_value += percentage_value
                     else:
                         filtered_marks[subject.name] = 0
             else:
@@ -1494,11 +1644,13 @@ def update_class_marks(grade, stream, term, assessment_type):
                 try:
                     # Get the raw mark and total marks from the form
                     raw_mark = int(request.form[mark_key])
-                    total_marks = int(request.form[total_marks_key])
+                    max_raw_mark = int(request.form[total_marks_key])
 
-                    # Ensure total_marks is not zero to avoid division by zero
-                    if total_marks <= 0:
-                        total_marks = 100
+                    # Sanitize the raw mark and total marks to ensure they're within acceptable ranges
+                    raw_mark, max_raw_mark = MarkConversionService.sanitize_raw_mark(raw_mark, max_raw_mark)
+
+                    # Calculate percentage using our service
+                    percentage = MarkConversionService.calculate_percentage(raw_mark, max_raw_mark)
 
                     # Find existing mark or create new one
                     mark = Mark.query.filter_by(
@@ -1509,18 +1661,24 @@ def update_class_marks(grade, stream, term, assessment_type):
                     ).first()
 
                     if mark:
-                        # Update existing mark
-                        mark.mark = raw_mark
-                        mark.total_marks = total_marks
+                        # Update existing mark with both old and new field names
+                        mark.mark = raw_mark  # Old field name
+                        mark.total_marks = max_raw_mark  # Old field name
+                        mark.raw_mark = raw_mark  # New field name
+                        mark.max_raw_mark = max_raw_mark  # New field name
+                        mark.percentage = percentage
                     else:
-                        # Create new mark
+                        # Create new mark with both old and new field names
                         mark = Mark(
                             student_id=student.id,
                             subject_id=subject.id,
                             term_id=term_obj.id,
                             assessment_type_id=assessment_type_obj.id,
-                            mark=raw_mark,
-                            total_marks=total_marks
+                            mark=raw_mark,  # Old field name
+                            total_marks=max_raw_mark,  # Old field name
+                            raw_mark=raw_mark,  # New field name
+                            max_raw_mark=max_raw_mark,  # New field name
+                            percentage=percentage
                         )
                         db.session.add(mark)
 
@@ -1543,6 +1701,17 @@ def update_class_marks(grade, stream, term, assessment_type):
 @classteacher_required
 def download_class_report(grade, stream, term, assessment_type):
     """Route for downloading class reports as PDF."""
+    # Check if we have a cached PDF
+    cached_pdf = get_cached_pdf(grade, stream, term, assessment_type, "class_report")
+    if cached_pdf:
+        return send_file(
+            cached_pdf,
+            as_attachment=True,
+            download_name=f"{grade}_{stream}_{term}_{assessment_type}_Class_Report.pdf",
+            mimetype='application/pdf'
+        )
+
+    # If no cache or cache miss, generate the report
     stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
@@ -1625,6 +1794,14 @@ def download_class_report(grade, stream, term, assessment_type):
     if not pdf_file:
         flash(f"Failed to generate report for {grade} Stream {stream[-1]} in {term} {assessment_type}", "error")
         return redirect(url_for('classteacher.dashboard'))
+
+    # Cache the report data
+    cache_report(grade, stream, term, assessment_type, report_data)
+
+    # Cache the PDF file
+    with open(pdf_file, 'rb') as f:
+        pdf_data = f.read()
+    cache_pdf(grade, stream, term, assessment_type, "class_report", pdf_data)
 
     # Return the PDF file
     filename = f"{grade}_Stream_{stream[-1]}_{term}_{assessment_type}_Report.pdf"
@@ -1956,6 +2133,43 @@ def get_streams_by_level(grade):
         print(f"Error fetching streams: {str(e)}")
         return jsonify({"success": False, "message": str(e), "streams": []})
 
+@classteacher_bp.route('/get_subjects_by_education_level/<education_level>', methods=['GET'])
+@classteacher_required
+def get_subjects_by_education_level(education_level):
+    """API route to get subjects for a specific education level."""
+    try:
+        # Get subjects for this education level
+        all_subjects = Subject.query.filter_by(education_level=education_level).all()
+
+        if not all_subjects:
+            return jsonify({"success": True, "message": f"No subjects found for {education_level}", "subjects": []})
+
+        # Define core subjects that should appear first
+        core_subjects = ["Mathematics", "English", "Kiswahili", "Science", "Integrated Science",
+                        "Science and Technology", "Integrated Science and Health Education"]
+
+        # Sort subjects with core subjects first
+        sorted_subjects = []
+
+        # First add core subjects in the specified order
+        for core_subject in core_subjects:
+            for subject in all_subjects:
+                if subject.name == core_subject or subject.name.upper() == core_subject.upper():
+                    sorted_subjects.append(subject)
+
+        # Then add remaining subjects alphabetically
+        remaining_subjects = [s for s in all_subjects if s not in sorted_subjects]
+        remaining_subjects.sort(key=lambda x: x.name)
+        sorted_subjects.extend(remaining_subjects)
+
+        # Convert to list of dictionaries
+        subjects_data = [{"id": subject.id, "name": subject.name} for subject in sorted_subjects]
+
+        return jsonify({"success": True, "subjects": subjects_data})
+    except Exception as e:
+        print(f"Error fetching subjects: {str(e)}")
+        return jsonify({"success": False, "message": str(e), "subjects": []})
+
 @classteacher_bp.route('/download_marks_template', methods=['GET'])
 @classteacher_required
 def download_marks_template():
@@ -2073,6 +2287,31 @@ def download_marks_template():
 @classteacher_required
 def generate_grade_marksheet(grade, term, assessment_type, action):
     """Route for generating grade marksheets (preview or download)."""
+    # Check if we have a cached version
+    cached_marksheet = get_cached_marksheet(grade, "all", term, assessment_type)
+    if cached_marksheet and action == 'preview':
+        # Use the cached marksheet data
+        return render_template(
+            'preview_grade_marksheet.html',
+            grade=grade,
+            term=term,
+            assessment_type=assessment_type,
+            subjects=cached_marksheet['subjects'],
+            data=cached_marksheet['data'],
+            statistics=cached_marksheet['statistics']
+        )
+    elif cached_marksheet and action == 'download':
+        # Check if we have a cached PDF
+        cached_pdf = get_cached_pdf(grade, "all", term, assessment_type, "marksheet")
+        if cached_pdf:
+            return send_file(
+                cached_pdf,
+                as_attachment=True,
+                download_name=f"{grade}_{term}_{assessment_type}_Grade_Marksheet.xlsx",
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+
+    # If no cache or cache miss, generate the marksheet
     # Fetch grade and related data
     grade_obj = Grade.query.filter_by(level=grade).first()
     if not grade_obj:
@@ -2239,6 +2478,14 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
         'gender_counts': gender_counts
     }
 
+    # Cache the marksheet data
+    marksheet_data = {
+        'subjects': subjects,
+        'data': all_data,
+        'statistics': statistics
+    }
+    cache_marksheet(grade, "all", term, assessment_type, marksheet_data)
+
     # Handle preview or download action
     if action == 'preview':
         return render_template(
@@ -2264,6 +2511,9 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
                 data=all_data,
                 statistics=statistics
             )
+
+            # Cache the Excel file
+            cached_file = cache_pdf(grade, "all", term, assessment_type, "marksheet", open(excel_file, 'rb').read())
 
             # Return the Excel file
             return send_file(
@@ -2357,6 +2607,9 @@ def delete_marksheet(grade, stream, term, assessment_type):
 
         # Commit the changes
         db.session.commit()
+
+        # Invalidate the cache for this grade/stream/term/assessment combination
+        invalidate_cache(grade, stream, term, assessment_type)
 
         # Create a detailed success message
         if deleted_count > 0:
@@ -2486,6 +2739,17 @@ def view_student_reports(grade, stream, term, assessment_type):
 @classteacher_required
 def download_individual_report(grade, stream, term, assessment_type, student_name):
     """Route for downloading an individual student report as PDF."""
+    # Check if we have a cached PDF for this student
+    cached_pdf = get_cached_pdf(grade, stream, term, assessment_type, f"student_{student_name.replace(' ', '_')}")
+    if cached_pdf:
+        return send_file(
+            cached_pdf,
+            as_attachment=True,
+            download_name=f"Individual_Report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf",
+            mimetype='application/pdf'
+        )
+
+    # If no cache or cache miss, generate the report
     stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
@@ -2532,6 +2796,11 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
     if not pdf_file:
         flash(f"Failed to generate PDF report for {student_name}", "error")
         return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
+
+    # Cache the PDF file
+    with open(pdf_file, 'rb') as f:
+        pdf_data = f.read()
+    cache_pdf(grade, stream, term, assessment_type, f"student_{student_name.replace(' ', '_')}", pdf_data)
 
     # Return the PDF file
     return send_file(
@@ -4941,3 +5210,185 @@ def get_teacher_assignments(teacher_id):
         print(f"Error fetching teacher assignments: {str(e)}")
         return jsonify({'error': 'Failed to fetch assignments'}), 500
 
+@classteacher_bp.route('/api/streams/<grade>')
+@classteacher_required
+def api_get_streams(grade):
+    """API endpoint to get streams for a grade level."""
+    grade_obj = Grade.query.filter_by(level=grade).first()
+    if grade_obj:
+        streams = Stream.query.filter_by(grade_id=grade_obj.id).all()
+        stream_names = [stream.name for stream in streams]
+        return jsonify({"streams": [f"Stream {name}" for name in stream_names]})
+    return jsonify({"streams": []})
+
+@classteacher_bp.route('/view_all_reports')
+@classteacher_required
+def view_all_reports():
+    """Route for viewing all reports with pagination and filtering."""
+    # Get filter parameters
+    sort_by = request.args.get('sort', 'date')
+    filter_grade = request.args.get('filter_grade', '')
+    filter_term = request.args.get('filter_term', '')
+    filter_assessment = request.args.get('filter_assessment', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 20  # Number of reports per page
+
+    # Build the query with joins
+    marks_query = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType)
+
+    # Apply filters if provided
+    if filter_grade:
+        marks_query = marks_query.filter(Grade.level == filter_grade)
+    if filter_term:
+        marks_query = marks_query.filter(Term.name == filter_term)
+    if filter_assessment:
+        marks_query = marks_query.filter(AssessmentType.name == filter_assessment)
+
+    # Apply sorting
+    if sort_by == 'grade':
+        marks_query = marks_query.order_by(Grade.level)
+    elif sort_by == 'term':
+        marks_query = marks_query.order_by(Term.name)
+    else:  # Default to date
+        marks_query = marks_query.order_by(Mark.created_at.desc())
+
+    # Get unique combinations of grade, stream, term, assessment_type
+    from sqlalchemy import func
+    unique_combinations = db.session.query(
+        Grade.level,
+        Stream.name,
+        Term.name,
+        AssessmentType.name,
+        func.count(Mark.id).label('mark_count'),
+        func.max(Mark.created_at).label('latest_date')
+    ).join(Student, Mark.student_id == Student.id)\
+     .join(Stream, Student.stream_id == Stream.id)\
+     .join(Grade, Stream.grade_id == Grade.id)\
+     .join(Term, Mark.term_id == Term.id)\
+     .join(AssessmentType, Mark.assessment_type_id == AssessmentType.id)\
+     .group_by(Grade.level, Stream.name, Term.name, AssessmentType.name)
+
+    # Apply filters to the unique combinations query
+    if filter_grade:
+        unique_combinations = unique_combinations.filter(Grade.level == filter_grade)
+    if filter_term:
+        unique_combinations = unique_combinations.filter(Term.name == filter_term)
+    if filter_assessment:
+        unique_combinations = unique_combinations.filter(AssessmentType.name == filter_assessment)
+
+    # Apply sorting to the unique combinations query
+    if sort_by == 'grade':
+        unique_combinations = unique_combinations.order_by(Grade.level)
+    elif sort_by == 'term':
+        unique_combinations = unique_combinations.order_by(Term.name)
+    else:  # Default to date
+        unique_combinations = unique_combinations.order_by(func.max(Mark.created_at).desc())
+
+    # Paginate the results
+    pagination = unique_combinations.paginate(page=page, per_page=per_page, error_out=False)
+
+    # Format the results
+    reports = []
+    for grade, stream, term, assessment_type, mark_count, latest_date in pagination.items:
+        reports.append({
+            'id': len(reports) + 1,
+            'grade': grade,
+            'stream': f"Stream {stream}",
+            'term': term,
+            'assessment_type': assessment_type,
+            'date': latest_date.strftime('%Y-%m-%d') if latest_date else 'N/A',
+            'mark_count': mark_count
+        })
+
+    # Get all grades, terms, and assessment types for filters
+    grades = [grade.level for grade in Grade.query.all()]
+    terms = [term.name for term in Term.query.all()]
+    assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
+
+    return render_template(
+        'all_reports.html',
+        reports=reports,
+        pagination=pagination,
+        sort_by=sort_by,
+        filter_grade=filter_grade,
+        filter_term=filter_term,
+        filter_assessment=filter_assessment,
+        grades=grades,
+        terms=terms,
+        assessment_types=assessment_types
+    )
+
+@classteacher_bp.route('/delete_report/<grade>/<stream>/<term>/<assessment_type>', methods=['GET', 'POST'])
+@classteacher_required
+def delete_report(grade, stream, term, assessment_type):
+    """Route for deleting a marksheet and all associated marks."""
+    # Extract stream letter from "Stream X" format
+    stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
+
+    # Get the stream, term, and assessment type objects
+    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream_letter).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if not (stream_obj and term_obj and assessment_type_obj):
+        flash("Invalid stream, term, or assessment type.", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    try:
+        # Get all students in this stream
+        students = Student.query.filter_by(stream_id=stream_obj.id).all()
+        student_ids = [student.id for student in students]
+
+        # Delete all marks for these students in the specified term and assessment type
+        deleted_count = Mark.query.filter(
+            Mark.student_id.in_(student_ids),
+            Mark.term_id == term_obj.id,
+            Mark.assessment_type_id == assessment_type_obj.id
+        ).delete(synchronize_session=False)
+
+        # Commit the changes
+        db.session.commit()
+
+        # Invalidate any existing cache for this grade/stream/term/assessment combination
+        invalidate_cache(grade, stream, term, assessment_type)
+
+        flash(f"Successfully deleted {deleted_count} marks for {grade} {stream} in {term} {assessment_type}.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting marks: {str(e)}", "error")
+
+    # Redirect back to the referring page or dashboard
+    referrer = request.referrer
+    if referrer and ('all_reports' in referrer or 'dashboard' in referrer):
+        return redirect(referrer)
+    else:
+        return redirect(url_for('classteacher.dashboard'))
+
+@classteacher_bp.route('/api/stream_status/<grade>/<term>/<assessment_type>')
+@classteacher_required
+def api_get_stream_status(grade, term, assessment_type):
+    """API endpoint to check if streams have marks for a specific grade, term, and assessment type."""
+    grade_obj = Grade.query.filter_by(level=grade).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if not (grade_obj and term_obj and assessment_type_obj):
+        return jsonify({"error": "Invalid grade, term, or assessment type"}), 400
+
+    streams = Stream.query.filter_by(grade_id=grade_obj.id).all()
+    result = []
+
+    for stream in streams:
+        # Check if there are any marks for this stream
+        has_marks = Mark.query.join(Student).filter(
+            Student.stream_id == stream.id,
+            Mark.term_id == term_obj.id,
+            Mark.assessment_type_id == assessment_type_obj.id
+        ).first() is not None
+
+        result.append({
+            "name": stream.name,
+            "has_marks": has_marks
+        })
+
+    return jsonify({"streams": result})
