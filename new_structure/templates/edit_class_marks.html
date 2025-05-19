@@ -118,6 +118,253 @@
         margin-bottom: 20px;
         border-radius: 5px;
       }
+      /* Performance indicator styles */
+      .performance-ee {
+        color: #28a745;
+        font-weight: bold;
+      }
+      .performance-me {
+        color: #17a2b8;
+        font-weight: bold;
+      }
+      .performance-ae {
+        color: #ffc107;
+        font-weight: bold;
+      }
+      .performance-be {
+        color: #dc3545;
+        font-weight: bold;
+      }
+
+      /* Subject marks configuration styles */
+      .subject-marks-config {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        border: 1px solid #e9ecef;
+      }
+
+      .subject-marks-config h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #495057;
+      }
+
+      .help-text {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 15px;
+      }
+
+      .subject-marks-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+
+      .subject-mark-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .subject-mark-item label {
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      .subject-mark-item input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .subject-mark-item input:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      }
+
+      /* Simplified mark entry styles */
+      .simplified-mark-entry {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+      }
+
+      .mark-input-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .mark-input-container input {
+        width: 60px;
+        text-align: center;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .mark-input-container input:focus {
+        border-color: #3498db;
+        outline: none;
+        box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+      }
+
+      .subject-info {
+        font-size: 11px;
+        color: #666;
+        display: block;
+        text-align: center;
+      }
+
+      .percentage-display {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+      }
+
+      .percentage-value {
+        font-size: 12px;
+        margin-bottom: 2px;
+        font-weight: bold;
+      }
+
+      .percentage-bar {
+        height: 4px;
+        background-color: #e9ecef;
+        border-radius: 2px;
+        overflow: hidden;
+        width: 100%;
+      }
+
+      .percentage-fill {
+        height: 100%;
+        background-color: #6c757d;
+        transition: width 0.3s ease;
+      }
+
+      /* Color the percentage fill based on performance level */
+      .performance-ee .percentage-fill {
+        background-color: #28a745;
+      }
+
+      .performance-me .percentage-fill {
+        background-color: #17a2b8;
+      }
+
+      .performance-ae .percentage-fill {
+        background-color: #ffc107;
+      }
+
+      .performance-be .percentage-fill {
+        background-color: #dc3545;
+      }
+
+      /* Composite subject styles */
+      .composite-subject-entry-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        padding: 5px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+      }
+
+      .composite-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .composite-title {
+        font-weight: bold;
+        font-size: 12px;
+        color: #495057;
+      }
+
+      .composite-percentage {
+        font-weight: bold;
+        font-size: 12px;
+        color: #495057;
+      }
+
+      .composite-subject-entry {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 8px;
+        padding: 5px;
+        background-color: #ffffff;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+      }
+
+      .component-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+
+      .component-title {
+        font-size: 11px;
+        color: #6c757d;
+      }
+
+      .component-weight {
+        font-size: 10px;
+        color: #6c757d;
+        font-style: italic;
+      }
+
+      .component-inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .component-mark-input,
+      .component-max-input {
+        width: 40px;
+        text-align: center;
+        padding: 3px;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+        font-size: 12px;
+      }
+
+      .mark-separator {
+        margin: 0 3px;
+        color: #6c757d;
+      }
+
+      .composite-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 5px;
+        padding-top: 5px;
+        border-top: 1px solid #e9ecef;
+      }
+
+      .composite-total-label {
+        font-size: 11px;
+        font-weight: bold;
+        color: #495057;
+      }
       .alert-success {
         background-color: #d4edda;
         color: #155724;
@@ -160,6 +407,36 @@
         action="{{ url_for('classteacher.update_class_marks', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}"
       >
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+        <!-- Subject Total Marks Configuration Section -->
+        <div class="subject-marks-config">
+          <h4>Set Maximum Raw Marks for Each Subject</h4>
+          <p class="help-text">
+            Enter the maximum possible raw marks for each subject before
+            entering student marks.
+          </p>
+
+          <div class="subject-marks-grid">
+            {% for subject in subject_names %}
+            <div class="subject-mark-item">
+              <label for="total_marks_{{ subject_ids[loop.index0] }}"
+                >{{ subject }}</label
+              >
+              <input
+                type="number"
+                id="total_marks_{{ subject_ids[loop.index0] }}"
+                name="total_marks_{{ subject_ids[loop.index0] }}"
+                value="{{ subject_total_marks.get(subject, 100) }}"
+                min="1"
+                max="1000"
+                class="subject-total-marks"
+                onchange="updateAllMarksForSubject('{{ subject_ids[loop.index0] }}', '{{ subject }}')"
+              />
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
         <table>
           <thead>
             <tr>
@@ -171,18 +448,11 @@
                 <div
                   style="font-size: 12px; font-weight: normal; margin-top: 5px"
                 >
-                  <label for="total_marks_{{ subject_ids[loop.index0] }}"
-                    >Total Marks:</label
+                  <span
+                    class="subject-info"
+                    id="subject_info_{{ subject_ids[loop.index0] }}"
+                    >Max Raw: {{ subject_total_marks.get(subject, 100) }}</span
                   >
-                  <input
-                    type="number"
-                    id="total_marks_{{ subject_ids[loop.index0] }}"
-                    name="total_marks_{{ subject_ids[loop.index0] }}"
-                    value="{{ subject_total_marks.get(subject, 100) }}"
-                    min="1"
-                    max="1000"
-                    style="width: 50px; padding: 2px; font-size: 12px"
-                  />
                 </div>
               </th>
               {% endfor %}
@@ -195,28 +465,72 @@
               <td class="student-name">{{ student_data.student.upper() }}</td>
               {% for subject in subject_names %}
               <td>
-                <div style="display: flex; flex-direction: column; gap: 5px">
-                  <div>
+                {% set subject_obj = subject_objects[loop.index0] %} {% if
+                subject_obj.is_composite %}
+                <div class="composite-subject-entry-container">
+                  <div class="composite-header">
+                    <span class="composite-title">{{ subject }}</span>
+                    <span
+                      class="composite-percentage"
+                      id="composite_percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
+                    >
+                      {{ student_data.filtered_marks.get(subject, 0) | int }}%
+                    </span>
+                  </div>
+
+                  {% for component in subject_obj.get_components() %} {% set
+                  component_mark = get_component_mark(student_data.student_id,
+                  component.id) %} {% include 'component_mark_entry.html' %} {%
+                  endfor %}
+
+                  <div class="composite-total">
+                    <span class="composite-total-label">Combined:</span>
+                    <div class="percentage-display">
+                      <span
+                        id="percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
+                        class="percentage-value"
+                      >
+                        {{ student_data.filtered_marks.get(subject, 0) | int }}%
+                      </span>
+                      <div class="percentage-bar">
+                        <div
+                          class="percentage-fill"
+                          style="width: {{ student_data.filtered_marks.get(subject, 0) }}%"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% else %}
+                <div class="simplified-mark-entry">
+                  <div class="mark-input-container">
                     <input
                       type="number"
                       name="mark_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
                       value="{{ student_data.filtered_raw_marks.get(subject, 0) | int }}"
                       min="0"
-                      max="1000"
-                      style="width: 60px"
+                      max="{{ subject_total_marks.get(subject, 100) }}"
+                      data-max-mark="{{ subject_total_marks.get(subject, 100) }}"
+                      class="student-mark"
                       oninput="updatePercentage('{{ student_data.student_id }}', '{{ subject_ids[loop.index0] }}', '{{ subject }}')"
                     />
-                    <span style="font-size: 12px; color: #666">Raw</span>
                   </div>
-                  <div style="font-size: 12px; color: #666">
+                  <div class="percentage-display">
                     <span
                       id="percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
+                      class="percentage-value"
                     >
-                      {{ ((student_data.filtered_marks.get(subject, 0) / 100) *
-                      100) | round(1) }}%
+                      {{ student_data.filtered_marks.get(subject, 0) | int }}%
                     </span>
+                    <div class="percentage-bar">
+                      <div
+                        class="percentage-fill"
+                        style="width: {{ student_data.filtered_marks.get(subject, 0) }}%"
+                      ></div>
+                    </div>
                   </div>
                 </div>
+                {% endif %}
               </td>
               {% endfor %}
             </tr>
@@ -253,41 +567,391 @@
             percentage = (rawMark / totalMarks) * 100;
           }
 
-          // Update the percentage display
-          percentageSpan.textContent = `${percentage.toFixed(1)}%`;
+          // Ensure percentage doesn't exceed 100%
+          let roundedPercentage;
+          if (percentage > 100) {
+            // Calculate the maximum allowed raw mark that would result in 100%
+            const maxAllowedRawMark = totalMarks;
+            rawMarkInput.value = maxAllowedRawMark;
+            roundedPercentage = 100.0;
+          } else {
+            // Round to 1 decimal place
+            roundedPercentage = Math.round(percentage * 10) / 10;
+          }
 
-          // Update max attribute of raw mark input
-          rawMarkInput.max = totalMarks;
+          // Update the percentage display
+          percentageSpan.textContent = `${roundedPercentage.toFixed(1)}%`;
+
+          // Add visual indicator of performance level
+          updatePerformanceIndicator(percentageSpan, roundedPercentage);
+
+          // Update the percentage bar
+          const percentageBar = percentageSpan
+            .closest(".percentage-display")
+            .querySelector(".percentage-fill");
+          if (percentageBar) {
+            percentageBar.style.width = `${Math.min(roundedPercentage, 100)}%`; // Cap at 100%
+
+            // Update the color of the percentage bar based on performance level
+            if (roundedPercentage >= 75) {
+              percentageBar.style.backgroundColor = "#28a745"; // Exceeding Expectation
+            } else if (roundedPercentage >= 50) {
+              percentageBar.style.backgroundColor = "#17a2b8"; // Meeting Expectation
+            } else if (roundedPercentage >= 30) {
+              percentageBar.style.backgroundColor = "#ffc107"; // Approaching Expectation
+            } else {
+              percentageBar.style.backgroundColor = "#dc3545"; // Below Expectation
+            }
+          }
+
+          // Validate that the raw mark doesn't exceed the maximum
+          if (rawMark > totalMarks) {
+            rawMarkInput.value = totalMarks;
+            // Recalculate with the corrected value
+            updatePercentage(studentId, subjectId, subjectName);
+          }
         }
+      }
+
+      // Function to update the visual performance indicator
+      function updatePerformanceIndicator(element, percentage) {
+        // Remove existing performance classes
+        element.classList.remove(
+          "performance-ee",
+          "performance-me",
+          "performance-ae",
+          "performance-be"
+        );
+
+        // Add appropriate class based on percentage
+        if (percentage >= 75) {
+          element.classList.add("performance-ee"); // Exceeding Expectation
+        } else if (percentage >= 50) {
+          element.classList.add("performance-me"); // Meeting Expectation
+        } else if (percentage >= 30) {
+          element.classList.add("performance-ae"); // Approaching Expectation
+        } else {
+          element.classList.add("performance-be"); // Below Expectation
+        }
+      }
+
+      // Function to update component percentage when raw marks are changed
+      function updateComponentPercentage(studentId, componentId, subjectId) {
+        const rawMarkInput = document.getElementsByName(
+          `component_mark_${studentId}_${componentId}`
+        )[0];
+        const maxRawMarkInput = document.getElementsByName(
+          `component_max_${studentId}_${componentId}`
+        )[0];
+        const percentageSpan = document.getElementById(
+          `component_percentage_${studentId}_${componentId}`
+        );
+
+        if (rawMarkInput && maxRawMarkInput && percentageSpan) {
+          const rawMark = parseFloat(rawMarkInput.value) || 0;
+          const maxRawMark = parseFloat(maxRawMarkInput.value) || 100;
+
+          // Calculate percentage (avoid division by zero)
+          let percentage = 0;
+          if (maxRawMark > 0) {
+            percentage = (rawMark / maxRawMark) * 100;
+          }
+
+          // Ensure percentage doesn't exceed 100%
+          let roundedPercentage;
+          if (percentage > 100) {
+            // Calculate the maximum allowed raw mark that would result in 100%
+            const maxAllowedRawMark = maxRawMark;
+            rawMarkInput.value = maxAllowedRawMark;
+            roundedPercentage = 100.0;
+          } else {
+            // Round to 1 decimal place
+            roundedPercentage = Math.round(percentage * 10) / 10;
+          }
+
+          // Update the percentage display
+          percentageSpan.textContent = `${roundedPercentage.toFixed(1)}%`;
+
+          // Add visual indicator of performance level
+          updatePerformanceIndicator(percentageSpan, roundedPercentage);
+
+          // Update the percentage bar
+          const percentageBar = percentageSpan
+            .closest(".percentage-display")
+            .querySelector(".percentage-fill");
+          if (percentageBar) {
+            percentageBar.style.width = `${Math.min(roundedPercentage, 100)}%`; // Cap at 100%
+
+            // Update the color of the percentage bar based on performance level
+            updatePercentageBarColor(percentageBar, roundedPercentage);
+          }
+
+          // Update the composite subject percentage
+          updateCompositePercentage(studentId, subjectId);
+        }
+      }
+
+      // Function to update the composite subject percentage based on component marks
+      function updateCompositePercentage(studentId, subjectId) {
+        // Get all component inputs for this student and subject
+        const componentInputs = document.querySelectorAll(
+          `input.component-mark-input[data-subject-id="${subjectId}"][name^="component_mark_${studentId}_"]`
+        );
+
+        if (componentInputs.length === 0) return;
+
+        let totalWeightedPercentage = 0;
+        let totalWeight = 0;
+
+        // Calculate weighted percentage for each component
+        componentInputs.forEach((input) => {
+          const componentId = input.getAttribute("data-component-id");
+          const weight = parseFloat(input.getAttribute("data-weight")) || 1;
+          const rawMark = parseFloat(input.value) || 0;
+          const maxRawMarkInput = document.getElementsByName(
+            `component_max_${studentId}_${componentId}`
+          )[0];
+          const maxRawMark = maxRawMarkInput
+            ? parseFloat(maxRawMarkInput.value) || 100
+            : 100;
+
+          // Calculate component percentage
+          let componentPercentage = 0;
+          if (maxRawMark > 0) {
+            componentPercentage = (rawMark / maxRawMark) * 100;
+          }
+
+          // Ensure percentage doesn't exceed 100%
+          componentPercentage = Math.min(componentPercentage, 100);
+
+          // Add weighted percentage to total
+          totalWeightedPercentage += componentPercentage * weight;
+          totalWeight += weight;
+        });
+
+        // Calculate final percentage
+        let finalPercentage = 0;
+        if (totalWeight > 0) {
+          finalPercentage = totalWeightedPercentage / totalWeight;
+        }
+
+        // Round to whole number for display
+        const roundedPercentage = Math.round(finalPercentage);
+
+        // Update the composite percentage display
+        const compositePercentageSpan = document.getElementById(
+          `composite_percentage_${studentId}_${subjectId}`
+        );
+        if (compositePercentageSpan) {
+          compositePercentageSpan.textContent = `${roundedPercentage}%`;
+        }
+
+        // Update the combined percentage display
+        const percentageSpan = document.getElementById(
+          `percentage_${studentId}_${subjectId}`
+        );
+        if (percentageSpan) {
+          percentageSpan.textContent = `${roundedPercentage}%`;
+
+          // Add visual indicator of performance level
+          updatePerformanceIndicator(percentageSpan, roundedPercentage);
+
+          // Update the percentage bar
+          const percentageBar = percentageSpan
+            .closest(".percentage-display")
+            .querySelector(".percentage-fill");
+          if (percentageBar) {
+            percentageBar.style.width = `${Math.min(roundedPercentage, 100)}%`; // Cap at 100%
+
+            // Update the color of the percentage bar based on performance level
+            updatePercentageBarColor(percentageBar, roundedPercentage);
+          }
+        }
+      }
+
+      // Function to update the color of a percentage bar based on performance level
+      function updatePercentageBarColor(percentageBar, percentage) {
+        if (percentage >= 75) {
+          percentageBar.style.backgroundColor = "#28a745"; // Exceeding Expectation
+        } else if (percentage >= 50) {
+          percentageBar.style.backgroundColor = "#17a2b8"; // Meeting Expectation
+        } else if (percentage >= 30) {
+          percentageBar.style.backgroundColor = "#ffc107"; // Approaching Expectation
+        } else {
+          percentageBar.style.backgroundColor = "#dc3545"; // Below Expectation
+        }
+      }
+
+      // Function to update all marks for a subject when the total marks change
+      function updateAllMarksForSubject(subjectId, subjectName) {
+        // Get the new total marks value
+        const totalMarksInput = document.getElementById(
+          `total_marks_${subjectId}`
+        );
+        let totalMarks = parseFloat(totalMarksInput.value) || 100;
+
+        // Ensure total marks is not less than 1
+        if (totalMarks < 1) {
+          totalMarksInput.value = 1;
+          totalMarks = 1;
+          return; // Don't proceed with invalid total marks
+        }
+
+        // Enforce reasonable limits on total marks (max 1000)
+        if (totalMarks > 1000) {
+          totalMarksInput.value = 1000;
+          totalMarks = 1000;
+        }
+
+        // Update the subject info display
+        const subjectInfoSpan = document.getElementById(
+          `subject_info_${subjectId}`
+        );
+        if (subjectInfoSpan) {
+          subjectInfoSpan.textContent = `Max Raw: ${totalMarks}`;
+        }
+
+        // Get all mark inputs for this subject
+        const studentInputs = document.querySelectorAll(
+          `input[name$="_${subjectId}"]`
+        );
+
+        // Update each mark's max attribute and data-max-mark attribute
+        studentInputs.forEach((studentInput) => {
+          studentInput.max = totalMarks;
+          studentInput.setAttribute("data-max-mark", totalMarks);
+
+          // If the current value exceeds the new max, cap it
+          const currentValue = parseFloat(studentInput.value) || 0;
+          if (currentValue > totalMarks) {
+            studentInput.value = totalMarks;
+          }
+
+          // Update the percentage display
+          const nameParts = studentInput.name.split("_");
+          if (nameParts.length >= 3) {
+            const studentId = nameParts[1];
+            updatePercentage(studentId, subjectId, subjectName);
+          }
+        });
       }
 
       // Add event listeners to all total marks inputs
       document.addEventListener("DOMContentLoaded", function () {
-        const totalMarksInputs = document.querySelectorAll(
-          'input[id^="total_marks_"]'
-        );
+        // Initialize all percentage displays for regular subjects
+        const studentMarks = document.querySelectorAll(".student-mark");
+        studentMarks.forEach((input) => {
+          const nameParts = input.name.split("_");
+          if (nameParts.length >= 3) {
+            const studentId = nameParts[1];
+            const subjectId = nameParts[2];
 
-        totalMarksInputs.forEach((input) => {
-          input.addEventListener("input", function () {
-            const subjectId = this.id.replace("total_marks_", "");
-
-            // Update all percentages for this subject
-            const studentInputs = document.querySelectorAll(
-              `input[name$="_${subjectId}"]`
+            // Get the subject name from the table header
+            const subjectHeader = document.querySelector(
+              `th:nth-child(${parseInt(
+                Array.from(document.querySelectorAll("th")).findIndex((th) =>
+                  th.textContent.trim().includes(subjectId)
+                ) + 1
+              )})`
             );
-            studentInputs.forEach((studentInput) => {
-              const nameParts = studentInput.name.split("_");
-              if (nameParts.length >= 3) {
-                const studentId = nameParts[1];
-                const subjectName = document
-                  .querySelector(`label[for="total_marks_${subjectId}"]`)
-                  .closest("th")
-                  .textContent.trim()
-                  .split("\n")[0]
-                  .trim();
-                updatePercentage(studentId, subjectId, subjectName);
-              }
+            const subjectName = subjectHeader
+              ? subjectHeader.textContent.trim().split("\n")[0]
+              : "";
+
+            // Update the percentage display
+            updatePercentage(studentId, subjectId, subjectName);
+
+            // Add event listener for real-time updates
+            input.addEventListener("input", function () {
+              updatePercentage(studentId, subjectId, subjectName);
             });
+          }
+        });
+
+        // Initialize all component mark displays
+        const componentMarks = document.querySelectorAll(
+          ".component-mark-input"
+        );
+        componentMarks.forEach((input) => {
+          const nameParts = input.name.split("_");
+          if (nameParts.length >= 3) {
+            const studentId = nameParts[2];
+            const componentId = nameParts[3];
+            const subjectId = input.getAttribute("data-subject-id");
+
+            // Update the component percentage display
+            updateComponentPercentage(studentId, componentId, subjectId);
+
+            // Add event listener for real-time updates
+            input.addEventListener("input", function () {
+              updateComponentPercentage(studentId, componentId, subjectId);
+            });
+          }
+        });
+
+        // Add event listeners to component max inputs
+        const componentMaxInputs = document.querySelectorAll(
+          ".component-max-input"
+        );
+        componentMaxInputs.forEach((input) => {
+          const nameParts = input.name.split("_");
+          if (nameParts.length >= 3) {
+            const studentId = nameParts[2];
+            const componentId = nameParts[3];
+            const componentMarkInput = document.querySelector(
+              `input[name="component_mark_${studentId}_${componentId}"]`
+            );
+            const subjectId = componentMarkInput
+              ? componentMarkInput.getAttribute("data-subject-id")
+              : null;
+
+            if (subjectId) {
+              // Add event listener for real-time updates
+              input.addEventListener("input", function () {
+                updateComponentPercentage(studentId, componentId, subjectId);
+              });
+            }
+          }
+        });
+
+        // Initialize all composite subject percentages
+        const compositeSubjects = document.querySelectorAll(
+          ".composite-subject-entry-container"
+        );
+        compositeSubjects.forEach((container) => {
+          const compositePercentageSpan = container.querySelector(
+            ".composite-percentage"
+          );
+          if (compositePercentageSpan) {
+            const idParts = compositePercentageSpan.id.split("_");
+            if (idParts.length >= 3) {
+              const studentId = idParts[1];
+              const subjectId = idParts[2];
+
+              // Update the composite percentage
+              updateCompositePercentage(studentId, subjectId);
+            }
+          }
+        });
+
+        // Add event listeners to total marks inputs
+        const totalMarksInputs = document.querySelectorAll(
+          ".subject-total-marks"
+        );
+        totalMarksInputs.forEach((input) => {
+          input.addEventListener("change", function () {
+            const subjectId = input.id.replace("total_marks_", "");
+            const subjectHeader = document.querySelector(
+              `th:nth-child(${parseInt(
+                Array.from(document.querySelectorAll("th")).findIndex((th) =>
+                  th.textContent.trim().includes(subjectId)
+                ) + 1
+              )})`
+            );
+            const subjectName = subjectHeader
+              ? subjectHeader.textContent.trim().split("\n")[0]
+              : "";
+            updateAllMarksForSubject(subjectId, subjectName);
           });
         });
       });

@@ -1509,9 +1509,10 @@ def edit_class_marks(grade, stream, term, assessment_type):
         else:
             filtered_subjects = Subject.query.all()
 
-        # Get subject names and IDs
+        # Get subject names, IDs, and objects
         subject_names = [subject.name for subject in filtered_subjects]
         subject_ids = [subject.id for subject in filtered_subjects]
+        subject_objects = filtered_subjects  # Pass the actual subject objects
     else:
         # Use subjects from report data if grade not found
         subject_names = report_data.get("subjects", [])
@@ -1585,6 +1586,24 @@ def edit_class_marks(grade, stream, term, assessment_type):
         student_data["filtered_marks"] = filtered_marks
         student_data["filtered_raw_marks"] = filtered_raw_marks
 
+    # Helper function to get component marks
+    def get_component_mark(student_id, component_id):
+        """Get the component mark for a student and component."""
+        from ..models.academic import ComponentMark
+
+        # Find the mark in the database
+        component_mark = ComponentMark.query.filter_by(
+            component_id=component_id
+        ).join(
+            Mark, ComponentMark.mark_id == Mark.id
+        ).filter(
+            Mark.student_id == student_id,
+            Mark.term_id == term_obj.id,
+            Mark.assessment_type_id == assessment_type_obj.id
+        ).first()
+
+        return component_mark
+
     return render_template(
         'edit_class_marks.html',
         grade=grade,
@@ -1594,8 +1613,10 @@ def edit_class_marks(grade, stream, term, assessment_type):
         class_data=class_data,
         subject_names=subject_names,
         subject_ids=subject_ids,
+        subject_objects=subject_objects,
         subject_total_marks=subject_total_marks,
-        education_level=education_level
+        education_level=education_level,
+        get_component_mark=get_component_mark
     )
 
 @classteacher_bp.route('/update_class_marks/<grade>/<stream>/<term>/<assessment_type>', methods=['POST'])
@@ -1635,22 +1656,59 @@ def update_class_marks(grade, stream, term, assessment_type):
 
     # Process form data
     marks_updated = 0
+    component_marks_updated = 0
+
     for student in students:
         for subject in filtered_subjects:
-            mark_key = f"mark_{student.id}_{subject.id}"
-            total_marks_key = f"total_marks_{subject.id}"
+            # Check if this is a composite subject
+            if subject.is_composite:
+                # Get the components for this subject
+                components = subject.get_components()
 
-            if mark_key in request.form and total_marks_key in request.form:
-                try:
-                    # Get the raw mark and total marks from the form
-                    raw_mark = int(request.form[mark_key])
-                    max_raw_mark = int(request.form[total_marks_key])
+                # Process each component
+                component_marks = []
+                for component in components:
+                    component_mark_key = f"component_mark_{student.id}_{component.id}"
+                    component_max_key = f"component_max_{student.id}_{component.id}"
 
-                    # Sanitize the raw mark and total marks to ensure they're within acceptable ranges
-                    raw_mark, max_raw_mark = MarkConversionService.sanitize_raw_mark(raw_mark, max_raw_mark)
+                    if component_mark_key in request.form and component_max_key in request.form:
+                        try:
+                            # Get the raw mark and max raw mark from the form
+                            raw_mark = int(request.form[component_mark_key])
+                            max_raw_mark = int(request.form[component_max_key])
 
-                    # Calculate percentage using our service
-                    percentage = MarkConversionService.calculate_percentage(raw_mark, max_raw_mark)
+                            # Sanitize the values
+                            raw_mark, max_raw_mark = MarkConversionService.sanitize_raw_mark(raw_mark, max_raw_mark)
+
+                            # Calculate percentage
+                            percentage = MarkConversionService.calculate_percentage(raw_mark, max_raw_mark)
+
+                            # Store the component mark data
+                            component_marks.append({
+                                'component_id': component.id,
+                                'raw_mark': raw_mark,
+                                'max_raw_mark': max_raw_mark,
+                                'percentage': percentage,
+                                'weight': component.weight
+                            })
+                        except ValueError:
+                            # Skip invalid values
+                            pass
+
+                # If we have component marks, calculate the overall mark
+                if component_marks:
+                    # Calculate weighted percentage
+                    total_weighted_percentage = 0
+                    total_weight = 0
+
+                    for cm in component_marks:
+                        total_weighted_percentage += cm['percentage'] * cm['weight']
+                        total_weight += cm['weight']
+
+                    if total_weight > 0:
+                        overall_percentage = total_weighted_percentage / total_weight
+                    else:
+                        overall_percentage = 0
 
                     # Find existing mark or create new one
                     mark = Mark.query.filter_by(
@@ -1661,36 +1719,120 @@ def update_class_marks(grade, stream, term, assessment_type):
                     ).first()
 
                     if mark:
-                        # Update existing mark with both old and new field names
-                        mark.mark = raw_mark  # Old field name
-                        mark.total_marks = max_raw_mark  # Old field name
-                        mark.raw_mark = raw_mark  # New field name
-                        mark.max_raw_mark = max_raw_mark  # New field name
-                        mark.percentage = percentage
+                        # Update existing mark
+                        mark.percentage = overall_percentage
+
+                        # Calculate raw mark based on percentage (for backward compatibility)
+                        # Use 100 as the default max_raw_mark for the overall mark
+                        mark.raw_mark = (overall_percentage / 100) * 100
+                        mark.max_raw_mark = 100
+                        mark.mark = mark.raw_mark  # Old field name
+                        mark.total_marks = mark.max_raw_mark  # Old field name
                     else:
-                        # Create new mark with both old and new field names
+                        # Create new mark
                         mark = Mark(
                             student_id=student.id,
                             subject_id=subject.id,
                             term_id=term_obj.id,
                             assessment_type_id=assessment_type_obj.id,
-                            mark=raw_mark,  # Old field name
-                            total_marks=max_raw_mark,  # Old field name
-                            raw_mark=raw_mark,  # New field name
-                            max_raw_mark=max_raw_mark,  # New field name
-                            percentage=percentage
+                            percentage=overall_percentage,
+                            raw_mark=(overall_percentage / 100) * 100,
+                            max_raw_mark=100,
+                            mark=(overall_percentage / 100) * 100,  # Old field name
+                            total_marks=100  # Old field name
                         )
                         db.session.add(mark)
 
+                    # Save the mark to get its ID
+                    db.session.flush()
+
+                    # Now save the component marks
+                    for cm in component_marks:
+                        # Find existing component mark or create new one
+                        from ..models.academic import ComponentMark
+                        component_mark = ComponentMark.query.filter_by(
+                            mark_id=mark.id,
+                            component_id=cm['component_id']
+                        ).first()
+
+                        if component_mark:
+                            # Update existing component mark
+                            component_mark.raw_mark = cm['raw_mark']
+                            component_mark.max_raw_mark = cm['max_raw_mark']
+                            component_mark.percentage = cm['percentage']
+                        else:
+                            # Create new component mark
+                            component_mark = ComponentMark(
+                                mark_id=mark.id,
+                                component_id=cm['component_id'],
+                                raw_mark=cm['raw_mark'],
+                                max_raw_mark=cm['max_raw_mark'],
+                                percentage=cm['percentage']
+                            )
+                            db.session.add(component_mark)
+
+                        component_marks_updated += 1
+
                     marks_updated += 1
-                except ValueError:
-                    # Skip invalid values
-                    pass
+            else:
+                # Regular subject (not composite)
+                mark_key = f"mark_{student.id}_{subject.id}"
+                total_marks_key = f"total_marks_{subject.id}"
+
+                if mark_key in request.form and total_marks_key in request.form:
+                    try:
+                        # Get the raw mark and total marks from the form
+                        raw_mark = int(request.form[mark_key])
+                        max_raw_mark = int(request.form[total_marks_key])
+
+                        # Sanitize the raw mark and total marks to ensure they're within acceptable ranges
+                        raw_mark, max_raw_mark = MarkConversionService.sanitize_raw_mark(raw_mark, max_raw_mark)
+
+                        # Calculate percentage using our service
+                        percentage = MarkConversionService.calculate_percentage(raw_mark, max_raw_mark)
+
+                        # Find existing mark or create new one
+                        mark = Mark.query.filter_by(
+                            student_id=student.id,
+                            subject_id=subject.id,
+                            term_id=term_obj.id,
+                            assessment_type_id=assessment_type_obj.id
+                        ).first()
+
+                        if mark:
+                            # Update existing mark with both old and new field names
+                            mark.mark = raw_mark  # Old field name
+                            mark.total_marks = max_raw_mark  # Old field name
+                            mark.raw_mark = raw_mark  # New field name
+                            mark.max_raw_mark = max_raw_mark  # New field name
+                            mark.percentage = percentage
+                        else:
+                            # Create new mark with both old and new field names
+                            mark = Mark(
+                                student_id=student.id,
+                                subject_id=subject.id,
+                                term_id=term_obj.id,
+                                assessment_type_id=assessment_type_obj.id,
+                                mark=raw_mark,  # Old field name
+                                total_marks=max_raw_mark,  # Old field name
+                                raw_mark=raw_mark,  # New field name
+                                max_raw_mark=max_raw_mark,  # New field name
+                                percentage=percentage
+                            )
+                            db.session.add(mark)
+
+                        marks_updated += 1
+                    except ValueError:
+                        # Skip invalid values
+                        pass
 
     # Commit changes to database
     try:
         db.session.commit()
-        flash(f"Successfully updated {marks_updated} marks.", "success")
+        if component_marks_updated > 0:
+            flash(f"Successfully updated {marks_updated} marks and {component_marks_updated} component marks.", "success")
+        else:
+            flash(f"Successfully updated {marks_updated} marks.", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Error updating marks: {str(e)}", "error")
