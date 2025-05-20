@@ -480,8 +480,9 @@
 
                   {% for component in subject_obj.get_components() %} {% set
                   component_mark = get_component_mark(student_data.student_id,
-                  component.id) %} {% include 'component_mark_entry.html' %} {%
-                  endfor %}
+                  component.id) %} {% set subject = subject_obj %} {% set
+                  student_id = student_data.student_id %} {% include
+                  'component_mark_entry.html' %} {% endfor %}
 
                   <div class="composite-total">
                     <span class="composite-total-label">Combined:</span>
