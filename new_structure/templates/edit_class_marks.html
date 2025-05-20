@@ -466,7 +466,7 @@
               {% for subject in subject_names %}
               <td>
                 {% set subject_obj = subject_objects[loop.index0] %} {% if
-                subject_obj.is_composite %}
+                subject_obj.is_composite and subject_obj.id in [2, 7] %}
                 <div class="composite-subject-entry-container">
                   <div class="composite-header">
                     <span class="composite-title">{{ subject }}</span>
