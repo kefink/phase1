@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Components</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .subject {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .component {
+            margin: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .debug {
+            font-family: monospace;
+            background-color: #f8f8f8;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Components</h1>
+    
+    <div class="debug">
+        <h2>Debug Information</h2>
+        <p>Number of subjects: {{ subjects|length }}</p>
+        {% for subject in subjects %}
+        <p>Subject: {{ subject.name }}, ID: {{ subject.id }}, Is Composite: {{ subject.is_composite }}</p>
+        {% endfor %}
+    </div>
+    
+    <h2>English (ID: 2)</h2>
+    <div class="subject">
+        {% set english = subjects|selectattr('id', 'eq', 2)|first %}
+        <p>Name: {{ english.name }}</p>
+        <p>ID: {{ english.id }}</p>
+        <p>Is Composite: {{ english.is_composite }}</p>
+        
+        <h3>Components:</h3>
+        {% set components = english.get_components() %}
+        <p>Number of components: {{ components|length }}</p>
+        
+        {% for component in components %}
+        <div class="component">
+            <p>Name: {{ component.name }}</p>
+            <p>ID: {{ component.id }}</p>
+            <p>Weight: {{ component.weight }}</p>
+            <p>Max Raw Mark: {{ component.max_raw_mark }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <h2>Kiswahili (ID: 7)</h2>
+    <div class="subject">
+        {% set kiswahili = subjects|selectattr('id', 'eq', 7)|first %}
+        <p>Name: {{ kiswahili.name }}</p>
+        <p>ID: {{ kiswahili.id }}</p>
+        <p>Is Composite: {{ kiswahili.is_composite }}</p>
+        
+        <h3>Components:</h3>
+        {% set components = kiswahili.get_components() %}
+        <p>Number of components: {{ components|length }}</p>
+        
+        {% for component in components %}
+        <div class="component">
+            <p>Name: {{ component.name }}</p>
+            <p>ID: {{ component.id }}</p>
+            <p>Weight: {{ component.weight }}</p>
+            <p>Max Raw Mark: {{ component.max_raw_mark }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

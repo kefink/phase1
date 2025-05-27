@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Class Teacher Dashboard - Kirima Primary School</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+    <style>
+        .stream-status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-ready {
+            background-color: #28a745;
+        }
+        .status-pending {
+            background-color: #dc3545;
+        }
+        .stream-status-list {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .stream-status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .refresh-status {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .marksheet-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid #17a2b8;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        /* New styles for improved layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .dashboard-full-width {
+            grid-column: 1 / span 2;
+        }
+
+        .dashboard-card {
+            margin-top: 0;
+        }
+
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .main-tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .main-tab.active {
+            border-bottom-color: #007BFF;
+            color: #007BFF;
+        }
+
+        .main-tab:hover {
+            background-color: #f8f9fa;
+        }
+
+        .tab-content-container {
+            display: none;
+        }
+
+        .tab-content-container.active {
+            display: block;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .quick-action-btn {
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .action-icon {
+            font-size: 18px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Error Message Section -->
+    {% if error_message %}
+    <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 10px 0; border-radius: 5px;">
+        <strong>Error:</strong> {{ error_message }}
+    </div>
+    {% endif %}
+
+    <!-- Deletion Confirmation Message -->
+    {% if confirmation_message %}
+    <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 5px solid #28a745;">
+        {{ confirmation_message|safe }}
+    </div>
+    {% endif %}
+
+    <!-- Teacher Assignment Status -->
+    {% if not stream %}
+    <div class="alert alert-info" style="background-color: #d1ecf1; color: #0c5460; padding: 10px; margin: 10px 0; border-radius: 5px;">
+        <strong>Note:</strong> You are not currently assigned to any class stream. You can still manage students and view reports for all grades and streams.
+    </div>
+    {% else %}
+    <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 10px; margin: 10px 0; border-radius: 5px;">
+        <strong>Assigned Class:</strong> Grade {{ grade }} {{ stream }}
+    </div>
+    {% endif %}
+
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">Kirima Primary School</a>
+        <ul class="navbar-nav">
+            <li class="nav-item"><a href="#" class="nav-link">Dashboard</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Reports</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Help</a></li>
+            <li class="nav-item"><a href="{{ url_for('auth.logout_route') }}" class="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container" style="max-width: 90%; margin-top: 80px;">
+        <h1 class="text-center mb-4">Class Teacher Dashboard</h1>
+
+        <!-- Management Options Section -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <span>Management Options</span>
+            </div>
+            <div class="management-links" style="padding: 20px;">
+                <ul>
+                    <li><a href="{{ url_for('classteacher.manage_students') }}">Manage Students</a></li>
+                    <li><a href="{{ url_for('classteacher.manage_subjects') }}">Manage Subjects</a></li>
+                    <li><a href="{{ url_for('classteacher.manage_teachers') }}">Manage Teachers</a></li>
+                    <li><a href="{{ url_for('bulk_assignments.bulk_assignments') }}">Teacher Assignments</a></li>
+                    <li><a href="{{ url_for('classteacher.manage_teacher_assignments') }}">Manage Teacher Transfers</a></li>
+                    <li><a href="{{ url_for('classteacher.manage_grades_streams') }}">Manage Grades and Streams</a></li>
+                    <li><a href="{{ url_for('classteacher.manage_terms_assessments') }}">Manage Terms and Assessment Types</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Tabs Navigation -->
+        <div class="tab-container">
+            <div class="main-tab active" onclick="switchMainTab('recent-reports')">Recent Reports</div>
+            <div class="main-tab" onclick="switchMainTab('upload-marks')">Upload Marks</div>
+            <div class="main-tab" onclick="switchMainTab('generate-marksheet')">Generate Marksheets</div>
+        </div>
+
+        <!-- Quick Actions Bar -->
+        <div class="quick-actions">
+            <a href="{{ url_for('classteacher.all_reports') }}" class="quick-action-btn" style="background-color: #007BFF; color: white;">
+                <span class="action-icon">📊</span> View All Reports
+            </a>
+            <a href="#" onclick="switchMainTab('upload-marks')" class="quick-action-btn" style="background-color: #28A745; color: white;">
+                <span class="action-icon">📝</span> Upload New Marks
+            </a>
+            <a href="#" onclick="switchMainTab('generate-marksheet')" class="quick-action-btn" style="background-color: #17a2b8; color: white;">
+                <span class="action-icon">📄</span> Generate Marksheet
+            </a>
+            <a href="#" onclick="downloadTemplate()" class="quick-action-btn" style="background-color: #6c757d; color: white;">
+                <span class="action-icon">📥</span> Download Template
+            </a>
+        </div>
+
+        <!-- Recent Reports Tab Content -->
+        <div id="recent-reports-tab" class="tab-content-container active">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span>Recent Reports</span>
+                    <a href="{{ url_for('classteacher.all_reports') }}" class="btn-outline">View All</a>
+                </div>
+
+                <!-- Filter and Sort Controls -->
+                <div class="filter-controls" style="padding: 15px; background-color: #f8f9fa; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+                    <div style="display: flex; align-items: center;">
+                        <label for="sort-reports" style="margin-right: 8px; font-weight: 500;">Sort by:</label>
+                        <select id="sort-reports" onchange="sortReports(this.value)" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="date" {% if request.args.get('sort') == 'date' or not request.args.get('sort') %}selected{% endif %}>Date (newest first)</option>
+                            <option value="grade" {% if request.args.get('sort') == 'grade' %}selected{% endif %}>Grade</option>
+                            <option value="term" {% if request.args.get('sort') == 'term' %}selected{% endif %}>Term</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; align-items: center;">
+                        <label for="filter-grade" style="margin-right: 8px; font-weight: 500;">Grade:</label>
+                        <select id="filter-grade" onchange="filterReports()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="">All Grades</option>
+                            {% for grade_option in grades %}
+                            <option value="{{ grade_option }}" {% if request.args.get('filter_grade') == grade_option %}selected{% endif %}>{{ grade_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div style="display: flex; align-items: center;">
+                        <label for="filter-term" style="margin-right: 8px; font-weight: 500;">Term:</label>
+                        <select id="filter-term" onchange="filterReports()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="">All Terms</option>
+                            {% for term_option in terms %}
+                            <option value="{{ term_option }}" {% if request.args.get('filter_term') == term_option %}selected{% endif %}>{{ term_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button onclick="resetFilters()" style="padding: 6px 12px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Reset Filters
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Grade</th>
+                                <th>Stream</th>
+                                <th>Term</th>
+                                <th>Assessment</th>
+                                <th>Date</th>
+                                <th>Marks</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_reports %}
+                            {% for report in recent_reports %}
+                            <tr>
+                                <td>{{ report.id }}</td>
+                                <td>{{ report.grade }}</td>
+                                <td>{{ report.stream }}</td>
+                                <td>{{ report.term }}</td>
+                                <td>{{ report.assessment_type }}</td>
+                                <td>{{ report.date }}</td>
+                                <td>
+                                    <span class="badge" style="background-color: #17a2b8; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">
+                                        {{ report.mark_count }} marks
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons" style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                        <a href="{{ url_for('classteacher.edit_class_marks', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #17a2b8; font-size: 12px; padding: 5px 10px;" title="Edit marks">
+                                            <i class="edit-icon">✏️</i> Edit
+                                        </a>
+                                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #007BFF; font-size: 12px; padding: 5px 10px;" title="Preview report">
+                                            <i class="preview-icon">👁️</i> View
+                                        </a>
+                                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #28A745; font-size: 12px; padding: 5px 10px;" title="Print report">
+                                            <i class="print-icon">🖨️</i> Print
+                                        </a>
+                                        <button onclick="confirmDeleteReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')" class="btn" style="background-color: #e74c3c; font-size: 12px; padding: 5px 10px;" title="Delete report">
+                                            <i class="delete-icon">🗑️</i> Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 20px;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                        <i style="font-size: 48px; color: #6c757d;">📊</i>
+                                        <p style="margin: 0; font-size: 16px; color: #6c757d;">No reports available</p>
+                                        <p style="margin: 0; font-size: 14px; color: #6c757d;">Upload marks to generate reports</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Marks Tab Content -->
+        <div id="upload-marks-tab" class="tab-content-container">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span>Upload Class Marks (All Subjects)</span>
+                    <small>Complete all fields to process marks</small>
+                </div>
+
+                {% if not show_students %}
+                <!-- Initial form to select grade and class -->
+                <div class="tabs">
+                    <div class="tab-header">
+                        <div class="tab-btn active" data-tab="manual-entry">Manual Entry</div>
+                        <div class="tab-btn" data-tab="bulk-upload">Bulk Upload</div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="manual-entry">
+                            <form id="upload-form" method="POST" action="{{ url_for('classteacher.dashboard') }}" class="login-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <div class="form-group">
+                                    <label for="education_level">Education Level</label>
+                                    <select id="education_level" name="education_level" required onchange="updateSubjects()">
+                                        <option value="">Select Education Level</option>
+                                        <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>Lower Primary</option>
+                                        <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>Upper Primary</option>
+                                        <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>Junior Secondary</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="term">Term</label>
+                                    <select id="term" name="term" required>
+                                        <option value="">Select Term</option>
+                                        {% for term_option in terms %}
+                                        <option value="{{ term_option }}" {% if term == term_option %}selected{% endif %}>{{ term_option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="assessment_type">Assessment Type</label>
+                                    <select id="assessment_type" name="assessment_type" required>
+                                        <option value="">Select Assessment Type</option>
+                                        {% for assessment_option in assessment_types %}
+                                        <option value="{{ assessment_option }}" {% if assessment_type == assessment_option %}selected{% endif %}>{{ assessment_option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="total_marks">Default Total Marks (Out Of)</label>
+                                    <input type="number" id="total_marks" name="total_marks" min="1" value="{{ total_marks if total_marks else '100' }}" required>
+                                    <p class="help-text">This is the default value. You can set different total marks for each subject when entering marks.</p>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="grade">Grade</label>
+                                    <select id="grade" name="grade" required onchange="fetchStreams()">
+                                        <option value="">Select Grade</option>
+                                        {% for grade_option in grades %}
+                                        <option value="{{ grade_option }}" {% if grade == grade_option %}selected{% endif %}>{{ grade_option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="stream">Stream</label>
+                                    <select id="stream" name="stream" required>
+                                        <option value="">Select Stream</option>
+                                        <!-- Streams will be populated dynamically via JavaScript -->
+                                    </select>
+                                </div>
+
+                                <div class="form-group" style="grid-column: span 2; text-align: center;">
+                                    <button type="submit" name="upload_marks" value="1" class="btn" id="upload-btn">
+                                        Load Students & Subjects
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane" id="bulk-upload">
+                            <form id="bulk-upload-form" method="POST" action="{{ url_for('classteacher.dashboard') }}" class="login-form" enctype="multipart/form-data">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <div class="form-group">
+                                    <label for="bulk_education_level">Education Level</label>
+                                    <select id="bulk_education_level" name="education_level" required>
+                                        <option value="">Select Education Level</option>
+                                        <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>Lower Primary</option>
+                                        <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>Upper Primary</option>
+                                        <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>Junior Secondary</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bulk_term">Term</label>
+                                    <select id="bulk_term" name="term" required>
+                                        <option value="">Select Term</option>
+                                        {% for term_option in terms %}
+                                        <option value="{{ term_option }}" {% if term == term_option %}selected{% endif %}>{{ term_option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bulk_assessment_type">Assessment Type</label>
+                                    <select id="bulk_assessment_type" name="assessment_type" required>
+                                        <option value="">Select Assessment Type</option>
+                                        {% for assessment_option in assessment_types %}
+                                        <option value="{{ assessment_option }}" {% if assessment_type == assessment_option %}selected{% endif %}>{{ assessment_option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bulk_total_marks">Total Marks (Out Of)</label>
+                                    <input type="number" id="bulk_total_marks" name="total_marks" min="1" value="100" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bulk_grade">Grade</label>
+                                    <select id="bulk_grade" name="grade" required onchange="fetchBulkStreams()">
+                                        <option value="">Select Grade</option>
+                                        {% for grade_option in grades %}
+                                        <option value="{{ grade_option }}" {% if grade == grade_option %}selected{% endif %}>{{ grade_option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bulk_stream">Stream</label>
+                                    <select id="bulk_stream" name="stream" required>
+                                        <option value="">Select Stream</option>
+                                        <!-- Streams will be populated dynamically via JavaScript -->
+                                    </select>
+                                </div>
+
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label for="marks_file">Upload Marks File (Excel or CSV)</label>
+                                    <input type="file" id="marks_file" name="marks_file" accept=".xlsx,.xls,.csv" required>
+                                    <p class="help-text">Upload an Excel or CSV file with student marks. The file should have student names or admission numbers as rows and subjects as columns.</p>
+                                </div>
+
+                                <div class="form-group" style="grid-column: span 2; text-align: center;">
+                                    <a href="#" class="btn-outline" onclick="downloadTemplate()" style="margin-right: 10px;">
+                                        Download Template
+                                    </a>
+                                    <button type="submit" name="bulk_upload_marks" value="1" class="btn" id="bulk-upload-btn">
+                                        Upload Marks
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Form for entering student marks for all subjects -->
+                <div id="pupils-list" class="pupils-list" style="grid-column: span 2;">
+                    <h3>Enter Marks for Grade {{ grade }} Stream {{ stream }} - All Subjects</h3>
+
+                    <form method="POST" action="{{ url_for('classteacher.dashboard') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <!-- Keep existing form fields as hidden fields -->
+                        <input type="hidden" name="education_level" value="{{ education_level }}">
+                        <input type="hidden" name="grade" value="{{ grade }}">
+                        <input type="hidden" name="stream" value="{{ stream }}">
+                        <input type="hidden" name="term" value="{{ term }}">
+                        <input type="hidden" name="assessment_type" value="{{ assessment_type }}">
+                        <input type="hidden" name="total_marks" value="{{ total_marks }}">
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        {% for subject in subjects %}
+                                        <th>
+                                            {{ subject }}
+                                            <div style="font-size: 12px; font-weight: normal; margin-top: 5px;">
+                                                <label for="total_marks_{{ loop.index0 }}">Total Marks:</label>
+                                                <input
+                                                    type="number"
+                                                    id="total_marks_{{ loop.index0 }}"
+                                                    name="total_marks_{{ loop.index0 }}"
+                                                    value="{{ total_marks }}"
+                                                    min="1"
+                                                    max="1000"
+                                                    style="width: 50px; padding: 2px; font-size: 12px;"
+                                                    onchange="updateAllPercentages('{{ subject.replace(' ', '_') }}')"
+                                                    class="subject-total-marks"
+                                                    data-subject="{{ subject.replace(' ', '_') }}"
+                                                >
+                                            </div>
+                                        </th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    <tr>
+                                        <td>{{ student.name }}</td>
+                                        {% for subject in subjects %}
+                                        <td>
+                                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                                <div>
+                                                    <input type="number"
+                                                        name="mark_{{ student.name.replace(' ', '_') }}_{{ subject.replace(' ', '_') }}"
+                                                        value="0"
+                                                        min="0"
+                                                        max="{{ total_marks }}"
+                                                        required
+                                                        style="width: 60px;"
+                                                        class="student-mark"
+                                                        data-student="{{ student.name.replace(' ', '_') }}"
+                                                        data-subject="{{ subject.replace(' ', '_') }}"
+                                                        data-subject-index="{{ loop.index0 }}"
+                                                        oninput="updatePercentage(this)">
+                                                    <span style="font-size: 12px; color: #666;">Raw</span>
+                                                </div>
+                                                <div style="font-size: 12px; color: #666;">
+                                                    <span id="percentage_{{ student.name.replace(' ', '_') }}_{{ subject.replace(' ', '_') }}">0%</span>
+                                                    <input type="hidden"
+                                                        name="percentage_{{ student.name.replace(' ', '_') }}_{{ subject.replace(' ', '_') }}"
+                                                        id="hidden_percentage_{{ student.name.replace(' ', '_') }}_{{ subject.replace(' ', '_') }}"
+                                                        value="0">
+                                                </div>
+                                            </div>
+                                        </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="submit" name="submit_marks" value="1" class="btn">
+                                Submit All Marks
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Generate Marksheet Tab Content -->
+        <div id="generate-marksheet-tab" class="tab-content-container">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span>Generate Grade Marksheet (All Streams)</span>
+                    <small>Select grade, term, and assessment type to generate a marksheet for all streams in the grade</small>
+                </div>
+                <form id="stream-marksheet-form" method="POST" action="{{ url_for('classteacher.dashboard') }}" class="login-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="form-group">
+                        <label for="stream_grade">Grade</label>
+                        <select id="stream_grade" name="stream_grade" required onchange="checkStreamStatus()">
+                            <option value="">Select Grade</option>
+                            {% for grade_option in grades %}
+                            <option value="{{ grade_option }}">{{ grade_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stream_term">Term</label>
+                        <select id="stream_term" name="stream_term" required onchange="checkStreamStatus()">
+                            <option value="">Select Term</option>
+                            {% for term_option in terms %}
+                            <option value="{{ term_option }}">{{ term_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stream_assessment_type">Assessment Type</label>
+                        <select id="stream_assessment_type" name="stream_assessment_type" required onchange="checkStreamStatus()">
+                            <option value="">Select Assessment Type</option>
+                            {% for assessment_option in assessment_types %}
+                            <option value="{{ assessment_option }}">{{ assessment_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <div class="marksheet-info">
+                            <strong>Grade Marksheet Status:</strong>
+                            <p>A grade marksheet combines results from all streams in the selected grade. All streams must have their marks entered before generating.</p>
+                            <button type="button" class="refresh-status" onclick="checkStreamStatus()">Refresh Status</button>
+                        </div>
+
+                        <div id="stream-status-container" class="stream-status-list" style="display: none;">
+                            <div id="stream-status-list">
+                                <!-- Stream status items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2; text-align: center;">
+                        <button type="submit" id="preview-marksheet-btn" name="generate_stream_marksheet" value="1" class="btn" style="background-color: #007BFF; margin-right: 10px;" disabled>
+                            Preview Grade Marksheet
+                        </button>
+                        <button type="submit" id="download-marksheet-btn" name="download_stream_marksheet" value="1" class="btn" style="background-color: #28A745;" disabled>
+                            Download Grade Marksheet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Conditional Download and Preview Class PDF Report Section -->
+        {% if show_download_button %}
+        <div class="text-center mt-4">
+            <a href="{{ url_for('classteacher.edit_class_marks', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}" class="btn" style="background-color: #17a2b8; margin-right: 10px;">
+                Edit Class Marks
+            </a>
+            <a href="{{ url_for('classteacher.preview_class_report', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}" class="btn" style="background-color: #007BFF; margin-right: 10px;">
+                Preview Class Report
+            </a>
+            <a href="{{ url_for('classteacher.preview_class_report', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}" class="btn" style="background-color: #28A745; margin-right: 10px;">
+                <i class="print-icon">🖨️</i> Print/PDF
+            </a>
+            <button onclick="confirmDeleteReport('{{ grade }}', '{{ stream }}', '{{ term }}', '{{ assessment_type }}')" class="btn" style="background-color: #e74c3c;">
+                Delete Marksheet
+            </button>
+            <p>Click above to edit, preview, print, download, or delete the class report.</p>
+        </div>
+        {% endif %}
+
+        <!-- Conditional Individual Reports Section -->
+        {% if show_individual_report_button %}
+        <div class="text-center mt-4">
+            <h3>Individual Learner Reports</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.name }}</td>
+                            <td>
+                                <a href="{{ url_for('classteacher.preview_individual_report', grade=grade, stream=stream, term=term, assessment_type=assessment_type, student_name=student.name) }}" class="btn" style="background-color: #007BFF;">Preview Report</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{{ url_for('classteacher.generate_all_individual_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}" class="btn mt-3">
+                Download All Individual Reports
+            </a>
+            <p>Click above to download a ZIP file containing individual reports for all learners.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function switchMainTab(tabId) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content-container').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+
+            // Deactivate all tabs
+            document.querySelectorAll('.main-tab').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+
+            // Show the selected tab content
+            document.getElementById(tabId + '-tab').classList.add('active');
+
+            // Activate the selected tab
+            document.querySelector('.main-tab[onclick="switchMainTab(\'' + tabId + '\')"]').classList.add('active');
+        }
+
+        // Function to fetch streams for a selected grade
+        function fetchStreams() {
+            const gradeSelect = document.getElementById('grade');
+            const streamSelect = document.getElementById('stream');
+
+            if (gradeSelect.value) {
+                // Clear current options
+                streamSelect.innerHTML = '<option value="">Loading streams...</option>';
+
+                // Fetch streams for the selected grade
+                fetch('/api/streams/' + gradeSelect.value)
+                    .then(response => response.json())
+                    .then(data => {
+                        streamSelect.innerHTML = '<option value="">Select Stream</option>';
+                        data.streams.forEach(stream => {
+                            const option = document.createElement('option');
+                            option.value = stream;
+                            option.textContent = stream;
+                            streamSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching streams:', error);
+                        streamSelect.innerHTML = '<option value="">Error loading streams</option>';
+                    });
+            } else {
+                streamSelect.innerHTML = '<option value="">Select Stream</option>';
+            }
+        }
+
+        // Function to fetch streams for bulk upload
+        function fetchBulkStreams() {
+            const gradeSelect = document.getElementById('bulk_grade');
+            const streamSelect = document.getElementById('bulk_stream');
+
+            if (gradeSelect.value) {
+                // Clear current options
+                streamSelect.innerHTML = '<option value="">Loading streams...</option>';
+
+                // Fetch streams for the selected grade
+                fetch('/api/streams/' + gradeSelect.value)
+                    .then(response => response.json())
+                    .then(data => {
+                        streamSelect.innerHTML = '<option value="">Select Stream</option>';
+                        data.streams.forEach(stream => {
+                            const option = document.createElement('option');
+                            option.value = stream;
+                            option.textContent = stream;
+                            streamSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching streams:', error);
+                        streamSelect.innerHTML = '<option value="">Error loading streams</option>';
+                    });
+            } else {
+                streamSelect.innerHTML = '<option value="">Select Stream</option>';
+            }
+        }
+
+        // Function to check stream status for grade marksheet
+        function checkStreamStatus() {
+            const gradeSelect = document.getElementById('stream_grade');
+            const termSelect = document.getElementById('stream_term');
+            const assessmentTypeSelect = document.getElementById('stream_assessment_type');
+            const statusContainer = document.getElementById('stream-status-container');
+            const statusList = document.getElementById('stream-status-list');
+            const previewButton = document.getElementById('preview-marksheet-btn');
+            const downloadButton = document.getElementById('download-marksheet-btn');
+
+            if (gradeSelect.value && termSelect.value && assessmentTypeSelect.value) {
+                // Show status container
+                statusContainer.style.display = 'block';
+                statusList.innerHTML = '<div>Checking stream status...</div>';
+
+                // Fetch stream status for the selected grade, term, and assessment type
+                fetch(`/api/stream_status/${gradeSelect.value}/${termSelect.value}/${assessmentTypeSelect.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        statusList.innerHTML = '';
+                        let allReady = true;
+
+                        data.streams.forEach(stream => {
+                            const statusItem = document.createElement('div');
+                            statusItem.className = 'stream-status-item';
+
+                            const indicator = document.createElement('span');
+                            indicator.className = 'stream-status-indicator ' + (stream.has_marks ? 'status-ready' : 'status-pending');
+
+                            const text = document.createElement('span');
+                            text.textContent = `Stream ${stream.name}: ${stream.has_marks ? 'Ready' : 'Marks not entered'}`;
+
+                            statusItem.appendChild(indicator);
+                            statusItem.appendChild(text);
+                            statusList.appendChild(statusItem);
+
+                            if (!stream.has_marks) {
+                                allReady = false;
+                            }
+                        });
+
+                        // Enable/disable buttons based on status
+                        previewButton.disabled = !allReady;
+                        downloadButton.disabled = !allReady;
+
+                        if (!allReady) {
+                            const message = document.createElement('div');
+                            message.style.marginTop = '10px';
+                            message.style.color = '#dc3545';
+                            message.textContent = 'All streams must have marks entered before generating a grade marksheet.';
+                            statusList.appendChild(message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking stream status:', error);
+                        statusList.innerHTML = '<div style="color: #dc3545;">Error checking stream status</div>';
+                    });
+            } else {
+                statusContainer.style.display = 'none';
+                previewButton.disabled = true;
+                downloadButton.disabled = true;
+            }
+        }
+
+        // Function to update percentage when mark is entered
+        function updatePercentage(input) {
+            const student = input.dataset.student;
+            const subject = input.dataset.subject;
+            const subjectIndex = input.dataset.subjectIndex;
+            const totalMarksInput = document.getElementById(`total_marks_${subjectIndex}`);
+            const totalMarks = parseInt(totalMarksInput.value);
+            const mark = parseInt(input.value);
+
+            if (!isNaN(mark) && !isNaN(totalMarks) && totalMarks > 0) {
+                const percentage = Math.round((mark / totalMarks) * 100);
+                document.getElementById(`percentage_${student}_${subject}`).textContent = `${percentage}%`;
+                document.getElementById(`hidden_percentage_${student}_${subject}`).value = percentage;
+            }
+        }
+
+        // Function to update all percentages for a subject when total marks change
+        function updateAllPercentages(subject) {
+            const inputs = document.querySelectorAll(`.student-mark[data-subject="${subject}"]`);
+            inputs.forEach(input => {
+                updatePercentage(input);
+            });
+        }
+
+        // Function to download template for bulk upload
+        function downloadTemplate() {
+            window.location.href = "{{ url_for('classteacher.download_marks_template') }}";
+        }
+
+        // Function to confirm deletion of a report
+        function confirmDeleteReport(grade, stream, term, assessment_type) {
+            if (confirm(`Are you sure you want to delete all marks for ${grade} ${stream} in ${term} ${assessment_type}? This action cannot be undone.`)) {
+                window.location.href = `/classteacher/delete_marksheet/${grade}/${stream}/${term}/${assessment_type}`;
+            }
+        }
+
+        // Function to sort reports
+        function sortReports(sortBy) {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('sort', sortBy);
+            window.location.href = currentUrl.toString();
+        }
+
+        // Function to filter reports
+        function filterReports() {
+            const currentUrl = new URL(window.location.href);
+            const gradeFilter = document.getElementById('filter-grade').value;
+            const termFilter = document.getElementById('filter-term').value;
+
+            if (gradeFilter) {
+                currentUrl.searchParams.set('filter_grade', gradeFilter);
+            } else {
+                currentUrl.searchParams.delete('filter_grade');
+            }
+
+            if (termFilter) {
+                currentUrl.searchParams.set('filter_term', termFilter);
+            } else {
+                currentUrl.searchParams.delete('filter_term');
+            }
+
+            window.location.href = currentUrl.toString();
+        }
+
+        // Function to reset filters
+        function resetFilters() {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.delete('filter_grade');
+            currentUrl.searchParams.delete('filter_term');
+            window.location.href = currentUrl.toString();
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tab buttons
+            document.querySelectorAll('.tab-btn').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+
+                    // Hide all tab panes
+                    document.querySelectorAll('.tab-pane').forEach(function(pane) {
+                        pane.classList.remove('active');
+                    });
+
+                    // Deactivate all tab buttons
+                    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+                        btn.classList.remove('active');
+                    });
+
+                    // Show the selected tab pane
+                    document.getElementById(tabId).classList.add('active');
+
+                    // Activate the selected tab button
+                    this.classList.add('active');
+                });
+            });
+
+            // Initialize grade dropdowns
+            if (document.getElementById('grade')) {
+                document.getElementById('grade').addEventListener('change', fetchStreams);
+                // If grade is already selected, fetch streams
+                if (document.getElementById('grade').value) {
+                    fetchStreams();
+                }
+            }
+
+            if (document.getElementById('bulk_grade')) {
+                document.getElementById('bulk_grade').addEventListener('change', fetchBulkStreams);
+                // If grade is already selected, fetch streams
+                if (document.getElementById('bulk_grade').value) {
+                    fetchBulkStreams();
+                }
+            }
+
+            // Initialize stream status check
+            if (document.getElementById('stream_grade')) {
+                document.getElementById('stream_grade').addEventListener('change', checkStreamStatus);
+                document.getElementById('stream_term').addEventListener('change', checkStreamStatus);
+                document.getElementById('stream_assessment_type').addEventListener('change', checkStreamStatus);
+
+                // If all fields are already selected, check stream status
+                if (document.getElementById('stream_grade').value &&
+                    document.getElementById('stream_term').value &&
+                    document.getElementById('stream_assessment_type').value) {
+                    checkStreamStatus();
+                }
+            }
+        });
+    </script>

@@ -25,6 +25,21 @@ from functools import wraps
 # Create a blueprint for class teacher routes
 classteacher_bp = Blueprint('classteacher', __name__, url_prefix='/classteacher')
 
+# Register template filter for education level
+@classteacher_bp.app_template_filter('get_education_level')
+def get_education_level_blueprint(grade):
+    """Filter to determine the education level for a grade (blueprint version)."""
+    education_level_mapping = {
+        'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
+        'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
+        'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
+    }
+
+    for level, grades in education_level_mapping.items():
+        if grade in grades:
+            return level
+    return ''
+
 # Decorator for requiring class teacher authentication
 def classteacher_required(f):
     """Decorator to require class teacher authentication for a route."""
@@ -34,6 +49,58 @@ def classteacher_required(f):
             return redirect(url_for('auth.classteacher_login'))
         return f(*args, **kwargs)
     return decorated_function
+
+# Decorator for requiring class teacher OR teacher authentication (for shared routes)
+def teacher_or_classteacher_required(f):
+    """Decorator to require teacher or class teacher authentication for a route."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_authenticated(session):
+            return redirect(url_for('auth.teacher_login'))
+
+        role = get_role(session)
+        if role not in ['teacher', 'classteacher']:
+            # Redirect to appropriate login based on current role attempt
+            if role == 'teacher':
+                return redirect(url_for('auth.teacher_login'))
+            else:
+                return redirect(url_for('auth.classteacher_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@classteacher_bp.route('/test_components')
+@classteacher_required
+def test_components():
+    """Test route to display components."""
+    from ..models.academic import Subject
+
+    # Get all subjects
+    subjects = Subject.query.all()
+
+    return render_template('test_components.html', subjects=subjects)
+
+@classteacher_bp.route('/test_edit_marks', methods=['GET', 'POST'])
+@classteacher_required
+def test_edit_marks():
+    """Test route to display edit marks page."""
+    from ..models.academic import Subject
+
+    # Get all subjects
+    subject_objects = Subject.query.all()
+
+    # Handle form submission
+    if request.method == 'POST':
+        # Process the form data
+        flash("Form submitted successfully! This is just a test page.", "success")
+        return redirect(url_for('classteacher.test_edit_marks'))
+
+    return render_template('test_edit_marks.html',
+                          grade="Grade 7",
+                          stream="Stream Y",
+                          term="Term 1",
+                          assessment_type="Mid Term",
+                          subject_objects=subject_objects)
+
 
 @classteacher_bp.route('/', methods=['GET', 'POST'])
 @classteacher_required
@@ -230,8 +297,8 @@ def dashboard():
                     remaining_subjects.sort(key=lambda x: x.name)
                     sorted_subjects.extend(remaining_subjects)
 
-                    # Extract just the names
-                    subjects = [subject.name for subject in sorted_subjects]
+                    # Use the full Subject objects instead of just names
+                    subjects = sorted_subjects
 
                     if students and subjects:
                         show_students = True
@@ -292,42 +359,49 @@ def dashboard():
                     remaining_subjects.sort(key=lambda x: x.name)
                     sorted_subjects.extend(remaining_subjects)
 
-                    # Use the sorted subjects
-                    subjects = sorted_subjects
-
-                    if not (students and subjects):
-                        error_message = "No students or subjects found"
+                    # Get the selected subjects from the form
+                    selected_subjects = request.form.getlist('selected_subjects')
+                    if not selected_subjects:
+                        error_message = "Please select at least one subject"
                     else:
-                        # Process marks for each student and subject
-                        marks_added = 0
-                        marks_updated = 0
+                        # Filter subjects to only include selected ones
+                        selected_subject_ids = [int(subject_id) for subject_id in selected_subjects]
+                        subjects = [subject for subject in sorted_subjects if subject.id in selected_subject_ids]
 
-                        for student in students:
-                            for subject in subjects:
-                                # Get the mark value and subject-specific total marks from the form
-                                mark_key = f"mark_{student.name.replace(' ', '_')}_{subject.name.replace(' ', '_')}"
-                                mark_value = request.form.get(mark_key, '')
+                        # Store selected subjects in session for report generation
+                        session['selected_subjects'] = selected_subject_ids
 
-                                # Get the subject-specific total marks
-                                subject_index = subjects.index(subject)
-                                total_marks_key = f"total_marks_{subject_index}"
-                                subject_total_marks = request.form.get(total_marks_key, type=int, default=total_marks)
+                        if not (students and subjects):
+                            error_message = "No students or subjects found"
+                        else:
+                            # Process marks for each student and subject
+                            marks_added = 0
+                            marks_updated = 0
 
-                                # Get the percentage value (calculated by JavaScript)
-                                percentage_key = f"percentage_{student.name.replace(' ', '_')}_{subject.name.replace(' ', '_')}"
-                                percentage_value = request.form.get(percentage_key, type=float, default=0.0)
+                            for student in students:
+                                for subject in subjects:
+                                    # Check if this is a composite subject
+                                    if subject.is_composite:
+                                        # Get the components for this subject
+                                        components = subject.get_components()
 
-                                if mark_value and mark_value.isdigit():
-                                    try:
-                                        raw_mark = int(mark_value)
+                                        # First, create or update the overall mark for the subject
+                                        mark_key = f"mark_{student.name.replace(' ', '_')}_{subject.id}"
+                                        mark_value = request.form.get(mark_key, '')
 
-                                        # Sanitize the raw mark and total marks to ensure they're within acceptable ranges
-                                        raw_mark, subject_total_marks = MarkConversionService.sanitize_raw_mark(raw_mark, subject_total_marks)
+                                        # Get the percentage value (calculated by JavaScript)
+                                        percentage_key = f"hidden_percentage_{student.name.replace(' ', '_')}_{subject.id}"
+                                        percentage_value = request.form.get(percentage_key, type=float, default=0.0)
 
-                                        # Calculate percentage using our service
-                                        percentage_value = MarkConversionService.calculate_percentage(raw_mark, subject_total_marks)
+                                        # Also try the overall mark field
+                                        overall_mark_key = f"overall_mark_{student.name.replace(' ', '_')}_{subject.id}"
+                                        overall_mark_value = request.form.get(overall_mark_key, type=float, default=0.0)
 
-                                        # Check if mark already exists
+                                        # Use the overall mark value if percentage is 0
+                                        if percentage_value == 0.0 and overall_mark_value > 0:
+                                            percentage_value = overall_mark_value
+
+                                        # Check if overall mark already exists
                                         existing_mark = Mark.query.filter_by(
                                             student_id=student.id,
                                             subject_id=subject.id,
@@ -336,31 +410,144 @@ def dashboard():
                                         ).first()
 
                                         if existing_mark:
-                                            # Update existing mark with both old and new field names
-                                            existing_mark.mark = raw_mark  # Old field name
-                                            existing_mark.total_marks = subject_total_marks  # Old field name
-                                            existing_mark.raw_mark = raw_mark  # New field name
-                                            existing_mark.max_raw_mark = subject_total_marks  # New field name
+                                            # Update existing mark
                                             existing_mark.percentage = percentage_value
+                                            # For backward compatibility, set raw_mark based on percentage
+                                            existing_mark.raw_mark = (percentage_value / 100) * total_marks
+                                            existing_mark.mark = existing_mark.raw_mark  # Update old field name too
                                             marks_updated += 1
                                         else:
-                                            # Create new mark with both old and new field names
+                                            # Create new mark
                                             new_mark = Mark(
                                                 student_id=student.id,
                                                 subject_id=subject.id,
                                                 term_id=term_obj.id,
                                                 assessment_type_id=assessment_type_obj.id,
-                                                mark=raw_mark,  # Old field name
-                                                total_marks=subject_total_marks,  # Old field name
-                                                raw_mark=raw_mark,  # New field name
-                                                max_raw_mark=subject_total_marks,  # New field name
-                                                percentage=percentage_value
+                                                percentage=percentage_value,
+                                                raw_mark=(percentage_value / 100) * total_marks,
+                                                max_raw_mark=total_marks
                                             )
                                             db.session.add(new_mark)
+                                            db.session.flush()  # Flush to get the ID of the new mark
                                             marks_added += 1
-                                    except Exception as e:
-                                        print(f"Error processing mark: {e}")
-                                        continue
+
+                                        # Now process each component mark
+                                        component_marks_added = 0
+                                        component_marks_updated = 0
+
+                                        # Get the mark ID (either existing or newly created)
+                                        mark_id = existing_mark.id if existing_mark else new_mark.id
+
+                                        # Import ComponentMark model
+                                        from ..models.academic import ComponentMark
+
+                                        for component in components:
+                                            # Get the component mark value
+                                            component_mark_key = f"component_mark_{student.name.replace(' ', '_')}_{subject.id}_{component.id}"
+                                            component_mark_value = request.form.get(component_mark_key, '')
+
+                                            if component_mark_value and component_mark_value.isdigit():
+                                                try:
+                                                    component_raw_mark = int(component_mark_value)
+                                                    component_max_mark = component.max_raw_mark or total_marks
+
+                                                    # Sanitize the raw mark
+                                                    component_raw_mark, component_max_mark = MarkConversionService.sanitize_raw_mark(
+                                                        component_raw_mark, component_max_mark)
+
+                                                    # Calculate percentage
+                                                    component_percentage = MarkConversionService.calculate_percentage(
+                                                        component_raw_mark, component_max_mark)
+
+                                                    # Check if component mark already exists
+                                                    existing_component_mark = ComponentMark.query.filter_by(
+                                                        mark_id=mark_id,
+                                                        component_id=component.id
+                                                    ).first()
+
+                                                    if existing_component_mark:
+                                                        # Update existing component mark
+                                                        existing_component_mark.raw_mark = component_raw_mark
+                                                        existing_component_mark.max_raw_mark = component_max_mark
+                                                        existing_component_mark.percentage = component_percentage
+                                                        component_marks_updated += 1
+                                                    else:
+                                                        # Create new component mark
+                                                        new_component_mark = ComponentMark(
+                                                            mark_id=mark_id,
+                                                            component_id=component.id,
+                                                            raw_mark=component_raw_mark,
+                                                            max_raw_mark=component_max_mark,
+                                                            percentage=component_percentage
+                                                        )
+                                                        db.session.add(new_component_mark)
+                                                        component_marks_added += 1
+                                                except Exception as e:
+                                                    print(f"Error processing component mark: {e}")
+                                                    continue
+
+                                        # Add component marks to the total
+                                        marks_added += component_marks_added
+                                        marks_updated += component_marks_updated
+                                    else:
+                                        # Regular subject processing
+                                        # Get the mark value and subject-specific total marks from the form
+                                        mark_key = f"mark_{student.name.replace(' ', '_')}_{subject.id}"
+                                        mark_value = request.form.get(mark_key, '')
+
+                                        # Get the subject-specific total marks
+                                        subject_index = subjects.index(subject)
+                                        total_marks_key = f"total_marks_{subject_index}"
+                                        subject_total_marks = request.form.get(total_marks_key, type=int, default=total_marks)
+
+                                        # Get the percentage value (calculated by JavaScript)
+                                        percentage_key = f"percentage_{student.name.replace(' ', '_')}_{subject.id}"
+                                        percentage_value = request.form.get(percentage_key, type=float, default=0.0)
+
+                                        if mark_value and mark_value.isdigit():
+                                            try:
+                                                raw_mark = int(mark_value)
+
+                                                # Sanitize the raw mark and total marks to ensure they're within acceptable ranges
+                                                raw_mark, subject_total_marks = MarkConversionService.sanitize_raw_mark(raw_mark, subject_total_marks)
+
+                                                # Calculate percentage using our service
+                                                percentage_value = MarkConversionService.calculate_percentage(raw_mark, subject_total_marks)
+
+                                                # Check if mark already exists
+                                                existing_mark = Mark.query.filter_by(
+                                                    student_id=student.id,
+                                                    subject_id=subject.id,
+                                                    term_id=term_obj.id,
+                                                    assessment_type_id=assessment_type_obj.id
+                                                ).first()
+
+                                                if existing_mark:
+                                                    # Update existing mark with both old and new field names
+                                                    existing_mark.mark = raw_mark  # Old field name
+                                                    existing_mark.total_marks = subject_total_marks  # Old field name
+                                                    existing_mark.raw_mark = raw_mark  # New field name
+                                                    existing_mark.max_raw_mark = subject_total_marks  # New field name
+                                                    existing_mark.percentage = percentage_value
+                                                    marks_updated += 1
+                                                else:
+                                                    # Create new mark with both old and new field names
+                                                    new_mark = Mark(
+                                                        student_id=student.id,
+                                                        subject_id=subject.id,
+                                                        term_id=term_obj.id,
+                                                        assessment_type_id=assessment_type_obj.id,
+                                                        mark=raw_mark,  # Old field name
+                                                        total_marks=subject_total_marks,  # Old field name
+                                                        raw_mark=raw_mark,  # New field name
+                                                        max_raw_mark=subject_total_marks,  # New field name
+                                                        percentage=percentage_value
+                                                    )
+                                                    db.session.add(new_mark)
+                                                    marks_added += 1
+                                            except Exception as e:
+                                                print(f"Error processing mark: {e}")
+                                                continue
 
                         # Commit changes to the database
                         db.session.commit()
@@ -1175,10 +1362,58 @@ def manage_students():
         educational_levels=list(educational_level_mapping.keys())
     )
 
-@classteacher_bp.route('/preview_class_report/<grade>/<stream>/<term>/<assessment_type>')
-@classteacher_required
+@classteacher_bp.route('/preview_class_report/<grade>/<stream>/<term>/<assessment_type>', methods=['GET', 'POST'])
+@teacher_or_classteacher_required
 def preview_class_report(grade, stream, term, assessment_type):
     """Route for previewing class reports."""
+    # Check if this is a form submission for subject selection
+    if request.method == 'POST':
+        # Get the selected subjects from the form
+        selected_subjects = []
+        for key, value in request.form.items():
+            if key.startswith('include_subject_') and value:
+                try:
+                    subject_id = int(value)
+                    selected_subjects.append(subject_id)
+                except (ValueError, TypeError):
+                    pass
+
+        # Store the selected subjects in the session
+        session['selected_subjects'] = selected_subjects
+
+    # Get the selected subjects from the session if available
+    selected_subjects = session.get('selected_subjects', [])
+
+    # Check if this is a subject teacher (role = 'teacher') and filter subjects accordingly
+    current_role = get_role(session)
+    if current_role == 'teacher':
+        # For subject teachers, only show subjects they are assigned to teach
+        teacher_id = session.get('teacher_id')
+        if teacher_id:
+            # Get the grade and stream objects
+            stream_obj_temp = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+
+            if stream_obj_temp:
+                grade_obj_temp = stream_obj_temp.grade
+
+                # Get subjects assigned to this teacher for this grade/stream
+                teacher_assignments = TeacherSubjectAssignment.query.filter_by(
+                    teacher_id=teacher_id,
+                    grade_id=grade_obj_temp.id
+                ).filter(
+                    (TeacherSubjectAssignment.stream_id == stream_obj_temp.id) |
+                    (TeacherSubjectAssignment.stream_id == None)  # Assignments for all streams
+                ).all()
+
+                # Get subject IDs from assignments
+                teacher_subject_ids = [assignment.subject_id for assignment in teacher_assignments]
+
+                # Override selected_subjects to only include teacher's assigned subjects
+                selected_subjects = teacher_subject_ids
+
+                # Store in session for consistency
+                session['selected_subjects'] = selected_subjects
+
     stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
@@ -1187,8 +1422,8 @@ def preview_class_report(grade, stream, term, assessment_type):
         flash("Invalid grade, stream, term, or assessment type", "error")
         return redirect(url_for('classteacher.dashboard'))
 
-    # Get class report data
-    report_data = get_class_report_data(grade, stream, term, assessment_type)
+    # Get class report data with selected subjects
+    report_data = get_class_report_data(grade, stream, term, assessment_type, selected_subject_ids=selected_subjects)
 
     if not report_data or report_data.get("error"):
         error_msg = report_data.get("error") if report_data and report_data.get("error") else f"No marks found for {grade} Stream {stream[-1]} in {term} {assessment_type}"
@@ -1249,9 +1484,17 @@ def preview_class_report(grade, stream, term, assessment_type):
 
         # Get subjects for this education level
         if education_level_code:
-            filtered_subjects = Subject.query.filter_by(education_level=education_level_code).all()
+            all_education_subjects = Subject.query.filter_by(education_level=education_level_code).all()
         else:
-            filtered_subjects = Subject.query.all()
+            all_education_subjects = Subject.query.all()
+
+        # Filter subjects based on selected subjects if available
+        if selected_subjects:
+            # Only include subjects that are both in the education level and selected
+            filtered_subjects = [subject for subject in all_education_subjects if subject.id in selected_subjects]
+        else:
+            # If no subjects selected, use all subjects for this education level
+            filtered_subjects = all_education_subjects
 
         # Get subject IDs for filtering marks
         filtered_subject_ids = [subject.id for subject in filtered_subjects]
@@ -1292,6 +1535,9 @@ def preview_class_report(grade, stream, term, assessment_type):
         for student_data in class_data:
             student = Student.query.filter_by(name=student_data["student"]).first()
             if student:
+                # Add student ID to the data
+                student_data["student_id"] = student.id
+
                 # Get marks for this student from the database
                 filtered_marks = {}
                 subject_count = 0
@@ -1327,6 +1573,7 @@ def preview_class_report(grade, stream, term, assessment_type):
                         filtered_marks[subject.name] = 0
             else:
                 # Fallback to report data if student not found
+                student_data["student_id"] = 0
                 filtered_marks = {}
                 subject_count = 0
                 total_marks_value = 0
@@ -1433,6 +1680,75 @@ def preview_class_report(grade, stream, term, assessment_type):
     class_average = round(class_total / student_count, 2) if student_count > 0 else 0
     print("\nDEBUG - Calculated Class Average:", class_average)
 
+    # Get all subjects for the subject selection form
+    all_subjects = []
+    if education_level_code:
+        all_subjects = Subject.query.filter_by(education_level=education_level_code).all()
+    else:
+        all_subjects = Subject.query.all()
+
+    # Get component data for composite subjects
+    subject_components = {}
+    component_marks_data = {}
+    component_averages = {}
+
+    for subject in filtered_subjects:
+        if subject.is_composite:
+            components = subject.get_components()
+            subject_components[subject.name] = components
+
+            # Initialize component averages for this subject
+            component_averages[subject.name] = {}
+            for component in components:
+                component_averages[subject.name][component.name] = 0
+
+            # Get component marks for each student
+            component_totals = {}
+            component_counts = {}
+
+            for student_data in class_data:
+                student = Student.query.filter_by(name=student_data["student"]).first()
+                if student:
+                    student_id = student.id
+                    if student_id not in component_marks_data:
+                        component_marks_data[student_id] = {}
+
+                    component_marks_data[student_id][subject.name] = {}
+
+                    for component in components:
+                        # Get component mark from database
+                        from ..models.academic import ComponentMark
+                        component_mark = ComponentMark.query.filter_by(
+                            component_id=component.id
+                        ).join(
+                            Mark, ComponentMark.mark_id == Mark.id
+                        ).filter(
+                            Mark.student_id == student_id,
+                            Mark.term_id == term_obj.id,
+                            Mark.assessment_type_id == assessment_type_obj.id
+                        ).first()
+
+                        if component_mark:
+                            # Display the raw mark, not the percentage
+                            raw_mark = component_mark.raw_mark
+                            component_marks_data[student_id][subject.name][component.name] = raw_mark
+
+                            # Add to totals for average calculation
+                            if component.name not in component_totals:
+                                component_totals[component.name] = 0
+                                component_counts[component.name] = 0
+                            component_totals[component.name] += raw_mark
+                            component_counts[component.name] += 1
+                        else:
+                            component_marks_data[student_id][subject.name][component.name] = 0
+
+            # Calculate component averages
+            for component in components:
+                if component.name in component_counts and component_counts[component.name] > 0:
+                    component_averages[subject.name][component.name] = round(
+                        component_totals[component.name] / component_counts[component.name], 1
+                    )
+
     return render_template(
         'preview_class_report.html',
         grade=grade,
@@ -1442,13 +1758,17 @@ def preview_class_report(grade, stream, term, assessment_type):
         report_data=report_data,
         education_level=education_level,
         current_date=current_date,
-        subjects=report_data.get("subjects", []),
+        subjects=all_subjects,  # Pass all subjects for the selection form
         subject_names=subject_names,
         abbreviated_subjects=abbreviated_subjects,
         class_data=class_data,
         stats=report_data.get("stats", {}),
         subject_averages=subject_averages,  # Pass pre-calculated subject averages
-        class_average=class_average  # Pass pre-calculated class average
+        class_average=class_average,  # Pass pre-calculated class average
+        subject_components=subject_components,  # Pass component data
+        component_marks_data=component_marks_data,  # Pass component marks
+        component_averages=component_averages,  # Pass component averages
+        filtered_subjects=filtered_subjects  # Pass filtered subject objects
     )
 
 @classteacher_bp.route('/edit_class_marks/<grade>/<stream>/<term>/<assessment_type>')
@@ -1463,8 +1783,18 @@ def edit_class_marks(grade, stream, term, assessment_type):
         flash("Invalid grade, stream, term, or assessment type", "error")
         return redirect(url_for('classteacher.dashboard'))
 
+    # Get the selected subjects from the form
+    selected_subjects = []
+    for key, value in request.form.items():
+        if key.startswith('include_subject_') and value:
+            try:
+                subject_id = int(value)
+                selected_subjects.append(subject_id)
+            except (ValueError, TypeError):
+                pass
+
     # Get class report data
-    report_data = get_class_report_data(grade, stream, term, assessment_type)
+    report_data = get_class_report_data(grade, stream, term, assessment_type, selected_subject_ids=selected_subjects)
 
     if not report_data or report_data.get("error"):
         error_msg = report_data.get("error") if report_data and report_data.get("error") else f"No marks found for {grade} Stream {stream[-1]} in {term} {assessment_type}"
@@ -1513,6 +1843,15 @@ def edit_class_marks(grade, stream, term, assessment_type):
         subject_names = [subject.name for subject in filtered_subjects]
         subject_ids = [subject.id for subject in filtered_subjects]
         subject_objects = filtered_subjects  # Pass the actual subject objects
+
+        # Debug: Print subject IDs and composite status
+        print("\n=== SUBJECTS BEING PASSED TO TEMPLATE ===")
+        for subject in filtered_subjects:
+            print(f"Subject: {subject.name}, ID: {subject.id}, Is Composite: {subject.is_composite}")
+            if subject.is_composite:
+                components = subject.get_components()
+                print(f"  Components: {[comp.name for comp in components]}")
+        print("=========================================")
     else:
         # Use subjects from report data if grade not found
         subject_names = report_data.get("subjects", [])
@@ -1591,18 +1930,26 @@ def edit_class_marks(grade, stream, term, assessment_type):
         """Get the component mark for a student and component."""
         from ..models.academic import ComponentMark
 
-        # Find the mark in the database
-        component_mark = ComponentMark.query.filter_by(
-            component_id=component_id
-        ).join(
-            Mark, ComponentMark.mark_id == Mark.id
-        ).filter(
-            Mark.student_id == student_id,
-            Mark.term_id == term_obj.id,
-            Mark.assessment_type_id == assessment_type_obj.id
-        ).first()
+        try:
+            # Find the mark in the database
+            component_mark = ComponentMark.query.filter_by(
+                component_id=component_id
+            ).join(
+                Mark, ComponentMark.mark_id == Mark.id
+            ).filter(
+                Mark.student_id == student_id,
+                Mark.term_id == term_obj.id,
+                Mark.assessment_type_id == assessment_type_obj.id
+            ).first()
 
-        return component_mark
+            # Debug output
+            if component_mark:
+                print(f"Found component mark: student_id={student_id}, component_id={component_id}, raw_mark={component_mark.raw_mark}, max_raw_mark={component_mark.max_raw_mark}, percentage={component_mark.percentage}")
+
+            return component_mark
+        except Exception as e:
+            print(f"Error getting component mark: {e}")
+            return None
 
     return render_template(
         'edit_class_marks.html',
@@ -1702,7 +2049,11 @@ def update_class_marks(grade, stream, term, assessment_type):
                     total_weight = 0
 
                     for cm in component_marks:
-                        total_weighted_percentage += cm['percentage'] * cm['weight']
+                        # Calculate percentage from raw mark and max raw mark
+                        component_percentage = (cm['raw_mark'] / cm['max_raw_mark']) * 100 if cm['max_raw_mark'] > 0 else 0
+                        # Cap at 100%
+                        component_percentage = min(component_percentage, 100)
+                        total_weighted_percentage += component_percentage * cm['weight']
                         total_weight += cm['weight']
 
                     if total_weight > 0:
@@ -1840,7 +2191,7 @@ def update_class_marks(grade, stream, term, assessment_type):
     return redirect(url_for('classteacher.dashboard'))
 
 @classteacher_bp.route('/download_class_report/<grade>/<stream>/<term>/<assessment_type>')
-@classteacher_required
+@teacher_or_classteacher_required
 def download_class_report(grade, stream, term, assessment_type):
     """Route for downloading class reports as PDF."""
     # Check if we have a cached PDF
@@ -1862,8 +2213,35 @@ def download_class_report(grade, stream, term, assessment_type):
         flash("Invalid grade, stream, term, or assessment type", "error")
         return redirect(url_for('classteacher.dashboard'))
 
-    # Get class report data first
-    report_data = get_class_report_data(grade, stream, term, assessment_type)
+    # Get the selected subjects from the session if available
+    selected_subjects = session.get('selected_subjects', [])
+
+    # Check if this is a subject teacher (role = 'teacher') and filter subjects accordingly
+    current_role = get_role(session)
+    if current_role == 'teacher':
+        # For subject teachers, only show subjects they are assigned to teach
+        teacher_id = session.get('teacher_id')
+        if teacher_id:
+            # Get the grade object
+            grade_obj_temp = stream_obj.grade
+
+            # Get subjects assigned to this teacher for this grade/stream
+            teacher_assignments = TeacherSubjectAssignment.query.filter_by(
+                teacher_id=teacher_id,
+                grade_id=grade_obj_temp.id
+            ).filter(
+                (TeacherSubjectAssignment.stream_id == stream_obj.id) |
+                (TeacherSubjectAssignment.stream_id == None)  # Assignments for all streams
+            ).all()
+
+            # Get subject IDs from assignments
+            teacher_subject_ids = [assignment.subject_id for assignment in teacher_assignments]
+
+            # Override selected_subjects to only include teacher's assigned subjects
+            selected_subjects = teacher_subject_ids
+
+    # Get class report data first with selected subjects
+    report_data = get_class_report_data(grade, stream, term, assessment_type, selected_subject_ids=selected_subjects)
 
     if not report_data or report_data.get("error"):
         error_msg = report_data.get("error") if report_data and report_data.get("error") else f"No marks found for {grade} Stream {stream[-1]} in {term} {assessment_type}"
@@ -1930,7 +2308,8 @@ def download_class_report(grade, stream, term, assessment_type):
         report_data["subjects"],
         education_level,
         subject_averages,
-        class_average
+        class_average,
+        selected_subject_ids=selected_subjects
     )
 
     if not pdf_file:
@@ -2149,25 +2528,184 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
     from ..utils import get_grade_and_points
     mean_grade, mean_points = get_grade_and_points(avg_percentage)
 
-    # Prepare table data for the report
+    # Prepare table data for the report with composite subject handling
     table_data = []
-    for subject in class_data_result.get("subjects", []):
-        mark = student_data.get("marks", {}).get(subject, 0)
-        # For now, we'll use the same mark for all assessment types
-        # In a real implementation, you'd get different marks for different assessment types
+    composite_data = {}
+
+    # Get only subjects that have marks in the class report data
+    subjects_with_marks = class_data_result.get("subjects", [])
+
+    # Define subject order - core subjects first (with variations)
+    subject_order = [
+        "Mathematics", "MATHEMATICS", "Math", "MATH",
+        "English", "ENGLISH", "English Language", "ENGLISH LANGUAGE",
+        "Kiswahili", "KISWAHILI", "Kiswahili Language", "KISWAHILI LANGUAGE",
+        "Religious", "RELIGIOUS", "Religious Education", "RELIGIOUS EDUCATION", "CRE", "IRE",
+        "Integrated Science", "INTEGRATED SCIENCE", "Science", "SCIENCE",
+        "Social Studies", "SOCIAL STUDIES", "Social Science", "SOCIAL SCIENCE",
+        "Agriculture", "AGRICULTURE", "Agricultural Science", "AGRICULTURAL SCIENCE",
+        "Creative Art and Sports", "CREATIVE ART AND SPORTS", "Creative Arts", "CREATIVE ARTS"
+    ]
+
+    # Sort subjects according to the defined order, but only include those with marks
+    ordered_subject_names = []
+    # First add subjects in the specified order if they have marks
+    for subject_name in subject_order:
+        if subject_name in subjects_with_marks and subject_name not in ordered_subject_names:
+            ordered_subject_names.append(subject_name)
+
+    # Then add any remaining subjects with marks alphabetically
+    remaining_subject_names = [s for s in subjects_with_marks if s not in ordered_subject_names]
+    remaining_subject_names.sort()
+    ordered_subject_names.extend(remaining_subject_names)
+
+    from ..models.academic import Subject, ComponentMark
+
+    for subject_name in ordered_subject_names:
+        # Get the subject object
+        subject = Subject.query.filter_by(name=subject_name).first()
+        if not subject:
+            continue
+        mark = student_data.get("marks", {}).get(subject.name, 0)
+
+        # Skip subjects with no marks (0 or None)
+        if not mark or mark == 0:
+            continue
+
+        # Clean up decimal precision and show whole numbers
+        if isinstance(mark, float):
+            mark = int(round(mark)) if mark == int(mark) else round(mark, 1)
+        else:
+            mark = int(mark)
+
+        # Check if this is a composite subject
+        if hasattr(subject, 'is_composite') and subject.is_composite:
+            # Get component marks for this student
+            components = subject.get_components()
+            component_marks = {}
+
+            # Get the mark record for this subject
+            mark_record = Mark.query.filter_by(
+                student_id=student.id,
+                subject_id=subject.id,
+                term_id=term_obj.id,
+                assessment_type_id=assessment_type_obj.id
+            ).first()
+
+            if mark_record:
+                # Get component marks
+                for component in components:
+                    component_mark = ComponentMark.query.filter_by(
+                        component_id=component.id,
+                        mark_id=mark_record.id
+                    ).first()
+
+                    if component_mark:
+                        # Clean component name (remove any prefixes like "L ")
+                        clean_component_name = component.name
+                        if clean_component_name.startswith("L "):
+                            clean_component_name = clean_component_name[2:]
+
+                        # Get the component's maximum mark from the component_mark record or component definition
+                        component_max_mark = component_mark.max_raw_mark if component_mark.max_raw_mark else (component.max_raw_mark if hasattr(component, 'max_raw_mark') and component.max_raw_mark else 100)
+
+                        # Convert component mark to percentage for proper grading
+                        component_percentage = (component_mark.raw_mark / component_max_mark) * 100
+
+                        # Show whole numbers for component marks
+                        component_raw_mark = component_mark.raw_mark
+                        if isinstance(component_raw_mark, float):
+                            component_raw_mark = int(round(component_raw_mark)) if component_raw_mark == int(component_raw_mark) else round(component_raw_mark, 1)
+                        else:
+                            component_raw_mark = int(component_raw_mark)
+
+                        component_marks[clean_component_name] = {
+                            'mark': component_raw_mark,
+                            'max_mark': int(component_max_mark),
+                            'percentage': round(component_percentage, 1),
+                            'remarks': get_performance_remarks(component_percentage, 100)
+                        }
+                    else:
+                        # Clean component name (remove any prefixes like "L ")
+                        clean_component_name = component.name
+                        if clean_component_name.startswith("L "):
+                            clean_component_name = clean_component_name[2:]
+
+                        # Get the component's maximum mark from component definition (default to 100 if not set)
+                        component_max_mark = component.max_raw_mark if hasattr(component, 'max_raw_mark') and component.max_raw_mark else 100
+
+                        component_marks[clean_component_name] = {
+                            'mark': 0,
+                            'max_mark': component_max_mark,
+                            'percentage': 0,
+                            'remarks': get_performance_remarks(0, 100)
+                        }
+
+            # Store composite data for template
+            composite_data[subject.name] = {
+                'components': component_marks,
+                'total': mark
+            }
+
+        # Add to table data
+        # Initialize marks for all assessment types
+        entrance_mark = 0
+        mid_term_mark = 0
+        end_term_mark = 0
+
+        # If this is an end-term report, fetch marks from all assessment types for comparison
+        if assessment_type.lower() in ['end_term', 'endterm']:
+            # Get all assessment types for this term
+            all_assessment_types = AssessmentType.query.all()
+
+            # Fetch marks for each assessment type
+            for at in all_assessment_types:
+                mark_record = Mark.query.filter_by(
+                    student_id=student.id,
+                    subject_id=subject.id,
+                    term_id=term_obj.id,
+                    assessment_type_id=at.id
+                ).first()
+
+                if mark_record:
+                    mark_value = mark_record.percentage or 0
+
+                    # Map to appropriate assessment type
+                    if at.name.lower() in ['entrance', 'opener']:
+                        entrance_mark = mark_value
+                    elif at.name.lower() in ['mid_term', 'midterm']:
+                        mid_term_mark = mark_value
+                    elif at.name.lower() in ['end_term', 'endterm']:
+                        end_term_mark = mark_value
+
+            # Calculate average of available marks
+            available_marks = [m for m in [entrance_mark, mid_term_mark, end_term_mark] if m > 0]
+            avg_mark = sum(available_marks) / len(available_marks) if available_marks else 0
+        else:
+            # For single assessment types, show only current assessment
+            if assessment_type.lower() in ['entrance', 'opener']:
+                entrance_mark = mark
+            elif assessment_type.lower() in ['mid_term', 'midterm']:
+                mid_term_mark = mark
+            elif assessment_type.lower() in ['end_term', 'endterm']:
+                end_term_mark = mark
+
+            avg_mark = mark
+
         table_data.append({
-            "subject": subject,
-            "entrance": mark,
-            "mid_term": mark,
-            "end_term": mark,
-            "avg": mark,
-            "remarks": get_performance_remarks(mark, class_data_result.get("total_marks", 100))
+            "subject": subject.name,
+            "entrance": entrance_mark,
+            "mid_term": mid_term_mark,
+            "end_term": end_term_mark,
+            "current_assessment": mark,  # Always show the current assessment mark
+            "avg": avg_mark,
+            "remarks": get_performance_remarks(avg_mark if assessment_type.lower() in ['end_term', 'endterm'] else mark, class_data_result.get("total_marks", 100))
         })
 
-    # Calculate total marks and points
+    # Calculate total marks and points based on subjects with marks
     total_marks = student_data.get("total_marks", 0)
-    total_possible_marks = len(class_data_result.get("subjects", [])) * class_data_result.get("total_marks", 100)
-    total_points = mean_points * len(class_data_result.get("subjects", []))
+    total_possible_marks = len(subjects_with_marks) * class_data_result.get("total_marks", 100)
+    total_points = mean_points * len(subjects_with_marks)
 
     # Generate admission number if not available
     admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
@@ -2190,6 +2728,7 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
         education_level=education_level,
         current_date=current_date,
         table_data=table_data,
+        composite_data=composite_data,  # Add composite subject data
         total=total_marks,
         avg_percentage=avg_percentage,
         mean_grade=mean_grade,
@@ -3112,6 +3651,8 @@ def download_class_list():
     response.headers["Content-Type"] = "text/csv"
 
     return response
+
+
 
 @classteacher_bp.route('/download_subject_template', methods=['GET'])
 @classteacher_required

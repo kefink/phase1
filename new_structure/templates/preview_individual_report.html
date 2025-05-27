@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="robots" content="noindex" />
-    <title>{{ student_data.student }} - Academic Report</title>
+    <title>Academic Report</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
       rel="stylesheet"
@@ -95,44 +95,123 @@
         background-color: #0056b3;
       }
 
+      /* Component row styling */
+      .component-row {
+        background-color: #f8f9fa !important;
+        font-size: 0.9em;
+        border-left: 3px solid #4caf50;
+      }
+
+      .component-name {
+        text-align: left !important;
+        padding-left: 30px !important;
+        font-style: italic;
+        color: #555;
+      }
+
+      .component-mark {
+        color: #666;
+        font-weight: normal;
+      }
+
+      .component-label {
+        font-style: italic;
+        color: #666;
+        font-size: 0.85em;
+      }
+
       /* Print styles */
       @media print {
-        body {
-          background-color: white;
-          padding: 0;
-          margin: 0;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        .report-container {
-          box-shadow: none;
-          padding: 0;
-          max-width: 100%;
-          margin: 0;
-        }
-        .back-btn,
-        .no-print {
-          display: none !important;
-        }
-        .logo-container img {
-          max-width: 120px;
-          height: auto;
-        }
-        /* Hide URL and page title */
+        /* Remove all browser-generated content */
         @page {
           size: portrait;
           margin: 1cm;
+          /* Remove headers and footers completely */
+          @top-left {
+            content: "";
+          }
+          @top-center {
+            content: "";
+          }
+          @top-right {
+            content: "";
+          }
+          @bottom-left {
+            content: "";
+          }
+          @bottom-center {
+            content: "";
+          }
+          @bottom-right {
+            content: "";
+          }
         }
-        /* Hide URL and other browser elements */
-        @page :first {
-          margin-top: 0;
+
+        /* Reset all styles for clean printing */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
-        /* Hide header and footer */
-        @page :left {
-          margin-left: 0;
+
+        html {
+          margin: 0 !important;
+          padding: 0 !important;
         }
-        @page :right {
-          margin-right: 0;
+
+        body {
+          background-color: white !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          font-size: 12pt !important;
+          font-family: Arial, sans-serif !important;
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+
+        .report-container {
+          box-shadow: none !important;
+          padding: 0 !important;
+          max-width: 100% !important;
+          margin: 0 !important;
+          background-color: white !important;
+        }
+
+        .back-btn,
+        .no-print,
+        button {
+          display: none !important;
+          visibility: hidden !important;
+        }
+
+        .logo-container img {
+          max-width: 120px !important;
+          height: auto !important;
+        }
+
+        /* Ensure colors print correctly */
+        th {
+          background-color: #4caf50 !important;
+          color: white !important;
+          -webkit-print-color-adjust: exact !important;
+        }
+
+        .component-row {
+          background-color: #f8f9fa !important;
+          -webkit-print-color-adjust: exact !important;
+        }
+
+        table {
+          page-break-inside: auto !important;
+        }
+
+        tr {
+          page-break-inside: avoid !important;
+          page-break-after: auto !important;
+        }
+
+        thead {
+          display: table-header-group !important;
         }
       }
     </style>
@@ -141,42 +220,15 @@
     <script>
       // This script helps ensure proper printing
       function handlePrint() {
-        // Create a new window for printing
-        var printWindow = window.open('', '_blank', 'width=800,height=600');
-
-        // Get the content of the current page
-        var content = document.documentElement.outerHTML;
-
-        // Write the content to the new window
-        printWindow.document.write(content);
-
-        // Add a script to the new window to trigger printing
-        printWindow.document.write('<script>document.title = "Academic Report"; setTimeout(function() { window.print(); window.close(); }, 500);<\/script>');
-
-        // Close the document
-        printWindow.document.close();
-
-        // Return false to prevent default behavior
+        // Simply use the browser's built-in print functionality with clean CSS
+        window.print();
         return false;
       }
 
       // For auto-print when print=1 is in the URL
       {% if print_mode %}
       window.onload = function() {
-        // Create a new window for printing
-        var printWindow = window.open('', '_blank', 'width=800,height=600');
-
-        // Get the content of the current page
-        var content = document.documentElement.outerHTML;
-
-        // Write the content to the new window
-        printWindow.document.write(content);
-
-        // Add a script to the new window to trigger printing
-        printWindow.document.write('<script>document.title = "Academic Report"; setTimeout(function() { window.print(); window.close(); }, 500);<\/script>');
-
-        // Close the document
-        printWindow.document.close();
+        handlePrint();
       };
       {% endif %}
     </script>
@@ -245,30 +297,93 @@
         <thead>
           <tr>
             <th>Subjects</th>
+            {% if assessment_type.lower() == 'end_term' or
+            assessment_type.lower() == 'endterm' %}
+            <!-- Show all assessment columns for end term comparison -->
             <th>Entrance</th>
             <th>Mid Term</th>
             <th>End Term</th>
             <th>Avg.</th>
+            {% else %}
+            <!-- Show only current assessment column for single assessments -->
+            <th>{{ assessment_type.replace('_', ' ').title() }}</th>
+            {% endif %}
             <th>Subject Remarks</th>
           </tr>
         </thead>
         <tbody>
           {% for row in table_data %}
           <tr>
-            <td>{{ row.subject }}</td>
-            <td>{{ row.entrance }}</td>
-            <td>{{ row.mid_term }}</td>
-            <td>{{ row.end_term }}</td>
-            <td>{{ row.avg }}</td>
+            <td style="text-align: left; font-weight: bold">
+              {{ row.subject }}
+            </td>
+            {% if assessment_type.lower() == 'end_term' or
+            assessment_type.lower() == 'endterm' %}
+            <!-- Show all assessment columns for end term comparison -->
+            <td>{{ row.entrance | int if row.entrance != 0 else '-' }}</td>
+            <td>{{ row.mid_term | int if row.mid_term != 0 else '-' }}</td>
+            <td>{{ row.end_term | int if row.end_term != 0 else '-' }}</td>
+            <td>{{ row.avg | int if row.avg != 0 else '-' }}</td>
+            {% else %}
+            <!-- Show only current assessment mark for single assessments -->
+            <td>
+              {{ row.current_assessment | int if row.current_assessment != 0
+              else '-' }}
+            </td>
+            {% endif %}
             <td>{{ row.remarks | replace(' (TBD)', '') }}</td>
           </tr>
-          {% endfor %}
+
+          <!-- Show component breakdown for composite subjects -->
+          {% if composite_data and composite_data.get(row.subject) %} {% set
+          components = composite_data[row.subject].components %} {% for
+          component_name, component_data in components.items() %}
+          <tr class="component-row">
+            <td class="component-name">
+              {{ component_name }}
+              <span style="font-size: 0.8em; color: #888; font-style: italic">
+                ({{ component_data.mark }}/{{ component_data.max_mark }})
+              </span>
+            </td>
+            {% if assessment_type.lower() == 'end_term' or
+            assessment_type.lower() == 'endterm' %}
+            <!-- Show component marks for all assessment columns -->
+            <td class="component-mark">
+              {{ component_data.mark if component_data.mark != 0 else '-' }}
+            </td>
+            <td class="component-mark">
+              {{ component_data.mark if component_data.mark != 0 else '-' }}
+            </td>
+            <td class="component-mark">
+              {{ component_data.mark if component_data.mark != 0 else '-' }}
+            </td>
+            <td class="component-mark">
+              {{ component_data.mark if component_data.mark != 0 else '-' }}
+            </td>
+            {% else %}
+            <!-- Show component mark for current assessment only -->
+            <td class="component-mark">
+              {{ component_data.mark if component_data.mark != 0 else '-' }}
+            </td>
+            {% endif %}
+            <td class="component-label">
+              {{ component_data.remarks | replace(' (TBD)', '') }}
+            </td>
+          </tr>
+          {% endfor %} {% endif %} {% endfor %}
           <tr>
             <td>Totals</td>
+            {% if assessment_type.lower() == 'end_term' or
+            assessment_type.lower() == 'endterm' %}
+            <!-- Show totals for all assessment columns -->
             <td></td>
             <td></td>
             <td>{{ total | int }}</td>
             <td>{{ total | int }}</td>
+            {% else %}
+            <!-- Show total for current assessment only -->
+            <td>{{ total | int }}</td>
+            {% endif %}
             <td></td>
           </tr>
         </tbody>

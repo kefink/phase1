@@ -133,7 +133,11 @@ class Mark(db.Model):
         for component_mark in component_marks:
             component = next((c for c in components if c.id == component_mark.component_id), None)
             if component:
-                total_weighted_percentage += component_mark.percentage * component.weight
+                # Calculate percentage from raw mark and max raw mark
+                component_percentage = (component_mark.raw_mark / component_mark.max_raw_mark) * 100 if component_mark.max_raw_mark > 0 else 0
+                # Cap at 100%
+                component_percentage = min(component_percentage, 100)
+                total_weighted_percentage += component_percentage * component.weight
                 total_weight += component.weight
 
         if total_weight > 0:
@@ -184,6 +188,7 @@ class Mark(db.Model):
 
 class SubjectComponent(db.Model):
     """Model for components of composite subjects like English (Grammar/Composition) and Kiswahili (Lugha/Insha)."""
+    __tablename__ = 'subject_component'  # Explicitly set the table name
     id = db.Column(db.Integer, primary_key=True)
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
@@ -197,6 +202,7 @@ class SubjectComponent(db.Model):
 
 class ComponentMark(db.Model):
     """Model for marks of individual components of composite subjects."""
+    __tablename__ = 'component_mark'  # Explicitly set the table name
     id = db.Column(db.Integer, primary_key=True)
     mark_id = db.Column(db.Integer, db.ForeignKey('mark.id'), nullable=False)
     component_id = db.Column(db.Integer, db.ForeignKey('subject_component.id'), nullable=False)

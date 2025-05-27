@@ -500,6 +500,238 @@ tbody tr:hover {
   gap: 10px;
 }
 
+/* Composite Subject Styles */
+.composite-subject-entry-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background-color: rgba(37, 95, 56, 0.05);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(37, 95, 56, 0.1);
+}
+
+.composite-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(37, 95, 56, 0.2);
+  margin-bottom: 5px;
+}
+
+.composite-title {
+  font-weight: 600;
+  color: var(--color-forest-green);
+}
+
+.composite-percentage {
+  font-weight: 600;
+  color: var(--color-bright-green);
+}
+
+.composite-subject-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(37, 95, 56, 0.1);
+}
+
+.component-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.component-title {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.component-weight {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.component-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mark-input-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.component-mark-input,
+.component-max-input {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-medium-gray);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.mark-separator {
+  font-weight: 600;
+  color: #666;
+}
+
+.percentage-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.percentage-value {
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 50px;
+}
+
+.percentage-bar {
+  flex-grow: 1;
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.percentage-fill {
+  height: 100%;
+  background-color: var(--color-forest-green);
+  border-radius: 4px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.composite-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: rgba(37, 95, 56, 0.1);
+  border-radius: var(--radius-sm);
+  margin-top: 5px;
+}
+
+.composite-total-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Performance indicator colors */
+.performance-ee {
+  color: #28a745 !important; /* Exceeding Expectation */
+}
+
+.performance-me {
+  color: #17a2b8 !important; /* Meeting Expectation */
+}
+
+.performance-ae {
+  color: #ffc107 !important; /* Approaching Expectation */
+}
+
+.performance-be {
+  color: #dc3545 !important; /* Below Expectation */
+}
+
+/* Composite Subject Styles */
+.composite-subject-entry-container {
+  background-color: rgba(37, 95, 56, 0.05);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-sm);
+  border: 1px solid rgba(37, 95, 56, 0.2);
+}
+
+.composite-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid rgba(37, 95, 56, 0.2);
+}
+
+.composite-title {
+  font-weight: 600;
+  color: var(--color-forest-green);
+}
+
+.composite-percentage {
+  font-weight: 600;
+  color: var(--color-bright-green);
+}
+
+.composite-subject-entry {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  margin-bottom: var(--space-xs);
+  border: 1px solid rgba(37, 95, 56, 0.1);
+}
+
+.component-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.component-title {
+  font-weight: 500;
+  color: var(--color-text-dark);
+}
+
+.component-weight {
+  font-size: 0.9rem;
+  color: var(--color-forest-green);
+}
+
+.component-inputs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.mark-input-container {
+  display: flex;
+  align-items: center;
+}
+
+.mark-separator {
+  margin: 0 var(--space-xs);
+  color: var(--color-text-dark);
+}
+
+.component-mark-input,
+.component-max-input {
+  width: 60px;
+  padding: var(--space-xs);
+  text-align: center;
+}
+
+.composite-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-sm);
+  padding-top: var(--space-xs);
+  border-top: 1px solid rgba(37, 95, 56, 0.2);
+}
+
+.composite-total-label {
+  font-weight: 600;
+  color: var(--color-forest-green);
+}
+
 #bulk-delete-form {
   margin-top: 10px;
 }

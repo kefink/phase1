@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ subject }} Subject Report - {{ grade }} {{ stream }}</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+      }
+
+      .report-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+
+      .report-header {
+        text-align: center;
+        padding: 30px 0;
+        background: linear-gradient(135deg, #4a90e2, #357abd);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        margin: -20px -20px 30px -20px;
+      }
+
+      .school-name {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .report-title {
+        font-size: 24px;
+        margin-bottom: 15px;
+      }
+
+      .report-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .detail-card {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .detail-label {
+        font-size: 12px;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+      }
+
+      .detail-value {
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .statistics-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border: 2px solid #4a90e2;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .stat-title {
+        font-size: 14px;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+      }
+
+      .stat-value {
+        font-size: 32px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 5px;
+      }
+
+      .stat-description {
+        font-size: 12px;
+        color: #6c757d;
+      }
+
+      .grade-distribution {
+        background: white;
+        border: 2px solid #4a90e2;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 30px;
+      }
+
+      .grade-distribution h3 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        font-size: 20px;
+      }
+
+      .grade-bars {
+        display: grid;
+        gap: 15px;
+      }
+
+      .grade-bar {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .grade-label {
+        min-width: 80px;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .grade-progress {
+        flex: 1;
+        height: 30px;
+        background: #e9ecef;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .grade-fill {
+        height: 100%;
+        border-radius: 15px;
+        transition: width 0.8s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+      }
+
+      .grade-ee {
+        background: linear-gradient(135deg, #28a745, #20c997);
+      }
+      .grade-me {
+        background: linear-gradient(135deg, #17a2b8, #6f42c1);
+      }
+      .grade-ae {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+      }
+      .grade-be {
+        background: linear-gradient(135deg, #dc3545, #e83e8c);
+      }
+
+      .grade-count {
+        min-width: 60px;
+        text-align: right;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .students-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .students-table th {
+        background: linear-gradient(135deg, #4a90e2, #357abd);
+        color: white;
+        padding: 15px;
+        text-align: left;
+        font-weight: bold;
+      }
+
+      .students-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .students-table tr:nth-child(even) {
+        background: #f8f9fa;
+      }
+
+      .students-table tr:hover {
+        background: #e8f4fd;
+      }
+
+      .grade-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 12px;
+        color: white;
+        text-align: center;
+      }
+
+      .badge-ee {
+        background: #28a745;
+      }
+      .badge-me {
+        background: #17a2b8;
+      }
+      .badge-ae {
+        background: #ffc107;
+        color: #333;
+      }
+      .badge-be {
+        background: #dc3545;
+      }
+
+      .percentage-cell {
+        font-weight: bold;
+        font-size: 16px;
+        color: #2c3e50;
+      }
+
+      .print-button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #4a90e2, #357abd);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .print-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+      }
+
+      @media print {
+        .print-button {
+          display: none;
+        }
+
+        /* Remove all browser elements */
+        @page {
+          margin: 0.5in;
+          size: A4;
+        }
+
+        body {
+          background: white !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          font-size: 12px;
+          line-height: 1.4;
+        }
+
+        .report-container {
+          box-shadow: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border-radius: 0 !important;
+          max-width: none !important;
+          width: 100% !important;
+        }
+
+        .report-header {
+          margin: 0 0 20px 0 !important;
+          padding: 20px !important;
+          border-radius: 0 !important;
+          background: linear-gradient(135deg, #4a90e2, #357abd) !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .school-name {
+          font-size: 24px !important;
+          margin-bottom: 8px !important;
+        }
+
+        .report-title {
+          font-size: 20px !important;
+          margin-bottom: 12px !important;
+        }
+
+        .report-details {
+          gap: 10px !important;
+          margin-bottom: 15px !important;
+        }
+
+        .detail-card {
+          padding: 10px !important;
+          background: rgba(255, 255, 255, 0.15) !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .detail-value {
+          font-size: 14px !important;
+        }
+
+        .statistics-section {
+          gap: 15px !important;
+          margin-bottom: 20px !important;
+        }
+
+        .stat-card {
+          padding: 15px !important;
+          background: #f8f9fa !important;
+          border: 1px solid #4a90e2 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .stat-value {
+          font-size: 24px !important;
+        }
+
+        .grade-distribution {
+          padding: 20px !important;
+          margin-bottom: 20px !important;
+          border: 1px solid #4a90e2 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .grade-distribution h3 {
+          font-size: 16px !important;
+          margin-bottom: 15px !important;
+        }
+
+        .grade-bars {
+          gap: 10px !important;
+        }
+
+        .grade-progress {
+          height: 25px !important;
+        }
+
+        .grade-fill {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          font-size: 11px !important;
+        }
+
+        .students-table {
+          font-size: 11px !important;
+          margin-top: 15px !important;
+        }
+
+        .students-table th {
+          padding: 10px 8px !important;
+          background: #4a90e2 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .students-table td {
+          padding: 8px !important;
+          border-bottom: 1px solid #ddd !important;
+        }
+
+        .students-table tr:nth-child(even) {
+          background: #f8f9fa !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .grade-badge {
+          padding: 4px 8px !important;
+          font-size: 10px !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .percentage-cell {
+          font-size: 12px !important;
+        }
+
+        /* Ensure colors print correctly */
+        .grade-ee,
+        .badge-ee {
+          background: #28a745 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .grade-me,
+        .badge-me {
+          background: #17a2b8 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .grade-ae,
+        .badge-ae {
+          background: #ffc107 !important;
+          color: #333 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .grade-be,
+        .badge-be {
+          background: #dc3545 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        /* Hide elements that shouldn't print */
+        .no-print {
+          display: none !important;
+        }
+
+        /* Show print header only when printing */
+        .print-header {
+          display: block !important;
+        }
+
+        /* Ensure page breaks work properly */
+        .page-break-before {
+          page-break-before: always;
+        }
+        .page-break-after {
+          page-break-after: always;
+        }
+        .page-break-inside {
+          page-break-inside: avoid;
+        }
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="print-button" onclick="window.print()">
+      🖨️ Print Report
+    </button>
+
+    <!-- Print-only header with date/time -->
+    <div class="print-header" style="display: none">
+      <div
+        style="
+          text-align: center;
+          margin-bottom: 20px;
+          padding: 15px;
+          border-bottom: 2px solid #4a90e2;
+        "
+      >
+        <h2 style="margin: 0; color: #2c3e50; font-size: 20px">
+          Kirima Primary School
+        </h2>
+        <p style="margin: 5px 0; color: #6c757d; font-size: 14px">
+          Subject Performance Analysis Report
+        </p>
+        <p style="margin: 0; font-size: 11px; color: #6c757d">
+          Generated on: <span id="print-date"></span>
+        </p>
+      </div>
+    </div>
+
+    <div class="report-container">
+      <div class="report-header">
+        <div class="school-name">Kirima Primary School</div>
+        <div class="report-title">📈 Enhanced Subject Analysis Report</div>
+
+        <div class="report-details">
+          <div class="detail-card">
+            <div class="detail-label">Subject</div>
+            <div class="detail-value">{{ subject }}</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Grade & Stream</div>
+            <div class="detail-value">{{ grade }} - {{ stream }}</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Term</div>
+            <div class="detail-value">{{ term }}</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Assessment</div>
+            <div class="detail-value">{{ assessment_type }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Section -->
+      <div class="statistics-section">
+        <div class="stat-card">
+          <div class="stat-title">Total Students</div>
+          <div class="stat-value">{{ total_students }}</div>
+          <div class="stat-description">Enrolled in class</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Students Assessed</div>
+          <div class="stat-value">{{ students_with_marks }}</div>
+          <div class="stat-description">Have submitted marks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Class Average</div>
+          <div class="stat-value">{{ statistics.average_percentage }}%</div>
+          <div class="stat-description">Overall performance</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Highest Score</div>
+          <div class="stat-value">{{ statistics.highest_percentage }}%</div>
+          <div class="stat-description">Best performance</div>
+        </div>
+      </div>
+
+      <!-- Grade Distribution -->
+      <div class="grade-distribution">
+        <h3>📊 Grade Distribution Analysis</h3>
+        <div class="grade-bars">
+          {% set max_count = [statistics.grade_distribution.values() | max, 1] |
+          max %}
+
+          <div class="grade-bar">
+            <div class="grade-label">E.E (≥75%)</div>
+            <div class="grade-progress">
+              <div
+                class="grade-fill grade-ee"
+                style="width: {{ (statistics.grade_distribution['E.E'] / max_count * 100) if max_count > 0 else 0 }}%"
+              >
+                {% if statistics.grade_distribution['E.E'] > 0 %}{{
+                statistics.grade_distribution['E.E'] }}{% endif %}
+              </div>
+            </div>
+            <div class="grade-count">
+              {{ statistics.grade_distribution['E.E'] }} students
+            </div>
+          </div>
+
+          <div class="grade-bar">
+            <div class="grade-label">M.E (50-74%)</div>
+            <div class="grade-progress">
+              <div
+                class="grade-fill grade-me"
+                style="width: {{ (statistics.grade_distribution['M.E'] / max_count * 100) if max_count > 0 else 0 }}%"
+              >
+                {% if statistics.grade_distribution['M.E'] > 0 %}{{
+                statistics.grade_distribution['M.E'] }}{% endif %}
+              </div>
+            </div>
+            <div class="grade-count">
+              {{ statistics.grade_distribution['M.E'] }} students
+            </div>
+          </div>
+
+          <div class="grade-bar">
+            <div class="grade-label">A.E (30-49%)</div>
+            <div class="grade-progress">
+              <div
+                class="grade-fill grade-ae"
+                style="width: {{ (statistics.grade_distribution['A.E'] / max_count * 100) if max_count > 0 else 0 }}%"
+              >
+                {% if statistics.grade_distribution['A.E'] > 0 %}{{
+                statistics.grade_distribution['A.E'] }}{% endif %}
+              </div>
+            </div>
+            <div class="grade-count">
+              {{ statistics.grade_distribution['A.E'] }} students
+            </div>
+          </div>
+
+          <div class="grade-bar">
+            <div class="grade-label">B.E (<30%)</div>
+            <div class="grade-progress">
+              <div
+                class="grade-fill grade-be"
+                style="width: {{ (statistics.grade_distribution['B.E'] / max_count * 100) if max_count > 0 else 0 }}%"
+              >
+                {% if statistics.grade_distribution['B.E'] > 0 %}{{
+                statistics.grade_distribution['B.E'] }}{% endif %}
+              </div>
+            </div>
+            <div class="grade-count">
+              {{ statistics.grade_distribution['B.E'] }} students
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Performance Table -->
+      {% if marks_data %}
+      <table class="students-table">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Raw Mark</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>Performance Level</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for data in marks_data %}
+          <tr>
+            <td>{{ data.student.name }}</td>
+            <td>
+              {{ data.mark.raw_mark|round|int }}/{{
+              data.mark.max_raw_mark|round|int }}
+            </td>
+            <td class="percentage-cell">{{ data.percentage|round|int }}%</td>
+            <td>
+              <span
+                class="grade-badge badge-{{ data.grade_letter.lower().replace('.', '') }}"
+              >
+                {{ data.grade_letter }}
+              </span>
+            </td>
+            <td>{{ data.grade_description }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="no-data">
+        <h3>📝 No Assessment Data Available</h3>
+        <p>No marks have been submitted for this subject assessment yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <script>
+      // Set current date and time for print
+      function setPrintDate() {
+        const now = new Date();
+        const options = {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        };
+        const dateString = now.toLocaleDateString("en-US", options);
+        document.getElementById("print-date").textContent = dateString;
+      }
+
+      // Add animation to grade bars on load
+      window.addEventListener("load", function () {
+        // Set print date
+        setPrintDate();
+
+        // Animate grade bars
+        const gradeFills = document.querySelectorAll(".grade-fill");
+        gradeFills.forEach((fill) => {
+          const width = fill.style.width;
+          fill.style.width = "0%";
+          setTimeout(() => {
+            fill.style.width = width;
+          }, 500);
+        });
+      });
+
+      // Optimize for printing
+      window.addEventListener("beforeprint", function () {
+        // Ensure all animations are complete before printing
+        const gradeFills = document.querySelectorAll(".grade-fill");
+        gradeFills.forEach((fill) => {
+          fill.style.transition = "none";
+        });
+
+        // Update print date right before printing
+        setPrintDate();
+      });
+
+      window.addEventListener("afterprint", function () {
+        // Restore animations after printing
+        const gradeFills = document.querySelectorAll(".grade-fill");
+        gradeFills.forEach((fill) => {
+          fill.style.transition = "width 0.8s ease";
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -50,6 +50,90 @@
             margin: 10px 0;
             font-size: 14px;
         }
+
+        /* New styles for improved layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .dashboard-full-width {
+            grid-column: 1 / span 2;
+        }
+
+        .dashboard-card {
+            margin-top: 0;
+        }
+
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .main-tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .main-tab.active {
+            border-bottom-color: #007BFF;
+            color: #007BFF;
+        }
+
+        .main-tab:hover {
+            background-color: #f8f9fa;
+        }
+
+        .tab-content-container {
+            display: none;
+        }
+
+        .tab-content-container.active {
+            display: block;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .quick-action-btn {
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .action-icon {
+            font-size: 18px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -109,11 +193,144 @@
             </div>
         </div>
 
-        <div class="dashboard-card mt-4">
-            <div class="card-header">
-                <span>Upload Class Marks (All Subjects)</span>
-                <small>Complete all fields to process marks</small>
+        <!-- Main Tabs Navigation -->
+        <div class="tab-container">
+            <div class="main-tab {% if active_tab == 'recent-reports' %}active{% endif %}" onclick="switchMainTab('recent-reports')">Recent Reports</div>
+            <div class="main-tab {% if active_tab == 'upload-marks' %}active{% endif %}" onclick="switchMainTab('upload-marks')">Upload Marks</div>
+            <div class="main-tab {% if active_tab == 'generate-marksheet' %}active{% endif %}" onclick="switchMainTab('generate-marksheet')">Generate Marksheets</div>
+        </div>
+
+        <!-- Quick Actions Bar -->
+        <div class="quick-actions">
+            <a href="{{ url_for('classteacher.view_all_reports') }}" class="quick-action-btn" style="background-color: #007BFF; color: white;">
+                <span class="action-icon">📊</span> View All Reports
+            </a>
+            <a href="#" onclick="switchMainTab('upload-marks')" class="quick-action-btn" style="background-color: #28A745; color: white;">
+                <span class="action-icon">📝</span> Upload New Marks
+            </a>
+            <a href="#" onclick="switchMainTab('generate-marksheet')" class="quick-action-btn" style="background-color: #17a2b8; color: white;">
+                <span class="action-icon">📄</span> Generate Marksheet
+            </a>
+            <a href="#" onclick="downloadTemplate()" class="quick-action-btn" style="background-color: #6c757d; color: white;">
+                <span class="action-icon">📥</span> Download Template
+            </a>
+        </div>
+
+        <!-- Recent Reports Tab Content -->
+        <div id="recent-reports-tab" class="tab-content-container {% if active_tab == 'recent-reports' %}active{% endif %}">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span>Recent Reports</span>
+                    <a href="{{ url_for('classteacher.all_reports') }}" class="btn-outline">View All</a>
+                </div>
+
+                <!-- Filter and Sort Controls -->
+                <div class="filter-controls" style="padding: 15px; background-color: #f8f9fa; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+                    <div style="display: flex; align-items: center;">
+                        <label for="sort-reports" style="margin-right: 8px; font-weight: 500;">Sort by:</label>
+                        <select id="sort-reports" onchange="sortReports(this.value)" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="date" {% if request.args.get('sort') == 'date' or not request.args.get('sort') %}selected{% endif %}>Date (newest first)</option>
+                            <option value="grade" {% if request.args.get('sort') == 'grade' %}selected{% endif %}>Grade</option>
+                            <option value="term" {% if request.args.get('sort') == 'term' %}selected{% endif %}>Term</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; align-items: center;">
+                        <label for="filter-grade" style="margin-right: 8px; font-weight: 500;">Grade:</label>
+                        <select id="filter-grade" onchange="filterReports()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="">All Grades</option>
+                            {% for grade_option in grades %}
+                            <option value="{{ grade_option }}" {% if request.args.get('filter_grade') == grade_option %}selected{% endif %}>{{ grade_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div style="display: flex; align-items: center;">
+                        <label for="filter-term" style="margin-right: 8px; font-weight: 500;">Term:</label>
+                        <select id="filter-term" onchange="filterReports()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="">All Terms</option>
+                            {% for term_option in terms %}
+                            <option value="{{ term_option }}" {% if request.args.get('filter_term') == term_option %}selected{% endif %}>{{ term_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button onclick="resetFilters()" style="padding: 6px 12px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Reset Filters
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Grade</th>
+                                <th>Stream</th>
+                                <th>Term</th>
+                                <th>Assessment</th>
+                                <th>Date</th>
+                                <th>Marks</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_reports %}
+                            {% for report in recent_reports %}
+                            <tr>
+                                <td>{{ report.id }}</td>
+                                <td>{{ report.grade }}</td>
+                                <td>{{ report.stream }}</td>
+                                <td>{{ report.term }}</td>
+                                <td>{{ report.assessment_type }}</td>
+                                <td>{{ report.date }}</td>
+                                <td>
+                                    <span class="badge" style="background-color: #17a2b8; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">
+                                        {{ report.mark_count }} marks
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons" style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                        <a href="{{ url_for('classteacher.edit_class_marks', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #17a2b8; font-size: 12px; padding: 5px 10px;" title="Edit marks">
+                                            <i class="edit-icon">✏️</i> Edit
+                                        </a>
+                                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #007BFF; font-size: 12px; padding: 5px 10px;" title="Preview report">
+                                            <i class="preview-icon">👁️</i> View
+                                        </a>
+                                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #28A745; font-size: 12px; padding: 5px 10px;" title="Print report">
+                                            <i class="print-icon">🖨️</i> Print
+                                        </a>
+                                        <button onclick="confirmDeleteReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')" class="btn" style="background-color: #e74c3c; font-size: 12px; padding: 5px 10px;" title="Delete report">
+                                            <i class="delete-icon">🗑️</i> Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 20px;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                        <i style="font-size: 48px; color: #6c757d;">📊</i>
+                                        <p style="margin: 0; font-size: 16px; color: #6c757d;">No reports available</p>
+                                        <p style="margin: 0; font-size: 14px; color: #6c757d;">Upload marks to generate reports</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </div>
+
+        <!-- Upload Marks Tab Content -->
+        <div id="upload-marks-tab" class="tab-content-container {% if active_tab == 'upload-marks' %}active{% endif %}">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span>Upload Class Marks (All Subjects)</span>
+                    <small>Complete all fields to process marks</small>
+                </div>
 
             {% if not show_students %}
             <!-- Initial form to select grade and class -->
@@ -156,11 +373,8 @@
                                 </select>
                             </div>
 
-                            <div class="form-group">
-                                <label for="total_marks">Default Total Marks (Out Of)</label>
-                                <input type="number" id="total_marks" name="total_marks" min="1" value="{{ total_marks if total_marks else '100' }}" required>
-                                <p class="help-text">This is the default value. You can set different total marks for each subject when entering marks.</p>
-                            </div>
+                            <!-- Default Total Marks field removed -->
+                            <input type="hidden" id="total_marks" name="total_marks" value="100">
 
                             <div class="form-group">
                                 <label for="grade">Grade</label>
@@ -192,7 +406,7 @@
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <div class="form-group">
                                 <label for="bulk_education_level">Education Level</label>
-                                <select id="bulk_education_level" name="education_level" required>
+                                <select id="bulk_education_level" name="education_level" required onchange="updateBulkGrades()">
                                     <option value="">Select Education Level</option>
                                     <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>Lower Primary</option>
                                     <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>Upper Primary</option>
@@ -220,10 +434,8 @@
                                 </select>
                             </div>
 
-                            <div class="form-group">
-                                <label for="bulk_total_marks">Total Marks (Out Of)</label>
-                                <input type="number" id="bulk_total_marks" name="total_marks" min="1" value="100" required>
-                            </div>
+                            <!-- Total Marks field removed -->
+                            <input type="hidden" id="bulk_total_marks" name="total_marks" value="100">
 
                             <div class="form-group">
                                 <label for="bulk_grade">Grade</label>
@@ -266,7 +478,7 @@
             <div id="pupils-list" class="pupils-list" style="grid-column: span 2;">
                 <h3>Enter Marks for Grade {{ grade }} Stream {{ stream }} - All Subjects</h3>
 
-                <form method="POST" action="{{ url_for('classteacher.dashboard') }}">
+                <form id="marks-form" method="POST" action="{{ url_for('classteacher.dashboard') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <!-- Keep existing form fields as hidden fields -->
                     <input type="hidden" name="education_level" value="{{ education_level }}">
@@ -276,29 +488,123 @@
                     <input type="hidden" name="assessment_type" value="{{ assessment_type }}">
                     <input type="hidden" name="total_marks" value="{{ total_marks }}">
 
+                    <!-- Subject Selection and Total Marks Configuration Section -->
+                    <div class="subject-marks-config">
+                        <h4>Select Subjects and Set Maximum Raw Marks</h4>
+                        <p class="help-text">Select which subjects to include in the report and enter the maximum possible raw marks for each subject.</p>
+
+                        <div class="subject-selection-header">
+                            <h5>Subject Selection</h5>
+                            <div class="selection-controls">
+                                <button type="button" class="btn-sm" onclick="selectAllSubjects()">Select All</button>
+                                <button type="button" class="btn-sm" onclick="deselectAllSubjects()">Deselect All</button>
+                            </div>
+                        </div>
+                        <p class="help-text">Check the subjects you want to include in the report. Unchecked subjects will not appear in the final report.</p>
+
+                        <div class="subject-marks-grid">
+                            {% for subject in subjects %}
+                            <div class="subject-mark-item {% if subject.is_composite %}composite-subject-item{% endif %}">
+                                <div class="subject-selection">
+                                    <input
+                                        type="checkbox"
+                                        id="include_subject_{{ loop.index0 }}"
+                                        name="include_subject_{{ loop.index0 }}"
+                                        value="{{ subject.id }}"
+                                        checked
+                                        class="subject-checkbox"
+                                        data-subject-id="{{ subject.id }}"
+                                        data-is-composite="{{ 'true' if subject.is_composite else 'false' }}"
+                                        onchange="toggleSubjectVisibility(this, '{{ subject.id }}')"
+                                    >
+                                    <label for="include_subject_{{ loop.index0 }}" class="checkbox-label">{{ subject.name }}</label>
+                                </div>
+
+                                {% if subject.is_composite %}
+                                <div class="composite-marks-container">
+                                    <div class="composite-marks-header">
+                                        <span>Component Distribution</span>
+                                        <small>Total: <span id="total_composite_{{ loop.index0 }}">{{ total_marks }}</span></small>
+                                    </div>
+
+                                    {% set subject_index = loop.index0 %}
+                                    {% set components = subject.get_components() %}
+                                    <div class="component-grid">
+                                        {% for component in components %}
+                                        <div class="component-marks-row">
+                                            <label for="component_marks_{{ subject_index }}_{{ component.id }}" class="component-label">{{ component.name }}:</label>
+                                            <div class="component-marks-input">
+                                                <input
+                                                    type="number"
+                                                    id="component_marks_{{ subject_index }}_{{ component.id }}"
+                                                    name="component_max_marks_{{ subject_index }}_{{ component.id }}"
+                                                    value="{{ component.max_raw_mark }}"
+                                                    min="1"
+                                                    max="1000"
+                                                    class="component-max-marks"
+                                                    data-subject="{{ subject.id }}"
+                                                    data-component="{{ component.id }}"
+                                                    data-subject-index="{{ subject_index }}"
+                                                    data-component-weight="{{ component.weight }}"
+                                                    onchange="updateComponentMaxMarks('{{ subject.id }}', {{ subject_index }})"
+                                                >
+                                                <span class="component-weight">{{ component.name }}</span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <input
+                                        type="hidden"
+                                        id="total_marks_{{ loop.index0 }}"
+                                        name="total_marks_{{ loop.index0 }}"
+                                        value="{{ total_marks }}"
+                                        data-subject="{{ subject.id }}"
+                                    >
+                                </div>
+                                {% else %}
+                                <div class="marks-input-container">
+                                    <label for="total_marks_{{ loop.index0 }}" class="marks-label">Max Marks:</label>
+                                    <input
+                                        type="number"
+                                        id="total_marks_{{ loop.index0 }}"
+                                        name="total_marks_{{ loop.index0 }}"
+                                        value="{{ total_marks }}"
+                                        min="1"
+                                        max="1000"
+                                        class="subject-total-marks"
+                                        data-subject="{{ subject.id }}"
+                                        onchange="updateAllMarksForSubject('{{ subject.id }}', {{ loop.index0 }})"
+                                    >
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
                     <div class="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
                                     <th>Student Name</th>
                                     {% for subject in subjects %}
-                                    <th>
-                                        {{ subject }}
+                                    <th class="{% if subject.is_composite %}composite-subject-header{% endif %}" data-subject-id="{{ subject.id }}">
+                                        {{ subject.name }}
                                         <div style="font-size: 12px; font-weight: normal; margin-top: 5px;">
-                                            <label for="total_marks_{{ loop.index0 }}">Total Marks:</label>
-                                            <input
-                                                type="number"
-                                                id="total_marks_{{ loop.index0 }}"
-                                                name="total_marks_{{ loop.index0 }}"
-                                                value="{{ total_marks }}"
-                                                min="1"
-                                                max="1000"
-                                                style="width: 50px; padding: 2px; font-size: 12px;"
-                                                onchange="updateAllPercentages('{{ subject.replace(' ', '_') }}')"
-                                                class="subject-total-marks"
-                                                data-subject="{{ subject.replace(' ', '_') }}"
-                                            >
+                                            <span class="subject-info" id="subject_info_{{ loop.index0 }}">Max Raw: {{ total_marks }}</span>
                                         </div>
+                                        {% if subject.is_composite %}
+                                        {% set components = subject.get_components() %}
+                                        <div class="component-headers">
+                                            {% for component in components %}
+                                            <div class="component-header-item">
+                                                {{ component.name }}
+                                            </div>
+                                            {% endfor %}
+                                            <div class="component-header-item overall-header">Overall</div>
+                                        </div>
+                                        {% endif %}
                                     </th>
                                     {% endfor %}
                                 </tr>
@@ -308,31 +614,86 @@
                                 <tr>
                                     <td>{{ student.name }}</td>
                                     {% for subject in subjects %}
-                                    <td>
-                                        <div style="display: flex; flex-direction: column; gap: 5px;">
-                                            <div>
+                                    <td data-subject-id="{{ subject.id }}">
+                                        {% if subject.is_composite %}
+                                        <div class="composite-subject-entry-improved">
+                                            {% set subject_index = loop.index0 %}
+                                            {% set components = subject.get_components() %}
+
+                                            <div class="composite-components-grid">
+                                                {% for component in components %}
+                                                <div class="component-column">
+                                                    <div class="mark-input-container">
+                                                        <input type="number"
+                                                            name="component_mark_{{ student.name.replace(' ', '_') }}_{{ subject.id }}_{{ component.id }}"
+                                                            value="0"
+                                                            min="0"
+                                                            max="{{ component.max_raw_mark or total_marks }}"
+                                                            required
+                                                            class="student-mark component-mark"
+                                                            data-student="{{ student.name.replace(' ', '_') }}"
+                                                            data-subject="{{ subject.id }}"
+                                                            data-component="{{ component.id }}"
+                                                            data-component-weight="{{ component.weight }}"
+                                                            data-subject-index="{{ subject_index }}"
+                                                            data-max-mark="{{ component.max_raw_mark or total_marks }}"
+                                                            oninput="updateComponentPercentage(this); calculateOverallSubjectMark('{{ student.name.replace(' ', '_') }}', '{{ subject.id }}')"
+                                                            onchange="updateComponentPercentage(this); calculateOverallSubjectMark('{{ student.name.replace(' ', '_') }}', '{{ subject.id }}')"
+                                                            title="Enter raw mark for {{ component.name }} (Max: {{ component.max_raw_mark or total_marks }})">
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+
+                                                <div class="overall-column">
+                                                    <div class="overall-percentage-display">
+                                                        <span id="overall_percentage_display_{{ student.name.replace(' ', '_') }}_{{ subject.id }}" class="overall-percentage-value">0%</span>
+                                                        <div class="percentage-bar">
+                                                            <div class="percentage-fill" style="width: 0%"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Hidden field for the overall subject mark (calculated from components) -->
+                                            <input type="hidden"
+                                                name="mark_{{ student.name.replace(' ', '_') }}_{{ subject.id }}"
+                                                id="overall_mark_{{ student.name.replace(' ', '_') }}_{{ subject.id }}"
+                                                value="0">
+                                            <input type="hidden"
+                                                name="percentage_{{ student.name.replace(' ', '_') }}_{{ subject.id }}"
+                                                id="hidden_percentage_{{ student.name.replace(' ', '_') }}_{{ subject.id }}"
+                                                value="0">
+                                        </div>
+                                        {% else %}
+                                        <div class="simplified-mark-entry">
+                                            <div class="mark-input-container">
                                                 <input type="number"
-                                                    name="mark_{{ student.name.replace(' ', '_') }}_{{ subject.replace(' ', '_') }}"
+                                                    name="mark_{{ student.name.replace(' ', '_') }}_{{ subject.id }}"
                                                     value="0"
                                                     min="0"
                                                     max="{{ total_marks }}"
                                                     required
-                                                    style="width: 60px;"
                                                     class="student-mark"
                                                     data-student="{{ student.name.replace(' ', '_') }}"
-                                                    data-subject="{{ subject.replace(' ', '_') }}"
+                                                    data-subject="{{ subject.id }}"
                                                     data-subject-index="{{ loop.index0 }}"
-                                                    oninput="updatePercentage(this)">
-                                                <span style="font-size: 12px; color: #666;">Raw</span>
+                                                    data-max-mark="{{ total_marks }}"
+                                                    oninput="updatePercentage(this)"
+                                                    onchange="updatePercentage(this)"
+                                                    title="Enter raw mark for {{ subject.name }} (Max: {{ total_marks }})">
                                             </div>
-                                            <div style="font-size: 12px; color: #666;">
-                                                <span id="percentage_{{ student.name.replace(' ', '_') }}_{{ subject.replace(' ', '_') }}">0%</span>
+                                            <div class="percentage-display">
+                                                <span id="percentage_{{ student.name.replace(' ', '_') }}_{{ subject.id }}" class="percentage-value">0%</span>
+                                                <div class="percentage-bar">
+                                                    <div class="percentage-fill" style="width: 0%"></div>
+                                                </div>
                                                 <input type="hidden"
-                                                    name="percentage_{{ student.name.replace(' ', '_') }}_{{ subject.replace(' ', '_') }}"
-                                                    id="hidden_percentage_{{ student.name.replace(' ', '_') }}_{{ subject.replace(' ', '_') }}"
+                                                    name="percentage_{{ student.name.replace(' ', '_') }}_{{ subject.id }}"
+                                                    id="hidden_percentage_{{ student.name.replace(' ', '_') }}_{{ subject.id }}"
                                                     value="0">
                                             </div>
                                         </div>
+                                        {% endif %}
                                     </td>
                                     {% endfor %}
                                 </tr>
@@ -341,7 +702,7 @@
                         </table>
                     </div>
                     <div class="text-center mt-3">
-                        <button type="submit" name="submit_marks" value="1" class="btn">
+                        <button type="submit" name="submit_marks" value="1" class="btn" onclick="return validateAndSubmitForm()">
                             Submit All Marks
                         </button>
                     </div>
@@ -350,13 +711,14 @@
             {% endif %}
         </div>
 
-        <!-- Updated Section: Generate Grade Marksheet (All Streams) -->
-        <div class="dashboard-card mt-4">
-            <div class="card-header">
-                <span>Generate Grade Marksheet (All Streams)</span>
-                <small>Select grade, term, and assessment type to generate a marksheet for all streams in the grade</small>
-            </div>
-            <form id="stream-marksheet-form" method="POST" action="{{ url_for('classteacher.dashboard') }}" class="login-form">
+        <!-- Generate Marksheet Tab Content -->
+        <div id="generate-marksheet-tab" class="tab-content-container {% if active_tab == 'generate-marksheet' %}active{% endif %}">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span>Generate Grade Marksheet (All Streams)</span>
+                    <small>Select grade, term, and assessment type to generate a marksheet for all streams in the grade</small>
+                </div>
+                <form id="stream-marksheet-form" method="POST" action="{{ url_for('classteacher.dashboard') }}" class="login-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-group">
                     <label for="stream_grade">Grade</label>
@@ -411,118 +773,6 @@
                     </button>
                 </div>
             </form>
-        </div>
-
-        <div class="dashboard-card mt-4">
-            <div class="card-header">
-                <span>Recent Reports</span>
-                <a href="{{ url_for('classteacher.all_reports') }}" class="btn-outline">View All</a>
-            </div>
-
-            <!-- Filter and Sort Controls -->
-            <div class="filter-controls" style="padding: 15px; background-color: #f8f9fa; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
-                <div style="display: flex; align-items: center;">
-                    <label for="sort-reports" style="margin-right: 8px; font-weight: 500;">Sort by:</label>
-                    <select id="sort-reports" onchange="sortReports(this.value)" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option value="date" {% if request.args.get('sort') == 'date' or not request.args.get('sort') %}selected{% endif %}>Date (newest first)</option>
-                        <option value="grade" {% if request.args.get('sort') == 'grade' %}selected{% endif %}>Grade</option>
-                        <option value="term" {% if request.args.get('sort') == 'term' %}selected{% endif %}>Term</option>
-                    </select>
-                </div>
-
-                <div style="display: flex; align-items: center;">
-                    <label for="filter-grade" style="margin-right: 8px; font-weight: 500;">Grade:</label>
-                    <select id="filter-grade" onchange="filterReports()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option value="">All Grades</option>
-                        {% for grade_option in grades %}
-                        <option value="{{ grade_option }}" {% if request.args.get('filter_grade') == grade_option %}selected{% endif %}>{{ grade_option }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div style="display: flex; align-items: center;">
-                    <label for="filter-term" style="margin-right: 8px; font-weight: 500;">Term:</label>
-                    <select id="filter-term" onchange="filterReports()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option value="">All Terms</option>
-                        {% for term_option in terms %}
-                        <option value="{{ term_option }}" {% if request.args.get('filter_term') == term_option %}selected{% endif %}>{{ term_option }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <button onclick="resetFilters()" style="padding: 6px 12px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    Reset Filters
-                </button>
-            </div>
-
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Grade</th>
-                            <th>Stream</th>
-                            <th>Term</th>
-                            <th>Assessment</th>
-                            <th>Date</th>
-                            <th>Marks</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if recent_reports %}
-                        {% for report in recent_reports %}
-                        <tr>
-                            <td>{{ report.id }}</td>
-                            <td>{{ report.grade }}</td>
-                            <td>{{ report.stream }}</td>
-                            <td>{{ report.term }}</td>
-                            <td>{{ report.assessment_type }}</td>
-                            <td>{{ report.date }}</td>
-                            <td>
-                                <span class="badge" style="background-color: #17a2b8; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">
-                                    {{ report.mark_count }} marks
-                                </span>
-                            </td>
-                            <td>
-                                <div class="action-buttons" style="display: flex; flex-wrap: wrap; gap: 5px;">
-                                    <a href="{{ url_for('classteacher.edit_class_marks', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #17a2b8; font-size: 12px; padding: 5px 10px;" title="Edit marks">
-                                        <i class="edit-icon">✏️</i> Edit
-                                    </a>
-                                    <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #007BFF; font-size: 12px; padding: 5px 10px;" title="Preview report">
-                                        <i class="preview-icon">👁️</i> View
-                                    </a>
-                                    <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #28A745; font-size: 12px; padding: 5px 10px;" title="Print report">
-                                        <i class="print-icon">🖨️</i> Print
-                                    </a>
-                                    <button onclick="confirmDeleteReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')" class="btn" style="background-color: #e74c3c; font-size: 12px; padding: 5px 10px;" title="Delete report">
-                                        <i class="delete-icon">🗑️</i> Delete
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 20px;">
-                                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                                    <i style="font-size: 48px; color: #6c757d;">📊</i>
-                                    <p style="margin: 0; font-size: 16px; color: #6c757d;">No reports available</p>
-                                    <p style="margin: 0; font-size: 14px; color: #6c757d;">Upload marks to generate reports</p>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination for future implementation -->
-            <div class="pagination" style="display: flex; justify-content: center; margin-top: 15px;">
-                <a href="#" class="pagination-link" style="display: none;">Previous</a>
-                <span class="pagination-info">Showing {{ recent_reports|length }} of {{ recent_reports|length }} reports</span>
-                <a href="#" class="pagination-link" style="display: none;">Next</a>
-            </div>
         </div>
 
         <script>
@@ -817,55 +1067,1211 @@
         .close-btn:hover {
             color: #e74c3c;
         }
+
+        /* Performance indicator styles */
+        .performance-ee {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .performance-me {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+
+        .performance-ae {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .performance-be {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* Subject marks configuration styles */
+        .subject-marks-config {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+
+        .subject-marks-config h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #495057;
+            font-size: 18px;
+        }
+
+        .subject-marks-config h5 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #495057;
+            font-size: 16px;
+        }
+
+        .subject-selection-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e9f7fe;
+            border-radius: 5px;
+            border: 1px solid #b3e5fc;
+        }
+
+        .subject-selection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .selection-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-sm:hover {
+            background-color: #0069d9;
+        }
+
+        .btn-sm:last-child {
+            background-color: #6c757d;
+        }
+
+        .btn-sm:last-child:hover {
+            background-color: #5a6268;
+        }
+
+        .subject-marks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .subject-mark-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+
+        .subject-mark-item:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .subject-mark-item.disabled {
+            opacity: 0.6;
+            background-color: #f1f1f1;
+        }
+
+        .subject-selection {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .subject-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .marks-input-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .marks-label {
+            font-size: 13px;
+            color: #495057;
+            white-space: nowrap;
+        }
+
+        .subject-mark-item input[type="number"] {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .subject-mark-item input:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Simplified mark entry styles */
+        .simplified-mark-entry {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            align-items: center;
+        }
+
+        .mark-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 3px;
+        }
+
+        .mark-input-container input {
+            width: 45px;
+            text-align: center;
+            padding: 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            background-color: #fff;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .mark-input-container input:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .mark-input-container input.has-value {
+            background-color: #e8f5e9;
+            border-color: #66bb6a;
+        }
+
+        @keyframes mark-updated {
+            0% { background-color: #fff; }
+            50% { background-color: #e3f2fd; }
+            100% { background-color: #e8f5e9; }
+        }
+
+        .mark-updated {
+            animation: mark-updated 0.5s ease;
+        }
+
+        .subject-info {
+            font-size: 11px;
+            color: #666;
+            display: block;
+            text-align: center;
+        }
+
+        .percentage-display {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            align-items: center;
+        }
+
+        .percentage-value {
+            font-size: 12px;
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+
+        .percentage-bar {
+            height: 4px;
+            background-color: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .percentage-fill {
+            height: 100%;
+            background-color: #6c757d;
+            transition: width 0.3s ease;
+        }
+
+        /* Color the percentage fill based on performance level */
+        .performance-ee .percentage-fill {
+            background-color: #28a745;
+        }
+
+        .performance-me .percentage-fill {
+            background-color: #17a2b8;
+        }
+
+        .performance-ae .percentage-fill {
+            background-color: #ffc107;
+        }
+
+        .performance-be .percentage-fill {
+            background-color: #dc3545;
+        }
+
+        /* Student row styles */
+        tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f8ff;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tbody tr td:first-child {
+            font-weight: bold;
+            color: #495057;
+            padding: 8px;
+            border-right: 1px solid #e9ecef;
+            position: sticky;
+            left: 0;
+            background-color: inherit;
+            z-index: 1;
+        }
+
+        /* Composite subject styles */
+        .composite-subject-entry {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 5px;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+
+        /* Improved composite subject styles */
+        .composite-subject-entry-improved {
+            width: 100%;
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+
+        .composite-components-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            width: 100%;
+        }
+
+        .component-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            padding: 5px;
+            border: 1px solid #e9ecef;
+        }
+
+        .overall-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #e9f7fe;
+            border-radius: 4px;
+            padding: 5px;
+            border: 1px solid #b3e5fc;
+        }
+
+        .component-percentage {
+            font-size: 10px;
+            text-align: center;
+            margin-top: 2px;
+            font-weight: bold;
+        }
+
+        .overall-percentage-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .overall-percentage-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #007bff;
+            padding: 3px 0;
+        }
+
+        .component-mark-entry {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px;
+            border-bottom: 1px dashed #dee2e6;
+        }
+
+        .component-mark-entry:last-child {
+            border-bottom: none;
+        }
+
+        .component-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 3px;
+        }
+
+        /* Styling for composite subject headers */
+        .composite-subject-header {
+            background-color: #e9f7fe;
+            border-bottom: 2px solid #007bff;
+            position: relative;
+        }
+
+        /* Add column headers for composite subjects */
+        .composite-subject-header .component-headers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            width: 100%;
+            margin-top: 8px;
+            font-size: 11px;
+            font-weight: normal;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            padding: 4px;
+            border: 1px solid #b3e5fc;
+        }
+
+        .composite-subject-header .component-header-item {
+            text-align: center;
+            color: #0d47a1;
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 3px 0;
+        }
+
+        .composite-subject-header .component-header-weight {
+            display: block;
+            font-size: 9px;
+            color: #1565c0;
+            font-style: italic;
+        }
+
+        .composite-subject-header .overall-header {
+            background-color: #bbdefb;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .composite-subject-header::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #007bff;
+        }
+
+        /* Styling for component marks */
+        .component-marks-container {
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px dashed #dee2e6;
+        }
+
+        /* Overall subject percentage display */
+        .overall-subject-percentage {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+            padding: 5px;
+            background-color: #f0f8ff;
+            border-radius: 4px;
+            border: 1px solid #b8daff;
+        }
+
+        .overall-percentage-label {
+            color: #0056b3;
+        }
+
+        .overall-percentage-value {
+            font-size: 14px;
+            color: #007bff;
+        }
+
+        /* Styles for dynamic composite subject components */
+        .composite-subject-item {
+            border: 1px solid #d0e8f7;
+            border-radius: 6px;
+            padding: 8px;
+            background-color: #f0f9ff;
+            box-shadow: 0 1px 3px rgba(0, 123, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .composite-subject-item:hover {
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.15);
+        }
+
+        .subject-mark-item {
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 8px;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+
+        .subject-mark-item:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .subject-marks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .subject-selection {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .checkbox-label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .subject-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #007bff;
+        }
+
+        .composite-marks-container {
+            margin-top: 8px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 6px;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .composite-marks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #0056b3;
+            border-bottom: 1px solid #b8daff;
+            padding-bottom: 6px;
+            flex-wrap: wrap;
+        }
+
+        .composite-marks-header span {
+            font-size: 13px;
+            margin-right: 5px;
+        }
+
+        .composite-marks-header small {
+            color: #666;
+            font-weight: normal;
+            background-color: #e6f3ff;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 4px;
+        }
+
+        .component-marks-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            padding: 6px 8px;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 4px;
+        }
+
+        .component-label {
+            flex: 1;
+            font-size: 13px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .component-marks-input {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .component-max-marks {
+            width: 60px;
+            padding: 6px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .component-max-marks:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .component-weight {
+            font-size: 12px;
+            color: #6c757d;
+            background-color: #e9ecef;
+            padding: 2px 5px;
+            border-radius: 3px;
+            text-align: center;
+            display: none; /* Hide the component weight since we're not using it */
+        }
+
+        .marks-input-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+
+        .marks-label {
+            font-size: 13px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .subject-total-marks {
+            width: 60px;
+            padding: 6px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .subject-total-marks:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .subject-selection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            background-color: #e9f7fe;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #b3e5fc;
+        }
+
+        .subject-selection-header h5 {
+            margin: 0;
+            color: #0277bd;
+            font-size: 16px;
+        }
+
+        .selection-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sm:first-child {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-sm:first-child:hover {
+            background-color: #0069d9;
+        }
+
+        .btn-sm:last-child {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-sm:last-child:hover {
+            background-color: #5a6268;
+        }
+
+        .disabled {
+            opacity: 0.6;
+            background-color: #f8f9fa !important;
+            border: 1px dashed #dee2e6 !important;
+        }
     </style>
 
     <script>
         // Function to update percentage based on raw mark and total marks
         function updatePercentage(inputElement) {
+            console.log("Updating percentage...");
+
             // Get the student and subject information from data attributes
             const student = inputElement.dataset.student;
             const subject = inputElement.dataset.subject;
             const subjectIndex = inputElement.dataset.subjectIndex;
 
-            // Get the raw mark value
-            const rawMark = parseFloat(inputElement.value) || 0;
+            // Get the max raw mark from the corresponding total marks input
+            const totalMarksInput = document.getElementById(`total_marks_${subjectIndex}`);
+            const maxRawMark = totalMarksInput ? parseFloat(totalMarksInput.value) : (parseFloat(inputElement.dataset.maxMark) || 100);
 
-            // Get the total marks for this subject
-            const totalMarksInput = document.querySelector(`#total_marks_${subjectIndex}`);
-            const totalMarks = parseFloat(totalMarksInput.value) || 100;
+            // Get the raw mark value
+            let rawMark = parseFloat(inputElement.value) || 0;
+
+            // Ensure the raw mark doesn't exceed the max mark
+            if (rawMark > maxRawMark) {
+                rawMark = maxRawMark;
+                inputElement.value = maxRawMark;
+                console.log(`Raw mark exceeded maximum (${maxRawMark}), capped at maximum`);
+            }
+
+            // Add visual feedback for mark entry
+            if (rawMark > 0) {
+                inputElement.classList.add('has-value');
+                inputElement.classList.add('mark-updated');
+                setTimeout(() => {
+                    inputElement.classList.remove('mark-updated');
+                }, 500);
+            } else {
+                inputElement.classList.remove('has-value');
+            }
 
             // Calculate percentage
-            const percentage = (rawMark / totalMarks) * 100;
-            const roundedPercentage = Math.round(percentage * 10) / 10; // Round to 1 decimal place
+            let percentage = 0;
+            if (maxRawMark > 0) {
+                percentage = (rawMark / maxRawMark) * 100;
+            }
+            console.log(`Initial percentage: ${percentage}`);
+
+            // Ensure percentage doesn't exceed 100% and round to whole number
+            let roundedPercentage;
+            if (percentage > 100) {
+                // Cap the raw mark to the maximum allowed value
+                inputElement.value = maxRawMark;
+                roundedPercentage = 100;
+                console.log(`Percentage exceeded 100%, capped to 100%`);
+            } else {
+                roundedPercentage = Math.round(percentage); // Round to whole number
+            }
+            console.log(`Final rounded percentage: ${roundedPercentage}%`);
 
             // Update the percentage display
             const percentageSpan = document.getElementById(`percentage_${student}_${subject}`);
-            percentageSpan.textContent = `${roundedPercentage}%`;
+            if (percentageSpan) {
+                percentageSpan.textContent = `${roundedPercentage}%`;
+                console.log(`Updated percentage display to: ${roundedPercentage}%`);
+
+                // Add visual indicator of performance level
+                updatePerformanceIndicator(percentageSpan, roundedPercentage);
+
+                // Update the percentage bar
+                const percentageBar = percentageSpan.closest('.percentage-display')?.querySelector('.percentage-fill');
+                if (percentageBar) {
+                    percentageBar.style.width = `${Math.min(roundedPercentage, 100)}%`; // Cap at 100%
+                    console.log(`Updated percentage bar width to: ${Math.min(roundedPercentage, 100)}%`);
+
+                    // Update the color of the percentage bar based on performance level
+                    if (roundedPercentage >= 75) {
+                        percentageBar.style.backgroundColor = '#28a745'; // Exceeding Expectation
+                    } else if (roundedPercentage >= 50) {
+                        percentageBar.style.backgroundColor = '#17a2b8'; // Meeting Expectation
+                    } else if (roundedPercentage >= 30) {
+                        percentageBar.style.backgroundColor = '#ffc107'; // Approaching Expectation
+                    } else {
+                        percentageBar.style.backgroundColor = '#dc3545'; // Below Expectation
+                    }
+                }
+            } else {
+                console.log(`Could not find percentage span with ID: percentage_${student}_${subject}`);
+            }
 
             // Update the hidden percentage input
             const hiddenPercentageInput = document.getElementById(`hidden_percentage_${student}_${subject}`);
-            hiddenPercentageInput.value = roundedPercentage;
+            if (hiddenPercentageInput) {
+                hiddenPercentageInput.value = roundedPercentage;
+                console.log(`Updated hidden percentage input to: ${roundedPercentage}`);
+            }
 
-            // Update the max attribute of the mark input to match the total marks
-            inputElement.max = totalMarks;
+            // Validate that the raw mark doesn't exceed the maximum
+            if (rawMark > maxRawMark) {
+                inputElement.value = maxRawMark;
+                console.log(`Raw mark exceeded maximum, capped to: ${maxRawMark}`);
+                // No need to recalculate as we've already set the correct values
+            }
         }
 
-        // Function to update all percentages for a subject when total marks change
-        function updateAllPercentages(subject) {
+        // Function to update component percentage and calculate overall subject mark
+        function updateComponentPercentage(inputElement) {
+            console.log("Updating component percentage...");
+
+            // Get the student, subject, and component information from data attributes
+            const student = inputElement.dataset.student;
+            const subject = inputElement.dataset.subject;
+            const component = inputElement.dataset.component;
+            const componentWeight = parseFloat(inputElement.dataset.componentWeight) || 1.0;
+            const subjectIndex = inputElement.dataset.subjectIndex;
+
+            // Get the raw mark and max mark
+            let rawMark = parseInt(inputElement.value) || 0;
+            const maxMark = parseInt(inputElement.dataset.maxMark) || 100;
+
+            // Ensure the raw mark doesn't exceed the max mark
+            if (rawMark > maxMark) {
+                rawMark = maxMark;
+                inputElement.value = maxMark;
+                console.log(`Raw mark exceeded maximum (${maxMark}), capped at maximum`);
+            }
+
+            // Add visual feedback for mark entry
+            if (rawMark > 0) {
+                inputElement.classList.add('has-value');
+                inputElement.classList.add('mark-updated');
+                setTimeout(() => {
+                    inputElement.classList.remove('mark-updated');
+                }, 500);
+            } else {
+                inputElement.classList.remove('has-value');
+            }
+
+            // Calculate the overall subject mark based on all components
+            calculateOverallSubjectMark(student, subject);
+        }
+
+        // Function to calculate the overall subject mark from component marks
+        function calculateOverallSubjectMark(student, subject) {
+            console.log(`Calculating overall mark for student: ${student}, subject: ${subject}`);
+
+            // Find all component inputs for this student and subject
+            const componentInputs = document.querySelectorAll(`input.component-mark[data-student="${student}"][data-subject="${subject}"]`);
+            console.log(`Found ${componentInputs.length} component inputs`);
+
+            if (componentInputs.length === 0) return;
+
+            let totalWeightedPercentage = 0;
+            let totalWeight = 0;
+
+            // Calculate weighted percentage for each component
+            componentInputs.forEach(input => {
+                const rawMark = parseInt(input.value) || 0;
+                const maxMark = parseInt(input.dataset.maxMark) || 100;
+                const weight = parseFloat(input.dataset.componentWeight) || 1.0;
+
+                // Calculate percentage for this component (out of 100%)
+                const percentage = maxMark > 0 ? (rawMark / maxMark) * 100 : 0;
+
+                // Apply the weight to get the weighted contribution to the final mark
+                const weightedContribution = percentage * weight;
+
+                // Add to the total
+                totalWeightedPercentage += weightedContribution;
+                totalWeight += weight;
+
+                console.log(`Component: ${input.dataset.component}, Raw: ${rawMark}, Max: ${maxMark}, Weight: ${weight}, Percentage: ${percentage.toFixed(1)}%, Weighted: ${weightedContribution.toFixed(1)}`);
+            });
+
+            // Calculate overall percentage using weighted average
+            const overallPercentage = totalWeight > 0 ? totalWeightedPercentage / totalWeight : 0;
+            console.log(`Total weighted percentage: ${totalWeightedPercentage.toFixed(1)}, Total weight: ${totalWeight}, Overall: ${overallPercentage.toFixed(1)}%`);
+
+            // Round the overall percentage to a whole number
+            const roundedOverallPercentage = Math.round(overallPercentage);
+
+            // Update hidden fields for overall mark and percentage
+            const overallMarkField = document.getElementById(`overall_mark_${student}_${subject}`);
+            const overallPercentageField = document.getElementById(`hidden_percentage_${student}_${subject}`);
+
+            if (overallMarkField && overallPercentageField) {
+                overallMarkField.value = roundedOverallPercentage;
+                overallPercentageField.value = roundedOverallPercentage;
+                console.log(`Updated hidden fields: mark=${roundedOverallPercentage}, percentage=${roundedOverallPercentage}`);
+            }
+
+            // Update the overall percentage display
+            const overallPercentageDisplay = document.getElementById(`overall_percentage_display_${student}_${subject}`);
+            if (overallPercentageDisplay) {
+                overallPercentageDisplay.textContent = `${roundedOverallPercentage}%`;
+                console.log(`Updated display to: ${roundedOverallPercentage}%`);
+
+                // Update the color based on performance level
+                if (roundedOverallPercentage >= 75) {
+                    overallPercentageDisplay.style.color = '#28a745'; // Exceeding Expectation
+                    overallPercentageDisplay.style.fontWeight = 'bold';
+                } else if (roundedOverallPercentage >= 50) {
+                    overallPercentageDisplay.style.color = '#17a2b8'; // Meeting Expectation
+                    overallPercentageDisplay.style.fontWeight = 'bold';
+                } else if (roundedOverallPercentage >= 30) {
+                    overallPercentageDisplay.style.color = '#ffc107'; // Approaching Expectation
+                    overallPercentageDisplay.style.fontWeight = 'bold';
+                } else {
+                    overallPercentageDisplay.style.color = '#dc3545'; // Below Expectation
+                    overallPercentageDisplay.style.fontWeight = 'bold';
+                }
+
+                // Update the percentage bar
+                const percentageFill = overallPercentageDisplay.nextElementSibling?.querySelector('.percentage-fill');
+                if (percentageFill) {
+                    percentageFill.style.width = `${Math.min(roundedOverallPercentage, 100)}%`;
+
+                    // Set color based on performance level
+                    if (roundedOverallPercentage >= 75) {
+                        percentageFill.style.backgroundColor = '#28a745'; // Exceeding Expectation
+                    } else if (roundedOverallPercentage >= 50) {
+                        percentageFill.style.backgroundColor = '#17a2b8'; // Meeting Expectation
+                    } else if (roundedOverallPercentage >= 30) {
+                        percentageFill.style.backgroundColor = '#ffc107'; // Approaching Expectation
+                    } else {
+                        percentageFill.style.backgroundColor = '#dc3545'; // Below Expectation
+                    }
+                }
+            }
+        }
+
+        // Function to update the visual performance indicator
+        function updatePerformanceIndicator(element, percentage) {
+            // Remove existing performance classes
+            element.classList.remove('performance-ee', 'performance-me', 'performance-ae', 'performance-be');
+
+            // Add appropriate class based on percentage
+            if (percentage >= 75) {
+                element.classList.add('performance-ee'); // Exceeding Expectation
+            } else if (percentage >= 50) {
+                element.classList.add('performance-me'); // Meeting Expectation
+            } else if (percentage >= 30) {
+                element.classList.add('performance-ae'); // Approaching Expectation
+            } else {
+                element.classList.add('performance-be'); // Below Expectation
+            }
+        }
+
+        // Function to update component max marks for composite subjects
+        function updateComponentMaxMarks(subject, subjectIndex) {
+            console.log(`Updating component max marks for subject: ${subject}, index: ${subjectIndex}`);
+
+            // Get all component max marks inputs for this subject
+            const componentInputs = document.querySelectorAll(`.component-max-marks[data-subject="${subject}"]`);
+            if (!componentInputs.length) {
+                console.log(`No component inputs found for subject ${subject}`);
+                return;
+            }
+
+            // Calculate the total marks from all components
+            let totalMarks = 0;
+            componentInputs.forEach(input => {
+                const componentMarks = parseInt(input.value) || 0;
+                totalMarks += componentMarks;
+            });
+
+            console.log(`Calculated total marks from components: ${totalMarks}`);
+
+            // Update the total marks display
+            const totalCompositeSpan = document.getElementById(`total_composite_${subjectIndex}`);
+            if (totalCompositeSpan) {
+                totalCompositeSpan.textContent = totalMarks;
+                console.log(`Updated total composite display to: ${totalMarks}`);
+            }
+
+            // Update the hidden total marks input
+            const totalMarksInput = document.getElementById(`total_marks_${subjectIndex}`);
+            if (totalMarksInput) {
+                totalMarksInput.value = totalMarks;
+                console.log(`Updated hidden total marks input to: ${totalMarks}`);
+            }
+
+            // Update the subject info display in the table header
+            const subjectInfoSpan = document.getElementById(`subject_info_${subjectIndex}`);
+            if (subjectInfoSpan) {
+                subjectInfoSpan.textContent = `Max Raw: ${totalMarks}`;
+                console.log(`Updated subject info display to: Max Raw: ${totalMarks}`);
+            }
+
+            // Update all component mark inputs with their new max values
+            componentInputs.forEach(input => {
+                const componentId = input.dataset.component;
+                const componentMaxMarks = parseInt(input.value) || 0;
+
+                // Find all student mark inputs for this component
+                const studentComponentInputs = document.querySelectorAll(`.component-mark[data-subject="${subject}"][data-component="${componentId}"]`);
+
+                // Update each student's component mark input
+                studentComponentInputs.forEach(studentInput => {
+                    studentInput.max = componentMaxMarks;
+                    studentInput.dataset.maxMark = componentMaxMarks;
+
+                    // If the current value exceeds the new max, cap it
+                    const currentValue = parseInt(studentInput.value) || 0;
+                    if (currentValue > componentMaxMarks) {
+                        studentInput.value = componentMaxMarks;
+                    }
+
+                    // Update the component percentage
+                    updateComponentPercentage(studentInput);
+                });
+
+                console.log(`Updated ${studentComponentInputs.length} student inputs for component ${componentId}`);
+            });
+
+            // Update all students' marks for this subject to recalculate with the new max marks
+            updateAllStudentMarksForSubject(subject);
+
+            console.log(`Finished updating component max marks for subject: ${subject}`);
+        }
+
+        // Function to update all student marks for a subject when max marks change
+        function updateAllStudentMarksForSubject(subject) {
+            // Find all component inputs for this subject across all students
+            const componentInputs = document.querySelectorAll(`input.component-mark[data-subject="${subject}"]`);
+
+            // Group by student
+            const studentMap = new Map();
+            componentInputs.forEach(input => {
+                const student = input.dataset.student;
+                if (!studentMap.has(student)) {
+                    studentMap.set(student, []);
+                }
+                studentMap.get(student).push(input);
+            });
+
+            // Update each student's marks
+            studentMap.forEach((inputs, student) => {
+                calculateOverallSubjectMark(student, subject);
+            });
+        }
+
+        // Function to add selected subjects to the form before submission
+        function addSelectedSubjectsToForm() {
+            const form = document.getElementById('marks-form');
+            if (!form) {
+                console.error('Form not found!');
+                return;
+            }
+
+            const selectedSubjects = [];
+
+            // Get all checked subject checkboxes
+            const checkboxes = document.querySelectorAll('.subject-checkbox:checked');
+            checkboxes.forEach(checkbox => {
+                selectedSubjects.push(checkbox.value);
+            });
+
+            // Remove any existing selected_subjects inputs
+            const existingInputs = form.querySelectorAll('input[name="selected_subjects"]');
+            existingInputs.forEach(input => input.remove());
+
+            // Add new selected_subjects inputs
+            selectedSubjects.forEach(subjectId => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'selected_subjects';
+                input.value = subjectId;
+                form.appendChild(input);
+            });
+
+            console.log('Added selected subjects to form:', selectedSubjects);
+            return selectedSubjects.length > 0;
+        }
+
+        // Function to initialize selected subjects when page loads
+        function initializeSelectedSubjects() {
+            // Add selected subjects to form on page load
+            addSelectedSubjectsToForm();
+
+            // Add event listeners to checkboxes to update selected subjects when changed
+            const checkboxes = document.querySelectorAll('.subject-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    addSelectedSubjectsToForm();
+                });
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSelectedSubjects();
+        });
+
+        // Function to validate form before submission
+        function validateAndSubmitForm() {
+            // Ensure selected subjects are added to form
+            const hasSelectedSubjects = addSelectedSubjectsToForm();
+
+            if (!hasSelectedSubjects) {
+                alert('Please select at least one subject before submitting marks.');
+                return false; // Prevent form submission
+            }
+
+            // Check if any marks have been entered
+            const markInputs = document.querySelectorAll('.student-mark, .component-mark');
+            let hasMarks = false;
+
+            markInputs.forEach(input => {
+                if (input.value && parseInt(input.value) > 0) {
+                    hasMarks = true;
+                }
+            });
+
+            if (!hasMarks) {
+                const confirmSubmit = confirm('No marks have been entered. Are you sure you want to submit an empty marksheet?');
+                if (!confirmSubmit) {
+                    return false; // Prevent form submission
+                }
+            }
+
+            console.log('Form validation passed, submitting...');
+            return true; // Allow form submission
+        }
+
+        // Function to select all subjects
+        function selectAllSubjects() {
+            const checkboxes = document.querySelectorAll('.subject-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                toggleSubjectVisibility(checkbox, checkbox.dataset.subjectId);
+            });
+        }
+
+        // Function to deselect all subjects
+        function deselectAllSubjects() {
+            const checkboxes = document.querySelectorAll('.subject-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                toggleSubjectVisibility(checkbox, checkbox.dataset.subjectId);
+            });
+        }
+
+        // Function to toggle subject visibility in the table
+        function toggleSubjectVisibility(checkbox, subjectId) {
+            const isChecked = checkbox.checked;
+            const subjectCells = document.querySelectorAll(`th[data-subject-id="${subjectId}"], td[data-subject-id="${subjectId}"]`);
+
+            subjectCells.forEach(cell => {
+                if (isChecked) {
+                    cell.style.display = '';
+                } else {
+                    cell.style.display = 'none';
+                }
+            });
+
+            // Also update the subject item styling
+            const subjectItem = checkbox.closest('.subject-mark-item');
+            if (subjectItem) {
+                if (isChecked) {
+                    subjectItem.classList.remove('disabled');
+                } else {
+                    subjectItem.classList.add('disabled');
+                }
+            }
+        }
+
+        // Function to update all marks for a subject when the total marks change
+        function updateAllMarksForSubject(subject, subjectIndex) {
+            console.log(`Updating all marks for subject: ${subject}, index: ${subjectIndex}`);
+
+            // Get the new total marks value
+            const totalMarksInput = document.getElementById(`total_marks_${subjectIndex}`);
+            let totalMarks = parseFloat(totalMarksInput.value) || 100;
+
+            // Enforce reasonable limits on total marks
+            if (totalMarks < 1) {
+                console.log(`Total marks too low (${totalMarks}), setting to 1`);
+                totalMarksInput.value = 1;
+                totalMarks = 1;
+            } else if (totalMarks > 1000) {
+                console.log(`Total marks too high (${totalMarks}), capping at 1000`);
+                totalMarksInput.value = 1000;
+                totalMarks = 1000;
+            }
+
+            console.log(`Using total marks: ${totalMarks}`);
+
+            // Update the subject info display
+            const subjectInfoSpan = document.getElementById(`subject_info_${subjectIndex}`);
+            if (subjectInfoSpan) {
+                subjectInfoSpan.textContent = `Max Raw: ${totalMarks}`;
+                console.log(`Updated subject info display to: Max Raw: ${totalMarks}`);
+            }
+
             // Get all mark inputs for this subject
             const markInputs = document.querySelectorAll(`.student-mark[data-subject="${subject}"]`);
+            console.log(`Found ${markInputs.length} mark inputs for subject ${subject}`);
 
-            // Update each mark's percentage
+            // Update each mark's max attribute and data-max-mark attribute
             markInputs.forEach(input => {
+                input.max = totalMarks;
+                input.dataset.maxMark = totalMarks;
+                console.log(`Updated max attribute to ${totalMarks} for input: ${input.name}`);
+
+                // If the current value exceeds the new max, cap it
+                const currentValue = parseFloat(input.value) || 0;
+                if (currentValue > totalMarks) {
+                    console.log(`Current value ${currentValue} exceeds new max ${totalMarks}, capping it`);
+                    input.value = totalMarks;
+                }
+
+                // Update the percentage display
                 updatePercentage(input);
             });
+
+            console.log(`Finished updating all marks for subject: ${subject}`);
         }
 
         // Function to confirm deletion of a marksheet
         function confirmDeleteReport(grade, stream, term, assessmentType) {
             // Set up the delete form action
             const deleteForm = document.getElementById('deleteReportForm');
-            deleteForm.action = `/classteacher/delete_marksheet/${grade}/${stream}/${term}/${assessmentType}`;
+            deleteForm.action = `/classteacher/delete_report/${grade}/${stream}/${term}/${assessmentType}`;
 
             // Update the confirmation message
             const deleteMessage = document.getElementById('deleteReportMessage');
@@ -1028,12 +2434,157 @@
         function updateSubjects() {
             const educationLevel = document.getElementById('education_level').value;
             const formGroup = document.getElementById('education_level').closest('.form-group');
+            const gradeSelect = document.getElementById('grade');
 
             if (educationLevel) {
                 formGroup.classList.add('success');
                 formGroup.classList.remove('error');
+
+                // Store the selected education level in a data attribute for later use
+                gradeSelect.dataset.educationLevel = educationLevel;
+
+                // Fetch subjects for this education level
+                fetchSubjectsForEducationLevel(educationLevel);
+
+                // Filter grades based on education level
+                filterGradesByEducationLevel(educationLevel, gradeSelect);
+
+                console.log("Updated subjects and filtered grades for education level:", educationLevel);
             } else {
                 formGroup.classList.remove('success');
+
+                // If no education level is selected, restore all grade options
+                if (window.originalGradeOptions && window.originalGradeOptions['grade']) {
+                    restoreOriginalGradeOptions(gradeSelect);
+                }
+            }
+        }
+
+        // Function to restore original grade options
+        function restoreOriginalGradeOptions(gradeSelect) {
+            if (!window.originalGradeOptions || !window.originalGradeOptions[gradeSelect.id]) {
+                console.error("Cannot restore original options - none stored for", gradeSelect.id);
+                return;
+            }
+
+            // Clear current options
+            gradeSelect.innerHTML = '';
+
+            // Add back all original options
+            window.originalGradeOptions[gradeSelect.id].forEach(opt => {
+                const newOption = document.createElement('option');
+                newOption.value = opt.value;
+                newOption.textContent = opt.textContent;
+                gradeSelect.appendChild(newOption);
+            });
+
+            console.log(`Restored ${window.originalGradeOptions[gradeSelect.id].length} original options for ${gradeSelect.id}`);
+        }
+
+        // Store all grade options globally when the page loads
+        window.originalGradeOptions = {};
+
+        // Function to filter grades based on education level
+        function filterGradesByEducationLevel(educationLevel, gradeSelect) {
+            console.log("Filtering grades for education level:", educationLevel);
+
+            // Define the mapping between education levels and grades
+            const educationLevelGradeMapping = {
+                'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
+                'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
+                'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
+            };
+
+            // Get the grades for the selected education level
+            const gradesForLevel = educationLevelGradeMapping[educationLevel] || [];
+            console.log("Grades for level:", gradesForLevel);
+
+            // Make sure we have the original options stored
+            if (!window.originalGradeOptions[gradeSelect.id]) {
+                // This should never happen if initialization is correct, but just in case
+                console.log("Original options not found, storing now");
+                storeOriginalGradeOptions();
+            }
+
+            // Get the original options for this select
+            const originalOptions = window.originalGradeOptions[gradeSelect.id];
+            if (!originalOptions || originalOptions.length === 0) {
+                console.error("No original options found for", gradeSelect.id);
+                return;
+            }
+
+            console.log(`Retrieved ${originalOptions.length} original options for ${gradeSelect.id}`);
+            console.log("Original options:", originalOptions.map(opt => opt.value));
+
+            // Clear all options from the select
+            gradeSelect.innerHTML = '';
+
+            // First add the empty option
+            const emptyOption = document.createElement('option');
+            emptyOption.value = '';
+            emptyOption.textContent = 'Select Grade';
+            gradeSelect.appendChild(emptyOption);
+
+            // Add only the grades for the selected education level
+            let optionsAdded = 0;
+
+            // Add filtered options
+            originalOptions.forEach(originalOpt => {
+                // Skip the empty option as we've already added it
+                if (originalOpt.value === '') return;
+
+                // Check if this grade should be included for the selected education level
+                const shouldInclude = gradesForLevel.some(grade =>
+                    originalOpt.value.trim().toLowerCase() === grade.trim().toLowerCase()
+                );
+
+                if (shouldInclude) {
+                    const newOption = document.createElement('option');
+                    newOption.value = originalOpt.value;
+                    newOption.textContent = originalOpt.textContent;
+                    gradeSelect.appendChild(newOption);
+                    optionsAdded++;
+                }
+            });
+
+            console.log(`Added ${optionsAdded} filtered options to ${gradeSelect.id}`);
+
+            // Reset the grade selection
+            gradeSelect.selectedIndex = 0;
+
+            // Clear the stream dropdown
+            let streamSelectId = 'stream';
+            if (gradeSelect.id === 'bulk_grade') {
+                streamSelectId = 'bulk_stream';
+            }
+            const streamSelect = document.getElementById(streamSelectId);
+            if (streamSelect) {
+                streamSelect.innerHTML = '<option value="">Select Stream</option>';
+            }
+        }
+
+        // Function to store original grade options for all grade selects
+        function storeOriginalGradeOptions() {
+            console.log("Storing original grade options");
+
+            // Store options for the main form
+            const gradeSelect = document.getElementById('grade');
+            if (gradeSelect) {
+                window.originalGradeOptions['grade'] = Array.from(gradeSelect.options).map(opt => ({
+                    value: opt.value,
+                    textContent: opt.textContent
+                }));
+                console.log(`Stored ${window.originalGradeOptions['grade'].length} original options for grade`);
+            }
+
+            // Store options for the bulk upload form
+            const bulkGradeSelect = document.getElementById('bulk_grade');
+            if (bulkGradeSelect) {
+                window.originalGradeOptions['bulk_grade'] = Array.from(bulkGradeSelect.options).map(opt => ({
+                    value: opt.value,
+                    textContent: opt.textContent
+                }));
+                console.log(`Stored ${window.originalGradeOptions['bulk_grade'].length} original options for bulk_grade`);
             }
         }
 
@@ -1043,10 +2594,14 @@
             const streamSelect = document.getElementById('stream');
             const formGroup = streamSelect.closest('.form-group');
 
+            // Get the education level from the data attribute
+            const educationLevel = document.getElementById('grade').dataset.educationLevel;
+
             // Clear existing options
             streamSelect.innerHTML = '<option value="">Select Stream</option>';
 
             if (grade) {
+                // Fetch streams for this grade
                 fetch(`/classteacher/get_streams_by_level/${grade}`)
                     .then(response => response.json())
                     .then(data => {
@@ -1058,6 +2613,11 @@
                         });
                         formGroup.classList.add('success');
                         formGroup.classList.remove('error');
+
+                        // After fetching streams, also fetch subjects for the selected education level
+                        if (educationLevel) {
+                            fetchSubjectsForEducationLevel(educationLevel);
+                        }
                     })
                     .catch(error => {
                         console.error('Error fetching streams:', error);
@@ -1068,17 +2628,46 @@
             }
         }
 
-        // Function to update percentage in real-time as marks are entered
-        function updatePercentage(inputElement, studentSubjectId) {
-            const totalMarks = parseInt(document.getElementsByName('total_marks')[0].value);
+        // Function to fetch subjects for a specific education level
+        function fetchSubjectsForEducationLevel(educationLevel) {
+            // This function will be called when the education level changes
+            // or when the grade changes (via fetchStreams)
+            fetch(`/classteacher/get_subjects_by_education_level/${educationLevel}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Fetched subjects for education level:', educationLevel, data);
+                    // We don't need to update the UI here, but we can store the subjects
+                    // for later use when the form is submitted
+                    window.availableSubjects = data.subjects;
+                })
+                .catch(error => {
+                    console.error('Error fetching subjects:', error);
+                });
+        }
+
+        // Function to update percentage in real-time as marks are entered in the bulk upload form
+        function updateBulkPercentage(inputElement, studentSubjectId) {
+            const totalMarksInput = document.getElementsByName('total_marks')[0];
+            if (!totalMarksInput) return;
+
+            const totalMarks = parseInt(totalMarksInput.value) || 100;
             const mark = parseInt(inputElement.value) || 0;
-            const percentage = (mark / totalMarks) * 100;
+
+            // Calculate percentage and ensure it doesn't exceed 100%
+            let percentage = (mark / totalMarks) * 100;
+            if (percentage > 100) {
+                percentage = 100;
+                inputElement.value = totalMarks; // Cap the raw mark
+            }
 
             // Find the corresponding percentage cell
             const percentageCell = document.getElementById(`percentage_${studentSubjectId}`);
 
             if (percentageCell) {
                 percentageCell.textContent = percentage.toFixed(1) + '%';
+
+                // Update visual indicator
+                updatePerformanceIndicator(percentageCell, percentage);
             }
         }
 
@@ -1164,6 +2753,34 @@
             }
         }
 
+        // Function to update grades based on education level for bulk upload form
+        function updateBulkGrades() {
+            const educationLevel = document.getElementById('bulk_education_level').value;
+            const gradeSelect = document.getElementById('bulk_grade');
+            const formGroup = document.getElementById('bulk_education_level').closest('.form-group');
+
+            if (educationLevel) {
+                formGroup.classList.add('success');
+                formGroup.classList.remove('error');
+
+                // Filter grades based on education level
+                filterGradesByEducationLevel(educationLevel, gradeSelect);
+
+                // Clear the stream dropdown since grade has changed
+                const streamSelect = document.getElementById('bulk_stream');
+                streamSelect.innerHTML = '<option value="">Select Stream</option>';
+
+                console.log("Updated bulk form grades for education level:", educationLevel);
+            } else {
+                formGroup.classList.remove('success');
+
+                // If no education level is selected, restore all grade options
+                if (window.originalGradeOptions && window.originalGradeOptions['bulk_grade']) {
+                    restoreOriginalGradeOptions(gradeSelect);
+                }
+            }
+        }
+
         // Function to fetch streams for bulk upload form
         function fetchBulkStreams() {
             const grade = document.getElementById('bulk_grade').value;
@@ -1195,6 +2812,49 @@
             }
         }
 
+        // Function to sort reports
+        function sortReports(sortBy) {
+            // Get current URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Update or add the sort parameter
+            urlParams.set('sort', sortBy);
+
+            // Redirect to the updated URL
+            window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
+        }
+
+        // Function to filter reports
+        function filterReports() {
+            // Get filter values
+            const filterGrade = document.getElementById('filter-grade').value;
+            const filterTerm = document.getElementById('filter-term').value;
+
+            // Get current URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Update or add the filter parameters
+            if (filterGrade) {
+                urlParams.set('filter_grade', filterGrade);
+            } else {
+                urlParams.delete('filter_grade');
+            }
+
+            if (filterTerm) {
+                urlParams.set('filter_term', filterTerm);
+            } else {
+                urlParams.delete('filter_term');
+            }
+
+            // Redirect to the updated URL
+            window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
+        }
+
+        // Function to reset filters
+        function resetFilters() {
+            window.location.href = window.location.pathname;
+        }
+
         // Function to download marks template
         function downloadTemplate() {
             const educationLevel = document.getElementById('bulk_education_level').value;
@@ -1224,10 +2884,94 @@
             window.location.href = url;
         }
 
+        // Tab switching functionality
+        function switchMainTab(tabId) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content-container').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+
+            // Deactivate all tabs
+            document.querySelectorAll('.main-tab').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+
+            // Show the selected tab content
+            document.getElementById(tabId + '-tab').classList.add('active');
+
+            // Activate the selected tab
+            document.querySelector('.main-tab[onclick="switchMainTab(\'' + tabId + '\')"]').classList.add('active');
+
+            // Store the active tab in session storage so it persists during form submissions
+            sessionStorage.setItem('activeTab', tabId);
+        }
+
+        // Function to restore the active tab after page reload
+        function restoreActiveTab() {
+            // Only restore from session storage if we don't have a server-side active tab
+            const serverActiveTab = "{{ active_tab }}";
+            if (serverActiveTab === "recent-reports") {
+                const activeTab = sessionStorage.getItem('activeTab');
+                if (activeTab) {
+                    switchMainTab(activeTab);
+                }
+            }
+        }
+
         // Initialize form validations on page load
         document.addEventListener('DOMContentLoaded', () => {
-            updateSubjects();
-            fetchStreams();
+            console.log("DOM loaded, initializing forms");
+
+            // Store original grade options for all grade selects
+            storeOriginalGradeOptions();
+
+            // Add direct event listeners to education level dropdowns
+            const educationLevel = document.getElementById('education_level');
+            if (educationLevel) {
+                educationLevel.addEventListener('change', function() {
+                    console.log("Education level changed to:", this.value);
+                    if (this.value) {
+                        const gradeSelect = document.getElementById('grade');
+                        filterGradesByEducationLevel(this.value, gradeSelect);
+                    }
+                });
+
+                // Initialize main form if education level is already selected
+                if (educationLevel.value) {
+                    console.log("Initializing main form with education level:", educationLevel.value);
+                    const gradeSelect = document.getElementById('grade');
+                    filterGradesByEducationLevel(educationLevel.value, gradeSelect);
+                }
+            }
+
+            // Initialize bulk upload form if it exists
+            const bulkEducationLevel = document.getElementById('bulk_education_level');
+            if (bulkEducationLevel) {
+                bulkEducationLevel.addEventListener('change', function() {
+                    console.log("Bulk education level changed to:", this.value);
+                    if (this.value) {
+                        const bulkGradeSelect = document.getElementById('bulk_grade');
+                        filterGradesByEducationLevel(this.value, bulkGradeSelect);
+                    }
+                });
+
+                // Initialize bulk form if education level is already selected
+                if (bulkEducationLevel.value) {
+                    console.log("Initializing bulk form with education level:", bulkEducationLevel.value);
+                    const bulkGradeSelect = document.getElementById('bulk_grade');
+                    filterGradesByEducationLevel(bulkEducationLevel.value, bulkGradeSelect);
+                }
+            }
+
+            // Initialize streams if grade is already selected
+            const gradeSelect = document.getElementById('grade');
+            if (gradeSelect && gradeSelect.value) {
+                console.log("Initializing streams for grade:", gradeSelect.value);
+                fetchStreams();
+            }
+
+            // Restore active tab from session storage if needed
+            restoreActiveTab();
 
             // Add event listeners for grade marksheet form fields
             document.getElementById('stream_grade').addEventListener('change', checkStreamStatus);
@@ -1259,7 +3003,53 @@
                     document.getElementById(tabId).classList.add('active');
                 });
             });
+
+            // Initialize subject visibility based on checkboxes
+            document.querySelectorAll('.subject-checkbox').forEach(checkbox => {
+                if (checkbox && checkbox.dataset.subjectId) {
+                    toggleSubjectVisibility(checkbox, checkbox.dataset.subjectId);
+                }
+            });
         });
+
+        // Function to toggle subject visibility in the table
+        function toggleSubjectVisibility(checkbox, subjectId) {
+            // Get all table cells for this subject
+            const subjectCells = document.querySelectorAll(`td [data-subject="${subjectId}"]`);
+            const subjectHeader = document.querySelector(`th[data-subject-id="${subjectId}"]`);
+            const subjectItem = checkbox.closest('.subject-mark-item');
+
+            if (checkbox.checked) {
+                // Show the subject
+                if (subjectHeader) subjectHeader.style.display = '';
+                subjectCells.forEach(cell => {
+                    const cellContainer = cell.closest('td');
+                    if (cellContainer) cellContainer.style.display = '';
+                });
+                if (subjectItem) subjectItem.classList.remove('disabled');
+            } else {
+                // Hide the subject
+                if (subjectHeader) subjectHeader.style.display = 'none';
+                subjectCells.forEach(cell => {
+                    const cellContainer = cell.closest('td');
+                    if (cellContainer) cellContainer.style.display = 'none';
+                });
+                if (subjectItem) subjectItem.classList.add('disabled');
+            }
+        }
+
+        // Function to select or deselect all subjects
+        function selectAllSubjects(select) {
+            const checkboxes = document.querySelectorAll('.subject-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = select;
+                if (checkbox.dataset.subjectId) {
+                    toggleSubjectVisibility(checkbox, checkbox.dataset.subjectId);
+                }
+            });
+        }
     </script>
+
+
 </body>
 </html>

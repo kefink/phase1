@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Class Report Preview - Kirima Primary School</title>
+    <title>Class Report</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
       rel="stylesheet"
@@ -417,67 +417,157 @@
       }
 
       @media print {
-        body {
-          background-color: white;
-          padding: 0;
-          margin: 0;
-          font-size: 12pt;
-        }
-        .report-container {
-          box-shadow: none;
-          padding: 0;
-          max-width: 100%;
-          margin: 0;
-        }
-        .action-buttons,
-        .print-controls,
-        .delete-btn,
-        .modal {
-          display: none !important;
-        }
-        .header {
-          margin-bottom: 20px;
-        }
-        .school-logo {
-          max-width: 150px;
-          height: auto;
-        }
-        .stats {
-          background-color: white;
-          border-left: 2px solid #3498db;
-          break-inside: avoid;
-        }
-        .stat-item {
-          border: 1px solid #ddd;
-        }
-        table {
-          width: 100%;
-          page-break-inside: auto;
-        }
-        tr {
-          page-break-inside: avoid;
-          page-break-after: auto;
-        }
-        thead {
-          display: table-header-group;
-        }
-        tfoot {
-          display: table-footer-group;
-        }
-        .signature-section {
-          break-inside: avoid;
-          break-before: auto;
-          margin-top: 30px;
-        }
-        .footer {
-          position: fixed;
-          bottom: 0;
-          width: 100%;
-          text-align: center;
-        }
+        /* Remove all browser-generated content */
         @page {
           size: landscape;
           margin: 1cm;
+          /* Remove headers and footers completely */
+          @top-left {
+            content: "";
+          }
+          @top-center {
+            content: "";
+          }
+          @top-right {
+            content: "";
+          }
+          @bottom-left {
+            content: "";
+          }
+          @bottom-center {
+            content: "";
+          }
+          @bottom-right {
+            content: "";
+          }
+        }
+
+        /* Reset all styles for clean printing */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        html {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        body {
+          background-color: white !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          font-size: 12pt !important;
+          font-family: Arial, sans-serif !important;
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+
+        .report-container {
+          box-shadow: none !important;
+          padding: 0 !important;
+          max-width: 100% !important;
+          margin: 0 !important;
+          background-color: white !important;
+          border-radius: 0 !important;
+        }
+
+        /* Hide all non-essential elements */
+        .action-buttons,
+        .print-controls,
+        .delete-btn,
+        .modal,
+        .subject-selection-form,
+        .instructions-panel,
+        .print-instructions {
+          display: none !important;
+          visibility: hidden !important;
+        }
+
+        .header {
+          margin-bottom: 20px !important;
+          page-break-inside: avoid !important;
+        }
+
+        .school-logo {
+          max-width: 150px !important;
+          height: auto !important;
+        }
+
+        .stats {
+          background-color: white !important;
+          border-left: 2px solid #3498db !important;
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+
+        .stat-item {
+          border: 1px solid #ddd !important;
+          background-color: white !important;
+        }
+
+        table {
+          width: 100% !important;
+          page-break-inside: auto !important;
+          border-collapse: collapse !important;
+        }
+
+        tr {
+          page-break-inside: avoid !important;
+          page-break-after: auto !important;
+        }
+
+        thead {
+          display: table-header-group !important;
+        }
+
+        tfoot {
+          display: table-footer-group !important;
+        }
+
+        .signature-section {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+          break-before: auto !important;
+          margin-top: 30px !important;
+        }
+
+        .footer {
+          position: static !important;
+          bottom: auto !important;
+          width: 100% !important;
+          text-align: center !important;
+          margin-top: 20px !important;
+        }
+
+        /* Ensure colors print correctly */
+        th {
+          background-color: #3498db !important;
+          color: white !important;
+          -webkit-print-color-adjust: exact !important;
+        }
+
+        .averages-row {
+          background-color: #eaf2f8 !important;
+          -webkit-print-color-adjust: exact !important;
+        }
+
+        .average-label {
+          background-color: #3498db !important;
+          color: white !important;
+          -webkit-print-color-adjust: exact !important;
+        }
+
+        .class-average-row {
+          background-color: #d4efdf !important;
+          -webkit-print-color-adjust: exact !important;
+        }
+
+        .class-average-row .average-label {
+          background-color: #27ae60 !important;
+          color: white !important;
+          -webkit-print-color-adjust: exact !important;
         }
       }
     </style>
@@ -535,6 +625,35 @@
           instructionsPanel.style.display = "none";
         }
       });
+
+      // Functions for subject selection
+      function selectAllSubjects() {
+        const checkboxes = document.querySelectorAll(
+          'input[type="checkbox"][id^="include_subject_"]'
+        );
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = true;
+        });
+      }
+
+      function deselectAllSubjects() {
+        const checkboxes = document.querySelectorAll(
+          'input[type="checkbox"][id^="include_subject_"]'
+        );
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = false;
+        });
+      }
+
+      function printCleanReport() {
+        // Simply use the browser's built-in print functionality with clean CSS
+        window.print();
+      }
+
+      function downloadReportAsPDF() {
+        // Alternative method: Use the browser's built-in print to PDF
+        window.print();
+      }
     </script>
   </head>
   <body>
@@ -556,10 +675,127 @@
         </button>
       </div>
 
+      <!-- Subject Selection Form -->
+      <div
+        class="subject-selection-form"
+        style="
+          margin-bottom: 20px;
+          padding: 15px;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+          border-left: 5px solid #3498db;
+        "
+      >
+        <h3
+          style="
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 18px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+          "
+        >
+          Select Subjects to Include in Report
+        </h3>
+        <form
+          method="POST"
+          action="{{ url_for('classteacher.preview_class_report', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+              gap: 10px;
+              margin-top: 15px;
+            "
+          >
+            {% for subject in subjects %}
+            <div style="display: flex; align-items: center">
+              <input
+                type="checkbox"
+                id="include_subject_{{ loop.index0 }}"
+                name="include_subject_{{ loop.index0 }}"
+                value="{{ subject.id if subject is defined and subject.id is defined else loop.index }}"
+                {%
+                if
+                not
+                session.selected_subjects
+                or
+                subject.id
+                in
+                session.selected_subjects
+                %}checked{%
+                endif
+                %}
+                style="margin-right: 8px"
+              />
+              <label
+                for="include_subject_{{ loop.index0 }}"
+                style="font-size: 14px"
+                >{{ subject.name }}</label
+              >
+            </div>
+            {% endfor %}
+          </div>
+          <div style="margin-top: 15px; display: flex; gap: 10px">
+            <button
+              type="button"
+              onclick="selectAllSubjects()"
+              style="
+                padding: 8px 12px;
+                background-color: #95a5a6;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+              "
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              onclick="deselectAllSubjects()"
+              style="
+                padding: 8px 12px;
+                background-color: #95a5a6;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+              "
+            >
+              Deselect All
+            </button>
+            <button
+              type="submit"
+              style="
+                padding: 8px 12px;
+                background-color: #3498db;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                margin-left: auto;
+              "
+            >
+              Update Report
+            </button>
+          </div>
+        </form>
+      </div>
+
       <!-- Print-Friendly Controls -->
       <div class="print-controls">
-        <button onclick="window.print()" class="print-btn">
-          <i class="print-icon">🖨️</i> Print Report
+        <button onclick="printCleanReport()" class="print-btn">
+          <i class="print-icon">🖨️</i> Print/Download Report
+        </button>
+        <button
+          onclick="downloadReportAsPDF()"
+          class="print-btn"
+          style="background-color: #28a745"
+        >
+          <i class="print-icon">📄</i> Quick Download
         </button>
         <a
           href="{{ url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}"
@@ -663,75 +899,128 @@
         </p>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 5%">S/N</th>
-            <th style="width: 20%">STUDENT NAME</th>
-            {% for abbr in abbreviated_subjects %}
-            <th>{{ abbr }}</th>
+      <!-- Table wrapper for horizontal scroll on very small screens -->
+      <div style="overflow-x: auto; -webkit-overflow-scrolling: touch">
+        <table>
+          <thead>
+            <tr>
+              <th rowspan="2">S/N</th>
+              <th rowspan="2">STUDENT NAME</th>
+              {% for subject_name in subject_names %} {% set subject_obj =
+              filtered_subjects | selectattr('name', 'equalto', subject_name) |
+              first %} {% if subject_obj and subject_obj.is_composite %} {% set
+              components = subject_components.get(subject_name, []) %}
+              <th colspan="{{ components|length + 1 }}">
+                {{ subject_name.upper() }}
+              </th>
+              {% else %}
+              <th rowspan="2">{{ abbreviated_subjects[loop.index0] }}</th>
+              {% endif %} {% endfor %}
+              <th style="width: 8%" rowspan="2">TOTAL</th>
+              <th style="width: 8%" rowspan="2">AVG %</th>
+              <th style="width: 6%" rowspan="2">GRD</th>
+              <th style="width: 6%" rowspan="2">RANK</th>
+            </tr>
+            <tr>
+              {% for subject_name in subject_names %} {% set subject_obj =
+              filtered_subjects | selectattr('name', 'equalto', subject_name) |
+              first %} {% if subject_obj and subject_obj.is_composite %} {% set
+              components = subject_components.get(subject_name, []) %} {% for
+              component in components %}
+              <th style="font-size: 11px">{{ component.name[:4].upper() }}</th>
+              {% endfor %}
+              <th style="font-size: 11px; background-color: #e8f4fc">TOTAL</th>
+              {% endif %} {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for student_data in class_data %}
+            <tr>
+              <td>{{ student_data.index }}</td>
+              <td class="student-name">{{ student_data.student.upper() }}</td>
+              {% for subject_name in subject_names %} {% set subject_obj =
+              filtered_subjects | selectattr('name', 'equalto', subject_name) |
+              first %} {% if subject_obj and subject_obj.is_composite %} {% set
+              components = subject_components.get(subject_name, []) %} {% set
+              student_id = student_data.get('student_id', 0) %} {% for component
+              in components %}
+              <td style="font-size: 12px">
+                {{ component_marks_data.get(student_id, {}).get(subject_name,
+                {}).get(component.name, 0) | int }}
+              </td>
+              {% endfor %}
+              <td style="background-color: #f0f8ff; font-weight: bold">
+                {{ student_data.filtered_marks.get(subject_name, 0) | int }}
+              </td>
+              {% else %}
+              <td>
+                {{ student_data.filtered_marks.get(subject_name, 0) | int }}
+              </td>
+              {% endif %} {% endfor %}
+              <td class="total-cell">
+                {{ student_data.filtered_total | int }}/{{
+                student_data.total_possible_marks }}
+              </td>
+              <td class="avg-cell">
+                {{ student_data.filtered_average | round(0) }}
+              </td>
+              <td class="grade-cell">
+                {{ student_data.performance_category }}
+              </td>
+              <td class="rank-cell">{{ student_data.rank }}</td>
+            </tr>
             {% endfor %}
-            <th style="width: 8%">TOTAL</th>
-            <th style="width: 8%">AVG %</th>
-            <th style="width: 6%">GRD</th>
-            <th style="width: 6%">RANK</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for student_data in class_data %}
-          <tr>
-            <td>{{ student_data.index }}</td>
-            <td class="student-name">{{ student_data.student.upper() }}</td>
-            {% for subject in subject_names %}
-            <td>{{ student_data.filtered_marks.get(subject, 0) | int }}</td>
-            {% endfor %}
-            <td class="total-cell">
-              {{ student_data.filtered_total | int }}/{{
-              student_data.total_possible_marks }}
-            </td>
-            <td class="avg-cell">
-              {{ student_data.filtered_average | round(0) }}
-            </td>
-            <td class="grade-cell">{{ student_data.performance_category }}</td>
-            <td class="rank-cell">{{ student_data.rank }}</td>
-          </tr>
-          {% endfor %}
 
-          <!-- Subject Averages Row -->
-          <tr class="averages-row">
-            <td colspan="2" class="average-label">SUBJECT AVERAGES</td>
-            {% for subject in subject_names %}
-            <td class="subject-average">
-              {{ subject_averages.get(subject, 0) | round(2) }}
-            </td>
-            {% endfor %}
-            <td colspan="4" class="empty-cell"></td>
-          </tr>
+            <!-- Subject Averages Row -->
+            <tr class="averages-row">
+              <td colspan="2" class="average-label">SUBJECT AVERAGES</td>
+              {% for subject_name in subject_names %} {% set subject_obj =
+              filtered_subjects | selectattr('name', 'equalto', subject_name) |
+              first %} {% if subject_obj and subject_obj.is_composite %} {% set
+              components = subject_components.get(subject_name, []) %} {% for
+              component in components %}
+              <td class="subject-average" style="font-size: 11px">
+                {{ component_averages.get(subject_name, {}).get(component.name,
+                0) }}
+              </td>
+              {% endfor %}
+              <td class="subject-average" style="background-color: #d6eaf8">
+                {{ subject_averages.get(subject_name, 0) | round(2) }}
+              </td>
+              {% else %}
+              <td class="subject-average">
+                {{ subject_averages.get(subject_name, 0) | round(2) }}
+              </td>
+              {% endif %} {% endfor %}
+              <td colspan="4" class="empty-cell"></td>
+            </tr>
 
-          <!-- Class Average Row -->
-          <tr class="averages-row class-average-row">
-            <td colspan="2" class="average-label">CLASS AVERAGE</td>
-            <td colspan="{{ subject_names|length }}" class="empty-cell"></td>
+            <!-- Class Average Row -->
+            <tr class="averages-row class-average-row">
+              <td colspan="2" class="average-label">CLASS AVERAGE</td>
+              <td colspan="{{ subject_names|length }}" class="empty-cell"></td>
 
-            <!-- Class Average Total -->
-            <td class="total-average">{{ class_average | round(2) }}</td>
+              <!-- Class Average Total -->
+              <td class="total-average">{{ class_average | round(2) }}</td>
 
-            <!-- Class Average Percentage -->
-            {% set avg_percentage_total = 0 %} {% set avg_student_count = 0 %}
-            {% for student_data in class_data %} {% if
-            student_data.filtered_average > 0 %} {% set avg_percentage_total =
-            avg_percentage_total + student_data.filtered_average %} {% set
-            avg_student_count = avg_student_count + 1 %} {% endif %} {% endfor
-            %}
-            <td class="avg-cell">
-              {% if avg_student_count > 0 %} {{ (avg_percentage_total /
-              avg_student_count) | round(2) }} {% else %} 0 {% endif %}
-            </td>
+              <!-- Class Average Percentage -->
+              {% set avg_percentage_total = 0 %} {% set avg_student_count = 0 %}
+              {% for student_data in class_data %} {% if
+              student_data.filtered_average > 0 %} {% set avg_percentage_total =
+              avg_percentage_total + student_data.filtered_average %} {% set
+              avg_student_count = avg_student_count + 1 %} {% endif %} {% endfor
+              %}
+              <td class="avg-cell">
+                {% if avg_student_count > 0 %} {{ (avg_percentage_total /
+                avg_student_count) | round(2) }} {% else %} 0 {% endif %}
+              </td>
 
-            <td colspan="2" class="empty-cell"></td>
-          </tr>
-        </tbody>
-      </table>
+              <td colspan="2" class="empty-cell"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Close table wrapper -->
 
       <div class="stats">
         <h3>Performance Summary</h3>

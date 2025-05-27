@@ -3,6 +3,7 @@ Report generation services for the Hillview School Management System.
 """
 from ..models import Student, Mark, Subject, Stream, Grade, Term, AssessmentType
 from ..utils import get_performance_category, get_grade_and_points
+from ..extensions import db
 from collections import defaultdict
 import os
 import tempfile
@@ -15,7 +16,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from flask import render_template_string
 
-def get_class_report_data(grade, stream, term, assessment_type):
+def get_class_report_data(grade, stream, term, assessment_type, selected_subject_ids=None):
     """
     Get data for a class report.
 
@@ -24,6 +25,7 @@ def get_class_report_data(grade, stream, term, assessment_type):
         stream: The class stream
         term: The term
         assessment_type: The assessment type
+        selected_subject_ids: Optional list of subject IDs to include in the report
 
     Returns:
         Dictionary containing class report data
@@ -56,12 +58,19 @@ def get_class_report_data(grade, stream, term, assessment_type):
     else:
         education_level = ""
 
-    # Get only subjects for this education level
+    # Get subjects for this education level
     if education_level:
-        subjects = Subject.query.filter_by(education_level=education_level).all()
+        subjects_query = Subject.query.filter_by(education_level=education_level)
     else:
         # Fallback to all subjects if education level can't be determined
-        subjects = Subject.query.all()
+        subjects_query = Subject.query
+
+    # Filter by selected subject IDs if provided
+    if selected_subject_ids and len(selected_subject_ids) > 0:
+        subjects_query = subjects_query.filter(Subject.id.in_(selected_subject_ids))
+
+    # Get the subjects
+    subjects = subjects_query.all()
 
     # Prepare class data
     class_data = []
@@ -82,17 +91,65 @@ def get_class_report_data(grade, stream, term, assessment_type):
             ).first()
 
             if mark:
-                # Store the raw mark
-                raw_mark_value = mark.raw_mark if hasattr(mark, 'raw_mark') and mark.raw_mark is not None else mark.mark
-                student_raw_marks[subject.name] = raw_mark_value
+                # Check if this is a composite subject
+                if hasattr(subject, 'is_composite') and subject.is_composite:
+                    # For composite subjects, we need to calculate from components
+                    from ..models.academic import ComponentMark
+                    component_marks = ComponentMark.query.filter_by(mark_id=mark.id).all()
 
-                # Use the percentage value directly if available
-                if hasattr(mark, 'percentage') and mark.percentage is not None:
-                    standardized_mark = mark.percentage
+                    if component_marks:
+                        # Get the components for this subject
+                        components = subject.get_components() if hasattr(subject, 'get_components') else []
+
+                        # Calculate weighted percentage
+                        total_weighted_percentage = 0
+                        total_weight = 0
+
+                        for component in components:
+                            # Find the component mark
+                            cm = next((cm for cm in component_marks if cm.component_id == component.id), None)
+                            if cm:
+                                total_weighted_percentage += cm.percentage * component.weight
+                                total_weight += component.weight
+
+                        if total_weight > 0:
+                            standardized_mark = total_weighted_percentage / total_weight
+
+                            # Update the mark's percentage in the database
+                            mark.percentage = standardized_mark
+                            mark.raw_mark = (standardized_mark / 100) * (mark.max_raw_mark or 100)
+                            mark.mark = mark.raw_mark  # Update old field name too
+                            try:
+                                db.session.commit()
+                                print(f"Updated composite mark for {subject.name}, student {student.name}: {standardized_mark}%")
+                            except Exception as e:
+                                db.session.rollback()
+                                print(f"Error updating mark: {e}")
+                        else:
+                            # Fallback to the mark's percentage or calculate it
+                            standardized_mark = mark.percentage if hasattr(mark, 'percentage') and mark.percentage is not None else 0
+                    else:
+                        # If no component marks, check if percentage is available
+                        if hasattr(mark, 'percentage') and mark.percentage is not None:
+                            standardized_mark = mark.percentage
+                        else:
+                            # Calculate from raw mark as fallback
+                            total_marks = mark.max_raw_mark if hasattr(mark, 'max_raw_mark') and mark.max_raw_mark is not None else (mark.total_marks if mark.total_marks > 0 else default_total_marks)
+                            raw_mark_value = mark.raw_mark if hasattr(mark, 'raw_mark') and mark.raw_mark is not None else mark.mark
+                            standardized_mark = (raw_mark_value / total_marks) * 100
                 else:
-                    # Calculate standardized mark (out of 100)
-                    total_marks = mark.max_raw_mark if hasattr(mark, 'max_raw_mark') and mark.max_raw_mark is not None else (mark.total_marks if mark.total_marks > 0 else default_total_marks)
-                    standardized_mark = (raw_mark_value / total_marks) * 100
+                    # For regular subjects
+                    # Store the raw mark
+                    raw_mark_value = mark.raw_mark if hasattr(mark, 'raw_mark') and mark.raw_mark is not None else mark.mark
+                    student_raw_marks[subject.name] = raw_mark_value
+
+                    # Use the percentage value directly if available
+                    if hasattr(mark, 'percentage') and mark.percentage is not None:
+                        standardized_mark = mark.percentage
+                    else:
+                        # Calculate standardized mark (out of 100)
+                        total_marks = mark.max_raw_mark if hasattr(mark, 'max_raw_mark') and mark.max_raw_mark is not None else (mark.total_marks if mark.total_marks > 0 else default_total_marks)
+                        standardized_mark = (raw_mark_value / total_marks) * 100
 
                 # Ensure standardized mark doesn't exceed 100%
                 if standardized_mark > 100:
@@ -158,7 +215,7 @@ def get_class_report_data(grade, stream, term, assessment_type):
 
 
 
-def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, class_data, stats, total_marks, subjects, education_level="", subject_averages=None, class_average=0):
+def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, class_data, stats, total_marks, subjects, education_level="", subject_averages=None, class_average=0, selected_subject_ids=None):
     """
     Generate a PDF report for a class using HTML template.
 
@@ -174,6 +231,7 @@ def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, cl
         education_level: The education level
         subject_averages: Dictionary of subject averages
         class_average: The class average
+        selected_subject_ids: Optional list of subject IDs to include in the report
 
     Returns:
         Path to the generated PDF file
@@ -211,17 +269,109 @@ def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, cl
             # Create a copy of the student data
             processed_student = dict(student_data)
 
-            # Ensure filtered_marks exists (copy from marks if needed)
-            if 'filtered_marks' not in processed_student and 'marks' in processed_student:
-                processed_student['filtered_marks'] = processed_student['marks']
+            # Debug: Print the marks for this student
+            print(f"\nProcessing student: {processed_student.get('student', 'Unknown')}")
+            print(f"Original marks: {processed_student.get('marks', {})}")
 
-            # Ensure filtered_total exists (copy from total_marks if needed)
-            if 'filtered_total' not in processed_student and 'total_marks' in processed_student:
-                processed_student['filtered_total'] = processed_student['total_marks']
+            # Ensure all composite subjects have correct marks
+            for subject_name, mark_value in processed_student.get('marks', {}).items():
+                subject = Subject.query.filter_by(name=subject_name).first()
+                if subject and hasattr(subject, 'is_composite') and subject.is_composite:
+                    print(f"Found composite subject: {subject_name}, current mark: {mark_value}")
 
-            # Ensure filtered_average exists (copy from average_percentage if needed)
-            if 'filtered_average' not in processed_student and 'average_percentage' in processed_student:
-                processed_student['filtered_average'] = processed_student['average_percentage']
+                    # Get the student
+                    student = Student.query.filter_by(name=processed_student.get('student', '')).first()
+                    if student:
+                        # Get the term and assessment type
+                        term_obj = Term.query.filter_by(name=term).first()
+                        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+                        if term_obj and assessment_type_obj:
+                            # Get the mark
+                            mark = Mark.query.filter_by(
+                                student_id=student.id,
+                                subject_id=subject.id,
+                                term_id=term_obj.id,
+                                assessment_type_id=assessment_type_obj.id
+                            ).first()
+
+                            if mark:
+                                # Recalculate from components
+                                from ..models.academic import ComponentMark
+                                component_marks = ComponentMark.query.filter_by(mark_id=mark.id).all()
+
+                                if component_marks:
+                                    # Get the components for this subject
+                                    components = subject.get_components() if hasattr(subject, 'get_components') else []
+
+                                    # Calculate weighted percentage
+                                    total_weighted_percentage = 0
+                                    total_weight = 0
+
+                                    for component in components:
+                                        # Find the component mark
+                                        cm = next((cm for cm in component_marks if cm.component_id == component.id), None)
+                                        if cm:
+                                            # Calculate percentage from raw mark and max raw mark
+                                            component_percentage = (cm.raw_mark / cm.max_raw_mark) * 100 if cm.max_raw_mark > 0 else 0
+                                            # Cap at 100%
+                                            component_percentage = min(component_percentage, 100)
+                                            print(f"  Component {component.name}: {cm.raw_mark}/{cm.max_raw_mark} = {component_percentage:.1f}% (weight: {component.weight})")
+                                            total_weighted_percentage += component_percentage * component.weight
+                                            total_weight += component.weight
+
+                                    if total_weight > 0:
+                                        # Calculate the weighted percentage
+                                        weighted_percentage = total_weighted_percentage / total_weight
+                                        print(f"  Calculated weighted percentage: {weighted_percentage}%")
+
+                                        # Update the mark in the student data
+                                        processed_student['marks'][subject_name] = weighted_percentage
+
+                                        # Update the mark in the database
+                                        mark.percentage = weighted_percentage
+                                        mark.raw_mark = (weighted_percentage / 100) * (mark.max_raw_mark or 100)
+                                        mark.mark = mark.raw_mark  # Update old field name too
+                                        try:
+                                            db.session.commit()
+                                            print(f"  Updated mark in database: {weighted_percentage}%")
+                                        except Exception as e:
+                                            db.session.rollback()
+                                            print(f"  Error updating mark: {e}")
+
+            # Filter marks based on selected subjects
+            if selected_subject_ids and len(selected_subject_ids) > 0:
+                # Get the subject names for the selected subject IDs
+                selected_subject_names = [subject for subject in subjects if Subject.query.filter_by(name=subject).first() and Subject.query.filter_by(name=subject).first().id in selected_subject_ids]
+
+                # Create filtered marks dictionary
+                filtered_marks = {}
+                filtered_total = 0
+                filtered_subject_count = 0
+
+                for subject_name in selected_subject_names:
+                    if subject_name in processed_student.get('marks', {}):
+                        filtered_marks[subject_name] = processed_student['marks'][subject_name]
+                        filtered_total += processed_student['marks'][subject_name]
+                        filtered_subject_count += 1
+
+                # Calculate filtered average
+                filtered_average = filtered_total / filtered_subject_count if filtered_subject_count > 0 else 0
+
+                # Add filtered data to processed student
+                processed_student['filtered_marks'] = filtered_marks
+                processed_student['filtered_total'] = filtered_total
+                processed_student['filtered_average'] = filtered_average
+                processed_student['performance_category'] = get_performance_category(filtered_average)
+            else:
+                # If no subjects are selected, use all marks
+                processed_student['filtered_marks'] = processed_student.get('marks', {})
+                processed_student['filtered_total'] = processed_student.get('total_marks', 0)
+                processed_student['filtered_average'] = processed_student.get('average_percentage', 0)
+                processed_student['performance_category'] = get_performance_category(processed_student.get('average_percentage', 0))
+
+            # Debug: Print the filtered marks
+            print(f"Filtered marks: {processed_student.get('filtered_marks', {})}")
 
             processed_class_data.append(processed_student)
 

@@ -257,11 +257,21 @@
             </div>
 
             <div class="filter-group">
+                <label class="filter-label">Education Level:</label>
+                <select id="education-level-select" class="filter-select" onchange="updateGradeOptions()">
+                    <option value="">All Levels</option>
+                    <option value="lower_primary" {% if filter_education_level == 'lower_primary' %}selected{% endif %}>Lower Primary</option>
+                    <option value="upper_primary" {% if filter_education_level == 'upper_primary' %}selected{% endif %}>Upper Primary</option>
+                    <option value="junior_secondary" {% if filter_education_level == 'junior_secondary' %}selected{% endif %}>Junior Secondary</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
                 <label class="filter-label">Grade:</label>
                 <select id="grade-select" class="filter-select" onchange="applyFilters()">
                     <option value="">All Grades</option>
                     {% for grade_option in grades %}
-                    <option value="{{ grade_option }}" {% if filter_grade == grade_option %}selected{% endif %}>{{ grade_option }}</option>
+                    <option value="{{ grade_option }}" {% if filter_grade == grade_option %}selected{% endif %} data-level="{{ grade_option|get_education_level }}">{{ grade_option }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -333,45 +343,35 @@
             {% endfor %}
 
             <!-- Pagination with improved navigation -->
-            {% if total_pages > 1 %}
+            {% if pagination.pages > 1 %}
             <div class="pagination">
-                {% if has_prev %}
-                <a href="{{ url_for('classteacher.all_reports', page=prev_page, sort=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">Previous</a>
+                {% if pagination.has_prev %}
+                <a href="{{ url_for('classteacher.view_all_reports', page=pagination.prev_num, sort_by=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">Previous</a>
                 {% else %}
                 <span class="page-link disabled">Previous</span>
                 {% endif %}
 
                 <!-- Show page numbers with ellipsis for large page counts -->
-                {% set window_size = 5 %}
-                {% set window_start = [1, page - window_size//2]|max %}
-                {% set window_end = [window_start + window_size - 1, total_pages]|min %}
-
-                {% if window_start > 1 %}
-                <a href="{{ url_for('classteacher.all_reports', page=1, sort=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">1</a>
-                {% if window_start > 2 %}
-                <span class="page-ellipsis">...</span>
-                {% endif %}
-                {% endif %}
-
-                {% for p in range(window_start, window_end + 1) %}
-                <a href="{{ url_for('classteacher.all_reports', page=p, sort=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link {% if p == page %}active{% endif %}">{{ p }}</a>
+                {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                        <span class="page-link active">{{ page_num }}</span>
+                        {% else %}
+                        <a href="{{ url_for('classteacher.view_all_reports', page=page_num, sort_by=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">{{ page_num }}</a>
+                        {% endif %}
+                    {% else %}
+                        <span class="page-ellipsis">...</span>
+                    {% endif %}
                 {% endfor %}
 
-                {% if window_end < total_pages %}
-                {% if window_end < total_pages - 1 %}
-                <span class="page-ellipsis">...</span>
-                {% endif %}
-                <a href="{{ url_for('classteacher.all_reports', page=total_pages, sort=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">{{ total_pages }}</a>
-                {% endif %}
-
-                {% if has_next %}
-                <a href="{{ url_for('classteacher.all_reports', page=next_page, sort=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">Next</a>
+                {% if pagination.has_next %}
+                <a href="{{ url_for('classteacher.view_all_reports', page=pagination.next_num, sort_by=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">Next</a>
                 {% else %}
                 <span class="page-link disabled">Next</span>
                 {% endif %}
 
                 <!-- Page info -->
-                <span class="page-info">Page {{ page }} of {{ total_pages }} ({{ total_reports }} reports)</span>
+                <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }} ({{ pagination.total }} reports)</span>
             </div>
             {% endif %}
         {% else %}
@@ -404,16 +404,63 @@
     </footer>
 
     <script>
+        // Define the mapping between education levels and grades
+        const educationLevelGradeMapping = {
+            'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
+            'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
+            'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
+        };
+
+        // Function to update grade options based on selected education level
+        function updateGradeOptions() {
+            const educationLevel = document.getElementById('education-level-select').value;
+            const gradeSelect = document.getElementById('grade-select');
+
+            // Store all original options if we haven't already
+            if (!window.allGradeOptions) {
+                window.allGradeOptions = Array.from(gradeSelect.options);
+            }
+
+            // Clear all options except the first one (All Grades)
+            while (gradeSelect.options.length > 1) {
+                gradeSelect.remove(1);
+            }
+
+            if (educationLevel) {
+                // Add only the grades for the selected education level
+                const gradesForLevel = educationLevelGradeMapping[educationLevel] || [];
+
+                window.allGradeOptions.forEach(option => {
+                    if (option.value === '' || gradesForLevel.includes(option.value)) {
+                        gradeSelect.add(option.cloneNode(true));
+                    }
+                });
+            } else {
+                // If no education level is selected, add all grades back
+                window.allGradeOptions.forEach(option => {
+                    gradeSelect.add(option.cloneNode(true));
+                });
+            }
+
+            // Apply filters after updating grade options
+            applyFilters();
+        }
+
         function applyFilters() {
             const sortBy = document.getElementById('sort-select').value;
+            const educationLevel = document.getElementById('education-level-select').value;
             const gradeFilter = document.getElementById('grade-select').value;
             const termFilter = document.getElementById('term-select').value;
             const assessmentFilter = document.getElementById('assessment-select').value;
 
-            let url = '{{ url_for("classteacher.all_reports") }}?';
+            let url = '{{ url_for("classteacher.view_all_reports") }}?';
 
             if (sortBy) {
                 url += `sort=${sortBy}&`;
+            }
+
+            if (educationLevel) {
+                url += `filter_education_level=${educationLevel}&`;
             }
 
             if (gradeFilter) {
@@ -437,13 +484,13 @@
         }
 
         function resetFilters() {
-            window.location.href = '{{ url_for("classteacher.all_reports") }}';
+            window.location.href = '{{ url_for("classteacher.view_all_reports") }}';
         }
 
         function confirmDeleteReport(grade, stream, term, assessmentType) {
             // Set up the delete form action
             const deleteForm = document.getElementById('deleteReportForm');
-            deleteForm.action = `/classteacher/delete_marksheet/${grade}/${stream}/${term}/${assessmentType}`;
+            deleteForm.action = `/classteacher/delete_report/${grade}/${stream}/${term}/${assessmentType}`;
 
             // Update the confirmation message
             const deleteMessage = document.getElementById('deleteReportMessage');
@@ -464,6 +511,19 @@
                 modal.style.display = 'none';
             }
         }
+
+        // Initialize the page when it loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Store all grade options for later use
+            const gradeSelect = document.getElementById('grade-select');
+            window.allGradeOptions = Array.from(gradeSelect.options);
+
+            // If an education level is already selected, filter the grades
+            const educationLevel = document.getElementById('education-level-select').value;
+            if (educationLevel) {
+                updateGradeOptions();
+            }
+        });
     </script>
 </body>
 </html>

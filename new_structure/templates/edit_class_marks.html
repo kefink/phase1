@@ -466,23 +466,75 @@
               {% for subject in subject_names %}
               <td>
                 {% set subject_obj = subject_objects[loop.index0] %} {% if
-                subject_obj.is_composite and subject_obj.id in [2, 7] %}
+                subject_obj.is_composite %}
                 <div class="composite-subject-entry-container">
                   <div class="composite-header">
                     <span class="composite-title">{{ subject }}</span>
                     <span
                       class="composite-percentage"
-                      id="composite_percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
+                      id="percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
                     >
                       {{ student_data.filtered_marks.get(subject, 0) | int }}%
                     </span>
                   </div>
 
-                  {% for component in subject_obj.get_components() %} {% set
-                  component_mark = get_component_mark(student_data.student_id,
-                  component.id) %} {% set subject = subject_obj %} {% set
-                  student_id = student_data.student_id %} {% include
-                  'component_mark_entry.html' %} {% endfor %}
+                  <!-- Get components for this subject -->
+                  {% set components = subject_obj.get_components() %} {% for
+                  component in components %}
+                  <div class="composite-subject-entry">
+                    <div class="component-header">
+                      <span class="component-title">{{ component.name }}</span>
+                      <span class="component-weight"
+                        >({{ (component.weight * 100) | int }}%)</span
+                      >
+                    </div>
+                    <div class="component-inputs">
+                      <div class="mark-input-container">
+                        {% set component_mark =
+                        get_component_mark(student_data.student_id,
+                        component.id) %}
+                        <input
+                          type="number"
+                          name="component_mark_{{ student_data.student_id }}_{{ component.id }}"
+                          value="{{ component_mark.raw_mark|int if component_mark else 0 }}"
+                          min="0"
+                          max="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
+                          data-max-mark="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
+                          data-weight="{{ component.weight }}"
+                          data-component-id="{{ component.id }}"
+                          data-subject-id="{{ subject_obj.id }}"
+                          class="component-mark-input"
+                          oninput="updateComponentPercentage('{{ student_data.student_id }}', '{{ component.id }}', '{{ subject_obj.id }}')"
+                        />
+                        <span class="mark-separator">/</span>
+                        <input
+                          type="number"
+                          name="component_max_{{ student_data.student_id }}_{{ component.id }}"
+                          value="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
+                          min="1"
+                          max="1000"
+                          class="component-max-input"
+                          oninput="updateComponentPercentage('{{ student_data.student_id }}', '{{ component.id }}', '{{ subject_obj.id }}')"
+                        />
+                      </div>
+                      <div class="percentage-display">
+                        <span
+                          id="component_percentage_{{ student_data.student_id }}_{{ component.id }}"
+                          class="percentage-value {% if component_mark and component_mark.percentage >= 75 %}performance-ee{% elif component_mark and component_mark.percentage >= 50 %}performance-me{% elif component_mark and component_mark.percentage >= 30 %}performance-ae{% elif component_mark %}performance-be{% endif %}"
+                        >
+                          {{ component_mark.percentage|round(1) if
+                          component_mark else 0 }}%
+                        </span>
+                        <div class="percentage-bar">
+                          <div
+                            class="percentage-fill"
+                            style="width: {{ component_mark.percentage if component_mark else 0 }}%"
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
 
                   <div class="composite-total">
                     <span class="composite-total-label">Combined:</span>
@@ -741,7 +793,7 @@
 
         // Update the composite percentage display
         const compositePercentageSpan = document.getElementById(
-          `composite_percentage_${studentId}_${subjectId}`
+          `percentage_${studentId}_${subjectId}`
         );
         if (compositePercentageSpan) {
           compositePercentageSpan.textContent = `${roundedPercentage}%`;
@@ -881,7 +933,11 @@
             const subjectId = input.getAttribute("data-subject-id");
 
             // Update the component percentage display
-            updateComponentPercentage(studentId, componentId, subjectId);
+            // Only update if the value is 0 (no existing mark)
+            // Otherwise, the server-side rendering already set the correct values
+            if (parseFloat(input.value) === 0) {
+              updateComponentPercentage(studentId, componentId, subjectId);
+            }
 
             // Add event listener for real-time updates
             input.addEventListener("input", function () {
@@ -929,8 +985,22 @@
               const studentId = idParts[1];
               const subjectId = idParts[2];
 
-              // Update the composite percentage
-              updateCompositePercentage(studentId, subjectId);
+              // Check if any component has a non-zero value
+              // If so, we need to update the composite percentage
+              const componentInputs = container.querySelectorAll(
+                ".component-mark-input"
+              );
+              let hasNonZeroComponent = false;
+              componentInputs.forEach((input) => {
+                if (parseFloat(input.value) > 0) {
+                  hasNonZeroComponent = true;
+                }
+              });
+
+              // Update the composite percentage if needed
+              if (hasNonZeroComponent) {
+                updateCompositePercentage(studentId, subjectId);
+              }
             }
           }
         });

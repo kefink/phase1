@@ -5,6 +5,11 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from ..models import Teacher, Student, Grade, Stream, Subject, Term, AssessmentType, Mark, TeacherSubjectAssignment
 from ..services import is_authenticated, get_role
 from ..extensions import db
+from ..services.admin_cache_service import (
+    cache_dashboard_stats, get_cached_dashboard_stats,
+    cache_subject_list, get_cached_subject_list,
+    invalidate_admin_cache
+)
 from functools import wraps
 import os
 import pandas as pd
@@ -26,6 +31,12 @@ def admin_required(f):
 @admin_required
 def dashboard():
     """Route for the admin/headteacher dashboard."""
+    # Check if we have cached dashboard stats
+    cached_stats = get_cached_dashboard_stats()
+    if cached_stats:
+        return render_template('headteacher.html', **cached_stats)
+
+    # If no cache or cache miss, generate the dashboard stats
     # Total students
     total_students = Student.query.count()
 
@@ -111,19 +122,99 @@ def dashboard():
     gender_per_grade = dict(sorted(gender_per_grade.items()))
     streams_per_grade = {grade: dict(sorted(streams.items())) for grade, streams in sorted(streams_per_grade.items())}
 
+    # Enhanced analytics for better insights
+    # Subject performance analysis
+    subject_performance = {}
+    for subject in Subject.query.all():
+        subject_marks = Mark.query.filter_by(subject_id=subject.id).all()
+        if subject_marks:
+            subject_avg = round(sum(mark.percentage for mark in subject_marks if mark.percentage) / len([m for m in subject_marks if m.percentage]), 2)
+            subject_performance[subject.name] = {
+                'average': subject_avg,
+                'total_assessments': len(subject_marks),
+                'education_level': subject.education_level
+            }
+
+    # Recent activities (last 10 mark entries)
+    recent_activities = []
+    recent_marks = Mark.query.order_by(Mark.id.desc()).limit(10).all()
+    for mark in recent_marks:
+        if mark.student and mark.subject:
+            recent_activities.append({
+                'type': 'mark_entry',
+                'description': f"Marks entered for {mark.student.name} in {mark.subject.name}",
+                'grade': mark.student.stream.grade.level if mark.student.stream and mark.student.stream.grade else 'N/A',
+                'stream': mark.student.stream.name if mark.student.stream else 'N/A',
+                'percentage': mark.percentage
+            })
+
+    # Performance alerts
+    performance_alerts = []
+
+    # Check for classes with low performance
+    for grade_name, avg_score in grade_performances.items():
+        if avg_score < 50:  # Below 50% average
+            performance_alerts.append({
+                'type': 'warning',
+                'title': 'Low Grade Performance',
+                'message': f"{grade_name} has an average performance of {avg_score}%",
+                'action': 'Review teaching strategies and provide additional support'
+            })
+
+    # Check for subjects with low performance
+    for subject_name, data in subject_performance.items():
+        if data['average'] < 45:  # Below 45% average
+            performance_alerts.append({
+                'type': 'alert',
+                'title': 'Subject Performance Concern',
+                'message': f"{subject_name} has an average performance of {data['average']}%",
+                'action': 'Consider additional training or resources for this subject'
+            })
+
+    # Quick stats for enhanced dashboard
+    total_subjects = Subject.query.count()
+    total_assessments = Mark.query.count()
+
+    # Performance distribution
+    performance_distribution = {'E.E': 0, 'M.E': 0, 'A.E': 0, 'B.E': 0}
+    all_marks = Mark.query.all()
+    for mark in all_marks:
+        if mark.percentage:
+            if mark.percentage >= 75:
+                performance_distribution['E.E'] += 1
+            elif mark.percentage >= 50:
+                performance_distribution['M.E'] += 1
+            elif mark.percentage >= 30:
+                performance_distribution['A.E'] += 1
+            else:
+                performance_distribution['B.E'] += 1
+
+    # Prepare enhanced dashboard stats for caching
+    dashboard_stats = {
+        'total_students': total_students,
+        'total_teachers': total_teachers,
+        'avg_performance': avg_performance,
+        'total_classes': total_classes,
+        'total_subjects': total_subjects,
+        'total_assessments': total_assessments,
+        'top_class': top_class,
+        'top_class_score': top_class_score,
+        'least_performing_grade': least_performing_grade,
+        'least_grade_score': least_grade_score,
+        'learners_per_grade': learners_per_grade,
+        'gender_per_grade': gender_per_grade,
+        'streams_per_grade': streams_per_grade,
+        'subject_performance': subject_performance,
+        'recent_activities': recent_activities,
+        'performance_alerts': performance_alerts,
+        'performance_distribution': performance_distribution
+    }
+
+    # Cache the dashboard stats
+    cache_dashboard_stats(dashboard_stats)
+
     # Render the admin dashboard
-    return render_template('headteacher.html',
-                           total_students=total_students,
-                           total_teachers=total_teachers,
-                           avg_performance=avg_performance,
-                           total_classes=total_classes,
-                           top_class=top_class,
-                           top_class_score=top_class_score,
-                           least_performing_grade=least_performing_grade,
-                           least_grade_score=least_grade_score,
-                           learners_per_grade=learners_per_grade,
-                           gender_per_grade=gender_per_grade,
-                           streams_per_grade=streams_per_grade)
+    return render_template('headteacher.html', **dashboard_stats)
 
 @admin_bp.route('/manage_teachers', methods=['GET', 'POST'])
 @admin_required
@@ -169,6 +260,8 @@ def manage_teachers():
 
                     try:
                         db.session.commit()
+                        # Invalidate admin cache since data has changed
+                        invalidate_admin_cache()
                         success_message = f"Teacher '{username}' added successfully."
                         # Refresh teachers list
                         teachers = Teacher.query.all()
@@ -185,6 +278,8 @@ def manage_teachers():
                     try:
                         db.session.delete(teacher)
                         db.session.commit()
+                        # Invalidate admin cache since data has changed
+                        invalidate_admin_cache()
                         success_message = f"Teacher '{teacher.username}' deleted successfully."
                         # Refresh teachers list
                         teachers = Teacher.query.all()
@@ -391,6 +486,12 @@ def manage_subjects():
     error_message = None
     success_message = None
 
+    # Check if we're just viewing (GET request) and have cached subject data
+    if request.method == 'GET':
+        cached_subjects = get_cached_subject_list()
+        if cached_subjects:
+            return render_template('manage_subjects.html', **cached_subjects)
+
     # Get all subjects
     subjects = Subject.query.all()
 
@@ -421,6 +522,8 @@ def manage_subjects():
 
                     try:
                         db.session.commit()
+                        # Invalidate admin cache since data has changed
+                        invalidate_admin_cache()
                         success_message = f"Subject '{subject_name}' added successfully."
                         # Refresh subjects list
                         subjects = Subject.query.all()
@@ -444,6 +547,8 @@ def manage_subjects():
                         try:
                             db.session.delete(subject)
                             db.session.commit()
+                            # Invalidate admin cache since data has changed
+                            invalidate_admin_cache()
                             success_message = f"Subject '{subject.name}' deleted successfully."
                             # Refresh subjects list
                             subjects = Subject.query.all()
@@ -565,12 +670,20 @@ def manage_subjects():
                         db.session.rollback()
                         error_message = f"Error processing file: {str(e)}"
 
+    # Prepare subject data for caching
+    subject_data = {
+        'subjects': subjects,
+        'education_levels': education_levels,
+        'error_message': error_message,
+        'success_message': success_message
+    }
+
+    # Cache the subject data (only if it's a GET request or a successful POST)
+    if request.method == 'GET' or success_message:
+        cache_subject_list(subject_data)
+
     # Render the template with data
-    return render_template('manage_subjects.html',
-                          subjects=subjects,
-                          education_levels=education_levels,
-                          error_message=error_message,
-                          success_message=success_message)
+    return render_template('manage_subjects.html', **subject_data)
 
 @admin_bp.route('/manage_grades_streams', methods=['GET', 'POST'])
 @admin_required
@@ -997,3 +1110,82 @@ def manage_terms_assessments():
                           success_message=success_message,
                           current_term=current_term,
                           current_academic_year=current_academic_year)
+
+
+@admin_bp.route('/analytics')
+@admin_required
+def analytics():
+    """Enhanced analytics dashboard for headteacher."""
+    # Get performance trends over time
+    performance_trends = {}
+    terms = Term.query.all()
+
+    for term in terms:
+        term_marks = Mark.query.filter_by(term_id=term.id).all()
+        if term_marks:
+            term_avg = round(sum(mark.percentage for mark in term_marks if mark.percentage) / len([m for m in term_marks if m.percentage]), 2)
+            performance_trends[term.name] = term_avg
+
+    # Subject-wise detailed analysis
+    subject_analysis = {}
+    for subject in Subject.query.all():
+        subject_marks = Mark.query.filter_by(subject_id=subject.id).all()
+        if subject_marks:
+            grades_performance = {}
+            for grade in Grade.query.all():
+                grade_subject_marks = [m for m in subject_marks if m.student and m.student.stream and m.student.stream.grade_id == grade.id]
+                if grade_subject_marks:
+                    grade_avg = round(sum(mark.percentage for mark in grade_subject_marks if mark.percentage) / len([m for m in grade_subject_marks if m.percentage]), 2)
+                    grades_performance[grade.level] = grade_avg
+
+            subject_analysis[subject.name] = {
+                'overall_average': round(sum(mark.percentage for mark in subject_marks if mark.percentage) / len([m for m in subject_marks if m.percentage]), 2),
+                'total_students': len(set([m.student_id for m in subject_marks])),
+                'grades_performance': grades_performance,
+                'education_level': subject.education_level
+            }
+
+    return render_template('analytics.html',
+                          performance_trends=performance_trends,
+                          subject_analysis=subject_analysis)
+
+
+@admin_bp.route('/reports')
+@admin_required
+def reports():
+    """Comprehensive reports dashboard."""
+    # Get available report types
+    report_types = [
+        {
+            'id': 'school_performance',
+            'title': 'School Performance Report',
+            'description': 'Comprehensive overview of school academic performance',
+            'icon': '📊'
+        },
+        {
+            'id': 'teacher_performance',
+            'title': 'Teacher Performance Report',
+            'description': 'Individual teacher effectiveness and student outcomes',
+            'icon': '👨‍🏫'
+        },
+        {
+            'id': 'student_progress',
+            'title': 'Student Progress Report',
+            'description': 'Detailed tracking of individual student advancement',
+            'icon': '📈'
+        },
+        {
+            'id': 'grade_analysis',
+            'title': 'Grade Level Analysis',
+            'description': 'Performance breakdown by grade and stream',
+            'icon': '🎓'
+        },
+        {
+            'id': 'subject_analysis',
+            'title': 'Subject Performance Analysis',
+            'description': 'Subject-wise performance across all grades',
+            'icon': '📚'
+        }
+    ]
+
+    return render_template('reports.html', report_types=report_types)
