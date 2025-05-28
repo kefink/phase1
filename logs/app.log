@@ -5807,3 +5807,665 @@
 2025-05-28 00:16:42,985 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 00:16:42] "GET /admin_login HTTP/1.1" 200 -
 2025-05-28 00:16:43,049 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 00:16:43] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
 2025-05-28 00:16:43,345 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 00:16:43] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 06:42:52,128 - new_structure - INFO - Application logging configured
+2025-05-28 06:42:53,603 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 06:42:53,605 - new_structure - INFO - Application initialized
+2025-05-28 06:42:53,665 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.112:5000
+2025-05-28 06:42:53,665 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 06:42:53,670 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 06:42:56,127 - new_structure - INFO - Application logging configured
+2025-05-28 06:42:57,206 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 06:42:57,216 - new_structure - INFO - Application initialized
+2025-05-28 06:42:57,271 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 06:42:57,298 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 06:47:42,093 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 06:47:42] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 06:47:42,249 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 06:47:42] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 06:47:43,314 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 06:47:43] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 06:47:58,039 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:47:58] "GET / HTTP/1.1" 200 -
+2025-05-28 06:47:58,373 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:47:58] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-05-28 06:48:00,372 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:00] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-05-28 06:48:03,978 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:03] "GET /classteacher_login HTTP/1.1" 200 -
+2025-05-28 06:48:15,536 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:15] "GET / HTTP/1.1" 200 -
+2025-05-28 06:48:15,622 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:15] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 06:48:17,535 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:17] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 06:48:17,604 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:17] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 06:48:17,803 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:17] "GET /static/hv.jpg HTTP/1.1" 200 -
+2025-05-28 06:48:24,390 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:24] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-05-28 06:48:25,057 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:25] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 06:48:25,232 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:25] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 06:48:25,267 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:25] "GET /static/css/headteacher.css HTTP/1.1" 200 -
+2025-05-28 06:48:38,224 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:38] "GET /headteacher/analytics HTTP/1.1" 200 -
+2025-05-28 06:48:38,383 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:38] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 06:48:38,388 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:38] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 06:48:52,270 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:52] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 06:48:52,337 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:52] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 06:48:52,341 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:52] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 06:48:54,243 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:54] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-05-28 06:48:54,252 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:54] "GET / HTTP/1.1" 200 -
+2025-05-28 06:48:54,327 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:54] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 06:48:56,523 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:48:56] "GET /classteacher_login HTTP/1.1" 200 -
+2025-05-28 06:49:02,718 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:49:02] "[32mPOST /classteacher_login HTTP/1.1[0m" 302 -
+2025-05-28 06:49:03,483 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:49:03] "GET /classteacher/ HTTP/1.1" 200 -
+2025-05-28 06:49:03,569 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:49:03] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 06:49:03,614 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:49:03] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-05-28 06:49:03,625 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:49:03] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-05-28 06:49:07,529 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:49:07] "GET /classteacher/preview_class_report/Grade%207/Stream%20Y/TERM%201/KJSEA HTTP/1.1" 200 -
+2025-05-28 06:49:07,632 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:49:07] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 06:49:07,667 - werkzeug - INFO - 192.168.1.112 - - [28/May/2025 06:49:07] "GET /static/images/kirima_logo.png HTTP/1.1" 200 -
+2025-05-28 07:20:19,743 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:19] "GET / HTTP/1.1" 200 -
+2025-05-28 07:20:19,783 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:19] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 07:20:24,510 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:24] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 07:20:24,605 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:24] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 07:20:24,880 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:24] "GET /static/hv.jpg HTTP/1.1" 200 -
+2025-05-28 07:20:39,647 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:39] "POST /admin_login HTTP/1.1" 200 -
+2025-05-28 07:20:39,720 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:39] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 07:20:40,047 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:40] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 07:20:48,514 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:48] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-05-28 07:20:48,529 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:48] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 07:20:48,682 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:48] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 07:20:48,687 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 07:20:48] "GET /static/css/headteacher.css HTTP/1.1" 200 -
+2025-05-28 08:40:41,427 - new_structure - INFO - Application logging configured
+2025-05-28 08:40:43,054 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 08:40:43,055 - new_structure - INFO - Application initialized
+2025-05-28 08:40:43,098 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 08:40:43,100 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 08:40:43,103 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 08:40:45,716 - new_structure - INFO - Application logging configured
+2025-05-28 08:40:47,850 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 08:40:47,859 - new_structure - INFO - Application initialized
+2025-05-28 08:40:47,901 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 08:40:47,950 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 08:41:13,824 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:41:13] "GET / HTTP/1.1" 200 -
+2025-05-28 08:41:14,227 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:41:14] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-05-28 08:41:17,130 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:41:17] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-05-28 08:41:18,943 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:41:18] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 08:41:19,082 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:41:19] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 08:41:19,258 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:41:19] "GET /static/hv.jpg HTTP/1.1" 200 -
+2025-05-28 08:41:32,328 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:41:32] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-05-28 08:41:32,852 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:41:32] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 08:41:33,016 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:41:33] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 08:41:33,320 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:41:33] "GET /static/css/headteacher.css HTTP/1.1" 200 -
+2025-05-28 08:45:48,604 - new_structure - INFO - Application logging configured
+2025-05-28 08:45:49,625 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 08:45:49,626 - new_structure - INFO - Application initialized
+2025-05-28 08:45:49,671 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 08:45:49,673 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 08:45:49,677 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 08:45:51,677 - new_structure - INFO - Application logging configured
+2025-05-28 08:45:53,672 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 08:45:53,677 - new_structure - INFO - Application initialized
+2025-05-28 08:45:53,718 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 08:45:53,748 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 08:46:06,472 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:06] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-05-28 08:46:06,493 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:06] "GET / HTTP/1.1" 200 -
+2025-05-28 08:46:06,859 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:06] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 08:46:09,799 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:09] "GET /classteacher_login HTTP/1.1" 200 -
+2025-05-28 08:46:16,684 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:16] "[32mPOST /classteacher_login HTTP/1.1[0m" 302 -
+2025-05-28 08:46:17,041 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:17] "GET /classteacher/ HTTP/1.1" 200 -
+2025-05-28 08:46:17,122 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:17] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 08:46:17,142 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:17] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-05-28 08:46:17,165 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:17] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-05-28 08:46:20,196 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:20] "GET /classteacher/preview_class_report/Grade%207/Stream%20Y/TERM%201/KJSEA HTTP/1.1" 200 -
+2025-05-28 08:46:20,276 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:20] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 08:46:20,278 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:20] "GET /static/images/kirima_logo.png HTTP/1.1" 200 -
+2025-05-28 08:46:51,304 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:51] "POST /classteacher/preview_class_report/Grade%207/Stream%20Y/TERM%201/KJSEA HTTP/1.1" 200 -
+2025-05-28 08:46:51,487 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:51] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 08:46:51,510 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:46:51] "[36mGET /static/images/kirima_logo.png HTTP/1.1[0m" 304 -
+2025-05-28 08:59:10,056 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:59:10] "GET / HTTP/1.1" 200 -
+2025-05-28 08:59:10,207 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:59:10] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 08:59:19,894 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:59:19] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-05-28 08:59:20,185 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:59:20] "GET / HTTP/1.1" 200 -
+2025-05-28 08:59:20,607 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 08:59:20] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 09:25:53,344 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 09:25:53] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 09:25:53,523 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 09:25:53] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 09:25:54,552 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 09:25:54] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 09:26:11,925 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 09:26:11] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-05-28 09:26:12,479 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 09:26:12] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 09:26:12,646 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 09:26:12] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 09:26:12,991 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 09:26:12] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 09:28:19,729 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 09:28:20,206 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 09:28:22,387 - new_structure - INFO - Application logging configured
+2025-05-28 09:28:23,744 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 09:28:23,745 - new_structure - INFO - Application initialized
+2025-05-28 09:28:23,757 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 09:28:23,771 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 09:49:32,792 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 09:49:32] "GET / HTTP/1.1" 200 -
+2025-05-28 09:49:33,205 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 09:49:33] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:05:50,896 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:05:50] "GET /teacher_login HTTP/1.1" 200 -
+2025-05-28 10:05:50,992 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:05:50] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:05:51,837 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:05:51] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 10:05:53,282 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:05:53] "GET / HTTP/1.1" 200 -
+2025-05-28 10:05:53,374 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:05:53] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:05:54,453 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:05:54] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 10:05:54,765 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:05:54] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:05:55,095 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:05:55] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 10:06:05,616 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:06:05] "POST /admin_login HTTP/1.1" 200 -
+2025-05-28 10:06:05,849 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:06:05] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:06:06,177 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:06:06] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 10:06:19,818 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:06:19] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-05-28 10:06:20,193 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:06:20] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 10:06:20,574 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:06:20] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:06:20,577 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:06:20] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 10:07:26,993 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:07:26] "GET /headteacher/reports HTTP/1.1" 200 -
+2025-05-28 10:07:27,110 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:07:27] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:07:27,222 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:07:27] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 10:07:44,878 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:07:44] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 10:07:45,005 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:07:45] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:07:45,149 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:07:45] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 10:11:09,459 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 10:11:09,811 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:11:12,055 - new_structure - INFO - Application logging configured
+2025-05-28 10:11:13,335 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:11:13,336 - new_structure - INFO - Application initialized
+2025-05-28 10:11:13,353 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:11:13,365 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:11:35,873 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 10:11:36,147 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:11:37,663 - new_structure - INFO - Application logging configured
+2025-05-28 10:11:38,746 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:11:38,747 - new_structure - INFO - Application initialized
+2025-05-28 10:11:38,760 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:11:38,769 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:12:11,431 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 10:12:11,720 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:12:13,423 - new_structure - INFO - Application logging configured
+2025-05-28 10:12:14,451 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:12:14,467 - new_structure - INFO - Application initialized
+2025-05-28 10:12:14,484 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:12:14,492 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:14:08,405 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:14:08] "GET / HTTP/1.1" 200 -
+2025-05-28 10:14:08,856 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:14:08] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:14:35,702 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:14:35] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 10:14:36,008 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:14:36] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:14:36,341 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:14:36] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 10:14:51,657 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:14:51] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-05-28 10:14:51,946 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:14:51] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 10:14:52,316 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:14:52] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:14:52,325 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:14:52] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 10:17:12,703 - new_structure - INFO - Application logging configured
+2025-05-28 10:17:13,485 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:17:13,486 - new_structure - INFO - Application initialized
+2025-05-28 10:17:13,522 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 10:17:13,523 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 10:17:13,526 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:17:14,894 - new_structure - INFO - Application logging configured
+2025-05-28 10:17:15,700 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:17:15,702 - new_structure - INFO - Application initialized
+2025-05-28 10:17:15,713 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:17:15,722 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:17:24,531 - werkzeug - INFO - 192.168.88.179 - - [28/May/2025 10:17:24] "GET / HTTP/1.1" 200 -
+2025-05-28 10:17:24,978 - werkzeug - INFO - 192.168.88.179 - - [28/May/2025 10:17:24] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:19:12,450 - werkzeug - INFO - 192.168.88.179 - - [28/May/2025 10:19:12] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 10:19:12,601 - werkzeug - INFO - 192.168.88.179 - - [28/May/2025 10:19:12] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:19:12,788 - werkzeug - INFO - 192.168.88.179 - - [28/May/2025 10:19:12] "GET /static/hv.jpg HTTP/1.1" 200 -
+2025-05-28 10:19:19,609 - werkzeug - INFO - 192.168.88.179 - - [28/May/2025 10:19:19] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-05-28 10:19:19,678 - werkzeug - INFO - 192.168.88.179 - - [28/May/2025 10:19:19] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 10:19:19,755 - werkzeug - INFO - 192.168.88.179 - - [28/May/2025 10:19:19] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:19:19,757 - werkzeug - INFO - 192.168.88.179 - - [28/May/2025 10:19:19] "GET /static/css/headteacher.css HTTP/1.1" 200 -
+2025-05-28 10:23:49,228 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 10:23:49,584 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:23:51,182 - new_structure - INFO - Application logging configured
+2025-05-28 10:23:52,315 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:23:52,316 - new_structure - INFO - Application initialized
+2025-05-28 10:23:52,328 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:23:52,336 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:24:06,692 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 10:24:06,948 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:24:08,916 - new_structure - INFO - Application logging configured
+2025-05-28 10:24:09,801 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:24:09,802 - new_structure - INFO - Application initialized
+2025-05-28 10:24:09,815 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:24:09,827 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:24:20,080 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 10:24:20,353 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:24:21,956 - new_structure - INFO - Application logging configured
+2025-05-28 10:24:22,945 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:24:22,946 - new_structure - INFO - Application initialized
+2025-05-28 10:24:22,961 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:24:22,972 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:24:39,350 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 10:24:39,627 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:24:41,299 - new_structure - INFO - Application logging configured
+2025-05-28 10:24:42,469 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:24:42,471 - new_structure - INFO - Application initialized
+2025-05-28 10:24:42,492 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:24:42,502 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:24:55,777 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 10:24:56,118 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:24:57,680 - new_structure - INFO - Application logging configured
+2025-05-28 10:24:58,739 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:24:58,740 - new_structure - INFO - Application initialized
+2025-05-28 10:24:58,756 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:24:58,765 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:27:04,751 - new_structure - INFO - Application logging configured
+2025-05-28 10:27:05,648 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:27:05,650 - new_structure - INFO - Application initialized
+2025-05-28 10:27:05,700 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 10:27:05,702 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 10:27:05,705 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:27:07,305 - new_structure - INFO - Application logging configured
+2025-05-28 10:27:08,193 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:27:08,196 - new_structure - INFO - Application initialized
+2025-05-28 10:27:08,207 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:27:08,219 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:53:38,494 - new_structure - INFO - Application logging configured
+2025-05-28 10:53:39,466 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:53:39,468 - new_structure - INFO - Application initialized
+2025-05-28 10:53:39,522 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 10:53:39,523 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 10:53:39,527 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:53:41,295 - new_structure - INFO - Application logging configured
+2025-05-28 10:53:42,391 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:53:42,393 - new_structure - INFO - Application initialized
+2025-05-28 10:53:42,407 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:53:42,416 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:54:24,744 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:24] "GET / HTTP/1.1" 200 -
+2025-05-28 10:54:25,165 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:25] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:54:27,551 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:27] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-05-28 10:54:27,891 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:27] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 10:54:28,189 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:28] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:54:28,519 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:28] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 10:54:34,664 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:34] "POST /admin_login HTTP/1.1" 200 -
+2025-05-28 10:54:34,813 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:34] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:54:44,415 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:44] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-05-28 10:54:44,716 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:44] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 10:54:44,805 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:44] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:54:45,116 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:54:45] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 10:56:28,038 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\debug_performance_data.py', reloading
+2025-05-28 10:56:28,352 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:56:30,050 - new_structure - INFO - Application logging configured
+2025-05-28 10:56:31,016 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:56:31,017 - new_structure - INFO - Application initialized
+2025-05-28 10:56:31,029 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:56:31,041 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 10:56:58,347 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:56:58] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 10:56:58,971 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:56:58] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 10:56:58,974 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 10:56:58] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 10:56:59,755 - new_structure - INFO - Application logging configured
+2025-05-28 10:57:00,858 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:57:00,859 - new_structure - INFO - Application initialized
+2025-05-28 10:57:19,146 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\debug_performance_data.py', reloading
+2025-05-28 10:57:19,413 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 10:57:20,962 - new_structure - INFO - Application logging configured
+2025-05-28 10:57:22,001 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 10:57:22,002 - new_structure - INFO - Application initialized
+2025-05-28 10:57:22,020 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 10:57:22,032 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:00:57,116 - new_structure - INFO - Application logging configured
+2025-05-28 11:00:57,962 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:00:57,963 - new_structure - INFO - Application initialized
+2025-05-28 11:01:31,924 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 11:01:32,246 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:01:34,340 - new_structure - INFO - Application logging configured
+2025-05-28 11:01:35,422 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:01:35,424 - new_structure - INFO - Application initialized
+2025-05-28 11:01:35,439 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:01:35,451 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:02:48,580 - new_structure - INFO - Application logging configured
+2025-05-28 11:02:49,366 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:02:49,367 - new_structure - INFO - Application initialized
+2025-05-28 11:02:49,402 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 11:02:49,403 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 11:02:49,408 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:02:50,878 - new_structure - INFO - Application logging configured
+2025-05-28 11:02:51,798 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:02:51,802 - new_structure - INFO - Application initialized
+2025-05-28 11:02:51,812 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:02:51,822 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:03:11,617 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:03:11] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-05-28 11:03:12,023 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:03:12] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 11:03:12,416 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:03:12] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:03:12,425 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:03:12] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 11:08:34,012 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:34] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-05-28 11:08:34,157 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:34] "GET / HTTP/1.1" 200 -
+2025-05-28 11:08:34,280 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:34] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:08:36,960 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:36] "GET /classteacher_login HTTP/1.1" 200 -
+2025-05-28 11:08:46,416 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:46] "[32mPOST /classteacher_login HTTP/1.1[0m" 302 -
+2025-05-28 11:08:46,605 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:46] "GET /classteacher/ HTTP/1.1" 200 -
+2025-05-28 11:08:46,683 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:46] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:08:46,992 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:46] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-05-28 11:08:47,312 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:47] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-05-28 11:08:50,802 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:50] "GET /classteacher/view_all_reports HTTP/1.1" 200 -
+2025-05-28 11:08:50,870 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:50] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:08:50,997 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:50] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-05-28 11:08:51,012 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:51] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-05-28 11:08:53,392 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:53] "GET /classteacher/preview_class_report/Grade%207/Stream%20Y/TERM%201/KJSEA HTTP/1.1" 200 -
+2025-05-28 11:08:53,464 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:53] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:08:53,465 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:08:53] "GET /static/images/kirima_logo.png HTTP/1.1" 200 -
+2025-05-28 11:11:17,974 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:17] "GET /classteacher/ HTTP/1.1" 200 -
+2025-05-28 11:11:18,053 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:18] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:11:18,271 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:18] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-05-28 11:11:18,611 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:18] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-05-28 11:11:20,087 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:20] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-05-28 11:11:20,182 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:20] "GET / HTTP/1.1" 200 -
+2025-05-28 11:11:20,355 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:20] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:11:23,012 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:23] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 11:11:23,309 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:23] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:11:23,640 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:23] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 11:11:29,778 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:29] "POST /admin_login HTTP/1.1" 200 -
+2025-05-28 11:11:29,840 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:29] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:11:36,828 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:36] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-05-28 11:11:37,228 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:37] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 11:11:37,588 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:37] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:11:37,594 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:11:37] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 11:13:31,946 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 11:13:32,282 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:13:34,234 - new_structure - INFO - Application logging configured
+2025-05-28 11:13:35,304 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:13:35,306 - new_structure - INFO - Application initialized
+2025-05-28 11:13:35,321 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:13:35,330 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:14:07,938 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 11:14:08,215 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:14:09,896 - new_structure - INFO - Application logging configured
+2025-05-28 11:14:10,906 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:14:10,908 - new_structure - INFO - Application initialized
+2025-05-28 11:14:10,924 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:14:10,936 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:15:19,475 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 11:15:19,809 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:15:21,518 - new_structure - INFO - Application logging configured
+2025-05-28 11:15:22,500 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:15:22,501 - new_structure - INFO - Application initialized
+2025-05-28 11:15:22,516 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:15:22,528 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:16:05,545 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 11:16:05,860 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:16:07,604 - new_structure - INFO - Application logging configured
+2025-05-28 11:16:08,621 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:16:08,623 - new_structure - INFO - Application initialized
+2025-05-28 11:16:08,635 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:16:08,644 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:18:21,642 - new_structure - INFO - Application logging configured
+2025-05-28 11:18:22,418 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:18:22,419 - new_structure - INFO - Application initialized
+2025-05-28 11:18:22,462 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 11:18:22,463 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 11:18:22,466 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:18:23,895 - new_structure - INFO - Application logging configured
+2025-05-28 11:18:24,689 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:18:24,690 - new_structure - INFO - Application initialized
+2025-05-28 11:18:24,703 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:18:24,711 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:20:31,400 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:20:31] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-05-28 11:20:31,757 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:20:31] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 11:20:32,046 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:20:32] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:20:32,134 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:20:32] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 11:20:46,639 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:20:46] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 11:20:46,721 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:20:46] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:20:46,733 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:20:46] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 11:21:25,870 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 11:21:26,265 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:21:28,438 - new_structure - INFO - Application logging configured
+2025-05-28 11:21:29,651 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:21:29,654 - new_structure - INFO - Application initialized
+2025-05-28 11:21:29,668 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:21:29,679 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:22:17,680 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 11:22:18,077 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:22:20,700 - new_structure - INFO - Application logging configured
+2025-05-28 11:22:21,846 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:22:21,848 - new_structure - INFO - Application initialized
+2025-05-28 11:22:21,862 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:22:21,873 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:23:07,746 - new_structure - INFO - Application logging configured
+2025-05-28 11:23:08,579 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:23:08,580 - new_structure - INFO - Application initialized
+2025-05-28 11:23:08,621 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 11:23:08,622 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 11:23:08,624 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:23:10,090 - new_structure - INFO - Application logging configured
+2025-05-28 11:23:10,911 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:23:10,913 - new_structure - INFO - Application initialized
+2025-05-28 11:23:10,926 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:23:10,935 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:23:41,770 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:23:41] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-05-28 11:23:42,217 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:23:42] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 11:23:42,684 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:23:42] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:23:43,002 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:23:43] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 11:26:03,613 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:03] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-05-28 11:26:03,763 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:03] "GET / HTTP/1.1" 200 -
+2025-05-28 11:26:03,922 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:03] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:26:05,710 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:05] "GET /classteacher_login HTTP/1.1" 200 -
+2025-05-28 11:26:24,339 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:24] "[32mPOST /classteacher_login HTTP/1.1[0m" 302 -
+2025-05-28 11:26:24,534 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:24] "GET /classteacher/ HTTP/1.1" 200 -
+2025-05-28 11:26:24,601 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:24] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:26:24,932 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:24] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-05-28 11:26:25,250 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:25] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-05-28 11:26:27,694 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:27] "GET /classteacher/preview_class_report/Grade%207/Stream%20Y/TERM%201/KJSEA HTTP/1.1" 200 -
+2025-05-28 11:26:27,747 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:27] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:26:28,070 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:28] "[36mGET /static/images/kirima_logo.png HTTP/1.1[0m" 304 -
+2025-05-28 11:26:56,374 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:56] "POST /classteacher/preview_class_report/Grade%207/Stream%20Y/TERM%201/KJSEA HTTP/1.1" 200 -
+2025-05-28 11:26:56,437 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:56] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:26:56,439 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:26:56] "[36mGET /static/images/kirima_logo.png HTTP/1.1[0m" 304 -
+2025-05-28 11:30:12,016 - new_structure - INFO - Application logging configured
+2025-05-28 11:30:12,797 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:30:12,798 - new_structure - INFO - Application initialized
+2025-05-28 11:30:12,843 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 11:30:12,845 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 11:30:12,849 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 11:30:14,296 - new_structure - INFO - Application logging configured
+2025-05-28 11:30:15,093 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 11:30:15,095 - new_structure - INFO - Application initialized
+2025-05-28 11:30:15,106 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 11:30:15,116 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 11:30:31,799 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:30:31] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-05-28 11:30:31,813 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:30:31] "[32mGET /headteacher/ HTTP/1.1[0m" 302 -
+2025-05-28 11:30:32,053 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:30:32] "GET /admin_login HTTP/1.1" 200 -
+2025-05-28 11:30:32,899 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:30:32] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:30:33,409 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:30:33] "[36mGET /static/hv.jpg HTTP/1.1[0m" 304 -
+2025-05-28 11:31:10,878 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:31:10] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-05-28 11:31:11,154 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:31:11] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 11:31:11,279 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:31:11] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 11:31:11,592 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 11:31:11] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 13:06:14,730 - new_structure - INFO - Application logging configured
+2025-05-28 13:06:16,998 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 13:06:17,001 - new_structure - INFO - Application initialized
+2025-05-28 13:06:17,106 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 13:06:17,108 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 13:06:17,119 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 13:06:19,978 - new_structure - INFO - Application logging configured
+2025-05-28 13:06:21,803 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 13:06:21,805 - new_structure - INFO - Application initialized
+2025-05-28 13:06:21,818 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 13:06:21,830 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 13:06:31,701 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:06:31] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-05-28 13:06:32,324 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:06:32] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 13:06:32,453 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:06:32] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 13:06:32,769 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:06:32] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 13:22:06,537 - new_structure - INFO - Application logging configured
+2025-05-28 13:22:07,922 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 13:22:07,923 - new_structure - INFO - Application initialized
+2025-05-28 13:22:07,966 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 13:22:07,967 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 13:22:07,970 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 13:22:10,293 - new_structure - INFO - Application logging configured
+2025-05-28 13:22:11,610 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 13:22:11,614 - new_structure - INFO - Application initialized
+2025-05-28 13:22:11,626 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 13:22:11,642 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 13:22:30,991 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:22:30] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-05-28 13:22:31,293 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:22:31] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 13:22:31,402 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:22:31] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 13:22:31,703 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:22:31] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 13:24:24,009 - new_structure - INFO - Application logging configured
+2025-05-28 13:24:25,896 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 13:24:25,899 - new_structure - INFO - Application initialized
+2025-05-28 13:24:26,038 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 13:24:26,041 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 13:24:26,048 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 13:24:28,325 - new_structure - INFO - Application logging configured
+2025-05-28 13:24:28,873 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:24:28] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-05-28 13:24:29,224 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:24:29] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 13:24:29,311 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:24:29] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 13:24:29,625 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:24:29] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 13:24:30,116 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 13:24:30,119 - new_structure - INFO - Application initialized
+2025-05-28 13:24:30,145 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 13:24:30,173 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 13:37:35,484 - new_structure - INFO - Application logging configured
+2025-05-28 13:37:36,632 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 13:37:36,633 - new_structure - INFO - Application initialized
+2025-05-28 13:37:36,685 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 13:37:36,687 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 13:37:36,691 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 13:37:39,915 - new_structure - INFO - Application logging configured
+2025-05-28 13:37:41,737 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 13:37:41,741 - new_structure - INFO - Application initialized
+2025-05-28 13:37:41,760 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 13:37:41,768 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 13:37:44,013 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:37:44] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-05-28 13:37:44,287 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:37:44] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 13:37:44,378 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:37:44] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 13:37:44,691 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:37:44] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 13:51:19,089 - new_structure - INFO - Application logging configured
+2025-05-28 13:51:20,712 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 13:51:20,716 - new_structure - INFO - Application initialized
+2025-05-28 13:51:20,839 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.88.179:5000
+2025-05-28 13:51:20,841 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-28 13:51:20,851 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 13:51:23,601 - new_structure - INFO - Application logging configured
+2025-05-28 13:51:24,948 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 13:51:24,951 - new_structure - INFO - Application initialized
+2025-05-28 13:51:25,013 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 13:51:25,080 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 13:51:40,673 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:51:40] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-05-28 13:51:40,979 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:51:40] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 13:51:41,086 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:51:41] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 13:51:41,419 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:51:41] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 13:52:29,180 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:52:29] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 13:52:29,247 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:52:29] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 13:52:29,247 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:52:29] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 13:52:30,873 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:52:30] "GET /headteacher/ HTTP/1.1" 200 -
+2025-05-28 13:52:31,071 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:52:31] "[36mGET /static/css/headteacher.css HTTP/1.1[0m" 304 -
+2025-05-28 13:52:31,073 - werkzeug - INFO - 127.0.0.1 - - [28/May/2025 13:52:31] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-05-28 15:01:28,443 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\models\\academic.py', reloading
+2025-05-28 15:01:28,460 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\models\\academic.py', reloading
+2025-05-28 15:01:29,358 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:01:29,487 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:01:32,175 - new_structure - INFO - Application logging configured
+2025-05-28 15:01:32,176 - new_structure - INFO - Application logging configured
+2025-05-28 15:01:33,729 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:01:33,731 - new_structure - INFO - Application initialized
+2025-05-28 15:01:33,738 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:01:33,742 - new_structure - INFO - Application initialized
+2025-05-28 15:01:33,748 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:01:33,759 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:01:33,763 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:01:33,773 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:01:50,333 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\models\\__init__.py', reloading
+2025-05-28 15:01:50,343 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\models\\__init__.py', reloading
+2025-05-28 15:01:50,690 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:01:50,703 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:01:52,529 - new_structure - INFO - Application logging configured
+2025-05-28 15:01:52,563 - new_structure - INFO - Application logging configured
+2025-05-28 15:01:53,497 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:01:53,498 - new_structure - INFO - Application initialized
+2025-05-28 15:01:53,502 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:01:53,504 - new_structure - INFO - Application initialized
+2025-05-28 15:01:53,514 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:01:53,516 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:01:53,524 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:01:53,527 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:02:44,122 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 15:02:44,127 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 15:02:44,518 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:02:44,529 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:02:47,193 - new_structure - INFO - Application logging configured
+2025-05-28 15:02:47,230 - new_structure - INFO - Application logging configured
+2025-05-28 15:02:48,490 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:02:48,491 - new_structure - INFO - Application initialized
+2025-05-28 15:02:48,502 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:02:48,513 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:02:48,516 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:02:48,518 - new_structure - INFO - Application initialized
+2025-05-28 15:02:48,531 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:02:48,542 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:02:58,987 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\models\\__init__.py', reloading
+2025-05-28 15:02:58,994 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\models\\__init__.py', reloading
+2025-05-28 15:02:59,346 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:02:59,347 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:03:01,215 - new_structure - INFO - Application logging configured
+2025-05-28 15:03:01,257 - new_structure - INFO - Application logging configured
+2025-05-28 15:03:02,273 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:03:02,274 - new_structure - INFO - Application initialized
+2025-05-28 15:03:02,287 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:03:02,295 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:03:02,349 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:03:02,350 - new_structure - INFO - Application initialized
+2025-05-28 15:03:02,366 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:03:02,374 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:03:39,482 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 15:03:39,523 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-05-28 15:03:39,887 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:03:39,911 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:03:42,193 - new_structure - INFO - Application logging configured
+2025-05-28 15:03:42,238 - new_structure - INFO - Application logging configured
+2025-05-28 15:03:43,478 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:03:43,479 - new_structure - INFO - Application initialized
+2025-05-28 15:03:43,493 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:03:43,494 - new_structure - INFO - Application initialized
+2025-05-28 15:03:43,495 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:03:43,508 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:03:43,511 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:03:43,526 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:05:22,923 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\__init__.py', reloading
+2025-05-28 15:05:22,932 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\__init__.py', reloading
+2025-05-28 15:05:23,248 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:05:23,270 - werkzeug - INFO -  * Restarting with stat
+2025-05-28 15:05:25,058 - new_structure - INFO - Application logging configured
+2025-05-28 15:05:25,140 - new_structure - INFO - Application logging configured
+2025-05-28 15:05:26,229 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:05:26,230 - new_structure - INFO - Application initialized
+2025-05-28 15:05:26,245 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:05:26,253 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-05-28 15:05:26,297 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-05-28 15:05:26,299 - new_structure - INFO - Application initialized
+2025-05-28 15:05:26,311 - werkzeug - WARNING -  * Debugger is active!
+2025-05-28 15:05:26,323 - werkzeug - INFO -  * Debugger PIN: 267-181-210

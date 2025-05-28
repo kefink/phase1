@@ -4,6 +4,67 @@ Academic-related models for the Hillview School Management System.
 from ..extensions import db
 from .user import teacher_subjects
 
+class SchoolConfiguration(db.Model):
+    """Model for storing school-specific configuration settings."""
+    __tablename__ = 'school_configuration'
+    id = db.Column(db.Integer, primary_key=True)
+
+    # School Identity
+    school_name = db.Column(db.String(200), nullable=False, default="School Name")
+    school_motto = db.Column(db.String(500), nullable=True)
+    school_address = db.Column(db.Text, nullable=True)
+    school_phone = db.Column(db.String(50), nullable=True)
+    school_email = db.Column(db.String(100), nullable=True)
+    school_website = db.Column(db.String(100), nullable=True)
+
+    # Academic Configuration
+    current_academic_year = db.Column(db.String(20), nullable=False, default="2024")
+    current_term = db.Column(db.String(50), nullable=False, default="Term 1")
+
+    # System Configuration
+    use_streams = db.Column(db.Boolean, default=True)  # Whether school uses streams/classes
+    grading_system = db.Column(db.String(20), default="CBC")  # CBC, 8-4-4, etc.
+
+    # Report Configuration
+    show_position = db.Column(db.Boolean, default=True)
+    show_class_average = db.Column(db.Boolean, default=True)
+    show_subject_teacher = db.Column(db.Boolean, default=False)
+
+    # Logo and Branding
+    logo_filename = db.Column(db.String(100), nullable=True)
+    primary_color = db.Column(db.String(7), default="#1f7d53")  # Hex color
+    secondary_color = db.Column(db.String(7), default="#18230f")  # Hex color
+
+    # Contact Information
+    headteacher_name = db.Column(db.String(100), nullable=True)
+    deputy_headteacher_name = db.Column(db.String(100), nullable=True)
+
+    # Assessment Configuration
+    max_raw_marks_default = db.Column(db.Integer, default=100)
+    pass_mark_percentage = db.Column(db.Float, default=50.0)
+
+    # Created and updated timestamps
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    @classmethod
+    def get_config(cls):
+        """Get the school configuration, creating default if none exists."""
+        config = cls.query.first()
+        if not config:
+            config = cls()
+            db.session.add(config)
+            db.session.commit()
+        return config
+
+    def update_config(self, **kwargs):
+        """Update configuration with provided values."""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        db.session.commit()
+        return self
+
 class Subject(db.Model):
     """Subject model representing courses taught in the school."""
     id = db.Column(db.Integer, primary_key=True)

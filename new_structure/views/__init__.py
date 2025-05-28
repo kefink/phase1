@@ -8,6 +8,7 @@ from .classteacher import classteacher_bp
 from .admin import admin_bp
 from .structured_assignments import structured_assignments_bp
 from .bulk_assignments import bulk_assignments_bp
+from .setup import setup_bp
 
 # List of all blueprints to register with the app
-blueprints = [auth_bp, teacher_bp, classteacher_bp, admin_bp, structured_assignments_bp, bulk_assignments_bp]
+blueprints = [auth_bp, teacher_bp, classteacher_bp, admin_bp, structured_assignments_bp, bulk_assignments_bp, setup_bp]

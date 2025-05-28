@@ -2,8 +2,9 @@
 Admin/Headteacher views for the Hillview School Management System.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from ..models import Teacher, Student, Grade, Stream, Subject, Term, AssessmentType, Mark, TeacherSubjectAssignment
+from ..models import Teacher, Student, Grade, Stream, Subject, Term, AssessmentType, Mark, TeacherSubjectAssignment, SchoolConfiguration
 from ..services import is_authenticated, get_role
+from ..services.school_config_service import SchoolConfigService
 from ..extensions import db
 from ..services.admin_cache_service import (
     cache_dashboard_stats, get_cached_dashboard_stats,
@@ -31,10 +32,10 @@ def admin_required(f):
 @admin_required
 def dashboard():
     """Route for the admin/headteacher dashboard."""
-    # Check if we have cached dashboard stats
-    cached_stats = get_cached_dashboard_stats()
-    if cached_stats:
-        return render_template('headteacher.html', **cached_stats)
+    # Temporarily disable cache to ensure fresh data
+    # cached_stats = get_cached_dashboard_stats()
+    # if cached_stats:
+    #     return render_template('headteacher.html', **cached_stats)
 
     # If no cache or cache miss, generate the dashboard stats
     # Total students
@@ -135,18 +136,11 @@ def dashboard():
                 'education_level': subject.education_level
             }
 
-    # Recent activities (last 10 mark entries)
-    recent_activities = []
-    recent_marks = Mark.query.order_by(Mark.id.desc()).limit(10).all()
-    for mark in recent_marks:
-        if mark.student and mark.subject:
-            recent_activities.append({
-                'type': 'mark_entry',
-                'description': f"Marks entered for {mark.student.name} in {mark.subject.name}",
-                'grade': mark.student.stream.grade.level if mark.student.stream and mark.student.stream.grade else 'N/A',
-                'stream': mark.student.stream.name if mark.student.stream else 'N/A',
-                'percentage': mark.percentage
-            })
+    # Generate performance assessment data
+    performance_data = generate_performance_assessment_data()
+    print(f"DEBUG: Generated {len(performance_data)} performance records")
+    if performance_data:
+        print(f"DEBUG: First record: {performance_data[0]}")
 
     # Performance alerts
     performance_alerts = []
@@ -189,6 +183,13 @@ def dashboard():
             else:
                 performance_distribution['B.E'] += 1
 
+    # Academic calendar overview
+    current_term = Term.query.first()  # Get current term
+    upcoming_assessments = get_upcoming_assessments()
+
+    # System alerts
+    system_alerts = generate_system_alerts()
+
     # Prepare enhanced dashboard stats for caching
     dashboard_stats = {
         'total_students': total_students,
@@ -205,13 +206,16 @@ def dashboard():
         'gender_per_grade': gender_per_grade,
         'streams_per_grade': streams_per_grade,
         'subject_performance': subject_performance,
-        'recent_activities': recent_activities,
         'performance_alerts': performance_alerts,
-        'performance_distribution': performance_distribution
+        'performance_distribution': performance_distribution,
+        'performance_data': performance_data,
+        'current_term': current_term,
+        'upcoming_assessments': upcoming_assessments,
+        'system_alerts': system_alerts
     }
 
-    # Cache the dashboard stats
-    cache_dashboard_stats(dashboard_stats)
+    # Temporarily disable caching for debugging
+    # cache_dashboard_stats(dashboard_stats)
 
     # Render the admin dashboard
     return render_template('headteacher.html', **dashboard_stats)
@@ -1150,6 +1154,216 @@ def analytics():
                           subject_analysis=subject_analysis)
 
 
+def generate_performance_assessment_data():
+    """
+    Generate dynamic performance assessment data based on actual reports in the database.
+
+    Returns:
+        List of dictionaries containing performance data for each grade/stream/term/assessment combination.
+    """
+    performance_data = []
+    print("DEBUG: Starting performance data generation...")
+
+    # Get all unique combinations of grade, stream, term, and assessment type
+    # We'll calculate student averages per assessment to avoid counting multiple subjects per student
+
+    # First, get all unique grade/stream/term/assessment combinations
+    combinations = db.session.query(
+        Grade.level.label('grade'),
+        Stream.name.label('stream'),
+        Term.name.label('term'),
+        AssessmentType.name.label('assessment_type'),
+        Term.id.label('term_id'),
+        AssessmentType.id.label('assessment_type_id'),
+        Grade.id.label('grade_id'),
+        Stream.id.label('stream_id')
+    ).join(
+        Stream, Grade.id == Stream.grade_id
+    ).join(
+        Student, Stream.id == Student.stream_id
+    ).join(
+        Mark, Student.id == Mark.student_id
+    ).join(
+        Term, Mark.term_id == Term.id
+    ).join(
+        AssessmentType, Mark.assessment_type_id == AssessmentType.id
+    ).filter(
+        Mark.percentage.isnot(None),
+        Mark.raw_mark.isnot(None),
+        Mark.max_raw_mark.isnot(None)
+    ).distinct().all()
+
+    print(f"DEBUG: Found {len(combinations)} unique combinations")
+    for combo in combinations[:3]:  # Show first 3
+        print(f"DEBUG: Combo - Grade: {combo.grade}, Stream: {combo.stream}, Term: {combo.term}, Assessment: {combo.assessment_type}")
+
+    # For each combination, calculate student averages to avoid double counting
+    for combo in combinations:
+        # Get all students in this grade/stream who have marks for this term/assessment
+        students_with_marks = db.session.query(
+            Student.id,
+            db.func.avg(Mark.percentage).label('avg_percentage'),
+            db.func.sum(Mark.raw_mark).label('total_raw_marks'),
+            db.func.sum(Mark.max_raw_mark).label('total_max_marks'),
+            db.func.count(Mark.id).label('subject_count')
+        ).join(
+            Mark, Student.id == Mark.student_id
+        ).join(
+            Stream, Student.stream_id == Stream.id
+        ).filter(
+            Stream.grade_id == combo.grade_id,
+            Stream.id == combo.stream_id,
+            Mark.term_id == combo.term_id,
+            Mark.assessment_type_id == combo.assessment_type_id,
+            Mark.percentage.isnot(None),
+            Mark.raw_mark.isnot(None),
+            Mark.max_raw_mark.isnot(None)
+        ).group_by(Student.id).all()
+
+        if not students_with_marks:
+            continue
+
+        # Calculate statistics for this combination
+        student_percentages = [student.avg_percentage for student in students_with_marks]
+        total_raw_marks = sum([student.total_raw_marks for student in students_with_marks])
+        total_possible_marks = sum([student.total_max_marks for student in students_with_marks])
+
+        # Calculate mean percentage for performance category (this is the class average)
+        mean_percentage = round(sum(student_percentages) / len(student_percentages), 2) if student_percentages else 0
+
+        # Calculate class average as it appears in class teacher reports
+        # This should be the average of total raw marks per student (like 649.4), not percentage
+        class_average = round(total_raw_marks / len(students_with_marks), 2) if students_with_marks else 0
+
+        print(f"DEBUG: {combo.grade} {combo.stream} {combo.term} {combo.assessment_type}: {len(students_with_marks)} students")
+        print(f"DEBUG: Class average: {class_average}, Raw marks: {int(round(total_raw_marks, 0))}/{int(round(total_possible_marks, 0))}")
+
+        # Calculate detailed performance counts using the established grading system
+        # Count students, not individual subject marks
+        performance_counts = {
+            'EE1': 0, 'EE2': 0, 'ME1': 0, 'ME2': 0,
+            'AE1': 0, 'AE2': 0, 'BE1': 0, 'BE2': 0
+        }
+
+        for student in students_with_marks:
+            percentage = student.avg_percentage
+            if percentage >= 90:
+                performance_counts['EE1'] += 1
+            elif percentage >= 75:
+                performance_counts['EE2'] += 1
+            elif percentage >= 58:
+                performance_counts['ME1'] += 1
+            elif percentage >= 41:
+                performance_counts['ME2'] += 1
+            elif percentage >= 31:
+                performance_counts['AE1'] += 1
+            elif percentage >= 21:
+                performance_counts['AE2'] += 1
+            elif percentage >= 11:
+                performance_counts['BE1'] += 1
+            else:
+                performance_counts['BE2'] += 1
+
+        # Determine overall performance category
+        if mean_percentage >= 75:
+            performance_category = "Excellent"
+        elif mean_percentage >= 60:
+            performance_category = "Good"
+        elif mean_percentage >= 45:
+            performance_category = "Average"
+        else:
+            performance_category = "Below Average"
+
+        performance_data.append({
+            'grade': combo.grade,
+            'stream': combo.stream,
+            'term': combo.term,
+            'assessment_type': combo.assessment_type,
+            'mean_percentage': mean_percentage,
+            'class_average': class_average,  # Use class average percentage instead of raw marks
+            'total_raw_marks': int(round(total_raw_marks, 0)),  # Show as whole numbers
+            'total_possible_marks': int(round(total_possible_marks, 0)),  # Show as whole numbers
+            'performance_category': performance_category,
+            'performance_counts': performance_counts,
+            'total_students': len(students_with_marks)  # Count unique students only
+        })
+
+    # Sort by grade, then stream, then term, then assessment type
+    performance_data.sort(key=lambda x: (x['grade'], x['stream'], x['term'], x['assessment_type']))
+
+    return performance_data
+
+
+def get_upcoming_assessments():
+    """
+    Get upcoming assessment information.
+
+    Returns:
+        List of upcoming assessments or assessment-related information.
+    """
+    # For now, return basic assessment type information
+    # In a real implementation, this would include dates and schedules
+    assessment_types = AssessmentType.query.all()
+    upcoming = []
+
+    for assessment in assessment_types:
+        upcoming.append({
+            'name': assessment.name,
+            'weight': assessment.weight,
+            'status': 'Active'
+        })
+
+    return upcoming
+
+
+def generate_system_alerts():
+    """
+    Generate system alerts for incomplete assessments or missing data.
+
+    Returns:
+        List of system alerts.
+    """
+    alerts = []
+
+    # Check for grades without any marks
+    grades_with_marks = db.session.query(Grade.id).join(
+        Stream, Grade.id == Stream.grade_id
+    ).join(
+        Student, Stream.id == Student.stream_id
+    ).join(
+        Mark, Student.id == Mark.student_id
+    ).distinct().all()
+
+    grades_with_marks_ids = [g[0] for g in grades_with_marks]
+    all_grades = Grade.query.all()
+
+    for grade in all_grades:
+        if grade.id not in grades_with_marks_ids:
+            alerts.append({
+                'type': 'warning',
+                'title': 'No Assessment Data',
+                'message': f"Grade {grade.level} has no assessment data recorded",
+                'action': 'Add marks for this grade'
+            })
+
+    # Check for students without marks in current term
+    current_term = Term.query.first()
+    if current_term:
+        students_without_marks = db.session.query(Student).outerjoin(
+            Mark, (Student.id == Mark.student_id) & (Mark.term_id == current_term.id)
+        ).filter(Mark.id.is_(None)).count()
+
+        if students_without_marks > 0:
+            alerts.append({
+                'type': 'info',
+                'title': 'Students Without Current Term Marks',
+                'message': f"{students_without_marks} students have no marks for {current_term.name}",
+                'action': 'Review and add missing marks'
+            })
+
+    return alerts
+
+
 @admin_bp.route('/reports')
 @admin_required
 def reports():
@@ -1189,3 +1403,75 @@ def reports():
     ]
 
     return render_template('reports.html', report_types=report_types)
+
+@admin_bp.route('/school_configuration', methods=['GET', 'POST'])
+@admin_required
+def school_configuration():
+    """Route for managing school configuration settings."""
+    error_message = None
+    success_message = None
+
+    if request.method == 'POST':
+        try:
+            # Get form data
+            config_data = {
+                'school_name': request.form.get('school_name', '').strip(),
+                'school_motto': request.form.get('school_motto', '').strip(),
+                'school_address': request.form.get('school_address', '').strip(),
+                'school_phone': request.form.get('school_phone', '').strip(),
+                'school_email': request.form.get('school_email', '').strip(),
+                'school_website': request.form.get('school_website', '').strip(),
+                'current_academic_year': request.form.get('current_academic_year', '').strip(),
+                'current_term': request.form.get('current_term', '').strip(),
+                'headteacher_name': request.form.get('headteacher_name', '').strip(),
+                'deputy_headteacher_name': request.form.get('deputy_headteacher_name', '').strip(),
+                'use_streams': request.form.get('use_streams') == 'on',
+                'grading_system': request.form.get('grading_system', 'CBC'),
+                'show_position': request.form.get('show_position') == 'on',
+                'show_class_average': request.form.get('show_class_average') == 'on',
+                'show_subject_teacher': request.form.get('show_subject_teacher') == 'on',
+                'max_raw_marks_default': int(request.form.get('max_raw_marks_default', 100)),
+                'pass_mark_percentage': float(request.form.get('pass_mark_percentage', 50.0)),
+                'primary_color': request.form.get('primary_color', '#1f7d53'),
+                'secondary_color': request.form.get('secondary_color', '#18230f')
+            }
+
+            # Validate required fields
+            if not config_data['school_name']:
+                error_message = "School name is required."
+            elif not config_data['current_academic_year']:
+                error_message = "Current academic year is required."
+            elif not config_data['current_term']:
+                error_message = "Current term is required."
+            else:
+                # Handle logo upload
+                logo_file = request.files.get('logo_file')
+                if logo_file and logo_file.filename:
+                    try:
+                        filename = SchoolConfigService.save_logo(logo_file)
+                        if filename:
+                            config_data['logo_filename'] = filename
+                    except Exception as e:
+                        error_message = f"Error uploading logo: {str(e)}"
+
+                if not error_message:
+                    # Update configuration
+                    SchoolConfigService.update_school_config(**config_data)
+
+                    # Invalidate admin cache since configuration has changed
+                    invalidate_admin_cache()
+
+                    success_message = "School configuration updated successfully!"
+
+        except ValueError as e:
+            error_message = f"Invalid input: {str(e)}"
+        except Exception as e:
+            error_message = f"Error updating configuration: {str(e)}"
+
+    # Get current configuration
+    config = SchoolConfigService.get_school_config()
+
+    return render_template('school_configuration.html',
+                         config=config,
+                         error_message=error_message,
+                         success_message=success_message)

@@ -3,5 +3,8 @@ Models package for the Hillview School Management System.
 This file imports and exposes all models for easy access.
 """
 from .user import Teacher, teacher_subjects
-from .academic import Subject, Grade, Stream, Term, AssessmentType, Student, Mark
+from .academic import (
+    SchoolConfiguration, Subject, Grade, Stream, Term,
+    AssessmentType, Student, Mark
+)
 from .assignment import TeacherSubjectAssignment
