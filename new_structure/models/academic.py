@@ -39,6 +39,18 @@ class SchoolConfiguration(db.Model):
     headteacher_name = db.Column(db.String(100), nullable=True)
     deputy_headteacher_name = db.Column(db.String(100), nullable=True)
 
+    # Dynamic Staff Assignment IDs (references to Teacher table)
+    headteacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
+    deputy_headteacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
+
+    # Relationships for dynamic staff assignment
+    headteacher = db.relationship('Teacher', foreign_keys=[headteacher_id],
+                                 backref='headteacher_schools')
+    deputy_headteacher = db.relationship('Teacher', foreign_keys=[deputy_headteacher_id],
+                                        backref='deputy_headteacher_schools')
+
+
+
     # Assessment Configuration
     max_raw_marks_default = db.Column(db.Integer, default=100)
     pass_mark_percentage = db.Column(db.Float, default=50.0)
@@ -85,7 +97,8 @@ class Subject(db.Model):
 class Grade(db.Model):
     """Grade model representing grade levels in the school."""
     id = db.Column(db.Integer, primary_key=True)
-    level = db.Column(db.String(50), nullable=False, unique=True)  # e.g., Grade 1, Grade 2
+    name = db.Column(db.String(50), nullable=False, unique=True)  # e.g., Grade 1, Grade 2
+    education_level = db.Column(db.String(50), nullable=False)  # e.g., lower_primary, upper_primary
     streams = db.relationship('Stream', backref='grade', lazy=True)
 
 class Stream(db.Model):

@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Management Hub - Hillview School</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <style>
+      /* Enhanced Professional Styling for Teacher Management Hub */
+
+      /* Override container styles for manage pages */
+      .manage-container {
+        max-width: 95% !important;
+        width: 95% !important;
+        margin: 80px auto 60px !important;
+        padding: var(--spacing-xl) !important;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      /* Enhanced Page header styling */
+      .page-header {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color) 0%,
+          #2c5530 100%
+        );
+        color: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(31, 125, 83, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: var(--spacing-xl);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .page-header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+      }
+
+      .page-header h1 {
+        color: white;
+        margin-bottom: var(--spacing-sm);
+        font-size: 2.8rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+      }
+
+      .page-subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.2rem;
+        margin-bottom: var(--spacing-md);
+        position: relative;
+        z-index: 1;
+        font-weight: 400;
+      }
+
+      .nav-links {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 1.5rem;
+      }
+
+      .nav-links a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 10px 20px;
+        border-radius: 25px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.95rem;
+      }
+
+      .nav-links a:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        text-decoration: none;
+      }
+
+      /* Enhanced Statistics section */
+      .stats-section {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(31, 125, 83, 0.1);
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stats-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), #28a745);
+      }
+
+      .stats-section h2 {
+        color: var(--primary-color);
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid #f8f9fa;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-color), #28a745);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary-color);
+      }
+
+      .stat-card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+
+      .stat-label {
+        color: var(--text-dark);
+        font-weight: 500;
+        font-size: 1.1rem;
+      }
+
+      /* Enhanced Hub sections grid */
+      .hub-sections {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2.5rem;
+        margin: 3rem 0;
+      }
+
+      /* Enhanced Section cards */
+      .section-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(31, 125, 83, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .section-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), #28a745);
+      }
+
+      .section-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .section-icon {
+        font-size: 2.5rem;
+        margin-right: 1rem;
+        color: var(--primary-color);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+
+      .section-title {
+        color: var(--primary-color);
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 0;
+      }
+
+      .section-description {
+        color: var(--text-light);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+        font-size: 1.05rem;
+      }
+
+      /* Enhanced Quick actions */
+      .quick-actions {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .action-btn {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--text-dark);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .action-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(31, 125, 83, 0.1),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .action-btn:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(31, 125, 83, 0.05) 0%,
+          rgba(31, 125, 83, 0.1) 100%
+        );
+        border-color: var(--primary-color);
+        text-decoration: none;
+        color: var(--primary-color);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(31, 125, 83, 0.2);
+      }
+
+      .action-btn:hover::before {
+        left: 100%;
+      }
+
+      .action-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        color: var(--primary-color);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+
+      .action-text {
+        flex: 1;
+      }
+
+      .action-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 1.05rem;
+      }
+
+      .action-subtitle {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        line-height: 1.4;
+      }
+
+      .action-arrow {
+        color: var(--primary-color);
+        font-size: 1.5rem;
+        font-weight: bold;
+        transition: transform 0.3s ease;
+      }
+
+      .action-btn:hover .action-arrow {
+        transform: translateX(5px);
+      }
+
+      /* Enhanced Recent activity section */
+      .recent-activity {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(31, 125, 83, 0.1);
+        margin-top: 3rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .recent-activity::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #17a2b8, var(--primary-color));
+      }
+
+      .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .activity-title {
+        color: var(--primary-color);
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .activity-title::before {
+        content: "📈";
+        font-size: 1.4rem;
+      }
+
+      .view-all-btn {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        padding: 0.8rem 1.5rem;
+        border: 2px solid var(--primary-color);
+        border-radius: 25px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .view-all-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(31, 125, 83, 0.3);
+      }
+
+      .activity-list {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .activity-item:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(31, 125, 83, 0.05) 0%,
+          rgba(31, 125, 83, 0.1) 100%
+        );
+        transform: translateX(5px);
+        border-color: var(--primary-color);
+      }
+
+      .activity-icon {
+        font-size: 2rem;
+        margin-right: 1.5rem;
+        color: var(--primary-color);
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+
+      .activity-content {
+        flex: 1;
+      }
+
+      .activity-text {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        font-size: 1.05rem;
+        color: var(--text-dark);
+      }
+
+      .activity-time {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        font-weight: 500;
+      }
+
+      /* Enhanced Responsive design */
+      @media (max-width: 1024px) {
+        .hub-sections {
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 2rem;
+        }
+
+        .manage-container {
+          max-width: 98% !important;
+          width: 98% !important;
+          padding: var(--spacing-lg) !important;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .manage-container {
+          max-width: 98% !important;
+          width: 98% !important;
+          padding: var(--spacing-md) !important;
+        }
+
+        .page-header {
+          padding: 2rem;
+        }
+
+        .page-header h1 {
+          font-size: 2.2rem;
+        }
+
+        .nav-links {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .hub-sections {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.5rem;
+        }
+
+        .section-card,
+        .stats-section,
+        .recent-activity {
+          padding: 1.5rem;
+        }
+
+        .section-header {
+          flex-direction: column;
+          text-align: center;
+          margin-bottom: 1rem;
+        }
+
+        .section-icon {
+          margin-right: 0;
+          margin-bottom: 0.5rem;
+        }
+
+        .activity-header {
+          flex-direction: column;
+          gap: 1rem;
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .manage-container {
+          padding: 1rem !important;
+        }
+
+        .page-header {
+          padding: 1.5rem;
+        }
+
+        .page-header h1 {
+          font-size: 1.8rem;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stat-card,
+        .section-card,
+        .stats-section,
+        .recent-activity {
+          padding: 1rem;
+        }
+
+        .action-btn {
+          padding: 1rem;
+        }
+
+        .activity-item {
+          padding: 1rem;
+        }
+      }
+
+      /* Loading States */
+      .loading {
+        opacity: 0.6;
+        pointer-events: none;
+        position: relative;
+      }
+
+      .loading::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid var(--primary-color);
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .stat-card,
+      .section-card,
+      .recent-activity {
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      .stat-card:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .stat-card:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .stat-card:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .stat-card:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+
+      .section-card:nth-child(1) {
+        animation-delay: 0.2s;
+      }
+      .section-card:nth-child(2) {
+        animation-delay: 0.3s;
+      }
+      .section-card:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #2c5530;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="manage-container">
+      <header class="page-header">
+        <h1>👥 Teacher Management Hub</h1>
+        <p class="page-subtitle">
+          Comprehensive teacher and assignment management system
+        </p>
+        <div class="nav-links">
+          <a href="{{ url_for('classteacher.dashboard') }}"
+            >Back to Dashboard</a
+          >
+          |
+          <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+        </div>
+      </header>
+
+      <!-- Statistics Overview -->
+      <div class="stats-section">
+        <h2>📊 Overview</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">👨‍🏫</div>
+            <div class="stat-value">{{ total_teachers or 0 }}</div>
+            <div class="stat-label">Total Teachers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-value">{{ total_assignments or 0 }}</div>
+            <div class="stat-label">Active Assignments</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🏫</div>
+            <div class="stat-value">{{ class_teachers or 0 }}</div>
+            <div class="stat-label">Class Teachers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📖</div>
+            <div class="stat-value">{{ subject_assignments or 0 }}</div>
+            <div class="stat-label">Subject Assignments</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hub Sections -->
+      <div class="hub-sections">
+        <!-- Teacher Profiles Section -->
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">👥</div>
+            <h3 class="section-title">Teacher Profiles</h3>
+          </div>
+          <p class="section-description">
+            Manage individual teacher profiles, add new teachers, and view
+            teacher information and performance metrics.
+          </p>
+          <div class="quick-actions">
+            <a
+              href="{{ url_for('classteacher.manage_teachers') }}"
+              class="action-btn"
+            >
+              <div class="action-icon">👨‍🏫</div>
+              <div class="action-text">
+                <div class="action-title">Manage Teachers</div>
+                <div class="action-subtitle">
+                  Add, edit, and manage individual teacher profiles
+                </div>
+              </div>
+              <div class="action-arrow">→</div>
+            </a>
+            <a
+              href="{{ url_for('classteacher.manage_teachers') }}#add-teacher"
+              class="action-btn"
+            >
+              <div class="action-icon">➕</div>
+              <div class="action-text">
+                <div class="action-title">Add New Teacher</div>
+                <div class="action-subtitle">Create a new teacher profile</div>
+              </div>
+              <div class="action-arrow">→</div>
+            </a>
+            <a
+              href="#"
+              class="action-btn"
+              onclick="alert('Feature coming soon!')"
+            >
+              <div class="action-icon">📊</div>
+              <div class="action-text">
+                <div class="action-title">Teacher Analytics</div>
+                <div class="action-subtitle">
+                  View teacher performance metrics
+                </div>
+              </div>
+              <div class="action-arrow">→</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Assignment Management Section -->
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">📚</div>
+            <h3 class="section-title">Assignment Management</h3>
+          </div>
+          <p class="section-description">
+            Manage class teacher and subject assignments, reassign teachers, and
+            track assignment changes.
+          </p>
+          <div class="quick-actions">
+            <a
+              href="{{ url_for('classteacher.manage_teacher_assignments') }}"
+              class="action-btn"
+            >
+              <div class="action-icon">🏫</div>
+              <div class="action-text">
+                <div class="action-title">Class & Subject Assignments</div>
+                <div class="action-subtitle">
+                  Manage all teacher assignments and reassignments
+                </div>
+              </div>
+              <div class="action-arrow">→</div>
+            </a>
+            <a
+              href="{{ url_for('classteacher.assign_subjects') }}"
+              class="action-btn"
+            >
+              <div class="action-icon">📖</div>
+              <div class="action-text">
+                <div class="action-title">Subject Assignment</div>
+                <div class="action-subtitle">
+                  Assign subjects to individual teachers
+                </div>
+              </div>
+              <div class="action-arrow">→</div>
+            </a>
+            <a
+              href="#"
+              class="action-btn"
+              onclick="alert('Feature coming soon!')"
+            >
+              <div class="action-icon">📈</div>
+              <div class="action-text">
+                <div class="action-title">Assignment History</div>
+                <div class="action-subtitle">
+                  Track assignment changes over time
+                </div>
+              </div>
+              <div class="action-arrow">→</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Bulk Operations Section -->
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">⚡</div>
+            <h3 class="section-title">Bulk Operations</h3>
+          </div>
+          <p class="section-description">
+            Perform bulk assignment operations, mass transfers, and
+            import/export teacher data efficiently.
+          </p>
+          <div class="quick-actions">
+            <a
+              href="{{ url_for('bulk_assignments.bulk_assignments') }}"
+              class="action-btn"
+            >
+              <div class="action-icon">📚</div>
+              <div class="action-text">
+                <div class="action-title">Bulk Subject Assignment</div>
+                <div class="action-subtitle">
+                  Assign multiple subjects across education levels
+                </div>
+              </div>
+              <div class="action-arrow">→</div>
+            </a>
+            <a
+              href="{{ url_for('classteacher.advanced_assignments') }}"
+              class="action-btn"
+            >
+              <div class="action-icon">🎯</div>
+              <div class="action-text">
+                <div class="action-title">Advanced Assignments</div>
+                <div class="action-subtitle">
+                  Structured assignment management
+                </div>
+              </div>
+              <div class="action-arrow">→</div>
+            </a>
+            <a
+              href="#"
+              class="action-btn"
+              onclick="alert('Feature coming soon!')"
+            >
+              <div class="action-icon">📤</div>
+              <div class="action-text">
+                <div class="action-title">Import/Export</div>
+                <div class="action-subtitle">
+                  Bulk import and export teacher data
+                </div>
+              </div>
+              <div class="action-arrow">→</div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="recent-activity">
+        <div class="activity-header">
+          <h3 class="activity-title">📋 Recent Activity</h3>
+          <a
+            href="#"
+            class="view-all-btn"
+            onclick="alert('Feature coming soon!')"
+            >View All</a
+          >
+        </div>
+        <div class="activity-list">
+          {% if recent_activities %} {% for activity in recent_activities %}
+          <div class="activity-item">
+            <div class="activity-icon">{{ activity.icon }}</div>
+            <div class="activity-content">
+              <div class="activity-text">{{ activity.text }}</div>
+              <div class="activity-time">{{ activity.time }}</div>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <div class="activity-item">
+            <div class="activity-icon">📝</div>
+            <div class="activity-content">
+              <div class="activity-text">No recent activity</div>
+              <div class="activity-time">
+                Start managing teachers to see activity here
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -5,7 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Students - Hillview School (Class Teacher)</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_pages_enhanced.css') }}">
     <style>
+        /* Override container styles for manage pages */
+        .manage-container {
+            max-width: 95% !important;
+            width: 95% !important;
+            margin: 80px auto 60px !important;
+            padding: var(--spacing-xl) !important;
+        }
+
+        /* Forms grid layout */
+        .forms-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+            margin: var(--spacing-xl) 0;
+        }
+
+        .form-card {
+            background: var(--white);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-card h2 {
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-lg);
+            font-size: 1.3rem;
+        }
+
+        .level-selector {
+            background: var(--white);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .students-section {
+            background: var(--white);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            margin-top: var(--spacing-xl);
+        }
+
+        .students-section h2 {
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .manage-container {
+                max-width: 98% !important;
+                width: 98% !important;
+                padding: var(--spacing-md) !important;
+            }
+
+            .forms-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-lg);
+            }
+        }
+
         .checkbox-column {
             width: 40px;
             text-align: center;
@@ -302,12 +370,98 @@
         .update-btn:hover {
             background-color: #45a049;
         }
+
+        /* Table improvements */
+        .table-responsive {
+            overflow-x: auto;
+            margin: var(--spacing-lg) 0;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            background: var(--white);
+        }
+
+        table {
+            width: 100%;
+            min-width: 800px; /* Ensure table doesn't get too cramped */
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        th {
+            background: var(--primary-color);
+            color: var(--white);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(31, 125, 83, 0.05);
+        }
+
+        tr:hover {
+            background: rgba(31, 125, 83, 0.1);
+        }
+
+        /* Improve button styling */
+        .manage-btn, .filter-btn, .download-btn {
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .manage-btn:hover, .filter-btn:hover, .download-btn:hover {
+            background: var(--secondary-color);
+            text-decoration: none;
+        }
+
+        /* Navigation links styling */
+        .manage-container > a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: var(--spacing-md);
+        }
+
+        .manage-container > a:hover {
+            text-decoration: underline;
+        }
+
+        /* Page title styling */
+        .manage-container h1 {
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-lg);
+            font-size: 2.5rem;
+        }
     </style>
 </head>
 <body>
     <div class="container manage-container">
-        <h1>Manage Students</h1>
-        <a href="{{ url_for('classteacher.dashboard') }}">Back to Dashboard</a> | <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+        <header class="page-header">
+            <h1>👨‍🎓 Manage Students</h1>
+            <p class="page-subtitle">
+                Add, edit, and manage student profiles and information
+            </p>
+            <div class="nav-links">
+                <a href="{{ url_for('classteacher.teacher_management_hub') }}">Teacher Hub</a>
+                <a href="{{ url_for('classteacher.dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+            </div>
+        </header>
 
         <!-- Dynamic Message Container -->
         <div id="message-container"></div>
@@ -346,7 +500,7 @@
 
             <!-- Form to Add a Student -->
             <div class="form-card">
-                <h2>Add New Student</h2>
+                <h2>➕ Add New Student</h2>
                 <form method="POST" action="{{ url_for('classteacher.manage_students') }}" id="add-student-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="action" value="add_student">

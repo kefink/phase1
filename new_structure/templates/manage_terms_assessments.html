@@ -1,1 +1,953 @@
-{% extends "manage_terms_assessments_improved.html" %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Terms & Assessments - Hillview School (Class Teacher)</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/manage_pages_enhanced.css') }}"
+    />
+    <style>
+      /* Override container styles for manage pages */
+      .manage-container {
+        max-width: 95% !important;
+        width: 95% !important;
+        margin: 80px auto 60px !important;
+        padding: var(--spacing-xl) !important;
+      }
+
+      /* Page header styling */
+      .page-header {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .page-header h1 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-sm);
+        font-size: 2.5rem;
+      }
+
+      .nav-links a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        margin-right: var(--spacing-md);
+      }
+
+      .nav-links a:hover {
+        text-decoration: underline;
+      }
+
+      /* Statistics section */
+      .stats-section {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .stat-card {
+        background: rgba(31, 125, 83, 0.1);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        text-align: center;
+      }
+
+      .stat-card h3 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-sm);
+        font-size: 1.1rem;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--primary-color);
+      }
+
+      /* Forms grid layout */
+      .forms-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-xl);
+        margin: var(--spacing-xl) 0;
+      }
+
+      /* Form card styling */
+      .form-card {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+      }
+
+      .form-card h2 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.3rem;
+      }
+
+      /* Section styling */
+      .terms-section,
+      .assessments-section {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .terms-section h2,
+      .assessments-section h2 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.5rem;
+      }
+
+      /* Form styling */
+      .form-group {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        color: var(--text-dark);
+        font-weight: 500;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        color: var(--text-dark);
+        background: var(--white);
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
+      }
+
+      /* Button styling */
+      .manage-btn {
+        background: var(--primary-color);
+        color: var(--white);
+        border: none;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      .manage-btn:hover {
+        background: var(--secondary-color);
+      }
+
+      /* Table improvements */
+      .table-responsive {
+        overflow-x: auto;
+        margin: var(--spacing-lg) 0;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        background: var(--white);
+      }
+
+      table {
+        width: 100%;
+        min-width: 600px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      th {
+        background: var(--primary-color);
+        color: var(--white);
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      tr:nth-child(even) {
+        background: rgba(31, 125, 83, 0.05);
+      }
+
+      tr:hover {
+        background: rgba(31, 125, 83, 0.1);
+      }
+
+      /* Action buttons */
+      .action-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap;
+      }
+
+      .edit-btn,
+      .delete-btn {
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+
+      .edit-btn {
+        background: var(--warning-color);
+        color: var(--text-dark);
+      }
+
+      .edit-btn:hover {
+        background: #e0a800;
+        text-decoration: none;
+      }
+
+      .delete-btn {
+        background: var(--error-color);
+        color: var(--white);
+      }
+
+      .delete-btn:hover {
+        background: #c82333;
+      }
+
+      /* Checkbox styling */
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-sm);
+      }
+
+      .checkbox-group input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+      }
+
+      /* Message styling */
+      .message {
+        padding: var(--spacing-md);
+        border-radius: var(--border-radius);
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .message-error {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid var(--error-color);
+        color: var(--error-color);
+      }
+
+      .message-success {
+        background: rgba(31, 125, 83, 0.1);
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+      }
+
+      /* Enhanced Terms & Assessments Specific Styling */
+
+      /* Enhanced Statistics Section */
+      .stats-section {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(31, 125, 83, 0.1);
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stats-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), #28a745);
+      }
+
+      .stats-section h2 {
+        color: var(--primary-color);
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid #f8f9fa;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-color), #28a745);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary-color);
+      }
+
+      .stat-card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .stat-card h3 {
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        display: block;
+      }
+
+      /* Enhanced Checkbox Styling */
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+      }
+
+      .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        accent-color: var(--primary-color);
+        cursor: pointer;
+      }
+
+      .checkbox-group label {
+        margin: 0;
+        font-weight: 500;
+        color: var(--text-dark);
+        cursor: pointer;
+        font-size: 1rem;
+      }
+
+      /* Enhanced Date Input Styling */
+      input[type="date"] {
+        position: relative;
+        cursor: pointer;
+      }
+
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        background: var(--primary-color);
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      /* Enhanced Number Input Styling */
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      /* Enhanced Table Status Indicators */
+      .status-current {
+        color: var(--primary-color);
+        font-weight: 600;
+        background: rgba(31, 125, 83, 0.1);
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+      }
+
+      .status-yes {
+        color: var(--primary-color);
+        font-weight: 600;
+        background: rgba(31, 125, 83, 0.1);
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+      }
+
+      .status-no {
+        color: var(--text-light);
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+      }
+
+      /* Enhanced Empty State Messages */
+      .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--text-light);
+        font-style: italic;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 12px;
+        border: 1px dashed #dee2e6;
+      }
+
+      .empty-state::before {
+        content: "📋";
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      /* Enhanced Section Styling */
+      .terms-section,
+      .assessments-section {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(31, 125, 83, 0.1);
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .terms-section::before,
+      .assessments-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #17a2b8, var(--primary-color));
+      }
+
+      .terms-section h2,
+      .assessments-section h2 {
+        color: var(--primary-color);
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      /* Enhanced Responsive design */
+      @media (max-width: 768px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.5rem;
+        }
+
+        .checkbox-group {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+          padding: 1.5rem;
+        }
+
+        .terms-section,
+        .assessments-section {
+          padding: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="manage-container">
+      <header class="page-header">
+        <h1>📅 Manage Terms & Assessments</h1>
+        <p class="page-subtitle">
+          Organize academic terms, assessment types, and evaluation periods
+        </p>
+        <div class="nav-links">
+          <a href="{{ url_for('classteacher.teacher_management_hub') }}"
+            >Teacher Hub</a
+          >
+          <a href="{{ url_for('classteacher.dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+        </div>
+      </header>
+
+      <!-- Message container for notifications -->
+      <div id="message-container">
+        {% if error_message %}
+        <div class="message message-error">{{ error_message }}</div>
+        {% endif %} {% if success_message %}
+        <div class="message message-success">{{ success_message }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Statistics Section -->
+      <div class="stats-section">
+        <h2>📊 Academic Overview</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Terms</h3>
+            <div class="stat-value">{{ terms|length }}</div>
+          </div>
+          <div class="stat-card">
+            <h3>Assessment Types</h3>
+            <div class="stat-value">{{ assessment_types|length }}</div>
+          </div>
+          <div class="stat-card">
+            <h3>Current Term</h3>
+            <div class="stat-value">{{ current_term }}</div>
+          </div>
+          <div class="stat-card">
+            <h3>Academic Year</h3>
+            <div class="stat-value">{{ current_academic_year }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forms Grid -->
+      <div class="forms-grid">
+        <!-- Add New Term Form -->
+        <div class="form-card">
+          <h2>📅 Add New Term</h2>
+          <form
+            method="POST"
+            action="{{ url_for('classteacher.manage_terms_assessments') }}"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <div class="form-group">
+              <label for="term_name">Term Name:</label>
+              <input
+                type="text"
+                name="term_name"
+                id="term_name"
+                class="form-control"
+                placeholder="e.g., Term 1, Term 2, Term 3"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="term_start_date">Start Date (Optional):</label>
+              <input
+                type="date"
+                name="term_start_date"
+                id="term_start_date"
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="term_end_date">End Date (Optional):</label>
+              <input
+                type="date"
+                name="term_end_date"
+                id="term_end_date"
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="academic_year">Academic Year (Optional):</label>
+              <input
+                type="text"
+                name="academic_year"
+                id="academic_year"
+                class="form-control"
+                placeholder="e.g., 2024-2025"
+              />
+            </div>
+
+            <div class="checkbox-group">
+              <input
+                type="checkbox"
+                name="is_current_term"
+                id="is_current_term"
+                value="1"
+              />
+              <label for="is_current_term">Set as Current Term</label>
+            </div>
+
+            <button type="submit" name="add_term" class="manage-btn">
+              Add Term
+            </button>
+          </form>
+        </div>
+
+        <!-- Add New Assessment Type Form -->
+        <div class="form-card">
+          <h2>📝 Add New Assessment Type</h2>
+          <form
+            method="POST"
+            action="{{ url_for('classteacher.manage_terms_assessments') }}"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <div class="form-group">
+              <label for="assessment_name">Assessment Name:</label>
+              <input
+                type="text"
+                name="assessment_name"
+                id="assessment_name"
+                class="form-control"
+                placeholder="e.g., Mid Term, End Term, CAT"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="assessment_weight">Weight (Optional):</label>
+              <input
+                type="number"
+                name="assessment_weight"
+                id="assessment_weight"
+                class="form-control"
+                placeholder="e.g., 30, 70"
+                min="0"
+                max="100"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="assessment_group">Group (Optional):</label>
+              <input
+                type="text"
+                name="assessment_group"
+                id="assessment_group"
+                class="form-control"
+                placeholder="e.g., Continuous Assessment, Summative"
+              />
+            </div>
+
+            <div class="checkbox-group">
+              <input
+                type="checkbox"
+                name="show_on_reports"
+                id="show_on_reports"
+                value="1"
+                checked
+              />
+              <label for="show_on_reports">Show on Reports</label>
+            </div>
+
+            <button type="submit" name="add_assessment" class="manage-btn">
+              Add Assessment Type
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Terms Section -->
+      <div class="terms-section">
+        <h2>📅 Existing Terms</h2>
+        {% if terms %}
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Term Name</th>
+                <th>Academic Year</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Current</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for term in terms %}
+              <tr>
+                <td>{{ term.id }}</td>
+                <td>{{ term.name }}</td>
+                <td>
+                  {% if term.academic_year %} {{ term.academic_year }} {% else
+                  %} - {% endif %}
+                </td>
+                <td>
+                  {% if term.start_date %} {{
+                  term.start_date.strftime('%Y-%m-%d') if term.start_date else
+                  '-' }} {% else %} - {% endif %}
+                </td>
+                <td>
+                  {% if term.end_date %} {{ term.end_date.strftime('%Y-%m-%d')
+                  if term.end_date else '-' }} {% else %} - {% endif %}
+                </td>
+                <td>
+                  {% if term.is_current %}
+                  <span style="color: var(--primary-color); font-weight: 600"
+                    >✓ Current</span
+                  >
+                  {% else %} - {% endif %}
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      class="edit-btn"
+                      onclick="editTerm({{ term.id }}, '{{ term.name }}', '{{ term.academic_year if term.academic_year else '' }}')"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="delete-btn"
+                      onclick="deleteTerm({{ term.id }}, '{{ term.name }}')"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p>No terms found. Add your first term using the form above.</p>
+        {% endif %}
+      </div>
+
+      <!-- Assessment Types Section -->
+      <div class="assessments-section">
+        <h2>📝 Existing Assessment Types</h2>
+        {% if assessment_types %}
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Assessment Name</th>
+                <th>Weight</th>
+                <th>Group</th>
+                <th>Show on Reports</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for assessment in assessment_types %}
+              <tr>
+                <td>{{ assessment.id }}</td>
+                <td>{{ assessment.name }}</td>
+                <td>
+                  {% if assessment.weight %} {{ assessment.weight }}% {% else %}
+                  - {% endif %}
+                </td>
+                <td>
+                  {% if assessment.group %} {{ assessment.group }} {% else %} -
+                  {% endif %}
+                </td>
+                <td>
+                  {% if assessment.show_on_reports %}
+                  <span style="color: var(--primary-color); font-weight: 600"
+                    >✓ Yes</span
+                  >
+                  {% else %}
+                  <span style="color: var(--text-light)">No</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      class="edit-btn"
+                      onclick="editAssessment({{ assessment.id }}, '{{ assessment.name }}', '{{ assessment.weight if assessment.weight else '' }}', '{{ assessment.group if assessment.group else '' }}', {{ 'true' if assessment.show_on_reports else 'false' }})"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="delete-btn"
+                      onclick="deleteAssessment({{ assessment.id }}, '{{ assessment.name }}')"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p>
+          No assessment types found. Add your first assessment type using the
+          form above.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <script>
+      // Functions for editing and deleting terms and assessments
+      function editTerm(id, name, academicYear) {
+        // For now, just populate the form with existing values
+        document.getElementById("term_name").value = name;
+        if (academicYear) {
+          document.getElementById("academic_year").value = academicYear;
+        }
+        // Scroll to form
+        document
+          .querySelector(".form-card")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      function deleteTerm(id, name) {
+        if (
+          confirm(
+            `Are you sure you want to delete the term "${name}"? This action cannot be undone.`
+          )
+        ) {
+          // Create a form to submit the delete request
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action =
+            '{{ url_for("classteacher.manage_terms_assessments") }}';
+
+          const csrfToken = document.createElement("input");
+          csrfToken.type = "hidden";
+          csrfToken.name = "csrf_token";
+          csrfToken.value = "{{ csrf_token() }}";
+
+          const termId = document.createElement("input");
+          termId.type = "hidden";
+          termId.name = "term_id";
+          termId.value = id;
+
+          const deleteAction = document.createElement("input");
+          deleteAction.type = "hidden";
+          deleteAction.name = "delete_term";
+          deleteAction.value = "1";
+
+          form.appendChild(csrfToken);
+          form.appendChild(termId);
+          form.appendChild(deleteAction);
+
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
+
+      function editAssessment(id, name, weight, group, showOnReports) {
+        // Populate the assessment form with existing values
+        document.getElementById("assessment_name").value = name;
+        if (weight) {
+          document.getElementById("assessment_weight").value = weight;
+        }
+        if (group) {
+          document.getElementById("assessment_group").value = group;
+        }
+        document.getElementById("show_on_reports").checked = showOnReports;
+
+        // Scroll to form
+        document
+          .querySelectorAll(".form-card")[1]
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      function deleteAssessment(id, name) {
+        if (
+          confirm(
+            `Are you sure you want to delete the assessment type "${name}"? This action cannot be undone.`
+          )
+        ) {
+          // Create a form to submit the delete request
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action =
+            '{{ url_for("classteacher.manage_terms_assessments") }}';
+
+          const csrfToken = document.createElement("input");
+          csrfToken.type = "hidden";
+          csrfToken.name = "csrf_token";
+          csrfToken.value = "{{ csrf_token() }}";
+
+          const assessmentId = document.createElement("input");
+          assessmentId.type = "hidden";
+          assessmentId.name = "assessment_id";
+          assessmentId.value = id;
+
+          const deleteAction = document.createElement("input");
+          deleteAction.type = "hidden";
+          deleteAction.name = "delete_assessment";
+          deleteAction.value = "1";
+
+          form.appendChild(csrfToken);
+          form.appendChild(assessmentId);
+          form.appendChild(deleteAction);
+
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
+    </script>
+  </body>
+</html>

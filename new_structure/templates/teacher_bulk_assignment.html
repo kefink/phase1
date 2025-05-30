@@ -9,60 +9,135 @@
       href="{{ url_for('static', filename='css/style.css') }}"
     />
     <style>
+      /* Override container styles for manage pages */
+      .manage-container {
+        max-width: 95% !important;
+        width: 95% !important;
+        margin: 80px auto 60px !important;
+        padding: var(--spacing-xl) !important;
+      }
+
+      /* Page header styling */
+      .page-header {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .page-header h1 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-sm);
+        font-size: 2.5rem;
+      }
+
+      .nav-links a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        margin-right: var(--spacing-md);
+      }
+
+      .nav-links a:hover {
+        text-decoration: underline;
+      }
+
+      /* Forms grid layout */
+      .forms-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-xl);
+        margin: var(--spacing-xl) 0;
+      }
+
+      /* Form card styling */
+      .form-card {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+      }
+
+      .form-card h2 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.3rem;
+      }
+
+      /* Education level sections */
       .education-level-section {
-        margin-bottom: 20px;
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f9f9f9;
+        margin-bottom: var(--spacing-xl);
+        padding: var(--spacing-lg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        background: rgba(31, 125, 83, 0.05);
       }
 
       .education-level-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 10px;
+        margin-bottom: var(--spacing-md);
+      }
+
+      .education-level-header h3 {
+        color: var(--primary-color);
+        margin: 0;
       }
 
       .add-level-btn {
-        background-color: #4a6741;
-        color: white;
+        background: var(--primary-color);
+        color: var(--white);
         border: none;
-        padding: 8px 15px;
-        border-radius: 4px;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--border-radius);
         cursor: pointer;
+        transition: var(--transition);
+        font-weight: 500;
+      }
+
+      .add-level-btn:hover {
+        background: var(--secondary-color);
       }
 
       .remove-level-btn {
-        background-color: #dc3545;
-        color: white;
+        background: var(--error-color);
+        color: var(--white);
         border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--border-radius);
         cursor: pointer;
-        font-size: 0.9em;
+        font-size: 0.9rem;
+        transition: var(--transition);
+      }
+
+      .remove-level-btn:hover {
+        background: #c82333;
       }
 
       .assignment-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 15px;
+        gap: var(--spacing-lg);
       }
 
       .assignment-section {
-        margin-bottom: 15px;
+        margin-bottom: var(--spacing-lg);
       }
 
       .subject-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
+        gap: var(--spacing-md);
       }
 
       .class-teacher-option {
-        margin-top: 15px;
-        padding-top: 10px;
-        border-top: 1px solid #eee;
+        margin-top: var(--spacing-lg);
+        padding-top: var(--spacing-md);
+        border-top: 1px solid var(--border-color);
       }
 
       .template-section {
@@ -70,32 +145,123 @@
       }
 
       .assignment-summary {
-        margin-top: 20px;
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f0f7ff;
+        margin-top: var(--spacing-xl);
+        padding: var(--spacing-lg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        background: rgba(31, 125, 83, 0.1);
+      }
+
+      .assignment-summary h3 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-md);
       }
 
       .summary-item {
-        margin-bottom: 5px;
-        padding: 5px;
-        border-bottom: 1px solid #eee;
+        margin-bottom: var(--spacing-sm);
+        padding: var(--spacing-sm);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      /* Form styling */
+      .form-group {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        color: var(--text-dark);
+        font-weight: 500;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        color: var(--text-dark);
+        background: var(--white);
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
+      }
+
+      /* Button styling */
+      .manage-btn {
+        background: var(--primary-color) !important;
+        color: var(--white);
+        border: none;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      .manage-btn:hover {
+        background: var(--secondary-color) !important;
+      }
+
+      /* Message styling */
+      .message {
+        padding: var(--spacing-md);
+        border-radius: var(--border-radius);
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .message-error {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid var(--error-color);
+        color: var(--error-color);
+      }
+
+      .message-success {
+        background: rgba(31, 125, 83, 0.1);
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        .manage-container {
+          max-width: 98% !important;
+          width: 98% !important;
+          padding: var(--spacing-md) !important;
+        }
+
+        .forms-grid {
+          grid-template-columns: 1fr;
+          gap: var(--spacing-lg);
+        }
+
+        .assignment-grid {
+          grid-template-columns: 1fr;
+          gap: var(--spacing-md);
+        }
+
+        .subject-grid {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="manage-container">
+    <div class="manage-container">
         <header class="page-header">
           <h1>Teacher Assignments</h1>
           <div class="nav-links">
-            <a href="{{ url_for('classteacher.manage_teachers') }}"
-              >Back to Manage Teachers</a
+            <a href="{{ url_for('classteacher.teacher_management_hub') }}"
+              >Teacher Hub</a
             >
             |
             <a href="{{ url_for('classteacher.dashboard') }}"
-              >Back to Dashboard</a
+              >Dashboard</a
             >
             |
             <a href="{{ url_for('auth.logout_route') }}">Logout</a>

@@ -9,6 +9,199 @@
       href="{{ url_for('static', filename='css/style.css') }}"
     />
     <style>
+      /* Override container styles for manage pages */
+      .manage-container {
+        max-width: 95% !important;
+        width: 95% !important;
+        margin: 80px auto 60px !important;
+        padding: var(--spacing-xl) !important;
+      }
+
+      /* Page header styling */
+      .page-header {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .page-header h1 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-sm);
+        font-size: 2.5rem;
+      }
+
+      .nav-links a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        margin-right: var(--spacing-md);
+      }
+
+      .nav-links a:hover {
+        text-decoration: underline;
+      }
+
+      /* Tab styling */
+      .tab {
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        background-color: var(--background-color);
+        border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+        margin-bottom: 0;
+      }
+
+      .tab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: var(--spacing-lg) var(--spacing-xl);
+        transition: var(--transition);
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-dark);
+      }
+
+      .tab button:hover {
+        background-color: rgba(31, 125, 83, 0.1);
+      }
+
+      .tab button.active {
+        background-color: var(--primary-color);
+        color: var(--white);
+      }
+
+      /* Tab content styling */
+      .tabcontent {
+        display: none;
+        padding: var(--spacing-xl);
+        background: var(--white);
+        border: 1px solid var(--border-color);
+        border-top: none;
+        border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+      }
+
+      .tabcontent.active {
+        display: block;
+      }
+
+      .tabcontent h2 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.5rem;
+      }
+
+      /* Table improvements */
+      .table-responsive {
+        overflow-x: auto;
+        margin: var(--spacing-lg) 0;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        background: var(--white);
+      }
+
+      .data-table {
+        width: 100%;
+        min-width: 800px;
+        border-collapse: collapse;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .data-table th {
+        background: var(--primary-color);
+        color: var(--white);
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .data-table tr:nth-child(even) {
+        background: rgba(31, 125, 83, 0.05);
+      }
+
+      .data-table tr:hover {
+        background: rgba(31, 125, 83, 0.1);
+      }
+
+      /* Action buttons */
+      .action-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap;
+      }
+
+      .edit-btn,
+      .delete-btn,
+      .btn {
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+
+      .edit-btn {
+        background: var(--warning-color);
+        color: var(--text-dark);
+      }
+
+      .edit-btn:hover {
+        background: #e0a800;
+        text-decoration: none;
+      }
+
+      .delete-btn {
+        background: var(--error-color);
+        color: var(--white);
+      }
+
+      .delete-btn:hover {
+        background: #c82333;
+      }
+
+      .btn {
+        background: var(--primary-color);
+        color: var(--white);
+      }
+
+      .btn:hover {
+        background: var(--secondary-color);
+        text-decoration: none;
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        .manage-container {
+          max-width: 98% !important;
+          width: 98% !important;
+          padding: var(--spacing-md) !important;
+        }
+
+        .tab button {
+          padding: var(--spacing-md);
+          font-size: 0.9rem;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+        }
+      }
       .action-buttons {
         display: flex;
         gap: 5px;
@@ -120,13 +313,16 @@
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="manage-container">
+    <div class="manage-container">
         <header class="page-header">
           <h1>Manage Teacher Assignments</h1>
           <div class="nav-links">
+            <a href="{{ url_for('classteacher.teacher_management_hub') }}"
+              >Teacher Hub</a
+            >
+            |
             <a href="{{ url_for('classteacher.dashboard') }}"
-              >Back to Dashboard</a
+              >Dashboard</a
             >
             |
             <a href="{{ url_for('auth.logout_route') }}">Logout</a>

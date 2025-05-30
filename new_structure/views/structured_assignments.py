@@ -5,11 +5,12 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask import session
 from sqlalchemy import text
 from ..extensions import db
-from ..models import Teacher, Subject, Grade, Stream, TeacherSubjectAssignment
+from ..models import Teacher, Subject, Grade, Stream
+from ..models.assignment import TeacherSubjectAssignment
 from .classteacher import classteacher_required
 
 # Create a blueprint for structured assignments
-structured_assignments_bp = Blueprint('structured_assignments', __name__)
+structured_assignments_bp = Blueprint('structured_assignments', __name__, url_prefix='/classteacher')
 
 @structured_assignments_bp.route('/advanced_assignments', methods=['GET'])
 @classteacher_required
@@ -28,7 +29,7 @@ def structured_assignments():
         assignments = []
 
     return render_template(
-        'teacher_assignments_updated.html',
+        'teacher_assignments.html',
         teachers=teachers,
         subjects=subjects,
         grades=grades,

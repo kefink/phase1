@@ -130,7 +130,7 @@ def dashboard():
                 class_teacher_assignments.append({
                     "id": assignment.id,
                     "teacher_username": current_teacher.username if current_teacher else "Unknown",
-                    "grade_level": grade.level if grade else "Unknown",
+                    "grade_level": grade.name if grade else "Unknown",
                     "stream_name": stream.name if stream else None
                 })
 
@@ -147,7 +147,7 @@ def dashboard():
                 "teacher_username": teacher.username if teacher else "Unknown",
                 "subject_name": subject.name if subject else "Unknown",
                 "education_level": subject.education_level if subject else None,
-                "grade_level": grade.level if grade else "Unknown",
+                "grade_level": grade.name if grade else "Unknown",
                 "stream_name": stream.name if stream else None
             })
     except Exception as e:
@@ -169,12 +169,12 @@ def dashboard():
         if stream:
             grade = Grade.query.get(stream.grade_id)
             if grade:
-                grade_level = grade.level
+                grade_level = grade.name
                 stream_name = f"Stream {stream.name}"
 
     # Get data for the form
-    grades = [grade.level for grade in Grade.query.all()]
-    grades_dict = {grade.level: grade.id for grade in Grade.query.all()}
+    grades = [grade.name for grade in Grade.query.all()]
+    grades_dict = {grade.name: grade.id for grade in Grade.query.all()}
     terms = [term.name for term in Term.query.all()]
     assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
     streams = []  # Empty list - streams will be populated via JavaScript
@@ -185,7 +185,7 @@ def dashboard():
     show_students = False
     students = []
     education_level = ""
-    grade_level = grade.level if grade else ""
+    grade_level = grade.name if grade else ""
     stream_name = f"Stream {stream.name}" if stream else ""
     term = ""
     assessment_type = ""
@@ -211,13 +211,13 @@ def dashboard():
 
     # Apply filters if provided
     if filter_grade:
-        marks_query = marks_query.filter(Grade.level == filter_grade)
+        marks_query = marks_query.filter(Grade.name == filter_grade)
     if filter_term:
         marks_query = marks_query.filter(Term.name == filter_term)
 
     # Apply sorting
     if sort_by == 'grade':
-        marks_query = marks_query.order_by(Grade.level)
+        marks_query = marks_query.order_by(Grade.name)
     elif sort_by == 'term':
         marks_query = marks_query.order_by(Term.name)
     else:  # Default to date
@@ -229,19 +229,19 @@ def dashboard():
     # Process the results
     seen_combinations = set()
     for mark in marks:
-        combination = (mark.student.stream.grade.level, mark.student.stream.name, mark.term.name, mark.assessment_type.name)
+        combination = (mark.student.stream.grade.name, mark.student.stream.name, mark.term.name, mark.assessment_type.name)
         if combination not in seen_combinations:
             seen_combinations.add(combination)
             # Get the count of marks for this combination
             mark_count = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType).filter(
-                Grade.level == mark.student.stream.grade.level,
+                Grade.name == mark.student.stream.grade.name,
                 Stream.name == mark.student.stream.name,
                 Term.name == mark.term.name,
                 AssessmentType.name == mark.assessment_type.name
             ).count()
 
             recent_reports.append({
-                'grade': mark.student.stream.grade.level,
+                'grade': mark.student.stream.grade.name,
                 'stream': f"Stream {mark.student.stream.name}",
                 'term': mark.term.name,
                 'assessment_type': mark.assessment_type.name,
@@ -270,7 +270,7 @@ def dashboard():
                 stream_letter = stream_name.replace("Stream ", "") if stream_name.startswith("Stream ") else stream_name
 
                 # Get the stream object
-                stream_obj = Stream.query.join(Grade).filter(Grade.level == grade_level, Stream.name == stream_letter).first()
+                stream_obj = Stream.query.join(Grade).filter(Grade.name == grade_level, Stream.name == stream_letter).first()
 
                 if stream_obj:
                     # Get students for this stream
@@ -328,7 +328,7 @@ def dashboard():
                 stream_letter = stream_name.replace("Stream ", "") if stream_name.startswith("Stream ") else stream_name
 
                 # Get the stream, term, and assessment type objects
-                stream_obj = Stream.query.join(Grade).filter(Grade.level == grade_level, Stream.name == stream_letter).first()
+                stream_obj = Stream.query.join(Grade).filter(Grade.name == grade_level, Stream.name == stream_letter).first()
                 term_obj = Term.query.filter_by(name=term).first()
                 assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -607,7 +607,7 @@ def dashboard():
             stream_letter = stream_name.replace("Stream ", "") if stream_name.startswith("Stream ") else stream_name
 
             # Get the stream, term, and assessment type objects
-            stream_obj = Stream.query.join(Grade).filter(Grade.level == grade_level, Stream.name == stream_letter).first()
+            stream_obj = Stream.query.join(Grade).filter(Grade.name == grade_level, Stream.name == stream_letter).first()
             term_obj = Term.query.filter_by(name=term).first()
             assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -824,6 +824,12 @@ def dashboard():
         # Clear the session preference
         session.pop('show_students_tab', None)
 
+    # Get management statistics for the dashboard
+    total_students = Student.query.count()
+    total_teachers = Teacher.query.count()
+    total_subjects = Subject.query.count()
+    total_grades = Grade.query.count()
+
     # Render the class teacher dashboard
     return render_template(
         "classteacher.html",
@@ -850,6 +856,10 @@ def dashboard():
         class_teacher_assignments=class_teacher_assignments,
         subject_assignments=subject_assignments,
         confirmation_message=confirmation_message,
+        total_students=total_students,
+        total_teachers=total_teachers,
+        total_subjects=total_subjects,
+        total_grades=total_grades,
         active_tab=active_tab  # Pass the active tab to the template
     )
 
@@ -982,6 +992,7 @@ def all_reports():
     return render_template(
         'all_reports.html',
         reports=reports,
+        pagination=paginated_query,
         total_reports=total_count,
         page=page,
         per_page=per_page,
@@ -1749,6 +1760,10 @@ def preview_class_report(grade, stream, term, assessment_type):
                         component_totals[component.name] / component_counts[component.name], 1
                     )
 
+    # Get staff information for the report
+    from ..services.staff_assignment_service import StaffAssignmentService
+    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream)
+
     return render_template(
         'preview_class_report.html',
         grade=grade,
@@ -1768,7 +1783,8 @@ def preview_class_report(grade, stream, term, assessment_type):
         subject_components=subject_components,  # Pass component data
         component_marks_data=component_marks_data,  # Pass component marks
         component_averages=component_averages,  # Pass component averages
-        filtered_subjects=filtered_subjects  # Pass filtered subject objects
+        filtered_subjects=filtered_subjects,  # Pass filtered subject objects
+        staff_info=staff_info  # Pass staff information
     )
 
 @classteacher_bp.route('/edit_class_marks/<grade>/<stream>/<term>/<assessment_type>')
@@ -2296,6 +2312,10 @@ def download_class_report(grade, stream, term, assessment_type):
 
     class_average = round(class_total / student_count, 2) if student_count > 0 else 0
 
+    # Get staff information for the report
+    from ..services.staff_assignment_service import StaffAssignmentService
+    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream)
+
     # Generate PDF report using HTML-to-PDF conversion for better formatting
     pdf_file = generate_class_report_pdf_from_html(
         grade,
@@ -2309,7 +2329,8 @@ def download_class_report(grade, stream, term, assessment_type):
         education_level,
         subject_averages,
         class_average,
-        selected_subject_ids=selected_subjects
+        selected_subject_ids=selected_subjects,
+        staff_info=staff_info
     )
 
     if not pdf_file:
@@ -3986,7 +4007,7 @@ def manage_subjects():
         session.pop('new_subject_ids')
 
     return render_template(
-        'manage_subjects_improved.html',
+        'manage_subjects.html',
         subjects=subjects,
         pagination=pagination,
         education_levels=education_levels,
@@ -4122,7 +4143,7 @@ def manage_grades_streams():
             grade.education_level = "unknown"
 
     return render_template(
-        "manage_grades_streams_improved.html",
+        "manage_grades_streams.html",
         grades=all_grades,
         grades_page=grades_page,
         total_grades=total_grades,
@@ -4200,12 +4221,74 @@ def edit_stream():
     flash(f"Stream updated from '{old_name}' in {old_grade.level} to '{stream_name}' in {grade.level}.", "success")
     return redirect(url_for('classteacher.manage_grades_streams'))
 
+def cleanup_duplicate_assignments():
+    """Utility function to remove duplicate teacher assignments."""
+    try:
+        from ..models.assignment import TeacherSubjectAssignment
+        from ..extensions import db
+
+        # Find and remove duplicate class teacher assignments
+        # Group by teacher_id, grade_id, stream_id, is_class_teacher
+        duplicates = db.session.query(TeacherSubjectAssignment).filter_by(is_class_teacher=True).all()
+
+        seen_combinations = set()
+        to_delete = []
+
+        for assignment in duplicates:
+            combination_key = (assignment.teacher_id, assignment.grade_id, assignment.stream_id, assignment.is_class_teacher)
+
+            if combination_key in seen_combinations:
+                to_delete.append(assignment)
+            else:
+                seen_combinations.add(combination_key)
+
+        # Delete duplicates
+        for assignment in to_delete:
+            db.session.delete(assignment)
+
+        # Find and remove duplicate subject assignments
+        subject_duplicates = db.session.query(TeacherSubjectAssignment).filter_by(is_class_teacher=False).all()
+
+        seen_subject_combinations = set()
+        subject_to_delete = []
+
+        for assignment in subject_duplicates:
+            subject_combination_key = (assignment.teacher_id, assignment.subject_id, assignment.grade_id, assignment.stream_id)
+
+            if subject_combination_key in seen_subject_combinations:
+                subject_to_delete.append(assignment)
+            else:
+                seen_subject_combinations.add(subject_combination_key)
+
+        # Delete subject duplicates
+        for assignment in subject_to_delete:
+            db.session.delete(assignment)
+
+        db.session.commit()
+
+        total_deleted = len(to_delete) + len(subject_to_delete)
+        print(f"Cleaned up {total_deleted} duplicate assignments")
+        return total_deleted
+
+    except Exception as e:
+        print(f"Error cleaning up duplicates: {str(e)}")
+        db.session.rollback()
+        return 0
+
 @classteacher_bp.route('/manage_teacher_assignments', methods=['GET', 'POST'])
 @classteacher_required
 def manage_teacher_assignments():
     """Route for managing teacher assignments, transfers, and reassignments."""
     error_message = None
     success_message = None
+
+    # Clean up any duplicate assignments first
+    try:
+        duplicates_removed = cleanup_duplicate_assignments()
+        if duplicates_removed > 0:
+            print(f"Cleaned up {duplicates_removed} duplicate assignments")
+    except Exception as e:
+        print(f"Error during cleanup: {str(e)}")
 
     # Get all teachers
     teachers = Teacher.query.all()
@@ -4228,10 +4311,22 @@ def manage_teacher_assignments():
             is_class_teacher=True
         ).all()
 
+        # Use a set to track unique grade-stream combinations to avoid duplicates
+        seen_combinations = set()
+
         for assignment in assignments:
             teacher = Teacher.query.get(assignment.teacher_id)
             grade = Grade.query.get(assignment.grade_id)
             stream = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
+
+            # Create a unique key for this grade-stream combination
+            combination_key = (assignment.grade_id, assignment.stream_id)
+
+            # Skip if we've already seen this combination
+            if combination_key in seen_combinations:
+                continue
+
+            seen_combinations.add(combination_key)
 
             # Determine education level based on grade
             education_level = ""
@@ -4277,11 +4372,23 @@ def manage_teacher_assignments():
             is_class_teacher=False
         ).all()
 
+        # Use a set to track unique subject-grade-stream combinations to avoid duplicates
+        seen_subject_combinations = set()
+
         for assignment in assignments:
             teacher = Teacher.query.get(assignment.teacher_id)
             subject = Subject.query.get(assignment.subject_id)
             grade = Grade.query.get(assignment.grade_id)
             stream = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
+
+            # Create a unique key for this subject-grade-stream combination
+            subject_combination_key = (assignment.subject_id, assignment.grade_id, assignment.stream_id)
+
+            # Skip if we've already seen this combination
+            if subject_combination_key in seen_subject_combinations:
+                continue
+
+            seen_subject_combinations.add(subject_combination_key)
 
             subject_assignments.append({
                 "id": assignment.id,
@@ -5085,7 +5192,7 @@ def manage_terms_assessments():
             assessment.weight = None
 
     return render_template(
-        'manage_terms_assessments_improved.html',
+        'manage_terms_assessments.html',
         terms=terms,
         assessment_types=assessment_types,
         current_academic_year=current_academic_year,
@@ -5339,10 +5446,53 @@ def bulk_transfer_assignments():
 
     return redirect(url_for('classteacher.manage_teacher_assignments'))
 
+@classteacher_bp.route('/teacher_management_hub', methods=['GET'])
+@classteacher_required
+def teacher_management_hub():
+    """Route for the Teacher Management Hub - central entry point."""
+    from ..models.assignment import TeacherSubjectAssignment
+
+    # Get statistics
+    total_teachers = Teacher.query.count()
+    total_assignments = TeacherSubjectAssignment.query.count()
+    class_teachers = TeacherSubjectAssignment.query.filter_by(is_class_teacher=True).count()
+    subject_assignments = TeacherSubjectAssignment.query.filter_by(is_class_teacher=False).count()
+
+    # Sample recent activities (you can expand this with real data)
+    recent_activities = [
+        {
+            'icon': '👨‍🏫',
+            'text': 'New teacher profile created',
+            'time': '2 hours ago'
+        },
+        {
+            'icon': '📚',
+            'text': 'Subject assignment updated',
+            'time': '4 hours ago'
+        },
+        {
+            'icon': '🔄',
+            'text': 'Teacher reassignment completed',
+            'time': '1 day ago'
+        }
+    ]
+
+    return render_template(
+        'teacher_management_hub.html',
+        total_teachers=total_teachers,
+        total_assignments=total_assignments,
+        class_teachers=class_teachers,
+        subject_assignments=subject_assignments,
+        recent_activities=recent_activities
+    )
+
 @classteacher_bp.route('/manage_teachers', methods=['GET', 'POST'])
 @classteacher_required
 def manage_teachers():
     """Route for managing teachers."""
+    # Import TeacherSubjectAssignment at the beginning
+    from ..models.assignment import TeacherSubjectAssignment
+
     error_message = None
     success_message = None
 
@@ -5375,8 +5525,56 @@ def manage_teachers():
         class_teacher_assignments = []
         subject_assignments = []
 
-    # Get all teachers
-    teachers = Teacher.query.all()
+    # Get all teachers with their assignment data
+    teachers = []
+    all_teachers = Teacher.query.all()
+
+    for teacher in all_teachers:
+        # Get teacher's assignments
+        teacher_assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher.id).all()
+
+        # Get subjects taught by this teacher
+        subjects_taught = []
+        class_assignments = []
+        subject_assignments = []
+
+        for assignment in teacher_assignments:
+            if assignment.is_class_teacher:
+                # Class teacher assignment
+                grade = Grade.query.get(assignment.grade_id)
+                stream = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
+                class_assignments.append({
+                    'grade': grade.level if grade else 'Unknown',
+                    'stream': stream.name if stream else 'All Streams'
+                })
+            else:
+                # Subject assignment
+                subject = Subject.query.get(assignment.subject_id)
+                grade = Grade.query.get(assignment.grade_id)
+                stream = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
+
+                if subject and subject.name not in subjects_taught:
+                    subjects_taught.append(subject.name)
+
+                subject_assignments.append({
+                    'subject': subject.name if subject else 'Unknown',
+                    'grade': grade.level if grade else 'Unknown',
+                    'stream': stream.name if stream else 'All Streams'
+                })
+
+        # Create enhanced teacher object
+        enhanced_teacher = {
+            'id': teacher.id,
+            'username': teacher.username,
+            'role': teacher.role,
+            'subjects_taught': subjects_taught,
+            'class_assignments': class_assignments,
+            'subject_assignments': subject_assignments,
+            'total_assignments': len(teacher_assignments),
+            'is_class_teacher': len(class_assignments) > 0
+        }
+
+        teachers.append(enhanced_teacher)
 
     # Get all subjects and grades for the form
     subjects = Subject.query.all()
@@ -5468,9 +5666,30 @@ def manage_teachers():
                     print(f"Error removing assignment: {str(e)}")
                     error_message = "Error removing assignment."
 
+    # Get current teacher's assignments for display
+    try:
+        # Get class teacher assignments for current teacher
+        class_teacher_assignments = TeacherSubjectAssignment.query.filter_by(
+            teacher_id=current_teacher.id,
+            is_class_teacher=True
+        ).all()
+
+        # Get subject assignments for current teacher
+        subject_assignments = TeacherSubjectAssignment.query.filter_by(
+            teacher_id=current_teacher.id,
+            is_class_teacher=False
+        ).all()
+
+    except Exception as e:
+        print(f"Error fetching assignments: {str(e)}")
+        class_teacher_assignments = []
+        subject_assignments = []
+
     return render_template(
-        'manage_teachers_simple.html',
+        'manage_teachers.html',
         teachers=teachers,
+        class_teacher_assignments=class_teacher_assignments,
+        subject_assignments=subject_assignments,
         error_message=error_message,
         success_message=success_message
     )
@@ -5808,6 +6027,245 @@ def bulk_assign_subjects():
         flash("Error creating assignments. Please try again.", "error")
 
     return redirect(url_for('classteacher.assign_subjects'))
+
+@classteacher_bp.route('/enhanced_bulk_assign_subjects', methods=['POST'])
+@classteacher_required
+def enhanced_bulk_assign_subjects():
+    """Enhanced route for bulk assignment of subjects to teachers with advanced features."""
+    from ..models.assignment import TeacherSubjectAssignment
+
+    teacher_id = request.form.get('bulk_teacher_id')
+    assignment_mode = request.form.get('assignment_mode', 'simple')
+
+    if not teacher_id:
+        flash("Please select a teacher.", "error")
+        return redirect(url_for('classteacher.assign_subjects'))
+
+    # Get the teacher
+    teacher = Teacher.query.get(teacher_id)
+    if not teacher:
+        flash("Teacher not found.", "error")
+        return redirect(url_for('classteacher.assign_subjects'))
+
+    # Track statistics for the flash message
+    assignments_created = 0
+    assignments_skipped = 0
+    class_teacher_conflicts = 0
+    errors = []
+
+    try:
+        if assignment_mode == 'simple':
+            # Handle enhanced simple bulk assignment with dynamic stream selection
+            subject_ids = request.form.getlist('bulk_subjects')
+            grade_ids = request.form.getlist('bulk_grades')
+            class_teacher_grades = request.form.getlist('class_teacher_grades')
+
+            if not subject_ids or not grade_ids:
+                flash("Please select at least one subject and one grade.", "error")
+                return redirect(url_for('classteacher.assign_subjects'))
+
+            # Create assignments for each subject and grade combination
+            for subject_id in subject_ids:
+                subject = Subject.query.get(subject_id)
+                if not subject:
+                    continue
+
+                for grade_id in grade_ids:
+                    grade = Grade.query.get(grade_id)
+                    if not grade:
+                        continue
+
+                    # Check if this grade should have class teacher designation
+                    is_class_teacher_for_grade = grade_id in class_teacher_grades
+
+                    # Check stream selection for this grade
+                    all_streams_option = request.form.get(f'stream_option_{grade_id}', 'all')
+
+                    if all_streams_option == 'all':
+                        # Assign to all streams or whole grade if no streams exist
+                        streams = Stream.query.filter_by(grade_id=grade_id).all()
+
+                        if not streams:
+                            # No streams - create assignment for whole grade
+                            result = create_single_assignment(
+                                teacher_id, subject_id, grade_id, None, is_class_teacher_for_grade
+                            )
+                            assignments_created += result['created']
+                            assignments_skipped += result['skipped']
+                            class_teacher_conflicts += result['conflicts']
+                            if result['error']:
+                                errors.append(result['error'])
+                        else:
+                            # Has streams - create assignment for each stream
+                            for stream in streams:
+                                result = create_single_assignment(
+                                    teacher_id, subject_id, grade_id, stream.id, is_class_teacher_for_grade
+                                )
+                                assignments_created += result['created']
+                                assignments_skipped += result['skipped']
+                                class_teacher_conflicts += result['conflicts']
+                                if result['error']:
+                                    errors.append(result['error'])
+                    else:
+                        # Assign to specific streams only
+                        specific_stream_ids = request.form.getlist(f'specific_streams_{grade_id}')
+
+                        if specific_stream_ids:
+                            for stream_id in specific_stream_ids:
+                                stream = Stream.query.get(stream_id)
+                                if stream and stream.grade_id == int(grade_id):
+                                    result = create_single_assignment(
+                                        teacher_id, subject_id, grade_id, stream.id, is_class_teacher_for_grade
+                                    )
+                                    assignments_created += result['created']
+                                    assignments_skipped += result['skipped']
+                                    class_teacher_conflicts += result['conflicts']
+                                    if result['error']:
+                                        errors.append(result['error'])
+                        else:
+                            # No specific streams selected but specific mode chosen - skip this grade
+                            errors.append(f"No specific streams selected for Grade {grade.level}")
+                            continue
+
+        else:  # advanced mode
+            # Handle advanced precise assignment
+            advanced_subjects = request.form.getlist('advanced_subjects[]')
+            advanced_grades = request.form.getlist('advanced_grades[]')
+            advanced_streams = request.form.getlist('advanced_streams[]')
+            advanced_class_teachers = request.form.getlist('advanced_class_teacher[]')
+
+            if not advanced_subjects or not advanced_grades:
+                flash("Please add at least one assignment combination.", "error")
+                return redirect(url_for('classteacher.assign_subjects'))
+
+            # Process each combination
+            for i in range(len(advanced_subjects)):
+                if i < len(advanced_subjects) and i < len(advanced_grades):
+                    subject_id = advanced_subjects[i]
+                    grade_id = advanced_grades[i]
+                    stream_id = advanced_streams[i] if i < len(advanced_streams) and advanced_streams[i] else None
+                    is_class_teacher = str(i + 1) in advanced_class_teachers
+
+                    if subject_id and grade_id:
+                        result = create_single_assignment(
+                            teacher_id, subject_id, grade_id, stream_id, is_class_teacher
+                        )
+                        assignments_created += result['created']
+                        assignments_skipped += result['skipped']
+                        class_teacher_conflicts += result['conflicts']
+                        if result['error']:
+                            errors.append(result['error'])
+
+        # Commit all the new assignments
+        db.session.commit()
+
+        # Create a comprehensive summary message
+        message_parts = []
+
+        if assignments_created > 0:
+            message_parts.append(f"✅ Created {assignments_created} new assignments for {teacher.username}")
+
+        if assignments_skipped > 0:
+            message_parts.append(f"⏭️ Skipped {assignments_skipped} existing assignments")
+
+        if class_teacher_conflicts > 0:
+            message_parts.append(f"⚠️ Skipped {class_teacher_conflicts} class teacher assignments due to conflicts")
+
+        if errors:
+            message_parts.append(f"❌ {len(errors)} errors occurred")
+
+        if assignments_created > 0:
+            flash(". ".join(message_parts), "success")
+        else:
+            flash("No new assignments were created. " + ". ".join(message_parts[1:]), "warning")
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error in enhanced bulk assignment: {str(e)}")
+        flash(f"Error creating assignments: {str(e)}", "error")
+
+    return redirect(url_for('classteacher.assign_subjects'))
+
+def create_single_assignment(teacher_id, subject_id, grade_id, stream_id, is_class_teacher):
+    """Helper function to create a single assignment with error handling."""
+    from ..models.assignment import TeacherSubjectAssignment
+
+    result = {
+        'created': 0,
+        'skipped': 0,
+        'conflicts': 0,
+        'error': None
+    }
+
+    try:
+        # Check if assignment already exists
+        existing = TeacherSubjectAssignment.query.filter_by(
+            teacher_id=teacher_id,
+            subject_id=subject_id,
+            grade_id=grade_id,
+            stream_id=stream_id
+        ).first()
+
+        if existing:
+            result['skipped'] = 1
+            return result
+
+        # If this is a class teacher, check if there's already one for this grade/stream
+        if is_class_teacher:
+            existing_class_teacher = TeacherSubjectAssignment.query.filter_by(
+                grade_id=grade_id,
+                stream_id=stream_id,
+                is_class_teacher=True
+            ).first()
+
+            if existing_class_teacher and int(existing_class_teacher.teacher_id) != int(teacher_id):
+                result['conflicts'] = 1
+                return result
+
+        # Create the assignment
+        new_assignment = TeacherSubjectAssignment(
+            teacher_id=teacher_id,
+            subject_id=subject_id,
+            grade_id=grade_id,
+            stream_id=stream_id,
+            is_class_teacher=is_class_teacher
+        )
+
+        db.session.add(new_assignment)
+        result['created'] = 1
+
+    except Exception as e:
+        result['error'] = f"Error creating assignment: {str(e)}"
+
+    return result
+
+@classteacher_bp.route('/advanced_assignments', methods=['GET'])
+@classteacher_required
+def advanced_assignments():
+    """Route for the advanced teacher assignments page."""
+    from ..models.assignment import TeacherSubjectAssignment
+
+    # Get all teachers, subjects, and grades
+    teachers = Teacher.query.all()
+    subjects = Subject.query.all()
+    grades = Grade.query.all()
+
+    # Get all current assignments
+    try:
+        assignments = TeacherSubjectAssignment.query.join(Teacher).join(Subject).join(Grade).all()
+    except Exception as e:
+        print(f"Error fetching teacher assignments: {str(e)}")
+        assignments = []
+
+    return render_template(
+        'teacher_assignments.html',
+        teachers=teachers,
+        subjects=subjects,
+        grades=grades,
+        assignments=assignments,
+        error_message=None,
+        success_message=None
+    )
 
 @classteacher_bp.route('/remove_assignment', methods=['POST'])
 @classteacher_required

@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Staff Management - {{ config.school_name }}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+          --primary-color: {{ config.primary_color or '#1f7d53' }};
+          --secondary-color: {{ config.secondary_color or '#18230f' }};
+      }
+
+      .staff-card {
+          border-left: 4px solid var(--primary-color);
+          transition: all 0.3s ease;
+      }
+
+      .staff-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+
+      .role-badge {
+          background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+          color: white;
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: 500;
+      }
+
+      .assignment-section {
+          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+          border-radius: 10px;
+          padding: 1.5rem;
+          margin-bottom: 1.5rem;
+      }
+
+      .btn-primary {
+          background: var(--primary-color);
+          border-color: var(--primary-color);
+      }
+
+      .btn-primary:hover {
+          background: var(--secondary-color);
+          border-color: var(--secondary-color);
+      }
+
+      .staff-stats {
+          background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+          color: white;
+          border-radius: 10px;
+          padding: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid py-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+              <i class="fas fa-users-cog text-primary me-2"></i>
+              Staff Management
+            </h1>
+            <a
+              href="{{ url_for('classteacher.dashboard') }}"
+              class="btn btn-outline-secondary"
+            >
+              <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff Statistics -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="staff-stats text-center">
+            <i class="fas fa-users fa-2x mb-2"></i>
+            <h4>{{ teachers|length }}</h4>
+            <p class="mb-0">Total Teachers</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="staff-stats text-center">
+            <i class="fas fa-user-tie fa-2x mb-2"></i>
+            <h4>{{ active_teachers }}</h4>
+            <p class="mb-0">Active Teachers</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="staff-stats text-center">
+            <i class="fas fa-chalkboard-teacher fa-2x mb-2"></i>
+            <h4>{{ class_teachers }}</h4>
+            <p class="mb-0">Class Teachers</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="staff-stats text-center">
+            <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+            <h4>{{ qualified_teachers }}</h4>
+            <p class="mb-0">With Qualifications</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- School Leadership Assignment -->
+      <div class="assignment-section">
+        <h4 class="mb-3">
+          <i class="fas fa-crown text-warning me-2"></i>
+          School Leadership
+        </h4>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-title">
+                  <i class="fas fa-user-tie me-2"></i>
+                  Headteacher
+                </h6>
+                {% if current_headteacher %}
+                <p class="mb-2">
+                  <strong
+                    >{{ current_headteacher.full_name or
+                    current_headteacher.username }}</strong
+                  >
+                  <br />
+                  <small class="text-muted"
+                    >{{ current_headteacher.employee_id }}</small
+                  >
+                </p>
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  onclick="changeHeadteacher()"
+                >
+                  Change Headteacher
+                </button>
+                {% else %}
+                <p class="text-muted mb-2">No headteacher assigned</p>
+                <button
+                  class="btn btn-sm btn-primary"
+                  onclick="assignHeadteacher()"
+                >
+                  Assign Headteacher
+                </button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-title">
+                  <i class="fas fa-user-friends me-2"></i>
+                  Deputy Headteacher
+                </h6>
+                {% if current_deputy %}
+                <p class="mb-2">
+                  <strong
+                    >{{ current_deputy.full_name or current_deputy.username
+                    }}</strong
+                  >
+                  <br />
+                  <small class="text-muted"
+                    >{{ current_deputy.employee_id }}</small
+                  >
+                </p>
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  onclick="changeDeputy()"
+                >
+                  Change Deputy
+                </button>
+                {% else %}
+                <p class="text-muted mb-2">No deputy headteacher assigned</p>
+                <button class="btn btn-sm btn-primary" onclick="assignDeputy()">
+                  Assign Deputy
+                </button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teachers List -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div
+              class="card-header d-flex justify-content-between align-items-center"
+            >
+              <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                All Teachers
+              </h5>
+              <button class="btn btn-primary btn-sm" onclick="addNewTeacher()">
+                <i class="fas fa-plus me-1"></i>
+                Add Teacher
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                {% for teacher in teachers %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                  <div class="card staff-card h-100">
+                    <div class="card-body">
+                      <div
+                        class="d-flex justify-content-between align-items-start mb-2"
+                      >
+                        <h6 class="card-title mb-0">
+                          {{ teacher.full_name or teacher.username }}
+                        </h6>
+                        <span class="role-badge"
+                          >{{ teacher.role.title() }}</span
+                        >
+                      </div>
+
+                      <p class="text-muted small mb-2">
+                        <i class="fas fa-id-badge me-1"></i>
+                        {{ teacher.employee_id or 'No ID' }}
+                      </p>
+
+                      {% if teacher.qualification %}
+                      <p class="text-muted small mb-2">
+                        <i class="fas fa-graduation-cap me-1"></i>
+                        {{ teacher.qualification }}
+                      </p>
+                      {% endif %} {% if teacher.email %}
+                      <p class="text-muted small mb-2">
+                        <i class="fas fa-envelope me-1"></i>
+                        {{ teacher.email }}
+                      </p>
+                      {% endif %}
+
+                      <div
+                        class="d-flex justify-content-between align-items-center mt-3"
+                      >
+                        <div>
+                          {% if teacher.is_active %}
+                          <span class="badge bg-success">Active</span>
+                          {% else %}
+                          <span class="badge bg-secondary">Inactive</span>
+                          {% endif %}
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                          <button
+                            class="btn btn-outline-primary"
+                            onclick="editTeacher({{ teacher.id }})"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button
+                            class="btn btn-outline-info"
+                            onclick="assignSubjects({{ teacher.id }})"
+                          >
+                            <i class="fas fa-book"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Teacher Modal -->
+    <div
+      class="modal fade"
+      id="editTeacherModal"
+      tabindex="-1"
+      aria-labelledby="editTeacherModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editTeacherModalLabel">
+              <i class="fas fa-edit me-2"></i>Edit Teacher
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="editTeacherForm">
+              <input type="hidden" id="editTeacherId" name="teacher_id" />
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="editUsername" class="form-label">Username</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="editUsername"
+                    name="username"
+                    readonly
+                  />
+                  <small class="text-muted">Username cannot be changed</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="editRole" class="form-label">Role</label>
+                  <select class="form-select" id="editRole" name="role">
+                    <option value="teacher">Teacher</option>
+                    <option value="classteacher">Class Teacher</option>
+                    <option value="headteacher">Head Teacher</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="editFullName" class="form-label">Full Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="editFullName"
+                    name="full_name"
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="editEmployeeId" class="form-label"
+                    >Employee ID</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="editEmployeeId"
+                    name="employee_id"
+                    placeholder="Enter employee ID"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="editEmail" class="form-label">Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="editEmail"
+                    name="email"
+                    placeholder="Enter email address"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="editPhone" class="form-label">Phone Number</label>
+                  <input
+                    type="tel"
+                    class="form-control"
+                    id="editPhone"
+                    name="phone_number"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="editQualification" class="form-label"
+                    >Qualification</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="editQualification"
+                    name="qualification"
+                    placeholder="Enter qualification"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="editSpecialization" class="form-label"
+                    >Specialization</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="editSpecialization"
+                    name="specialization"
+                    placeholder="Enter specialization"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="editIsActive"
+                      name="is_active"
+                    />
+                    <label class="form-check-label" for="editIsActive">
+                      Active Status
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="saveTeacherChanges()"
+            >
+              <i class="fas fa-save me-1"></i>Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subject Assignment Modal -->
+    <div
+      class="modal fade"
+      id="subjectAssignmentModal"
+      tabindex="-1"
+      aria-labelledby="subjectAssignmentModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="subjectAssignmentModalLabel">
+              <i class="fas fa-book me-2"></i>Assign Subjects to
+              <span id="assignTeacherName"></span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="assignTeacherId" name="teacher_id" />
+
+            <div class="row">
+              <div class="col-md-6">
+                <h6>Available Subjects</h6>
+                <div
+                  class="border rounded p-3"
+                  style="height: 400px; overflow-y: auto"
+                >
+                  <div id="availableSubjects">
+                    <!-- Subjects will be loaded here -->
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <h6>Assigned Subjects</h6>
+                <div
+                  class="border rounded p-3"
+                  style="height: 400px; overflow-y: auto"
+                >
+                  <div id="assignedSubjects">
+                    <!-- Assigned subjects will be loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="saveSubjectAssignments()"
+            >
+              <i class="fas fa-save me-1"></i>Save Assignments
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add New Teacher Modal -->
+    <div
+      class="modal fade"
+      id="addTeacherModal"
+      tabindex="-1"
+      aria-labelledby="addTeacherModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addTeacherModalLabel">
+              <i class="fas fa-user-plus me-2"></i>Add New Teacher
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="addTeacherForm">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="newUsername" class="form-label"
+                    >Username <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="newUsername"
+                    name="username"
+                    required
+                  />
+                  <small class="text-muted">This will be used for login</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="newPassword" class="form-label"
+                    >Password <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="newPassword"
+                    name="password"
+                    required
+                  />
+                  <small class="text-muted">Minimum 6 characters</small>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="newRole" class="form-label"
+                    >Role <span class="text-danger">*</span></label
+                  >
+                  <select class="form-select" id="newRole" name="role" required>
+                    <option value="">Select Role</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="classteacher">Class Teacher</option>
+                    <option value="headteacher">Head Teacher</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="newFullName" class="form-label">Full Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="newFullName"
+                    name="full_name"
+                    placeholder="Enter full name"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="newEmployeeId" class="form-label"
+                    >Employee ID</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="newEmployeeId"
+                    name="employee_id"
+                    placeholder="Enter employee ID"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="newEmail" class="form-label">Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="newEmail"
+                    name="email"
+                    placeholder="Enter email address"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="newPhone" class="form-label">Phone Number</label>
+                  <input
+                    type="tel"
+                    class="form-control"
+                    id="newPhone"
+                    name="phone_number"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="newQualification" class="form-label"
+                    >Qualification</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="newQualification"
+                    name="qualification"
+                    placeholder="Enter qualification"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="newSpecialization" class="form-label"
+                    >Specialization</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="newSpecialization"
+                    name="specialization"
+                    placeholder="Enter specialization"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <div class="form-check mt-4">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="newIsActive"
+                      name="is_active"
+                      checked
+                    />
+                    <label class="form-check-label" for="newIsActive">
+                      Active Status
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="saveNewTeacher()"
+            >
+              <i class="fas fa-user-plus me-1"></i>Add Teacher
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function assignHeadteacher() {
+        // Implementation for headteacher assignment
+        alert("Headteacher assignment feature - to be implemented");
+      }
+
+      function changeHeadteacher() {
+        // Implementation for changing headteacher
+        alert("Change headteacher feature - to be implemented");
+      }
+
+      function assignDeputy() {
+        // Implementation for deputy assignment
+        alert("Deputy assignment feature - to be implemented");
+      }
+
+      function changeDeputy() {
+        // Implementation for changing deputy
+        alert("Change deputy feature - to be implemented");
+      }
+
+      function editTeacher(teacherId) {
+        // Get teacher information first
+        fetch(`/staff/teacher/${teacherId}/info`)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              showEditTeacherModal(data.teacher);
+            } else {
+              alert("Error loading teacher information: " + data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Error loading teacher information");
+          });
+      }
+
+      function assignSubjects(teacherId) {
+        // Get teacher information and available subjects
+        Promise.all([
+          fetch(`/staff/teacher/${teacherId}/info`),
+          fetch("/staff/subjects/list"),
+          fetch("/staff/grades/list"),
+        ])
+          .then((responses) => Promise.all(responses.map((r) => r.json())))
+          .then(([teacherData, subjectsData, gradesData]) => {
+            if (
+              teacherData.success &&
+              subjectsData.success &&
+              gradesData.success
+            ) {
+              showSubjectAssignmentModal(
+                teacherData.teacher,
+                subjectsData.subjects,
+                gradesData.grades
+              );
+            } else {
+              alert("Error loading data for subject assignment");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Error loading subject assignment data");
+          });
+      }
+
+      function addNewTeacher() {
+        // Show the add new teacher modal
+        showAddTeacherModal();
+      }
+
+      function showEditTeacherModal(teacher) {
+        // Populate the modal with teacher data
+        document.getElementById("editTeacherId").value = teacher.id;
+        document.getElementById("editUsername").value = teacher.username;
+        document.getElementById("editRole").value = teacher.role;
+        document.getElementById("editFullName").value = teacher.full_name || "";
+        document.getElementById("editEmployeeId").value =
+          teacher.employee_id || "";
+        document.getElementById("editEmail").value = teacher.email || "";
+        document.getElementById("editPhone").value = teacher.phone_number || "";
+        document.getElementById("editQualification").value =
+          teacher.qualification || "";
+        document.getElementById("editSpecialization").value =
+          teacher.specialization || "";
+        document.getElementById("editIsActive").checked = teacher.is_active;
+
+        // Show the modal
+        const modal = new bootstrap.Modal(
+          document.getElementById("editTeacherModal")
+        );
+        modal.show();
+      }
+
+      function saveTeacherChanges() {
+        const teacherId = document.getElementById("editTeacherId").value;
+        const formData = {
+          full_name: document.getElementById("editFullName").value,
+          role: document.getElementById("editRole").value,
+          employee_id: document.getElementById("editEmployeeId").value,
+          email: document.getElementById("editEmail").value,
+          phone_number: document.getElementById("editPhone").value,
+          qualification: document.getElementById("editQualification").value,
+          specialization: document.getElementById("editSpecialization").value,
+          is_active: document.getElementById("editIsActive").checked,
+        };
+
+        // Send update request
+        fetch(`/staff/teacher/${teacherId}/update`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              // Close modal
+              const modal = bootstrap.Modal.getInstance(
+                document.getElementById("editTeacherModal")
+              );
+              modal.hide();
+
+              // Show success message and reload page
+              alert("Teacher updated successfully!");
+              location.reload();
+            } else {
+              alert("Error updating teacher: " + data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Error updating teacher");
+          });
+      }
+
+      function showSubjectAssignmentModal(teacher, subjects, grades) {
+        // Set teacher info
+        document.getElementById("assignTeacherId").value = teacher.id;
+        document.getElementById("assignTeacherName").textContent =
+          teacher.full_name || teacher.username;
+
+        // Load available subjects
+        const availableSubjectsDiv =
+          document.getElementById("availableSubjects");
+        availableSubjectsDiv.innerHTML = "";
+
+        subjects.forEach((subject) => {
+          const subjectDiv = document.createElement("div");
+          subjectDiv.className = "form-check mb-2";
+          subjectDiv.innerHTML = `
+            <input class="form-check-input" type="checkbox" id="subject_${subject.id}" value="${subject.id}">
+            <label class="form-check-label" for="subject_${subject.id}">
+              <strong>${subject.name}</strong> <small class="text-muted">(${subject.education_level})</small>
+            </label>
+          `;
+          availableSubjectsDiv.appendChild(subjectDiv);
+        });
+
+        // Load current assignments (this would need an API endpoint)
+        const assignedSubjectsDiv = document.getElementById("assignedSubjects");
+        assignedSubjectsDiv.innerHTML =
+          '<p class="text-muted">Current assignments will be loaded here...</p>';
+
+        // Show modal
+        const modal = new bootstrap.Modal(
+          document.getElementById("subjectAssignmentModal")
+        );
+        modal.show();
+      }
+
+      function saveSubjectAssignments() {
+        const teacherId = document.getElementById("assignTeacherId").value;
+        const selectedSubjects = [];
+
+        // Get selected subjects
+        document
+          .querySelectorAll('#availableSubjects input[type="checkbox"]:checked')
+          .forEach((checkbox) => {
+            selectedSubjects.push(parseInt(checkbox.value));
+          });
+
+        // Send assignment request
+        fetch("/staff/assign_subjects", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            teacher_id: teacherId,
+            subject_ids: selectedSubjects,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              const modal = bootstrap.Modal.getInstance(
+                document.getElementById("subjectAssignmentModal")
+              );
+              modal.hide();
+              alert("Subject assignments saved successfully!");
+              location.reload();
+            } else {
+              alert("Error saving assignments: " + data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Error saving subject assignments");
+          });
+      }
+
+      function showAddTeacherModal() {
+        // Clear form
+        document.getElementById("addTeacherForm").reset();
+        document.getElementById("newIsActive").checked = true;
+
+        // Show modal
+        const modal = new bootstrap.Modal(
+          document.getElementById("addTeacherModal")
+        );
+        modal.show();
+      }
+
+      function saveNewTeacher() {
+        const formData = {
+          username: document.getElementById("newUsername").value,
+          password: document.getElementById("newPassword").value,
+          role: document.getElementById("newRole").value,
+          full_name: document.getElementById("newFullName").value,
+          employee_id: document.getElementById("newEmployeeId").value,
+          email: document.getElementById("newEmail").value,
+          phone_number: document.getElementById("newPhone").value,
+          qualification: document.getElementById("newQualification").value,
+          specialization: document.getElementById("newSpecialization").value,
+          is_active: document.getElementById("newIsActive").checked,
+        };
+
+        // Basic validation
+        if (!formData.username || !formData.password || !formData.role) {
+          alert(
+            "Please fill in all required fields (Username, Password, Role)"
+          );
+          return;
+        }
+
+        if (formData.password.length < 6) {
+          alert("Password must be at least 6 characters long");
+          return;
+        }
+
+        // Send create request
+        fetch("/staff/create_teacher", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              const modal = bootstrap.Modal.getInstance(
+                document.getElementById("addTeacherModal")
+              );
+              modal.hide();
+              alert("Teacher created successfully!");
+              location.reload();
+            } else {
+              alert("Error creating teacher: " + data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Error creating teacher");
+          });
+      }
+    </script>
+  </body>
+</html>

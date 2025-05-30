@@ -215,7 +215,7 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
 
 
 
-def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, class_data, stats, total_marks, subjects, education_level="", subject_averages=None, class_average=0, selected_subject_ids=None):
+def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, class_data, stats, total_marks, subjects, education_level="", subject_averages=None, class_average=0, selected_subject_ids=None, staff_info=None):
     """
     Generate a PDF report for a class using HTML template.
 
@@ -389,6 +389,7 @@ def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, cl
             education_level=education_level,
             subject_averages=subject_averages,
             class_average=class_average,
+            staff_info=staff_info,  # Include staff information
             print_mode=True  # Flag to indicate PDF generation
         )
 

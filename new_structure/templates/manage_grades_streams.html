@@ -3,24 +3,416 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>
-      Manage Grades and Streams - Kirima Primary School (Class Teacher)
-    </title>
+    <title>Manage Grades and Streams - Hillview School (Class Teacher)</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/manage_pages_enhanced.css') }}"
+    />
+    <style>
+      /* Override container styles for manage pages */
+      .manage-container {
+        max-width: 95% !important;
+        width: 95% !important;
+        margin: 80px auto 60px !important;
+        padding: var(--spacing-xl) !important;
+      }
+
+      /* Page header styling */
+      .page-header {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .page-header h1 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-sm);
+        font-size: 2.5rem;
+      }
+
+      .nav-links a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        margin-right: var(--spacing-md);
+      }
+
+      .nav-links a:hover {
+        text-decoration: underline;
+      }
+
+      /* Forms grid layout */
+      .forms-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-xl);
+        margin: var(--spacing-xl) 0;
+      }
+
+      /* Form card styling */
+      .form-card {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+      }
+
+      .form-card h2 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.3rem;
+      }
+
+      /* Section styling */
+      .grades-streams-section {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .grades-streams-section h2 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.5rem;
+      }
+
+      /* Form styling */
+      .form-group {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        color: var(--text-dark);
+        font-weight: 500;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        color: var(--text-dark);
+        background: var(--white);
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
+      }
+
+      /* Button styling */
+      .manage-btn {
+        background: var(--primary-color);
+        color: var(--white);
+        border: none;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      .manage-btn:hover {
+        background: var(--secondary-color);
+      }
+
+      /* Table improvements */
+      .table-responsive {
+        overflow-x: auto;
+        margin: var(--spacing-lg) 0;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        background: var(--white);
+      }
+
+      table {
+        width: 100%;
+        min-width: 800px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      th {
+        background: var(--primary-color);
+        color: var(--white);
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      tr:nth-child(even) {
+        background: rgba(31, 125, 83, 0.05);
+      }
+
+      tr:hover {
+        background: rgba(31, 125, 83, 0.1);
+      }
+
+      /* Stream styling */
+      .streams-cell {
+        max-width: 300px;
+      }
+
+      .streams-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+      }
+
+      .stream-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-sm);
+        background: rgba(31, 125, 83, 0.1);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+      }
+
+      .stream-name {
+        font-weight: 500;
+        color: var(--primary-color);
+      }
+
+      .stream-id {
+        font-size: 0.9rem;
+        color: var(--text-light);
+      }
+
+      /* Action buttons */
+      .action-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap;
+      }
+
+      .edit-btn,
+      .delete-btn {
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+
+      .edit-btn {
+        background: var(--warning-color);
+        color: var(--text-dark);
+      }
+
+      .edit-btn:hover {
+        background: #e0a800;
+        text-decoration: none;
+      }
+
+      .delete-btn {
+        background: var(--error-color);
+        color: var(--white);
+      }
+
+      .delete-btn:hover {
+        background: #c82333;
+      }
+
+      /* Inline form styling */
+      .inline-form {
+        display: inline-block;
+        margin-left: var(--spacing-sm);
+      }
+
+      /* Message styling */
+      .message {
+        padding: var(--spacing-md);
+        border-radius: var(--border-radius);
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .message-error {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid var(--error-color);
+        color: var(--error-color);
+      }
+
+      .message-success {
+        background: rgba(31, 125, 83, 0.1);
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+      }
+
+      /* Enhanced Grades & Streams Specific Styling */
+
+      /* Form divider styling */
+      .form-divider {
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary-color), #28a745);
+        margin: 2rem 0;
+        border-radius: 2px;
+      }
+
+      /* Enhanced stream styling */
+      .streams-cell {
+        max-width: 350px;
+      }
+
+      .streams-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+
+      .stream-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(31, 125, 83, 0.05) 0%, rgba(31, 125, 83, 0.1) 100%);
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .stream-item:hover {
+        background: linear-gradient(135deg, rgba(31, 125, 83, 0.1) 0%, rgba(31, 125, 83, 0.15) 100%);
+        transform: translateX(5px);
+        border-color: var(--primary-color);
+      }
+
+      .stream-name {
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 1.05rem;
+      }
+
+      .stream-id {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        font-weight: 500;
+      }
+
+      .no-streams {
+        color: var(--text-light);
+        font-style: italic;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px dashed #dee2e6;
+      }
+
+      /* Enhanced delete buttons for streams */
+      .delete-btn.sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+      }
+
+      .delete-btn.sm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+      }
+
+      /* Enhanced search section */
+      #student-filter label::before {
+        content: '🔍';
+        margin-right: 8px;
+        font-size: 1.2rem;
+      }
+
+      /* Enhanced table styling for grades */
+      #grades-table th:nth-child(1) { width: 10%; }
+      #grades-table th:nth-child(2) { width: 15%; }
+      #grades-table th:nth-child(3) { width: 50%; }
+      #grades-table th:nth-child(4) { width: 25%; }
+
+      /* Enhanced tips content */
+      .tips-content {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 1.5rem;
+        border-radius: 10px;
+        border-left: 4px solid var(--primary-color);
+      }
+
+      .tips-content ul li {
+        margin-bottom: 0.8rem;
+        line-height: 1.5;
+        position: relative;
+        padding-left: 1.5rem;
+      }
+
+      .tips-content ul li::before {
+        content: '▶';
+        position: absolute;
+        left: 0;
+        color: var(--primary-color);
+        font-size: 0.8rem;
+        top: 2px;
+      }
+
+      /* Enhanced responsive design */
+      @media (max-width: 768px) {
+        .stream-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.8rem;
+        }
+
+        .stream-item .delete-btn.sm {
+          align-self: flex-end;
+        }
+
+        .streams-cell {
+          max-width: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div class="container">
-      <div class="manage-container">
+    <div class="manage-container">
         <header class="page-header">
-          <h1>Manage Grades and Streams</h1>
+          <h1>🎓 Manage Grades & Streams</h1>
+          <p class="page-subtitle">
+            Organize your school's academic structure with grades and class streams
+          </p>
           <div class="nav-links">
-            <a href="{{ url_for('classteacher.dashboard') }}"
-              >Back to Dashboard</a
+            <a href="{{ url_for('classteacher.teacher_management_hub') }}"
+              >Teacher Hub</a
             >
-            |
+            <a href="{{ url_for('classteacher.dashboard') }}">Dashboard</a>
             <a href="{{ url_for('auth.logout_route') }}">Logout</a>
           </div>
         </header>
@@ -37,7 +429,7 @@
         <div class="forms-grid">
           <!-- Add Grade Form -->
           <div class="form-card">
-            <h2>Add New Grade</h2>
+            <h2>📊 Add New Grade</h2>
             <form
               method="POST"
               action="{{ url_for('classteacher.manage_grades_streams') }}"
@@ -65,7 +457,7 @@
 
             <div class="form-divider"></div>
 
-            <h2>Add New Stream</h2>
+            <h2>🏫 Add New Stream</h2>
             <form
               method="POST"
               action="{{ url_for('classteacher.manage_grades_streams') }}"
@@ -109,7 +501,7 @@
 
           <!-- Tips section -->
           <div class="form-card">
-            <h2>Grade & Stream Management Tips</h2>
+            <h2>💡 Grade & Stream Management Tips</h2>
             <div class="tips-content">
               <p>Important guidelines for managing grades and streams:</p>
               <ul>
@@ -140,7 +532,7 @@
 
         <!-- Grades and Streams Table -->
         <div class="students-section">
-          <h2>Existing Grades and Streams</h2>
+          <h2>📋 Existing Grades and Streams</h2>
           <div id="student-filter">
             <label for="grade-search">Search grades:</label>
             <input

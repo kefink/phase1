@@ -8,350 +8,854 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/manage_pages_enhanced.css') }}"
+    />
     <style>
+      /* Override container styles for manage pages */
+      .manage-container {
+        max-width: 95% !important;
+        width: 95% !important;
+        margin: 80px auto 60px !important;
+        padding: var(--spacing-xl) !important;
+      }
+
+      /* Page header styling */
+      .page-header {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .page-header h1 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-sm);
+        font-size: 2.5rem;
+      }
+
+      .nav-links a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        margin-right: var(--spacing-md);
+      }
+
+      .nav-links a:hover {
+        text-decoration: underline;
+      }
+
+      /* Forms grid layout */
+      .forms-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-xl);
+        margin: var(--spacing-xl) 0;
+      }
+
+      /* Section styling */
+      .form-card,
+      .students-section {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .form-card h2,
+      .students-section h2 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.3rem;
+      }
+
+      /* Form styling */
+      .form-group {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        color: var(--text-dark);
+        font-weight: 500;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        color: var(--text-dark);
+        background: var(--white);
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
+      }
+
+      /* Button styling */
+      .manage-btn {
+        background: var(--primary-color);
+        color: var(--white);
+        border: none;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      .manage-btn:hover {
+        background: var(--secondary-color);
+      }
+
+      /* Action buttons */
       .action-buttons {
         display: flex;
-        gap: 5px;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap;
       }
-      .edit-btn {
-        display: inline-block;
-        padding: 5px 10px;
-        background-color: #4a6741;
-        color: white;
-        text-decoration: none;
-        border-radius: 3px;
-        font-size: 0.8rem;
-      }
-      .edit-btn:hover {
-        background-color: #3a5331;
-      }
+
+      .edit-btn,
       .delete-btn {
-        padding: 5px 10px;
-        background-color: #dc3545;
-        color: white;
+        padding: var(--spacing-sm) var(--spacing-md);
         border: none;
-        border-radius: 3px;
+        border-radius: var(--border-radius);
         cursor: pointer;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
       }
+
+      .edit-btn {
+        background: var(--warning-color);
+        color: var(--text-dark);
+      }
+
+      .edit-btn:hover {
+        background: #e0a800;
+        text-decoration: none;
+      }
+
+      .delete-btn {
+        background: var(--error-color);
+        color: var(--white);
+      }
+
       .delete-btn:hover {
-        background-color: #c82333;
+        background: #c82333;
+      }
+
+      /* Table improvements */
+      .table-responsive {
+        overflow-x: auto;
+        margin: var(--spacing-lg) 0;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        background: var(--white);
+      }
+
+      table {
+        width: 100%;
+        min-width: 800px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      th {
+        background: var(--primary-color);
+        color: var(--white);
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      tr:nth-child(even) {
+        background: rgba(31, 125, 83, 0.05);
+      }
+
+      tr:hover {
+        background: rgba(31, 125, 83, 0.1);
+      }
+
+      /* Assignment sections */
+      .assignment-section h3 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-md);
+        font-size: 1.2rem;
+      }
+
+      /* Search styling */
+      #student-filter {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      #student-filter label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        color: var(--text-dark);
+        font-weight: 500;
+      }
+
+      #teacher-search {
+        width: 100%;
+        max-width: 400px;
+        padding: var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        .manage-container {
+          max-width: 98% !important;
+          width: 98% !important;
+          padding: var(--spacing-md) !important;
+        }
+
+        .forms-grid {
+          grid-template-columns: 1fr;
+          gap: var(--spacing-lg);
+        }
+
+        .action-buttons {
+          flex-direction: column;
+        }
+      }
+
+      /* Enhanced Teacher Management Styles */
+      .filter-controls {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+      }
+
+      .filter-controls label {
+        font-weight: 600;
+        color: #495057;
+        margin-right: 8px;
+      }
+
+      .filter-controls select {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+        color: #495057;
+      }
+
+      /* Status and Role Badges */
+      .status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75em;
+        font-weight: 600;
+        margin-left: 8px;
+      }
+
+      .status-badge.class-teacher {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .role-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 0.85em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .role-badge.teacher {
+        background: #e3f2fd;
+        color: #1565c0;
+        border: 1px solid #bbdefb;
+      }
+
+      .role-badge.classteacher {
+        background: #e8f5e8;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
+      }
+
+      .role-badge.headteacher {
+        background: #fff3e0;
+        color: #ef6c00;
+        border: 1px solid #ffcc02;
+      }
+
+      .status-active {
+        color: #28a745;
+        font-weight: 600;
+      }
+
+      .status-inactive {
+        color: #6c757d;
+        font-style: italic;
+      }
+
+      /* Subject and Assignment Display */
+      .subjects-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .subject-tag {
+        background: #e7f3ff;
+        color: #0066cc;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        border: 1px solid #b3d9ff;
+      }
+
+      .more-subjects {
+        color: #6c757d;
+        font-size: 0.8em;
+        font-style: italic;
+      }
+
+      .class-assignments {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .class-assignment {
+        background: #f0f8f0;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border-left: 3px solid #28a745;
+      }
+
+      .class-assignment .stream {
+        background: #28a745;
+        color: white;
+        padding: 1px 6px;
+        border-radius: 8px;
+        font-size: 0.75em;
+        margin-left: 6px;
+      }
+
+      .assignment-count {
+        background: #6f42c1;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 50%;
+        font-weight: 600;
+        font-size: 0.9em;
+        min-width: 24px;
+        text-align: center;
+        display: inline-block;
+      }
+
+      .no-data {
+        color: #6c757d;
+        font-style: italic;
+        font-size: 0.9em;
+      }
+
+      /* Enhanced Action Buttons */
+      .action-buttons {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .view-btn,
+      .edit-btn {
+        background: none;
+        border: none;
+        font-size: 1.2em;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+
+      .view-btn:hover {
+        background: #e3f2fd;
+      }
+
+      .edit-btn:hover {
+        background: #fff3e0;
+      }
+
+      .delete-btn {
+        background: none;
+        border: none;
+        font-size: 1.1em;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+
+      .delete-btn:hover {
+        background: #ffebee;
+      }
+
+      /* Table Enhancements */
+      #teachers-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+      }
+
+      #teachers-table tbody tr:hover {
+        background: #f8f9fa;
+        transition: background-color 0.2s;
+      }
+
+      #teachers-table td {
+        vertical-align: middle;
+        padding: 12px 8px;
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="manage-container">
-        <header class="page-header">
-          <h1>Manage Teachers</h1>
-          <div class="nav-links">
-            <a href="{{ url_for('classteacher.dashboard') }}"
-              >Back to Dashboard</a
-            >
-            |
-            <a href="{{ url_for('bulk_assignments.bulk_assignments') }}"
-              >Teacher Assignments</a
-            >
-            |
-            <a href="{{ url_for('auth.logout_route') }}">Logout</a>
-          </div>
-        </header>
-
-        <!-- Message container for notifications -->
-        <div id="message-container">
-          {% if error_message %}
-          <div class="message message-error">{{ error_message }}</div>
-          {% endif %} {% if success_message %}
-          <div class="message message-success">{{ success_message }}</div>
-          {% endif %}
+    <div class="manage-container">
+      <header class="page-header">
+        <h1>👨‍🏫 Manage Teachers</h1>
+        <p class="page-subtitle">
+          Add, edit, and manage teacher profiles and information
+        </p>
+        <div class="nav-links">
+          <a href="{{ url_for('classteacher.teacher_management_hub') }}"
+            >Teacher Hub</a
+          >
+          <a href="{{ url_for('classteacher.dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('auth.logout_route') }}">Logout</a>
         </div>
+      </header>
 
-        <div class="forms-grid">
-          <!-- Add Teacher Form -->
-          <div class="form-card">
-            <h2>Add New Teacher</h2>
-            <form
-              method="POST"
-              action="{{ url_for('classteacher.manage_teachers') }}"
-            >
+      <!-- Message container for notifications -->
+      <div id="message-container">
+        {% if error_message %}
+        <div class="message message-error">{{ error_message }}</div>
+        {% endif %} {% if success_message %}
+        <div class="message message-success">{{ success_message }}</div>
+        {% endif %}
+      </div>
+
+      <div class="forms-grid">
+        <!-- Add Teacher Form -->
+        <div class="form-card">
+          <h2>➕ Add New Teacher</h2>
+          <form
+            method="POST"
+            action="{{ url_for('classteacher.manage_teachers') }}"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <div class="form-group">
+              <label for="username">Username:</label>
               <input
-                type="hidden"
-                name="csrf_token"
-                value="{{ csrf_token() }}"
+                type="text"
+                name="username"
+                id="username"
+                class="form-control"
+                required
               />
-              <div class="form-group">
-                <label for="username">Username:</label>
-                <input
-                  type="text"
-                  name="username"
-                  id="username"
-                  class="form-control"
-                  required
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="password">Password:</label>
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  class="form-control"
-                  required
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="role">Role:</label>
-                <select name="role" id="role" class="form-control" required>
-                  <option value="">Select Role</option>
-                  <option value="teacher">Teacher</option>
-                  <option value="classteacher">Class Teacher</option>
-                  <option value="headteacher">Head Teacher</option>
-                </select>
-              </div>
-
-              <button type="submit" name="add_teacher" class="manage-btn">
-                Add Teacher
-              </button>
-            </form>
-          </div>
-
-          <!-- This is the second column for tips -->
-          <div class="form-card">
-            <h2>Teacher Management Tips</h2>
-            <div class="tips-content">
-              <p>Here are some tips for managing teachers effectively:</p>
-              <ul>
-                <li>Create unique usernames for each teacher account</li>
-                <li>Ensure passwords are secure but easy to remember</li>
-                <li>
-                  Assign appropriate subjects based on teacher specialization
-                </li>
-                <li>
-                  Be careful when deleting teacher accounts - this will remove
-                  all associated data
-                </li>
-                <li>
-                  Teachers must be assigned to a grade and stream to access
-                  class information
-                </li>
-                <li>
-                  Different roles have different levels of access in the system
-                </li>
-              </ul>
             </div>
-          </div>
+
+            <div class="form-group">
+              <label for="password">Password:</label>
+              <input
+                type="password"
+                name="password"
+                id="password"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="role">Role:</label>
+              <select name="role" id="role" class="form-control" required>
+                <option value="">Select Role</option>
+                <option value="teacher">Teacher</option>
+                <option value="classteacher">Class Teacher</option>
+                <option value="headteacher">Head Teacher</option>
+              </select>
+            </div>
+
+            <button type="submit" name="add_teacher" class="manage-btn">
+              Add Teacher
+            </button>
+          </form>
         </div>
 
-        <!-- Teacher Assignments Section -->
-        <div class="students-section">
-          <h2>My Teaching Assignments</h2>
-
-          <!-- Class Teacher Assignments -->
-          <div class="assignment-section" style="margin-bottom: 20px">
-            <h3>Class Teacher Assignments</h3>
-            {% if class_teacher_assignments %}
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Grade</th>
-                    <th>Stream</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for assignment in class_teacher_assignments %}
-                  <tr>
-                    <td>
-                      {{ assignment.grade.level if assignment.grade is not
-                      mapping else assignment.grade }}
-                    </td>
-                    <td>
-                      {% if assignment.stream is not mapping %} {{
-                      assignment.stream.name if assignment.stream else 'All
-                      Streams' }} {% else %} {{ assignment.stream.name if
-                      assignment.stream else 'All Streams' }} {% endif %}
-                    </td>
-                    <td>
-                      <div class="action-buttons">
-                        <form
-                          method="POST"
-                          action="{{ url_for('classteacher.manage_teachers') }}"
-                          style="display: inline"
-                        >
-                          <input
-                            type="hidden"
-                            name="csrf_token"
-                            value="{{ csrf_token() }}"
-                          />
-                          <input
-                            type="hidden"
-                            name="assignment_id"
-                            value="{{ assignment.id }}"
-                          />
-                          <input
-                            type="hidden"
-                            name="assignment_type"
-                            value="class_teacher"
-                          />
-                          <button
-                            type="submit"
-                            name="delete_assignment"
-                            class="delete-btn"
-                            onclick="return confirm('Are you sure you want to remove this class teacher assignment?')"
-                          >
-                            Delete
-                          </button>
-                        </form>
-                        <a
-                          href="{{ url_for('bulk_assignments.edit_assignment', assignment_id=assignment.id, assignment_type='class_teacher') }}"
-                          class="edit-btn"
-                        >
-                          Edit
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-            {% else %}
-            <p>
-              You are not currently assigned as a class teacher for any class.
-            </p>
-            {% endif %}
-          </div>
-
-          <!-- Subject Assignments -->
-          <div class="assignment-section" style="margin-bottom: 30px">
-            <h3>Subject Assignments</h3>
-            {% if subject_assignments %}
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Subject</th>
-                    <th>Education Level</th>
-                    <th>Grade</th>
-                    <th>Stream</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for assignment in subject_assignments %}
-                  <tr>
-                    <td>{{ assignment.subject.name }}</td>
-                    <td>
-                      {{ assignment.subject.education_level|replace('_', '
-                      ')|title if assignment.subject.education_level else 'N/A'
-                      }}
-                    </td>
-                    <td>{{ assignment.grade.level }}</td>
-                    <td>
-                      {{ assignment.stream.name if assignment.stream else 'All
-                      Streams' }}
-                    </td>
-                    <td>
-                      <div class="action-buttons">
-                        <form
-                          method="POST"
-                          action="{{ url_for('classteacher.manage_teachers') }}"
-                          style="display: inline"
-                        >
-                          <input
-                            type="hidden"
-                            name="csrf_token"
-                            value="{{ csrf_token() }}"
-                          />
-                          <input
-                            type="hidden"
-                            name="assignment_id"
-                            value="{{ assignment.id if assignment is not mapping else assignment['id'] }}"
-                          />
-                          <input
-                            type="hidden"
-                            name="assignment_type"
-                            value="subject"
-                          />
-                          <button
-                            type="submit"
-                            name="delete_assignment"
-                            class="delete-btn"
-                            onclick="return confirm('Are you sure you want to remove this subject assignment?')"
-                          >
-                            Delete
-                          </button>
-                        </form>
-                        <a
-                          href="{{ url_for('bulk_assignments.edit_assignment', assignment_id=assignment.id, assignment_type='subject') }}"
-                          class="edit-btn"
-                        >
-                          Edit
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-            {% else %}
-            <p>You are not currently assigned to teach any subjects.</p>
-            {% endif %}
+        <!-- This is the second column for tips -->
+        <div class="form-card">
+          <h2>💡 Teacher Management Tips</h2>
+          <div class="tips-content">
+            <p>Here are some tips for managing teachers effectively:</p>
+            <ul>
+              <li>Create unique usernames for each teacher account</li>
+              <li>Ensure passwords are secure but easy to remember</li>
+              <li>
+                Assign appropriate subjects based on teacher specialization
+              </li>
+              <li>
+                Be careful when deleting teacher accounts - this will remove all
+                associated data
+              </li>
+              <li>
+                Teachers must be assigned to a grade and stream to access class
+                information
+              </li>
+              <li>
+                Different roles have different levels of access in the system
+              </li>
+            </ul>
           </div>
         </div>
+      </div>
 
-        <!-- Teachers Table -->
-        <div class="students-section">
-          <h2>Existing Teachers</h2>
-          <div id="student-filter">
-            <label for="teacher-search">Search teachers:</label>
-            <input
-              type="text"
-              id="teacher-search"
-              onkeyup="searchTeachers()"
-              placeholder="Type to search..."
-            />
-          </div>
+      <!-- Teacher Assignments Section -->
+      <div class="students-section">
+        <h2>📚 My Teaching Assignments</h2>
 
+        <!-- Class Teacher Assignments -->
+        <div class="assignment-section" style="margin-bottom: 20px">
+          <h3>Class Teacher Assignments</h3>
+          {% if class_teacher_assignments %}
           <div class="table-responsive">
-            <table id="teachers-table">
+            <table>
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Username</th>
-                  <th>Role</th>
-                  <th>Subjects</th>
                   <th>Grade</th>
                   <th>Stream</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {% for teacher in teachers %}
+                {% for assignment in class_teacher_assignments %}
                 <tr>
-                  <td>{{ teacher.id }}</td>
-                  <td>{{ teacher.username }}</td>
-                  <td>{{ teacher.role }}</td>
                   <td>
-                    {% for subject in teacher.subjects %} {{ subject.name }}{%
-                    if not loop.last %}, {% endif %} {% endfor %}
+                    {{ assignment.grade.level if assignment.grade is not mapping
+                    else assignment.grade }}
                   </td>
                   <td>
-                    {{ teacher.stream.grade.level if teacher.stream else 'N/A'
-                    }}
+                    {% if assignment.stream is not mapping %} {{
+                    assignment.stream.name if assignment.stream else 'All
+                    Streams' }} {% else %} {{ assignment.stream.name if
+                    assignment.stream else 'All Streams' }} {% endif %}
                   </td>
                   <td>
-                    {{ teacher.stream.name if teacher.stream else 'N/A' }}
+                    <div class="action-buttons">
+                      <form
+                        method="POST"
+                        action="{{ url_for('classteacher.manage_teachers') }}"
+                        style="display: inline"
+                      >
+                        <input
+                          type="hidden"
+                          name="csrf_token"
+                          value="{{ csrf_token() }}"
+                        />
+                        <input
+                          type="hidden"
+                          name="assignment_id"
+                          value="{{ assignment.id }}"
+                        />
+                        <input
+                          type="hidden"
+                          name="assignment_type"
+                          value="class_teacher"
+                        />
+                        <button
+                          type="submit"
+                          name="delete_assignment"
+                          class="delete-btn"
+                          onclick="return confirm('Are you sure you want to remove this class teacher assignment?')"
+                        >
+                          Delete
+                        </button>
+                      </form>
+                      <a
+                        href="{{ url_for('bulk_assignments.edit_assignment', assignment_id=assignment.id, assignment_type='class_teacher') }}"
+                        class="edit-btn"
+                      >
+                        Edit
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p>
+            You are not currently assigned as a class teacher for any class.
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Subject Assignments -->
+        <div class="assignment-section" style="margin-bottom: 30px">
+          <h3>Subject Assignments</h3>
+          {% if subject_assignments %}
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Education Level</th>
+                  <th>Grade</th>
+                  <th>Stream</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for assignment in subject_assignments %}
+                <tr>
+                  <td>{{ assignment.subject.name }}</td>
+                  <td>
+                    {{ assignment.subject.education_level|replace('_', '
+                    ')|title if assignment.subject.education_level else 'N/A' }}
+                  </td>
+                  <td>{{ assignment.grade.level }}</td>
+                  <td>
+                    {{ assignment.stream.name if assignment.stream else 'All
+                    Streams' }}
                   </td>
                   <td>
+                    <div class="action-buttons">
+                      <form
+                        method="POST"
+                        action="{{ url_for('classteacher.manage_teachers') }}"
+                        style="display: inline"
+                      >
+                        <input
+                          type="hidden"
+                          name="csrf_token"
+                          value="{{ csrf_token() }}"
+                        />
+                        <input
+                          type="hidden"
+                          name="assignment_id"
+                          value="{{ assignment.id if assignment is not mapping else assignment['id'] }}"
+                        />
+                        <input
+                          type="hidden"
+                          name="assignment_type"
+                          value="subject"
+                        />
+                        <button
+                          type="submit"
+                          name="delete_assignment"
+                          class="delete-btn"
+                          onclick="return confirm('Are you sure you want to remove this subject assignment?')"
+                        >
+                          Delete
+                        </button>
+                      </form>
+                      <a
+                        href="{{ url_for('bulk_assignments.edit_assignment', assignment_id=assignment.id, assignment_type='subject') }}"
+                        class="edit-btn"
+                      >
+                        Edit
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p>You are not currently assigned to teach any subjects.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Teachers Table -->
+      <div class="students-section">
+        <h2>👥 Existing Teachers</h2>
+        <div id="student-filter">
+          <label for="teacher-search">Search teachers:</label>
+          <input
+            type="text"
+            id="teacher-search"
+            onkeyup="searchTeachers()"
+            placeholder="Type to search..."
+          />
+        </div>
+
+        <!-- Filter and Sort Controls -->
+        <div
+          class="filter-controls"
+          style="
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+          "
+        >
+          <div>
+            <label for="role-filter">Filter by Role:</label>
+            <select
+              id="role-filter"
+              onchange="filterTeachers()"
+              style="padding: 5px"
+            >
+              <option value="">All Roles</option>
+              <option value="teacher">Teacher</option>
+              <option value="classteacher">Class Teacher</option>
+              <option value="headteacher">Head Teacher</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="assignment-filter">Filter by Assignment:</label>
+            <select
+              id="assignment-filter"
+              onchange="filterTeachers()"
+              style="padding: 5px"
+            >
+              <option value="">All Teachers</option>
+              <option value="has-class">Has Class Assignment</option>
+              <option value="has-subject">Has Subject Assignment</option>
+              <option value="no-assignment">No Assignments</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="sort-by">Sort by:</label>
+            <select id="sort-by" onchange="sortTeachers()" style="padding: 5px">
+              <option value="username">Username</option>
+              <option value="role">Role</option>
+              <option value="assignments">Total Assignments</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table id="teachers-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Subjects Taught</th>
+                <th>Class Assignments</th>
+                <th>Total Assignments</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for teacher in teachers %}
+              <tr
+                data-role="{{ teacher.role }}"
+                data-has-class="{{ 'true' if teacher.is_class_teacher else 'false' }}"
+                data-has-subject="{{ 'true' if teacher.subjects_taught else 'false' }}"
+                data-assignments="{{ teacher.total_assignments }}"
+              >
+                <td>{{ teacher.id }}</td>
+                <td>
+                  <strong>{{ teacher.username }}</strong>
+                  {% if teacher.is_class_teacher %}
+                  <span class="status-badge class-teacher">Class Teacher</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="role-badge {{ teacher.role }}">
+                    {{ teacher.role|title }}
+                  </span>
+                </td>
+                <td>
+                  {% if teacher.total_assignments > 0 %}
+                  <span class="status-active">Active</span>
+                  {% else %}
+                  <span class="status-inactive">No Assignments</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if teacher.subjects_taught %}
+                  <div class="subjects-list">
+                    {% for subject in teacher.subjects_taught[:3] %}
+                    <span class="subject-tag">{{ subject }}</span>
+                    {% endfor %} {% if teacher.subjects_taught|length > 3 %}
+                    <span class="more-subjects"
+                      >+{{ teacher.subjects_taught|length - 3 }} more</span
+                    >
+                    {% endif %}
+                  </div>
+                  {% else %}
+                  <span class="no-data">No subjects assigned</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if teacher.class_assignments %}
+                  <div class="class-assignments">
+                    {% for assignment in teacher.class_assignments %}
+                    <div class="class-assignment">
+                      <strong>{{ assignment.grade }}</strong>
+                      {% if assignment.stream != 'All Streams' %}
+                      <span class="stream">{{ assignment.stream }}</span>
+                      {% endif %}
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% else %}
+                  <span class="no-data">No class assignments</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="assignment-count"
+                    >{{ teacher.total_assignments }}</span
+                  >
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      class="view-btn"
+                      onclick="viewTeacherDetails({{ teacher.id }}, '{{ teacher.username }}')"
+                      title="View Details"
+                    >
+                      👁️
+                    </button>
+                    <button
+                      class="edit-btn"
+                      onclick="editTeacher({{ teacher.id }}, '{{ teacher.username }}', '{{ teacher.role }}')"
+                      title="Edit Teacher"
+                    >
+                      ✏️
+                    </button>
                     <form
                       method="POST"
                       action="{{ url_for('classteacher.manage_teachers') }}"
                       style="display: inline"
+                      onsubmit="return confirm('Are you sure you want to delete {{ teacher.username }}? This will remove all their assignments.')"
                     >
                       <input
                         type="hidden"
@@ -367,16 +871,17 @@
                         type="submit"
                         name="delete_teacher"
                         class="delete-btn"
+                        title="Delete Teacher"
                       >
-                        Delete
+                        🗑️
                       </button>
                     </form>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -409,7 +914,7 @@
         }
       }
 
-      // Function to search teachers by username
+      // Enhanced search function
       function searchTeachers() {
         const searchValue = document
           .getElementById("teacher-search")
@@ -418,12 +923,124 @@
 
         rows.forEach((row) => {
           const teacherName = row.cells[1].textContent.toLowerCase();
-          if (teacherName.includes(searchValue)) {
+          const subjects = row.cells[4].textContent.toLowerCase();
+          const role = row.cells[2].textContent.toLowerCase();
+
+          if (
+            teacherName.includes(searchValue) ||
+            subjects.includes(searchValue) ||
+            role.includes(searchValue)
+          ) {
             row.style.display = "";
           } else {
             row.style.display = "none";
           }
         });
+      }
+
+      // Filter teachers by role and assignment status
+      function filterTeachers() {
+        const roleFilter = document.getElementById("role-filter").value;
+        const assignmentFilter =
+          document.getElementById("assignment-filter").value;
+        const rows = document.querySelectorAll("#teachers-table tbody tr");
+
+        rows.forEach((row) => {
+          let showRow = true;
+
+          // Role filter
+          if (roleFilter && row.dataset.role !== roleFilter) {
+            showRow = false;
+          }
+
+          // Assignment filter
+          if (assignmentFilter) {
+            switch (assignmentFilter) {
+              case "has-class":
+                if (row.dataset.hasClass !== "true") showRow = false;
+                break;
+              case "has-subject":
+                if (row.dataset.hasSubject !== "true") showRow = false;
+                break;
+              case "no-assignment":
+                if (parseInt(row.dataset.assignments) > 0) showRow = false;
+                break;
+            }
+          }
+
+          row.style.display = showRow ? "" : "none";
+        });
+      }
+
+      // Sort teachers
+      function sortTeachers() {
+        const sortBy = document.getElementById("sort-by").value;
+        const tbody = document.querySelector("#teachers-table tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        rows.sort((a, b) => {
+          let aValue, bValue;
+
+          switch (sortBy) {
+            case "username":
+              aValue = a.cells[1].textContent.trim().toLowerCase();
+              bValue = b.cells[1].textContent.trim().toLowerCase();
+              return aValue.localeCompare(bValue);
+            case "role":
+              aValue = a.dataset.role;
+              bValue = b.dataset.role;
+              return aValue.localeCompare(bValue);
+            case "assignments":
+              aValue = parseInt(a.dataset.assignments);
+              bValue = parseInt(b.dataset.assignments);
+              return bValue - aValue; // Descending order
+            default:
+              return 0;
+          }
+        });
+
+        // Re-append sorted rows
+        rows.forEach((row) => tbody.appendChild(row));
+      }
+
+      // View teacher details
+      function viewTeacherDetails(teacherId, username) {
+        // Create modal or redirect to detailed view
+        alert(
+          `Viewing details for ${username} (ID: ${teacherId})\n\nThis feature will show:\n- Complete assignment history\n- Performance metrics\n- Student feedback\n- Schedule overview`
+        );
+      }
+
+      // Edit teacher
+      function editTeacher(teacherId, username, role) {
+        const newRole = prompt(
+          `Edit role for ${username}:\n\nCurrent role: ${role}\n\nEnter new role (teacher/classteacher/headteacher):`,
+          role
+        );
+
+        if (newRole && newRole !== role) {
+          const newPassword = prompt(
+            `Optional: Enter new password for ${username} (leave blank to keep current):`
+          );
+
+          // Create form and submit
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = '{{ url_for("classteacher.manage_teachers") }}';
+
+          form.innerHTML = `
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="edit_teacher_id" value="${teacherId}">
+            <input type="hidden" name="edit_role" value="${newRole}">
+            <input type="hidden" name="edit_password" value="${
+              newPassword || ""
+            }">
+            <input type="hidden" name="update_teacher" value="1">
+          `;
+
+          document.body.appendChild(form);
+          form.submit();
+        }
       }
 
       // Function to auto-hide messages after 5 seconds
