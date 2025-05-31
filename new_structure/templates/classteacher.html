@@ -913,83 +913,100 @@
             </div>
         </div>
 
-        <!-- Upload Marks Tab Content -->
-        <div id="upload-marks-tab" class="tab-content-container {% if active_tab == 'upload-marks' %}active{% endif %}">
-            <div class="form-card">
-                <h2>📝 Upload Class Marks (All Subjects)</h2>
-                <p class="section-description">Complete all fields to process marks</p>
+        <!-- Modern Upload Marks Tab Content -->
+        <div id="upload-marks-tab" class="tab-content {% if active_tab == 'upload-marks' %}active{% endif %}">
+            <div class="modern-card slide-up">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-upload card-icon"></i>
+                        Upload Class Marks
+                    </h2>
+                    <div class="card-actions">
+                        <span class="modern-badge badge-info">All Subjects</span>
+                    </div>
+                </div>
 
             {% if not show_students %}
-            <!-- Initial form to select grade and class -->
-            <div class="tabs">
-                <div class="tab-header">
-                    <div class="tab-btn active" data-tab="manual-entry">Manual Entry</div>
-                    <div class="tab-btn" data-tab="bulk-upload">Bulk Upload</div>
+            <!-- Modern Upload Method Selection -->
+            <div class="modern-tabs">
+                <div class="tab-nav">
+                    <button class="tab-button active" data-tab="manual-entry">
+                        <i class="fas fa-keyboard"></i>
+                        Manual Entry
+                    </button>
+                    <button class="tab-button" data-tab="bulk-upload">
+                        <i class="fas fa-file-upload"></i>
+                        Bulk Upload
+                    </button>
                 </div>
                 <div class="tab-content">
                     <div class="tab-pane active" id="manual-entry">
-                        <form id="upload-form" method="POST" action="{{ url_for('classteacher.dashboard') }}" class="login-form">
+                        <form id="upload-form" method="POST" action="{{ url_for('classteacher.dashboard') }}" class="modern-form">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                            <div class="form-group">
-                                <label for="education_level">Education Level</label>
-                                <select id="education_level" name="education_level" required onchange="updateSubjects()">
-                                    <option value="">Select Education Level</option>
-                                    <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>Lower Primary</option>
-                                    <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>Upper Primary</option>
-                                    <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>Junior Secondary</option>
-                                </select>
+
+                            <div class="modern-grid grid-cols-2">
+                                <div class="form-group">
+                                    <label for="education_level" class="form-label">Education Level</label>
+                                    <select id="education_level" name="education_level" required onchange="updateSubjects()" class="form-select">
+                                        <option value="">Select Education Level</option>
+                                        <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>Lower Primary</option>
+                                        <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>Upper Primary</option>
+                                        <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>Junior Secondary</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="term" class="form-label">Term</label>
+                                    <select id="term" name="term" required class="form-select">
+                                        <option value="">Select Term</option>
+                                        {% for term_option in terms %}
+                                        <option value="{{ term_option }}" {% if term == term_option %}selected{% endif %}>{{ term_option.replace('_', ' ').title() }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="assessment_type" class="form-label">Assessment Type</label>
+                                    <select id="assessment_type" name="assessment_type" required class="form-select">
+                                        <option value="">Select Assessment Type</option>
+                                        {% for assessment_option in assessment_types %}
+                                        <option value="{{ assessment_option }}" {% if assessment_type == assessment_option %}selected{% endif %}>{{ assessment_option.replace('_', ' ').title() }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="grade" class="form-label">Grade</label>
+                                    <select id="grade" name="grade" required onchange="fetchStreams()" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        {% for grade_option in grades %}
+                                        <option value="{{ grade_option }}" {% if grade == grade_option %}selected{% endif %}>{{ grade_option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="stream" class="form-label">Stream</label>
+                                    <select id="stream" name="stream" required class="form-select">
+                                        <option value="">Select Stream</option>
+                                        <!-- Streams will be populated dynamically via JavaScript -->
+                                    </select>
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="term">Term</label>
-                                <select id="term" name="term" required>
-                                    <option value="">Select Term</option>
-                                    {% for term_option in terms %}
-                                    <option value="{{ term_option }}" {% if term == term_option %}selected{% endif %}>{{ term_option }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="assessment_type">Assessment Type</label>
-                                <select id="assessment_type" name="assessment_type" required>
-                                    <option value="">Select Assessment Type</option>
-                                    {% for assessment_option in assessment_types %}
-                                    <option value="{{ assessment_option }}" {% if assessment_type == assessment_option %}selected{% endif %}>{{ assessment_option }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <!-- Default Total Marks field removed -->
+                            <!-- Hidden field for total marks -->
                             <input type="hidden" id="total_marks" name="total_marks" value="100">
 
-                            <div class="form-group">
-                                <label for="grade">Grade</label>
-                                <select id="grade" name="grade" required onchange="fetchStreams()">
-                                    <option value="">Select Grade</option>
-                                    {% for grade_option in grades %}
-                                    <option value="{{ grade_option }}" {% if grade == grade_option %}selected{% endif %}>{{ grade_option }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="stream">Stream</label>
-                                <select id="stream" name="stream" required>
-                                    <option value="">Select Stream</option>
-                                    <!-- Streams will be populated dynamically via JavaScript -->
-                                </select>
-                            </div>
-
-                            <div class="form-group" style="grid-column: span 2; text-align: center;">
-                                <button type="submit" name="upload_marks" value="1" class="btn" id="upload-btn">
+                            <div style="text-align: center; margin-top: var(--space-6);">
+                                <button type="submit" name="upload_marks" value="1" class="modern-btn btn-primary" id="upload-btn">
+                                    <i class="fas fa-users"></i>
                                     Load Students & Subjects
                                 </button>
                             </div>
                         </form>
                     </div>
                     <div class="tab-pane" id="bulk-upload">
-                        <form id="bulk-upload-form" method="POST" action="{{ url_for('classteacher.dashboard') }}" class="login-form" enctype="multipart/form-data">
+                        <form id="bulk-upload-form" method="POST" action="{{ url_for('classteacher.dashboard') }}" class="modern-form" enctype="multipart/form-data">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <div class="form-group">
                                 <label for="bulk_education_level">Education Level</label>
@@ -3695,6 +3712,87 @@
                 }
             });
         }
+
+        // Modern Tab System
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle modern tab buttons
+            const modernTabButtons = document.querySelectorAll('.tab-button');
+            const modernTabPanes = document.querySelectorAll('.tab-pane');
+
+            modernTabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+
+                    // Remove active class from all buttons and panes
+                    modernTabButtons.forEach(btn => btn.classList.remove('active'));
+                    modernTabPanes.forEach(pane => pane.classList.remove('active'));
+
+                    // Add active class to clicked button and corresponding pane
+                    this.classList.add('active');
+                    const targetPane = document.getElementById(targetTab);
+                    if (targetPane) {
+                        targetPane.classList.add('active');
+                    }
+                });
+            });
+
+            // Handle filter buttons in management section
+            const filterButtons = document.querySelectorAll('[data-filter]');
+            const managementCards = document.querySelectorAll('[data-category]');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+
+                    // Update active filter button
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Filter management cards
+                    managementCards.forEach(card => {
+                        if (filter === 'all' || card.getAttribute('data-category') === filter) {
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeIn 0.3s ease-in-out';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Search functionality for management options
+            const searchInput = document.getElementById('management-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+
+                    managementCards.forEach(card => {
+                        const title = card.querySelector('.quick-action-title')?.textContent.toLowerCase() || '';
+                        const desc = card.querySelector('.quick-action-desc')?.textContent.toLowerCase() || '';
+
+                        if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeIn 0.3s ease-in-out';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Add loading states to buttons
+            const modernButtons = document.querySelectorAll('.modern-btn');
+            modernButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (this.type === 'submit') {
+                        this.classList.add('loading');
+                        setTimeout(() => {
+                            this.classList.remove('loading');
+                        }, 2000);
+                    }
+                });
+            });
+        });
     </script>
 
 
