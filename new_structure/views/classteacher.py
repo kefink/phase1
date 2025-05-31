@@ -1013,7 +1013,7 @@ def all_reports():
         })
 
     # Get all grades, terms, and assessment types for the filter dropdowns
-    grades = [grade.level for grade in Grade.query.all()]
+    grades = [grade.name for grade in Grade.query.all()]
     terms = [term.name for term in Term.query.all()]
     assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
 
@@ -4762,12 +4762,12 @@ def manage_grades_streams():
                 else:
                     existing_stream = Stream.query.filter_by(name=stream_name, grade_id=grade_id).first()
                     if existing_stream:
-                        error_message = f"Stream '{stream_name}' already exists for Grade {grade.level}."
+                        error_message = f"Stream '{stream_name}' already exists for Grade {grade.name}."
                     else:
                         new_stream = Stream(name=stream_name, grade_id=grade_id)
                         db.session.add(new_stream)
                         db.session.commit()
-                        success_message = f"Stream '{stream_name}' added to Grade {grade.level} successfully!"
+                        success_message = f"Stream '{stream_name}' added to Grade {grade.name} successfully!"
             else:
                 error_message = "Please fill in all fields."
 
@@ -4791,7 +4791,7 @@ def manage_grades_streams():
                 # Now delete the grade
                 db.session.delete(grade)
                 db.session.commit()
-                success_message = f"Grade '{grade.level}' and all its streams deleted successfully!"
+                success_message = f"Grade '{grade.name}' and all its streams deleted successfully!"
             else:
                 error_message = "Grade not found."
 
@@ -5958,7 +5958,7 @@ def manage_teacher_subjects(teacher_id):
                 "subject_id": assignment.subject_id,
                 "subject_name": subject.name if subject else "Unknown",
                 "grade_id": assignment.grade_id,
-                "grade_level": grade.level if grade else "Unknown",
+                "grade_level": grade.name if grade else "Unknown",
                 "stream_id": assignment.stream_id,
                 "stream_name": stream.name if stream else None,
                 "education_level": subject.education_level if subject else "",
@@ -5985,7 +5985,7 @@ def manage_teacher_subjects(teacher_id):
                     db.session.delete(assignment)
                     db.session.commit()
 
-                    success_message = f"Removed {subject.name} assignment for Grade {grade.level}{stream_text}."
+                    success_message = f"Removed {subject.name} assignment for Grade {grade.name}{stream_text}."
                 else:
                     error_message = "Assignment not found or does not belong to this teacher."
             except Exception as e:
@@ -6013,7 +6013,7 @@ def manage_teacher_subjects(teacher_id):
                         assignment.subject_id = new_subject_id
                         db.session.commit()
 
-                        success_message = f"Changed subject from {old_subject.name} to {new_subject.name} for Grade {grade.level}{stream_text}."
+                        success_message = f"Changed subject from {old_subject.name} to {new_subject.name} for Grade {grade.name}{stream_text}."
                     else:
                         error_message = "Assignment not found or does not belong to this teacher."
                 except Exception as e:
@@ -6060,7 +6060,7 @@ def manage_teacher_subjects(teacher_id):
 
                     if added_count > 0:
                         db.session.commit()
-                        success_message = f"Added {added_count} subject assignments for Grade {grade.level}{stream_text}."
+                        success_message = f"Added {added_count} subject assignments for Grade {grade.name}{stream_text}."
                     else:
                         error_message = "No new assignments added. They may already exist."
                 except Exception as e:
@@ -6218,7 +6218,7 @@ def manage_teachers():
         subject_assignments = []
         for assignment in teacher_assignments:
             subject_name = assignment.subject.name
-            grade_level = assignment.grade.level
+            grade_level = assignment.grade.name
             stream_name = assignment.stream.name if assignment.stream else "All Streams"
             subject_assignments.append({
                 "subject": subject_name,
@@ -6988,7 +6988,7 @@ def remove_assignment():
                 subject = Subject.query.get(assignment.subject_id)
                 grade = Grade.query.get(assignment.grade_id)
 
-                message = f"Assignment of {subject.name} to {teacher.username} for Grade {grade.level}"
+                message = f"Assignment of {subject.name} to {teacher.username} for Grade {grade.name}"
                 if assignment.stream_id:
                     stream = Stream.query.get(assignment.stream_id)
                     message += f" Stream {stream.name}"
@@ -7045,7 +7045,7 @@ def get_teacher_assignments(teacher_id):
             formatted_assignments.append({
                 'id': assignment.id,
                 'subject': subject.name if subject else 'Unknown Subject',
-                'grade': grade.level if grade else 'Unknown Grade',
+                'grade': grade.name if grade else 'Unknown Grade',
                 'stream': stream.name if stream else None,
                 'is_class_teacher': assignment.is_class_teacher
             })
@@ -7149,7 +7149,7 @@ def view_all_reports():
         })
 
     # Get all grades, terms, and assessment types for filters
-    grades = [grade.level for grade in Grade.query.all()]
+    grades = [grade.name for grade in Grade.query.all()]
     terms = [term.name for term in Term.query.all()]
     assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
 
@@ -7216,7 +7216,7 @@ def delete_report(grade, stream, term, assessment_type):
 @classteacher_required
 def api_get_stream_status(grade, term, assessment_type):
     """API endpoint to check if streams have marks for a specific grade, term, and assessment type."""
-    grade_obj = Grade.query.filter_by(level=grade).first()
+    grade_obj = Grade.query.filter_by(name=grade).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
