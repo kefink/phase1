@@ -240,6 +240,22 @@ def dashboard():
                 AssessmentType.name == mark.assessment_type.name
             ).count()
 
+            # Calculate class average for this grade/stream/term/assessment combination
+            class_marks = Mark.query.filter_by(
+                term_id=mark.term.id,
+                assessment_type_id=mark.assessment_type.id
+            ).join(Student).join(Stream).join(Grade).filter(
+                Grade.name == mark.student.stream.grade.name,
+                Stream.name == mark.student.stream.name
+            ).all()
+
+            # Calculate the class average percentage
+            if class_marks:
+                total_percentage = sum(m.percentage for m in class_marks if m.percentage is not None)
+                class_average = round(total_percentage / len(class_marks), 1) if class_marks else 0
+            else:
+                class_average = 0
+
             recent_reports.append({
                 'grade': mark.student.stream.grade.name,
                 'stream': f"Stream {mark.student.stream.name}",
@@ -247,6 +263,7 @@ def dashboard():
                 'assessment_type': mark.assessment_type.name,
                 'date': mark.created_at.strftime('%Y-%m-%d') if mark.created_at else 'N/A',
                 'mark_count': mark_count,
+                'class_average': class_average,  # Add the real class average
                 'id': len(recent_reports) + 1  # Add an ID for easier reference
             })
             if len(recent_reports) >= 10:  # Increased limit to 10 recent reports

@@ -318,7 +318,13 @@
                             <span class="info-value">{{ report.assessment_type }}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Marks</span>
+                            <span class="info-label">Class Average</span>
+                            <span class="info-value">
+                                <span class="badge badge-success">{{ report.class_average }}%</span>
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Marks</span>
                             <span class="info-value">
                                 <span class="badge badge-info">{{ report.mark_count }} marks</span>
                             </span>

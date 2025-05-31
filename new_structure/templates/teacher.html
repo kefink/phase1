@@ -1087,6 +1087,7 @@
                             <th>Stream</th>
                             <th>Term</th>
                             <th>Assessment</th>
+                            <th>Class Average</th>
                             <th>Date</th>
                             <th>Action</th>
                         </tr>
@@ -1099,6 +1100,11 @@
                             <td>{{ report.stream }}</td>
                             <td>{{ report.term }}</td>
                             <td>{{ report.assessment_type }}</td>
+                            <td>
+                                <span class="badge" style="background-color: #28a745; color: white; padding: 4px 8px; border-radius: 4px;">
+                                    {{ report.class_average }}%
+                                </span>
+                            </td>
                             <td>{{ report.date }}</td>
                             <td>
                                 <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #007BFF;">
@@ -1112,7 +1118,7 @@
                         {% endfor %}
                         {% else %}
                         <tr>
-                            <td colspan="6" style="text-align: center;">No recent reports available.</td>
+                            <td colspan="7" style="text-align: center;">No recent reports available.</td>
                         </tr>
                         {% endif %}
                     </tbody>
