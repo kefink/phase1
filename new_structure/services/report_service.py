@@ -32,7 +32,7 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
     """
     # Get the stream object
     stream_letter = stream[-1] if stream.startswith("Stream ") else stream[-1]
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream_letter).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
 
     if not stream_obj:
         return {"error": f"No students found for grade {grade} stream {stream_letter}"}

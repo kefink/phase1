@@ -22,7 +22,7 @@ class StaffAssignmentService:
         """
         try:
             # Get grade and stream objects
-            grade_obj = Grade.query.filter_by(level=grade).first()
+            grade_obj = Grade.query.filter_by(name=grade).first()
             stream_obj = Stream.query.filter_by(name=stream).first()
 
             if not grade_obj or not stream_obj:
@@ -57,7 +57,7 @@ class StaffAssignmentService:
         """
         try:
             # Get grade and stream objects
-            grade_obj = Grade.query.filter_by(level=grade).first()
+            grade_obj = Grade.query.filter_by(name=grade).first()
             stream_obj = Stream.query.filter_by(name=stream).first()
 
             if not grade_obj or not stream_obj:
@@ -135,7 +135,7 @@ class StaffAssignmentService:
         """
         try:
             # Get grade and stream objects
-            grade_obj = Grade.query.filter_by(level=grade).first()
+            grade_obj = Grade.query.filter_by(name=grade).first()
             stream_obj = Stream.query.filter_by(name=stream).first()
             teacher = Teacher.query.get(teacher_id)
 

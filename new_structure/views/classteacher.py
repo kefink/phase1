@@ -1126,7 +1126,7 @@ def manage_students():
     students = students_paginated.items
 
     # Get all grades for the template
-    grades = [{"id": grade.id, "level": grade.level} for grade in Grade.query.all()]
+    grades = [{"id": grade.id, "level": grade.name} for grade in Grade.query.all()]
 
     # Define educational level mapping
     educational_level_mapping = {
@@ -1383,7 +1383,7 @@ def manage_students():
         students=students,
         pagination=students_paginated,
         total_students=total_students,
-        grade=grade.level if grade else "",
+        grade=grade.name if grade else "",
         stream=stream.name if stream else "",
         grades=grades,
         educational_level_mapping=educational_level_mapping,
@@ -1419,7 +1419,7 @@ def preview_class_report(grade, stream, term, assessment_type):
         teacher_id = session.get('teacher_id')
         if teacher_id:
             # Get the grade and stream objects
-            stream_obj_temp = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+            stream_obj_temp = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
 
             if stream_obj_temp:
                 grade_obj_temp = stream_obj_temp.grade
@@ -1442,7 +1442,7 @@ def preview_class_report(grade, stream, term, assessment_type):
                 # Store in session for consistency
                 session['selected_subjects'] = selected_subjects
 
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -1488,10 +1488,10 @@ def preview_class_report(grade, stream, term, assessment_type):
     class_data = report_data.get("class_data", [])
 
     # Get subjects for this grade based on education level
-    grade_obj = Grade.query.filter_by(level=grade).first()
+    grade_obj = Grade.query.filter_by(name=grade).first()
 
     # Get all subjects that have marks for this grade/stream/term/assessment
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -1808,7 +1808,7 @@ def preview_class_report(grade, stream, term, assessment_type):
 @classteacher_required
 def edit_class_marks(grade, stream, term, assessment_type):
     """Route for editing class marks."""
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -1860,7 +1860,7 @@ def edit_class_marks(grade, stream, term, assessment_type):
             education_level = "junior secondary"
 
     # Get subjects for this grade based on education level
-    grade_obj = Grade.query.filter_by(level=grade).first()
+    grade_obj = Grade.query.filter_by(name=grade).first()
     if grade_obj:
         # Filter subjects by education level
         if education_level == "lower primary":
@@ -4141,11 +4141,11 @@ def manage_grades_streams():
         grade_num = 0
         try:
             # Extract grade number
-            if grade.level.startswith("Grade "):
-                grade_num = int(grade.level[6:])
+            if grade.name.startswith("Grade "):
+                grade_num = int(grade.name[6:])
             else:
                 # Try to extract just the number
-                grade_num = int(''.join(filter(str.isdigit, grade.level)))
+                grade_num = int(''.join(filter(str.isdigit, grade.name)))
 
             # Assign education level
             if 1 <= grade_num <= 3:
@@ -4188,13 +4188,13 @@ def edit_grade():
         return redirect(url_for('classteacher.manage_grades_streams'))
 
     # Check if another grade with this level already exists
-    existing = Grade.query.filter(Grade.level == grade_level, Grade.id != grade_id).first()
+    existing = Grade.query.filter(Grade.name == grade_level, Grade.id != grade_id).first()
     if existing:
         flash(f"Grade '{grade_level}' already exists.", "error")
         return redirect(url_for('classteacher.manage_grades_streams'))
 
-    old_level = grade.level
-    grade.level = grade_level
+    old_level = grade.name
+    grade.name = grade_level
     db.session.commit()
 
     flash(f"Grade updated from '{old_level}' to '{grade_level}'.", "success")
@@ -4225,7 +4225,7 @@ def edit_stream():
     # Check if another stream with this name already exists in the selected grade
     existing = Stream.query.filter(Stream.name == stream_name, Stream.grade_id == grade_id, Stream.id != stream_id).first()
     if existing:
-        flash(f"Stream '{stream_name}' already exists for Grade {grade.level}.", "error")
+        flash(f"Stream '{stream_name}' already exists for Grade {grade.name}.", "error")
         return redirect(url_for('classteacher.manage_grades_streams'))
 
     old_name = stream.name
@@ -4235,7 +4235,7 @@ def edit_stream():
     stream.grade_id = grade_id
     db.session.commit()
 
-    flash(f"Stream updated from '{old_name}' in {old_grade.level} to '{stream_name}' in {grade.level}.", "success")
+    flash(f"Stream updated from '{old_name}' in {old_grade.name} to '{stream_name}' in {grade.name}.", "success")
     return redirect(url_for('classteacher.manage_grades_streams'))
 
 def cleanup_duplicate_assignments():
@@ -4350,11 +4350,11 @@ def manage_teacher_assignments():
             grade_num = 0
             try:
                 # Extract grade number
-                if grade.level.startswith("Grade "):
-                    grade_num = int(grade.level[6:])
+                if grade.name.startswith("Grade "):
+                    grade_num = int(grade.name[6:])
                 else:
                     # Try to extract just the number
-                    grade_num = int(''.join(filter(str.isdigit, grade.level)))
+                    grade_num = int(''.join(filter(str.isdigit, grade.name)))
 
                 # Assign education level
                 if 1 <= grade_num <= 3:
@@ -4371,7 +4371,7 @@ def manage_teacher_assignments():
                 "teacher_id": assignment.teacher_id,
                 "teacher_username": teacher.username if teacher else "Unknown",
                 "grade_id": assignment.grade_id,
-                "grade_level": grade.level if grade else "Unknown",
+                "grade_level": grade.name if grade else "Unknown",
                 "stream_id": assignment.stream_id,
                 "stream_name": stream.name if stream else None,
                 "education_level": education_level
@@ -4414,7 +4414,7 @@ def manage_teacher_assignments():
                 "subject_id": assignment.subject_id,
                 "subject_name": subject.name if subject else "Unknown",
                 "grade_id": assignment.grade_id,
-                "grade_level": grade.level if grade else "Unknown",
+                "grade_level": grade.name if grade else "Unknown",
                 "stream_id": assignment.stream_id,
                 "stream_name": stream.name if stream else None,
                 "education_level": subject.education_level if subject else ""
@@ -4485,7 +4485,7 @@ def reassign_class_teacher():
         assignment.teacher_id = new_teacher_id
         db.session.commit()
 
-        flash(f"Class teacher for Grade {grade.level}{stream_text} changed from {old_teacher.username} to {new_teacher.username}.", "success")
+        flash(f"Class teacher for Grade {grade.name}{stream_text} changed from {old_teacher.username} to {new_teacher.username}.", "success")
     except Exception as e:
         print(f"Error reassigning class teacher: {str(e)}")
         flash("Error reassigning class teacher. Please try again.", "error")
@@ -4530,7 +4530,7 @@ def reassign_subject_teacher():
         assignment.teacher_id = new_teacher_id
         db.session.commit()
 
-        flash(f"Teacher for {subject.name} in Grade {grade.level}{stream_text} changed from {old_teacher.username} to {new_teacher.username}.", "success")
+        flash(f"Teacher for {subject.name} in Grade {grade.name}{stream_text} changed from {old_teacher.username} to {new_teacher.username}.", "success")
     except Exception as e:
         print(f"Error reassigning subject teacher: {str(e)}")
         flash("Error reassigning subject teacher. Please try again.", "error")
