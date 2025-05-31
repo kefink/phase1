@@ -3,41 +3,382 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Teacher Login - Kirima Primary School</title>
+    <title>Subject Teacher Login - Kirima Primary School</title>
+
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Modern CSS Framework -->
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}"
+      href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+
+    <style>
+      /* Modern Subject Teacher Login Styles */
+      body {
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: var(--space-6);
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Animated Background Pattern */
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: radial-gradient(
+            circle at 20% 80%,
+            rgba(255, 255, 255, 0.1) 2px,
+            transparent 2px
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(255, 255, 255, 0.1) 2px,
+            transparent 2px
+          );
+        background-size: 80px 80px;
+        animation: backgroundMove 25s linear infinite;
+        z-index: 1;
+      }
+
+      @keyframes backgroundMove {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translate(80px, 80px);
+        }
+      }
+
+      .login-container {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 450px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: var(--radius-2xl);
+        padding: var(--space-12);
+        box-shadow: var(--shadow-2xl);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        animation: slideUp 0.8s ease-out;
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: var(--space-10);
+      }
+
+      .login-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-6);
+        box-shadow: var(--shadow-lg);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .login-icon i {
+        font-size: 2.5rem;
+        color: white;
+      }
+
+      .login-title {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #10b981, #059669);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: var(--space-2);
+        line-height: 1.2;
+      }
+
+      .login-subtitle {
+        font-size: 1rem;
+        color: var(--gray-600);
+        font-weight: 500;
+        margin-bottom: var(--space-8);
+      }
+
+      .modern-form {
+        display: grid;
+        gap: var(--space-6);
+      }
+
+      .form-group {
+        position: relative;
+      }
+
+      .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--gray-700);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: var(--space-2);
+      }
+
+      .form-input {
+        width: 100%;
+        padding: var(--space-4) var(--space-5);
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        font-size: 1rem;
+        font-family: inherit;
+        transition: all 0.2s ease;
+        background: var(--white);
+        position: relative;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .form-input:not(:placeholder-shown) {
+        border-color: var(--gray-300);
+      }
+
+      .input-icon {
+        position: absolute;
+        left: var(--space-4);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-400);
+        font-size: 1.1rem;
+        transition: color 0.2s ease;
+      }
+
+      .form-input:focus + .input-icon {
+        color: #10b981;
+      }
+
+      .form-input.with-icon {
+        padding-left: var(--space-12);
+      }
+
+      .login-button {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: var(--radius-lg);
+        padding: var(--space-4) var(--space-6);
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        margin-top: var(--space-4);
+      }
+
+      .login-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s ease;
+      }
+
+      .login-button:hover::before {
+        left: 100%;
+      }
+
+      .login-button:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .back-link {
+        text-align: center;
+        margin-top: var(--space-8);
+        padding-top: var(--space-6);
+        border-top: 1px solid var(--gray-200);
+      }
+
+      .back-link a {
+        color: var(--gray-600);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .back-link a:hover {
+        color: var(--gray-800);
+        text-decoration: none;
+      }
+
+      .help-text {
+        text-align: center;
+        margin-top: var(--space-4);
+        font-size: 0.875rem;
+        color: var(--gray-500);
+      }
+    </style>
   </head>
-  <body class="background">
-    <div class="container">
-      <h1>Teacher Login</h1>
+  <body>
+    <div class="login-container">
+      <!-- Login Header -->
+      <div class="login-header">
+        <div class="login-icon">
+          <i class="fas fa-user-graduate"></i>
+        </div>
+        <h1 class="login-title">Subject Teacher</h1>
+        <p class="login-subtitle">Access your subject teaching portal</p>
+      </div>
 
-      <form method="POST" class="login-form">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="error-message">
+        <i class="fas fa-exclamation-triangle"></i>
+        {{ message }}
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <!-- Login Form -->
+      <form method="POST" class="modern-form" id="loginForm">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
         <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" name="username" required autofocus />
+          <label for="username" class="form-label">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-input with-icon"
+            placeholder="Enter your username"
+            required
+            autofocus
+            autocomplete="username"
+          />
+          <i class="fas fa-user input-icon"></i>
         </div>
 
         <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" required />
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input with-icon"
+            placeholder="Enter your password"
+            required
+            autocomplete="current-password"
+          />
+          <i class="fas fa-lock input-icon"></i>
         </div>
 
-        <button type="submit" class="btn">Sign In</button>
-        <a href="{{ url_for('auth.index') }}" class="btn btn-secondary"
-          >Back to Home</a
-        >
+        <button type="submit" class="login-button" id="loginBtn">
+          <i class="fas fa-sign-in-alt"></i>
+          Sign In
+        </button>
       </form>
 
-      <div class="form-footer">
+      <!-- Help Text -->
+      <div class="help-text">
         <p>Forgot your password? Contact the administrator.</p>
       </div>
+
+      <!-- Back Link -->
+      <div class="back-link">
+        <a href="{{ url_for('auth.index') }}">
+          <i class="fas fa-arrow-left"></i>
+          Back to Home
+        </a>
+      </div>
     </div>
+
+    <!-- JavaScript for Enhanced Interactions -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("loginForm");
+        const loginBtn = document.getElementById("loginBtn");
+        const inputs = document.querySelectorAll(".form-input");
+
+        // Enhanced form submission
+        form.addEventListener("submit", function (e) {
+          loginBtn.classList.add("loading");
+          loginBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+          loginBtn.disabled = true;
+        });
+
+        // Enhanced input interactions
+        inputs.forEach((input) => {
+          input.addEventListener("focus", function () {
+            this.parentElement.style.transform = "translateY(-2px)";
+          });
+
+          input.addEventListener("blur", function () {
+            this.parentElement.style.transform = "translateY(0)";
+          });
+        });
+
+        // Animate container on load
+        const container = document.querySelector(".login-container");
+        container.style.opacity = "0";
+        container.style.transform = "translateY(30px)";
+
+        setTimeout(() => {
+          container.style.transition = "all 0.8s ease-out";
+          container.style.opacity = "1";
+          container.style.transform = "translateY(0)";
+        }, 100);
+      });
+    </script>
   </body>
 </html>
