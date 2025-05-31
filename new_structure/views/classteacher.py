@@ -3404,7 +3404,7 @@ def download_student_template():
 def view_student_reports(grade, stream, term, assessment_type):
     """Route for viewing a list of students with options to view their individual reports."""
     # Get the stream object
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -3469,7 +3469,7 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
         )
 
     # If no cache or cache miss, generate the report
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -3533,7 +3533,7 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
 @classteacher_required
 def generate_all_individual_reports(grade, stream, term, assessment_type):
     """Route for generating and downloading all individual reports as a ZIP file."""
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -3634,7 +3634,7 @@ def download_class_list():
         students_query = students_query.filter_by(stream_id=stream_id)
         stream = Stream.query.get(stream_id)
         grade = Grade.query.get(stream.grade_id) if stream else None
-        filename = f"Class_List_{grade.level if grade else 'Unknown'}_{stream.name if stream else 'Unknown'}.csv"
+        filename = f"Class_List_{grade.name if grade else 'Unknown'}_{stream.name if stream else 'Unknown'}.csv"
 
     # Filter by grade if specified (and not already filtered by stream)
     elif grade_id:
@@ -3644,13 +3644,13 @@ def download_class_list():
         stream_ids = [s.id for s in grade_streams]
         if stream_ids:
             students_query = students_query.filter(Student.stream_id.in_(stream_ids))
-        filename = f"Class_List_{grade.level if grade else 'Unknown'}_All_Streams.csv"
+        filename = f"Class_List_{grade.name if grade else 'Unknown'}_All_Streams.csv"
 
     # Filter by educational level if specified
     elif educational_level:
         # Get all grades for this educational level
         allowed_grades = educational_level_mapping.get(educational_level, [])
-        grades = Grade.query.filter(Grade.level.in_(allowed_grades)).all()
+        grades = Grade.query.filter(Grade.name.in_(allowed_grades)).all()
         grade_ids = [g.id for g in grades]
 
         # Get all streams for these grades
@@ -3677,7 +3677,7 @@ def download_class_list():
     csv_data = "ID,Name,Admission Number,Grade,Stream,Gender\n"
 
     for student in students:
-        grade_name = student.stream.grade.level if student.stream else "N/A"
+        grade_name = student.stream.grade.name if student.stream else "N/A"
         stream_name = student.stream.name if student.stream else "No Stream"
         gender = student.gender.capitalize() if student.gender else "Not Set"
 
