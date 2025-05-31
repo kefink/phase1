@@ -3777,7 +3777,7 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
         print(f"Error generating individual report PDF: {str(e)}")
         return None
 
-def generate_simple_individual_report_pdf(student, grade, stream, term, assessment_type, stream_obj, term_obj, assessment_type_obj):
+def generate_simple_individual_report_pdf(student, grade, stream, term, assessment_type, stream_obj, term_obj, assessment_type_obj, pdf_available=False):
     """Generate individual report PDF using a simpler approach."""
     try:
         import tempfile
@@ -3909,27 +3909,28 @@ def generate_simple_individual_report_pdf(student, grade, stream, term, assessme
         temp_dir = tempfile.gettempdir()
         pdf_path = os.path.join(temp_dir, filename)
 
-        # Try to use pdfkit first
-        try:
-            import pdfkit
-            options = {
-                'page-size': 'A4',
-                'orientation': 'Portrait',
-                'margin-top': '0.75in',
-                'margin-right': '0.75in',
-                'margin-bottom': '0.75in',
-                'margin-left': '0.75in',
-                'encoding': 'UTF-8',
-                'no-outline': None
-            }
-            pdfkit.from_string(html_content, pdf_path, options=options)
-            return pdf_path
-        except Exception as e:
-            print(f"pdfkit failed: {e}")
-
-            # Fallback: Create a simple text-based report
+        # Try to use pdfkit if available
+        if pdf_available:
             try:
-                text_content = f"""
+                import pdfkit
+                options = {
+                    'page-size': 'A4',
+                    'orientation': 'Portrait',
+                    'margin-top': '0.75in',
+                    'margin-right': '0.75in',
+                    'margin-bottom': '0.75in',
+                    'margin-left': '0.75in',
+                    'encoding': 'UTF-8',
+                    'no-outline': None
+                }
+                pdfkit.from_string(html_content, pdf_path, options=options)
+                return pdf_path
+            except Exception as e:
+                print(f"pdfkit failed: {e}")
+
+        # Fallback: Create a simple text-based report
+        try:
+            text_content = f"""
 KIRIMA PRIMARY SCHOOL
 INDIVIDUAL STUDENT REPORT
 {term} - {assessment_type} - Academic Year {academic_year}
@@ -3944,22 +3945,22 @@ SUBJECT MARKS:
 {'='*50}
 """
 
-                # Add subject marks in text format
-                for subject_name in subjects_with_marks:
-                    mark = student_data.get("marks", {}).get(subject_name, 0)
-                    if mark and mark > 0:
-                        # Clean up decimal precision
-                        if isinstance(mark, float):
-                            mark = int(round(mark)) if mark == int(mark) else round(mark, 1)
-                        else:
-                            mark = int(mark)
+            # Add subject marks in text format
+            for subject_name in subjects_with_marks:
+                mark = student_data.get("marks", {}).get(subject_name, 0)
+                if mark and mark > 0:
+                    # Clean up decimal precision
+                    if isinstance(mark, float):
+                        mark = int(round(mark)) if mark == int(mark) else round(mark, 1)
+                    else:
+                        mark = int(mark)
 
-                        grade_letter, points = get_grade_and_points(mark)
-                        remarks = get_performance_remarks(mark, 100)
+                    grade_letter, points = get_grade_and_points(mark)
+                    remarks = get_performance_remarks(mark, 100)
 
-                        text_content += f"{subject_name:<30} {mark:>5} {grade_letter:>3} {remarks}\n"
+                    text_content += f"{subject_name:<30} {mark:>5} {grade_letter:>3} {remarks}\n"
 
-                text_content += f"""
+            text_content += f"""
 {'='*50}
 SUMMARY:
 Total Marks: {total_marks}/{total_possible_marks}
@@ -3970,17 +3971,17 @@ Total Points: {total_points}
 Report generated on {current_date}
 """
 
-                # Save as text file instead of PDF
-                txt_path = pdf_path.replace('.pdf', '.txt')
-                with open(txt_path, 'w', encoding='utf-8') as f:
-                    f.write(text_content)
+            # Save as text file instead of PDF
+            txt_path = pdf_path.replace('.pdf', '.txt')
+            with open(txt_path, 'w', encoding='utf-8') as f:
+                f.write(text_content)
 
-                print(f"Created text report: {txt_path}")
-                return txt_path
+            print(f"Created text report: {txt_path}")
+            return txt_path
 
-            except Exception as text_error:
-                print(f"Text fallback also failed: {text_error}")
-                return None
+        except Exception as text_error:
+            print(f"Text fallback also failed: {text_error}")
+            return None
 
     except Exception as e:
         print(f"Error generating simple individual report PDF: {str(e)}")
@@ -4009,13 +4010,22 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
             flash(f"No students found for {grade} Stream {stream[-1]}", "error")
             return redirect(url_for('classteacher.dashboard'))
 
-        # Check if pdfkit is available
+        # Check if we can generate PDFs (optional - will fallback to text if not available)
+        pdf_available = False
         try:
             import pdfkit
-            print("✅ pdfkit is available")
-        except ImportError:
-            flash("PDF generation library not available. Please contact administrator.", "error")
-            return redirect(url_for('classteacher.dashboard'))
+            # Test if wkhtmltopdf is working
+            test_html = "<html><body><h1>Test</h1></body></html>"
+            temp_test_file = os.path.join(tempfile.gettempdir(), "wkhtmltopdf_test.pdf")
+            pdfkit.from_string(test_html, temp_test_file, options={'page-size': 'A4'})
+            if os.path.exists(temp_test_file):
+                os.remove(temp_test_file)
+                pdf_available = True
+                print("✅ PDF generation available")
+            else:
+                print("⚠️ wkhtmltopdf not working, will use text fallback")
+        except Exception as e:
+            print(f"⚠️ PDF generation not available: {e}, will use text fallback")
 
         # Import necessary modules
         import zipfile
@@ -4042,22 +4052,23 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
                 try:
                     print(f"📄 Processing student {i}/{len(students)}: {student.name}")
 
-                    # Use a simpler approach - generate HTML and convert to PDF
-                    pdf_file = generate_simple_individual_report_pdf(
+                    # Use a simpler approach - generate report file (PDF or text)
+                    report_file = generate_simple_individual_report_pdf(
                         student, grade, stream, term, assessment_type,
-                        stream_obj, term_obj, assessment_type_obj
+                        stream_obj, term_obj, assessment_type_obj, pdf_available
                     )
 
-                    if pdf_file and os.path.exists(pdf_file):
-                        # Add PDF to ZIP file
-                        pdf_filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}.pdf"
-                        zipf.write(pdf_file, pdf_filename)
+                    if report_file and os.path.exists(report_file):
+                        # Determine file extension and name
+                        file_extension = ".pdf" if pdf_available else ".txt"
+                        report_filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}{file_extension}"
+                        zipf.write(report_file, report_filename)
                         successful_reports += 1
                         print(f"✅ Generated report for {student.name}")
 
-                        # Clean up individual PDF file
+                        # Clean up individual report file
                         try:
-                            os.remove(pdf_file)
+                            os.remove(report_file)
                         except:
                             pass
                     else:
