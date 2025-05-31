@@ -22,6 +22,7 @@ from ..services.cache_service import (
     invalidate_cache
 )
 from ..services.collaborative_marks_service import CollaborativeMarksService
+from ..services.grade_report_service import GradeReportService
 from functools import wraps
 
 # Create a blueprint for class teacher routes
@@ -7498,3 +7499,148 @@ def submit_subject_marks(grade_id, stream_id, subject_id, term_id, assessment_ty
         print(f"Error submitting subject marks: {str(e)}")
         flash("Error submitting marks. Please try again.", "error")
         return redirect(url_for('classteacher.collaborative_marks_dashboard'))
+
+
+# ============================================================================
+# ENHANCED GRADE REPORT GENERATION SYSTEM
+# ============================================================================
+
+@classteacher_bp.route('/grade_reports_dashboard')
+@classteacher_required
+def grade_reports_dashboard():
+    """Dashboard for generating grade-level reports with multiple streams."""
+    try:
+        # Get all grades
+        grades = Grade.query.all()
+        terms = Term.query.all()
+        assessment_types = AssessmentType.query.all()
+
+        return render_template('grade_reports_dashboard.html',
+                             grades=grades,
+                             terms=terms,
+                             assessment_types=assessment_types)
+
+    except Exception as e:
+        print(f"Error in grade reports dashboard: {str(e)}")
+        flash("Error loading grade reports dashboard.", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+
+@classteacher_bp.route('/grade_streams_status/<grade_name>/<term>/<assessment_type>')
+@classteacher_required
+def grade_streams_status(grade_name, term, assessment_type):
+    """Show status of all streams in a grade for report generation."""
+    try:
+        # Get grade streams status
+        status_data = GradeReportService.get_grade_streams_status(grade_name, term, assessment_type)
+
+        if 'error' in status_data:
+            flash(f"Error loading grade status: {status_data['error']}", "error")
+            return redirect(url_for('classteacher.grade_reports_dashboard'))
+
+        return render_template('grade_streams_status.html', **status_data)
+
+    except Exception as e:
+        print(f"Error in grade streams status: {str(e)}")
+        flash("Error loading grade streams status.", "error")
+        return redirect(url_for('classteacher.grade_reports_dashboard'))
+
+
+@classteacher_bp.route('/generate_individual_stream_report/<grade_name>/<stream_name>/<term>/<assessment_type>')
+@classteacher_required
+def generate_individual_stream_report(grade_name, stream_name, term, assessment_type):
+    """Generate report for a single stream."""
+    try:
+        pdf_file = GradeReportService.generate_individual_stream_report(
+            grade_name, stream_name, term, assessment_type
+        )
+
+        if not pdf_file:
+            flash(f"Failed to generate report for {grade_name} Stream {stream_name}", "error")
+            return redirect(url_for('classteacher.grade_streams_status',
+                                  grade_name=grade_name, term=term, assessment_type=assessment_type))
+
+        # Return the PDF file
+        filename = f"{grade_name}_Stream_{stream_name}_{term}_{assessment_type}_Report.pdf"
+        return send_file(
+            pdf_file,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/pdf'
+        )
+
+    except Exception as e:
+        print(f"Error generating individual stream report: {str(e)}")
+        flash("Error generating stream report.", "error")
+        return redirect(url_for('classteacher.grade_streams_status',
+                              grade_name=grade_name, term=term, assessment_type=assessment_type))
+
+
+@classteacher_bp.route('/generate_consolidated_grade_report/<grade_name>/<term>/<assessment_type>')
+@classteacher_required
+def generate_consolidated_grade_report(grade_name, term, assessment_type):
+    """Generate consolidated report for entire grade."""
+    try:
+        # Get selected streams from query parameters
+        selected_streams = request.args.getlist('streams')
+
+        pdf_file = GradeReportService.generate_consolidated_grade_report(
+            grade_name, term, assessment_type, selected_streams if selected_streams else None
+        )
+
+        if not pdf_file:
+            flash(f"Failed to generate consolidated report for Grade {grade_name}", "error")
+            return redirect(url_for('classteacher.grade_streams_status',
+                                  grade_name=grade_name, term=term, assessment_type=assessment_type))
+
+        # Return the PDF file
+        filename = f"Grade_{grade_name}_Consolidated_{term}_{assessment_type}_Report.pdf"
+        return send_file(
+            pdf_file,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/pdf'
+        )
+
+    except Exception as e:
+        print(f"Error generating consolidated grade report: {str(e)}")
+        flash("Error generating consolidated report.", "error")
+        return redirect(url_for('classteacher.grade_streams_status',
+                              grade_name=grade_name, term=term, assessment_type=assessment_type))
+
+
+@classteacher_bp.route('/generate_batch_grade_reports/<grade_name>/<term>/<assessment_type>')
+@classteacher_required
+def generate_batch_grade_reports(grade_name, term, assessment_type):
+    """Generate batch reports for a grade (individual streams + consolidated)."""
+    try:
+        # Get options from query parameters
+        include_individual = request.args.get('individual', 'true').lower() == 'true'
+        include_consolidated = request.args.get('consolidated', 'true').lower() == 'true'
+        selected_streams = request.args.getlist('streams')
+
+        zip_file = GradeReportService.generate_batch_grade_reports(
+            grade_name, term, assessment_type,
+            include_individual, include_consolidated,
+            selected_streams if selected_streams else None
+        )
+
+        if not zip_file:
+            flash(f"Failed to generate batch reports for Grade {grade_name}", "error")
+            return redirect(url_for('classteacher.grade_streams_status',
+                                  grade_name=grade_name, term=term, assessment_type=assessment_type))
+
+        # Return the ZIP file
+        filename = f"Grade_{grade_name}_Batch_Reports_{term}_{assessment_type}.zip"
+        return send_file(
+            zip_file,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/zip'
+        )
+
+    except Exception as e:
+        print(f"Error generating batch grade reports: {str(e)}")
+        flash("Error generating batch reports.", "error")
+        return redirect(url_for('classteacher.grade_streams_status',
+                              grade_name=grade_name, term=term, assessment_type=assessment_type))
