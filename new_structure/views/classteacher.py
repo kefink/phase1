@@ -3909,7 +3909,7 @@ def generate_simple_individual_report_pdf(student, grade, stream, term, assessme
         temp_dir = tempfile.gettempdir()
         pdf_path = os.path.join(temp_dir, filename)
 
-        # Try to use pdfkit
+        # Try to use pdfkit first
         try:
             import pdfkit
             options = {
@@ -3926,11 +3926,61 @@ def generate_simple_individual_report_pdf(student, grade, stream, term, assessme
             return pdf_path
         except Exception as e:
             print(f"pdfkit failed: {e}")
-            # Fallback: save as HTML file for debugging
-            html_path = pdf_path.replace('.pdf', '.html')
-            with open(html_path, 'w', encoding='utf-8') as f:
-                f.write(html_content)
-            return None
+
+            # Fallback: Create a simple text-based report
+            try:
+                text_content = f"""
+KIRIMA PRIMARY SCHOOL
+INDIVIDUAL STUDENT REPORT
+{term} - {assessment_type} - Academic Year {academic_year}
+
+Student Name: {student.name}
+Admission Number: {admission_no}
+Grade: {grade}
+Stream: {stream}
+Date: {current_date}
+
+SUBJECT MARKS:
+{'='*50}
+"""
+
+                # Add subject marks in text format
+                for subject_name in subjects_with_marks:
+                    mark = student_data.get("marks", {}).get(subject_name, 0)
+                    if mark and mark > 0:
+                        # Clean up decimal precision
+                        if isinstance(mark, float):
+                            mark = int(round(mark)) if mark == int(mark) else round(mark, 1)
+                        else:
+                            mark = int(mark)
+
+                        grade_letter, points = get_grade_and_points(mark)
+                        remarks = get_performance_remarks(mark, 100)
+
+                        text_content += f"{subject_name:<30} {mark:>5} {grade_letter:>3} {remarks}\n"
+
+                text_content += f"""
+{'='*50}
+SUMMARY:
+Total Marks: {total_marks}/{total_possible_marks}
+Average Percentage: {avg_percentage:.1f}%
+Mean Grade: {mean_grade}
+Total Points: {total_points}
+
+Report generated on {current_date}
+"""
+
+                # Save as text file instead of PDF
+                txt_path = pdf_path.replace('.pdf', '.txt')
+                with open(txt_path, 'w', encoding='utf-8') as f:
+                    f.write(text_content)
+
+                print(f"Created text report: {txt_path}")
+                return txt_path
+
+            except Exception as text_error:
+                print(f"Text fallback also failed: {text_error}")
+                return None
 
     except Exception as e:
         print(f"Error generating simple individual report PDF: {str(e)}")
