@@ -1,9 +1,9 @@
 """
 Collaborative Marks Service for managing multi-teacher marks upload workflow.
 """
-from ..models.academic import SubjectMarksStatus, Mark, Subject, Grade, Stream, Term, AssessmentType
+from ..models.academic import SubjectMarksStatus, Mark, Subject, Grade, Stream, Term, AssessmentType, Student
 from ..models.assignment import TeacherSubjectAssignment
-from ..models.user import Student, Teacher
+from ..models.user import Teacher
 from ..extensions import db
 from sqlalchemy import and_
 
@@ -15,7 +15,7 @@ class CollaborativeMarksService:
     def get_class_marks_status(grade_id, stream_id, term_id, assessment_type_id):
         """
         Get the marks upload status for all subjects in a class.
-        
+
         Returns:
             dict: Status information for each subject
         """
@@ -27,7 +27,7 @@ class CollaborativeMarksService:
 
             # Get subjects based on education level
             subjects = Subject.query.filter_by(education_level=grade.education_level).all()
-            
+
             status_data = {
                 'grade': grade.name,
                 'stream': Stream.query.get(stream_id).name if stream_id else 'Unknown',
@@ -77,7 +77,7 @@ class CollaborativeMarksService:
                 }
 
                 status_data['subjects'].append(subject_info)
-                
+
                 if status and status.is_uploaded:
                     status_data['completed_subjects'] += 1
 
@@ -96,7 +96,7 @@ class CollaborativeMarksService:
     def can_teacher_upload_subject(teacher_id, subject_id, grade_id, stream_id):
         """
         Check if a teacher can upload marks for a specific subject.
-        
+
         Returns:
             bool: True if teacher can upload marks
         """
@@ -130,7 +130,7 @@ class CollaborativeMarksService:
     def get_teacher_assigned_subjects_for_class(teacher_id, grade_id, stream_id):
         """
         Get subjects that a teacher can upload marks for in a specific class.
-        
+
         Returns:
             list: Subject IDs that teacher can upload
         """
@@ -146,7 +146,7 @@ class CollaborativeMarksService:
 
             # If teacher is class teacher, they can upload all subjects
             is_class_teacher = any(assignment.is_class_teacher for assignment in subject_assignments)
-            
+
             if is_class_teacher:
                 # Get all subjects for the grade's education level
                 grade = Grade.query.get(grade_id)
@@ -164,7 +164,7 @@ class CollaborativeMarksService:
     def update_marks_status_after_upload(grade_id, stream_id, subject_id, term_id, assessment_type_id, teacher_id):
         """
         Update marks status after a teacher uploads marks.
-        
+
         Returns:
             dict: Updated status information
         """
@@ -193,7 +193,7 @@ class CollaborativeMarksService:
     def get_class_teacher_dashboard_data(teacher_id):
         """
         Get dashboard data for a class teacher showing all their classes and marks status.
-        
+
         Returns:
             dict: Dashboard data with class information and marks status
         """
@@ -213,7 +213,7 @@ class CollaborativeMarksService:
             for assignment in class_assignments:
                 grade = assignment.grade
                 stream = assignment.stream
-                
+
                 # Get latest term and assessment type (you might want to make this configurable)
                 latest_term = Term.query.order_by(Term.id.desc()).first()
                 latest_assessment = AssessmentType.query.order_by(AssessmentType.id.desc()).first()
@@ -238,7 +238,7 @@ class CollaborativeMarksService:
                     }
 
                     dashboard_data['classes'].append(class_info)
-                    
+
                     if class_info['can_generate_report']:
                         dashboard_data['classes_ready_for_reports'] += 1
 
