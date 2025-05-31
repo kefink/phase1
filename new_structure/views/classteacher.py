@@ -10,10 +10,10 @@ from werkzeug.utils import secure_filename
 from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark, Teacher, TeacherSubjectAssignment
 from ..utils.constants import educational_level_mapping
 from ..services import is_authenticated, get_role, get_class_report_data, generate_individual_report, generate_class_report_pdf
-from ..services.report_service import generate_class_report_pdf_from_html, get_performance_remarks
+from ..services.report_service import generate_class_report_pdf_from_html
 from ..services.mark_conversion_service import MarkConversionService
 from ..extensions import db
-from ..utils import get_performance_category
+from ..utils import get_performance_category, get_performance_remarks
 from ..services.cache_service import (
     cache_marksheet, get_cached_marksheet,
     cache_report, get_cached_report,
