@@ -310,3 +310,89 @@ class ComponentMark(db.Model):
 
     def __repr__(self):
         return f"<ComponentMark {self.raw_mark}/{self.max_raw_mark} for Component {self.component_id}>"
+
+
+class SubjectMarksStatus(db.Model):
+    """Track the status of marks upload for each subject in a class."""
+    __tablename__ = 'subject_marks_status'
+
+    id = db.Column(db.Integer, primary_key=True)
+    grade_id = db.Column(db.Integer, db.ForeignKey('grade.id'), nullable=False)
+    stream_id = db.Column(db.Integer, db.ForeignKey('stream.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    term_id = db.Column(db.Integer, db.ForeignKey('term.id'), nullable=False)
+    assessment_type_id = db.Column(db.Integer, db.ForeignKey('assessment_type.id'), nullable=False)
+
+    # Status tracking
+    is_uploaded = db.Column(db.Boolean, default=False)
+    uploaded_by_teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
+    upload_date = db.Column(db.DateTime, nullable=True)
+    last_modified = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    # Statistics
+    total_students = db.Column(db.Integer, default=0)
+    students_with_marks = db.Column(db.Integer, default=0)
+    completion_percentage = db.Column(db.Float, default=0.0)
+
+    # Relationships
+    grade = db.relationship('Grade')
+    stream = db.relationship('Stream')
+    subject = db.relationship('Subject')
+    term = db.relationship('Term')
+    assessment_type = db.relationship('AssessmentType')
+    uploaded_by = db.relationship('Teacher')
+
+    def __repr__(self):
+        return f"<SubjectMarksStatus {self.subject.name if self.subject else 'Unknown'} - Grade {self.grade.name if self.grade else 'Unknown'} - {'Complete' if self.is_uploaded else 'Pending'}>"
+
+    @staticmethod
+    def update_status(grade_id, stream_id, subject_id, term_id, assessment_type_id, teacher_id=None):
+        """Update the marks upload status for a subject."""
+        try:
+            # Find or create status record
+            status = SubjectMarksStatus.query.filter_by(
+                grade_id=grade_id,
+                stream_id=stream_id,
+                subject_id=subject_id,
+                term_id=term_id,
+                assessment_type_id=assessment_type_id
+            ).first()
+
+            if not status:
+                status = SubjectMarksStatus(
+                    grade_id=grade_id,
+                    stream_id=stream_id,
+                    subject_id=subject_id,
+                    term_id=term_id,
+                    assessment_type_id=assessment_type_id
+                )
+                db.session.add(status)
+
+            # Count students and marks
+            from ..models.user import Student
+            total_students = Student.query.filter_by(stream_id=stream_id).count()
+
+            students_with_marks = Mark.query.join(Student).filter(
+                Student.stream_id == stream_id,
+                Mark.subject_id == subject_id,
+                Mark.term_id == term_id,
+                Mark.assessment_type_id == assessment_type_id
+            ).count()
+
+            # Update status
+            status.total_students = total_students
+            status.students_with_marks = students_with_marks
+            status.completion_percentage = (students_with_marks / total_students * 100) if total_students > 0 else 0
+            status.is_uploaded = students_with_marks >= total_students and total_students > 0
+
+            if teacher_id and status.is_uploaded:
+                status.uploaded_by_teacher_id = teacher_id
+                status.upload_date = db.func.current_timestamp()
+
+            db.session.commit()
+            return status
+
+        except Exception as e:
+            print(f"Error updating subject marks status: {str(e)}")
+            db.session.rollback()
+            return None

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dark Glassmorphism Teacher Dashboard - Kirima Primary School</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="static/css/style.css" />
+    <style>
+      /* Additional demo-specific styles */
+      .demo-floating-element {
+        position: fixed;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(52, 168, 83, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        animation: float 15s ease-in-out infinite;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .demo-floating-element:nth-child(1) {
+        top: 10%;
+        right: 10%;
+        animation-delay: 0s;
+      }
+
+      .demo-floating-element:nth-child(2) {
+        bottom: 20%;
+        left: 5%;
+        width: 150px;
+        height: 150px;
+        animation-delay: 5s;
+      }
+
+      .demo-floating-element:nth-child(3) {
+        top: 50%;
+        right: 5%;
+        width: 100px;
+        height: 100px;
+        animation-delay: 10s;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) rotate(0deg);
+        }
+        25% {
+          transform: translateY(-20px) rotate(2deg);
+        }
+        50% {
+          transform: translateY(-10px) rotate(-2deg);
+        }
+        75% {
+          transform: translateY(-30px) rotate(1deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Floating geometric elements like the reference image -->
+    <div class="demo-floating-element"></div>
+    <div class="demo-floating-element"></div>
+    <div class="demo-floating-element"></div>
+    <nav class="navbar">
+      <a href="#" class="navbar-brand">Kirima Primary School</a>
+      <ul class="navbar-nav">
+        <li class="nav-item"><a href="#" class="nav-link">Dashboard</a></li>
+        <li class="nav-item"><a href="#" class="logout-btn">Logout</a></li>
+      </ul>
+    </nav>
+
+    <div class="container" style="max-width: 90%; margin-top: 80px">
+      <h1 class="text-center mb-4">🌟 Dark Glassmorphism Teacher Dashboard</h1>
+
+      <div class="dashboard-card">
+        <div class="card-header">
+          <span>Upload Class Marks</span>
+          <small>Complete all fields to process marks</small>
+        </div>
+
+        <form id="upload-form" class="login-form">
+          <div class="form-group">
+            <label for="education_level">Education Level</label>
+            <select id="education_level" name="education_level" required>
+              <option value="">Select Education Level</option>
+              <option value="lower_primary">Lower Primary (Grades 1-3)</option>
+              <option value="upper_primary">Upper Primary (Grades 4-6)</option>
+              <option value="junior_secondary">
+                Junior Secondary (Grades 7-9)
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject" required>
+              <option value="">Select Subject</option>
+              <option value="MATHEMATICS">Mathematics</option>
+              <option value="ENGLISH">English</option>
+              <option value="KISWAHILI">Kiswahili</option>
+              <option value="SCIENCE">Science</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="term">Term</label>
+            <select id="term" name="term" required>
+              <option value="">Select Term</option>
+              <option value="Term 1">Term 1</option>
+              <option value="Term 2">Term 2</option>
+              <option value="Term 3">Term 3</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="assessment_type">Assessment Type</label>
+            <select id="assessment_type" name="assessment_type" required>
+              <option value="">Select Assessment Type</option>
+              <option value="CAT">CAT</option>
+              <option value="End Term Exam">End Term Exam</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="total_marks">Total Marks (Out Of)</label>
+            <input
+              type="number"
+              id="total_marks"
+              name="total_marks"
+              min="1"
+              placeholder="Enter total marks"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="grade">Grade</label>
+            <select id="grade" name="grade" required>
+              <option value="">Select Grade</option>
+              <option value="Grade 1">Grade 1</option>
+              <option value="Grade 2">Grade 2</option>
+              <option value="Grade 3">Grade 3</option>
+              <option value="Grade 4">Grade 4</option>
+              <option value="Grade 5">Grade 5</option>
+              <option value="Grade 6">Grade 6</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="stream">Stream</label>
+            <select id="stream" name="stream" required>
+              <option value="">Select Stream</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+            </select>
+          </div>
+
+          <div
+            class="form-group"
+            style="grid-column: span 2; text-align: center"
+          >
+            <button type="submit" class="btn">✨ Upload Marks</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Composite Subject Configuration Demo -->
+      <div class="composite-config-section">
+        <div class="composite-config-header">
+          <h4>📚 Composite Subject Configuration</h4>
+          <p>Set maximum marks for each component:</p>
+        </div>
+        <div class="component-config-grid">
+          <div class="component-config-item">
+            <label for="grammar_max">Grammar (Max Marks)</label>
+            <input
+              type="number"
+              id="grammar_max"
+              name="grammar_max"
+              value="60"
+              min="1"
+              max="1000"
+            />
+          </div>
+          <div class="component-config-item">
+            <label for="composition_max">Composition (Max Marks)</label>
+            <input
+              type="number"
+              id="composition_max"
+              name="composition_max"
+              value="40"
+              min="1"
+              max="1000"
+            />
+          </div>
+          <div class="component-config-item total-display">
+            <label>Total Max Marks</label>
+            <div class="total-marks-display">100</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-card mt-4">
+        <div class="card-header">
+          <span>📊 Recent Reports</span>
+          <a href="#" class="btn-outline">View All</a>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Grade</th>
+                <th>Stream</th>
+                <th>Term</th>
+                <th>Assessment</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Grade 1</td>
+                <td>A</td>
+                <td>Term 1</td>
+                <td>CAT</td>
+                <td>2025-01-15</td>
+                <td>
+                  <a
+                    href="#"
+                    class="btn"
+                    style="min-width: 80px; margin-right: 5px"
+                    >Preview</a
+                  >
+                  <a href="#" class="btn" style="min-width: 80px">Download</a>
+                </td>
+              </tr>
+              <tr>
+                <td>Grade 2</td>
+                <td>B</td>
+                <td>Term 1</td>
+                <td>End Term Exam</td>
+                <td>2025-01-10</td>
+                <td>
+                  <a
+                    href="#"
+                    class="btn"
+                    style="min-width: 80px; margin-right: 5px"
+                    >Preview</a
+                  >
+                  <a href="#" class="btn" style="min-width: 80px">Download</a>
+                </td>
+              </tr>
+              <tr>
+                <td>Grade 3</td>
+                <td>C</td>
+                <td>Term 2</td>
+                <td>CAT</td>
+                <td>2025-01-08</td>
+                <td>
+                  <a
+                    href="#"
+                    class="btn"
+                    style="min-width: 80px; margin-right: 5px"
+                    >Preview</a
+                  >
+                  <a href="#" class="btn" style="min-width: 80px">Download</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Enhanced Subject Report Section Demo -->
+      <div class="enhanced-subject-report-section">
+        <div class="subject-report-header">
+          <h3>📈 Enhanced Subject Report</h3>
+          <div class="report-details-card">
+            <div class="report-detail-item">
+              <span class="detail-label">Subject:</span>
+              <span class="detail-value">Mathematics</span>
+            </div>
+            <div class="report-detail-item">
+              <span class="detail-label">Grade & Stream:</span>
+              <span class="detail-value">Grade 4 - A</span>
+            </div>
+            <div class="report-detail-item">
+              <span class="detail-label">Assessment:</span>
+              <span class="detail-value">Term 1 | CAT</span>
+            </div>
+          </div>
+        </div>
+        <div class="subject-report-actions">
+          <a href="#" class="btn enhanced-report-btn">
+            📊 Generate Subject Analysis Report
+          </a>
+          <p class="report-description">
+            Generate a comprehensive subject-specific report with grading
+            analysis, performance statistics, and detailed insights for
+            Mathematics.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>© 2025 Kirima Primary School - All Rights Reserved</p>
+    </footer>
+
+    <script>
+      // Add some interactive effects
+      document.addEventListener("DOMContentLoaded", function () {
+        // Add hover effects to form elements
+        const formElements = document.querySelectorAll("input, select");
+        formElements.forEach((element) => {
+          element.addEventListener("focus", function () {
+            this.style.transform = "scale(1.02)";
+          });
+          element.addEventListener("blur", function () {
+            this.style.transform = "scale(1)";
+          });
+        });
+
+        // Add click effect to buttons
+        const buttons = document.querySelectorAll(".btn");
+        buttons.forEach((button) => {
+          button.addEventListener("click", function (e) {
+            e.preventDefault();
+            this.style.transform = "scale(0.98)";
+            setTimeout(() => {
+              this.style.transform = "";
+            }, 150);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

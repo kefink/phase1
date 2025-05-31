@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Marks Dashboard - Hillview School</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 5px solid #3498db;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .classes-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .class-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .class-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .completion-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .completion-complete {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .completion-partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .completion-none {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            transition: width 0.3s ease;
+        }
+
+        .class-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .class-stat {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .class-stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .class-stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .no-classes {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .class-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Collaborative Marks Dashboard</h1>
+            <p>Monitor and manage marks upload across all your classes</p>
+        </div>
+
+        <div class="content">
+            <a href="{{ url_for('classteacher.dashboard') }}" class="back-link">← Back to Main Dashboard</a>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_classes }}</div>
+                    <div class="stat-label">Total Classes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ classes_ready_for_reports }}</div>
+                    <div class="stat-label">Ready for Reports</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_classes - classes_ready_for_reports }}</div>
+                    <div class="stat-label">Pending Completion</div>
+                </div>
+            </div>
+
+            {% if classes %}
+                <div class="classes-grid">
+                    {% for class_info in classes %}
+                    <div class="class-card">
+                        <div class="class-header">
+                            <div class="class-title">{{ class_info.grade }} - Stream {{ class_info.stream }}</div>
+                            <div class="completion-badge 
+                                {% if class_info.can_generate_report %}completion-complete
+                                {% elif class_info.overall_completion > 0 %}completion-partial
+                                {% else %}completion-none{% endif %}">
+                                {% if class_info.can_generate_report %}Complete
+                                {% elif class_info.overall_completion > 0 %}{{ "%.0f"|format(class_info.overall_completion) }}%
+                                {% else %}Not Started{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ class_info.overall_completion }}%"></div>
+                        </div>
+
+                        <div class="class-stats">
+                            <div class="class-stat">
+                                <div class="class-stat-number">{{ class_info.completed_subjects }}</div>
+                                <div class="class-stat-label">Completed</div>
+                            </div>
+                            <div class="class-stat">
+                                <div class="class-stat-number">{{ class_info.total_subjects - class_info.completed_subjects }}</div>
+                                <div class="class-stat-label">Pending</div>
+                            </div>
+                            <div class="class-stat">
+                                <div class="class-stat-number">{{ class_info.total_subjects }}</div>
+                                <div class="class-stat-label">Total Subjects</div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <a href="{{ url_for('classteacher.class_marks_status', 
+                                              grade_id=class_info.grade_id, 
+                                              stream_id=class_info.stream_id,
+                                              term_id=class_info.term_id,
+                                              assessment_type_id=class_info.assessment_type_id) }}" 
+                               class="btn btn-primary">View Details</a>
+                            
+                            {% if class_info.can_generate_report %}
+                                <a href="{{ url_for('classteacher.preview_class_report', 
+                                                  grade=class_info.grade, 
+                                                  stream='Stream ' + class_info.stream) }}" 
+                                   class="btn btn-success">Generate Report</a>
+                            {% else %}
+                                <span class="btn btn-warning">{{ class_info.total_subjects - class_info.completed_subjects }} subjects pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-classes">
+                    <h3>No Classes Assigned</h3>
+                    <p>You are not currently assigned as a class teacher for any classes.</p>
+                    <p>Contact your administrator to get class teacher assignments.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -8,6 +8,7 @@ import os
 from io import BytesIO
 from werkzeug.utils import secure_filename
 from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark, Teacher, TeacherSubjectAssignment
+from ..models.academic import SubjectMarksStatus
 from ..utils.constants import educational_level_mapping
 from ..services import is_authenticated, get_role, get_class_report_data, generate_individual_report, generate_class_report_pdf
 from ..services.report_service import generate_class_report_pdf_from_html
@@ -20,6 +21,7 @@ from ..services.cache_service import (
     cache_pdf, get_cached_pdf,
     invalidate_cache
 )
+from ..services.collaborative_marks_service import CollaborativeMarksService
 from functools import wraps
 
 # Create a blueprint for class teacher routes
@@ -571,6 +573,15 @@ def dashboard():
 
                         # Invalidate any existing cache for this grade/stream/term/assessment combination
                         invalidate_cache(grade_level, stream_name, term, assessment_type)
+
+                        # Update collaborative marks status
+                        current_teacher_id = session.get('teacher_id')
+                        if current_teacher_id and subjects:
+                            # Update status for each subject that was uploaded
+                            for subject in subjects:
+                                CollaborativeMarksService.update_marks_status_after_upload(
+                                    stream_obj.grade_id, stream_obj.id, subject.id, term_obj.id, assessment_type_obj.id, current_teacher_id
+                                )
 
                         # Show success message
                         flash(f"Successfully saved {marks_added} new marks and updated {marks_updated} existing marks.", "success")
@@ -7229,3 +7240,261 @@ def api_get_stream_status(grade, term, assessment_type):
         })
 
     return jsonify({"streams": result})
+
+
+# ============================================================================
+# COLLABORATIVE MARKS UPLOAD SYSTEM
+# ============================================================================
+
+@classteacher_bp.route('/collaborative_marks_dashboard')
+@classteacher_required
+def collaborative_marks_dashboard():
+    """Dashboard showing marks upload status for all classes managed by the class teacher."""
+    try:
+        current_teacher_id = session.get('teacher_id')
+        if not current_teacher_id:
+            flash("Please log in to access this page.", "error")
+            return redirect(url_for('auth.classteacher_login'))
+
+        # Get dashboard data
+        dashboard_data = CollaborativeMarksService.get_class_teacher_dashboard_data(current_teacher_id)
+
+        if 'error' in dashboard_data:
+            flash(f"Error loading dashboard: {dashboard_data['error']}", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+        return render_template('collaborative_marks_dashboard.html', **dashboard_data)
+
+    except Exception as e:
+        print(f"Error in collaborative marks dashboard: {str(e)}")
+        flash("Error loading collaborative marks dashboard.", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+
+@classteacher_bp.route('/class_marks_status/<int:grade_id>/<int:stream_id>/<int:term_id>/<int:assessment_type_id>')
+@classteacher_required
+def class_marks_status(grade_id, stream_id, term_id, assessment_type_id):
+    """Show detailed marks upload status for a specific class."""
+    try:
+        current_teacher_id = session.get('teacher_id')
+        if not current_teacher_id:
+            flash("Please log in to access this page.", "error")
+            return redirect(url_for('auth.classteacher_login'))
+
+        # Get class marks status
+        status_data = CollaborativeMarksService.get_class_marks_status(
+            grade_id, stream_id, term_id, assessment_type_id
+        )
+
+        if 'error' in status_data:
+            flash(f"Error loading class status: {status_data['error']}", "error")
+            return redirect(url_for('classteacher.collaborative_marks_dashboard'))
+
+        # Check if current teacher can upload marks for each subject
+        for subject in status_data['subjects']:
+            subject['can_upload'] = CollaborativeMarksService.can_teacher_upload_subject(
+                current_teacher_id, subject['id'], grade_id, stream_id
+            )
+
+        # Add navigation data
+        status_data['grade_id'] = grade_id
+        status_data['stream_id'] = stream_id
+        status_data['term_id'] = term_id
+        status_data['assessment_type_id'] = assessment_type_id
+
+        return render_template('class_marks_status.html', **status_data)
+
+    except Exception as e:
+        print(f"Error in class marks status: {str(e)}")
+        flash("Error loading class marks status.", "error")
+        return redirect(url_for('classteacher.collaborative_marks_dashboard'))
+
+
+@classteacher_bp.route('/upload_subject_marks/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id>')
+@classteacher_required
+def upload_subject_marks(grade_id, stream_id, subject_id, term_id, assessment_type_id):
+    """Upload marks for a specific subject in a class."""
+    try:
+        current_teacher_id = session.get('teacher_id')
+        if not current_teacher_id:
+            flash("Please log in to access this page.", "error")
+            return redirect(url_for('auth.classteacher_login'))
+
+        # Check if teacher can upload marks for this subject
+        if not CollaborativeMarksService.can_teacher_upload_subject(
+            current_teacher_id, subject_id, grade_id, stream_id
+        ):
+            flash("You are not authorized to upload marks for this subject.", "error")
+            return redirect(url_for('classteacher.class_marks_status',
+                                  grade_id=grade_id, stream_id=stream_id,
+                                  term_id=term_id, assessment_type_id=assessment_type_id))
+
+        # Get required objects
+        grade = Grade.query.get(grade_id)
+        stream = Stream.query.get(stream_id)
+        subject = Subject.query.get(subject_id)
+        term = Term.query.get(term_id)
+        assessment_type = AssessmentType.query.get(assessment_type_id)
+
+        if not all([grade, stream, subject, term, assessment_type]):
+            flash("Invalid parameters for marks upload.", "error")
+            return redirect(url_for('classteacher.collaborative_marks_dashboard'))
+
+        # Get students in this stream
+        students = Student.query.filter_by(stream_id=stream_id).order_by(Student.name).all()
+
+        # Get existing marks for this subject
+        existing_marks = {}
+        marks = Mark.query.filter_by(
+            subject_id=subject_id,
+            term_id=term_id,
+            assessment_type_id=assessment_type_id
+        ).join(Student).filter(Student.stream_id == stream_id).all()
+
+        for mark in marks:
+            existing_marks[mark.student_id] = mark
+
+        # Check if subject is composite
+        components = subject.get_components() if subject.is_composite else []
+
+        upload_data = {
+            'grade': grade,
+            'stream': stream,
+            'subject': subject,
+            'term': term,
+            'assessment_type': assessment_type,
+            'students': students,
+            'existing_marks': existing_marks,
+            'components': components,
+            'is_composite': subject.is_composite,
+            'grade_id': grade_id,
+            'stream_id': stream_id,
+            'subject_id': subject_id,
+            'term_id': term_id,
+            'assessment_type_id': assessment_type_id
+        }
+
+        return render_template('upload_subject_marks.html', **upload_data)
+
+    except Exception as e:
+        print(f"Error in upload subject marks: {str(e)}")
+        flash("Error loading marks upload page.", "error")
+        return redirect(url_for('classteacher.collaborative_marks_dashboard'))
+
+
+@classteacher_bp.route('/submit_subject_marks/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id>', methods=['POST'])
+@classteacher_required
+def submit_subject_marks(grade_id, stream_id, subject_id, term_id, assessment_type_id):
+    """Handle submission of marks for a specific subject."""
+    try:
+        current_teacher_id = session.get('teacher_id')
+        if not current_teacher_id:
+            flash("Please log in to submit marks.", "error")
+            return redirect(url_for('auth.classteacher_login'))
+
+        # Check if teacher can upload marks for this subject
+        if not CollaborativeMarksService.can_teacher_upload_subject(
+            current_teacher_id, subject_id, grade_id, stream_id
+        ):
+            flash("You are not authorized to upload marks for this subject.", "error")
+            return redirect(url_for('classteacher.class_marks_status',
+                                  grade_id=grade_id, stream_id=stream_id,
+                                  term_id=term_id, assessment_type_id=assessment_type_id))
+
+        # Get required objects
+        grade = Grade.query.get(grade_id)
+        stream = Stream.query.get(stream_id)
+        subject = Subject.query.get(subject_id)
+        term = Term.query.get(term_id)
+        assessment_type = AssessmentType.query.get(assessment_type_id)
+
+        if not all([grade, stream, subject, term, assessment_type]):
+            flash("Invalid parameters for marks submission.", "error")
+            return redirect(url_for('classteacher.collaborative_marks_dashboard'))
+
+        # Get students in this stream
+        students = Student.query.filter_by(stream_id=stream_id).order_by(Student.name).all()
+
+        # Process marks submission
+        marks_added = 0
+        marks_updated = 0
+        total_marks = request.form.get('total_marks', type=int, default=100)
+
+        for student in students:
+            # Get mark value from form
+            mark_key = f"mark_{student.name.replace(' ', '_')}_{subject.id}"
+            mark_value = request.form.get(mark_key, '')
+
+            if mark_value and mark_value.replace('.', '').isdigit():
+                try:
+                    raw_mark = float(mark_value)
+
+                    # Sanitize the raw mark
+                    raw_mark, sanitized_total_marks = MarkConversionService.sanitize_raw_mark(raw_mark, total_marks)
+
+                    # Calculate percentage
+                    percentage = MarkConversionService.calculate_percentage(raw_mark, sanitized_total_marks)
+
+                    # Check if mark already exists
+                    existing_mark = Mark.query.filter_by(
+                        student_id=student.id,
+                        subject_id=subject.id,
+                        term_id=term.id,
+                        assessment_type_id=assessment_type.id
+                    ).first()
+
+                    if existing_mark:
+                        # Update existing mark
+                        existing_mark.mark = raw_mark
+                        existing_mark.total_marks = sanitized_total_marks
+                        existing_mark.raw_mark = raw_mark
+                        existing_mark.max_raw_mark = sanitized_total_marks
+                        existing_mark.percentage = percentage
+                        marks_updated += 1
+                    else:
+                        # Create new mark
+                        new_mark = Mark(
+                            student_id=student.id,
+                            subject_id=subject.id,
+                            term_id=term.id,
+                            assessment_type_id=assessment_type.id,
+                            mark=raw_mark,
+                            total_marks=sanitized_total_marks,
+                            raw_mark=raw_mark,
+                            max_raw_mark=sanitized_total_marks,
+                            percentage=percentage
+                        )
+                        db.session.add(new_mark)
+                        marks_added += 1
+
+                except Exception as e:
+                    print(f"Error processing mark for {student.name}: {str(e)}")
+                    continue
+
+        # Commit changes
+        db.session.commit()
+
+        # Update collaborative marks status
+        status_result = CollaborativeMarksService.update_marks_status_after_upload(
+            grade_id, stream_id, subject_id, term_id, assessment_type_id, current_teacher_id
+        )
+
+        # Show success message
+        if marks_added > 0 or marks_updated > 0:
+            flash(f"Successfully saved {marks_added} new marks and updated {marks_updated} existing marks for {subject.name}.", "success")
+
+            # Add completion status to message
+            if status_result.get('is_complete'):
+                flash(f"All students now have marks for {subject.name}. Subject is marked as complete!", "success")
+        else:
+            flash("No marks were processed.", "warning")
+
+        # Redirect back to class marks status
+        return redirect(url_for('classteacher.class_marks_status',
+                              grade_id=grade_id, stream_id=stream_id,
+                              term_id=term_id, assessment_type_id=assessment_type_id))
+
+    except Exception as e:
+        print(f"Error submitting subject marks: {str(e)}")
+        flash("Error submitting marks. Please try again.", "error")
+        return redirect(url_for('classteacher.collaborative_marks_dashboard'))

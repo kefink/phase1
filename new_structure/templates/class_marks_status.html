@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Marks Status - {{ grade }} Stream {{ stream }} - Hillview School</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .class-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+
+        .overall-progress {
+            margin-bottom: 30px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .progress-percentage {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            transition: width 0.3s ease;
+        }
+
+        .subjects-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .subject-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .subject-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .status-complete {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-none {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .subject-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .detail-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .subject-progress {
+            margin-bottom: 15px;
+        }
+
+        .subject-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .subject-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #17a2b8 0%, #138496 100%);
+            transition: width 0.3s ease;
+        }
+
+        .subject-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+        }
+
+        .btn-disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .btn:hover:not(.btn-disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .generate-report-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+            text-align: center;
+            border: 2px solid #28a745;
+        }
+
+        .generate-report-section h3 {
+            color: #155724;
+            margin-bottom: 15px;
+        }
+
+        .generate-report-section p {
+            color: #155724;
+            margin-bottom: 20px;
+        }
+
+        .pending-section {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+            text-align: center;
+            border: 2px solid #ffc107;
+        }
+
+        .pending-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .pending-section p {
+            color: #856404;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .subject-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 {{ grade }} - Stream {{ stream }}</h1>
+            <p>{{ term }} • {{ assessment_type }} • Marks Upload Status</p>
+        </div>
+
+        <div class="content">
+            <a href="{{ url_for('classteacher.collaborative_marks_dashboard') }}" class="back-link">← Back to Dashboard</a>
+
+            <div class="class-info">
+                <div class="overall-progress">
+                    <div class="progress-header">
+                        <div class="progress-title">Overall Progress</div>
+                        <div class="progress-percentage">{{ "%.0f"|format(overall_completion) }}%</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ overall_completion }}%"></div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #27ae60;">{{ completed_subjects }}</div>
+                        <div style="color: #6c757d;">Completed</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #e74c3c;">{{ total_subjects - completed_subjects }}</div>
+                        <div style="color: #6c757d;">Pending</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #3498db;">{{ total_subjects }}</div>
+                        <div style="color: #6c757d;">Total</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="subjects-grid">
+                {% for subject in subjects %}
+                <div class="subject-card">
+                    <div class="subject-header">
+                        <div class="subject-name">{{ subject.name }}</div>
+                        <div class="status-badge 
+                            {% if subject.is_uploaded %}status-complete
+                            {% elif subject.completion_percentage > 0 %}status-partial
+                            {% else %}status-none{% endif %}">
+                            {% if subject.is_uploaded %}Complete
+                            {% elif subject.completion_percentage > 0 %}{{ "%.0f"|format(subject.completion_percentage) }}%
+                            {% else %}Not Started{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="subject-progress">
+                        <div class="subject-progress-bar">
+                            <div class="subject-progress-fill" style="width: {{ subject.completion_percentage }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="subject-details">
+                        <div class="detail-item">
+                            <div class="detail-number">{{ subject.students_with_marks }}</div>
+                            <div class="detail-label">With Marks</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-number">{{ subject.total_students - subject.students_with_marks }}</div>
+                            <div class="detail-label">Pending</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-number">{{ subject.total_students }}</div>
+                            <div class="detail-label">Total Students</div>
+                        </div>
+                    </div>
+
+                    <div class="subject-meta">
+                        <div>
+                            <strong>Assigned to:</strong> {{ subject.assigned_teacher }}
+                        </div>
+                        {% if subject.uploaded_by %}
+                        <div>
+                            <strong>Uploaded by:</strong> {{ subject.uploaded_by }}
+                            {% if subject.upload_date %}({{ subject.upload_date }}){% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="action-buttons">
+                        {% if subject.can_upload %}
+                            <a href="{{ url_for('classteacher.upload_subject_marks', 
+                                              grade_id=grade_id, 
+                                              stream_id=stream_id,
+                                              subject_id=subject.id,
+                                              term_id=term_id,
+                                              assessment_type_id=assessment_type_id) }}" 
+                               class="btn btn-primary">
+                                {% if subject.is_uploaded %}Edit Marks{% else %}Upload Marks{% endif %}
+                            </a>
+                        {% else %}
+                            <span class="btn btn-disabled">No Permission</span>
+                        {% endif %}
+                        
+                        {% if subject.is_uploaded %}
+                            <a href="#" class="btn btn-secondary">View Marks</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if can_generate_report %}
+                <div class="generate-report-section">
+                    <h3>🎉 All Subjects Complete!</h3>
+                    <p>All subjects have been uploaded with marks. You can now generate the class report.</p>
+                    <a href="{{ url_for('classteacher.preview_class_report', grade=grade, stream='Stream ' + stream) }}" 
+                       class="btn btn-success" style="font-size: 1.1rem; padding: 15px 30px;">
+                        Generate Class Report
+                    </a>
+                </div>
+            {% else %}
+                <div class="pending-section">
+                    <h3>⏳ Marks Upload in Progress</h3>
+                    <p>{{ total_subjects - completed_subjects }} subject(s) still need marks to be uploaded before you can generate the class report.</p>
+                    <p>Contact the assigned subject teachers or upload the marks yourself if you have permission.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
