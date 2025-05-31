@@ -899,7 +899,7 @@ def all_reports():
     # Create a subquery to get unique combinations with the most recent date
     # This uses a Common Table Expression (CTE) approach for better performance
     subquery = db.session.query(
-        Grade.level.label('grade_level'),
+        Grade.name.label('grade_level'),
         Stream.name.label('stream_name'),
         Term.name.label('term_name'),
         AssessmentType.name.label('assessment_name'),
@@ -918,7 +918,7 @@ def all_reports():
 
     # Apply filters
     if filter_grade:
-        subquery = subquery.filter(Grade.level == filter_grade)
+        subquery = subquery.filter(Grade.name == filter_grade)
     if filter_term:
         subquery = subquery.filter(Term.name == filter_term)
     if filter_assessment:
@@ -926,7 +926,7 @@ def all_reports():
 
     # Group by the combination fields to get unique combinations
     subquery = subquery.group_by(
-        Grade.level,
+        Grade.name,
         Stream.name,
         Term.name,
         AssessmentType.name
@@ -934,7 +934,7 @@ def all_reports():
 
     # Apply sorting to the subquery
     if sort_by == 'grade':
-        subquery = subquery.order_by(Grade.level)
+        subquery = subquery.order_by(Grade.name)
     elif sort_by == 'term':
         subquery = subquery.order_by(Term.name)
     else:  # Default to date
@@ -962,7 +962,7 @@ def all_reports():
     ).join(
         AssessmentType, Mark.assessment_type_id == AssessmentType.id
     ).filter(
-        Grade.level == subquery.c.grade_level,
+        Grade.name == subquery.c.grade_level,
         Stream.name == subquery.c.stream_name,
         Term.name == subquery.c.term_name,
         AssessmentType.name == subquery.c.assessment_name
@@ -1107,7 +1107,7 @@ def manage_students():
     if educational_level:
         # Get all grades for this educational level
         allowed_grades = educational_level_mapping.get(educational_level, [])
-        grades = Grade.query.filter(Grade.level.in_(allowed_grades)).all()
+        grades = Grade.query.filter(Grade.name.in_(allowed_grades)).all()
         grade_ids = [g.id for g in grades]
 
         # Get all streams for these grades
@@ -2003,7 +2003,7 @@ def edit_class_marks(grade, stream, term, assessment_type):
 @classteacher_required
 def update_class_marks(grade, stream, term, assessment_type):
     """Route for updating class marks."""
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -2238,7 +2238,7 @@ def download_class_report(grade, stream, term, assessment_type):
         )
 
     # If no cache or cache miss, generate the report
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -2375,7 +2375,7 @@ def download_class_report(grade, stream, term, assessment_type):
 @classteacher_required
 def print_individual_report(grade, stream, term, assessment_type, student_name):
     """Route for printing individual student reports with a clean format."""
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -2520,7 +2520,7 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
                                assessment_type=assessment_type,
                                student_name=student_name))
     """Route for previewing individual student reports."""
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream[-1]).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -2907,7 +2907,7 @@ def download_marks_template():
         stream_letter = stream_name.replace("Stream ", "") if stream_name.startswith("Stream ") else stream_name[-1]
 
         # Get the stream object
-        stream_obj = Stream.query.join(Grade).filter(Grade.level == grade_level, Stream.name == stream_letter).first()
+        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade_level, Stream.name == stream_letter).first()
 
         if stream_obj:
             # Get students for this stream
@@ -3275,7 +3275,7 @@ def delete_marksheet(grade, stream, term, assessment_type):
     try:
         # Get the stream object
         stream_letter = stream[-1] if stream.startswith("Stream ") else stream[-1]
-        stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream_letter).first()
+        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
 
         if not stream_obj:
             flash(f"Stream {stream} not found for grade {grade}", "error")
@@ -6396,7 +6396,7 @@ def view_all_reports():
 
     # Apply filters if provided
     if filter_grade:
-        marks_query = marks_query.filter(Grade.level == filter_grade)
+        marks_query = marks_query.filter(Grade.name == filter_grade)
     if filter_term:
         marks_query = marks_query.filter(Term.name == filter_term)
     if filter_assessment:
@@ -6404,7 +6404,7 @@ def view_all_reports():
 
     # Apply sorting
     if sort_by == 'grade':
-        marks_query = marks_query.order_by(Grade.level)
+        marks_query = marks_query.order_by(Grade.name)
     elif sort_by == 'term':
         marks_query = marks_query.order_by(Term.name)
     else:  # Default to date
@@ -6413,7 +6413,7 @@ def view_all_reports():
     # Get unique combinations of grade, stream, term, assessment_type
     from sqlalchemy import func
     unique_combinations = db.session.query(
-        Grade.level,
+        Grade.name,
         Stream.name,
         Term.name,
         AssessmentType.name,
@@ -6424,11 +6424,11 @@ def view_all_reports():
      .join(Grade, Stream.grade_id == Grade.id)\
      .join(Term, Mark.term_id == Term.id)\
      .join(AssessmentType, Mark.assessment_type_id == AssessmentType.id)\
-     .group_by(Grade.level, Stream.name, Term.name, AssessmentType.name)
+     .group_by(Grade.name, Stream.name, Term.name, AssessmentType.name)
 
     # Apply filters to the unique combinations query
     if filter_grade:
-        unique_combinations = unique_combinations.filter(Grade.level == filter_grade)
+        unique_combinations = unique_combinations.filter(Grade.name == filter_grade)
     if filter_term:
         unique_combinations = unique_combinations.filter(Term.name == filter_term)
     if filter_assessment:
@@ -6436,7 +6436,7 @@ def view_all_reports():
 
     # Apply sorting to the unique combinations query
     if sort_by == 'grade':
-        unique_combinations = unique_combinations.order_by(Grade.level)
+        unique_combinations = unique_combinations.order_by(Grade.name)
     elif sort_by == 'term':
         unique_combinations = unique_combinations.order_by(Term.name)
     else:  # Default to date
@@ -6484,7 +6484,7 @@ def delete_report(grade, stream, term, assessment_type):
     stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
 
     # Get the stream, term, and assessment type objects
-    stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream_letter).first()
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
