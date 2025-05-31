@@ -3457,7 +3457,7 @@ def view_student_reports(grade, stream, term, assessment_type):
 @classteacher_bp.route('/download_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
 @classteacher_required
 def download_individual_report(grade, stream, term, assessment_type, student_name):
-    """Route for downloading an individual student report as PDF."""
+    """Route for downloading an individual student report as PDF using the same format as preview."""
     # Check if we have a cached PDF for this student
     cached_pdf = get_cached_pdf(grade, stream, term, assessment_type, f"student_{student_name.replace(' ', '_')}")
     if cached_pdf:
@@ -3482,38 +3482,14 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
         flash(f"No data available for student {student_name}.", "error")
         return redirect(url_for('classteacher.dashboard'))
 
-    # Generate individual report data
-    from ..services.report_service import generate_individual_report_pdf_from_html
-
-    # Get education level based on grade
-    education_level = ""
-    grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
-    if 1 <= grade_num <= 3:
-        education_level = "lower primary"
-    elif 4 <= grade_num <= 6:
-        education_level = "upper primary"
-    elif 7 <= grade_num <= 9:
-        education_level = "junior secondary"
-
-    # Get report data
-    report_data = generate_individual_report(student, grade, stream, term, assessment_type, education_level)
-
-    # Handle different return types from generate_individual_report
-    if not report_data:
-        flash(f"No marks found for {student_name} in {term} {assessment_type}", "error")
-        return redirect(url_for('classteacher.dashboard'))
-
-    # If report_data is a dictionary with an error message
-    if isinstance(report_data, dict) and report_data.get("error"):
-        flash(report_data.get("error"), "error")
-        return redirect(url_for('classteacher.dashboard'))
-
-    # Generate PDF using the ReportLab-based function instead of HTML-based function
-    # This avoids the dependency on pdfkit which might be causing the issue
-    pdf_file = report_data
+    # Generate PDF using the same format as preview
+    pdf_file = generate_individual_report_pdf_like_preview(
+        student, grade, stream, term, assessment_type,
+        stream_obj, term_obj, assessment_type_obj
+    )
 
     if not pdf_file:
-        flash(f"Failed to generate PDF report for {student_name}", "error")
+        flash(f"No marks found for {student_name} in {term} {assessment_type}", "error")
         return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
 
     # Cache the PDF file
@@ -3529,10 +3505,282 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
         mimetype='application/pdf'
     )
 
+def generate_individual_report_pdf_like_preview(student, grade, stream, term, assessment_type, stream_obj, term_obj, assessment_type_obj):
+    """Generate individual report PDF using the same format as the preview."""
+    try:
+        import tempfile
+        import os
+        from datetime import datetime
+        from flask import render_template_string
+        import pdfkit
+
+        # Get education level based on grade
+        education_level = ""
+        grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+        if 1 <= grade_num <= 3:
+            education_level = "lower primary"
+        elif 4 <= grade_num <= 6:
+            education_level = "upper primary"
+        elif 7 <= grade_num <= 9:
+            education_level = "junior secondary"
+
+        # Get class report data first (same as preview)
+        class_data_result = get_class_report_data(grade, stream, term, assessment_type)
+
+        if class_data_result.get("error"):
+            return None
+
+        # Find student data in the class report
+        student_data = None
+        for data in class_data_result["class_data"]:
+            if data["student"] == student.name:
+                student_data = data
+                break
+
+        if not student_data:
+            return None
+
+        # Calculate mean grade and points (same as preview)
+        avg_percentage = student_data.get("average_percentage", 0)
+        from ..utils import get_grade_and_points, get_performance_remarks
+        mean_grade, mean_points = get_grade_and_points(avg_percentage)
+
+        # Prepare table data for the report with composite subject handling (same as preview)
+        table_data = []
+        composite_data = {}
+
+        # Get only subjects that have marks in the class report data
+        subjects_with_marks = class_data_result.get("subjects", [])
+
+        # Define subject order - core subjects first (same as preview)
+        subject_order = [
+            "Mathematics", "MATHEMATICS", "Math", "MATH",
+            "English", "ENGLISH", "English Language", "ENGLISH LANGUAGE",
+            "Kiswahili", "KISWAHILI", "Kiswahili Language", "KISWAHILI LANGUAGE",
+            "Religious", "RELIGIOUS", "Religious Education", "RELIGIOUS EDUCATION", "CRE", "IRE",
+            "Integrated Science", "INTEGRATED SCIENCE", "Science", "SCIENCE",
+            "Social Studies", "SOCIAL STUDIES", "Social Science", "SOCIAL SCIENCE",
+            "Agriculture", "AGRICULTURE", "Agricultural Science", "AGRICULTURAL SCIENCE",
+            "Creative Art and Sports", "CREATIVE ART AND SPORTS", "Creative Arts", "CREATIVE ARTS"
+        ]
+
+        # Sort subjects according to the defined order (same as preview)
+        ordered_subject_names = []
+        for subject_name in subject_order:
+            if subject_name in subjects_with_marks and subject_name not in ordered_subject_names:
+                ordered_subject_names.append(subject_name)
+
+        remaining_subject_names = [s for s in subjects_with_marks if s not in ordered_subject_names]
+        remaining_subject_names.sort()
+        ordered_subject_names.extend(remaining_subject_names)
+
+        from ..models.academic import Subject, ComponentMark
+
+        # Process subjects (same logic as preview)
+        for subject_name in ordered_subject_names:
+            subject = Subject.query.filter_by(name=subject_name).first()
+            if not subject:
+                continue
+            mark = student_data.get("marks", {}).get(subject.name, 0)
+
+            if not mark or mark == 0:
+                continue
+
+            # Clean up decimal precision
+            if isinstance(mark, float):
+                mark = int(round(mark)) if mark == int(mark) else round(mark, 1)
+            else:
+                mark = int(mark)
+
+            # Handle composite subjects (same as preview)
+            if hasattr(subject, 'is_composite') and subject.is_composite:
+                components = subject.get_components()
+                component_marks = {}
+
+                mark_record = Mark.query.filter_by(
+                    student_id=student.id,
+                    subject_id=subject.id,
+                    term_id=term_obj.id,
+                    assessment_type_id=assessment_type_obj.id
+                ).first()
+
+                if mark_record:
+                    for component in components:
+                        component_mark = ComponentMark.query.filter_by(
+                            component_id=component.id,
+                            mark_id=mark_record.id
+                        ).first()
+
+                        if component_mark:
+                            clean_component_name = component.name
+                            if clean_component_name.startswith("L "):
+                                clean_component_name = clean_component_name[2:]
+
+                            component_max_mark = component_mark.max_raw_mark if component_mark.max_raw_mark else (component.max_raw_mark if hasattr(component, 'max_raw_mark') and component.max_raw_mark else 100)
+                            component_percentage = (component_mark.raw_mark / component_max_mark) * 100
+
+                            component_raw_mark = component_mark.raw_mark
+                            if isinstance(component_raw_mark, float):
+                                component_raw_mark = int(round(component_raw_mark)) if component_raw_mark == int(component_raw_mark) else round(component_raw_mark, 1)
+                            else:
+                                component_raw_mark = int(component_raw_mark)
+
+                            component_marks[clean_component_name] = {
+                                'mark': component_raw_mark,
+                                'max_mark': int(component_max_mark),
+                                'percentage': round(component_percentage, 1),
+                                'remarks': get_performance_remarks(component_percentage, 100)
+                            }
+
+                composite_data[subject.name] = {
+                    'components': component_marks,
+                    'total': mark
+                }
+
+            # Add to table data (same logic as preview)
+            entrance_mark = 0
+            mid_term_mark = 0
+            end_term_mark = 0
+
+            if assessment_type.lower() in ['end_term', 'endterm']:
+                all_assessment_types = AssessmentType.query.all()
+                for at in all_assessment_types:
+                    mark_record = Mark.query.filter_by(
+                        student_id=student.id,
+                        subject_id=subject.id,
+                        term_id=term_obj.id,
+                        assessment_type_id=at.id
+                    ).first()
+
+                    if mark_record:
+                        mark_value = mark_record.percentage or 0
+                        if at.name.lower() in ['entrance', 'opener']:
+                            entrance_mark = mark_value
+                        elif at.name.lower() in ['mid_term', 'midterm']:
+                            mid_term_mark = mark_value
+                        elif at.name.lower() in ['end_term', 'endterm']:
+                            end_term_mark = mark_value
+
+                available_marks = [m for m in [entrance_mark, mid_term_mark, end_term_mark] if m > 0]
+                avg_mark = sum(available_marks) / len(available_marks) if available_marks else 0
+            else:
+                if assessment_type.lower() in ['entrance', 'opener']:
+                    entrance_mark = mark
+                elif assessment_type.lower() in ['mid_term', 'midterm']:
+                    mid_term_mark = mark
+                elif assessment_type.lower() in ['end_term', 'endterm']:
+                    end_term_mark = mark
+                avg_mark = mark
+
+            table_data.append({
+                "subject": subject.name,
+                "entrance": entrance_mark,
+                "mid_term": mid_term_mark,
+                "end_term": end_term_mark,
+                "current_assessment": mark,
+                "avg": avg_mark,
+                "remarks": get_performance_remarks(avg_mark if assessment_type.lower() in ['end_term', 'endterm'] else mark, class_data_result.get("total_marks", 100))
+            })
+
+        # Calculate totals (same as preview)
+        total_marks = student_data.get("total_marks", 0)
+        total_possible_marks = len(subjects_with_marks) * class_data_result.get("total_marks", 100)
+        total_points = mean_points * len(subjects_with_marks)
+
+        # Generate admission number (same as preview)
+        admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
+
+        # Get academic year (same as preview)
+        academic_year = term_obj.academic_year if hasattr(term_obj, 'academic_year') and term_obj.academic_year else "2023"
+
+        # Get current date
+        current_date = datetime.now().strftime("%Y-%m-%d")
+
+        # Read the template file
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'preview_individual_report.html')
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template_content = f.read()
+
+        # Add print-specific CSS
+        print_css = """
+        <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .action-buttons, .print-controls, .delete-btn, .modal {
+            display: none !important;
+        }
+        .report-container {
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+        }
+        </style>
+        """
+        template_content = template_content.replace('</head>', f'{print_css}</head>')
+
+        # Render the template with the same data as preview
+        html_content = render_template_string(
+            template_content,
+            student=student,
+            student_data=student_data,
+            grade=grade,
+            stream=stream,
+            term=term,
+            assessment_type=assessment_type,
+            education_level=education_level,
+            current_date=current_date,
+            table_data=table_data,
+            composite_data=composite_data,
+            total=total_marks,
+            avg_percentage=avg_percentage,
+            mean_grade=mean_grade,
+            mean_points=mean_points,
+            total_possible_marks=total_possible_marks,
+            total_points=total_points,
+            admission_no=admission_no,
+            academic_year=academic_year,
+            print_mode=True
+        )
+
+        # Generate PDF
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"Individual_Report_{grade}_{stream}_{student.name.replace(' ', '_')}_{timestamp}.pdf"
+        temp_dir = tempfile.gettempdir()
+        pdf_path = os.path.join(temp_dir, filename)
+
+        # Configure pdfkit options
+        options = {
+            'page-size': 'A4',
+            'orientation': 'Portrait',
+            'margin-top': '0.75in',
+            'margin-right': '0.75in',
+            'margin-bottom': '0.75in',
+            'margin-left': '0.75in',
+            'encoding': 'UTF-8',
+            'no-outline': None,
+            'enable-local-file-access': True,
+            'print-media-type': None
+        }
+
+        # Convert HTML to PDF
+        pdfkit.from_string(html_content, pdf_path, options=options)
+        return pdf_path
+
+    except Exception as e:
+        print(f"Error generating individual report PDF: {str(e)}")
+        return None
+
 @classteacher_bp.route('/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type>')
 @classteacher_required
 def generate_all_individual_reports(grade, stream, term, assessment_type):
-    """Route for generating and downloading all individual reports as a ZIP file."""
+    """Route for generating and downloading all individual reports as a ZIP file using the same format as preview."""
     stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj = Term.query.filter_by(name=term).first()
     assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
@@ -3553,17 +3801,6 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
     import tempfile
     import os
     from datetime import datetime
-    from ..services.report_service import generate_individual_report_pdf_from_html
-
-    # Get education level based on grade
-    education_level = ""
-    grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
-    if 1 <= grade_num <= 3:
-        education_level = "lower primary"
-    elif 4 <= grade_num <= 6:
-        education_level = "upper primary"
-    elif 7 <= grade_num <= 9:
-        education_level = "junior secondary"
 
     # Create a temporary directory to store the PDFs
     temp_dir = tempfile.mkdtemp()
@@ -3574,30 +3811,34 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
     zip_path = os.path.join(temp_dir, zip_filename)
 
     # Generate PDFs for each student and add them to the ZIP file
+    successful_reports = 0
     with zipfile.ZipFile(zip_path, 'w') as zipf:
         for student in students:
             try:
-                # Generate report data
-                report_data = generate_individual_report(student, grade, stream, term, assessment_type, education_level)
+                # Generate PDF using the same format as preview
+                pdf_file = generate_individual_report_pdf_like_preview(
+                    student, grade, stream, term, assessment_type,
+                    stream_obj, term_obj, assessment_type_obj
+                )
 
-                # Skip if no report data or if it's a dictionary with an error
-                if not report_data:
-                    continue
-
-                if isinstance(report_data, dict) and report_data.get("error"):
-                    continue
-
-                # Generate PDF using the ReportLab-based function instead of HTML-based function
-                # This avoids the dependency on pdfkit which might be causing the issue
-                pdf_file = report_data
-
-                if pdf_file:
+                if pdf_file and os.path.exists(pdf_file):
                     # Add PDF to ZIP file
                     pdf_filename = f"Individual_Report_{grade}_{stream}_{student.name.replace(' ', '_')}.pdf"
                     zipf.write(pdf_file, pdf_filename)
+                    successful_reports += 1
+                    print(f"✅ Generated report for {student.name}")
+                else:
+                    print(f"⚠️ No report generated for {student.name} (no marks found)")
+
             except Exception as e:
-                print(f"Error generating report for {student.name}: {str(e)}")
+                print(f"❌ Error generating report for {student.name}: {str(e)}")
                 continue
+
+    if successful_reports == 0:
+        flash(f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}.", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", "success")
 
     # Return the ZIP file
     return send_file(
