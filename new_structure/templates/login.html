@@ -80,6 +80,10 @@
         box-shadow: var(--shadow-2xl);
         border: 1px solid rgba(255, 255, 255, 0.2);
         animation: slideUp 0.8s ease-out;
+        /* Ensure container can expand to show all content */
+        min-height: auto;
+        height: auto;
+        max-height: none;
       }
 
       .school-header {
@@ -136,6 +140,11 @@
       .login-options {
         display: grid;
         gap: var(--space-4);
+        /* Ensure all cards are visible */
+        width: 100%;
+        min-height: auto;
+        height: auto;
+        overflow: visible;
       }
 
       .login-card {
@@ -240,6 +249,30 @@
       }
 
       .admin-card:hover .login-arrow {
+        color: white;
+      }
+
+      /* Subject Teacher Card Styling */
+      .subject-teacher-card {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+      }
+
+      .subject-teacher-card .login-icon {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+      }
+
+      .subject-teacher-card .login-title,
+      .subject-teacher-card .login-description {
+        color: white;
+      }
+
+      .subject-teacher-card .login-arrow {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .subject-teacher-card:hover .login-arrow {
         color: white;
       }
 
@@ -390,7 +423,10 @@
         </a>
 
         <!-- Subject Teacher Login -->
-        <a href="{{ url_for('auth.teacher_login') }}" class="login-card">
+        <a
+          href="{{ url_for('auth.teacher_login') }}"
+          class="login-card subject-teacher-card"
+        >
           <div class="login-card-header">
             <div class="login-icon">
               <i class="fas fa-user-graduate"></i>
