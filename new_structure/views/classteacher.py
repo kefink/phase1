@@ -4014,6 +4014,7 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         pdf_available = False
         try:
             import pdfkit
+            import os
             # Test if wkhtmltopdf is working
             test_html = "<html><body><h1>Test</h1></body></html>"
             temp_test_file = os.path.join(tempfile.gettempdir(), "wkhtmltopdf_test.pdf")

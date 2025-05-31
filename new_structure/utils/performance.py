@@ -48,6 +48,37 @@ def get_grade_and_points(average):
     else:
         return "BE2", 0.5
 
+def get_performance_remarks(mark, total_marks=100):
+    """
+    Generate performance remarks based on a mark.
+
+    Args:
+        mark: The mark achieved
+        total_marks: The total possible marks (default: 100)
+
+    Returns:
+        String with performance remarks
+    """
+    if total_marks > 0:
+        percentage = (mark / total_marks) * 100
+    else:
+        percentage = 0
+
+    if percentage >= 90:
+        return "Excellent"
+    elif percentage >= 80:
+        return "Very Good"
+    elif percentage >= 70:
+        return "Good"
+    elif percentage >= 60:
+        return "Satisfactory"
+    elif percentage >= 50:
+        return "Fair"
+    elif percentage >= 40:
+        return "Needs Improvement"
+    else:
+        return "Poor"
+
 def get_performance_summary(marks_data):
     """
     Generate a summary of performance categories from marks data.
