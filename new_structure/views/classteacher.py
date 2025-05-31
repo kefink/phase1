@@ -3987,6 +3987,188 @@ Report generated on {current_date}
         print(f"Error generating simple individual report PDF: {str(e)}")
         return None
 
+def generate_individual_report_like_preview_for_zip(student, grade, stream, term, assessment_type, stream_obj, term_obj, assessment_type_obj, pdf_available=False):
+    """Generate individual report using the exact same format as the preview template."""
+    try:
+        import tempfile
+        import os
+        from datetime import datetime
+        from flask import render_template_string
+
+        # Get class report data first (same as preview)
+        class_data_result = get_class_report_data(grade, stream, term, assessment_type)
+
+        if class_data_result.get("error"):
+            return None
+
+        # Find student data in the class report
+        student_data = None
+        for data in class_data_result["class_data"]:
+            if data["student"] == student.name:
+                student_data = data
+                break
+
+        if not student_data:
+            return None
+
+        # Get education level based on grade (same as preview)
+        education_level = ""
+        grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+        if 1 <= grade_num <= 3:
+            education_level = "lower primary"
+        elif 4 <= grade_num <= 6:
+            education_level = "upper primary"
+        elif 7 <= grade_num <= 9:
+            education_level = "junior secondary"
+
+        # Calculate mean grade and points (same as preview)
+        avg_percentage = student_data.get("average_percentage", 0)
+        from ..utils import get_grade_and_points, get_performance_remarks
+        mean_grade, mean_points = get_grade_and_points(avg_percentage)
+
+        # Prepare table data for the report with composite subject handling (same as preview)
+        table_data = []
+        composite_data = {}
+
+        # Get only subjects that have marks in the class report data
+        subjects_with_marks = class_data_result.get("subjects", [])
+
+        for subject_name in subjects_with_marks:
+            mark = student_data.get("marks", {}).get(subject_name, 0)
+            if mark and mark > 0:
+                # Clean up decimal precision
+                if isinstance(mark, float):
+                    mark = int(round(mark)) if mark == int(mark) else round(mark, 1)
+                else:
+                    mark = int(mark)
+
+                grade_letter, points = get_grade_and_points(mark)
+                remarks = get_performance_remarks(mark, 100)
+
+                # Create table row data (same structure as preview)
+                row_data = {
+                    'subject': subject_name.upper(),
+                    'entrance': 0,  # Not used for single assessments
+                    'mid_term': 0,  # Not used for single assessments
+                    'end_term': mark if assessment_type.lower() in ['end_term', 'endterm'] else 0,
+                    'current_assessment': mark,
+                    'avg': mark,
+                    'remarks': remarks
+                }
+                table_data.append(row_data)
+
+        # Calculate totals (same as preview)
+        total_marks = student_data.get("total_marks", 0)
+        total_possible_marks = len(subjects_with_marks) * class_data_result.get("total_marks", 100)
+        total_points = mean_points * len(subjects_with_marks)
+
+        # Generate admission number (same as preview)
+        admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
+
+        # Get academic year (same as preview)
+        academic_year = term_obj.academic_year if hasattr(term_obj, 'academic_year') and term_obj.academic_year else "2023"
+
+        # Get current date
+        current_date = datetime.now().strftime("%Y-%m-%d")
+
+        # Read the template file and render it (same as preview)
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'preview_individual_report.html')
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template_content = f.read()
+
+        # Render the template with the same data as preview
+        rendered_html = render_template_string(
+            template_content,
+            student=student,
+            student_data=student_data,
+            grade=grade,
+            stream=stream,
+            term=term,
+            assessment_type=assessment_type,
+            education_level=education_level,
+            current_date=current_date,
+            table_data=table_data,
+            composite_data=composite_data,
+            total=total_marks,
+            avg_percentage=avg_percentage,
+            mean_grade=mean_grade,
+            mean_points=mean_points,
+            total_possible_marks=total_possible_marks,
+            total_points=total_points,
+            admission_no=admission_no,
+            academic_year=academic_year,
+            print_mode=True  # Enable print mode for clean output
+        )
+
+        # Generate file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        temp_dir = tempfile.gettempdir()
+
+        if pdf_available:
+            # Try to generate PDF
+            try:
+                import pdfkit
+                filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}_{timestamp}.pdf"
+                pdf_path = os.path.join(temp_dir, filename)
+
+                # Add print-specific CSS for PDF
+                print_css = """
+                <style>
+                @page { size: A4; margin: 1cm; }
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+                .action-buttons, .print-controls, .delete-btn, .modal { display: none !important; }
+                .report-container { max-width: none; margin: 0; padding: 20px; }
+                </style>
+                """
+                html_with_css = rendered_html.replace('</head>', f'{print_css}</head>')
+
+                options = {
+                    'page-size': 'A4',
+                    'orientation': 'Portrait',
+                    'margin-top': '0.75in',
+                    'margin-right': '0.75in',
+                    'margin-bottom': '0.75in',
+                    'margin-left': '0.75in',
+                    'encoding': 'UTF-8',
+                    'no-outline': None
+                }
+                pdfkit.from_string(html_with_css, pdf_path, options=options)
+                return pdf_path
+            except Exception as e:
+                print(f"PDF generation failed: {e}")
+                # Fall through to HTML generation
+
+        # Generate HTML file as fallback
+        filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}_{timestamp}.html"
+        html_path = os.path.join(temp_dir, filename)
+
+        # Add some basic styling for standalone HTML
+        standalone_css = """
+        <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .action-buttons, .print-controls, .delete-btn, .modal { display: none !important; }
+        .report-container { max-width: 800px; margin: 0 auto; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .student-details { margin: 20px 0; }
+        .remarks { margin: 20px 0; }
+        .footer { margin-top: 20px; text-align: center; font-size: 12px; color: #666; }
+        </style>
+        """
+        html_with_css = rendered_html.replace('</head>', f'{standalone_css}</head>')
+
+        with open(html_path, 'w', encoding='utf-8') as f:
+            f.write(html_with_css)
+
+        print(f"Created HTML report: {html_path}")
+        return html_path
+
+    except Exception as e:
+        print(f"Error generating individual report like preview: {str(e)}")
+        return None
+
 @classteacher_bp.route('/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type>')
 @classteacher_required
 def generate_all_individual_reports(grade, stream, term, assessment_type):
@@ -4053,15 +4235,15 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
                 try:
                     print(f"📄 Processing student {i}/{len(students)}: {student.name}")
 
-                    # Use a simpler approach - generate report file (PDF or text)
-                    report_file = generate_simple_individual_report_pdf(
+                    # Use the same format as preview - generate report file (PDF or HTML)
+                    report_file = generate_individual_report_like_preview_for_zip(
                         student, grade, stream, term, assessment_type,
                         stream_obj, term_obj, assessment_type_obj, pdf_available
                     )
 
                     if report_file and os.path.exists(report_file):
-                        # Determine file extension and name
-                        file_extension = ".pdf" if pdf_available else ".txt"
+                        # Determine file extension from the actual file
+                        file_extension = os.path.splitext(report_file)[1]  # Gets .pdf, .html, or .txt
                         report_filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}{file_extension}"
                         zipf.write(report_file, report_filename)
                         successful_reports += 1
