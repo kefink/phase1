@@ -234,7 +234,7 @@ def bulk_assign_subjects_new():
                 grade_id_int = int(grade_level)
                 grade = Grade.query.get(grade_id_int)
                 if grade:
-                    print(f"Found grade by ID: {grade.level} (ID: {grade.id})")
+                    print(f"Found grade by ID: {grade.name} (ID: {grade.id})")
                 else:
                     print(f"ERROR: Grade with ID {grade_id_int} not found")
                     continue
@@ -242,7 +242,7 @@ def bulk_assign_subjects_new():
                 print(f"Could not convert grade level '{grade_level}' to integer")
                 continue
         else:
-            print(f"Found grade by level: {grade.level} (ID: {grade.id})")
+            print(f"Found grade by level: {grade.name} (ID: {grade.id})")
 
         grade_id = grade.id
 

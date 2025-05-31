@@ -28,7 +28,7 @@ def get_grade_mapping():
     """API endpoint to get grade level to ID mapping."""
     try:
         grades = Grade.query.all()
-        mapping = {grade.level: grade.id for grade in grades}
+        mapping = {grade.name: grade.id for grade in grades}
         return jsonify({'success': True, 'mapping': mapping})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
@@ -186,7 +186,7 @@ def dashboard():
                 stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
 
                 # Get the stream object
-                stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream_letter).first()
+                stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
 
                 if stream_obj:
                     # Get students for this stream
@@ -435,7 +435,7 @@ def generate_subject_report():
     try:
         # Get database objects
         stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
-        stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream_letter).first()
+        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
         subject_obj = Subject.query.filter_by(name=subject).first()
         term_obj = Term.query.filter_by(name=term).first()
         assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()

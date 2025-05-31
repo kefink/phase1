@@ -6254,7 +6254,7 @@ def manage_teachers():
 
                 subject_assignments.append({
                     'subject': subject.name if subject else 'Unknown',
-                    'grade': grade.level if grade else 'Unknown',
+                    'grade': grade.name if grade else 'Unknown',
                     'stream': stream.name if stream else 'All Streams'
                 })
 
@@ -7051,7 +7051,7 @@ def get_teacher_assignments(teacher_id):
 @classteacher_required
 def api_get_streams(grade):
     """API endpoint to get streams for a grade level."""
-    grade_obj = Grade.query.filter_by(level=grade).first()
+    grade_obj = Grade.query.filter_by(name=grade).first()
     if grade_obj:
         streams = Stream.query.filter_by(grade_id=grade_obj.id).all()
         stream_names = [stream.name for stream in streams]

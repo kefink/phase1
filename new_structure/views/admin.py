@@ -78,7 +78,7 @@ def dashboard():
         grade_marks = Mark.query.join(Student, Mark.student_id == Student.id).join(Stream, Student.stream_id == Stream.id).filter(Stream.grade_id == grade.id).all()
         if grade_marks:
             grade_avg = round(sum(mark.mark for mark in grade_marks) / len(grade_marks), 2)
-            grade_performances[grade.level] = grade_avg
+            grade_performances[grade.name] = grade_avg
     if grade_performances:
         least_performing_grade = min(grade_performances, key=grade_performances.get)
         least_grade_score = grade_performances[least_performing_grade]
@@ -809,8 +809,8 @@ def manage_grades_streams():
                 grade = Grade.query.get(grade_id)
                 if grade:
                     # Check if new level already exists (if level is changed)
-                    if grade_level != grade.level:
-                        existing_grade = Grade.query.filter_by(level=grade_level).first()
+                    if grade_level != grade.name:
+                        existing_grade = Grade.query.filter_by(name=grade_level).first()
                         if existing_grade:
                             error_message = f"Grade '{grade_level}' already exists."
                             return render_template('manage_grades_streams.html',
@@ -820,7 +820,7 @@ def manage_grades_streams():
                                                 success_message=success_message)
 
                     # Update grade
-                    grade.level = grade_level
+                    grade.name = grade_level
 
                     try:
                         db.session.commit()
@@ -1169,7 +1169,7 @@ def generate_performance_assessment_data():
 
     # First, get all unique grade/stream/term/assessment combinations
     combinations = db.session.query(
-        Grade.level.label('grade'),
+        Grade.name.label('grade'),
         Stream.name.label('stream'),
         Term.name.label('term'),
         AssessmentType.name.label('assessment_type'),
