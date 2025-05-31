@@ -6240,7 +6240,7 @@ def manage_teachers():
                 grade = Grade.query.get(assignment.grade_id)
                 stream = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
                 class_assignments.append({
-                    'grade': grade.level if grade else 'Unknown',
+                    'grade': grade.name if grade else 'Unknown',
                     'stream': stream.name if stream else 'All Streams'
                 })
             else:
@@ -6342,7 +6342,7 @@ def manage_teachers():
                                 stream = Stream.query.get(assignment.stream_id)
                                 stream_text = f" Stream {stream.name}"
 
-                            message = f"Class teacher assignment for {teacher.username} in Grade {grade.level}{stream_text} removed successfully."
+                            message = f"Class teacher assignment for {teacher.username} in Grade {grade.name}{stream_text} removed successfully."
                         else:
                             subject = Subject.query.get(assignment.subject_id)
                             grade = Grade.query.get(assignment.grade_id)
@@ -6351,7 +6351,7 @@ def manage_teachers():
                                 stream = Stream.query.get(assignment.stream_id)
                                 stream_text = f" Stream {stream.name}"
 
-                            message = f"Subject assignment of {subject.name} to {teacher.username} for Grade {grade.level}{stream_text} removed successfully."
+                            message = f"Subject assignment of {subject.name} to {teacher.username} for Grade {grade.name}{stream_text} removed successfully."
 
                         db.session.delete(assignment)
                         db.session.commit()
@@ -6528,7 +6528,7 @@ def assign_subjects():
                 subject = Subject.query.get(subject_id)
                 grade = Grade.query.get(grade_id)
 
-                success_message = f"Successfully assigned {subject.name} to {teacher.username} for Grade {grade.level}"
+                success_message = f"Successfully assigned {subject.name} to {teacher.username} for Grade {grade.name}"
                 if stream_id:
                     stream = Stream.query.get(stream_id)
                     success_message += f" Stream {stream.name}"
@@ -6820,7 +6820,7 @@ def enhanced_bulk_assign_subjects():
                                         errors.append(result['error'])
                         else:
                             # No specific streams selected but specific mode chosen - skip this grade
-                            errors.append(f"No specific streams selected for Grade {grade.level}")
+                            errors.append(f"No specific streams selected for Grade {grade.name}")
                             continue
 
         else:  # advanced mode
