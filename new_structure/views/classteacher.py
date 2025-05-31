@@ -3777,76 +3777,270 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
         print(f"Error generating individual report PDF: {str(e)}")
         return None
 
+def generate_simple_individual_report_pdf(student, grade, stream, term, assessment_type, stream_obj, term_obj, assessment_type_obj):
+    """Generate individual report PDF using a simpler approach."""
+    try:
+        import tempfile
+        import os
+        from datetime import datetime
+
+        # Get class report data first (same as preview)
+        class_data_result = get_class_report_data(grade, stream, term, assessment_type)
+
+        if class_data_result.get("error"):
+            return None
+
+        # Find student data in the class report
+        student_data = None
+        for data in class_data_result["class_data"]:
+            if data["student"] == student.name:
+                student_data = data
+                break
+
+        if not student_data:
+            return None
+
+        # Calculate mean grade and points
+        avg_percentage = student_data.get("average_percentage", 0)
+        from ..utils import get_grade_and_points, get_performance_remarks
+        mean_grade, mean_points = get_grade_and_points(avg_percentage)
+
+        # Get subjects with marks
+        subjects_with_marks = class_data_result.get("subjects", [])
+
+        # Calculate totals
+        total_marks = student_data.get("total_marks", 0)
+        total_possible_marks = len(subjects_with_marks) * class_data_result.get("total_marks", 100)
+        total_points = mean_points * len(subjects_with_marks)
+
+        # Generate admission number
+        admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
+
+        # Get academic year
+        academic_year = term_obj.academic_year if hasattr(term_obj, 'academic_year') and term_obj.academic_year else "2023"
+
+        # Get current date
+        current_date = datetime.now().strftime("%Y-%m-%d")
+
+        # Create simple HTML content
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Individual Report - {student.name}</title>
+            <style>
+                @page {{ size: A4; margin: 1cm; }}
+                body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; }}
+                .header {{ text-align: center; margin-bottom: 20px; }}
+                .student-info {{ margin-bottom: 20px; }}
+                .marks-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
+                .marks-table th, .marks-table td {{ border: 1px solid #000; padding: 8px; text-align: center; }}
+                .marks-table th {{ background-color: #f0f0f0; }}
+                .summary {{ margin-top: 20px; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h2>KIRIMA PRIMARY SCHOOL</h2>
+                <h3>INDIVIDUAL STUDENT REPORT</h3>
+                <p>{term} - {assessment_type} - Academic Year {academic_year}</p>
+            </div>
+
+            <div class="student-info">
+                <p><strong>Student Name:</strong> {student.name}</p>
+                <p><strong>Admission Number:</strong> {admission_no}</p>
+                <p><strong>Grade:</strong> {grade}</p>
+                <p><strong>Stream:</strong> {stream}</p>
+                <p><strong>Date:</strong> {current_date}</p>
+            </div>
+
+            <table class="marks-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Marks</th>
+                        <th>Grade</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+        """
+
+        # Add subject marks
+        for subject_name in subjects_with_marks:
+            mark = student_data.get("marks", {}).get(subject_name, 0)
+            if mark and mark > 0:
+                # Clean up decimal precision
+                if isinstance(mark, float):
+                    mark = int(round(mark)) if mark == int(mark) else round(mark, 1)
+                else:
+                    mark = int(mark)
+
+                grade_letter, points = get_grade_and_points(mark)
+                remarks = get_performance_remarks(mark, 100)
+
+                html_content += f"""
+                    <tr>
+                        <td>{subject_name}</td>
+                        <td>{mark}</td>
+                        <td>{grade_letter}</td>
+                        <td>{remarks}</td>
+                    </tr>
+                """
+
+        html_content += f"""
+                </tbody>
+            </table>
+
+            <div class="summary">
+                <p><strong>Total Marks:</strong> {total_marks}/{total_possible_marks}</p>
+                <p><strong>Average Percentage:</strong> {avg_percentage:.1f}%</p>
+                <p><strong>Mean Grade:</strong> {mean_grade}</p>
+                <p><strong>Total Points:</strong> {total_points}</p>
+            </div>
+        </body>
+        </html>
+        """
+
+        # Generate PDF
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}_{timestamp}.pdf"
+        temp_dir = tempfile.gettempdir()
+        pdf_path = os.path.join(temp_dir, filename)
+
+        # Try to use pdfkit
+        try:
+            import pdfkit
+            options = {
+                'page-size': 'A4',
+                'orientation': 'Portrait',
+                'margin-top': '0.75in',
+                'margin-right': '0.75in',
+                'margin-bottom': '0.75in',
+                'margin-left': '0.75in',
+                'encoding': 'UTF-8',
+                'no-outline': None
+            }
+            pdfkit.from_string(html_content, pdf_path, options=options)
+            return pdf_path
+        except Exception as e:
+            print(f"pdfkit failed: {e}")
+            # Fallback: save as HTML file for debugging
+            html_path = pdf_path.replace('.pdf', '.html')
+            with open(html_path, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            return None
+
+    except Exception as e:
+        print(f"Error generating simple individual report PDF: {str(e)}")
+        return None
+
 @classteacher_bp.route('/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type>')
 @classteacher_required
 def generate_all_individual_reports(grade, stream, term, assessment_type):
     """Route for generating and downloading all individual reports as a ZIP file using the same format as preview."""
-    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
-    term_obj = Term.query.filter_by(name=term).first()
-    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+    try:
+        print(f"🚀 Starting ZIP generation for {grade} {stream} {term} {assessment_type}")
 
-    if not (stream_obj and term_obj and assessment_type_obj):
-        flash("Invalid grade, stream, term, or assessment type", "error")
+        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
+        term_obj = Term.query.filter_by(name=term).first()
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+        if not (stream_obj and term_obj and assessment_type_obj):
+            flash("Invalid grade, stream, term, or assessment type", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+        # Get students in this stream
+        students = Student.query.filter_by(stream_id=stream_obj.id).all()
+        print(f"📊 Found {len(students)} students in {grade} Stream {stream[-1]}")
+
+        if not students:
+            flash(f"No students found for {grade} Stream {stream[-1]}", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+        # Check if pdfkit is available
+        try:
+            import pdfkit
+            print("✅ pdfkit is available")
+        except ImportError:
+            flash("PDF generation library not available. Please contact administrator.", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+        # Import necessary modules
+        import zipfile
+        import tempfile
+        import os
+        from datetime import datetime
+
+        # Create a temporary directory to store the PDFs
+        temp_dir = tempfile.mkdtemp()
+        print(f"📁 Created temp directory: {temp_dir}")
+
+        # Create a ZIP file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        zip_filename = f"Individual_Reports_{grade.replace(' ', '_')}_{stream}_{term}_{assessment_type}_{timestamp}.zip"
+        zip_path = os.path.join(temp_dir, zip_filename)
+        print(f"📦 Creating ZIP file: {zip_filename}")
+
+        # Generate PDFs for each student and add them to the ZIP file
+        successful_reports = 0
+        failed_reports = 0
+
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            for i, student in enumerate(students, 1):
+                try:
+                    print(f"📄 Processing student {i}/{len(students)}: {student.name}")
+
+                    # Use a simpler approach - generate HTML and convert to PDF
+                    pdf_file = generate_simple_individual_report_pdf(
+                        student, grade, stream, term, assessment_type,
+                        stream_obj, term_obj, assessment_type_obj
+                    )
+
+                    if pdf_file and os.path.exists(pdf_file):
+                        # Add PDF to ZIP file
+                        pdf_filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}.pdf"
+                        zipf.write(pdf_file, pdf_filename)
+                        successful_reports += 1
+                        print(f"✅ Generated report for {student.name}")
+
+                        # Clean up individual PDF file
+                        try:
+                            os.remove(pdf_file)
+                        except:
+                            pass
+                    else:
+                        failed_reports += 1
+                        print(f"⚠️ No report generated for {student.name} (no marks found)")
+
+                except Exception as e:
+                    failed_reports += 1
+                    print(f"❌ Error generating report for {student.name}: {str(e)}")
+                    continue
+
+        print(f"📊 Generation complete: {successful_reports} successful, {failed_reports} failed")
+
+        if successful_reports == 0:
+            flash(f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}.", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+        flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", "success")
+
+        # Return the ZIP file
+        return send_file(
+            zip_path,
+            as_attachment=True,
+            download_name=zip_filename,
+            mimetype='application/zip'
+        )
+
+    except Exception as e:
+        print(f"💥 Critical error in ZIP generation: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash(f"Error generating reports: {str(e)}", "error")
         return redirect(url_for('classteacher.dashboard'))
-
-    # Get students in this stream
-    students = Student.query.filter_by(stream_id=stream_obj.id).all()
-
-    if not students:
-        flash(f"No students found for {grade} Stream {stream[-1]}", "error")
-        return redirect(url_for('classteacher.dashboard'))
-
-    # Import necessary modules
-    import zipfile
-    import tempfile
-    import os
-    from datetime import datetime
-
-    # Create a temporary directory to store the PDFs
-    temp_dir = tempfile.mkdtemp()
-
-    # Create a ZIP file
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    zip_filename = f"Individual_Reports_{grade}_{stream}_{term}_{assessment_type}_{timestamp}.zip"
-    zip_path = os.path.join(temp_dir, zip_filename)
-
-    # Generate PDFs for each student and add them to the ZIP file
-    successful_reports = 0
-    with zipfile.ZipFile(zip_path, 'w') as zipf:
-        for student in students:
-            try:
-                # Generate PDF using the same format as preview
-                pdf_file = generate_individual_report_pdf_like_preview(
-                    student, grade, stream, term, assessment_type,
-                    stream_obj, term_obj, assessment_type_obj
-                )
-
-                if pdf_file and os.path.exists(pdf_file):
-                    # Add PDF to ZIP file
-                    pdf_filename = f"Individual_Report_{grade}_{stream}_{student.name.replace(' ', '_')}.pdf"
-                    zipf.write(pdf_file, pdf_filename)
-                    successful_reports += 1
-                    print(f"✅ Generated report for {student.name}")
-                else:
-                    print(f"⚠️ No report generated for {student.name} (no marks found)")
-
-            except Exception as e:
-                print(f"❌ Error generating report for {student.name}: {str(e)}")
-                continue
-
-    if successful_reports == 0:
-        flash(f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}.", "error")
-        return redirect(url_for('classteacher.dashboard'))
-
-    flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", "success")
-
-    # Return the ZIP file
-    return send_file(
-        zip_path,
-        as_attachment=True,
-        download_name=zip_filename,
-        mimetype='application/zip'
-    )
 
 @classteacher_bp.route('/download_class_list', methods=['GET'])
 @classteacher_required
