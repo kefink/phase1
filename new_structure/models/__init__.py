@@ -8,3 +8,5 @@ from .academic import (
     AssessmentType, Student, Mark
 )
 from .assignment import TeacherSubjectAssignment
+from .permission import ClassTeacherPermission, PermissionRequest
+from .function_permission import FunctionPermission, DefaultFunctionPermissions

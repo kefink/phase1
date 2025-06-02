@@ -111,11 +111,11 @@ def get_streams_by_grade():
         print(f"No grade found with ID: {grade_id}")
         return jsonify({'streams': []})
 
-    print(f"Found grade: {grade.level} (ID: {grade.id})")
+    print(f"Found grade: {grade.name} (ID: {grade.id})")
 
     # Get streams for this grade
     streams = Stream.query.filter_by(grade_id=grade.id).all()
-    print(f"Found {len(streams)} streams for grade {grade.level}")
+    print(f"Found {len(streams)} streams for grade {grade.name}")
 
     return jsonify({
         'streams': [{'id': stream.id, 'name': stream.name} for stream in streams]
@@ -219,15 +219,15 @@ def bulk_assign_subjects_new():
         is_class_teacher = f'is_class_teacher_{level_num}' in request.form
 
         # Get the grade ID from the grade level
-        print(f"Looking for grade with level: {grade_level}")
-        grade = Grade.query.filter_by(level=grade_level).first()
+        print(f"Looking for grade with name: {grade_level}")
+        grade = Grade.query.filter_by(name=grade_level).first()
         if not grade:
             print(f"ERROR: Grade with level '{grade_level}' not found")
             # Try to find a grade with a similar level
             all_grades = Grade.query.all()
             print(f"All grades in database ({len(all_grades)}):")
             for g in all_grades:
-                print(f"  - ID: {g.id}, Level: {g.level}")
+                print(f"  - ID: {g.id}, Name: {g.name}")
 
             # Try to find a grade with the ID directly
             try:
@@ -276,7 +276,7 @@ def bulk_assign_subjects_new():
         # Debug: Check if grade exists
         grade_obj = Grade.query.get(grade_id)
         if grade_obj:
-            print(f"Found grade: ID={grade_obj.id}, Level={grade_obj.level}")
+            print(f"Found grade: ID={grade_obj.id}, Name={grade_obj.name}")
         else:
             print(f"ERROR: Grade with ID {grade_id} not found")
 
@@ -446,7 +446,7 @@ def bulk_assign_subjects_new():
 
                             grade_obj = Grade.query.get(assignment.grade_id)
                             stream_obj = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
-                            grade_name = grade_obj.level if grade_obj else f"Grade ID {assignment.grade_id}"
+                            grade_name = grade_obj.name if grade_obj else f"Grade ID {assignment.grade_id}"
                             stream_name = stream_obj.name if stream_obj else "All Streams"
 
                             print(f"Teacher is already a class teacher for {grade_name} {stream_name}")
@@ -549,7 +549,7 @@ def bulk_assign_subjects_new():
                     print(f"Final check before creating assignment:")
                     print(f"  - Teacher: ID={teacher_id}, Username={teacher_obj.username}")
                     print(f"  - Subject: ID={actual_subject_id}, Name={subject_obj.name}")
-                    print(f"  - Grade: ID={grade_id}, Level={grade_obj.level}")
+                    print(f"  - Grade: ID={grade_id}, Name={grade_obj.name}")
                     if stream_id:
                         print(f"  - Stream: ID={stream_id}, Name={stream_obj.name}")
                     else:
@@ -715,7 +715,7 @@ def update_assignment():
                 stream = Stream.query.get(stream_id)
                 stream_text = f" Stream {stream.name}"
 
-            message = f"Class teacher assignment for {teacher.username} in Grade {grade.level}{stream_text} updated successfully."
+            message = f"Class teacher assignment for {teacher.username} in Grade {grade.name}{stream_text} updated successfully."
         else:
             subject = Subject.query.get(subject_id)
             stream_text = ""
@@ -723,7 +723,7 @@ def update_assignment():
                 stream = Stream.query.get(stream_id)
                 stream_text = f" Stream {stream.name}"
 
-            message = f"Subject assignment of {subject.name} to {teacher.username} for Grade {grade.level}{stream_text} updated successfully."
+            message = f"Subject assignment of {subject.name} to {teacher.username} for Grade {grade.name}{stream_text} updated successfully."
 
         flash(message, "success")
     except Exception as e:

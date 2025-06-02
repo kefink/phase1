@@ -3,8 +3,8 @@ Teacher views for the Hillview School Management System.
 Adapted from proven classteacher functionality for single-subject use.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
-from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark, Teacher
-from ..services import is_authenticated, get_role
+from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark, Teacher, TeacherSubjectAssignment
+from ..services import is_authenticated, get_role, RoleBasedDataService
 from ..extensions import db
 from ..utils import get_performance_category, get_performance_summary
 from functools import wraps
@@ -101,20 +101,42 @@ def reset_form():
 @teacher_bp.route('/', methods=['GET', 'POST'])
 @teacher_required
 def dashboard():
-    """Teacher dashboard with single-subject marks upload functionality."""
-    # Get data for the form with education level filtering
-    grades = [grade.level for grade in Grade.query.all()]
-    grades_dict = {grade.level: grade.id for grade in Grade.query.all()}
+    """Teacher dashboard with role-based assignments and single-subject marks upload functionality."""
+    # Get current teacher info
+    teacher_id = session.get('teacher_id')
+    role = session.get('role', 'teacher')
+
+    # Get role-based assignment summary
+    assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, role)
+
+    if 'error' in assignment_summary:
+        flash(f"Error loading assignments: {assignment_summary['error']}", "error")
+        assignment_summary = {
+            'teacher': None,
+            'role': role,
+            'subject_assignments': [],
+            'class_teacher_assignments': [],
+            'total_subjects_taught': 0,
+            'subjects_involved': []
+        }
+
+    # Get accessible data based on role
+    accessible_subjects = RoleBasedDataService.get_accessible_subjects(teacher_id, role)
+    accessible_grades = RoleBasedDataService.get_accessible_grades(teacher_id, role)
+    accessible_streams = RoleBasedDataService.get_accessible_streams(teacher_id, role)
+
+    # Organize subjects by education level (only accessible ones)
+    subjects_by_education_level = {
+        'lower_primary': [s.name for s in accessible_subjects if s.education_level == 'lower_primary'],
+        'upper_primary': [s.name for s in accessible_subjects if s.education_level == 'upper_primary'],
+        'junior_secondary': [s.name for s in accessible_subjects if s.education_level == 'junior_secondary']
+    }
+
+    # Get form data (only accessible options)
+    grades = [grade.name for grade in accessible_grades]
+    grades_dict = {grade.name: grade.id for grade in accessible_grades}
     terms = [term.name for term in Term.query.all()]
     assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
-
-    # Get subjects organized by education level
-    all_subjects = Subject.query.all()
-    subjects_by_education_level = {
-        'lower_primary': [s.name for s in all_subjects if s.education_level == 'lower_primary'],
-        'upper_primary': [s.name for s in all_subjects if s.education_level == 'upper_primary'],
-        'junior_secondary': [s.name for s in all_subjects if s.education_level == 'junior_secondary']
-    }
 
     # Initialize variables
     error_message = None
@@ -207,7 +229,7 @@ def dashboard():
             else:
                 # Extract stream letter and get objects
                 stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
-                stream_obj = Stream.query.join(Grade).filter(Grade.level == grade, Stream.name == stream_letter).first()
+                stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
                 subject_obj = Subject.query.filter_by(name=subject).first()
                 term_obj = Term.query.filter_by(name=term).first()
                 assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
@@ -414,7 +436,16 @@ def dashboard():
         grammar_max_marks=grammar_max_marks,
         composition_max_marks=composition_max_marks,
         lugha_max_marks=lugha_max_marks,
-        insha_max_marks=insha_max_marks
+        insha_max_marks=insha_max_marks,
+        # Role-based assignment data
+        assignment_summary=assignment_summary,
+        subject_assignments=assignment_summary.get('subject_assignments', []),
+        class_teacher_assignments=assignment_summary.get('class_teacher_assignments', []),
+        total_subjects_taught=assignment_summary.get('total_subjects_taught', 0),
+        can_manage_classes=assignment_summary.get('can_manage_classes', False),
+        accessible_subjects=accessible_subjects,
+        accessible_grades=accessible_grades,
+        accessible_streams=accessible_streams
     )
 
 

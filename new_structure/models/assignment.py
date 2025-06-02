@@ -21,6 +21,6 @@ class TeacherSubjectAssignment(db.Model):
     def __repr__(self):
         teacher_name = self.teacher.username if self.teacher else f"Teacher ID {self.teacher_id}"
         subject_name = self.subject.name if self.subject else f"Subject ID {self.subject_id}"
-        grade_level = self.grade.level if self.grade else f"Grade ID {self.grade_id}"
+        grade_level = self.grade.name if self.grade else f"Grade ID {self.grade_id}"
         stream_name = self.stream.name if self.stream else "All"
         return f"<TeacherSubjectAssignment {teacher_name} - {subject_name} - Grade {grade_level} - Stream {stream_name}>"

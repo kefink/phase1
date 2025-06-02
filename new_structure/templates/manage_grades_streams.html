@@ -488,7 +488,7 @@
                 >
                   <option value="">Select Grade</option>
                   {% for grade in grades %}
-                  <option value="{{ grade.id }}">{{ grade.level }}</option>
+                  <option value="{{ grade.id }}">{{ grade.name }}</option>
                   {% endfor %}
                 </select>
               </div>
@@ -557,7 +557,7 @@
                 {% for grade in grades %}
                 <tr>
                   <td>{{ grade.id }}</td>
-                  <td>{{ grade.level }}</td>
+                  <td>{{ grade.name }}</td>
                   <td class="streams-cell">
                     {% if grade.streams %}
                     <div class="streams-list">

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Class Teacher Dashboard - Kirima Primary School</title>
 
     <!-- Modern Fonts -->
@@ -487,6 +488,113 @@
             line-height: 1.6;
         }
 
+        /* Role-Based Assignment Cards */
+        .assignment-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            border: 2px solid var(--gray-200);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .assignment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
+
+        .assignment-card.class-teacher {
+            border-color: var(--blue-300);
+            background: linear-gradient(135deg, var(--blue-50) 0%, white 100%);
+        }
+
+        .assignment-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--green-600) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .assignment-content {
+            flex: 1;
+        }
+
+        .assignment-title {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-1);
+        }
+
+        .assignment-subtitle {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-bottom: var(--space-2);
+        }
+
+        .assignment-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--blue-500) 0%, var(--indigo-500) 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            border: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--green-600) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-top: var(--space-1);
+        }
+
         /* Enhanced Card Actions */
         .card-actions {
             position: absolute;
@@ -628,6 +736,172 @@
                 </div>
             </div>
         </header>
+
+        <!-- Role-Based Assignments Section -->
+        {% if assignment_summary and assignment_summary.teacher %}
+        <div class="modern-card slide-up" style="margin-bottom: var(--space-6);">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-user-graduate card-icon"></i>
+                    My Teaching Assignments
+                </h2>
+                <div class="card-actions">
+                    <span class="modern-badge badge-info">{{ assignment_summary.role.title() }}</span>
+                </div>
+            </div>
+            <div style="padding: var(--space-6);">
+                <!-- Assignment Summary Stats -->
+                <div class="modern-grid grid-cols-4" style="margin-bottom: var(--space-6);">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ total_subjects_taught }}</div>
+                            <div class="stat-label">Subjects Taught</div>
+                        </div>
+                    </div>
+                    {% if can_manage_classes %}
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chalkboard"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ assignment_summary.total_classes_managed }}</div>
+                            <div class="stat-label">Classes Managed</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ assignment_summary.grades_involved|length if assignment_summary.grades_involved else 0 }}</div>
+                            <div class="stat-label">Grades Involved</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-stream"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ assignment_summary.streams_involved|length if assignment_summary.streams_involved else 0 }}</div>
+                            <div class="stat-label">Streams Involved</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Class Teacher Assignments (if any) -->
+                {% if can_manage_classes and class_teacher_assignments %}
+                <div style="margin-bottom: var(--space-6);">
+                    <h3 style="color: var(--primary-color); margin-bottom: var(--space-4); font-size: 1.1rem; font-weight: 600;">
+                        <i class="fas fa-chalkboard-teacher"></i> Class Teacher Responsibilities
+                    </h3>
+                    <div class="modern-grid grid-cols-3">
+                        {% for assignment in class_teacher_assignments %}
+                        <div class="assignment-card class-teacher">
+                            <div class="assignment-icon">
+                                <i class="fas fa-chalkboard"></i>
+                            </div>
+                            <div class="assignment-content">
+                                <div class="assignment-title">{{ assignment.grade_level }}</div>
+                                {% if assignment.stream_name %}
+                                <div class="assignment-subtitle">Stream {{ assignment.stream_name }}</div>
+                                {% endif %}
+                                <div class="assignment-badge">Class Teacher</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Subject Assignments -->
+                {% if subject_assignments %}
+                <div>
+                    <h3 style="color: var(--primary-color); margin-bottom: var(--space-4); font-size: 1.1rem; font-weight: 600;">
+                        <i class="fas fa-book-open"></i> Subject Teaching Assignments
+                    </h3>
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--gray-200); border-radius: var(--radius-lg);">
+                        <div class="modern-table-container">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-book"></i> Subject</th>
+                                        <th><i class="fas fa-layer-group"></i> Grade</th>
+                                        <th><i class="fas fa-stream"></i> Stream</th>
+                                        <th><i class="fas fa-user-tag"></i> Role</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for assignment in subject_assignments[:15] %}
+                                    <tr>
+                                        <td><strong>{{ assignment.subject_name }}</strong></td>
+                                        <td><span class="modern-badge badge-info">{{ assignment.grade_level }}</span></td>
+                                        <td><span class="modern-badge badge-success">{{ assignment.stream_name or 'All' }}</span></td>
+                                        <td>
+                                            {% if assignment.is_class_teacher %}
+                                            <span class="modern-badge badge-primary">Class Teacher</span>
+                                            {% else %}
+                                            <span class="modern-badge badge-warning">Subject Teacher</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if subject_assignments|length > 15 %}
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; color: var(--gray-500); font-style: italic; padding: var(--space-4);">
+                                            ... and {{ subject_assignments|length - 15 }} more assignments
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Quick Access Note -->
+                <div style="margin-top: var(--space-6); padding: var(--space-4); background: linear-gradient(135deg, var(--blue-50) 0%, var(--indigo-50) 100%); border-radius: var(--radius-lg); border: 1px solid var(--blue-200);">
+                    <div style="font-size: 0.9rem; color: var(--gray-600);">
+                        <strong style="color: var(--blue-600);"><i class="fas fa-info-circle"></i> Access Control:</strong>
+                        {% if assignment_summary.role == 'teacher' %}
+                        As a subject teacher, you can upload marks for your assigned subjects only.
+                        {% elif assignment_summary.role == 'classteacher' %}
+                        As a class teacher, you can upload marks for all your subjects and manage your assigned classes.
+                        {% elif assignment_summary.role == 'headteacher' %}
+                        As a headteacher, you have full access to all subjects and classes in the system.
+                        {% endif %}
+                        The forms below are filtered to show only your accessible options.
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Permission Status Widget -->
+        <div class="modern-card slide-up" id="permission-status-widget" style="margin-bottom: var(--space-6);">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-key card-icon"></i>
+                    Class Permissions
+                </h2>
+                <div class="card-actions">
+                    <button onclick="refreshPermissionStatus()" class="modern-btn btn-outline" style="font-size: 0.8rem; padding: var(--space-2) var(--space-3);">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+            <div id="permission-status-content" style="padding: var(--space-6);">
+                <div style="text-align: center; color: var(--gray-500);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: var(--space-2);"></i>
+                    <p>Loading permission status...</p>
+                </div>
+            </div>
+        </div>
 
         <!-- Modern Management Options Section -->
         <div class="modern-card slide-up">
@@ -3792,7 +4066,387 @@
                     }
                 });
             });
+
+            // Load permission status on page load
+            loadPermissionStatus();
         });
+
+        // Get CSRF token
+        function getCSRFToken() {
+            return document.querySelector('meta[name=csrf-token]').getAttribute('content');
+        }
+
+        // Permission Status Functions
+        function loadPermissionStatus() {
+            const container = document.getElementById('permission-status-content');
+
+            fetch('/permission/my_permissions_api')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayPermissionStatus(data);
+                    } else {
+                        showPermissionError(data.message);
+                    }
+                })
+                .catch(error => {
+                    showPermissionError('Failed to load permission status');
+                });
+        }
+
+        function displayPermissionStatus(data) {
+            const container = document.getElementById('permission-status-content');
+
+            if (data.is_headteacher) {
+                container.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: var(--space-4);">
+                        <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: var(--space-3); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-crown" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; color: var(--primary-color);">Full Administrative Access</h3>
+                            <p style="margin: 0; color: var(--gray-600);">${data.message}</p>
+                        </div>
+                        <div style="margin-left: auto;">
+                            <a href="/permission/manage" class="modern-btn btn-primary">
+                                <i class="fas fa-cogs"></i>
+                                Manage Permissions
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else if (data.has_permissions && data.permissions.length > 0) {
+                let permissionsHtml = data.permissions.map(perm => `
+                    <div class="modern-badge badge-success" style="margin: var(--space-1);">
+                        <i class="fas fa-check-circle"></i>
+                        ${perm.display_name}
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: var(--space-4);">
+                        <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: var(--space-3); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-key" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0; color: var(--primary-color);">Active Permissions</h3>
+                            <p style="margin: var(--space-1) 0; color: var(--gray-600);">${data.message}</p>
+                            <div style="display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2);">
+                                ${permissionsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: var(--space-4);">
+                        <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: var(--space-3); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-lock" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0; color: #dc2626;">No Class Permissions</h3>
+                            <p style="margin: 0; color: var(--gray-600);">You don't have permission to manage any classes. Contact the headteacher to request access.</p>
+                        </div>
+                        <div>
+                            <button onclick="requestPermission()" class="modern-btn btn-outline">
+                                <i class="fas fa-paper-plane"></i>
+                                Request Access
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function showPermissionError(message) {
+            const container = document.getElementById('permission-status-content');
+            container.innerHTML = `
+                <div style="display: flex; align-items: center; gap: var(--space-4);">
+                    <div style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: white; padding: var(--space-3); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0; color: #d97706;">Permission Status Error</h3>
+                        <p style="margin: 0; color: var(--gray-600);">${message}</p>
+                    </div>
+                    <div>
+                        <button onclick="refreshPermissionStatus()" class="modern-btn btn-outline">
+                            <i class="fas fa-sync-alt"></i>
+                            Retry
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function refreshPermissionStatus() {
+            const container = document.getElementById('permission-status-content');
+            container.innerHTML = `
+                <div style="text-align: center; color: var(--gray-500);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: var(--space-2);"></i>
+                    <p>Refreshing permission status...</p>
+                </div>
+            `;
+            loadPermissionStatus();
+        }
+
+        function requestPermission() {
+            // Show the permission request modal
+            showPermissionRequestModal();
+        }
+
+        function showPermissionRequestModal() {
+            // Create modal HTML
+            const modalHTML = `
+                <div id="permissionRequestModal" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                ">
+                    <div style="
+                        background: white;
+                        border-radius: var(--radius-lg);
+                        padding: var(--space-6);
+                        max-width: 500px;
+                        width: 90%;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                            <h3 style="margin: 0; color: var(--primary-color);">
+                                <i class="fas fa-paper-plane"></i>
+                                Request Class Permission
+                            </h3>
+                            <button onclick="closePermissionRequestModal()" style="
+                                background: none;
+                                border: none;
+                                font-size: 1.5rem;
+                                color: var(--gray-400);
+                                cursor: pointer;
+                                padding: var(--space-1);
+                            ">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <form id="permissionRequestForm">
+                            <div style="margin-bottom: var(--space-4);">
+                                <label style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--gray-700);">
+                                    Education Level *
+                                </label>
+                                <select id="requestEducationLevel" required style="
+                                    width: 100%;
+                                    padding: var(--space-3);
+                                    border: 1px solid var(--gray-300);
+                                    border-radius: var(--radius-md);
+                                    font-size: 1rem;
+                                ">
+                                    <option value="">Select education level...</option>
+                                    <option value="lower_primary">Lower Primary (PP1, PP2, Grade 1-3)</option>
+                                    <option value="upper_primary">Upper Primary (Grade 4-6)</option>
+                                    <option value="junior_secondary">Junior Secondary (Grade 7-9)</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: var(--space-4);">
+                                <label style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--gray-700);">
+                                    Grade/Class *
+                                </label>
+                                <select id="requestGrade" required style="
+                                    width: 100%;
+                                    padding: var(--space-3);
+                                    border: 1px solid var(--gray-300);
+                                    border-radius: var(--radius-md);
+                                    font-size: 1rem;
+                                ">
+                                    <option value="">Select a grade...</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: var(--space-4);">
+                                <label style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--gray-700);">
+                                    Stream (if applicable)
+                                </label>
+                                <select id="requestStream" style="
+                                    width: 100%;
+                                    padding: var(--space-3);
+                                    border: 1px solid var(--gray-300);
+                                    border-radius: var(--radius-md);
+                                    font-size: 1rem;
+                                ">
+                                    <option value="">No specific stream</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: var(--space-4);">
+                                <label style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--gray-700);">
+                                    Reason for Request *
+                                </label>
+                                <textarea id="requestReason" required placeholder="Please explain why you need access to this class..." style="
+                                    width: 100%;
+                                    padding: var(--space-3);
+                                    border: 1px solid var(--gray-300);
+                                    border-radius: var(--radius-md);
+                                    font-size: 1rem;
+                                    min-height: 100px;
+                                    resize: vertical;
+                                "></textarea>
+                            </div>
+
+                            <div style="display: flex; gap: var(--space-3); justify-content: flex-end;">
+                                <button type="button" onclick="closePermissionRequestModal()" style="
+                                    padding: var(--space-3) var(--space-4);
+                                    border: 1px solid var(--gray-300);
+                                    background: white;
+                                    color: var(--gray-700);
+                                    border-radius: var(--radius-md);
+                                    cursor: pointer;
+                                    font-size: 1rem;
+                                ">
+                                    Cancel
+                                </button>
+                                <button type="submit" style="
+                                    padding: var(--space-3) var(--space-4);
+                                    border: none;
+                                    background: var(--primary-color);
+                                    color: white;
+                                    border-radius: var(--radius-md);
+                                    cursor: pointer;
+                                    font-size: 1rem;
+                                ">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Submit Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            // Load grades and streams
+            loadGradesForRequest();
+
+            // Handle form submission
+            document.getElementById('permissionRequestForm').addEventListener('submit', handlePermissionRequest);
+        }
+
+        function closePermissionRequestModal() {
+            const modal = document.getElementById('permissionRequestModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function loadGradesForRequest() {
+            // Load available grades
+            fetch('/permission/class_structure')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const educationLevelSelect = document.getElementById('requestEducationLevel');
+                        const gradeSelect = document.getElementById('requestGrade');
+                        const streamSelect = document.getElementById('requestStream');
+
+                        // Store the full structure for filtering
+                        window.classStructure = data.structure;
+
+                        // Education level mapping
+                        const educationLevels = {
+                            'lower_primary': ['PP1', 'PP2', 'Grade 1', 'Grade 2', 'Grade 3'],
+                            'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
+                            'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
+                        };
+
+                        // Handle education level change to filter grades
+                        educationLevelSelect.addEventListener('change', function() {
+                            gradeSelect.innerHTML = '<option value="">Select a grade...</option>';
+                            streamSelect.innerHTML = '<option value="">No specific stream</option>';
+
+                            if (this.value && educationLevels[this.value]) {
+                                educationLevels[this.value].forEach(gradeName => {
+                                    if (data.structure[gradeName]) {
+                                        const option = document.createElement('option');
+                                        option.value = gradeName;
+                                        option.textContent = gradeName;
+                                        gradeSelect.appendChild(option);
+                                    }
+                                });
+                            }
+                        });
+
+                        // Handle grade change to update streams
+                        gradeSelect.addEventListener('change', function() {
+                            streamSelect.innerHTML = '<option value="">No specific stream</option>';
+
+                            if (this.value && data.structure[this.value]) {
+                                data.structure[this.value].forEach(stream => {
+                                    const option = document.createElement('option');
+                                    option.value = stream.name;
+                                    option.textContent = stream.name;
+                                    streamSelect.appendChild(option);
+                                });
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading class structure:', error);
+                    alert('Failed to load class structure. Please try again.');
+                });
+        }
+
+        function handlePermissionRequest(event) {
+            event.preventDefault();
+
+            const grade = document.getElementById('requestGrade').value;
+            const stream = document.getElementById('requestStream').value;
+            const reason = document.getElementById('requestReason').value;
+
+            if (!grade || !reason.trim()) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Submit the request
+            fetch('/permission/request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                },
+                body: JSON.stringify({
+                    grade_name: grade,
+                    stream_name: stream || null,
+                    reason: reason.trim()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message + '\\n\\nThe headteacher will review your request and respond accordingly.');
+                    closePermissionRequestModal();
+                    // Refresh permission status
+                    loadPermissionStatus();
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting request:', error);
+                alert('❌ Failed to submit request. Please try again.');
+            });
+        }
     </script>
 
 

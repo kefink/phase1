@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <title>Permission Required - Hillview School</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 800px;
+        width: 100%;
+      }
+
+      .permission-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .permission-icon {
+        font-size: 4rem;
+        color: #f44336;
+        margin-bottom: 20px;
+      }
+
+      .permission-title {
+        color: white;
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      .permission-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+      }
+
+      .function-info {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        border-left: 4px solid #f44336;
+      }
+
+      .function-name {
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 500;
+        margin-bottom: 10px;
+      }
+
+      .function-category {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1rem;
+        margin-bottom: 15px;
+      }
+
+      .function-description {
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.6;
+      }
+
+      .guidance-section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        text-align: left;
+      }
+
+      .guidance-title {
+        color: white;
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .guidance-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .guidance-list li {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 12px;
+        padding-left: 25px;
+        position: relative;
+        line-height: 1.5;
+      }
+
+      .guidance-list li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #4caf50;
+        font-weight: bold;
+      }
+
+      .current-permissions {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        text-align: left;
+      }
+
+      .permissions-title {
+        color: white;
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .permission-category {
+        margin-bottom: 15px;
+      }
+
+      .category-name {
+        color: #4caf50;
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+
+      .permission-item {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+        padding-left: 15px;
+      }
+
+      .no-permissions {
+        color: rgba(255, 255, 255, 0.6);
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #2196f3, #1976d2);
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+      }
+
+      .btn-outline {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-left: 10px;
+      }
+
+      .status-restricted {
+        background: rgba(244, 67, 54, 0.2);
+        color: #f44336;
+      }
+
+      .status-allowed {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4caf50;
+      }
+
+      .contact-info {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+        border-left: 4px solid #2196f3;
+      }
+
+      .contact-title {
+        color: white;
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .contact-text {
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.5;
+      }
+
+      @media (max-width: 768px) {
+        .permission-card {
+          padding: 30px 20px;
+        }
+
+        .permission-title {
+          font-size: 2rem;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .btn {
+          width: 100%;
+          max-width: 300px;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="permission-card">
+        <!-- Permission Denied Icon and Title -->
+        <div class="permission-icon">
+          <i class="fas fa-lock"></i>
+        </div>
+
+        <h1 class="permission-title">Permission Required</h1>
+        <p class="permission-subtitle">
+          You need additional permissions to access this function
+        </p>
+
+        <!-- Function Information -->
+        <div class="function-info">
+          <div class="function-name">
+            {{ function_name.replace('_', ' ').title() }} {% if is_restricted %}
+            <span class="status-badge status-restricted">Restricted</span>
+            {% elif is_default_allowed %}
+            <span class="status-badge status-allowed">Allowed</span>
+            {% endif %}
+          </div>
+          <div class="function-category">
+            Category: {{ function_category.replace('_', ' ').title() }}
+          </div>
+          <div class="function-description">
+            {% if function_category == 'student_management' %} This function
+            allows you to manage student records, including adding, editing, and
+            viewing student information. {% elif function_category ==
+            'subject_management' %} This function provides access to subject
+            configuration, curriculum management, and subject-related settings.
+            {% elif function_category == 'teacher_management' %} This function
+            enables teacher administration, including assignments, transfers,
+            and teacher record management. {% elif function_category ==
+            'system_configuration' %} This function provides access to
+            system-wide settings, including grades, streams, terms, and
+            assessments. {% elif function_category == 'advanced_marks' %} This
+            function includes advanced marks operations that can affect existing
+            data permanently. {% else %} This function requires special
+            permissions to ensure proper access control and data security. {%
+            endif %}
+          </div>
+        </div>
+
+        <!-- Guidance Section -->
+        <div class="guidance-section">
+          <h3 class="guidance-title">
+            <i class="fas fa-lightbulb"></i>
+            What You Can Do
+          </h3>
+          <ul class="guidance-list">
+            <li>
+              Contact the headteacher to request permission for this function
+            </li>
+            <li>Explain why you need access to this specific function</li>
+            <li>Provide details about your intended use of this function</li>
+            <li>
+              Wait for approval before attempting to access this function again
+            </li>
+            <li>
+              Use the functions you currently have permission for in the
+              meantime
+            </li>
+          </ul>
+        </div>
+
+        <!-- Current Permissions -->
+        <div class="current-permissions">
+          <h3 class="permissions-title">
+            <i class="fas fa-key"></i>
+            Your Current Permissions
+          </h3>
+
+          {% if current_permissions and current_permissions.explicit_permissions
+          %} {% for category, permissions in
+          current_permissions.explicit_permissions.items() %}
+          <div class="permission-category">
+            <div class="category-name">
+              {{ category.replace('_', ' ').title() }}
+            </div>
+            {% for permission in permissions %}
+            <div class="permission-item">
+              • {{ permission.function_name.replace('_', ' ').title() }} {% if
+              permission.scope_type != 'global' %} ({{
+              permission.scope_type.title() }}{% if permission.grade_name %}: {{
+              permission.grade_name }}{% endif %}{% if permission.stream_name %}
+              {{ permission.stream_name }}{% endif %}) {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endfor %} {% endif %}
+
+          <!-- Default Allowed Functions -->
+          <div class="permission-category">
+            <div class="category-name">Default Allowed Functions</div>
+            <div class="permission-item">
+              • All Marks Management Functions (Upload, Edit, Submit)
+            </div>
+            <div class="permission-item">
+              • All Reports Management Functions (Generate, Download, View)
+            </div>
+          </div>
+
+          {% if not current_permissions or not
+          current_permissions.explicit_permissions %}
+          <div class="no-permissions">
+            You currently have access to marks management and report generation
+            functions only. All other functions require explicit permission from
+            the headteacher.
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <a
+            href="{{ url_for('classteacher.dashboard') }}"
+            class="btn btn-primary"
+          >
+            <i class="fas fa-home"></i>
+            Return to Dashboard
+          </a>
+
+          <button class="btn btn-secondary" onclick="requestPermission()">
+            <i class="fas fa-paper-plane"></i>
+            Request Permission
+          </button>
+
+          <a
+            href="{{ url_for('permission.my_permissions') }}"
+            class="btn btn-outline"
+          >
+            <i class="fas fa-list"></i>
+            View All Permissions
+          </a>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="contact-info">
+          <h4 class="contact-title">
+            <i class="fas fa-info-circle"></i>
+            Need Help?
+          </h4>
+          <p class="contact-text">
+            Contact the headteacher or school administrator to request
+            additional permissions. Be sure to explain why you need access to
+            this specific function and how you plan to use it.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Get CSRF token
+      function getCSRFToken() {
+        return document
+          .querySelector("meta[name=csrf-token]")
+          .getAttribute("content");
+      }
+
+      function requestPermission() {
+        // Show function permission request modal
+        showFunctionPermissionRequestModal();
+      }
+
+      function showFunctionPermissionRequestModal() {
+        const modalHTML = `
+                <div id="functionPermissionModal" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                ">
+                    <div style="
+                        background: white;
+                        border-radius: 15px;
+                        padding: 30px;
+                        max-width: 500px;
+                        width: 90%;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="margin: 0; color: #4CAF50;">
+                                <i class="fas fa-paper-plane"></i>
+                                Request Function Permission
+                            </h3>
+                            <button onclick="closeFunctionPermissionModal()" style="
+                                background: none;
+                                border: none;
+                                font-size: 1.5rem;
+                                color: #999;
+                                cursor: pointer;
+                                padding: 5px;
+                            ">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <form id="functionPermissionForm">
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                                    Function Requested:
+                                </label>
+                                <input type="text" id="functionName" value="{{ function_name }}" readonly style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 8px;
+                                    background: #f5f5f5;
+                                    color: #666;
+                                ">
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                                    Function Category:
+                                </label>
+                                <input type="text" value="{{ function_category.replace('_', ' ').title() }}" readonly style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 8px;
+                                    background: #f5f5f5;
+                                    color: #666;
+                                ">
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                                    Justification *
+                                </label>
+                                <textarea id="functionReason" required placeholder="Please explain why you need access to this function and how you plan to use it..." style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 8px;
+                                    min-height: 100px;
+                                    resize: vertical;
+                                "></textarea>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                                    Scope Requested:
+                                </label>
+                                <select id="functionScope" style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 8px;
+                                ">
+                                    <option value="global">Global (All Classes)</option>
+                                    <option value="grade">Specific Grade</option>
+                                    <option value="stream">Specific Stream</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                                <button type="button" onclick="closeFunctionPermissionModal()" style="
+                                    padding: 12px 20px;
+                                    border: 1px solid #ddd;
+                                    background: white;
+                                    color: #666;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                ">
+                                    Cancel
+                                </button>
+                                <button type="submit" style="
+                                    padding: 12px 20px;
+                                    border: none;
+                                    background: #4CAF50;
+                                    color: white;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                ">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Submit Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+        document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+        // Handle form submission
+        document
+          .getElementById("functionPermissionForm")
+          .addEventListener("submit", handleFunctionPermissionRequest);
+      }
+
+      function closeFunctionPermissionModal() {
+        const modal = document.getElementById("functionPermissionModal");
+        if (modal) {
+          modal.remove();
+        }
+      }
+
+      function handleFunctionPermissionRequest(event) {
+        event.preventDefault();
+
+        const functionName = document.getElementById("functionName").value;
+        const reason = document.getElementById("functionReason").value;
+        const scope = document.getElementById("functionScope").value;
+
+        if (!reason.trim()) {
+          alert("Please provide a justification for this request");
+          return;
+        }
+
+        // Submit the function permission request
+        fetch("/permission/request_function", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+          },
+          body: JSON.stringify({
+            function_name: functionName,
+            reason: reason.trim(),
+            scope: scope,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert(
+                "✅ " +
+                  data.message +
+                  "\\n\\nThe headteacher will review your request and respond accordingly."
+              );
+              closeFunctionPermissionModal();
+              // Redirect to dashboard after successful submission
+              setTimeout(() => {
+                window.location.href =
+                  "{{ url_for('classteacher.dashboard') }}";
+              }, 2000);
+            } else {
+              alert("❌ " + data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Error submitting request:", error);
+            alert("❌ Failed to submit request. Please try again.");
+          });
+      }
+
+      // Auto-redirect after 30 seconds if user doesn't take action
+      setTimeout(function () {
+        if (confirm("Would you like to return to the dashboard?")) {
+          window.location.href = "{{ url_for('classteacher.dashboard') }}";
+        }
+      }, 30000);
+    </script>
+  </body>
+</html>

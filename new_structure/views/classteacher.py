@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark, Teacher, TeacherSubjectAssignment
 from ..models.academic import SubjectMarksStatus
 from ..utils.constants import educational_level_mapping
-from ..services import is_authenticated, get_role, get_class_report_data, generate_individual_report, generate_class_report_pdf
+from ..services import is_authenticated, get_role, get_class_report_data, generate_individual_report, generate_class_report_pdf, RoleBasedDataService
 from ..services.report_service import generate_class_report_pdf_from_html
 from ..services.mark_conversion_service import MarkConversionService
 from ..extensions import db
@@ -23,6 +23,8 @@ from ..services.cache_service import (
 )
 from ..services.collaborative_marks_service import CollaborativeMarksService
 from ..services.grade_report_service import GradeReportService
+from ..services.enhanced_permission_service import EnhancedPermissionService, function_permission_required
+from ..models.function_permission import DefaultFunctionPermissions
 from functools import wraps
 
 # Create a blueprint for class teacher routes
@@ -43,14 +45,40 @@ def get_education_level_blueprint(grade):
             return level
     return ''
 
-# Decorator for requiring class teacher authentication
+# Enhanced decorator for requiring class teacher authentication with function permissions
 def classteacher_required(f):
-    """Decorator to require class teacher authentication for a route."""
+    """
+    Enhanced decorator to require class teacher authentication with function-level permissions.
+    Only allows marks upload and report generation by default. Other functions require explicit permission.
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not is_authenticated(session) or get_role(session) != 'classteacher':
+        if not is_authenticated(session):
             return redirect(url_for('auth.classteacher_login'))
-        return f(*args, **kwargs)
+
+        role = get_role(session)
+
+        # Allow headteacher universal access
+        if role == 'headteacher' and session.get('headteacher_universal_access'):
+            return f(*args, **kwargs)
+
+        # For classteachers, check function-level permissions
+        if role == 'classteacher':
+            teacher_id = session.get('teacher_id')
+            function_name = f.__name__  # Get the function name
+
+            # Check if this function has permission
+            has_permission = EnhancedPermissionService.check_function_permission(
+                teacher_id, function_name
+            )
+
+            if has_permission:
+                return f(*args, **kwargs)
+            else:
+                # Function requires permission that teacher doesn't have
+                return redirect(url_for('classteacher.permission_denied', function_name=function_name))
+
+        return redirect(url_for('auth.classteacher_login'))
     return decorated_function
 
 # Decorator for requiring class teacher OR teacher authentication (for shared routes)
@@ -62,6 +90,11 @@ def teacher_or_classteacher_required(f):
             return redirect(url_for('auth.teacher_login'))
 
         role = get_role(session)
+
+        # Allow headteacher universal access
+        if role == 'headteacher' and session.get('headteacher_universal_access'):
+            return f(*args, **kwargs)
+
         if role not in ['teacher', 'classteacher']:
             # Redirect to appropriate login based on current role attempt
             if role == 'teacher':
@@ -70,6 +103,35 @@ def teacher_or_classteacher_required(f):
                 return redirect(url_for('auth.classteacher_login'))
         return f(*args, **kwargs)
     return decorated_function
+
+@classteacher_bp.route('/permission_denied')
+def permission_denied():
+    """Enhanced permission denied page with guidance."""
+    function_name = request.args.get('function_name', 'unknown function')
+    teacher_id = session.get('teacher_id')
+
+    # Get teacher info
+    teacher = Teacher.query.get(teacher_id) if teacher_id else None
+
+    # Get function category and description
+    function_category = DefaultFunctionPermissions.get_function_category(function_name)
+
+    # Check if function is restricted or unknown
+    is_restricted = DefaultFunctionPermissions.is_restricted(function_name)
+    is_default_allowed = DefaultFunctionPermissions.is_default_allowed(function_name)
+
+    # Get teacher's current permissions
+    current_permissions = []
+    if teacher_id:
+        current_permissions = EnhancedPermissionService.get_teacher_function_summary(teacher_id)
+
+    return render_template('permission_denied.html',
+                         function_name=function_name,
+                         function_category=function_category,
+                         is_restricted=is_restricted,
+                         is_default_allowed=is_default_allowed,
+                         teacher=teacher,
+                         current_permissions=current_permissions)
 
 @classteacher_bp.route('/test_components')
 @classteacher_required
@@ -117,48 +179,26 @@ def dashboard():
         flash("Teacher not found.", "error")
         return render_template("classteacher.html")
 
-    # Get teacher's subject assignments and class teacher status
-    try:
-        # Get only this teacher's assignments
-        teacher_assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher.id).all()
+    # Get role-based assignment summary for classteacher
+    teacher_id = session.get('teacher_id')
+    role = session.get('role', 'classteacher')
 
-        # Get class teacher assignments
-        class_teacher_assignments = []
-        for assignment in teacher_assignments:
-            if assignment.is_class_teacher:
-                current_teacher = Teacher.query.get(assignment.teacher_id)
-                grade = Grade.query.get(assignment.grade_id)
-                stream = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
+    assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, role)
 
-                class_teacher_assignments.append({
-                    "id": assignment.id,
-                    "teacher_username": current_teacher.username if current_teacher else "Unknown",
-                    "grade_level": grade.name if grade else "Unknown",
-                    "stream_name": stream.name if stream else None
-                })
+    if 'error' in assignment_summary:
+        flash(f"Error loading assignments: {assignment_summary['error']}", "error")
+        assignment_summary = {
+            'teacher': teacher,
+            'role': role,
+            'subject_assignments': [],
+            'class_teacher_assignments': [],
+            'total_subjects_taught': 0,
+            'can_manage_classes': False
+        }
 
-        # Get subject assignments
-        subject_assignments = []
-        for assignment in teacher_assignments:
-            teacher = Teacher.query.get(assignment.teacher_id)
-            subject = Subject.query.get(assignment.subject_id)
-            grade = Grade.query.get(assignment.grade_id)
-            stream = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
-
-            subject_assignments.append({
-                "id": assignment.id,
-                "teacher_username": teacher.username if teacher else "Unknown",
-                "subject_name": subject.name if subject else "Unknown",
-                "education_level": subject.education_level if subject else None,
-                "grade_level": grade.name if grade else "Unknown",
-                "stream_name": stream.name if stream else None
-            })
-    except Exception as e:
-        # If there's an error (like the table doesn't exist), use empty lists
-        print(f"Error fetching teacher assignments: {str(e)}")
-        teacher_assignments = []
-        class_teacher_assignments = []
-        subject_assignments = []
+    # Extract assignments for backward compatibility
+    class_teacher_assignments = assignment_summary.get('class_teacher_assignments', [])
+    subject_assignments = assignment_summary.get('subject_assignments', [])
 
     # Initialize variables for teacher's assigned stream/grade (if any)
     stream = None
@@ -889,7 +929,14 @@ def dashboard():
         total_teachers=total_teachers,
         total_subjects=total_subjects,
         total_grades=total_grades,
-        active_tab=active_tab  # Pass the active tab to the template
+        active_tab=active_tab,  # Pass the active tab to the template
+        # Role-based assignment data
+        assignment_summary=assignment_summary,
+        total_subjects_taught=assignment_summary.get('total_subjects_taught', 0),
+        can_manage_classes=assignment_summary.get('can_manage_classes', False),
+        grades_involved=assignment_summary.get('grades_involved', []),
+        streams_involved=assignment_summary.get('streams_involved', []),
+        subjects_involved=assignment_summary.get('subjects_involved', [])
     )
 
 @classteacher_bp.route('/all_reports', methods=['GET'])
@@ -1138,7 +1185,7 @@ def manage_students():
     students = students_paginated.items
 
     # Get all grades for the template
-    grades = [{"id": grade.id, "level": grade.name} for grade in Grade.query.all()]
+    grades = [{"id": grade.id, "name": grade.name} for grade in Grade.query.all()]
 
     # Define educational level mapping
     educational_level_mapping = {

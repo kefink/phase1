@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Class Permission Management - Hillview School</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <style>
+      /* Dark Green Teal Theme - Ultra Compact */
+      :root {
+        --primary-color: #134e4a;
+        --secondary-color: #0f766e;
+        --accent-color: #14b8a6;
+        --success-color: #059669;
+        --warning-color: #d97706;
+        --danger-color: #dc2626;
+        --info-color: #0891b2;
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --text-muted: #9ca3af;
+        --border-color: #e5e7eb;
+        --background-light: #f9fafb;
+        --background-white: #ffffff;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.1);
+        --radius-sm: 3px;
+        --radius-md: 4px;
+        --radius-lg: 6px;
+        --spacing-xs: 0.125rem;
+        --spacing-sm: 0.25rem;
+        --spacing-md: 0.5rem;
+        --spacing-lg: 0.75rem;
+        --spacing-xl: 1rem;
+        --transition-fast: all 0.1s ease-in-out;
+        --gradient-primary: linear-gradient(
+          135deg,
+          var(--primary-color) 0%,
+          var(--secondary-color) 100%
+        );
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--background-light);
+        margin: 0;
+        padding: 0;
+        color: var(--text-primary);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: calc(60px + var(--spacing-md)) var(--spacing-md)
+          var(--spacing-md);
+      }
+
+      .page-header {
+        text-align: center;
+        margin-bottom: var(--spacing-lg);
+        padding: var(--spacing-md);
+        background: var(--background-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: var(--spacing-xs);
+      }
+
+      .permission-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .permission-card {
+        background: var(--background-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+      }
+
+      .card-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .card-content {
+        padding: var(--spacing-md);
+      }
+
+      .teacher-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+      }
+
+      .teacher-item {
+        padding: var(--spacing-sm);
+        border-bottom: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: var(--transition-fast);
+      }
+
+      .teacher-item:hover {
+        background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+      }
+
+      .teacher-item.selected {
+        background: var(--gradient-primary);
+        color: white;
+      }
+
+      .class-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+      }
+
+      .class-item {
+        padding: var(--spacing-sm);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        background: var(--background-white);
+        text-align: center;
+        transition: var(--transition-fast);
+      }
+
+      .class-item.has-permission {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border-color: var(--success-color);
+      }
+
+      .permission-controls {
+        display: flex;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-sm);
+        justify-content: center;
+      }
+
+      .btn {
+        background: var(--gradient-primary);
+        color: white;
+        padding: var(--spacing-xs) var(--spacing-md);
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-fast);
+        min-height: 32px;
+      }
+
+      .btn:hover {
+        background: linear-gradient(
+          135deg,
+          var(--secondary-color) 0%,
+          #0d5d56 100%
+        );
+        transform: translateY(-1px);
+      }
+
+      .btn-danger {
+        background: linear-gradient(
+          135deg,
+          var(--danger-color) 0%,
+          #b91c1c 100%
+        );
+      }
+
+      .btn-success {
+        background: linear-gradient(
+          135deg,
+          var(--success-color) 0%,
+          #047857 100%
+        );
+      }
+
+      .permission-status {
+        margin-top: var(--spacing-lg);
+        background: var(--background-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+      }
+
+      .status-item {
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .status-item:last-child {
+        border-bottom: none;
+      }
+
+      .status-badge {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .status-active {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .status-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .alert {
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--spacing-md);
+        border: 1px solid;
+      }
+
+      .alert-success {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+        color: #166534;
+      }
+
+      .alert-error {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #991b1b;
+      }
+
+      .loading {
+        text-align: center;
+        padding: var(--spacing-lg);
+        color: var(--text-secondary);
+      }
+
+      @media (max-width: 768px) {
+        .permission-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .class-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <i class="fas fa-school"></i>
+          <span>Kirima Primary School</span>
+        </div>
+        <div class="nav-links">
+          <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+          <a href="{{ url_for('auth.logout_route') }}" class="nav-link logout">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">🔐 Class Permission Management</h1>
+        <p class="page-subtitle">
+          Grant and manage classteacher permissions for specific classes and
+          streams
+        </p>
+      </div>
+
+      <!-- Alert Messages -->
+      <div id="alertContainer"></div>
+
+      <!-- Permission Management Grid -->
+      <div class="permission-grid">
+        <!-- Teacher Selection -->
+        <div class="permission-card">
+          <div class="card-header">
+            <i class="fas fa-users"></i> Select Teacher
+          </div>
+          <div class="card-content">
+            <div class="teacher-list" id="teacherList">
+              <div class="loading">Loading teachers...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Class/Stream Management -->
+        <div class="permission-card">
+          <div class="card-header">
+            <i class="fas fa-school"></i> Class Permissions
+          </div>
+          <div class="card-content">
+            <div id="classPermissions">
+              <p class="text-muted">
+                Select a teacher to manage their class permissions
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Requests Section -->
+      <div class="permission-card" style="margin-top: var(--spacing-lg)">
+        <div class="card-header">
+          <i class="fas fa-clock"></i> Pending Permission Requests
+          <span
+            id="requestCount"
+            class="badge"
+            style="
+              background: var(--warning-color);
+              color: white;
+              padding: 0.25rem 0.5rem;
+              border-radius: 1rem;
+              font-size: 0.75rem;
+              margin-left: 0.5rem;
+            "
+            >0</span
+          >
+        </div>
+        <div class="card-content">
+          <div id="pendingRequests">
+            <div class="loading">Loading pending requests...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Permissions Status -->
+      <div class="permission-status">
+        <div class="card-header">
+          <i class="fas fa-list"></i> Current Permission Assignments
+        </div>
+        <div id="permissionStatus">
+          <div class="loading">Loading permission status...</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Global variables
+      let selectedTeacher = null;
+      let classStructure = {};
+      let currentPermissions = [];
+
+      // Initialize page
+      document.addEventListener('DOMContentLoaded', function() {
+          loadTeachers();
+          loadClassStructure();
+          loadPermissionStatus();
+          loadPendingRequests();
+      });
+
+      // Load pending permission requests
+      function loadPendingRequests() {
+          fetch('/permission/requests')
+              .then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      displayPendingRequests(data.requests);
+                      updateRequestCount(data.requests.length);
+                  } else {
+                      showRequestError('Failed to load pending requests');
+                  }
+              })
+              .catch(error => {
+                  showRequestError('Error loading pending requests');
+              });
+      }
+
+      function displayPendingRequests(requests) {
+          const container = document.getElementById('pendingRequests');
+
+          if (requests.length === 0) {
+              container.innerHTML = `
+                  <div style="text-align: center; padding: var(--spacing-lg); color: var(--text-secondary);">
+                      <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: var(--spacing-md); color: var(--success-color);"></i>
+                      <h3 style="margin: 0; color: var(--success-color);">No Pending Requests</h3>
+                      <p style="margin: 0.5rem 0 0 0;">All permission requests have been processed.</p>
+                  </div>
+              `;
+              return;
+          }
+
+          let html = '<div class="request-list">';
+
+          requests.forEach(request => {
+              html += `
+                  <div class="request-item" style="
+                      border: 1px solid var(--border-color);
+                      border-radius: var(--radius-md);
+                      padding: var(--spacing-md);
+                      margin-bottom: var(--spacing-md);
+                      background: var(--bg-secondary);
+                  ">
+                      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-sm);">
+                          <div>
+                              <h4 style="margin: 0; color: var(--primary-color);">
+                                  ${request.teacher_name} (${request.teacher_username})
+                              </h4>
+                              <p style="margin: 0.25rem 0; font-weight: 600; color: var(--text-primary);">
+                                  Requesting: ${request.class_name}
+                              </p>
+                              <p style="margin: 0; font-size: 0.875rem; color: var(--text-secondary);">
+                                  Requested: ${request.requested_at}
+                              </p>
+                          </div>
+                          <div style="display: flex; gap: var(--spacing-sm);">
+                              <button onclick="processRequest(${request.id}, 'approve')" style="
+                                  background: var(--success-color);
+                                  color: white;
+                                  border: none;
+                                  padding: 0.5rem 1rem;
+                                  border-radius: var(--radius-sm);
+                                  cursor: pointer;
+                                  font-size: 0.875rem;
+                              ">
+                                  <i class="fas fa-check"></i> Approve
+                              </button>
+                              <button onclick="processRequest(${request.id}, 'deny')" style="
+                                  background: var(--error-color);
+                                  color: white;
+                                  border: none;
+                                  padding: 0.5rem 1rem;
+                                  border-radius: var(--radius-sm);
+                                  cursor: pointer;
+                                  font-size: 0.875rem;
+                              ">
+                                  <i class="fas fa-times"></i> Deny
+                              </button>
+                          </div>
+                      </div>
+                      <div style="
+                          background: white;
+                          padding: var(--spacing-sm);
+                          border-radius: var(--radius-sm);
+                          border-left: 4px solid var(--primary-color);
+                      ">
+                          <strong>Reason:</strong> ${request.reason}
+                      </div>
+                  </div>
+              `;
+          });
+
+          html += '</div>';
+          container.innerHTML = html;
+      }
+
+      function updateRequestCount(count) {
+          const badge = document.getElementById('requestCount');
+          badge.textContent = count;
+          badge.style.display = count > 0 ? 'inline' : 'none';
+      }
+
+      function showRequestError(message) {
+          const container = document.getElementById('pendingRequests');
+          container.innerHTML = `
+              <div style="text-align: center; padding: var(--spacing-lg); color: var(--error-color);">
+                  <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: var(--spacing-sm);"></i>
+                  <p>${message}</p>
+                  <button onclick="loadPendingRequests()" style="
+                      background: var(--primary-color);
+                      color: white;
+                      border: none;
+                      padding: 0.5rem 1rem;
+                      border-radius: var(--radius-sm);
+                      cursor: pointer;
+                      margin-top: var(--spacing-sm);
+                  ">
+                      <i class="fas fa-sync-alt"></i> Retry
+                  </button>
+              </div>
+          `;
+      }
+
+      function processRequest(requestId, action) {
+          const actionText = action === 'approve' ? 'approve' : 'deny';
+          const confirmMessage = `Are you sure you want to ${actionText} this permission request?`;
+
+          if (!confirm(confirmMessage)) {
+              return;
+          }
+
+          let adminNotes = '';
+          if (action === 'deny') {
+              adminNotes = prompt('Please provide a reason for denying this request (optional):') || '';
+          }
+
+          fetch('/permission/process_request', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                  request_id: requestId,
+                  action: action,
+                  admin_notes: adminNotes
+              })
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  showAlert(data.message, 'success');
+                  loadPendingRequests();
+                  loadPermissionStatus();
+                  // Refresh teacher permissions if a teacher is selected
+                  if (selectedTeacher) {
+                      loadTeacherPermissions(selectedTeacher.id);
+                  }
+              } else {
+                  showAlert('Error: ' + data.message, 'error');
+              }
+          })
+          .catch(error => {
+              showAlert('Failed to process request', 'error');
+          });
+      }
+
+      // Load teachers
+      function loadTeachers() {
+          const teacherData = {{ data.teachers | tojsonhtml }};
+          const teacherList = document.getElementById('teacherList');
+
+          if (teacherData.length === 0) {
+              teacherList.innerHTML = '<p class="text-muted">No teachers found</p>';
+              return;
+          }
+
+          teacherList.innerHTML = '';
+          teacherData.forEach(teacher => {
+              const item = document.createElement('div');
+              item.className = 'teacher-item';
+              item.innerHTML = `
+                  <strong>${teacher.name}</strong><br>
+                  <small>${teacher.username} (${teacher.role})</small>
+              `;
+              item.onclick = () => selectTeacher(teacher);
+              teacherList.appendChild(item);
+          });
+      }
+
+      // Load class structure
+      function loadClassStructure() {
+          classStructure = {{ data.class_assignments | tojsonhtml }};
+      }
+
+      // Load permission status
+      function loadPermissionStatus() {
+          currentPermissions = {{ data.current_permissions | tojsonhtml }};
+          updatePermissionStatus();
+      }
+
+      // Select teacher
+      function selectTeacher(teacher) {
+          selectedTeacher = teacher;
+
+          // Update UI
+          document.querySelectorAll('.teacher-item').forEach(item => {
+              item.classList.remove('selected');
+          });
+          event.target.closest('.teacher-item').classList.add('selected');
+
+          // Load teacher's permissions
+          loadTeacherPermissions(teacher.id);
+      }
+
+      // Load teacher permissions
+      function loadTeacherPermissions(teacherId) {
+          const classPermissions = document.getElementById('classPermissions');
+          classPermissions.innerHTML = '<div class="loading">Loading permissions...</div>';
+
+          fetch(`/permission/teacher/${teacherId}/permissions`)
+              .then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      displayClassPermissions(data.permissions);
+                  } else {
+                      showAlert('Error loading permissions: ' + data.message, 'error');
+                  }
+              })
+              .catch(error => {
+                  showAlert('Error loading permissions: ' + error.message, 'error');
+              });
+      }
+
+      // Display class permissions
+      function displayClassPermissions(permissions) {
+          const container = document.getElementById('classPermissions');
+          const permissionMap = {};
+
+          // Create permission map
+          permissions.forEach(perm => {
+              const key = `${perm.grade_name}_${perm.stream_name || 'single'}`;
+              permissionMap[key] = true;
+          });
+
+          let html = '<div class="class-grid">';
+
+          Object.keys(classStructure).forEach(gradeName => {
+              const grade = classStructure[gradeName];
+
+              if (grade.type === 'single_class') {
+                  const key = `${gradeName}_single`;
+                  const hasPermission = permissionMap[key] || false;
+
+                  html += `
+                      <div class="class-item ${hasPermission ? 'has-permission' : ''}">
+                          <strong>${gradeName}</strong>
+                          <div class="permission-controls">
+                              ${hasPermission ?
+                                  `<button class="btn btn-danger" onclick="revokePermission('${gradeName}', null)">Revoke</button>` :
+                                  `<button class="btn btn-success" onclick="grantPermission('${gradeName}', null)">Grant</button>`
+                              }
+                          </div>
+                      </div>
+                  `;
+              } else {
+                  grade.streams.forEach(stream => {
+                      const key = `${gradeName}_${stream.name}`;
+                      const hasPermission = permissionMap[key] || false;
+
+                      html += `
+                          <div class="class-item ${hasPermission ? 'has-permission' : ''}">
+                              <strong>${gradeName}</strong><br>
+                              <small>Stream ${stream.name}</small>
+                              <div class="permission-controls">
+                                  ${hasPermission ?
+                                      `<button class="btn btn-danger" onclick="revokePermission('${gradeName}', '${stream.name}')">Revoke</button>` :
+                                      `<button class="btn btn-success" onclick="grantPermission('${gradeName}', '${stream.name}')">Grant</button>`
+                                  }
+                              </div>
+                          </div>
+                      `;
+                  });
+              }
+          });
+
+          html += '</div>';
+          container.innerHTML = html;
+      }
+
+      // Grant permission
+      function grantPermission(gradeName, streamName) {
+          if (!selectedTeacher) {
+              showAlert('Please select a teacher first', 'error');
+              return;
+          }
+
+          const data = {
+              teacher_id: selectedTeacher.id,
+              grade_name: gradeName,
+              stream_name: streamName,
+              notes: `Granted by headteacher on ${new Date().toLocaleDateString()}`
+          };
+
+          fetch('/permission/grant', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data)
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  showAlert(data.message, 'success');
+                  loadTeacherPermissions(selectedTeacher.id);
+                  loadPermissionStatus();
+              } else {
+                  showAlert('Error: ' + data.message, 'error');
+              }
+          })
+          .catch(error => {
+              showAlert('Error granting permission: ' + error.message, 'error');
+          });
+      }
+
+      // Revoke permission
+      function revokePermission(gradeName, streamName) {
+          if (!selectedTeacher) {
+              showAlert('Please select a teacher first', 'error');
+              return;
+          }
+
+          if (!confirm(`Are you sure you want to revoke ${selectedTeacher.name}'s permission for ${gradeName}${streamName ? ' Stream ' + streamName : ''}?`)) {
+              return;
+          }
+
+          const data = {
+              teacher_id: selectedTeacher.id,
+              grade_name: gradeName,
+              stream_name: streamName
+          };
+
+          fetch('/permission/revoke', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data)
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  showAlert(data.message, 'success');
+                  loadTeacherPermissions(selectedTeacher.id);
+                  loadPermissionStatus();
+              } else {
+                  showAlert('Error: ' + data.message, 'error');
+              }
+          })
+          .catch(error => {
+              showAlert('Error revoking permission: ' + error.message, 'error');
+          });
+      }
+
+      // Update permission status
+      function updatePermissionStatus() {
+          const container = document.getElementById('permissionStatus');
+
+          if (currentPermissions.length === 0) {
+              container.innerHTML = '<p class="text-muted" style="padding: 1rem;">No permissions currently assigned</p>';
+              return;
+          }
+
+          let html = '';
+          currentPermissions.forEach(perm => {
+              const displayName = perm.grade_name + (perm.stream_name ? ` Stream ${perm.stream_name}` : '');
+              html += `
+                  <div class="status-item">
+                      <div>
+                          <strong>${perm.teacher_name}</strong><br>
+                          <small>${displayName}</small>
+                      </div>
+                      <div>
+                          <span class="status-badge status-active">Active</span>
+                      </div>
+                  </div>
+              `;
+          });
+
+          container.innerHTML = html;
+      }
+
+      // Show alert
+      function showAlert(message, type) {
+          const container = document.getElementById('alertContainer');
+          const alert = document.createElement('div');
+          alert.className = `alert alert-${type}`;
+          alert.innerHTML = `
+              <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+              ${message}
+          `;
+
+          container.appendChild(alert);
+
+          // Auto-remove after 5 seconds
+          setTimeout(() => {
+              alert.remove();
+          }, 5000);
+      }
+    </script>
+  </body>
+</html>

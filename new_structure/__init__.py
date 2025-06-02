@@ -52,6 +52,13 @@ def create_app(config_name='default'):
                 return level
         return ''
 
+    @app.template_filter('tojsonhtml')
+    def tojsonhtml_filter(obj):
+        """Convert object to JSON for safe use in HTML templates."""
+        import json
+        from markupsafe import Markup
+        return Markup(json.dumps(obj))
+
     # Import the classteacher blueprint
     from .views.classteacher import classteacher_bp
 

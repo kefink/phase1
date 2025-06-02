@@ -9,6 +9,35 @@
       href="{{ url_for('static', filename='css/style.css') }}"
     />
     <style>
+      /* Override container styles for manage pages */
+      .manage-container {
+        max-width: 95% !important;
+        width: 95% !important;
+        margin: 80px auto 60px !important;
+        padding: var(--spacing-xl) !important;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      /* Responsive design */
+      @media (max-width: 1024px) {
+        .manage-container {
+          max-width: 98% !important;
+          width: 98% !important;
+          padding: var(--spacing-lg) !important;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .manage-container {
+          max-width: 98% !important;
+          width: 98% !important;
+          padding: var(--spacing-md) !important;
+        }
+      }
+
       .action-buttons {
         display: flex;
         gap: 5px;
@@ -144,209 +173,304 @@
           color: inherit;
         }
       }
+
+      /* Enhanced table styling */
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .data-table th,
+      .data-table td {
+        border: 1px solid #e0e0e0;
+        padding: 12px 15px;
+        text-align: left;
+      }
+      .data-table th {
+        background: linear-gradient(135deg, #4a6741 0%, #3a5331 100%);
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+      }
+      .data-table tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+      }
+      .data-table tbody tr:hover {
+        background-color: #e8f5e8;
+        transition: background-color 0.2s ease;
+      }
+
+      /* Responsive table */
+      @media (max-width: 768px) {
+        .data-table {
+          font-size: 0.9rem;
+        }
+        .data-table th,
+        .data-table td {
+          padding: 8px 10px;
+        }
+        .action-buttons {
+          flex-direction: column;
+          gap: 3px;
+        }
+        .edit-btn,
+        .delete-btn {
+          font-size: 0.75rem;
+          padding: 4px 8px;
+        }
+      }
+
+      /* Enhanced page header styling */
+      .page-header {
+        background: linear-gradient(135deg, #4a6741 0%, #3a5331 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(74, 103, 65, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .page-header h1 {
+        color: white !important;
+        margin-bottom: 1rem;
+        font-size: 2.2rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .nav-links {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 1rem;
+      }
+
+      .nav-links a {
+        color: rgba(255, 255, 255, 0.9) !important;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .nav-links a:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="manage-container">
-        <header class="page-header">
-          <h1>Manage Teacher Subjects: {{ teacher.username }}</h1>
-          <div class="nav-links">
-            <a href="{{ url_for('classteacher.manage_teacher_assignments') }}"
-              >Back to Teacher Assignments</a
-            >
-            |
-            <a href="{{ url_for('classteacher.dashboard') }}"
-              >Back to Dashboard</a
-            >
-            |
-            <a href="{{ url_for('auth.logout_route') }}">Logout</a>
-          </div>
-        </header>
+    <div class="manage-container">
+      <header class="page-header">
+        <h1>Manage Teacher Subjects: {{ teacher.username }}</h1>
+        <div class="nav-links">
+          <a href="{{ url_for('classteacher.manage_teacher_assignments') }}"
+            >Back to Teacher Assignments</a
+          >
+          |
+          <a href="{{ url_for('classteacher.dashboard') }}"
+            >Back to Dashboard</a
+          >
+          |
+          <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+        </div>
+      </header>
 
-        <!-- Message container for notifications -->
-        <div id="message-container">
-          {% if error_message %}
-          <div class="message message-error">{{ error_message }}</div>
-          {% endif %} {% if success_message %}
-          <div class="message message-success">{{ success_message }}</div>
-          {% endif %} {% if session.get('assignment_success') %}
-          <div class="message message-success highlight-message">
-            {{ session.get('assignment_message') }}
-            <script>
-              // Remove the session variables after displaying
-              window.onload = function () {
-                fetch("/clear_assignment_session", { method: "POST" });
-              };
-            </script>
-          </div>
-          {% endif %}
+      <!-- Message container for notifications -->
+      <div id="message-container">
+        {% if error_message %}
+        <div class="message message-error">{{ error_message }}</div>
+        {% endif %} {% if success_message %}
+        <div class="message message-success">{{ success_message }}</div>
+        {% endif %} {% if session.get('assignment_success') %}
+        <div class="message message-success highlight-message">
+          {{ session.get('assignment_message') }}
+          <script>
+            // Remove the session variables after displaying
+            window.onload = function () {
+              fetch("/clear_assignment_session", { method: "POST" });
+            };
+          </script>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="manage-section">
+        <h2>Current Subject Assignments</h2>
+
+        <div class="filter-section">
+          <h3>Filter Assignments</h3>
+          <select id="educationLevelFilter" onchange="filterAssignments()">
+            <option value="">All Education Levels</option>
+            <option value="lower_primary">Lower Primary (Grades 1-3)</option>
+            <option value="upper_primary">Upper Primary (Grades 4-6)</option>
+            <option value="junior_secondary">
+              Junior Secondary (Grades 7-9)
+            </option>
+          </select>
+          <select id="gradeFilter" onchange="filterAssignments()">
+            <option value="">All Grades</option>
+            {% for grade in grades %}
+            <option value="{{ grade.id }}">{{ grade.name }}</option>
+            {% endfor %}
+          </select>
         </div>
 
-        <div class="manage-section">
-          <h2>Current Subject Assignments</h2>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Education Level</th>
+              <th>Grade</th>
+              <th>Stream</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="assignmentsTableBody">
+            {% for assignment in subject_assignments %}
+            <tr
+              data-grade="{{ assignment.grade_id }}"
+              data-education-level="{{ assignment.education_level }}"
+              class="{% if assignment.is_new and session.get('assignment_success') %}highlight-row{% endif %}"
+            >
+              <td>{{ assignment.subject_name }}</td>
+              <td>
+                {{ assignment.education_level|replace('_', ' ')|title if
+                assignment.education_level else 'N/A' }}
+              </td>
+              <td>{{ assignment.grade_level }}</td>
+              <td>
+                {{ assignment.stream_name if assignment.stream_name else 'All
+                Streams' }}
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <form
+                    method="POST"
+                    action="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=teacher.id) }}"
+                    style="display: inline"
+                    onsubmit="return confirm('Are you sure you want to remove this subject assignment?')"
+                  >
+                    <input
+                      type="hidden"
+                      name="csrf_token"
+                      value="{{ csrf_token() }}"
+                    />
+                    <input
+                      type="hidden"
+                      name="assignment_id"
+                      value="{{ assignment.id }}"
+                    />
+                    <button
+                      type="submit"
+                      name="remove_subject"
+                      class="delete-btn"
+                    >
+                      Remove
+                    </button>
+                  </form>
+                  <button
+                    class="edit-btn"
+                    onclick="openChangeSubjectModal('{{ assignment.id }}', '{{ assignment.subject_name }}', '{{ assignment.grade_level }}', '{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}')"
+                  >
+                    Change Subject
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
 
-          <div class="filter-section">
-            <h3>Filter Assignments</h3>
-            <select id="educationLevelFilter" onchange="filterAssignments()">
-              <option value="">All Education Levels</option>
+      <div class="manage-section">
+        <h2>Add New Subject Assignments</h2>
+        <form
+          method="POST"
+          action="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=teacher.id) }}"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          <!-- Education Level Selection -->
+          <div class="form-group">
+            <label for="education_level">Education Level:</label>
+            <select
+              id="education_level"
+              name="education_level"
+              required
+              class="form-control"
+              onchange="updateSubjectsAndGrades()"
+            >
+              <option value="">-- Select Education Level --</option>
               <option value="lower_primary">Lower Primary (Grades 1-3)</option>
               <option value="upper_primary">Upper Primary (Grades 4-6)</option>
               <option value="junior_secondary">
                 Junior Secondary (Grades 7-9)
               </option>
             </select>
-            <select id="gradeFilter" onchange="filterAssignments()">
-              <option value="">All Grades</option>
+          </div>
+
+          <!-- Grade Selection -->
+          <div class="form-group">
+            <label for="grade_id">Grade:</label>
+            <select
+              id="grade_id"
+              name="grade_id"
+              required
+              class="form-control"
+              onchange="updateStreams()"
+            >
+              <option value="">-- Select Grade --</option>
               {% for grade in grades %}
-              <option value="{{ grade.id }}">{{ grade.level }}</option>
+              <option
+                value="{{ grade.id }}"
+                data-education-level="{% if grade.name in ['Grade 1', 'Grade 2', 'Grade 3'] %}lower_primary{% elif grade.name in ['Grade 4', 'Grade 5', 'Grade 6'] %}upper_primary{% elif grade.name in ['Grade 7', 'Grade 8', 'Grade 9'] %}junior_secondary{% endif %}"
+              >
+                {{ grade.name }}
+              </option>
               {% endfor %}
             </select>
           </div>
 
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Subject</th>
-                <th>Education Level</th>
-                <th>Grade</th>
-                <th>Stream</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="assignmentsTableBody">
-              {% for assignment in subject_assignments %}
-              <tr
-                data-grade="{{ assignment.grade_id }}"
-                data-education-level="{{ assignment.education_level }}"
-                class="{% if assignment.is_new and session.get('assignment_success') %}highlight-row{% endif %}"
-              >
-                <td>{{ assignment.subject_name }}</td>
-                <td>
-                  {{ assignment.education_level|replace('_', ' ')|title if
-                  assignment.education_level else 'N/A' }}
-                </td>
-                <td>{{ assignment.grade_level }}</td>
-                <td>
-                  {{ assignment.stream_name if assignment.stream_name else 'All
-                  Streams' }}
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <form
-                      method="POST"
-                      action="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=teacher.id) }}"
-                      style="display: inline"
-                      onsubmit="return confirm('Are you sure you want to remove this subject assignment?')"
-                    >
-                      <input
-                        type="hidden"
-                        name="csrf_token"
-                        value="{{ csrf_token() }}"
-                      />
-                      <input
-                        type="hidden"
-                        name="assignment_id"
-                        value="{{ assignment.id }}"
-                      />
-                      <button
-                        type="submit"
-                        name="remove_subject"
-                        class="delete-btn"
-                      >
-                        Remove
-                      </button>
-                    </form>
-                    <button
-                      class="edit-btn"
-                      onclick="openChangeSubjectModal('{{ assignment.id }}', '{{ assignment.subject_name }}', '{{ assignment.grade_level }}', '{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}')"
-                    >
-                      Change Subject
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+          <!-- Stream Selection -->
+          <div class="form-group">
+            <label for="stream_id">Stream (Optional):</label>
+            <select id="stream_id" name="stream_id" class="form-control">
+              <option value="">All Streams</option>
+              <!-- Streams will be populated by JavaScript -->
+            </select>
+          </div>
 
-        <div class="manage-section">
-          <h2>Add New Subject Assignments</h2>
-          <form
-            method="POST"
-            action="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=teacher.id) }}"
-          >
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-
-            <!-- Education Level Selection -->
-            <div class="form-group">
-              <label for="education_level">Education Level:</label>
-              <select
-                id="education_level"
-                name="education_level"
-                required
-                class="form-control"
-                onchange="updateSubjectsAndGrades()"
-              >
-                <option value="">-- Select Education Level --</option>
-                <option value="lower_primary">
-                  Lower Primary (Grades 1-3)
-                </option>
-                <option value="upper_primary">
-                  Upper Primary (Grades 4-6)
-                </option>
-                <option value="junior_secondary">
-                  Junior Secondary (Grades 7-9)
-                </option>
-              </select>
+          <!-- Subject Selection -->
+          <div class="form-group">
+            <label>Subjects:</label>
+            <div id="subjectsContainer">
+              <!-- Subject checkboxes will be populated by JavaScript -->
+              <p>Please select an education level first</p>
             </div>
+          </div>
 
-            <!-- Grade Selection -->
-            <div class="form-group">
-              <label for="grade_id">Grade:</label>
-              <select
-                id="grade_id"
-                name="grade_id"
-                required
-                class="form-control"
-                onchange="updateStreams()"
-              >
-                <option value="">-- Select Grade --</option>
-                {% for grade in grades %}
-                <option
-                  value="{{ grade.id }}"
-                  data-education-level="{% if grade.level in ['Grade 1', 'Grade 2', 'Grade 3'] %}lower_primary{% elif grade.level in ['Grade 4', 'Grade 5', 'Grade 6'] %}upper_primary{% elif grade.level in ['Grade 7', 'Grade 8', 'Grade 9'] %}junior_secondary{% endif %}"
-                >
-                  {{ grade.level }}
-                </option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <!-- Stream Selection -->
-            <div class="form-group">
-              <label for="stream_id">Stream (Optional):</label>
-              <select id="stream_id" name="stream_id" class="form-control">
-                <option value="">All Streams</option>
-                <!-- Streams will be populated by JavaScript -->
-              </select>
-            </div>
-
-            <!-- Subject Selection -->
-            <div class="form-group">
-              <label>Subjects:</label>
-              <div id="subjectsContainer">
-                <!-- Subject checkboxes will be populated by JavaScript -->
-                <p>Please select an education level first</p>
-              </div>
-            </div>
-
-            <button type="submit" name="add_subjects" class="btn btn-primary">
-              Add Subject Assignments
-            </button>
-          </form>
-        </div>
+          <button type="submit" name="add_subjects" class="btn btn-primary">
+            Add Subject Assignments
+          </button>
+        </form>
       </div>
     </div>
 

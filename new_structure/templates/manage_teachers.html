@@ -641,7 +641,7 @@
                     {{ assignment.subject.education_level|replace('_', '
                     ')|title if assignment.subject.education_level else 'N/A' }}
                   </td>
-                  <td>{{ assignment.grade.level }}</td>
+                  <td>{{ assignment.grade.name }}</td>
                   <td>
                     {{ assignment.stream.name if assignment.stream else 'All
                     Streams' }}

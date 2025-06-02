@@ -33,11 +33,12 @@
         min-height: 100vh;
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start; /* Changed from center to flex-start */
         margin: 0;
-        padding: var(--space-6);
+        padding: 2rem 1.5rem; /* Use fixed padding */
         position: relative;
-        overflow: hidden;
+        overflow-x: hidden; /* Only hide horizontal overflow */
+        overflow-y: auto; /* Allow vertical scrolling */
       }
 
       /* Animated Background Pattern */
@@ -80,15 +81,20 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: var(--radius-2xl);
-        padding: var(--space-12);
+        padding: 2rem; /* Reduced padding */
         box-shadow: var(--shadow-2xl);
         border: 1px solid rgba(255, 255, 255, 0.2);
         animation: slideUp 0.8s ease-out;
+        /* Let container expand naturally */
+        margin: 2rem auto;
+        min-height: auto;
+        height: auto;
+        max-height: none;
       }
 
       .login-header {
         text-align: center;
-        margin-bottom: var(--space-10);
+        margin-bottom: 1.5rem; /* Reduced spacing */
       }
 
       .login-icon {

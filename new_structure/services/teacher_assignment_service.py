@@ -112,11 +112,11 @@ def get_teacher_recent_reports(teacher_id, limit=5):
     recent_reports = []
     
     for mark in marks:
-        combination = (mark.student.stream.grade.level, mark.student.stream.name, mark.term.name, mark.assessment_type.name)
+        combination = (mark.student.stream.grade.name, mark.student.stream.name, mark.term.name, mark.assessment_type.name)
         if combination not in seen_combinations:
             seen_combinations.add(combination)
             recent_reports.append({
-                'grade': mark.student.stream.grade.level,
+                'grade': mark.student.stream.grade.name,
                 'stream': f"Stream {mark.student.stream.name}",
                 'term': mark.term.name,
                 'assessment_type': mark.assessment_type.name,

@@ -373,7 +373,7 @@
             <select id="gradeFilter" onchange="filterClassTeachers()">
               <option value="">All Grades</option>
               {% for grade in grades %}
-              <option value="{{ grade.id }}">{{ grade.level }}</option>
+              <option value="{{ grade.id }}">{{ grade.name }}</option>
               {% endfor %}
             </select>
           </div>
@@ -439,7 +439,7 @@
             <select id="subjectGradeFilter" onchange="filterSubjectTeachers()">
               <option value="">All Grades</option>
               {% for grade in grades %}
-              <option value="{{ grade.id }}">{{ grade.level }}</option>
+              <option value="{{ grade.id }}">{{ grade.name }}</option>
               {% endfor %}
             </select>
             <select id="subjectFilter" onchange="filterSubjectTeachers()">

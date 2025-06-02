@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page_title }} - Kirima Primary School</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #1f7d53;
+        --secondary-color: #18230f;
+        --accent-color: #4ade80;
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --bg-tertiary: #f1f5f9;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --border-color: #e2e8f0;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --info-color: #3b82f6;
+        --radius-sm: 0.375rem;
+        --radius-md: 0.5rem;
+        --radius-lg: 0.75rem;
+        --spacing-xs: 0.25rem;
+        --spacing-sm: 0.5rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
+        --spacing-xl: 2rem;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: var(--text-primary);
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+
+      /* Navigation */
+      .navbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border-color);
+        padding: var(--spacing-md) var(--spacing-xl);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      .navbar-nav {
+        display: flex;
+        gap: var(--spacing-lg);
+        list-style: none;
+        align-items: center;
+      }
+
+      .nav-link {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-weight: 500;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-md);
+        transition: all 0.2s ease;
+      }
+
+      .nav-link:hover {
+        color: var(--primary-color);
+        background: var(--bg-secondary);
+      }
+
+      .logout-btn {
+        background: var(--error-color);
+        color: white;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+
+      .logout-btn:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+      }
+
+      /* Main Container */
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--spacing-xl);
+      }
+
+      /* Header */
+      .page-header {
+        text-align: center;
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-sm);
+      }
+
+      .page-subtitle {
+        font-size: 1.125rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      /* Dashboard Grid */
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+      }
+
+      /* Cards */
+      .card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-sm);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .card-icon {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+      }
+
+      /* Statistics Cards */
+      .stat-card {
+        text-align: center;
+        padding: var(--spacing-lg);
+      }
+
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-xs);
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      /* Class Selection */
+      .class-selector {
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .class-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+      }
+
+      .class-card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+      }
+
+      .class-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .class-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-sm);
+      }
+
+      .class-info {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-sm);
+      }
+
+      .class-actions {
+        display: flex;
+        gap: var(--spacing-xs);
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .action-btn {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .action-btn:hover {
+        background: #166534;
+        transform: translateY(-1px);
+      }
+
+      .action-btn.secondary {
+        background: var(--text-secondary);
+      }
+
+      .action-btn.secondary:hover {
+        background: var(--text-primary);
+      }
+
+      /* Loading States */
+      .loading {
+        text-align: center;
+        padding: var(--spacing-xl);
+        color: var(--text-secondary);
+      }
+
+      .loading i {
+        font-size: 2rem;
+        margin-bottom: var(--spacing-sm);
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .container {
+          padding: var(--spacing-md);
+        }
+
+        .page-title {
+          font-size: 2rem;
+        }
+
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .class-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .navbar {
+          padding: var(--spacing-sm) var(--spacing-md);
+        }
+
+        .navbar-nav {
+          gap: var(--spacing-sm);
+        }
+      }
+
+      /* Management Hub Styles */
+      .management-hub {
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .management-category {
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .management-category h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+      }
+
+      .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--spacing-md);
+      }
+
+      .quick-action-card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+        display: block;
+      }
+
+      .quick-action-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-color);
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .quick-action-icon {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-sm);
+      }
+
+      .quick-action-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-xs);
+      }
+
+      .quick-action-desc {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin: 0;
+      }
+
+      .section-header {
+        text-align: center;
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .section-header h2 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+      }
+
+      .section-header p {
+        color: var(--text-secondary);
+        font-size: 1rem;
+      }
+
+      /* Utility Classes */
+      .text-center {
+        text-align: center;
+      }
+      .text-success {
+        color: var(--success-color);
+      }
+      .text-warning {
+        color: var(--warning-color);
+      }
+      .text-error {
+        color: var(--error-color);
+      }
+      .text-info {
+        color: var(--info-color);
+      }
+      .mb-0 {
+        margin-bottom: 0;
+      }
+      .mb-1 {
+        margin-bottom: var(--spacing-xs);
+      }
+      .mb-2 {
+        margin-bottom: var(--spacing-sm);
+      }
+      .mb-3 {
+        margin-bottom: var(--spacing-md);
+      }
+      .mb-4 {
+        margin-bottom: var(--spacing-lg);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <a href="{{ url_for('admin.dashboard') }}" class="navbar-brand">
+        <i class="fas fa-school"></i> Kirima Primary School
+      </a>
+      <ul class="navbar-nav">
+        <li>
+          <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('universal.dashboard') }}" class="nav-link">
+            <i class="fas fa-users-cog"></i> Universal Access
+          </a>
+        </li>
+        <li>
+          <a
+            href="{{ url_for('permission.manage_permissions') }}"
+            class="nav-link"
+          >
+            <i class="fas fa-key"></i> Permissions
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('auth.logout_route') }}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">
+          <i class="fas fa-users-cog"></i>
+          Universal Class Management
+        </h1>
+        <p class="page-subtitle">
+          Access and manage all classteacher functions across all grades and
+          streams. The system intelligently detects single classes vs. streamed
+          classes.
+        </p>
+      </div>
+
+      <!-- Dashboard Statistics -->
+      <div class="dashboard-grid">
+        <div class="card stat-card">
+          <div class="stat-number" id="totalGrades">
+            {{ dashboard_data.class_statistics.total_grades or 0 }}
+          </div>
+          <div class="stat-label">Total Grades</div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-number" id="totalClasses">
+            {{ dashboard_data.class_statistics.total_classes or 0 }}
+          </div>
+          <div class="stat-label">Total Classes</div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-number" id="totalStudents">
+            {{ dashboard_data.class_statistics.total_students or 0 }}
+          </div>
+          <div class="stat-label">Total Students</div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-number text-info" id="structureType">
+            {{ dashboard_data.class_statistics.structure_type or 'Unknown' }}
+          </div>
+          <div class="stat-label">Structure Type</div>
+        </div>
+      </div>
+
+      <!-- Comprehensive Management Hub -->
+      <div class="management-hub">
+        <div class="section-header">
+          <h2>
+            <i class="fas fa-cogs"></i>
+            Comprehensive Management Hub
+          </h2>
+          <p>Access all classteacher functions with universal permissions</p>
+        </div>
+
+        <!-- Core Management Functions -->
+        <div class="management-category">
+          <h3><i class="fas fa-users"></i> Student Management</h3>
+          <div class="quick-actions-grid">
+            <a
+              href="{{ url_for('universal.proxy_manage_students') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <h4 class="quick-action-title">Manage Students</h4>
+              <p class="quick-action-desc">
+                Add, edit, and organize student records
+              </p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_download_student_template') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-download"></i>
+              </div>
+              <h4 class="quick-action-title">Student Template</h4>
+              <p class="quick-action-desc">Download student upload template</p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_download_class_list') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-list"></i>
+              </div>
+              <h4 class="quick-action-title">Class Lists</h4>
+              <p class="quick-action-desc">Export class lists as CSV</p>
+            </a>
+          </div>
+        </div>
+
+        <!-- Subject Management -->
+        <div class="management-category">
+          <h3><i class="fas fa-book"></i> Subject Management</h3>
+          <div class="quick-actions-grid">
+            <a
+              href="{{ url_for('universal.proxy_manage_subjects') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-book"></i>
+              </div>
+              <h4 class="quick-action-title">Manage Subjects</h4>
+              <p class="quick-action-desc">Configure subjects and curriculum</p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_download_subject_template') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-download"></i>
+              </div>
+              <h4 class="quick-action-title">Subject Template</h4>
+              <p class="quick-action-desc">Download subject upload template</p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_export_subjects') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-file-export"></i>
+              </div>
+              <h4 class="quick-action-title">Export Subjects</h4>
+              <p class="quick-action-desc">Export subjects as CSV/Excel</p>
+            </a>
+          </div>
+        </div>
+
+        <!-- Teacher Management -->
+        <div class="management-category">
+          <h3><i class="fas fa-chalkboard-teacher"></i> Teacher Management</h3>
+          <div class="quick-actions-grid">
+            <a
+              href="{{ url_for('universal.proxy_teacher_management_hub') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-users-cog"></i>
+              </div>
+              <h4 class="quick-action-title">Teacher Hub</h4>
+              <p class="quick-action-desc">Central teacher management</p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_manage_teachers') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-chalkboard-teacher"></i>
+              </div>
+              <h4 class="quick-action-title">Manage Teachers</h4>
+              <p class="quick-action-desc">Add, edit teacher records</p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_assign_subjects') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-tasks"></i>
+              </div>
+              <h4 class="quick-action-title">Assign Subjects</h4>
+              <p class="quick-action-desc">Assign subjects to teachers</p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_manage_teacher_assignments') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-exchange-alt"></i>
+              </div>
+              <h4 class="quick-action-title">Teacher Assignments</h4>
+              <p class="quick-action-desc">Manage teacher transfers</p>
+            </a>
+          </div>
+        </div>
+
+        <!-- Marks Management -->
+        <div class="management-category">
+          <h3><i class="fas fa-chart-line"></i> Marks Management</h3>
+          <div class="quick-actions-grid">
+            <a
+              href="{{ url_for('universal.proxy_classteacher_dashboard') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-upload"></i>
+              </div>
+              <h4 class="quick-action-title">Upload Marks</h4>
+              <p class="quick-action-desc">Bulk marks upload interface</p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_download_marks_template') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-download"></i>
+              </div>
+              <h4 class="quick-action-title">Marks Template</h4>
+              <p class="quick-action-desc">Download marks upload template</p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_collaborative_marks_dashboard') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <h4 class="quick-action-title">Collaborative Marks</h4>
+              <p class="quick-action-desc">Multi-teacher marks system</p>
+            </a>
+          </div>
+        </div>
+
+        <!-- Reports Management -->
+        <div class="management-category">
+          <h3><i class="fas fa-file-pdf"></i> Reports Management</h3>
+          <div class="quick-actions-grid">
+            <a
+              href="{{ url_for('universal.proxy_view_all_reports') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-chart-bar"></i>
+              </div>
+              <h4 class="quick-action-title">View All Reports</h4>
+              <p class="quick-action-desc">Browse and manage all reports</p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_grade_reports_dashboard') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <h4 class="quick-action-title">Grade Reports</h4>
+              <p class="quick-action-desc">Multi-stream grade analysis</p>
+            </a>
+          </div>
+        </div>
+
+        <!-- System Configuration -->
+        <div class="management-category">
+          <h3><i class="fas fa-cogs"></i> System Configuration</h3>
+          <div class="quick-actions-grid">
+            <a
+              href="{{ url_for('universal.proxy_manage_grades_streams') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <h4 class="quick-action-title">Grades & Streams</h4>
+              <p class="quick-action-desc">
+                Configure grade levels and streams
+              </p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_manage_terms_assessments') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <h4 class="quick-action-title">Terms & Assessments</h4>
+              <p class="quick-action-desc">
+                Manage academic terms and assessments
+              </p>
+            </a>
+          </div>
+        </div>
+
+        <!-- Enhanced Permission Management -->
+        <div class="management-category">
+          <h3>
+            <i class="fas fa-shield-alt"></i> Enhanced Permission Management
+          </h3>
+          <div class="quick-actions-grid">
+            <a
+              href="{{ url_for('permission.manage_function_permissions') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-key"></i>
+              </div>
+              <h4 class="quick-action-title">Function Permissions</h4>
+              <p class="quick-action-desc">
+                Manage granular function-level permissions
+              </p>
+            </a>
+
+            <a
+              href="{{ url_for('permission.manage_permissions') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-users-cog"></i>
+              </div>
+              <h4 class="quick-action-title">Class Permissions</h4>
+              <p class="quick-action-desc">
+                Manage class-level teacher permissions
+              </p>
+            </a>
+
+            <a
+              href="{{ url_for('permission.get_pending_requests') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-inbox"></i>
+              </div>
+              <h4 class="quick-action-title">Permission Requests</h4>
+              <p class="quick-action-desc">
+                Review and approve permission requests
+              </p>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Class Selection -->
+      <div class="class-selector">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-school card-icon"></i>
+            <h2 class="card-title">Select Class to Manage</h2>
+          </div>
+          <div class="class-grid" id="classGrid">
+            <div class="loading">
+              <i class="fas fa-spinner"></i>
+              <p>Loading classes...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Initialize the universal dashboard
+      document.addEventListener("DOMContentLoaded", function () {
+        loadClassGrid();
+      });
+
+      function loadClassGrid() {
+        fetch("/universal/api/class_selection")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              displayClasses(data.classes);
+            } else {
+              showError("Failed to load classes: " + data.message);
+            }
+          })
+          .catch((error) => {
+            showError("Error loading classes: " + error.message);
+          });
+      }
+
+      function displayClasses(classes) {
+        const grid = document.getElementById("classGrid");
+
+        if (classes.length === 0) {
+          grid.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        <p>No classes found. Please set up grades and streams first.</p>
+                    </div>
+                `;
+          return;
+        }
+
+        let html = "";
+        classes.forEach((classItem) => {
+          const typeIcon =
+            classItem.type === "single_class"
+              ? "fas fa-users"
+              : "fas fa-layer-group";
+          html += `
+                    <div class="class-card" onclick="selectClass('${
+                      classItem.value
+                    }')">
+                        <div class="class-name">
+                            <i class="${typeIcon}"></i>
+                            ${classItem.label}
+                        </div>
+                        <div class="class-info">
+                            ${classItem.student_count} students
+                        </div>
+                        <div class="class-info">
+                            Type: ${
+                              classItem.type === "single_class"
+                                ? "Single Class"
+                                : "Stream"
+                            }
+                        </div>
+                        <div class="class-actions">
+                            <button class="action-btn" onclick="event.stopPropagation(); manageStudents('${
+                              classItem.value
+                            }')">
+                                <i class="fas fa-users"></i> Students
+                            </button>
+                            <button class="action-btn" onclick="event.stopPropagation(); manageMarks('${
+                              classItem.value
+                            }')">
+                                <i class="fas fa-chart-line"></i> Marks
+                            </button>
+                            <button class="action-btn secondary" onclick="event.stopPropagation(); generateReports('${
+                              classItem.value
+                            }')">
+                                <i class="fas fa-file-alt"></i> Reports
+                            </button>
+                        </div>
+                    </div>
+                `;
+        });
+
+        grid.innerHTML = html;
+      }
+
+      function selectClass(classIdentifier) {
+        window.location.href = `/universal/class_manager/${encodeURIComponent(
+          classIdentifier
+        )}`;
+      }
+
+      function manageStudents(classIdentifier) {
+        window.location.href = `/universal/proxy/students/${encodeURIComponent(
+          classIdentifier
+        )}`;
+      }
+
+      function manageMarks(classIdentifier) {
+        window.location.href = `/universal/proxy/marks/${encodeURIComponent(
+          classIdentifier
+        )}`;
+      }
+
+      function generateReports(classIdentifier) {
+        window.location.href = `/universal/proxy/reports/${encodeURIComponent(
+          classIdentifier
+        )}`;
+      }
+
+      function showError(message) {
+        const grid = document.getElementById("classGrid");
+        grid.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-exclamation-triangle text-error"></i>
+                    <p>${message}</p>
+                    <button class="action-btn" onclick="loadClassGrid()" style="margin-top: 1rem;">
+                        <i class="fas fa-sync-alt"></i> Retry
+                    </button>
+                </div>
+            `;
+      }
+    </script>
+  </body>
+</html>

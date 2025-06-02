@@ -64,7 +64,7 @@ def dashboard():
         stream_marks = Mark.query.join(Student, Mark.student_id == Student.id).filter(Student.stream_id == stream.id).all()
         if stream_marks:
             stream_avg = round(sum(mark.mark for mark in stream_marks) / len(stream_marks), 2)
-            stream_name = f"{stream.grade.level} {stream.name}" if stream.grade else stream.name
+            stream_name = f"{stream.grade.name} {stream.name}" if stream.grade else stream.name
             stream_performances[stream_name] = stream_avg
     if stream_performances:
         top_class = max(stream_performances, key=stream_performances.get)
@@ -90,7 +90,7 @@ def dashboard():
 
     students = Student.query.all()
     for student in students:
-        grade = student.stream.grade.level if student.stream and student.stream.grade else "No Grade"
+        grade = student.stream.grade.name if student.stream and student.stream.grade else "No Grade"
         stream_name = student.stream.name if student.stream else "No Stream"
 
         # Initialize grade-level data
@@ -360,7 +360,7 @@ def manage_teachers():
                         existing_grade = Grade.query.get(existing_assignment.grade_id)
                         existing_stream = Stream.query.get(existing_assignment.stream_id) if existing_assignment.stream_id else None
 
-                        grade_name = existing_grade.level if existing_grade else "Unknown Grade"
+                        grade_name = existing_grade.name if existing_grade else "Unknown Grade"
                         stream_name = f"Stream {existing_stream.name}" if existing_stream else "All Streams"
 
                         error_message = f"Teacher '{teacher.username}' is already assigned as class teacher to {grade_name} {stream_name}."
@@ -398,7 +398,7 @@ def manage_teachers():
                         try:
                             db.session.commit()
                             stream_text = f"Stream {stream.name}" if stream else "All Streams"
-                            success_message = f"Teacher '{teacher.username}' assigned as class teacher to {grade.level} {stream_text}."
+                            success_message = f"Teacher '{teacher.username}' assigned as class teacher to {grade.name} {stream_text}."
                         except Exception as e:
                             db.session.rollback()
                             error_message = f"Error assigning class teacher: {str(e)}"
@@ -435,7 +435,7 @@ def manage_teachers():
 
                     if existing_assignment:
                         stream_text = f"Stream {stream.name}" if stream else "All Streams"
-                        error_message = f"Teacher '{teacher.username}' is already assigned to teach {subject.name} for {grade.level} {stream_text}."
+                        error_message = f"Teacher '{teacher.username}' is already assigned to teach {subject.name} for {grade.name} {stream_text}."
                     else:
                         # Create new assignment
                         new_assignment = TeacherSubjectAssignment(
@@ -451,7 +451,7 @@ def manage_teachers():
                         try:
                             db.session.commit()
                             stream_text = f"Stream {stream.name}" if stream else "All Streams"
-                            success_message = f"Teacher '{teacher.username}' assigned to teach {subject.name} for {grade.level} {stream_text}."
+                            success_message = f"Teacher '{teacher.username}' assigned to teach {subject.name} for {grade.name} {stream_text}."
                         except Exception as e:
                             db.session.rollback()
                             error_message = f"Error assigning subject: {str(e)}"
@@ -743,7 +743,7 @@ def manage_grades_streams():
                 existing_stream = Stream.query.filter_by(name=stream_name, grade_id=grade_id).first()
                 if existing_stream:
                     grade = Grade.query.get(grade_id)
-                    error_message = f"Stream '{stream_name}' already exists for {grade.level if grade else 'this grade'}."
+                    error_message = f"Stream '{stream_name}' already exists for {grade.name if grade else 'this grade'}."
                 else:
                     # Create new stream
                     new_stream = Stream(name=stream_name, grade_id=grade_id)
@@ -767,12 +767,12 @@ def manage_grades_streams():
                     # Check if grade has streams
                     streams_in_grade = Stream.query.filter_by(grade_id=grade_id).first()
                     if streams_in_grade:
-                        error_message = f"Cannot delete grade '{grade.level}' because it has streams. Delete the streams first."
+                        error_message = f"Cannot delete grade '{grade.name}' because it has streams. Delete the streams first."
                     else:
                         try:
                             db.session.delete(grade)
                             db.session.commit()
-                            success_message = f"Grade '{grade.level}' deleted successfully."
+                            success_message = f"Grade '{grade.name}' deleted successfully."
                             # Refresh grades list
                             grades = Grade.query.all()
                         except Exception as e:
@@ -845,7 +845,7 @@ def manage_grades_streams():
                         existing_stream = Stream.query.filter_by(name=stream_name, grade_id=grade_id).first()
                         if existing_stream and existing_stream.id != stream_id:
                             grade = Grade.query.get(grade_id)
-                            error_message = f"Stream '{stream_name}' already exists for {grade.level if grade else 'this grade'}."
+                            error_message = f"Stream '{stream_name}' already exists for {grade.name if grade else 'this grade'}."
                             return render_template('manage_grades_streams.html',
                                                 grades=grades,
                                                 streams=streams,
@@ -1140,7 +1140,7 @@ def analytics():
                 grade_subject_marks = [m for m in subject_marks if m.student and m.student.stream and m.student.stream.grade_id == grade.id]
                 if grade_subject_marks:
                     grade_avg = round(sum(mark.percentage for mark in grade_subject_marks if mark.percentage) / len([m for m in grade_subject_marks if m.percentage]), 2)
-                    grades_performance[grade.level] = grade_avg
+                    grades_performance[grade.name] = grade_avg
 
             subject_analysis[subject.name] = {
                 'overall_average': round(sum(mark.percentage for mark in subject_marks if mark.percentage) / len([m for m in subject_marks if m.percentage]), 2),
@@ -1342,7 +1342,7 @@ def generate_system_alerts():
             alerts.append({
                 'type': 'warning',
                 'title': 'No Assessment Data',
-                'message': f"Grade {grade.level} has no assessment data recorded",
+                'message': f"Grade {grade.name} has no assessment data recorded",
                 'action': 'Add marks for this grade'
             })
 

@@ -924,11 +924,11 @@
                         gradeSelect.innerHTML = '<option value="">Select Grade</option>';
 
                         allGrades.forEach(grade => {
-                            if (allowedGrades.includes(grade.level)) {
+                            if (allowedGrades.includes(grade.name)) {
                                 const option = document.createElement('option');
                                 option.value = grade.id;
-                                option.textContent = grade.level;
-                                option.setAttribute('data-level', grade.level);
+                                option.textContent = grade.name;
+                                option.setAttribute('data-level', grade.name);
                                 gradeSelect.appendChild(option);
                             }
                         });
@@ -941,8 +941,8 @@
                         allGrades.forEach(grade => {
                             const option = document.createElement('option');
                             option.value = grade.id;
-                            option.textContent = grade.level;
-                            option.setAttribute('data-level', grade.level);
+                            option.textContent = grade.name;
+                            option.setAttribute('data-level', grade.name);
                             gradeSelect.appendChild(option);
                         });
                     }

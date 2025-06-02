@@ -2,15 +2,34 @@
 Staff Management Views for enhanced teacher and staff administration.
 """
 
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, session
 from ..models.user import Teacher
 from ..models.academic import SchoolConfiguration
 from ..services.staff_assignment_service import StaffAssignmentService
+from ..services import is_authenticated, get_role
 from ..extensions import db
+from functools import wraps
 
 staff_bp = Blueprint('staff', __name__, url_prefix='/staff')
 
+def staff_access_required(f):
+    """Decorator to require authentication for staff management access."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_authenticated(session):
+            return redirect(url_for('auth.classteacher_login'))
+
+        # Allow classteachers and headteachers to access staff management
+        role = get_role(session)
+        if role not in ['classteacher', 'headteacher']:
+            flash('Access denied. Staff management is only available to class teachers and headteachers.', 'error')
+            return redirect(url_for('auth.classteacher_login'))
+
+        return f(*args, **kwargs)
+    return decorated_function
+
 @staff_bp.route('/management')
+@staff_access_required
 def management():
     """Staff management dashboard."""
     try:
@@ -44,7 +63,23 @@ def management():
         flash(f'Error loading staff management: {str(e)}', 'error')
         return redirect(url_for('classteacher.dashboard'))
 
+def headteacher_required(f):
+    """Decorator to require headteacher authentication for sensitive operations."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_authenticated(session):
+            return jsonify({'success': False, 'message': 'Authentication required'})
+
+        # Only headteachers can perform sensitive operations
+        role = get_role(session)
+        if role != 'headteacher':
+            return jsonify({'success': False, 'message': 'Only headteachers can perform this action'})
+
+        return f(*args, **kwargs)
+    return decorated_function
+
 @staff_bp.route('/assign_headteacher', methods=['POST'])
+@headteacher_required
 def assign_headteacher():
     """Assign a teacher as headteacher."""
     try:
@@ -64,6 +99,7 @@ def assign_headteacher():
         return jsonify({'success': False, 'message': str(e)})
 
 @staff_bp.route('/assign_deputy', methods=['POST'])
+@headteacher_required
 def assign_deputy():
     """Assign a teacher as deputy headteacher."""
     try:
