@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from ..models import ClassTeacherPermission, Teacher, Grade, Stream
 from ..services.permission_service import PermissionService
 from ..services.enhanced_permission_service import EnhancedPermissionService
+from ..services.enhanced_permission_management_service import EnhancedPermissionManagementService
 from ..services import is_authenticated, get_role
 from ..models.function_permission import DefaultFunctionPermissions
 from ..extensions import csrf
@@ -613,7 +614,7 @@ def my_permissions():
 
         if role == 'classteacher':
             # Get class permissions
-            class_permissions = PermissionService.get_teacher_permissions(teacher_id)
+            class_permissions = PermissionService.get_teacher_assigned_classes(teacher_id)
 
             # Get function permissions
             function_permissions = EnhancedPermissionService.get_teacher_function_summary(teacher_id)
@@ -697,3 +698,136 @@ def submit_function_permission_request():
 
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error submitting function request: {str(e)}'})
+
+
+# ============================================================================
+# ENHANCED PERMISSION MANAGEMENT WITH DIRECT GRANTING AND EXPIRATION
+# ============================================================================
+
+@permission_bp.route('/direct_grant', methods=['POST'])
+@headteacher_required
+def direct_grant_permission():
+    """Grant permission directly to a teacher with expiration support."""
+    try:
+        data = request.get_json()
+        teacher_id = data.get('teacher_id')
+        grade_id = data.get('grade_id')
+        stream_id = data.get('stream_id')
+        duration_key = data.get('duration_key', '1_month')
+        notes = data.get('notes', '')
+
+        if not teacher_id or not grade_id:
+            return jsonify({'success': False, 'message': 'Teacher and grade are required'})
+
+        # Grant permission with expiration
+        result = EnhancedPermissionManagementService.grant_direct_permission(
+            teacher_id=teacher_id,
+            grade_id=grade_id,
+            stream_id=stream_id,
+            granted_by_id=session.get('teacher_id'),
+            duration_key=duration_key,
+            notes=notes
+        )
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error granting direct permission: {str(e)}'})
+
+@permission_bp.route('/bulk_direct_grant', methods=['POST'])
+@headteacher_required
+def bulk_direct_grant_permissions():
+    """Grant multiple permissions directly with expiration support."""
+    try:
+        data = request.get_json()
+        teacher_id = data.get('teacher_id')
+        class_assignments = data.get('class_assignments', [])  # [{'grade_id': int, 'stream_id': int|None}]
+        duration_key = data.get('duration_key', '1_month')
+        notes = data.get('notes', '')
+
+        if not teacher_id or not class_assignments:
+            return jsonify({'success': False, 'message': 'Teacher and class assignments are required'})
+
+        # Bulk grant permissions
+        result = EnhancedPermissionManagementService.bulk_grant_permissions(
+            teacher_id=teacher_id,
+            class_assignments=class_assignments,
+            granted_by_id=session.get('teacher_id'),
+            duration_key=duration_key,
+            notes=notes
+        )
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error in bulk direct grant: {str(e)}'})
+
+@permission_bp.route('/extend_permission', methods=['POST'])
+@headteacher_required
+def extend_permission():
+    """Extend an existing permission's expiration date."""
+    try:
+        data = request.get_json()
+        permission_id = data.get('permission_id')
+        duration_key = data.get('duration_key', '1_month')
+
+        if not permission_id:
+            return jsonify({'success': False, 'message': 'Permission ID is required'})
+
+        # Extend permission
+        result = EnhancedPermissionManagementService.extend_permission(
+            permission_id=permission_id,
+            duration_key=duration_key,
+            extended_by_id=session.get('teacher_id')
+        )
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error extending permission: {str(e)}'})
+
+@permission_bp.route('/expiring_permissions')
+@headteacher_required
+def get_expiring_permissions():
+    """Get permissions that will expire soon."""
+    try:
+        days_ahead = request.args.get('days_ahead', 7, type=int)
+
+        expiring_permissions = EnhancedPermissionManagementService.get_expiring_permissions(days_ahead)
+
+        return jsonify({
+            'success': True,
+            'expiring_permissions': expiring_permissions,
+            'count': len(expiring_permissions)
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error getting expiring permissions: {str(e)}'})
+
+@permission_bp.route('/permission_statistics')
+@headteacher_required
+def get_permission_statistics():
+    """Get comprehensive permission statistics."""
+    try:
+        stats = EnhancedPermissionManagementService.get_permission_statistics()
+
+        return jsonify({
+            'success': True,
+            'statistics': stats
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error getting statistics: {str(e)}'})
+
+@permission_bp.route('/duration_options')
+@headteacher_required
+def get_duration_options():
+    """Get available duration options for permissions."""
+    try:
+        return jsonify({
+            'success': True,
+            'duration_options': EnhancedPermissionManagementService.DURATION_OPTIONS
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error getting duration options: {str(e)}'})

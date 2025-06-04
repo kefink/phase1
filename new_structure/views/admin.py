@@ -28,6 +28,37 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+@admin_bp.route('/analytics')
+@admin_required
+def analytics_dashboard():
+    """Dedicated analytics page for headteachers."""
+    try:
+        # Get comprehensive analytics data
+        from ..services.analytics_service import AnalyticsService
+        analytics_data = AnalyticsService.get_headteacher_analytics()
+
+        if 'error' in analytics_data:
+            flash(f'Error loading analytics: {analytics_data["error"]}', 'error')
+            analytics_data = {'has_data': False, 'summary': {}, 'grade_performance': [], 'subject_performance': []}
+
+        # Get filter options
+        terms = [term.name for term in Term.query.all()]
+        assessment_types = [at.name for at in AssessmentType.query.all()]
+        grades = [grade.name for grade in Grade.query.all()]
+
+        return render_template('headteacher_analytics.html',
+                             analytics_data=analytics_data,
+                             terms=terms,
+                             assessment_types=assessment_types,
+                             grades=grades,
+                             page_title="School-Wide Academic Analytics")
+
+    except Exception as e:
+        print(f"Error loading analytics dashboard: {e}")
+        flash('Error loading analytics dashboard.', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+
 @admin_bp.route('/')
 @admin_required
 def dashboard():

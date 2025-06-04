@@ -1028,10 +1028,10 @@
                               type="checkbox"
                               name="bulk_grades"
                               value="{{ grade.id }}"
-                              onchange="toggleGradeSelection('{{ grade.id }}', '{{ grade.level }}')"
+                              onchange="toggleGradeSelection('{{ grade.id }}', '{{ grade.name }}')"
                               id="grade-{{ grade.id }}"
                             />
-                            <span style="margin-left: 8px; color: #333;">📚 Grade {{ grade.level }}</span>
+                            <span style="margin-left: 8px; color: #333;">📚 {{ grade.name }}</span>
                           </label>
 
                           <div id="grade-{{ grade.id }}-status" style="color: #666; font-size: 0.9em;">
@@ -1041,7 +1041,7 @@
 
                         <div id="streams-for-grade-{{ grade.id }}" style="display: none; margin-left: 25px; padding: 10px; background: #f8f9fa; border-radius: 3px;">
                           <div style="margin-bottom: 10px;">
-                            <label style="font-weight: 600; color: #555;">🏫 Stream Selection for Grade {{ grade.level }}:</label>
+                            <label style="font-weight: 600; color: #555;">🏫 Stream Selection for {{ grade.name }}:</label>
                           </div>
 
                           <div style="margin-bottom: 15px;">

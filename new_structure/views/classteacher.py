@@ -24,6 +24,7 @@ from ..services.cache_service import (
 from ..services.collaborative_marks_service import CollaborativeMarksService
 from ..services.grade_report_service import GradeReportService
 from ..services.enhanced_permission_service import EnhancedPermissionService, function_permission_required
+from ..services.permission_service import PermissionService
 from ..models.function_permission import DefaultFunctionPermissions
 from functools import wraps
 
@@ -75,6 +76,14 @@ def classteacher_required(f):
             if has_permission:
                 return f(*args, **kwargs)
             else:
+                # Special case: If teacher has any class permissions, allow management functions
+                if DefaultFunctionPermissions.is_management_function(function_name):
+                    # Check if teacher has any class permissions
+                    class_permissions = PermissionService.get_teacher_assigned_classes(teacher_id)
+                    if class_permissions and len(class_permissions) > 0:
+                        # Teacher has class permissions, allow management functions
+                        return f(*args, **kwargs)
+
                 # Function requires permission that teacher doesn't have
                 return redirect(url_for('classteacher.permission_denied', function_name=function_name))
 
@@ -167,6 +176,47 @@ def test_edit_marks():
                           subject_objects=subject_objects)
 
 
+@classteacher_bp.route('/analytics')
+@classteacher_required
+def analytics_dashboard():
+    """Dedicated analytics page for classteachers."""
+    try:
+        teacher_id = session.get('teacher_id')
+        if not teacher_id:
+            flash('Please log in to access analytics.', 'error')
+            return redirect(url_for('auth.classteacher_login'))
+
+        # Get teacher information
+        teacher = Teacher.query.get(teacher_id)
+        if not teacher:
+            flash('Teacher not found.', 'error')
+            return redirect(url_for('auth.classteacher_login'))
+
+        # Get analytics data
+        from ..services.analytics_service import AnalyticsService
+        analytics_data = AnalyticsService.get_classteacher_analytics(teacher_id)
+
+        if 'error' in analytics_data:
+            flash(f'Error loading analytics: {analytics_data["error"]}', 'error')
+            analytics_data = {'has_data': False, 'summary': {}, 'top_students': [], 'subject_performance': []}
+
+        # Get filter options
+        terms = [term.name for term in Term.query.all()]
+        assessment_types = [at.name for at in AssessmentType.query.all()]
+
+        return render_template('classteacher_analytics.html',
+                             teacher=teacher,
+                             analytics_data=analytics_data,
+                             terms=terms,
+                             assessment_types=assessment_types,
+                             page_title="Academic Performance Analytics")
+
+    except Exception as e:
+        print(f"Error loading analytics dashboard: {e}")
+        flash('Error loading analytics dashboard.', 'error')
+        return redirect(url_for('classteacher.dashboard'))
+
+
 @classteacher_bp.route('/', methods=['GET', 'POST'])
 @classteacher_required
 def dashboard():
@@ -206,7 +256,7 @@ def dashboard():
     grade_level = ""
     stream_name = ""
 
-    # Check if teacher is assigned to a stream
+    # Check if teacher is assigned to a stream (direct assignment)
     if teacher.stream_id:
         stream = Stream.query.get(teacher.stream_id)
         if stream:
@@ -214,6 +264,35 @@ def dashboard():
             if grade:
                 grade_level = grade.name
                 stream_name = f"Stream {stream.name}"
+
+    # If no direct stream assignment, check if teacher has subject assignments
+    if not stream and assignment_summary.get('subject_assignments'):
+        # Teacher has subject assignments, so they are assigned
+        # Use the first assignment to show assignment status
+        first_assignment = assignment_summary['subject_assignments'][0]
+        if first_assignment.get('grade_name') and first_assignment.get('stream_name'):
+            grade_level = first_assignment['grade_name']
+            stream_name = f"Stream {first_assignment['stream_name']}"
+            # Create a mock stream object for template compatibility
+            stream = type('MockStream', (), {'name': first_assignment['stream_name']})()
+            grade = type('MockGrade', (), {'name': first_assignment['grade_name']})()
+
+    # If teacher has class teacher assignments, use those
+    if not stream and assignment_summary.get('class_teacher_assignments'):
+        first_class_assignment = assignment_summary['class_teacher_assignments'][0]
+        if first_class_assignment.get('grade_name') and first_class_assignment.get('stream_name'):
+            grade_level = first_class_assignment['grade_name']
+            stream_name = f"Stream {first_class_assignment['stream_name']}"
+            # Create a mock stream object for template compatibility
+            stream = type('MockStream', (), {'name': first_class_assignment['stream_name']})()
+            grade = type('MockGrade', (), {'name': first_class_assignment['grade_name']})()
+
+    # Check if teacher has any assignments at all
+    has_assignments = (
+        assignment_summary.get('subject_assignments') or
+        assignment_summary.get('class_teacher_assignments') or
+        teacher.stream_id
+    )
 
     # Get data for the form
     grades = [grade.name for grade in Grade.query.all()]
@@ -936,7 +1015,8 @@ def dashboard():
         can_manage_classes=assignment_summary.get('can_manage_classes', False),
         grades_involved=assignment_summary.get('grades_involved', []),
         streams_involved=assignment_summary.get('streams_involved', []),
-        subjects_involved=assignment_summary.get('subjects_involved', [])
+        subjects_involved=assignment_summary.get('subjects_involved', []),
+        has_assignments=has_assignments  # Pass assignment status to template
     )
 
 @classteacher_bp.route('/all_reports', methods=['GET'])

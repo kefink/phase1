@@ -262,6 +262,54 @@
             transform: translateX(5px);
         }
 
+        /* Analytics Quick Access */
+        .analytics-quick-access {
+            margin-bottom: var(--space-6);
+        }
+
+        .quick-access-card {
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            transition: all 0.3s ease;
+        }
+
+        .quick-access-card:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+        }
+
+        .quick-access-card .card-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-size: 2rem;
+            margin-right: var(--space-6);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .quick-access-card .card-content h3 {
+            color: var(--primary-color);
+            margin-bottom: var(--space-2);
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .quick-access-card .card-content p {
+            color: var(--text-secondary);
+            margin-bottom: var(--space-4);
+            line-height: 1.5;
+        }
+
         /* Enhanced Tab Navigation */
         .tab-container {
             background: white;
@@ -694,11 +742,11 @@
     {% endif %}
 
     <!-- Teacher Assignment Status -->
-    {% if not stream %}
+    {% if not has_assignments %}
     <div class="alert alert-info" style="background-color: #d1ecf1; color: #0c5460; padding: 10px; margin: 10px 0; border-radius: 5px;">
         <strong>Note:</strong> You are not currently assigned to any class stream. You can still manage students and view reports for all grades and streams.
     </div>
-    {% else %}
+    {% elif stream %}
     <div class="modern-alert alert-success">
         <i class="fas fa-check-circle"></i>
         <strong>Assigned Class:</strong> Grade {{ grade }} {{ stream }}
@@ -724,6 +772,10 @@
                 </div>
                 <div class="header-actions">
                     <nav class="modern-nav">
+                        <a href="{{ url_for('classteacher.analytics_dashboard') }}" class="nav-link">
+                            <i class="fas fa-chart-line"></i>
+                            Analytics
+                        </a>
                         <a href="{{ url_for('classteacher.teacher_management_hub') }}" class="nav-link">
                             <i class="fas fa-users-cog"></i>
                             Teacher Hub
@@ -817,48 +869,102 @@
                 </div>
                 {% endif %}
 
-                <!-- Subject Assignments -->
+                <!-- Analytics Quick Access -->
+                <div class="analytics-quick-access">
+                    <div class="quick-access-card">
+                        <div class="card-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Academic Performance Analytics</h3>
+                            <p>View comprehensive insights into student performance and subject analytics for your assigned classes.</p>
+                            <a href="{{ url_for('classteacher.analytics_dashboard') }}" class="modern-btn btn-primary">
+                                <i class="fas fa-chart-bar"></i> View Analytics Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Subject Assignments with Pagination and Filtering -->
                 {% if subject_assignments %}
                 <div>
                     <h3 style="color: var(--primary-color); margin-bottom: var(--space-4); font-size: 1.1rem; font-weight: 600;">
                         <i class="fas fa-book-open"></i> Subject Teaching Assignments
+                        <span class="modern-badge badge-info" style="font-size: 0.8rem; margin-left: var(--space-2);">
+                            {{ subject_assignments|length }} Total
+                        </span>
                     </h3>
-                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--gray-200); border-radius: var(--radius-lg);">
-                        <div class="modern-table-container">
-                            <table class="modern-table">
-                                <thead>
+
+                    <!-- Assignment Filters -->
+                    <div style="background: var(--gray-50); padding: var(--space-4); border-radius: var(--radius-lg); margin-bottom: var(--space-4);">
+                        <div class="modern-grid grid-cols-4">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 0.8rem;">Search Subject</label>
+                                <input type="text" id="assignment-search" placeholder="Search subjects..."
+                                       class="form-input" style="font-size: 0.9rem; padding: var(--space-2);"
+                                       onkeyup="filterAssignments()">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 0.8rem;">Filter by Grade</label>
+                                <select id="assignment-grade-filter" class="form-select" style="font-size: 0.9rem; padding: var(--space-2);"
+                                        onchange="filterAssignments()">
+                                    <option value="">All Grades</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 0.8rem;">Filter by Role</label>
+                                <select id="assignment-role-filter" class="form-select" style="font-size: 0.9rem; padding: var(--space-2);"
+                                        onchange="filterAssignments()">
+                                    <option value="">All Roles</option>
+                                    <option value="class_teacher">Class Teacher</option>
+                                    <option value="subject_teacher">Subject Teacher</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 0.8rem;">Items per Page</label>
+                                <select id="assignment-per-page" class="form-select" style="font-size: 0.9rem; padding: var(--space-2);"
+                                        onchange="updateAssignmentPagination()">
+                                    <option value="10">10 per page</option>
+                                    <option value="20" selected>20 per page</option>
+                                    <option value="50">50 per page</option>
+                                    <option value="all">Show All</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assignment Table -->
+                    <div style="border: 1px solid var(--gray-200); border-radius: var(--radius-lg); overflow: hidden;">
+                        <div class="modern-table-container" style="max-height: 400px; overflow-y: auto;">
+                            <table class="modern-table" id="assignments-table">
+                                <thead style="position: sticky; top: 0; background: white; z-index: 10;">
                                     <tr>
-                                        <th><i class="fas fa-book"></i> Subject</th>
-                                        <th><i class="fas fa-layer-group"></i> Grade</th>
+                                        <th style="cursor: pointer;" onclick="sortAssignments('subject')">
+                                            <i class="fas fa-book"></i> Subject
+                                            <i class="fas fa-sort" id="sort-subject"></i>
+                                        </th>
+                                        <th style="cursor: pointer;" onclick="sortAssignments('grade')">
+                                            <i class="fas fa-layer-group"></i> Grade
+                                            <i class="fas fa-sort" id="sort-grade"></i>
+                                        </th>
                                         <th><i class="fas fa-stream"></i> Stream</th>
-                                        <th><i class="fas fa-user-tag"></i> Role</th>
+                                        <th style="cursor: pointer;" onclick="sortAssignments('role')">
+                                            <i class="fas fa-user-tag"></i> Role
+                                            <i class="fas fa-sort" id="sort-role"></i>
+                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    {% for assignment in subject_assignments[:15] %}
-                                    <tr>
-                                        <td><strong>{{ assignment.subject_name }}</strong></td>
-                                        <td><span class="modern-badge badge-info">{{ assignment.grade_level }}</span></td>
-                                        <td><span class="modern-badge badge-success">{{ assignment.stream_name or 'All' }}</span></td>
-                                        <td>
-                                            {% if assignment.is_class_teacher %}
-                                            <span class="modern-badge badge-primary">Class Teacher</span>
-                                            {% else %}
-                                            <span class="modern-badge badge-warning">Subject Teacher</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                    {% if subject_assignments|length > 15 %}
-                                    <tr>
-                                        <td colspan="4" style="text-align: center; color: var(--gray-500); font-style: italic; padding: var(--space-4);">
-                                            ... and {{ subject_assignments|length - 15 }} more assignments
-                                        </td>
-                                    </tr>
-                                    {% endif %}
+                                <tbody id="assignments-tbody">
+                                    <!-- Assignments will be populated by JavaScript -->
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div id="assignment-pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-4); padding: var(--space-4); background: var(--gray-50); border-radius: var(--radius-lg);">
+                        <div id="assignment-info" style="color: var(--gray-600); font-size: 0.9rem;"></div>
+                        <div id="assignment-controls" style="display: flex; gap: var(--space-2);"></div>
                     </div>
                 </div>
                 {% endif %}
@@ -4069,6 +4175,12 @@
 
             // Load permission status on page load
             loadPermissionStatus();
+
+            // Initialize assignment management
+            initializeAssignmentManagement();
+
+            // Initialize analytics dashboard
+            initializeAnalyticsDashboard();
         });
 
         // Get CSRF token
@@ -4447,7 +4559,216 @@
                 alert('❌ Failed to submit request. Please try again.');
             });
         }
+
+        // ============================================================================
+        // ASSIGNMENT MANAGEMENT SYSTEM
+        // ============================================================================
+
+        let assignmentData = {{ subject_assignments | tojson }};
+        let filteredAssignments = [...assignmentData];
+        let currentAssignmentPage = 1;
+        let assignmentsPerPage = 20;
+        let currentSortField = '';
+        let currentSortDirection = 'asc';
+
+        function initializeAssignmentManagement() {
+            if (!assignmentData || assignmentData.length === 0) {
+                return;
+            }
+
+            // Populate grade filter options
+            const gradeFilter = document.getElementById('assignment-grade-filter');
+            if (gradeFilter) {
+                const uniqueGrades = [...new Set(assignmentData.map(a => a.grade_level))].sort();
+                uniqueGrades.forEach(grade => {
+                    const option = document.createElement('option');
+                    option.value = grade;
+                    option.textContent = grade;
+                    gradeFilter.appendChild(option);
+                });
+
+                // Initial render
+                renderAssignments();
+            }
+        }
+
+        function filterAssignments() {
+            const searchTerm = document.getElementById('assignment-search').value.toLowerCase();
+            const gradeFilter = document.getElementById('assignment-grade-filter').value;
+            const roleFilter = document.getElementById('assignment-role-filter').value;
+
+            filteredAssignments = assignmentData.filter(assignment => {
+                const matchesSearch = assignment.subject_name.toLowerCase().includes(searchTerm);
+                const matchesGrade = !gradeFilter || assignment.grade_level === gradeFilter;
+                const matchesRole = !roleFilter ||
+                    (roleFilter === 'class_teacher' && assignment.is_class_teacher) ||
+                    (roleFilter === 'subject_teacher' && !assignment.is_class_teacher);
+
+                return matchesSearch && matchesGrade && matchesRole;
+            });
+
+            currentAssignmentPage = 1;
+            renderAssignments();
+        }
+
+        function sortAssignments(field) {
+            if (currentSortField === field) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortField = field;
+                currentSortDirection = 'asc';
+            }
+
+            filteredAssignments.sort((a, b) => {
+                let aValue, bValue;
+
+                switch (field) {
+                    case 'subject':
+                        aValue = a.subject_name;
+                        bValue = b.subject_name;
+                        break;
+                    case 'grade':
+                        aValue = a.grade_level;
+                        bValue = b.grade_level;
+                        break;
+                    case 'role':
+                        aValue = a.is_class_teacher ? 'Class Teacher' : 'Subject Teacher';
+                        bValue = b.is_class_teacher ? 'Class Teacher' : 'Subject Teacher';
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (currentSortDirection === 'asc') {
+                    return aValue.localeCompare(bValue);
+                } else {
+                    return bValue.localeCompare(aValue);
+                }
+            });
+
+            updateSortIcons(field);
+            renderAssignments();
+        }
+
+        function updateSortIcons(activeField) {
+            // Reset all sort icons
+            document.querySelectorAll('[id^="sort-"]').forEach(icon => {
+                icon.className = 'fas fa-sort';
+            });
+
+            // Update active field icon
+            const activeIcon = document.getElementById(`sort-${activeField}`);
+            if (activeIcon) {
+                activeIcon.className = currentSortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+            }
+        }
+
+        function updateAssignmentPagination() {
+            const perPageSelect = document.getElementById('assignment-per-page');
+            assignmentsPerPage = perPageSelect.value === 'all' ? filteredAssignments.length : parseInt(perPageSelect.value);
+            currentAssignmentPage = 1;
+            renderAssignments();
+        }
+
+        function renderAssignments() {
+            const tbody = document.getElementById('assignments-tbody');
+            if (!tbody) return;
+
+            const startIndex = (currentAssignmentPage - 1) * assignmentsPerPage;
+            const endIndex = assignmentsPerPage === filteredAssignments.length ?
+                filteredAssignments.length :
+                Math.min(startIndex + assignmentsPerPage, filteredAssignments.length);
+
+            const pageAssignments = filteredAssignments.slice(startIndex, endIndex);
+
+            // Render table rows
+            tbody.innerHTML = pageAssignments.map(assignment => `
+                <tr>
+                    <td><strong>${assignment.subject_name}</strong></td>
+                    <td><span class="modern-badge badge-info">${assignment.grade_level}</span></td>
+                    <td><span class="modern-badge badge-success">${assignment.stream_name || 'All'}</span></td>
+                    <td>
+                        ${assignment.is_class_teacher ?
+                            '<span class="modern-badge badge-primary">Class Teacher</span>' :
+                            '<span class="modern-badge badge-warning">Subject Teacher</span>'
+                        }
+                    </td>
+                </tr>
+            `).join('');
+
+            // Update pagination info
+            const info = document.getElementById('assignment-info');
+            if (info) {
+                const totalPages = Math.ceil(filteredAssignments.length / assignmentsPerPage);
+
+                if (filteredAssignments.length === 0) {
+                    info.textContent = 'No assignments found';
+                } else {
+                    info.textContent = `Showing ${startIndex + 1}-${endIndex} of ${filteredAssignments.length} assignments`;
+                }
+
+                // Update pagination controls
+                renderAssignmentPaginationControls(totalPages);
+            }
+        }
+
+        function renderAssignmentPaginationControls(totalPages) {
+            const controls = document.getElementById('assignment-controls');
+            if (!controls) return;
+
+            if (totalPages <= 1) {
+                controls.innerHTML = '';
+                return;
+            }
+
+            let controlsHTML = '';
+
+            // Previous button
+            if (currentAssignmentPage > 1) {
+                controlsHTML += `
+                    <button onclick="goToAssignmentPage(${currentAssignmentPage - 1})"
+                            class="modern-btn btn-outline" style="padding: var(--space-2) var(--space-3); font-size: 0.8rem;">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                `;
+            }
+
+            // Page numbers
+            const startPage = Math.max(1, currentAssignmentPage - 2);
+            const endPage = Math.min(totalPages, currentAssignmentPage + 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = i === currentAssignmentPage;
+                controlsHTML += `
+                    <button onclick="goToAssignmentPage(${i})"
+                            class="modern-btn ${isActive ? 'btn-primary' : 'btn-outline'}"
+                            style="padding: var(--space-2) var(--space-3); font-size: 0.8rem;">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            // Next button
+            if (currentAssignmentPage < totalPages) {
+                controlsHTML += `
+                    <button onclick="goToAssignmentPage(${currentAssignmentPage + 1})"
+                            class="modern-btn btn-outline" style="padding: var(--space-2) var(--space-3); font-size: 0.8rem;">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                `;
+            }
+
+            controls.innerHTML = controlsHTML;
+        }
+
+        function goToAssignmentPage(page) {
+            currentAssignmentPage = page;
+            renderAssignments();
+        }
     </script>
+
+    <!-- Analytics Dashboard JavaScript -->
+    <script src="{{ url_for('static', filename='js/analytics_dashboard.js') }}"></script>
 
 
 </body>

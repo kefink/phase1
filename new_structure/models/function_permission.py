@@ -235,6 +235,9 @@ class DefaultFunctionPermissions:
             'collaborative_marks_dashboard',  # Multi-teacher marks system
             'class_marks_status',  # Marks status tracking
         ],
+        'analytics': [
+            'analytics_dashboard',  # Academic performance analytics dashboard
+        ],
         'reports_management': [
             'preview_class_report',  # Preview class reports
             'download_class_report',  # Download class reports
@@ -314,3 +317,18 @@ class DefaultFunctionPermissions:
             if function_name in functions:
                 return category
         return 'unknown'
+
+    @classmethod
+    def is_management_function(cls, function_name):
+        """Check if a function is a management function that should be allowed with class permissions."""
+        management_categories = [
+            'student_management',
+            'subject_management',
+            'system_configuration'
+        ]
+
+        for category in management_categories:
+            if category in cls.RESTRICTED_FUNCTIONS:
+                if function_name in cls.RESTRICTED_FUNCTIONS[category]:
+                    return True
+        return False

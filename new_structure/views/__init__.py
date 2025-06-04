@@ -11,10 +11,11 @@ from .setup import setup_bp
 from .staff_management import staff_bp
 from .permission_management import permission_bp
 from .headteacher_universal import universal_bp
+from .analytics_api import analytics_api_bp
 
 # List of all blueprints to register with the app
 blueprints = [
     auth_bp, teacher_bp, classteacher_bp, admin_bp,
     bulk_assignments_bp, setup_bp, staff_bp,
-    permission_bp, universal_bp
+    permission_bp, universal_bp, analytics_api_bp
 ]

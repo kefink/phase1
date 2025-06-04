@@ -66,11 +66,12 @@
         min-height: 100vh;
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start; /* Changed from center to flex-start */
         margin: 0;
-        padding: var(--space-6);
+        padding: 2rem 1.5rem; /* Use fixed padding */
         position: relative;
-        overflow: hidden;
+        overflow-x: hidden; /* Only hide horizontal overflow */
+        overflow-y: auto; /* Allow vertical scrolling */
       }
 
       /* Animated Background Elements */
@@ -108,33 +109,32 @@
         max-width: 480px;
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
-        border-radius: 1.5rem; /* Use fixed value */
-        padding: 3rem; /* Use fixed value */
+        border-radius: 1.5rem;
+        padding: 2rem; /* Reduced padding */
         box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
         border: 1px solid rgba(255, 255, 255, 0.2);
         animation: slideUp 0.8s ease-out;
-        /* Ensure container can expand to show all content */
+        /* Let container expand naturally */
+        margin: 2rem auto;
         min-height: auto;
         height: auto;
         max-height: none;
-        /* Force container to be tall enough */
-        min-height: 600px;
       }
 
       .school-header {
         text-align: center;
-        margin-bottom: var(--space-10);
+        margin-bottom: 1.5rem; /* Reduced spacing */
       }
 
       .school-logo {
-        width: 80px;
-        height: 80px;
+        width: 60px; /* Smaller logo */
+        height: 60px;
         background: var(--primary-gradient);
         border-radius: var(--radius-full);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto var(--space-6);
+        margin: 0 auto 1rem; /* Reduced margin */
         box-shadow: var(--shadow-lg);
         animation: pulse 2s ease-in-out infinite;
       }
@@ -150,26 +150,26 @@
       }
 
       .school-logo i {
-        font-size: 2.5rem;
+        font-size: 2rem; /* Smaller icon */
         color: white;
       }
 
       .school-name {
-        font-size: 2rem;
+        font-size: 1.75rem; /* Smaller title */
         font-weight: 800;
         background: var(--primary-gradient);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: var(--space-2);
+        margin-bottom: 0.5rem; /* Reduced margin */
         line-height: 1.2;
       }
 
       .school-tagline {
-        font-size: 1rem;
+        font-size: 0.9rem; /* Smaller tagline */
         color: var(--gray-600);
         font-weight: 500;
-        margin-bottom: var(--space-8);
+        margin-bottom: 1.5rem; /* Reduced margin */
       }
 
       .login-options {
@@ -186,8 +186,8 @@
 
       .login-card {
         background: linear-gradient(135deg, #ffffff, #f8f9fa);
-        border-radius: var(--radius-xl);
-        padding: var(--space-6);
+        border-radius: 1rem; /* Fixed value */
+        padding: 1rem; /* Reduced padding */
         border: 2px solid transparent;
         transition: all 0.3s ease;
         text-decoration: none;
@@ -223,25 +223,25 @@
       .login-card-header {
         display: flex;
         align-items: center;
-        gap: var(--space-4);
-        margin-bottom: var(--space-3);
+        gap: 0.75rem; /* Reduced gap */
+        margin-bottom: 0; /* Remove bottom margin */
       }
 
       .login-icon {
-        width: 50px;
-        height: 50px;
+        width: 40px; /* Smaller icon */
+        height: 40px;
         background: var(--primary-gradient);
-        border-radius: var(--radius-lg);
+        border-radius: 0.75rem; /* Fixed value */
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1.5rem;
+        font-size: 1.25rem; /* Smaller icon */
         box-shadow: var(--shadow-md);
       }
 
       .login-title {
-        font-size: 1.25rem;
+        font-size: 1.1rem; /* Smaller title */
         font-weight: 700;
         color: var(--gray-800);
         margin: 0;
@@ -249,9 +249,9 @@
 
       .login-description {
         color: var(--gray-600);
-        font-size: 0.9rem;
-        line-height: 1.5;
-        margin: 0;
+        font-size: 0.8rem; /* Smaller description */
+        line-height: 1.4;
+        margin: 0.25rem 0 0 0; /* Small top margin */
       }
 
       .login-arrow {

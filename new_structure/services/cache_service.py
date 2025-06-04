@@ -14,6 +14,7 @@ CACHE_DIR = 'cache'
 REPORT_CACHE_DIR = os.path.join(CACHE_DIR, 'reports')
 MARKSHEET_CACHE_DIR = os.path.join(CACHE_DIR, 'marksheets')
 PDF_CACHE_DIR = os.path.join(CACHE_DIR, 'pdfs')
+ANALYTICS_CACHE_DIR = os.path.join(CACHE_DIR, 'analytics')
 
 # In-memory cache for frequently accessed data
 _memory_cache = {}
@@ -24,6 +25,7 @@ def _ensure_cache_dirs():
     os.makedirs(REPORT_CACHE_DIR, exist_ok=True)
     os.makedirs(MARKSHEET_CACHE_DIR, exist_ok=True)
     os.makedirs(PDF_CACHE_DIR, exist_ok=True)
+    os.makedirs(ANALYTICS_CACHE_DIR, exist_ok=True)
 
 def _generate_cache_key(*args, **kwargs):
     """Generate a unique cache key based on arguments."""
@@ -286,3 +288,101 @@ def invalidate_cache(grade, stream, term, assessment_type):
             except OSError:
                 # Ignore errors when deleting cache files
                 pass
+
+
+def cache_analytics(cache_key, analytics_data, expiry=1800):
+    """
+    Cache analytics data.
+
+    Args:
+        cache_key: Unique cache key for the analytics data
+        analytics_data: The analytics data to cache
+        expiry: Cache expiry time in seconds (default: 30 minutes)
+    """
+    _ensure_cache_dirs()
+
+    # Store in memory cache
+    _memory_cache[f"analytics_{cache_key}"] = {
+        'data': analytics_data,
+        'timestamp': time.time(),
+        'expiry': expiry
+    }
+
+    # Store in file cache
+    cache_file = os.path.join(ANALYTICS_CACHE_DIR, f"{cache_key}.pickle")
+    with open(cache_file, 'wb') as f:
+        pickle.dump({
+            'data': analytics_data,
+            'timestamp': time.time(),
+            'expiry': expiry
+        }, f)
+
+
+def get_cached_analytics(cache_key):
+    """
+    Get cached analytics data if available and not expired.
+
+    Args:
+        cache_key: Unique cache key for the analytics data
+
+    Returns:
+        The cached analytics data if available and not expired, None otherwise.
+    """
+    memory_key = f"analytics_{cache_key}"
+
+    # Check memory cache first
+    if memory_key in _memory_cache:
+        cache_entry = _memory_cache[memory_key]
+        if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
+            return cache_entry['data']
+
+    # Check file cache
+    cache_file = os.path.join(ANALYTICS_CACHE_DIR, f"{cache_key}.pickle")
+    if os.path.exists(cache_file):
+        with open(cache_file, 'rb') as f:
+            try:
+                cache_entry = pickle.load(f)
+                if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
+                    # Update memory cache
+                    _memory_cache[memory_key] = cache_entry
+                    return cache_entry['data']
+            except (pickle.PickleError, KeyError):
+                # Invalid cache file, ignore
+                pass
+
+    return None
+
+
+def invalidate_analytics_cache(cache_key=None):
+    """
+    Invalidate analytics cache.
+
+    Args:
+        cache_key: Specific cache key to invalidate (None to clear all analytics cache)
+    """
+    if cache_key:
+        # Clear specific cache entry
+        memory_key = f"analytics_{cache_key}"
+        if memory_key in _memory_cache:
+            del _memory_cache[memory_key]
+
+        cache_file = os.path.join(ANALYTICS_CACHE_DIR, f"{cache_key}.pickle")
+        if os.path.exists(cache_file):
+            try:
+                os.remove(cache_file)
+            except OSError:
+                pass
+    else:
+        # Clear all analytics cache
+        analytics_keys = [key for key in _memory_cache.keys() if key.startswith('analytics_')]
+        for key in analytics_keys:
+            del _memory_cache[key]
+
+        # Clear all analytics cache files
+        if os.path.exists(ANALYTICS_CACHE_DIR):
+            for filename in os.listdir(ANALYTICS_CACHE_DIR):
+                if filename.endswith('.pickle'):
+                    try:
+                        os.remove(os.path.join(ANALYTICS_CACHE_DIR, filename))
+                    except OSError:
+                        pass

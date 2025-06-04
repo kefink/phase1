@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Class Permission Management - Hillview School</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -408,6 +409,24 @@
             </div>
         </div>
 
+        <!-- Pending Requests Section -->
+        <div class="panel" id="pending-requests-section" style="margin-bottom: 20px;">
+            <h2>
+                <i class="fas fa-inbox"></i>
+                Pending Permission Requests
+                <button onclick="loadPendingRequests()" class="btn btn-secondary btn-small" style="float: right;">
+                    <i class="fas fa-refresh"></i>
+                    Refresh
+                </button>
+            </h2>
+            <div id="pending-requests-list">
+                <div style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.7);">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Loading pending requests...
+                </div>
+            </div>
+        </div>
+
         <!-- Controls Section -->
         <div class="controls-section">
             <form method="GET" id="filter-form">
@@ -564,15 +583,457 @@
             }
         }
 
-        // Show grant permission modal (placeholder)
+        // Show grant permission modal
         function showGrantModal(teacherId, teacherName) {
-            alert(`Grant permission modal for ${teacherName} (ID: ${teacherId}) will be implemented`);
+            const modalHTML = `
+                <div id="grantPermissionModal" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                ">
+                    <div style="
+                        background: white;
+                        border-radius: 15px;
+                        padding: 30px;
+                        max-width: 600px;
+                        width: 90%;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="margin: 0; color: #4CAF50;">
+                                <i class="fas fa-user-plus"></i>
+                                Grant Permission to ${teacherName}
+                            </h3>
+                            <button onclick="closeGrantModal()" style="
+                                background: none;
+                                border: none;
+                                font-size: 1.5rem;
+                                color: #999;
+                                cursor: pointer;
+                                padding: 5px;
+                            ">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <form id="grantPermissionForm">
+                            <input type="hidden" id="grantTeacherId" value="${teacherId}">
+
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                                    Education Level *
+                                </label>
+                                <select id="grantEducationLevel" required style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 8px;
+                                    font-size: 1rem;
+                                ">
+                                    <option value="">Select education level...</option>
+                                    <option value="lower_primary">Lower Primary (PP1, PP2, Grade 1-3)</option>
+                                    <option value="upper_primary">Upper Primary (Grade 4-6)</option>
+                                    <option value="junior_secondary">Junior Secondary (Grade 7-9)</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                                    Grade/Class *
+                                </label>
+                                <select id="grantGrade" required style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 8px;
+                                    font-size: 1rem;
+                                ">
+                                    <option value="">Select a grade...</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                                    Stream (if applicable)
+                                </label>
+                                <select id="grantStream" style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 8px;
+                                    font-size: 1rem;
+                                ">
+                                    <option value="">No specific stream</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                                    Notes (optional)
+                                </label>
+                                <textarea id="grantNotes" placeholder="Add any notes about this permission..." style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 8px;
+                                    min-height: 80px;
+                                    resize: vertical;
+                                "></textarea>
+                            </div>
+
+                            <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                                <button type="button" onclick="closeGrantModal()" style="
+                                    padding: 12px 20px;
+                                    border: 1px solid #ddd;
+                                    background: white;
+                                    color: #666;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                ">
+                                    Cancel
+                                </button>
+                                <button type="submit" style="
+                                    padding: 12px 20px;
+                                    border: none;
+                                    background: #4CAF50;
+                                    color: white;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                ">
+                                    <i class="fas fa-check"></i>
+                                    Grant Permission
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            // Load class structure for the modal
+            loadClassStructureForGrant();
+
+            // Handle form submission
+            document.getElementById('grantPermissionForm').addEventListener('submit', handleGrantPermission);
         }
 
-        // View teacher permissions (placeholder)
-        function viewPermissions(teacherId) {
-            alert(`View permissions for teacher ID: ${teacherId} will be implemented`);
+        function closeGrantModal() {
+            const modal = document.getElementById('grantPermissionModal');
+            if (modal) {
+                modal.remove();
+            }
         }
+
+        function loadClassStructureForGrant() {
+            fetch('/permission/class_structure')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const educationLevelSelect = document.getElementById('grantEducationLevel');
+                        const gradeSelect = document.getElementById('grantGrade');
+                        const streamSelect = document.getElementById('grantStream');
+
+                        // Store the full structure for filtering
+                        window.grantClassStructure = data.structure;
+
+                        // Education level mapping
+                        const educationLevels = {
+                            'lower_primary': ['PP1', 'PP2', 'Grade 1', 'Grade 2', 'Grade 3'],
+                            'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
+                            'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
+                        };
+
+                        // Handle education level change to filter grades
+                        educationLevelSelect.addEventListener('change', function() {
+                            gradeSelect.innerHTML = '<option value="">Select a grade...</option>';
+                            streamSelect.innerHTML = '<option value="">No specific stream</option>';
+
+                            if (this.value && educationLevels[this.value]) {
+                                educationLevels[this.value].forEach(gradeName => {
+                                    if (data.structure[gradeName]) {
+                                        const option = document.createElement('option');
+                                        option.value = gradeName;
+                                        option.textContent = gradeName;
+                                        gradeSelect.appendChild(option);
+                                    }
+                                });
+                            }
+                        });
+
+                        // Handle grade change to update streams
+                        gradeSelect.addEventListener('change', function() {
+                            streamSelect.innerHTML = '<option value="">No specific stream</option>';
+
+                            if (this.value && data.structure[this.value]) {
+                                data.structure[this.value].forEach(stream => {
+                                    const option = document.createElement('option');
+                                    option.value = stream.name;
+                                    option.textContent = stream.name;
+                                    streamSelect.appendChild(option);
+                                });
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading class structure:', error);
+                    alert('Failed to load class structure. Please try again.');
+                });
+        }
+
+        function handleGrantPermission(event) {
+            event.preventDefault();
+
+            const teacherId = document.getElementById('grantTeacherId').value;
+            const gradeName = document.getElementById('grantGrade').value;
+            const streamName = document.getElementById('grantStream').value;
+            const notes = document.getElementById('grantNotes').value;
+
+            if (!gradeName) {
+                alert('Please select a grade');
+                return;
+            }
+
+            // Submit the grant permission request
+            fetch('/permission/grant', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                },
+                body: JSON.stringify({
+                    teacher_id: parseInt(teacherId),
+                    grade_name: gradeName,
+                    stream_name: streamName || null,
+                    notes: notes.trim()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    closeGrantModal();
+                    // Refresh the page to show updated permissions
+                    window.location.reload();
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error granting permission:', error);
+                alert('❌ Failed to grant permission. Please try again.');
+            });
+        }
+
+        // View teacher permissions
+        function viewPermissions(teacherId) {
+            fetch(`/permission/teacher/${teacherId}/permissions`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const permissions = data.permissions;
+                        if (permissions.length === 0) {
+                            alert('This teacher has no class permissions assigned.');
+                        } else {
+                            let permissionList = 'Current Permissions:\\n\\n';
+                            permissions.forEach(perm => {
+                                permissionList += `• ${perm.grade_name}`;
+                                if (perm.stream_name) {
+                                    permissionList += ` - ${perm.stream_name}`;
+                                }
+                                permissionList += '\\n';
+                            });
+                            alert(permissionList);
+                        }
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error viewing permissions:', error);
+                    alert('❌ Failed to load permissions. Please try again.');
+                });
+        }
+
+        // Get CSRF token
+        function getCSRFToken() {
+            return document.querySelector('meta[name=csrf-token]').getAttribute('content');
+        }
+
+        // Load pending permission requests
+        function loadPendingRequests() {
+            const requestsList = document.getElementById('pending-requests-list');
+            requestsList.innerHTML = '<div style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.7);"><i class="fas fa-spinner fa-spin"></i> Loading pending requests...</div>';
+
+            fetch('/permission/requests')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const requests = data.requests;
+                        if (requests.length === 0) {
+                            requestsList.innerHTML = '<div style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.7);"><i class="fas fa-check-circle"></i> No pending requests</div>';
+                        } else {
+                            let requestsHTML = '';
+                            requests.forEach(req => {
+                                const isFunction = req.reason && req.reason.includes('FUNCTION PERMISSION REQUEST');
+                                const requestType = isFunction ? 'Function Permission' : 'Class Permission';
+                                const requestIcon = isFunction ? 'fas fa-cog' : 'fas fa-school';
+
+                                requestsHTML += `
+                                    <div class="teacher-item" style="border-left: 4px solid #ff9800;">
+                                        <div class="teacher-info">
+                                            <div class="teacher-name">
+                                                <i class="${requestIcon}"></i>
+                                                ${req.teacher_name} - ${requestType}
+                                            </div>
+                                            <div class="teacher-username">
+                                                ${isFunction ? 'Function Request' : (req.grade_name + (req.stream_name ? ' - ' + req.stream_name : ''))}
+                                            </div>
+                                            <div class="teacher-role" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+                                                ${req.reason.substring(0, 100)}${req.reason.length > 100 ? '...' : ''}
+                                            </div>
+                                            <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.5);">
+                                                Requested: ${new Date(req.requested_at).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                        <div class="teacher-actions">
+                                            <button class="btn btn-primary btn-small" onclick="approveRequest(${req.id}, '${req.teacher_name}')">
+                                                <i class="fas fa-check"></i>
+                                                Approve
+                                            </button>
+                                            <button class="btn btn-secondary btn-small" onclick="viewRequestDetails(${req.id})">
+                                                <i class="fas fa-eye"></i>
+                                                Details
+                                            </button>
+                                            <button class="btn" style="background: #f44336; color: white;" onclick="denyRequest(${req.id}, '${req.teacher_name}')">
+                                                <i class="fas fa-times"></i>
+                                                Deny
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            requestsList.innerHTML = requestsHTML;
+                        }
+                    } else {
+                        requestsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #f44336;"><i class="fas fa-exclamation-triangle"></i> Failed to load requests</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading pending requests:', error);
+                    requestsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #f44336;"><i class="fas fa-exclamation-triangle"></i> Error loading requests</div>';
+                });
+        }
+
+        // Approve permission request
+        function approveRequest(requestId, teacherName) {
+            if (confirm(`Approve permission request from ${teacherName}?`)) {
+                fetch('/permission/process_request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken(),
+                    },
+                    body: JSON.stringify({
+                        request_id: requestId,
+                        action: 'approve',
+                        admin_notes: 'Approved by headteacher'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        loadPendingRequests(); // Refresh the list
+                        window.location.reload(); // Refresh to update statistics
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error approving request:', error);
+                    alert('❌ Failed to approve request. Please try again.');
+                });
+            }
+        }
+
+        // Deny permission request
+        function denyRequest(requestId, teacherName) {
+            const reason = prompt(`Deny permission request from ${teacherName}?\\n\\nPlease provide a reason for denial:`);
+            if (reason !== null && reason.trim()) {
+                fetch('/permission/process_request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken(),
+                    },
+                    body: JSON.stringify({
+                        request_id: requestId,
+                        action: 'deny',
+                        admin_notes: reason.trim()
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        loadPendingRequests(); // Refresh the list
+                        window.location.reload(); // Refresh to update statistics
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error denying request:', error);
+                    alert('❌ Failed to deny request. Please try again.');
+                });
+            }
+        }
+
+        // View request details
+        function viewRequestDetails(requestId) {
+            fetch(`/permission/requests`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const request = data.requests.find(r => r.id === requestId);
+                        if (request) {
+                            const isFunction = request.reason && request.reason.includes('FUNCTION PERMISSION REQUEST');
+                            const details = `
+Request Details:
+
+Teacher: ${request.teacher_name}
+Type: ${isFunction ? 'Function Permission' : 'Class Permission'}
+${isFunction ? 'Function Request' : 'Grade: ' + request.grade_name + (request.stream_name ? '\\nStream: ' + request.stream_name : '')}
+Requested: ${new Date(request.requested_at).toLocaleString()}
+
+Reason:
+${request.reason}
+                            `;
+                            alert(details);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading request details:', error);
+                    alert('❌ Failed to load request details.');
+                });
+        }
+
+        // Load pending requests when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPendingRequests();
+        });
 
         // Show alert
         function showAlert(message, type) {

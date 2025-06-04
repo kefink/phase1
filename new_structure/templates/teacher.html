@@ -2,10 +2,380 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard - Kirima Primary School</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+        /* Dark Green Teal Theme - Ultra Compact */
+        :root {
+            --primary-color: #134e4a;
+            --secondary-color: #0f766e;
+            --accent-color: #14b8a6;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --info-color: #0891b2;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-color: #e5e7eb;
+            --background-light: #f9fafb;
+            --background-white: #ffffff;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.15);
+            --radius-sm: 3px;
+            --radius-md: 4px;
+            --radius-lg: 6px;
+            --radius-xl: 8px;
+            --spacing-xs: 0.125rem;
+            --spacing-sm: 0.25rem;
+            --spacing-md: 0.5rem;
+            --spacing-lg: 0.75rem;
+            --spacing-xl: 1rem;
+            --spacing-2xl: 1.25rem;
+            --transition-fast: all 0.1s ease-in-out;
+            --transition-normal: all 0.2s ease-in-out;
+            --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-color) 0%, #047857 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-color) 0%, #b45309 100%);
+            --gradient-danger: linear-gradient(135deg, var(--danger-color) 0%, #b91c1c 100%);
+        }
+
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Enhanced Navbar */
+        .navbar {
+            background: var(--gradient-primary);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: var(--shadow-lg);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: var(--spacing-md) var(--spacing-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            transition: var(--transition-fast);
+        }
+
+        .navbar-brand:hover {
+            color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-1px);
+        }
+
+        .navbar-brand::before {
+            content: "🏫";
+            font-size: 1.75rem;
+        }
+
+        .navbar-nav {
+            display: flex;
+            list-style: none;
+            gap: var(--spacing-lg);
+            align-items: center;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .logout-btn {
+            background: var(--gradient-danger);
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            color: white;
+        }
+
+        /* Ultra Compact Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: calc(60px + var(--spacing-md)) var(--spacing-md) var(--spacing-md);
+        }
+
+        /* Ultra Compact Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--background-white);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Ultra Compact Dashboard Cards */
+        .dashboard-card {
+            background: var(--background-white);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            margin-bottom: var(--spacing-md);
+            overflow: hidden;
+            transition: var(--transition-fast);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-header span {
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .card-header span::before {
+            content: "📚";
+            font-size: 1rem;
+        }
+
+        .card-header small {
+            opacity: 0.9;
+            font-size: 0.75rem;
+            font-weight: 400;
+        }
+
+        .card-header button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: var(--spacing-xs);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .card-header button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Ultra Compact Form Styling */
+        .login-form {
+            padding: var(--spacing-md);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-sm);
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .form-group label::before {
+            content: "📋";
+            font-size: 0.8rem;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: var(--background-white);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(19, 78, 74, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-group select:hover,
+        .form-group input:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Ultra Compact Button Styling */
+        .btn {
+            background: var(--gradient-primary);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-md);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            text-decoration: none;
+            box-shadow: var(--shadow-sm);
+            min-height: 32px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #0d5d56 100%);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+            color: white;
+        }
+
+        .btn i {
+            font-size: 0.85rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Enhanced Alert Styling */
+        .alert {
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin: var(--spacing-lg) 0;
+            border-left: 4px solid;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-md);
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+            border-left-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .alert-danger::before {
+            content: "⚠️";
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .alert strong {
+            font-weight: 700;
+        }
         /* Ocean Marble Performance indicator styles */
         .percentage-cell {
             font-weight: bold;
@@ -671,42 +1041,403 @@
             margin-right: auto;
         }
 
-        /* Simple marks table */
-        #marks-table {
+        /* Ultra Compact Table Styling */
+        .table-wrapper {
+            background: var(--background-white);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            margin: var(--spacing-md) 0;
+        }
+
+        .table-wrapper table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: var(--spacing-md);
-            border-radius: var(--border-radius-lg);
-            overflow: hidden;
+            margin: 0;
+        }
+
+        .table-wrapper th {
+            background: var(--gradient-primary);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .table-wrapper th::before {
+            content: "📊";
+            margin-right: var(--spacing-xs);
+            font-size: 0.8rem;
+        }
+
+        .table-wrapper td {
+            padding: var(--spacing-xs);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: var(--transition-fast);
+            font-size: 0.8rem;
+        }
+
+        .table-wrapper tr:nth-child(even) {
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        }
+
+        .table-wrapper tr:nth-child(odd) {
+            background: var(--background-white);
+        }
+
+        .table-wrapper tr:hover {
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+            transform: scale(1.002);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .table-wrapper tr:hover td {
+            color: var(--primary-color);
+        }
+
+        /* Ultra Compact Marks Entry Styling */
+        .pupils-list {
+            padding: var(--spacing-md);
+        }
+
+        .pupils-list h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+            text-align: center;
+            padding: var(--spacing-sm);
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .pupils-list h3::before {
+            content: "📝";
+            margin-right: var(--spacing-xs);
+            font-size: 1.2rem;
+        }
+
+        /* Enhanced Student Mark Input */
+        .student-mark {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            background: var(--background-white);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .student-mark:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+        }
+
+        .student-mark:hover {
+            border-color: var(--primary-color);
             box-shadow: var(--shadow-md);
         }
 
-        #marks-table th {
-            background: var(--primary-color);
-            color: var(--white);
-            padding: var(--spacing-md);
-            text-align: center;
+        /* Enhanced Composite Subject Styling */
+        .composite-subject-entry-clean {
+            width: 100%;
+            padding: var(--spacing-lg);
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            border-radius: var(--radius-lg);
             border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .composite-components-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--spacing-lg);
+            align-items: center;
+            justify-items: center;
+        }
+
+        .component-input-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-lg);
+            background: var(--background-white);
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--border-color);
+            min-width: 120px;
+            transition: var(--transition-fast);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .component-input-cell:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .component-input-cell input {
+            width: 80px;
+            padding: var(--spacing-sm);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-size: 1rem;
             font-weight: 600;
+            background: var(--background-white);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
         }
 
-        #marks-table td {
-            padding: var(--spacing-md);
-            border: 1px solid var(--border-color);
+        .component-input-cell input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+        }
+
+        .component-percentage {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            min-width: 50px;
             text-align: center;
-            color: var(--text-dark);
+            box-shadow: var(--shadow-sm);
         }
 
-        #marks-table tr:nth-child(even) {
-            background: rgba(31, 125, 83, 0.05);
+        .overall-cell {
+            background: var(--gradient-primary) !important;
+            border: 2px solid var(--primary-color) !important;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
         }
 
-        #marks-table tr:nth-child(odd) {
-            background: var(--white);
+        .overall-percentage {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 70px;
+            backdrop-filter: blur(10px);
         }
 
-        #marks-table tr:hover {
-            background: rgba(31, 125, 83, 0.1);
+        /* Enhanced Subject Info */
+        .subject-info {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-lg);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid var(--info-color);
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .subject-info::before {
+            content: "ℹ️";
+            margin-right: var(--spacing-sm);
+            font-size: 1.25rem;
+        }
+
+        .subject-info strong {
+            color: var(--info-color);
+            font-weight: 700;
+        }
+
+        /* Enhanced Composite Configuration */
+        .composite-config-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid var(--primary-color);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            margin: var(--spacing-xl) 0;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .composite-config-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-primary);
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .composite-config-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            position: relative;
+            z-index: 1;
+        }
+
+        .composite-config-header h4 {
+            color: var(--primary-color);
+            margin: 0 0 var(--spacing-sm) 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .composite-config-header p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .component-config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--spacing-lg);
+            align-items: end;
+            position: relative;
+            z-index: 1;
+        }
+
+        .component-config-item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .component-config-item label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .component-config-item input {
+            padding: var(--spacing-md);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            text-align: center;
+            background: var(--background-white);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .component-config-item input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .total-marks-display {
+            background: var(--gradient-primary);
+            color: white;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-lg);
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-align: center;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Enhanced Recent Reports */
+        .table-responsive {
+            background: var(--background-white);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .table-responsive table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-responsive th {
+            background: var(--gradient-primary);
+            color: white;
+            padding: var(--spacing-lg);
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-responsive td {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .table-responsive tr:hover {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+
+        .badge {
+            background: var(--gradient-success);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Enhanced Footer */
+        footer {
+            background: var(--gradient-primary);
+            color: white;
+            text-align: center;
+            padding: var(--spacing-xl);
+            margin-top: var(--spacing-2xl);
+            font-weight: 500;
+        }
+
+        footer::before {
+            content: "🏫";
+            margin-right: var(--spacing-sm);
+            font-size: 1.25rem;
         }
     </style>
 </head>
@@ -721,13 +1452,130 @@
     <nav class="navbar">
         <a href="#" class="navbar-brand">Kirima Primary School</a>
         <ul class="navbar-nav">
-            <li class="nav-item"><a href="{{ url_for('teacher.dashboard') }}" class="nav-link">Dashboard</a></li>
-            <li class="nav-item"><a href="{{ url_for('auth.logout_route') }}" class="logout-btn">Logout</a></li>
+            <li class="nav-item">
+                <a href="{{ url_for('teacher.dashboard') }}" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('auth.logout_route') }}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </li>
         </ul>
     </nav>
 
-    <div class="container" style="max-width: 90%; margin-top: 80px;">
-        <h1 class="text-center mb-4">Teacher Dashboard</h1>
+    <div class="container">
+        <!-- Modern Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Teacher Dashboard</h1>
+            <p class="page-subtitle">Manage student marks and generate comprehensive reports</p>
+        </div>
+
+        <!-- Role-Based Assignments Section -->
+        {% if assignment_summary and assignment_summary.teacher %}
+        <div class="dashboard-card" style="margin-bottom: var(--spacing-xl);">
+            <div class="card-header">
+                <span>📚 My Assignments</span>
+                <small>{{ assignment_summary.role.title() }} Dashboard</small>
+            </div>
+            <div style="padding: var(--spacing-lg);">
+                <!-- Assignment Summary Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                    <div style="background: var(--gradient-success); color: white; padding: var(--spacing-md); border-radius: var(--radius-md); text-align: center; box-shadow: var(--shadow-sm);">
+                        <div style="font-size: 1.5rem; font-weight: 700;">{{ total_subjects_taught }}</div>
+                        <div style="font-size: 0.85rem; opacity: 0.9;">Subjects Taught</div>
+                    </div>
+                    {% if can_manage_classes %}
+                    <div style="background: var(--gradient-primary); color: white; padding: var(--spacing-md); border-radius: var(--radius-md); text-align: center; box-shadow: var(--shadow-sm);">
+                        <div style="font-size: 1.5rem; font-weight: 700;">{{ assignment_summary.total_classes_managed }}</div>
+                        <div style="font-size: 0.85rem; opacity: 0.9;">Classes Managed</div>
+                    </div>
+                    {% endif %}
+                    <div style="background: var(--gradient-warning); color: white; padding: var(--spacing-md); border-radius: var(--radius-md); text-align: center; box-shadow: var(--shadow-sm);">
+                        <div style="font-size: 1.5rem; font-weight: 700;">{{ assignment_summary.grades_involved|length if assignment_summary.grades_involved else 0 }}</div>
+                        <div style="font-size: 0.85rem; opacity: 0.9;">Grades Involved</div>
+                    </div>
+                </div>
+
+                <!-- Class Teacher Assignments (if any) -->
+                {% if can_manage_classes and class_teacher_assignments %}
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <h4 style="color: var(--primary-color); margin-bottom: var(--spacing-md); font-size: 1rem; font-weight: 600;">🏫 Class Teacher Responsibilities</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-sm);">
+                        {% for assignment in class_teacher_assignments %}
+                        <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 2px solid var(--primary-color); border-radius: var(--radius-md); padding: var(--spacing-md); text-align: center;">
+                            <div style="font-weight: 600; color: var(--primary-color);">{{ assignment.grade_level }}</div>
+                            {% if assignment.stream_name %}
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">Stream {{ assignment.stream_name }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Subject Assignments -->
+                {% if subject_assignments %}
+                <div>
+                    <h4 style="color: var(--primary-color); margin-bottom: var(--spacing-md); font-size: 1rem; font-weight: 600;">📖 Subject Teaching Assignments</h4>
+                    <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: var(--gradient-primary); color: white;">
+                                    <th style="padding: var(--spacing-sm); text-align: left; font-size: 0.8rem;">Subject</th>
+                                    <th style="padding: var(--spacing-sm); text-align: center; font-size: 0.8rem;">Grade</th>
+                                    <th style="padding: var(--spacing-sm); text-align: center; font-size: 0.8rem;">Stream</th>
+                                    <th style="padding: var(--spacing-sm); text-align: center; font-size: 0.8rem;">Role</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in subject_assignments[:10] %}
+                                <tr style="border-bottom: 1px solid var(--border-color); {% if loop.index % 2 == 0 %}background: var(--background-light);{% endif %}">
+                                    <td style="padding: var(--spacing-sm); font-weight: 500;">{{ assignment.subject_name }}</td>
+                                    <td style="padding: var(--spacing-sm); text-align: center;">{{ assignment.grade_level }}</td>
+                                    <td style="padding: var(--spacing-sm); text-align: center;">{{ assignment.stream_name or 'All' }}</td>
+                                    <td style="padding: var(--spacing-sm); text-align: center;">
+                                        {% if assignment.is_class_teacher %}
+                                        <span style="background: var(--gradient-success); color: white; padding: 2px 6px; border-radius: var(--radius-sm); font-size: 0.7rem;">Class Teacher</span>
+                                        {% else %}
+                                        <span style="background: var(--gradient-warning); color: white; padding: 2px 6px; border-radius: var(--radius-sm); font-size: 0.7rem;">Subject Teacher</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if subject_assignments|length > 10 %}
+                                <tr>
+                                    <td colspan="4" style="padding: var(--spacing-sm); text-align: center; color: var(--text-secondary); font-style: italic;">
+                                        ... and {{ subject_assignments|length - 10 }} more assignments
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Quick Access Note -->
+                <div style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: var(--radius-md); border: 1px solid var(--info-color);">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        <strong style="color: var(--info-color);">📌 Quick Access:</strong>
+                        The form below is filtered to show only subjects and grades you're assigned to teach.
+                        {% if assignment_summary.role == 'teacher' %}
+                        As a subject teacher, you can upload marks for your assigned subjects only.
+                        {% elif assignment_summary.role == 'classteacher' %}
+                        As a class teacher, you can upload marks for all your subjects and manage your assigned classes.
+                        {% elif assignment_summary.role == 'headteacher' %}
+                        As a headteacher, you have full access to all subjects and classes in the system.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Debug Panel -->
         <div id="debug-panel" class="dashboard-card" style="background: var(--white); border: 1px solid var(--border-color); margin-bottom: var(--spacing-xl); display: none;">
@@ -762,22 +1610,28 @@
             <form id="upload-form" method="POST" action="{{ url_for('teacher.dashboard') }}" class="login-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-                <!-- Education Level Selection -->
+                <!-- Enhanced Education Level Selection -->
                 <div class="form-group">
-                    <label for="education_level">Education Level</label>
+                    <label for="education_level">
+                        <i class="fas fa-graduation-cap"></i>
+                        Education Level
+                    </label>
                     <select id="education_level" name="education_level" required onchange="updateSubjectsByEducationLevel()">
-                        <option value="">Select Education Level</option>
-                        <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>Lower Primary (Grades 1-3)</option>
-                        <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>Upper Primary (Grades 4-6)</option>
-                        <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>Junior Secondary (Grades 7-9)</option>
+                        <option value="">🎯 Select Education Level</option>
+                        <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>🎓 Lower Primary (Grades 1-3)</option>
+                        <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>📚 Upper Primary (Grades 4-6)</option>
+                        <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>🏫 Junior Secondary (Grades 7-9)</option>
                     </select>
                 </div>
 
-                <!-- Subject Selection (filtered by education level) -->
+                <!-- Enhanced Subject Selection (filtered by education level) -->
                 <div class="form-group">
-                    <label for="subject">Subject</label>
+                    <label for="subject">
+                        <i class="fas fa-book"></i>
+                        Subject
+                    </label>
                     <select id="subject" name="subject" required onchange="handleSubjectSelection()">
-                        <option value="">Select Subject</option>
+                        <option value="">📖 Select Subject</option>
                         <!-- Subjects will be populated based on education level -->
                     </select>
                     <div id="subject-info" class="subject-info" style="display: none;">
@@ -786,27 +1640,36 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="term">Term</label>
+                    <label for="term">
+                        <i class="fas fa-calendar-alt"></i>
+                        Term
+                    </label>
                     <select id="term" name="term" required>
-                        <option value="">Select Term</option>
+                        <option value="">📅 Select Term</option>
                         {% for term_option in terms %}
-                        <option value="{{ term_option }}" {% if term == term_option %}selected{% endif %}>{{ term_option }}</option>
+                        <option value="{{ term_option }}" {% if term == term_option %}selected{% endif %}>📆 {{ term_option }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="assessment_type">Assessment Type</label>
+                    <label for="assessment_type">
+                        <i class="fas fa-clipboard-check"></i>
+                        Assessment Type
+                    </label>
                     <select id="assessment_type" name="assessment_type" required>
-                        <option value="">Select Assessment Type</option>
+                        <option value="">📝 Select Assessment Type</option>
                         {% for assessment_option in assessment_types %}
-                        <option value="{{ assessment_option }}" {% if assessment_type == assessment_option %}selected{% endif %}>{{ assessment_option }}</option>
+                        <option value="{{ assessment_option }}" {% if assessment_type == assessment_option %}selected{% endif %}>📊 {{ assessment_option }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="form-group" id="total-marks-group">
-                    <label for="total_marks">Total Marks (Out Of)</label>
+                    <label for="total_marks">
+                        <i class="fas fa-calculator"></i>
+                        Total Marks (Out Of)
+                    </label>
                     <input type="number" id="total_marks" name="total_marks" min="1" value="{{ total_marks if total_marks else '' }}" required>
                 </div>
 
@@ -859,25 +1722,32 @@
 
 
                 <div class="form-group">
-                    <label for="grade">Grade</label>
+                    <label for="grade">
+                        <i class="fas fa-layer-group"></i>
+                        Grade
+                    </label>
                     <select id="grade" name="grade" required onchange="updateStreams()">
-                        <option value="">Select Grade</option>
+                        <option value="">📚 Select Grade</option>
                         {% for grade_option in grades %}
-                        <option value="{{ grade_option }}" {% if grade == grade_option %}selected{% endif %}>{{ grade_option }}</option>
+                        <option value="{{ grade_option }}" {% if grade == grade_option %}selected{% endif %}>🎓 {{ grade_option }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="stream">Stream</label>
+                    <label for="stream">
+                        <i class="fas fa-users"></i>
+                        Stream
+                    </label>
                     <select id="stream" name="stream" required>
-                        <option value="">Select Stream</option>
+                        <option value="">🏛️ Select Stream</option>
                         <!-- Streams will be populated dynamically via JavaScript -->
                     </select>
                 </div>
 
                 <div class="form-group" style="grid-column: span 2; text-align: center;">
                     <button type="submit" name="upload_marks" value="1" class="btn" id="upload-btn" onclick="debugFormSubmission()">
+                        <i class="fas fa-upload"></i>
                         Upload Marks
                     </button>
                 </div>
@@ -1066,6 +1936,7 @@
                     </div>
                     <div class="text-center mt-3">
                         <button type="submit" name="submit_marks" value="1" class="btn">
+                            <i class="fas fa-check-circle"></i>
                             Submit Marks
                         </button>
                     </div>

@@ -98,10 +98,13 @@ class RoleBasedDataService:
             grades_involved = set()
             streams_involved = set()
             subjects_involved = set()
-            
+
+            # Track unique class assignments to avoid duplicates
+            unique_class_assignments = {}
+
             for assignment in teacher_assignments:
                 assignment_data = RoleBasedDataService._format_assignment(assignment)
-                
+
                 # Track involvement
                 if assignment.grade:
                     grades_involved.add(assignment.grade.name)
@@ -109,13 +112,18 @@ class RoleBasedDataService:
                     streams_involved.add(assignment.stream.name)
                 if assignment.subject:
                     subjects_involved.add(assignment.subject.name)
-                
-                # Separate class teacher assignments
+
+                # Separate class teacher assignments (deduplicate by grade+stream)
                 if assignment.is_class_teacher:
-                    class_assignments.append(assignment_data)
-                
+                    class_key = f"{assignment_data['grade_level']}_{assignment_data['stream_name'] or 'None'}"
+                    if class_key not in unique_class_assignments:
+                        unique_class_assignments[class_key] = assignment_data
+
                 # All assignments are subject assignments for class teachers
                 subject_assignments.append(assignment_data)
+
+            # Convert unique class assignments to list
+            class_assignments = list(unique_class_assignments.values())
             
             return {
                 'class_teacher_assignments': class_assignments,

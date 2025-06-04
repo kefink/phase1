@@ -1,0 +1,654 @@
+{% extends "modern_base.html" %} {% block title %}Academic Performance Analytics
+- Class Teacher{% endblock %} {% block extra_css %}
+<style>
+  .analytics-page-header {
+    background: linear-gradient(
+      135deg,
+      var(--primary-color),
+      var(--secondary-color)
+    );
+    color: white;
+    padding: var(--space-8) var(--space-6);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-6);
+    text-align: center;
+  }
+
+  .analytics-page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .analytics-page-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+  }
+
+  .analytics-main-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .analytics-filters-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .analytics-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .analytics-full-width {
+    grid-column: 1 / -1;
+  }
+
+  .quick-insights {
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.1),
+      rgba(139, 92, 246, 0.1)
+    );
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .quick-insights h3 {
+    color: var(--primary-color);
+    margin-bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .insight-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    text-align: center;
+  }
+
+  .insight-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: var(--space-1);
+  }
+
+  .insight-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .analytics-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+  }
+
+  .analytics-actions h2 {
+    color: var(--primary-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .breadcrumb {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-6);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.9rem;
+  }
+
+  .breadcrumb a {
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  .breadcrumb-separator {
+    color: var(--text-secondary);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .analytics-content-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .analytics-page-header {
+      padding: var(--space-6) var(--space-4);
+    }
+
+    .analytics-page-header h1 {
+      font-size: 2rem;
+    }
+
+    .analytics-actions {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-3);
+    }
+
+    .action-buttons {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .insights-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container">
+  <!-- Breadcrumb Navigation -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('classteacher.classteacher_dashboard') }}">
+      <i class="fas fa-home"></i> Dashboard
+    </a>
+    <span class="breadcrumb-separator">/</span>
+    <span>Academic Performance Analytics</span>
+  </div>
+
+  <!-- Page Header -->
+  <div class="analytics-page-header">
+    <h1><i class="fas fa-chart-line"></i> Academic Performance Analytics</h1>
+    <p>
+      Comprehensive insights into student performance and subject analytics for
+      your assigned classes
+    </p>
+  </div>
+
+  <!-- Quick Insights Summary -->
+  <div class="quick-insights">
+    <h3><i class="fas fa-tachometer-alt"></i> Quick Insights</h3>
+    <div class="insights-grid">
+      <div class="insight-card">
+        <div class="insight-value" id="total-students-analyzed">
+          {{ analytics_data.summary.students_analyzed or 0 }}
+        </div>
+        <div class="insight-label">Students Analyzed</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-value" id="total-subjects-analyzed">
+          {{ analytics_data.summary.subjects_analyzed or 0 }}
+        </div>
+        <div class="insight-label">Subjects Analyzed</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-value" id="top-subject-performance">
+          {{ analytics_data.summary.best_subject_average or 0 }}%
+        </div>
+        <div class="insight-label">Best Subject Average</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-value" id="top-student-performance">
+          {{ analytics_data.summary.top_student_average or 0 }}%
+        </div>
+        <div class="insight-label">Top Student Average</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Filters -->
+  <div class="analytics-filters-section">
+    <div class="analytics-actions">
+      <h2><i class="fas fa-filter"></i> Analytics Filters</h2>
+      <div class="action-buttons">
+        <button
+          class="modern-btn btn-outline btn-sm"
+          onclick="resetAnalyticsFilters()"
+        >
+          <i class="fas fa-undo"></i> Reset Filters
+        </button>
+        <button
+          class="modern-btn btn-primary btn-sm"
+          onclick="refreshAnalyticsData()"
+        >
+          <i class="fas fa-sync-alt"></i> Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <div class="modern-grid grid-cols-4">
+      <div class="form-group">
+        <label class="form-label">Term</label>
+        <select
+          id="analytics-term-filter"
+          class="form-select"
+          onchange="updateAnalytics()"
+        >
+          <option value="">All Terms</option>
+          <!-- Terms will be populated by JavaScript -->
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Assessment Type</label>
+        <select
+          id="analytics-assessment-filter"
+          class="form-select"
+          onchange="updateAnalytics()"
+        >
+          <option value="">All Assessments</option>
+          <!-- Assessment types will be populated by JavaScript -->
+        </select>
+      </div>
+
+      <div
+        class="form-group"
+        id="analytics-grade-filter-group"
+        style="display: none"
+      >
+        <label class="form-label">Grade</label>
+        <select
+          id="analytics-grade-filter"
+          class="form-select"
+          onchange="updateAnalytics()"
+        >
+          <option value="">All Grades</option>
+          <!-- Grades will be populated by JavaScript -->
+        </select>
+      </div>
+
+      <div
+        class="form-group"
+        id="analytics-stream-filter-group"
+        style="display: none"
+      >
+        <label class="form-label">Stream</label>
+        <select
+          id="analytics-stream-filter"
+          class="form-select"
+          onchange="updateAnalytics()"
+        >
+          <option value="">All Streams</option>
+          <!-- Streams will be populated by JavaScript -->
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Analytics Content -->
+  <div class="analytics-content-grid">
+    <!-- Top Performers Component -->
+    <div class="analytics-component top-performers-component">
+      <div class="component-header">
+        <h3><i class="fas fa-trophy"></i> Top Performing Students</h3>
+        <div class="component-actions">
+          <button
+            class="modern-btn btn-sm btn-outline"
+            onclick="refreshAnalytics('top_performers')"
+          >
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="component-content">
+        <div id="top-performers-container">
+          {% if analytics_data.has_data and analytics_data.top_students %}
+          <div class="top-performers-list">
+            {% for student in analytics_data.top_students[:5] %}
+            <div class="performer-item">
+              <div class="performer-rank">{{ loop.index }}</div>
+              <div class="performer-info">
+                <div class="performer-name">{{ student.name }}</div>
+                <div class="performer-details">
+                  {{ student.grade }} {{ student.stream }} • {{
+                  student.subjects_count }} subjects
+                </div>
+              </div>
+              <div class="performer-score">{{ student.average }}%</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="no-data-message">
+            <i class="fas fa-users"></i>
+            <p>
+              No student performance data available for your assigned classes.
+            </p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Subject Performance Component -->
+    <div class="analytics-component subject-performance-component">
+      <div class="component-header">
+        <h3><i class="fas fa-chart-bar"></i> Subject Performance Analysis</h3>
+        <div class="component-actions">
+          <button
+            class="modern-btn btn-sm btn-outline"
+            onclick="refreshAnalytics('subject_performance')"
+          >
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="component-content">
+        <div id="subject-performance-container">
+          {% if analytics_data.has_data and analytics_data.subject_performance
+          %}
+          <div class="subject-performance-list">
+            {% for subject in analytics_data.subject_performance[:5] %}
+            <div class="subject-item">
+              <div class="subject-info">
+                <div class="subject-name">{{ subject.name }}</div>
+                <div class="subject-details">
+                  {{ subject.students_count }} students • {{ subject.total_marks
+                  }} assessments
+                </div>
+              </div>
+              <div class="subject-score">{{ subject.average }}%</div>
+              <div class="subject-trend">
+                {% if subject.average >= 75 %}
+                <span class="trend-excellent"
+                  ><i class="fas fa-arrow-up"></i> Excellent</span
+                >
+                {% elif subject.average >= 50 %}
+                <span class="trend-good"
+                  ><i class="fas fa-arrow-right"></i> Good</span
+                >
+                {% else %}
+                <span class="trend-needs-improvement"
+                  ><i class="fas fa-arrow-down"></i> Needs Improvement</span
+                >
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="no-data-message">
+            <i class="fas fa-chart-bar"></i>
+            <p>
+              No subject performance data available for your assigned classes.
+            </p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Analytics Section -->
+  <div class="analytics-component analytics-full-width">
+    <div class="component-header">
+      <h3><i class="fas fa-chart-pie"></i> Detailed Performance Breakdown</h3>
+      <div class="component-actions">
+        <button
+          class="modern-btn btn-sm btn-outline"
+          onclick="exportAnalytics()"
+        >
+          <i class="fas fa-download"></i> Export Data
+        </button>
+      </div>
+    </div>
+
+    <div class="component-content">
+      <div id="detailed-analytics-container">
+        <div class="loading-state">
+          <i class="fas fa-spinner fa-spin"></i> Loading detailed analytics...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Data State -->
+  <div id="no-data-state" class="no-data-state" style="display: none">
+    <div class="no-data-icon">
+      <i class="fas fa-chart-line"></i>
+    </div>
+    <h3>No Analytics Data Available</h3>
+    <p>
+      There isn't enough data to generate meaningful analytics for your assigned
+      classes.
+    </p>
+    <div class="no-data-suggestions">
+      <h4>Suggestions:</h4>
+      <ul>
+        <li>Ensure marks have been uploaded for your students</li>
+        <li>Try selecting a different term or assessment type</li>
+        <li>Check that students are properly assigned to your classes</li>
+        <li>
+          Contact the headteacher if you need additional class assignments
+        </li>
+      </ul>
+    </div>
+    <div style="margin-top: var(--space-4)">
+      <button class="modern-btn btn-primary" onclick="resetAnalyticsFilters()">
+        <i class="fas fa-undo"></i> Reset Filters
+      </button>
+      <a
+        href="{{ url_for('classteacher.classteacher_dashboard') }}"
+        class="modern-btn btn-outline"
+        style="margin-left: var(--space-2)"
+      >
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Include Analytics Components Styles -->
+{% include 'analytics_dashboard_components.html' %} {% endblock %} {% block
+extra_js %}
+<!-- Analytics Dashboard JavaScript -->
+<script src="{{ url_for('static', filename='js/analytics_dashboard.js') }}"></script>
+
+<script>
+  // Page-specific analytics functions
+  function exportAnalytics() {
+    // TODO: Implement analytics export functionality
+    showNotification("Export functionality coming soon!", "info");
+  }
+
+  function refreshAnalyticsData() {
+    loadAnalyticsData();
+  }
+
+  // Initialize analytics when page loads
+  document.addEventListener("DOMContentLoaded", function () {
+    initializeAnalyticsDashboard();
+  });
+
+  // Utility function for notifications
+  function showNotification(message, type = "info") {
+    // Create notification element
+    const notification = document.createElement("div");
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+            <i class="fas fa-info-circle"></i>
+            <span>${message}</span>
+        `;
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 3000);
+  }
+</script>
+
+<style>
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--primary-color);
+    color: white;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .notification-info {
+    background: var(--blue-500);
+  }
+
+  .notification-success {
+    background: var(--green-500);
+  }
+
+  .notification-warning {
+    background: var(--orange-500);
+  }
+
+  .notification-error {
+    background: var(--red-500);
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Analytics Data Display Styles */
+  .top-performers-list,
+  .subject-performance-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .performer-item,
+  .subject-item {
+    display: flex;
+    align-items: center;
+    padding: var(--space-3);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+  }
+
+  .performer-item:hover,
+  .subject-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .performer-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    margin-right: var(--space-3);
+  }
+
+  .performer-info,
+  .subject-info {
+    flex: 1;
+  }
+
+  .performer-name,
+  .subject-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+  }
+
+  .performer-details,
+  .subject-details {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .performer-score,
+  .subject-score {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-right: var(--space-3);
+  }
+
+  .subject-trend {
+    font-size: 0.9rem;
+  }
+
+  .trend-excellent {
+    color: var(--green-500);
+  }
+
+  .trend-good {
+    color: var(--blue-500);
+  }
+
+  .trend-needs-improvement {
+    color: var(--orange-500);
+  }
+
+  .no-data-message {
+    text-align: center;
+    padding: var(--space-6);
+    color: var(--text-secondary);
+  }
+
+  .no-data-message i {
+    font-size: 3rem;
+    margin-bottom: var(--space-3);
+    opacity: 0.5;
+  }
+</style>
+{% endblock %}
