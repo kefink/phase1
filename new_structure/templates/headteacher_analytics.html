@@ -717,7 +717,9 @@ extra_js %}
 
   // Initialize analytics when page loads
   document.addEventListener("DOMContentLoaded", function () {
-    initializeAnalyticsDashboard();
+    console.log("Headteacher analytics page - initializing dashboard");
+    // The analytics dashboard will be initialized by the main analytics_dashboard.js file
+    // which now checks for analytics page elements before initializing
     loadSchoolOverview();
   });
 

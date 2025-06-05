@@ -234,6 +234,14 @@ class DefaultFunctionPermissions:
             'submit_subject_marks',  # Submit subject marks
             'collaborative_marks_dashboard',  # Multi-teacher marks system
             'class_marks_status',  # Marks status tracking
+            'get_streams_by_level',  # API to get streams for grade selection
+            'get_subjects_by_education_level',  # API to get subjects by education level
+            'api_check_stream_status',  # API to check stream status for reports
+            'get_streams',  # API to get streams for a grade
+            'get_grade_streams',  # API to get grade streams
+            'teacher_streams',  # API to get teacher streams
+            'api_get_streams',  # Alternative API to get streams
+            'get_teacher_assignments',  # API to get teacher assignments
         ],
         'analytics': [
             'analytics_dashboard',  # Academic performance analytics dashboard

@@ -56,17 +56,26 @@ def classteacher_login():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
-        
+
+        # Debug: Print received credentials
+        print(f"DEBUG: Login attempt - Username: '{username}', Password: '{password}'")
+
         teacher = authenticate_teacher(username, password, 'classteacher')
-        
+
+        # Debug: Print authentication result
+        print(f"DEBUG: Authentication result - Teacher: {teacher}")
+
         if teacher:
+            print(f"DEBUG: Setting session - Teacher ID: {teacher.id}, Role: classteacher")
             session['teacher_id'] = teacher.id
             session['role'] = 'classteacher'
             session.permanent = True
+            print(f"DEBUG: Redirecting to classteacher dashboard")
             return redirect(url_for('classteacher.dashboard'))
-        
+
+        print(f"DEBUG: Authentication failed - returning error")
         return render_template('classteacher_login.html', error='Invalid credentials')
-    
+
     return render_template('classteacher_login.html')
 
 @auth_bp.route('/logout')

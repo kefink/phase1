@@ -12,9 +12,10 @@ class CollaborativeMarksService:
     """Service for handling collaborative marks upload between subject teachers and class teachers."""
 
     @staticmethod
-    def get_class_marks_status(grade_id, stream_id, term_id, assessment_type_id):
+    def get_class_marks_status(grade_id, stream_id, term_id, assessment_type_id, teacher_id=None):
         """
-        Get the marks upload status for all subjects in a class.
+        Get the marks upload status for subjects in a class.
+        If teacher_id is provided, only show subjects assigned to that teacher.
 
         Returns:
             dict: Status information for each subject
@@ -25,8 +26,27 @@ class CollaborativeMarksService:
             if not grade:
                 return {"error": "Grade not found"}
 
-            # Get subjects based on education level
-            subjects = Subject.query.filter_by(education_level=grade.education_level).all()
+            # Get subjects based on teacher assignments if teacher_id is provided
+            if teacher_id:
+                # Get subjects assigned to this teacher for this class
+                teacher_assignments = TeacherSubjectAssignment.query.filter_by(
+                    teacher_id=teacher_id,
+                    grade_id=grade_id,
+                    stream_id=stream_id
+                ).all()
+
+                # If teacher is class teacher, show all subjects for the education level
+                is_class_teacher = any(assignment.is_class_teacher for assignment in teacher_assignments)
+
+                if is_class_teacher:
+                    subjects = Subject.query.filter_by(education_level=grade.education_level).all()
+                else:
+                    # Only show subjects assigned to this teacher
+                    subject_ids = [assignment.subject_id for assignment in teacher_assignments]
+                    subjects = Subject.query.filter(Subject.id.in_(subject_ids)).all() if subject_ids else []
+            else:
+                # Get all subjects for the grade's education level (for admin/headteacher view)
+                subjects = Subject.query.filter_by(education_level=grade.education_level).all()
 
             status_data = {
                 'grade': grade.name,
@@ -220,7 +240,7 @@ class CollaborativeMarksService:
 
                 if latest_term and latest_assessment:
                     class_status = CollaborativeMarksService.get_class_marks_status(
-                        grade.id, stream.id, latest_term.id, latest_assessment.id
+                        grade.id, stream.id, latest_term.id, latest_assessment.id, teacher_id
                     )
 
                     class_info = {

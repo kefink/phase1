@@ -153,6 +153,251 @@
 
         /* Enhanced Dashboard Specific Styling */
 
+        /* Enhanced Sticky Navigation System */
+        .enhanced-nav-system {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1f7d53 0%, #28a745 100%);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-primary {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-brand:hover {
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-main {
+            display: flex;
+            gap: 0.5rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-item {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 0.6rem 1.2rem;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-item:hover::before {
+            left: 100%;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-item i {
+            font-size: 1rem;
+            width: 18px;
+            text-align: center;
+        }
+
+        .nav-secondary {
+            padding: 0.5rem 0;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .nav-quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .quick-action {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 0.4rem 0.8rem;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .quick-action:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            transform: scale(1.05);
+        }
+
+        .quick-action i {
+            font-size: 0.8rem;
+        }
+
+        /* Enhanced Floating Action System */
+        .floating-action-system {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 15px;
+        }
+
+        .fab-main {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1f7d53 0%, #28a745 100%);
+            color: white;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(31, 125, 83, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fab-main::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .fab-main:hover::before {
+            opacity: 1;
+        }
+
+        .fab-main:hover {
+            transform: scale(1.15) rotate(90deg);
+            box-shadow: 0 12px 40px rgba(31, 125, 83, 0.6);
+        }
+
+        .fab-main.active {
+            transform: rotate(45deg);
+            background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+        }
+
+        .fab-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fab-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .fab-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 12px 18px;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            font-weight: 500;
+            border: 1px solid rgba(31, 125, 83, 0.1);
+            min-width: 180px;
+        }
+
+        .fab-item:hover {
+            background: rgba(31, 125, 83, 0.1);
+            transform: translateX(-8px) scale(1.05);
+            color: #1f7d53;
+            text-decoration: none;
+            box-shadow: 0 8px 30px rgba(31, 125, 83, 0.2);
+        }
+
+        .fab-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Speed Dial Animation */
+        .fab-item:nth-child(1) { transition-delay: 0.1s; }
+        .fab-item:nth-child(2) { transition-delay: 0.15s; }
+        .fab-item:nth-child(3) { transition-delay: 0.2s; }
+        .fab-item:nth-child(4) { transition-delay: 0.25s; }
+        .fab-item:nth-child(5) { transition-delay: 0.3s; }
+
         /* Enhanced Management Options Grid */
         .management-options-grid {
             display: grid;
@@ -671,8 +916,63 @@
             text-decoration: none;
         }
 
-        /* Responsive Design */
+        /* Enhanced Responsive Design */
+        @media (max-width: 1024px) {
+            .nav-main {
+                gap: 0.3rem;
+            }
+
+            .nav-item {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
+
+            .nav-secondary {
+                padding: 0.3rem 0;
+            }
+
+            .quick-action {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.75rem;
+            }
+        }
+
         @media (max-width: 768px) {
+            .enhanced-nav-system {
+                position: relative;
+                top: auto;
+            }
+
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .nav-brand {
+                font-size: 1.1rem;
+            }
+
+            .nav-main {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+
+            .nav-item {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+                min-width: auto;
+            }
+
+            .nav-item span {
+                display: none;
+            }
+
+            .nav-secondary {
+                display: none;
+            }
+
             .management-options-grid {
                 grid-template-columns: 1fr;
                 gap: 1.5rem;
@@ -683,6 +983,51 @@
                 text-align: center;
                 gap: 1rem;
             }
+
+            .floating-action-system {
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .fab-main {
+                width: 55px;
+                height: 55px;
+                font-size: 1.3rem;
+            }
+
+            .fab-item {
+                min-width: 160px;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-container {
+                padding: 0.8rem;
+            }
+
+            .nav-main {
+                gap: 0.3rem;
+            }
+
+            .nav-item {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .fab-main {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+
+            .fab-item {
+                min-width: 140px;
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+        }
 
             .option-icon {
                 width: 60px;
@@ -752,6 +1097,75 @@
         <strong>Assigned Class:</strong> Grade {{ grade }} {{ stream }}
     </div>
     {% endif %}
+
+    <!-- Enhanced Navigation System -->
+    <div class="enhanced-nav-system">
+        <!-- Primary Navigation -->
+        <div class="nav-primary">
+            <div class="nav-container">
+                <a href="#" class="nav-brand">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Class Teacher</span>
+                </a>
+
+                <nav class="nav-main">
+                    <button type="button" onclick="navigateToFeature('upload-marks')" class="nav-item" data-feature="upload-marks">
+                        <i class="fas fa-upload"></i>
+                        <span>Upload Marks</span>
+                    </button>
+                    <button type="button" onclick="navigateToFeature('recent-reports')" class="nav-item" data-feature="recent-reports">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Recent Reports</span>
+                    </button>
+                    <button type="button" onclick="navigateToFeature('generate-reports')" class="nav-item" data-feature="generate-reports">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Generate Reports</span>
+                    </button>
+                    <a href="{{ url_for('classteacher.analytics_dashboard') }}" class="nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Analytics</span>
+                    </a>
+                    <button type="button" onclick="navigateToFeature('management')" class="nav-item" data-feature="management">
+                        <i class="fas fa-cogs"></i>
+                        <span>Management</span>
+                    </button>
+                </nav>
+
+                <a href="{{ url_for('auth.logout_route') }}" class="nav-item" style="background: rgba(220, 53, 69, 0.2); border-color: rgba(220, 53, 69, 0.3);">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Secondary Quick Actions -->
+        <div class="nav-secondary">
+            <div class="nav-container">
+                <div class="nav-quick-actions">
+                    <a href="{{ url_for('classteacher.collaborative_marks_dashboard') }}" class="quick-action">
+                        <i class="fas fa-users"></i>
+                        <span>Collaborative</span>
+                    </a>
+                    <a href="{{ url_for('classteacher.view_all_reports') }}" class="quick-action">
+                        <i class="fas fa-list"></i>
+                        <span>All Reports</span>
+                    </a>
+                    <a href="{{ url_for('classteacher.grade_reports_dashboard') }}" class="quick-action">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Grade Reports</span>
+                    </a>
+                    <a href="#" onclick="downloadTemplate()" class="quick-action">
+                        <i class="fas fa-download"></i>
+                        <span>Template</span>
+                    </a>
+                    <a href="{{ url_for('staff.management') }}" class="quick-action">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Staff</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modern-container">
         <!-- Modern Header -->
@@ -1010,7 +1424,7 @@
         </div>
 
         <!-- Modern Management Options Section -->
-        <div class="modern-card slide-up">
+        <div id="management-section" class="modern-card slide-up">
             <div class="card-header">
                 <h2 class="card-title">
                     <i class="fas fa-cogs card-icon"></i>
@@ -1159,7 +1573,7 @@
         </div>
 
         <!-- Modern Recent Reports Tab Content -->
-        <div id="recent-reports-tab" class="tab-content {% if active_tab == 'recent-reports' %}active{% endif %}">
+        <div id="recent-reports-tab" class="tab-content-container {% if active_tab == 'recent-reports' %}active{% endif %}">
             <div class="modern-card slide-up">
                 <div class="card-header">
                     <h2 class="card-title">
@@ -1294,8 +1708,8 @@
         </div>
 
         <!-- Modern Upload Marks Tab Content -->
-        <div id="upload-marks-tab" class="tab-content {% if active_tab == 'upload-marks' %}active{% endif %}">
-            <div class="modern-card slide-up">
+        <div id="upload-marks-tab" class="tab-content-container {% if active_tab == 'upload-marks' %}active{% endif %}">
+            <div id="upload-marks-section" class="modern-card slide-up">
                 <div class="card-header">
                     <h2 class="card-title">
                         <i class="fas fa-upload card-icon"></i>
@@ -1686,7 +2100,7 @@
                         </table>
                     </div>
                     <div class="text-center mt-3">
-                        <button type="submit" name="submit_marks" value="1" class="btn" onclick="return validateAndSubmitForm()">
+                        <button type="button" name="submit_marks" value="1" class="btn" id="submit-marks-btn">
                             Submit All Marks
                         </button>
                     </div>
@@ -1871,6 +2285,35 @@
             <p>Click above to download a ZIP file containing individual reports for all learners.</p>
         </div>
         {% endif %}
+    </div>
+
+    <!-- Enhanced Floating Action System -->
+    <div class="floating-action-system">
+        <div class="fab-menu" id="fab-menu">
+            <a href="#" onclick="navigateToFeature('upload-marks'); toggleEnhancedFab(); return false;" class="fab-item">
+                <i class="fas fa-upload"></i>
+                <span>Upload Marks</span>
+            </a>
+            <a href="#" onclick="downloadTemplate(); toggleEnhancedFab(); return false;" class="fab-item">
+                <i class="fas fa-download"></i>
+                <span>Download Template</span>
+            </a>
+            <a href="{{ url_for('classteacher.collaborative_marks_dashboard') }}" class="fab-item">
+                <i class="fas fa-users"></i>
+                <span>Collaborative Marks</span>
+            </a>
+            <a href="#" onclick="navigateToFeature('generate-reports'); toggleEnhancedFab(); return false;" class="fab-item">
+                <i class="fas fa-file-pdf"></i>
+                <span>Generate Reports</span>
+            </a>
+            <a href="{{ url_for('classteacher.analytics_dashboard') }}" class="fab-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+        </div>
+        <button class="fab-main" onclick="toggleEnhancedFab()" id="fab-main-btn">
+            <i class="fas fa-plus" id="fab-icon"></i>
+        </button>
     </div>
 
     <!-- Delete Confirmation Modal -->
@@ -2188,6 +2631,35 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        /* Validation Error and Confirmation Dialog Animations */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .validation-error-message {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .confirmation-dialog {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         .marks-label {
@@ -3128,11 +3600,14 @@
 
         // Function to validate form before submission
         function validateAndSubmitForm() {
+            console.log('=== FORM VALIDATION STARTED ===');
+
             // Ensure selected subjects are added to form
             const hasSelectedSubjects = addSelectedSubjectsToForm();
 
             if (!hasSelectedSubjects) {
-                alert('Please select at least one subject before submitting marks.');
+                console.log('No subjects selected - showing error message');
+                showValidationError('Please select at least one subject before submitting marks.');
                 return false; // Prevent form submission
             }
 
@@ -3147,14 +3622,301 @@
             });
 
             if (!hasMarks) {
-                const confirmSubmit = confirm('No marks have been entered. Are you sure you want to submit an empty marksheet?');
-                if (!confirmSubmit) {
-                    return false; // Prevent form submission
-                }
+                console.log('No marks entered - showing confirmation dialog');
+                showConfirmationDialog(
+                    'No marks have been entered. Are you sure you want to submit an empty marksheet?',
+                    function() {
+                        console.log('User confirmed empty submission');
+                        submitMarksForm();
+                    }
+                );
+                return false; // Prevent form submission for now
             }
 
             console.log('Form validation passed, submitting...');
             return true; // Allow form submission
+        }
+
+        // Function to show validation error
+        function showValidationError(message) {
+            // Remove any existing error messages
+            const existingError = document.querySelector('.validation-error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Create error message element
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'validation-error-message';
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #dc3545;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                z-index: 10000;
+                max-width: 400px;
+                font-size: 14px;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            errorDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="
+                        background: none;
+                        border: none;
+                        color: white;
+                        font-size: 16px;
+                        cursor: pointer;
+                        margin-left: auto;
+                    ">&times;</button>
+                </div>
+            `;
+
+            document.body.appendChild(errorDiv);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentElement) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Function to show confirmation dialog
+        function showConfirmationDialog(message, onConfirm) {
+            // Remove any existing confirmation dialog
+            const existingDialog = document.querySelector('.confirmation-dialog');
+            if (existingDialog) {
+                existingDialog.remove();
+            }
+
+            // Create confirmation dialog
+            const dialogDiv = document.createElement('div');
+            dialogDiv.className = 'confirmation-dialog';
+            dialogDiv.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10001;
+            `;
+
+            dialogDiv.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    max-width: 500px;
+                    width: 90%;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                ">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <i class="fas fa-question-circle" style="color: #ffc107; font-size: 24px;"></i>
+                        <h3 style="margin: 0; color: #333;">Confirm Submission</h3>
+                    </div>
+                    <p style="margin-bottom: 25px; color: #666; line-height: 1.5;">${message}</p>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="closeConfirmationDialog()" style="
+                            padding: 10px 20px;
+                            border: 1px solid #ddd;
+                            background: white;
+                            color: #666;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">Cancel</button>
+                        <button onclick="confirmSubmission()" style="
+                            padding: 10px 20px;
+                            border: none;
+                            background: #007bff;
+                            color: white;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">Yes, Submit</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(dialogDiv);
+
+            // Store the callback function
+            window.confirmationCallback = onConfirm;
+        }
+
+        // Function to close confirmation dialog
+        function closeConfirmationDialog() {
+            const dialog = document.querySelector('.confirmation-dialog');
+            if (dialog) {
+                dialog.remove();
+            }
+            window.confirmationCallback = null;
+        }
+
+        // Function to confirm submission
+        function confirmSubmission() {
+            closeConfirmationDialog();
+            if (window.confirmationCallback) {
+                window.confirmationCallback();
+            }
+        }
+
+        // Function to submit marks form programmatically
+        function submitMarksForm() {
+            console.log('Submitting marks form programmatically...');
+            const form = document.getElementById('marks-form');
+            if (form) {
+                // Create a hidden submit button to trigger the form submission
+                const submitBtn = document.createElement('input');
+                submitBtn.type = 'hidden';
+                submitBtn.name = 'submit_marks';
+                submitBtn.value = '1';
+                form.appendChild(submitBtn);
+
+                // Submit the form
+                form.submit();
+            } else {
+                console.error('Marks form not found!');
+            }
+        }
+
+        // Enhanced Navigation System Functions
+        function navigateToFeature(feature) {
+            console.log(`=== NAVIGATING TO FEATURE: ${feature} ===`);
+
+            try {
+                // Update active navigation state
+                updateActiveNavigation(feature);
+
+                switch(feature) {
+                    case 'upload-marks':
+                        console.log('Switching to upload-marks tab');
+                        switchMainTab('upload-marks');
+                        // Auto-scroll to the upload section after tab switch
+                        setTimeout(() => {
+                            const uploadSection = document.getElementById('upload-marks-tab');
+                            if (uploadSection) {
+                                uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                console.log('✅ Successfully navigated to upload marks section');
+                            } else {
+                                console.error('❌ Upload marks section not found');
+                            }
+                        }, 300);
+                        break;
+                    case 'recent-reports':
+                        console.log('Switching to recent-reports tab');
+                        switchMainTab('recent-reports');
+                        setTimeout(() => {
+                            const reportsSection = document.getElementById('recent-reports-tab');
+                            if (reportsSection) {
+                                reportsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                console.log('✅ Successfully navigated to recent reports section');
+                            } else {
+                                console.error('❌ Recent reports section not found');
+                            }
+                        }, 300);
+                        break;
+                    case 'generate-reports':
+                        console.log('Switching to generate-marksheet tab');
+                        switchMainTab('generate-marksheet');
+                        // Auto-scroll to the generate section after tab switch
+                        setTimeout(() => {
+                            const generateSection = document.getElementById('generate-marksheet-tab');
+                            if (generateSection) {
+                                generateSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                console.log('✅ Successfully navigated to generate reports section');
+                            } else {
+                                console.error('❌ Generate reports section not found');
+                            }
+                        }, 300);
+                        break;
+                    case 'management':
+                        console.log('Scrolling to management section');
+                        scrollToSection('management-section');
+                        break;
+                    default:
+                        console.error(`❌ Unknown feature: ${feature}`);
+                }
+
+                console.log(`✅ Navigation to ${feature} completed`);
+
+            } catch (error) {
+                console.error(`❌ Error navigating to ${feature}:`, error);
+            }
+
+            return false; // Prevent default link behavior
+        }
+
+        function updateActiveNavigation(activeFeature) {
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item[data-feature]').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Add active class to current feature
+            const activeItem = document.querySelector(`.nav-item[data-feature="${activeFeature}"]`);
+            if (activeItem) {
+                activeItem.classList.add('active');
+            }
+        }
+
+        // Enhanced Floating Action Button Functions
+        function toggleEnhancedFab() {
+            const fabMenu = document.getElementById('fab-menu');
+            const fabIcon = document.getElementById('fab-icon');
+            const fabMain = document.getElementById('fab-main-btn');
+
+            if (fabMenu.classList.contains('active')) {
+                fabMenu.classList.remove('active');
+                fabMain.classList.remove('active');
+                fabIcon.className = 'fas fa-plus';
+            } else {
+                fabMenu.classList.add('active');
+                fabMain.classList.add('active');
+                fabIcon.className = 'fas fa-times';
+            }
+        }
+
+        function initializeEnhancedNavigation() {
+            // Close FAB menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const fabSystem = document.querySelector('.floating-action-system');
+                if (!fabSystem.contains(event.target)) {
+                    const menu = document.getElementById('fab-menu');
+                    const icon = document.getElementById('fab-icon');
+                    const main = document.getElementById('fab-main-btn');
+                    if (menu.classList.contains('active')) {
+                        menu.classList.remove('active');
+                        main.classList.remove('active');
+                        icon.className = 'fas fa-plus';
+                    }
+                }
+            });
+
+            // Initialize active navigation based on current tab
+            const activeTab = sessionStorage.getItem('activeTab') || 'recent-reports';
+            updateActiveNavigation(activeTab);
+        }
+
+        // Smooth scrolling function
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
         }
 
         // Function to select all subjects
@@ -3578,36 +4340,106 @@
             const streamSelect = document.getElementById('stream');
             const formGroup = streamSelect.closest('.form-group');
 
-            // Get the education level from the data attribute
-            const educationLevel = document.getElementById('grade').dataset.educationLevel;
+            console.log('=== FETCH STREAMS DEBUG ===');
+            console.log('fetchStreams called with grade:', grade);
+            console.log('Stream select element:', streamSelect);
+            console.log('Form group element:', formGroup);
 
             // Clear existing options
             streamSelect.innerHTML = '<option value="">Select Stream</option>';
 
             if (grade) {
-                // Fetch streams for this grade
-                fetch(`/classteacher/get_streams_by_level/${grade}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.streams.forEach(stream => {
-                            const option = document.createElement('option');
-                            option.value = `Stream ${stream.name}`;
-                            option.textContent = `Stream ${stream.name}`;
-                            streamSelect.appendChild(option);
-                        });
-                        formGroup.classList.add('success');
-                        formGroup.classList.remove('error');
+                // Extract grade level from "Grade X" format
+                const gradeLevel = grade.replace('Grade ', '');
+                console.log('Extracted grade level:', gradeLevel);
 
-                        // After fetching streams, also fetch subjects for the selected education level
-                        if (educationLevel) {
-                            fetchSubjectsForEducationLevel(educationLevel);
+                const apiUrl = `/classteacher/get_streams_by_level/${gradeLevel}`;
+                console.log('Making API call to:', apiUrl);
+
+                // Fetch streams for this grade
+                fetch(apiUrl)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        console.log('Response headers:', response.headers);
+
+                        if (response.status === 401) {
+                            console.error('Authentication required - user needs to login');
+                            // Redirect to login if not authenticated
+                            window.location.href = '/classteacher_login';
+                            return;
+                        }
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (!data) {
+                            console.log('No data received (redirect case)');
+                            return;
+                        }
+
+                        console.log('Received streams data:', data);
+                        console.log('Data success:', data.success);
+                        console.log('Data streams:', data.streams);
+                        console.log('Number of streams:', data.streams ? data.streams.length : 0);
+
+                        if (data.success && data.streams && data.streams.length > 0) {
+                            console.log('Processing streams...');
+
+                            // Clear any existing options except the first one (to avoid duplicates)
+                            while (streamSelect.options.length > 1) {
+                                streamSelect.removeChild(streamSelect.lastChild);
+                            }
+
+                            // Create a Set to track unique stream names and avoid duplicates
+                            const addedStreams = new Set();
+
+                            data.streams.forEach((stream, index) => {
+                                const streamName = stream.name;
+                                const streamValue = `Stream ${streamName}`;
+
+                                // Only add if we haven't seen this stream name before
+                                if (!addedStreams.has(streamName)) {
+                                    console.log(`Adding stream ${index + 1}: ${streamName} (ID: ${stream.id})`);
+                                    const option = document.createElement('option');
+                                    option.value = streamValue;
+                                    option.textContent = streamValue;
+                                    streamSelect.appendChild(option);
+                                    addedStreams.add(streamName);
+                                } else {
+                                    console.log(`Skipping duplicate stream: ${streamName}`);
+                                }
+                            });
+                            formGroup.classList.add('success');
+                            formGroup.classList.remove('error');
+                            console.log('Successfully populated streams');
+                            console.log('Final stream select options:', streamSelect.options.length);
+                            console.log('Unique streams added:', Array.from(addedStreams));
+                        } else {
+                            console.error('No streams found or error in response:', data);
+                            formGroup.classList.add('error');
+
+                            // Show helpful error message
+                            if (data && data.message) {
+                                console.error('API Error:', data.message);
+                                // Show error message to user
+                                alert(`Error loading streams: ${data.message}`);
+                            } else {
+                                console.error('Unknown error or no streams available');
+                                alert('No streams available for the selected grade');
+                            }
                         }
                     })
                     .catch(error => {
                         console.error('Error fetching streams:', error);
                         formGroup.classList.add('error');
+                        alert(`Network error: ${error.message}`);
                     });
             } else {
+                console.log('No grade selected, clearing form group success state');
                 formGroup.classList.remove('success');
             }
         }
@@ -3771,24 +4603,68 @@
             const streamSelect = document.getElementById('bulk_stream');
             const formGroup = streamSelect.closest('.form-group');
 
+            console.log('fetchBulkStreams called with grade:', grade);
+
             // Clear existing options
             streamSelect.innerHTML = '<option value="">Select Stream</option>';
 
             if (grade) {
-                fetch(`/classteacher/get_streams_by_level/${grade}`)
-                    .then(response => response.json())
+                // Extract grade level from "Grade X" format
+                const gradeLevel = grade.replace('Grade ', '');
+                console.log('Extracted bulk grade level:', gradeLevel);
+
+                fetch(`/classteacher/get_streams_by_level/${gradeLevel}`)
+                    .then(response => {
+                        console.log('Bulk streams response status:', response.status);
+                        if (response.status === 401) {
+                            console.error('Authentication required - user needs to login');
+                            // Redirect to login if not authenticated
+                            window.location.href = '/classteacher_login';
+                            return;
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        data.streams.forEach(stream => {
-                            const option = document.createElement('option');
-                            option.value = `Stream ${stream.name}`;
-                            option.textContent = `Stream ${stream.name}`;
-                            streamSelect.appendChild(option);
-                        });
-                        formGroup.classList.add('success');
-                        formGroup.classList.remove('error');
+                        if (!data) return; // Handle redirect case
+
+                        console.log('Received bulk streams data:', data);
+                        if (data.success && data.streams) {
+                            // Clear any existing options except the first one (to avoid duplicates)
+                            while (streamSelect.options.length > 1) {
+                                streamSelect.removeChild(streamSelect.lastChild);
+                            }
+
+                            // Create a Set to track unique stream names and avoid duplicates
+                            const addedStreams = new Set();
+
+                            data.streams.forEach(stream => {
+                                const streamName = stream.name;
+                                const streamValue = `Stream ${streamName}`;
+
+                                // Only add if we haven't seen this stream name before
+                                if (!addedStreams.has(streamName)) {
+                                    const option = document.createElement('option');
+                                    option.value = streamValue;
+                                    option.textContent = streamValue;
+                                    streamSelect.appendChild(option);
+                                    addedStreams.add(streamName);
+                                }
+                            });
+                            formGroup.classList.add('success');
+                            formGroup.classList.remove('error');
+                            console.log('Successfully populated bulk streams');
+                        } else {
+                            console.error('No bulk streams found or error in response:', data);
+                            formGroup.classList.add('error');
+
+                            // Show helpful error message
+                            if (data && data.message) {
+                                console.error('API Error:', data.message);
+                            }
+                        }
                     })
                     .catch(error => {
-                        console.error('Error fetching streams:', error);
+                        console.error('Error fetching bulk streams:', error);
                         formGroup.classList.add('error');
                     });
             } else {
@@ -3870,24 +4746,61 @@
 
         // Tab switching functionality
         function switchMainTab(tabId) {
+            console.log(`=== SWITCHING TO TAB: ${tabId} ===`);
+
             // Hide all tab content
             document.querySelectorAll('.tab-content-container').forEach(function(tab) {
                 tab.classList.remove('active');
             });
 
-            // Deactivate all tabs
-            document.querySelectorAll('.main-tab').forEach(function(tab) {
+            // Deactivate all navigation items
+            document.querySelectorAll('.nav-item').forEach(function(navItem) {
+                navItem.classList.remove('active');
+            });
+
+            // Deactivate all tab buttons
+            document.querySelectorAll('.tab-button').forEach(function(tab) {
                 tab.classList.remove('active');
             });
 
             // Show the selected tab content
-            document.getElementById(tabId + '-tab').classList.add('active');
+            const targetTab = document.getElementById(tabId + '-tab');
+            if (targetTab) {
+                targetTab.classList.add('active');
+                console.log(`Successfully activated tab: ${tabId}`);
+            } else {
+                console.error(`Tab not found: ${tabId}-tab`);
+            }
 
-            // Activate the selected tab
-            document.querySelector('.main-tab[onclick="switchMainTab(\'' + tabId + '\')"]').classList.add('active');
+            // Activate the corresponding navigation item
+            const navItem = document.querySelector(`[data-feature="${tabId}"]`);
+            if (navItem) {
+                navItem.classList.add('active');
+            }
+
+            // Activate the corresponding tab button
+            const tabButton = document.querySelector(`.tab-button[onclick*="${tabId}"]`);
+            if (tabButton) {
+                tabButton.classList.add('active');
+            }
 
             // Store the active tab in session storage so it persists during form submissions
             sessionStorage.setItem('activeTab', tabId);
+
+            // Auto-scroll to upload marks section when upload-marks tab is selected
+            if (tabId === 'upload-marks') {
+                setTimeout(() => {
+                    const uploadSection = document.getElementById('upload-marks-section');
+                    if (uploadSection) {
+                        uploadSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                            inline: 'nearest'
+                        });
+                        console.log('Auto-scrolled to upload marks section');
+                    }
+                }, 300); // Small delay to ensure tab transition is complete
+            }
         }
 
         // Function to restore the active tab after page reload
@@ -3963,8 +4876,27 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM loaded, initializing forms");
 
+            // Auto-scroll to upload form if students are being shown
+            {% if show_students %}
+            console.log("Students form is visible - auto-scrolling to upload form");
+            setTimeout(() => {
+                const pupilsList = document.getElementById('pupils-list');
+                if (pupilsList) {
+                    pupilsList.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                    console.log("Scrolled to pupils-list");
+                }
+            }, 500); // Small delay to ensure page is fully rendered
+            {% endif %}
+
             // Initialize management options functionality
             initializeManagementOptions();
+
+            // Initialize enhanced navigation system
+            initializeEnhancedNavigation();
 
             // Store original grade options for all grade selects
             storeOriginalGradeOptions();
@@ -4016,6 +4948,41 @@
 
             // Restore active tab from session storage if needed
             restoreActiveTab();
+
+            // Add scroll functionality to upload buttons
+            const uploadBtn = document.getElementById('upload-btn');
+            const bulkUploadBtn = document.getElementById('bulk-upload-btn');
+            const submitMarksBtn = document.getElementById('submit-marks-btn');
+
+            if (uploadBtn) {
+                uploadBtn.addEventListener('click', function(e) {
+                    console.log('Upload button clicked - will scroll after form submission');
+                    // The scroll will happen automatically when show_students becomes true
+                    // due to the Jinja template logic we added above
+                });
+            }
+
+            if (bulkUploadBtn) {
+                bulkUploadBtn.addEventListener('click', function(e) {
+                    console.log('Bulk upload button clicked - will scroll after form submission');
+                    // The scroll will happen automatically when show_students becomes true
+                    // due to the Jinja template logic we added above
+                });
+            }
+
+            // Add event listener for submit marks button
+            if (submitMarksBtn) {
+                submitMarksBtn.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevent default form submission
+                    console.log('Submit marks button clicked - validating form...');
+
+                    // Run validation
+                    if (validateAndSubmitForm()) {
+                        // If validation passes, submit the form
+                        submitMarksForm();
+                    }
+                });
+            }
 
             // Add event listeners for grade marksheet form fields
             document.getElementById('stream_grade').addEventListener('change', checkStreamStatus);
@@ -4179,8 +5146,7 @@
             // Initialize assignment management
             initializeAssignmentManagement();
 
-            // Initialize analytics dashboard
-            initializeAnalyticsDashboard();
+            // Note: Analytics dashboard is initialized only on the dedicated analytics page
         });
 
         // Get CSRF token
@@ -4767,9 +5733,7 @@
         }
     </script>
 
-    <!-- Analytics Dashboard JavaScript -->
-    <script src="{{ url_for('static', filename='js/analytics_dashboard.js') }}"></script>
-
+    <!-- Note: Analytics Dashboard JavaScript is loaded only on the dedicated analytics page -->
 
 </body>
 </html>

@@ -55,6 +55,9 @@ def classteacher_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not is_authenticated(session):
+            # Check if this is an AJAX/API request
+            if request.is_json or request.headers.get('Content-Type') == 'application/json' or 'api' in request.endpoint or request.path.startswith('/classteacher/get_'):
+                return jsonify({"success": False, "message": "Authentication required", "redirect": url_for('auth.classteacher_login')}), 401
             return redirect(url_for('auth.classteacher_login'))
 
         role = get_role(session)
@@ -85,8 +88,13 @@ def classteacher_required(f):
                         return f(*args, **kwargs)
 
                 # Function requires permission that teacher doesn't have
+                if request.is_json or request.headers.get('Content-Type') == 'application/json' or 'api' in request.endpoint or request.path.startswith('/classteacher/get_'):
+                    return jsonify({"success": False, "message": f"Permission denied for function: {function_name}"}), 403
                 return redirect(url_for('classteacher.permission_denied', function_name=function_name))
 
+        # Final fallback for non-classteacher roles
+        if request.is_json or request.headers.get('Content-Type') == 'application/json' or 'api' in request.endpoint or request.path.startswith('/classteacher/get_'):
+            return jsonify({"success": False, "message": "Access denied", "redirect": url_for('auth.classteacher_login')}), 403
         return redirect(url_for('auth.classteacher_login'))
     return decorated_function
 
@@ -2974,21 +2982,90 @@ def check_stream_status(grade, term, assessment_type):
 def get_streams_by_level(grade):
     """API route to get streams for a grade by grade level."""
     try:
-        # Get the grade object
-        grade_obj = Grade.query.filter_by(level=grade).first()
+        # Get current teacher info for debugging
+        teacher_id = session.get('teacher_id')
+        current_role = get_role(session)
+        print(f"=== STREAM FETCH DEBUG ===")
+        print(f"Teacher ID: {teacher_id}, Role: {current_role}")
+        print(f"Requested grade: {grade}")
+
+        # Handle both "Grade X" format and just "X" format
+        if grade.isdigit():
+            grade_name = f"Grade {grade}"
+        else:
+            grade_name = grade
+
+        print(f"Looking for grade: {grade_name}")
+
+        # Get the grade object by name
+        grade_obj = Grade.query.filter_by(name=grade_name).first()
 
         if not grade_obj:
-            return jsonify({"success": False, "message": f"Grade {grade} not found", "streams": []})
+            print(f"Grade {grade_name} not found in database")
+            # Try alternative formats
+            if grade_name.startswith("Grade "):
+                alt_grade = grade_name.replace("Grade ", "")
+                grade_obj = Grade.query.filter_by(name=alt_grade).first()
+                print(f"Trying alternative format: {alt_grade}")
+
+            if not grade_obj:
+                # List all available grades for debugging
+                all_grades = Grade.query.all()
+                available_grades = [g.name for g in all_grades]
+                print(f"Available grades in database: {available_grades}")
+                return jsonify({"success": False, "message": f"Grade {grade} not found. Available: {available_grades}", "streams": []})
+
+        print(f"Found grade: {grade_obj.name} (ID: {grade_obj.id})")
 
         # Get streams for this grade
         streams = Stream.query.filter_by(grade_id=grade_obj.id).all()
+        print(f"Found {len(streams)} streams for grade {grade_obj.name}")
+
+        # Debug: List all streams
+        for stream in streams:
+            print(f"  Stream: {stream.name} (ID: {stream.id})")
+
+        # Check if teacher has access to these streams (for role-based filtering)
+        accessible_streams = streams  # Default: all streams
+
+        if current_role in ['teacher', 'classteacher']:
+            # Check teacher assignments
+            teacher_assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher_id).all()
+            print(f"Teacher has {len(teacher_assignments)} assignments")
+
+            # Get assigned stream IDs
+            assigned_stream_ids = []
+            for assignment in teacher_assignments:
+                if assignment.stream_id:
+                    assigned_stream_ids.append(assignment.stream_id)
+                    print(f"  Assigned to stream ID: {assignment.stream_id}")
+                else:
+                    print(f"  Assigned to all streams in grade {assignment.grade_id}")
+
+            # If teacher has specific stream assignments, filter streams
+            if assigned_stream_ids:
+                accessible_streams = [s for s in streams if s.id in assigned_stream_ids]
+                print(f"Filtered to {len(accessible_streams)} accessible streams")
+            else:
+                # If no specific stream assignments, check if teacher has any assignments for this grade
+                grade_assignments = [a for a in teacher_assignments if a.grade_id == grade_obj.id]
+                if grade_assignments:
+                    print(f"Teacher has {len(grade_assignments)} assignments for this grade - allowing all streams")
+                    accessible_streams = streams
+                else:
+                    print(f"Teacher has no assignments for grade {grade_obj.name}")
+                    # For now, still allow all streams - we can restrict this later if needed
+                    accessible_streams = streams
 
         # Format streams for JSON response
-        streams_data = [{"id": stream.id, "name": stream.name} for stream in streams]
+        streams_data = [{"id": stream.id, "name": stream.name} for stream in accessible_streams]
+        print(f"Returning {len(streams_data)} streams: {[s['name'] for s in streams_data]}")
 
         return jsonify({"success": True, "streams": streams_data})
     except Exception as e:
         print(f"Error fetching streams: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "message": str(e), "streams": []})
 
 @classteacher_bp.route('/get_subjects_by_education_level/<education_level>', methods=['GET'])
@@ -7411,7 +7488,7 @@ def class_marks_status(grade_id, stream_id, term_id, assessment_type_id):
 
         # Get class marks status
         status_data = CollaborativeMarksService.get_class_marks_status(
-            grade_id, stream_id, term_id, assessment_type_id
+            grade_id, stream_id, term_id, assessment_type_id, current_teacher_id
         )
 
         if 'error' in status_data:

@@ -47,15 +47,23 @@ def get_top_performers():
         
         if role == 'classteacher':
             # Classteachers can only see analytics for their assigned classes
-            assigned_classes = RoleBasedDataService.get_teacher_assigned_classes(teacher_id)
-            
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
+
+            if 'error' in assignment_summary:
+                return jsonify({
+                    'success': True,
+                    'top_performers': [],
+                    'message': assignment_summary['error']
+                })
+
+            assigned_classes = assignment_summary.get('class_teacher_assignments', [])
             if not assigned_classes:
                 return jsonify({
                     'success': True,
                     'top_performers': [],
                     'message': 'No assigned classes found'
                 })
-            
+
             # If no specific grade/stream provided, use first assigned class
             if not grade_id and not stream_id and assigned_classes:
                 first_class = assigned_classes[0]
@@ -102,8 +110,18 @@ def get_subject_performance():
 
         if role == 'classteacher':
             # Classteachers can only see analytics for their assigned classes
-            assigned_classes = RoleBasedDataService.get_teacher_assigned_classes(teacher_id)
-            
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
+
+            if 'error' in assignment_summary:
+                return jsonify({
+                    'success': True,
+                    'subject_analytics': [],
+                    'top_subject': None,
+                    'least_performing_subject': None,
+                    'message': assignment_summary['error']
+                })
+
+            assigned_classes = assignment_summary.get('class_teacher_assignments', [])
             if not assigned_classes:
                 return jsonify({
                     'success': True,
@@ -112,7 +130,7 @@ def get_subject_performance():
                     'least_performing_subject': None,
                     'message': 'No assigned classes found'
                 })
-            
+
             # If no specific grade/stream provided, use first assigned class
             if not grade_id and not stream_id and assigned_classes:
                 first_class = assigned_classes[0]
@@ -161,8 +179,27 @@ def get_comprehensive_analytics():
 
         if role == 'classteacher':
             # Classteachers can only see analytics for their assigned classes
-            assigned_classes = RoleBasedDataService.get_teacher_assigned_classes(teacher_id)
-            
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
+
+            if 'error' in assignment_summary:
+                return jsonify({
+                    'success': True,
+                    'analytics': {
+                        'top_performers': [],
+                        'subject_analytics': [],
+                        'top_subject': None,
+                        'least_performing_subject': None,
+                        'context': {},
+                        'summary': {
+                            'total_students_analyzed': 0,
+                            'total_subjects_analyzed': 0,
+                            'has_sufficient_data': False
+                        }
+                    },
+                    'message': assignment_summary['error']
+                })
+
+            assigned_classes = assignment_summary.get('class_teacher_assignments', [])
             if not assigned_classes:
                 return jsonify({
                     'success': True,
@@ -180,7 +217,7 @@ def get_comprehensive_analytics():
                     },
                     'message': 'No assigned classes found'
                 })
-            
+
             # If no specific grade/stream provided, use first assigned class
             if not grade_id and not stream_id and assigned_classes:
                 first_class = assigned_classes[0]
@@ -252,17 +289,20 @@ def get_context_options():
             
         elif role == 'classteacher':
             # Classteachers can only see their assigned grades and streams
-            assigned_classes = RoleBasedDataService.get_teacher_assigned_classes(teacher_id)
-            
-            # Extract unique grades and streams from assignments
-            grade_ids = set()
-            stream_ids = set()
-            
-            for assignment in assigned_classes:
-                if assignment.get('grade_id'):
-                    grade_ids.add(assignment['grade_id'])
-                if assignment.get('stream_id'):
-                    stream_ids.add(assignment['stream_id'])
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
+
+            if 'error' not in assignment_summary:
+                assigned_classes = assignment_summary.get('class_teacher_assignments', [])
+
+                # Extract unique grades and streams from assignments
+                grade_ids = set()
+                stream_ids = set()
+
+                for assignment in assigned_classes:
+                    if assignment.get('grade_id'):
+                        grade_ids.add(assignment['grade_id'])
+                    if assignment.get('stream_id'):
+                        stream_ids.add(assignment['stream_id'])
             
             # Get grade data
             if grade_ids:
@@ -389,11 +429,16 @@ def get_grades():
             grades = Grade.query.all()
         elif role == 'classteacher':
             # Classteachers can only see their assigned grades
-            assigned_classes = RoleBasedDataService.get_teacher_assigned_classes(teacher_id)
-            grade_ids = set(assignment.get('grade_id') for assignment in assigned_classes if assignment.get('grade_id'))
-            
-            if grade_ids:
-                grades = Grade.query.filter(Grade.id.in_(grade_ids)).all()
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
+
+            if 'error' not in assignment_summary:
+                assigned_classes = assignment_summary.get('class_teacher_assignments', [])
+                grade_ids = set(assignment.get('grade_id') for assignment in assigned_classes if assignment.get('grade_id'))
+
+                if grade_ids:
+                    grades = Grade.query.filter(Grade.id.in_(grade_ids)).all()
+                else:
+                    grades = []
             else:
                 grades = []
         else:
