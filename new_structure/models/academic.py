@@ -82,8 +82,8 @@ class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     education_level = db.Column(db.String(50), nullable=False)
-    is_standard = db.Column(db.Boolean, default=True)  # Whether this is a standard subject
     is_composite = db.Column(db.Boolean, default=False)  # Whether this subject has components
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     marks = db.relationship('Mark', backref='subject', lazy=True)
     teachers = db.relationship('Teacher', secondary=teacher_subjects, back_populates='subjects')
     components = db.relationship('SubjectComponent', backref='subject', lazy=True)
@@ -114,17 +114,17 @@ class Term(db.Model):
     name = db.Column(db.String(50), nullable=False, unique=True)  # e.g., Term 1, Term 2
     academic_year = db.Column(db.String(20), nullable=True)  # e.g., 2023, 2024
     is_current = db.Column(db.Boolean, default=False)  # Whether this is the current active term
-    start_date = db.Column(db.Date, nullable=True)  # Start date of the term
-    end_date = db.Column(db.Date, nullable=True)  # End date of the term
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     marks = db.relationship('Mark', backref='term', lazy=True)
 
 class AssessmentType(db.Model):
     """AssessmentType model representing types of assessments."""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)  # e.g., Mid Term, End Term
-    weight = db.Column(db.Integer, nullable=True)  # Percentage weight in final grade calculation (0-100)
-    group = db.Column(db.String(50), nullable=True)  # Group related assessments (e.g., "Exams", "Projects")
-    show_on_reports = db.Column(db.Boolean, default=True)  # Whether to show this assessment type on reports
+    weight = db.Column(db.Float, nullable=True)  # Percentage weight in final grade calculation (0-100)
+    category = db.Column(db.String(50), nullable=True)  # Category of assessment (e.g., "Exams", "Projects")
+    is_active = db.Column(db.Boolean, default=True)  # Whether this assessment type is active
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     marks = db.relationship('Mark', backref='assessment_type', lazy=True)
 
 class Student(db.Model):
@@ -133,6 +133,7 @@ class Student(db.Model):
     name = db.Column(db.String(100), nullable=False)
     admission_number = db.Column(db.String(50), nullable=False, unique=True)
     stream_id = db.Column(db.Integer, db.ForeignKey('stream.id'), nullable=True)
+    grade_id = db.Column(db.Integer, db.ForeignKey('grade.id'), nullable=True)
     gender = db.Column(db.String(10), nullable=False, default="Unknown")
     marks = db.relationship('Mark', backref='student', lazy=True)
 
@@ -143,31 +144,43 @@ class Mark(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     term_id = db.Column(db.Integer, db.ForeignKey('term.id'), nullable=False)
     assessment_type_id = db.Column(db.Integer, db.ForeignKey('assessment_type.id'), nullable=False)
-    # Keep both old and new column names during migration
-    mark = db.Column(db.Float, nullable=False)  # Old column name
-    total_marks = db.Column(db.Float, nullable=False)  # Old column name
-    raw_mark = db.Column(db.Float, nullable=False)  # New column name
-    max_raw_mark = db.Column(db.Float, nullable=False)  # New column name
-    percentage = db.Column(db.Float, nullable=False)  # Always store the calculated percentage
+    # Match actual database structure
+    mark = db.Column(db.Float, nullable=False)
+    total_marks = db.Column(db.Float, nullable=False)
+    raw_mark = db.Column(db.Float, nullable=False)
+    raw_total_marks = db.Column(db.Float, nullable=False)  # Match database column name
+    percentage = db.Column(db.Float, nullable=False)
+    grade_letter = db.Column(db.String(5), nullable=True)  # Match database column
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     # Relationship with component marks
     component_marks = db.relationship('ComponentMark', backref='mark', lazy=True)
+
+    # Backward compatibility property
+    @property
+    def max_raw_mark(self):
+        """Backward compatibility property for max_raw_mark."""
+        return self.raw_total_marks
+
+    @max_raw_mark.setter
+    def max_raw_mark(self, value):
+        """Backward compatibility setter for max_raw_mark."""
+        self.raw_total_marks = value
 
     def __init__(self, **kwargs):
         """Initialize a Mark instance with validation."""
         # Sanitize raw_mark and max_raw_mark before setting
         from ..services.mark_conversion_service import MarkConversionService
 
-        # Get values from kwargs
+        # Get values from kwargs - handle both old and new column names
         raw_mark = kwargs.get('raw_mark', 0)
-        max_raw_mark = kwargs.get('max_raw_mark', 100)
+        max_raw_mark = kwargs.get('max_raw_mark', kwargs.get('raw_total_marks', 100))
 
         # Sanitize values
         sanitized_raw_mark, sanitized_max_raw_mark = MarkConversionService.sanitize_raw_mark(raw_mark, max_raw_mark)
 
-        # Update kwargs with sanitized values
+        # Update kwargs with sanitized values for both old and new column names
         kwargs['raw_mark'] = sanitized_raw_mark
-        kwargs['max_raw_mark'] = sanitized_max_raw_mark
+        kwargs['raw_total_marks'] = sanitized_max_raw_mark  # New database column name
         kwargs['mark'] = sanitized_raw_mark  # Update old field name too
         kwargs['total_marks'] = sanitized_max_raw_mark  # Update old field name too
 
@@ -219,7 +232,7 @@ class Mark(db.Model):
             self.percentage = total_weighted_percentage / total_weight
 
             # Calculate raw mark based on percentage (for backward compatibility)
-            self.raw_mark = (self.percentage / 100) * self.max_raw_mark
+            self.raw_mark = (self.percentage / 100) * self.raw_total_marks
             self.mark = self.raw_mark  # Update old field name too
 
             # Save changes
@@ -238,16 +251,16 @@ class Mark(db.Model):
         """
         from ..services.mark_conversion_service import MarkConversionService
 
-        # Get values from data
+        # Get values from data - handle both old and new column names
         raw_mark = data.get('raw_mark', 0)
-        max_raw_mark = data.get('max_raw_mark', 100)
+        max_raw_mark = data.get('max_raw_mark', data.get('raw_total_marks', 100))
 
         # Sanitize values
         sanitized_raw_mark, sanitized_max_raw_mark = MarkConversionService.sanitize_raw_mark(raw_mark, max_raw_mark)
 
-        # Update data with sanitized values
+        # Update data with sanitized values for both old and new column names
         data['raw_mark'] = sanitized_raw_mark
-        data['max_raw_mark'] = sanitized_max_raw_mark
+        data['raw_total_marks'] = sanitized_max_raw_mark  # New database column name
         data['mark'] = sanitized_raw_mark  # Update old field name too
         data['total_marks'] = sanitized_max_raw_mark  # Update old field name too
 

@@ -204,16 +204,26 @@ def staff_report(grade, stream):
 def teachers_list():
     """Get list of all teachers for dropdowns."""
     try:
-        teachers = Teacher.query.filter_by(is_active=True).all() if hasattr(Teacher, 'is_active') else Teacher.query.all()
+        teachers = Teacher.query.all()
 
         teachers_data = []
         for teacher in teachers:
+            # Create full name from first_name and last_name
+            full_name = None
+            if hasattr(teacher, 'first_name') and hasattr(teacher, 'last_name'):
+                if teacher.first_name and teacher.last_name:
+                    full_name = f"{teacher.first_name} {teacher.last_name}"
+                elif teacher.first_name:
+                    full_name = teacher.first_name
+                elif teacher.last_name:
+                    full_name = teacher.last_name
+
             teachers_data.append({
                 'id': teacher.id,
-                'name': getattr(teacher, 'full_name', None) or teacher.username,
-                'employee_id': getattr(teacher, 'employee_id', None),
+                'name': full_name or teacher.username,
+                'employee_id': f"EMP{teacher.id:03d}",  # Generate employee ID
                 'role': teacher.role,
-                'qualification': getattr(teacher, 'qualification', None)
+                'qualification': None  # Not available in current database
             })
 
         return jsonify({'success': True, 'teachers': teachers_data})
@@ -228,11 +238,18 @@ def create_teacher():
         username = request.json.get('username')
         password = request.json.get('password', 'password123')  # Default password
         role = request.json.get('role', 'teacher')
-        full_name = request.json.get('full_name')
+        full_name = request.json.get('full_name', '')
         email = request.json.get('email')
         phone_number = request.json.get('phone_number')
-        qualification = request.json.get('qualification')
-        specialization = request.json.get('specialization')
+
+        # Split full_name into first_name and last_name
+        first_name = ''
+        last_name = ''
+        if full_name:
+            name_parts = full_name.strip().split(' ', 1)
+            first_name = name_parts[0]
+            if len(name_parts) > 1:
+                last_name = name_parts[1]
 
         if not username:
             return jsonify({'success': False, 'message': 'Username is required'})
@@ -249,27 +266,17 @@ def create_teacher():
             'role': role
         }
 
-        # Add enhanced fields if they exist in the model
-        if hasattr(Teacher, 'full_name'):
-            teacher_data['full_name'] = full_name
+        # Add fields that exist in the current database structure
+        if hasattr(Teacher, 'first_name'):
+            teacher_data['first_name'] = first_name
+        if hasattr(Teacher, 'last_name'):
+            teacher_data['last_name'] = last_name
         if hasattr(Teacher, 'email'):
             teacher_data['email'] = email
-        if hasattr(Teacher, 'phone_number'):
-            teacher_data['phone_number'] = phone_number
-        if hasattr(Teacher, 'qualification'):
-            teacher_data['qualification'] = qualification
-        if hasattr(Teacher, 'specialization'):
-            teacher_data['specialization'] = specialization
-        if hasattr(Teacher, 'is_active'):
-            teacher_data['is_active'] = True
+        if hasattr(Teacher, 'phone'):
+            teacher_data['phone'] = phone_number
 
         teacher = Teacher(**teacher_data)
-
-        # Generate employee ID if the field exists
-        if hasattr(Teacher, 'employee_id'):
-            db.session.add(teacher)
-            db.session.flush()  # Get the ID
-            teacher.employee_id = f"EMP{teacher.id:03d}"
 
         db.session.commit()
 

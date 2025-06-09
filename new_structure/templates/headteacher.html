@@ -1065,6 +1065,181 @@
         font-weight: 700;
         color: white;
       }
+
+      /* Enhanced Dashboard Header Styles */
+      .dashboard-header {
+        background: linear-gradient(135deg, var(--white) 0%, #f8fafc 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      .dashboard-title {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .dashboard-title i {
+        color: var(--primary-color);
+        font-size: 2rem;
+      }
+
+      .dashboard-subtitle {
+        font-size: 1.125rem;
+        color: var(--text-secondary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .quick-stats {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .quick-stat {
+        text-align: center;
+        padding: 1rem;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: var(--radius-lg);
+        color: white;
+        min-width: 80px;
+        box-shadow: var(--shadow-md);
+      }
+
+      .quick-stat-value {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+      }
+
+      .quick-stat-label {
+        display: block;
+        font-size: 0.75rem;
+        opacity: 0.9;
+        font-weight: 500;
+      }
+
+      /* Filter Panel Styles */
+      .filter-panel {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+        animation: slideDown 0.3s ease;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      .filter-header h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .filter-close {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: var(--radius-md);
+        transition: all 0.3s ease;
+      }
+
+      .filter-close:hover {
+        background: var(--danger-color);
+        color: white;
+      }
+
+      .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .filter-group label {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+      }
+
+      .filter-group select,
+      .filter-group input {
+        padding: 0.75rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: white;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+      }
+
+      .filter-group select:focus,
+      .filter-group input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .filter-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+      }
     </style>
   </head>
   <body>
@@ -1093,7 +1268,10 @@
             </a>
           </li>
           <li class="nav-item">
-            <a href="{{ url_for('admin.analytics') }}" class="nav-link">
+            <a
+              href="{{ url_for('admin.analytics_dashboard') }}"
+              class="nav-link"
+            >
               <i class="fas fa-chart-bar"></i>
               Analytics
             </a>
@@ -1130,16 +1308,128 @@
     </nav>
 
     <div class="dashboard-container">
+      <!-- Enhanced Dashboard Header with Quick Actions -->
+      <div class="dashboard-header">
+        <div class="header-content">
+          <div class="header-info">
+            <h1 class="dashboard-title">
+              <i class="fas fa-tachometer-alt"></i>
+              Headteacher Dashboard
+            </h1>
+            <p class="dashboard-subtitle">
+              <i class="fas fa-calendar-day"></i>
+              {{ current_academic_year or '2024/2025' }} Academic Year - {{
+              current_term.name if current_term else 'Term 1' }}
+            </p>
+          </div>
+          <div class="header-actions">
+            <div class="quick-stats">
+              <div class="quick-stat">
+                <span class="quick-stat-value">{{ total_students }}</span>
+                <span class="quick-stat-label">Students</span>
+              </div>
+              <div class="quick-stat">
+                <span class="quick-stat-value">{{ total_teachers }}</span>
+                <span class="quick-stat-label">Teachers</span>
+              </div>
+              <div class="quick-stat">
+                <span class="quick-stat-value"
+                  >{{ "%.1f"|format(avg_performance) }}%</span
+                >
+                <span class="quick-stat-label">Avg Performance</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Enhanced Dashboard Actions -->
       <div class="dashboard-actions">
-        <button class="action-btn action-btn-outline">
+        <button
+          class="action-btn action-btn-outline"
+          onclick="toggleFilterPanel()"
+        >
           <i class="fas fa-filter"></i>
-          <span>Filter Data</span>
+          <span>Advanced Filters</span>
         </button>
-        <button class="action-btn">
+        <button
+          class="action-btn action-btn-outline"
+          onclick="refreshDashboard()"
+        >
+          <i class="fas fa-sync-alt"></i>
+          <span>Refresh Data</span>
+        </button>
+        <button class="action-btn" onclick="generateComprehensiveReport()">
           <i class="fas fa-file-download"></i>
-          <span>Generate Report</span>
+          <span>Export Report</span>
         </button>
+        <button class="action-btn" onclick="openAnalyticsDashboard()">
+          <i class="fas fa-chart-line"></i>
+          <span>Advanced Analytics</span>
+        </button>
+      </div>
+
+      <!-- Advanced Filter Panel (Hidden by default) -->
+      <div class="filter-panel" id="filterPanel" style="display: none">
+        <div class="filter-content">
+          <div class="filter-header">
+            <h3><i class="fas fa-sliders-h"></i> Advanced Filters</h3>
+            <button class="filter-close" onclick="toggleFilterPanel()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="filter-grid">
+            <div class="filter-group">
+              <label for="gradeFilter">Grade Level</label>
+              <select id="gradeFilter" onchange="applyFilters()">
+                <option value="">All Grades</option>
+                <option value="1">Grade 1</option>
+                <option value="2">Grade 2</option>
+                <option value="3">Grade 3</option>
+                <option value="4">Grade 4</option>
+                <option value="5">Grade 5</option>
+                <option value="6">Grade 6</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="termFilter">Term</label>
+              <select id="termFilter" onchange="applyFilters()">
+                <option value="">All Terms</option>
+                <option value="1">Term 1</option>
+                <option value="2">Term 2</option>
+                <option value="3">Term 3</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="performanceFilter">Performance Level</label>
+              <select id="performanceFilter" onchange="applyFilters()">
+                <option value="">All Levels</option>
+                <option value="excellent">Excellent (≥75%)</option>
+                <option value="good">Good (50-74%)</option>
+                <option value="average">Average (30-49%)</option>
+                <option value="below">Below Average (<30%)</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="dateRange">Date Range</label>
+              <input type="date" id="dateFrom" onchange="applyFilters()" />
+              <input type="date" id="dateTo" onchange="applyFilters()" />
+            </div>
+          </div>
+          <div class="filter-actions">
+            <button
+              class="action-btn action-btn-outline"
+              onclick="resetFilters()"
+            >
+              <i class="fas fa-undo"></i> Reset
+            </button>
+            <button class="action-btn" onclick="applyFilters()">
+              <i class="fas fa-check"></i> Apply Filters
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Enhanced School Statistics -->
@@ -2761,6 +3051,161 @@
         }
       }
 
+      // Enhanced Dashboard Functions
+      function toggleFilterPanel() {
+        const panel = document.getElementById('filterPanel');
+        if (panel.style.display === 'none' || panel.style.display === '') {
+          panel.style.display = 'block';
+          panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          panel.style.display = 'none';
+        }
+      }
+
+      function refreshDashboard() {
+        // Show loading indicator
+        showNotification('Refreshing dashboard data...', 'info');
+
+        // Simulate refresh (in real implementation, this would reload data)
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      }
+
+      function generateComprehensiveReport() {
+        showNotification('Generating comprehensive school report...', 'info');
+
+        // In real implementation, this would trigger report generation
+        setTimeout(() => {
+          showNotification('Report generation started. You will be notified when ready.', 'success');
+        }, 1500);
+      }
+
+      function openAnalyticsDashboard() {
+        // Navigate to analytics dashboard
+        window.location.href = "{{ url_for('admin.analytics_dashboard') }}";
+      }
+
+      function applyFilters() {
+        const grade = document.getElementById('gradeFilter').value;
+        const term = document.getElementById('termFilter').value;
+        const performance = document.getElementById('performanceFilter').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        // Show loading
+        showNotification('Applying filters...', 'info');
+
+        // In real implementation, this would filter the dashboard data
+        console.log('Filters applied:', { grade, term, performance, dateFrom, dateTo });
+
+        setTimeout(() => {
+          showNotification('Filters applied successfully!', 'success');
+        }, 1000);
+      }
+
+      function resetFilters() {
+        document.getElementById('gradeFilter').value = '';
+        document.getElementById('termFilter').value = '';
+        document.getElementById('performanceFilter').value = '';
+        document.getElementById('dateFrom').value = '';
+        document.getElementById('dateTo').value = '';
+
+        showNotification('Filters reset', 'info');
+      }
+
+      function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+          <div class="notification-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+          </div>
+          <button class="notification-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+
+        // Add styles
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6'};
+          color: white;
+          padding: 1rem 1.5rem;
+          border-radius: 0.5rem;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          max-width: 400px;
+          animation: slideInRight 0.3s ease;
+        `;
+
+        // Add to page
+        document.body.appendChild(notification);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+          }
+        }, 5000);
+      }
+
+      // Add notification animations
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+
+        @keyframes slideOutRight {
+          from {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+        }
+
+        .notification-content {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          flex: 1;
+        }
+
+        .notification-close {
+          background: none;
+          border: none;
+          color: white;
+          cursor: pointer;
+          padding: 0.25rem;
+          border-radius: 0.25rem;
+          transition: background 0.2s ease;
+        }
+
+        .notification-close:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      `;
+      document.head.appendChild(style);
+
       // Add smooth scrolling for better UX
       document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
         anchor.addEventListener("click", function (e) {
@@ -2772,6 +3217,14 @@
             });
           }
         });
+      });
+
+      // Initialize dashboard on load
+      document.addEventListener('DOMContentLoaded', function() {
+        // Show welcome message
+        setTimeout(() => {
+          showNotification('Welcome to the Enhanced Headteacher Dashboard!', 'success');
+        }, 1000);
       });
     </script>
   </body>

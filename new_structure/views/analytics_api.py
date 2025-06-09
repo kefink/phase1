@@ -459,3 +459,106 @@ def get_grades():
             'success': False,
             'message': f'Error getting grades: {str(e)}'
         }), 500
+
+
+@analytics_api_bp.route('/class-stream-performance')
+@analytics_required
+def get_class_stream_performance():
+    """Get performance analytics by class and stream."""
+    try:
+        # Get query parameters
+        term_id = request.args.get('term_id', type=int)
+        assessment_type_id = request.args.get('assessment_type_id', type=int)
+
+        # Check permissions
+        role = get_role(session)
+        if role not in ['headteacher', 'admin']:
+            return jsonify({
+                'success': False,
+                'message': 'Insufficient permissions'
+            }), 403
+
+        # Get class/stream performance data
+        result = AcademicAnalyticsService.get_class_stream_performance(
+            term_id=term_id,
+            assessment_type_id=assessment_type_id
+        )
+
+        return jsonify({
+            'success': True,
+            'class_stream_performance': result.get('class_stream_performance', []),
+            'total_classes_analyzed': result.get('total_classes_analyzed', 0),
+            'best_performing_class': result.get('best_performing_class'),
+            'lowest_performing_class': result.get('lowest_performing_class')
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error getting class-stream performance: {str(e)}'
+        }), 500
+
+
+@analytics_api_bp.route('/enhanced-top-performers')
+@analytics_required
+def get_enhanced_top_performers():
+    """Get enhanced top performers with detailed marks breakdown."""
+    try:
+        # Get query parameters
+        grade_id = request.args.get('grade_id', type=int)
+        stream_id = request.args.get('stream_id', type=int)
+        term_id = request.args.get('term_id', type=int)
+        assessment_type_id = request.args.get('assessment_type_id', type=int)
+        limit = request.args.get('limit', default=10, type=int)
+
+        # Apply role-based filtering
+        role = get_role(session)
+        teacher_id = session.get('teacher_id')
+
+        if role == 'classteacher':
+            # Classteachers can only see analytics for their assigned classes
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
+
+            if 'error' in assignment_summary:
+                return jsonify({
+                    'success': True,
+                    'enhanced_top_performers': {},
+                    'total_grades_analyzed': 0,
+                    'message': assignment_summary['error']
+                })
+
+            assigned_classes = assignment_summary.get('class_teacher_assignments', [])
+            if not assigned_classes:
+                return jsonify({
+                    'success': True,
+                    'enhanced_top_performers': {},
+                    'total_grades_analyzed': 0,
+                    'message': 'No assigned classes found'
+                })
+
+            # If no specific grade/stream provided, use first assigned class
+            if not grade_id and not stream_id and assigned_classes:
+                first_class = assigned_classes[0]
+                grade_id = first_class.get('grade_id')
+                stream_id = first_class.get('stream_id')
+
+        # Get enhanced top performers data
+        result = AcademicAnalyticsService.get_enhanced_top_performers(
+            grade_id=grade_id,
+            stream_id=stream_id,
+            term_id=term_id,
+            assessment_type_id=assessment_type_id,
+            limit=limit
+        )
+
+        return jsonify({
+            'success': True,
+            'enhanced_top_performers': result.get('enhanced_top_performers', {}),
+            'total_grades_analyzed': result.get('total_grades_analyzed', 0)
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error getting enhanced top performers: {str(e)}'
+        }), 500

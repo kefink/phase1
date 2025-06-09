@@ -1147,42 +1147,7 @@ def manage_terms_assessments():
                           current_academic_year=current_academic_year)
 
 
-@admin_bp.route('/analytics')
-@admin_required
-def analytics():
-    """Enhanced analytics dashboard for headteacher."""
-    # Get performance trends over time
-    performance_trends = {}
-    terms = Term.query.all()
-
-    for term in terms:
-        term_marks = Mark.query.filter_by(term_id=term.id).all()
-        if term_marks:
-            term_avg = round(sum(mark.percentage for mark in term_marks if mark.percentage) / len([m for m in term_marks if m.percentage]), 2)
-            performance_trends[term.name] = term_avg
-
-    # Subject-wise detailed analysis
-    subject_analysis = {}
-    for subject in Subject.query.all():
-        subject_marks = Mark.query.filter_by(subject_id=subject.id).all()
-        if subject_marks:
-            grades_performance = {}
-            for grade in Grade.query.all():
-                grade_subject_marks = [m for m in subject_marks if m.student and m.student.stream and m.student.stream.grade_id == grade.id]
-                if grade_subject_marks:
-                    grade_avg = round(sum(mark.percentage for mark in grade_subject_marks if mark.percentage) / len([m for m in grade_subject_marks if m.percentage]), 2)
-                    grades_performance[grade.name] = grade_avg
-
-            subject_analysis[subject.name] = {
-                'overall_average': round(sum(mark.percentage for mark in subject_marks if mark.percentage) / len([m for m in subject_marks if m.percentage]), 2),
-                'total_students': len(set([m.student_id for m in subject_marks])),
-                'grades_performance': grades_performance,
-                'education_level': subject.education_level
-            }
-
-    return render_template('analytics.html',
-                          performance_trends=performance_trends,
-                          subject_analysis=subject_analysis)
+# Removed duplicate analytics route - using analytics_dashboard() instead
 
 
 def generate_performance_assessment_data():
@@ -1221,7 +1186,7 @@ def generate_performance_assessment_data():
     ).filter(
         Mark.percentage.isnot(None),
         Mark.raw_mark.isnot(None),
-        Mark.max_raw_mark.isnot(None)
+        Mark.raw_total_marks.isnot(None)
     ).distinct().all()
 
     print(f"DEBUG: Found {len(combinations)} unique combinations")
@@ -1235,7 +1200,7 @@ def generate_performance_assessment_data():
             Student.id,
             db.func.avg(Mark.percentage).label('avg_percentage'),
             db.func.sum(Mark.raw_mark).label('total_raw_marks'),
-            db.func.sum(Mark.max_raw_mark).label('total_max_marks'),
+            db.func.sum(Mark.raw_total_marks).label('total_max_marks'),
             db.func.count(Mark.id).label('subject_count')
         ).join(
             Mark, Student.id == Mark.student_id
@@ -1248,7 +1213,7 @@ def generate_performance_assessment_data():
             Mark.assessment_type_id == combo.assessment_type_id,
             Mark.percentage.isnot(None),
             Mark.raw_mark.isnot(None),
-            Mark.max_raw_mark.isnot(None)
+            Mark.raw_total_marks.isnot(None)
         ).group_by(Student.id).all()
 
         if not students_with_marks:

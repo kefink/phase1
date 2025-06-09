@@ -1,17 +1,22 @@
 {% extends "modern_base.html" %} {% block title %}Academic Performance Analytics
 - Head Teacher{% endblock %} {% block extra_css %}
 <style>
+  /* Premium Analytics Styling */
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+  }
+
   .analytics-page-header {
-    background: linear-gradient(
-      135deg,
-      var(--primary-color),
-      var(--secondary-color)
-    );
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
     padding: var(--space-8) var(--space-6);
-    border-radius: var(--radius-lg);
+    border-radius: 20px;
     margin-bottom: var(--space-6);
     text-align: center;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   }
 
   .analytics-page-header h1 {
@@ -54,24 +59,53 @@
   }
 
   .overview-card {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
+    border-radius: 20px;
+    padding: var(--space-6);
     text-align: center;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .overview-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 20px 20px 0 0;
+  }
+
+  .overview-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+    background: rgba(255, 255, 255, 0.25);
   }
 
   .overview-value {
-    font-size: 2.2rem;
-    font-weight: bold;
-    color: var(--green-600);
-    margin-bottom: var(--space-1);
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-2);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .overview-label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: var(--space-1);
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .overview-trend {
@@ -266,6 +300,186 @@
     gap: var(--space-2);
   }
 
+  /* Premium Analytics Components */
+  .analytics-component {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: var(--space-6);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    transition: all 0.3s ease;
+  }
+
+  .analytics-component:hover {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+  }
+
+  .component-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .component-header h3 {
+    color: white;
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .loading-state {
+    text-align: center;
+    padding: var(--space-8);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+  }
+
+  .loading-state i {
+    font-size: 2rem;
+    margin-bottom: var(--space-3);
+    color: #667eea;
+  }
+
+  /* Performance Badge Styling */
+  .performance-badge {
+    padding: var(--space-1) var(--space-3);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .performance-excellent {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+  }
+
+  .performance-very-good {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+  }
+
+  .performance-good {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+  }
+
+  .performance-satisfactory {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+  }
+
+  .performance-needs-improvement {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+  }
+
+  .performance-critical {
+    background: linear-gradient(135deg, #991b1b, #7f1d1d);
+    color: white;
+  }
+
+  /* Premium Card Styling */
+  .premium-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .premium-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .top-performer-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .performer-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .rank-1 {
+    background: linear-gradient(135deg, #ffd700, #ffb300);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+  }
+
+  .rank-2 {
+    background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+    box-shadow: 0 4px 15px rgba(192, 192, 192, 0.4);
+  }
+
+  .rank-3 {
+    background: linear-gradient(135deg, #cd7f32, #b8860b);
+    box-shadow: 0 4px 15px rgba(205, 127, 50, 0.4);
+  }
+
+  .rank-other {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .performer-info {
+    flex: 1;
+  }
+
+  .performer-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: var(--space-1);
+  }
+
+  .performer-details {
+    display: flex;
+    gap: var(--space-3);
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .performer-metrics {
+    text-align: right;
+  }
+
+  .performance-score {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: var(--space-1);
+  }
+
+  .grade-letter {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
   /* Responsive Design */
   @media (max-width: 1024px) {
     .analytics-content-grid {
@@ -314,11 +528,16 @@
     }
   }
 </style>
+<!-- Enhanced Analytics Styles -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/enhanced_analytics.css') }}"
+/>
 {% endblock %} {% block content %}
 <div class="container">
   <!-- Breadcrumb Navigation -->
   <div class="breadcrumb">
-    <a href="{{ url_for('admin.admin_dashboard') }}">
+    <a href="{{ url_for('admin.dashboard') }}">
       <i class="fas fa-home"></i> Dashboard
     </a>
     <span class="breadcrumb-separator">/</span>
@@ -509,9 +728,7 @@
 
         <div class="component-content">
           <div id="top-performers-container">
-            <div class="loading-state">
-              <i class="fas fa-spinner fa-spin"></i> Loading top performers...
-            </div>
+            <!-- Enhanced Top Performers will be loaded here -->
           </div>
         </div>
       </div>
@@ -532,11 +749,26 @@
 
         <div class="component-content">
           <div id="subject-performance-container">
-            <div class="loading-state">
-              <i class="fas fa-spinner fa-spin"></i> Loading subject
-              analytics...
-            </div>
+            <!-- Subject Performance will be loaded here -->
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Class/Stream Performance Section -->
+  <div class="analytics-section">
+    <div class="analytics-component">
+      <div class="component-header">
+        <h3><i class="fas fa-users"></i> Class & Stream Performance</h3>
+        <button class="refresh-btn" onclick="loadClassStreamPerformance()">
+          <i class="fas fa-sync-alt"></i> REFRESH
+        </button>
+      </div>
+
+      <div class="component-content">
+        <div id="class-stream-performance-container">
+          <!-- Class/Stream Performance will be loaded here -->
         </div>
       </div>
     </div>
@@ -623,7 +855,7 @@
         <i class="fas fa-undo"></i> Reset Filters
       </button>
       <a
-        href="{{ url_for('admin.admin_dashboard') }}"
+        href="{{ url_for('admin.dashboard') }}"
         class="modern-btn btn-outline"
         style="margin-left: var(--space-2)"
       >
@@ -724,12 +956,13 @@ extra_js %}
   });
 
   function loadSchoolOverview() {
-    // TODO: Load school overview statistics
-    // For now, show placeholder data
-    document.getElementById("total-students-school").textContent = "127";
-    document.getElementById("total-subjects-school").textContent = "33";
-    document.getElementById("school-average-performance").textContent = "78.5%";
-    document.getElementById("total-teachers-active").textContent = "12";
+    // Load real school overview statistics from server-side data
+    // These values are already populated by the server-side template
+    console.log("School overview loaded from server-side data");
+
+    // Load enhanced analytics
+    loadEnhancedTopPerformers();
+    loadClassStreamPerformance();
   }
 
   // Utility function for notifications

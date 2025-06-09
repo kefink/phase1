@@ -176,7 +176,7 @@ class AcademicAnalyticsService:
             
             # Group by subject
             query = query.group_by(Subject.id, Subject.name)
-            query = query.having(func.count(Mark.id) >= 5)  # Minimum 5 marks for analysis
+            query = query.having(func.count(Mark.id) >= 2)  # Minimum 2 marks for analysis (reduced from 5)
             
             # Execute query
             results = query.all()
@@ -275,18 +275,25 @@ class AcademicAnalyticsService:
             )
             
             # Combine results
+            top_performers = top_performers_data.get('top_performers', [])
+            subject_analytics = subject_analytics_data.get('subject_analytics', [])
+
             comprehensive_data = {
-                'top_performers': top_performers_data.get('top_performers', []),
-                'subject_analytics': subject_analytics_data.get('subject_analytics', []),
+                'top_performers': top_performers,
+                'topPerformers': top_performers,  # Alias for JavaScript compatibility
+                'subject_analytics': subject_analytics,
+                'subjectAnalytics': subject_analytics,  # Alias for JavaScript compatibility
                 'top_subject': subject_analytics_data.get('top_subject'),
+                'topSubject': subject_analytics_data.get('top_subject'),  # Alias for JavaScript compatibility
                 'least_performing_subject': subject_analytics_data.get('least_performing_subject'),
+                'leastPerformingSubject': subject_analytics_data.get('least_performing_subject'),  # Alias for JavaScript compatibility
                 'context': top_performers_data.get('context', {}),
                 'summary': {
                     'total_students_analyzed': top_performers_data.get('total_students_analyzed', 0),
                     'total_subjects_analyzed': subject_analytics_data.get('total_subjects_analyzed', 0),
                     'has_sufficient_data': (
-                        top_performers_data.get('total_students_analyzed', 0) >= 3 and
-                        subject_analytics_data.get('total_subjects_analyzed', 0) >= 2
+                        top_performers_data.get('total_students_analyzed', 0) >= 1 and
+                        subject_analytics_data.get('total_subjects_analyzed', 0) >= 1
                     )
                 },
                 'generated_at': time.time()
@@ -298,9 +305,13 @@ class AcademicAnalyticsService:
             print(f"Error getting comprehensive analytics: {e}")
             return {
                 'top_performers': [],
+                'topPerformers': [],  # Alias for JavaScript compatibility
                 'subject_analytics': [],
+                'subjectAnalytics': [],  # Alias for JavaScript compatibility
                 'top_subject': None,
+                'topSubject': None,  # Alias for JavaScript compatibility
                 'least_performing_subject': None,
+                'leastPerformingSubject': None,  # Alias for JavaScript compatibility
                 'context': {},
                 'summary': {
                     'total_students_analyzed': 0,
@@ -312,35 +323,43 @@ class AcademicAnalyticsService:
     
     @staticmethod
     def _get_performance_category(percentage: float) -> str:
-        """Get performance category based on percentage."""
+        """Get performance category based on percentage using CBC standards."""
         if percentage >= 90:
-            return 'Excellent'
-        elif percentage >= 80:
-            return 'Very Good'
-        elif percentage >= 70:
-            return 'Good'
-        elif percentage >= 60:
-            return 'Satisfactory'
-        elif percentage >= 50:
-            return 'Needs Improvement'
+            return 'Exceeding Expectation'
+        elif percentage >= 75:
+            return 'Exceeding Expectation'
+        elif percentage >= 58:
+            return 'Meeting Expectation'
+        elif percentage >= 41:
+            return 'Meeting Expectation'
+        elif percentage >= 31:
+            return 'Approaching Expectation'
+        elif percentage >= 21:
+            return 'Approaching Expectation'
+        elif percentage >= 11:
+            return 'Below Expectation'
         else:
-            return 'Below Expectations'
+            return 'Below Expectation'
     
     @staticmethod
     def _get_grade_letter(percentage: float) -> str:
-        """Get grade letter based on percentage."""
+        """Get grade letter based on percentage using CBC grading standards."""
         if percentage >= 90:
-            return 'A'
-        elif percentage >= 80:
-            return 'B'
-        elif percentage >= 70:
-            return 'C'
-        elif percentage >= 60:
-            return 'D'
-        elif percentage >= 50:
-            return 'E'
+            return 'EE1'
+        elif percentage >= 75:
+            return 'EE2'
+        elif percentage >= 58:
+            return 'ME1'
+        elif percentage >= 41:
+            return 'ME2'
+        elif percentage >= 31:
+            return 'AE1'
+        elif percentage >= 21:
+            return 'AE2'
+        elif percentage >= 11:
+            return 'BE1'
         else:
-            return 'F'
+            return 'BE2'
     
     @staticmethod
     def _get_context_info(grade_id: Optional[int], stream_id: Optional[int],
@@ -367,5 +386,259 @@ class AcademicAnalyticsService:
             
         except Exception as e:
             print(f"Error getting context info: {e}")
-        
+
         return context
+
+    @classmethod
+    def get_class_stream_performance(cls, term_id: Optional[int] = None,
+                                   assessment_type_id: Optional[int] = None,
+                                   use_cache: bool = True) -> Dict[str, Any]:
+        """
+        Get performance analytics by class and stream for headteacher view.
+
+        Args:
+            term_id: Term ID to filter by
+            assessment_type_id: Assessment type ID to filter by
+            use_cache: Whether to use caching
+
+        Returns:
+            Dictionary containing class/stream performance data
+        """
+        try:
+            # Generate cache key
+            cache_key = f"class_stream_performance_{term_id}_{assessment_type_id}"
+
+            # Check cache first
+            if use_cache:
+                cached_result = get_cached_analytics(cache_key)
+                if cached_result:
+                    return cached_result
+
+            # Build query for class/stream performance
+            query = db.session.query(
+                Grade.id.label('grade_id'),
+                Grade.name.label('grade_name'),
+                Stream.id.label('stream_id'),
+                Stream.name.label('stream_name'),
+                func.avg(Mark.percentage).label('average_percentage'),
+                func.count(func.distinct(Student.id)).label('student_count'),
+                func.count(Mark.id).label('total_marks'),
+                func.min(Mark.percentage).label('min_percentage'),
+                func.max(Mark.percentage).label('max_percentage')
+            ).join(Student, Mark.student_id == Student.id)\
+             .join(Grade, Student.grade_id == Grade.id)\
+             .outerjoin(Stream, Student.stream_id == Stream.id)
+
+            # Apply filters
+            if term_id:
+                query = query.filter(Mark.term_id == term_id)
+            if assessment_type_id:
+                query = query.filter(Mark.assessment_type_id == assessment_type_id)
+
+            # Group by grade and stream
+            query = query.group_by(Grade.id, Grade.name, Stream.id, Stream.name)
+            query = query.order_by(Grade.name, Stream.name)
+
+            results = query.all()
+
+            # Format results
+            class_stream_data = []
+            for result in results:
+                performance_data = {
+                    'grade_id': result.grade_id,
+                    'grade_name': result.grade_name,
+                    'stream_id': result.stream_id,
+                    'stream_name': result.stream_name or 'No Stream',
+                    'average_percentage': round(result.average_percentage, 2),
+                    'student_count': result.student_count,
+                    'total_marks': result.total_marks,
+                    'min_percentage': round(result.min_percentage, 2),
+                    'max_percentage': round(result.max_percentage, 2),
+                    'performance_category': cls._get_performance_category(result.average_percentage),
+                    'grade_letter': cls._get_grade_letter(result.average_percentage)
+                }
+                class_stream_data.append(performance_data)
+
+            # Sort by performance
+            class_stream_data.sort(key=lambda x: x['average_percentage'], reverse=True)
+
+            result_data = {
+                'class_stream_performance': class_stream_data,
+                'total_classes_analyzed': len(class_stream_data),
+                'best_performing_class': class_stream_data[0] if class_stream_data else None,
+                'lowest_performing_class': class_stream_data[-1] if class_stream_data else None,
+                'generated_at': time.time()
+            }
+
+            # Cache the result
+            if use_cache:
+                cache_analytics(cache_key, result_data, expiry=1800)  # 30 minutes
+
+            return result_data
+
+        except Exception as e:
+            print(f"Error getting class/stream performance: {e}")
+            return {
+                'class_stream_performance': [],
+                'total_classes_analyzed': 0,
+                'best_performing_class': None,
+                'lowest_performing_class': None,
+                'error': str(e)
+            }
+
+    @classmethod
+    def get_enhanced_top_performers(cls, grade_id: Optional[int] = None, stream_id: Optional[int] = None,
+                                  term_id: Optional[int] = None, assessment_type_id: Optional[int] = None,
+                                  limit: int = 10, use_cache: bool = True) -> Dict[str, Any]:
+        """
+        Get enhanced top performers with detailed marks breakdown per grade/stream.
+
+        Args:
+            grade_id: Grade ID to filter by
+            stream_id: Stream ID to filter by
+            term_id: Term ID to filter by
+            assessment_type_id: Assessment type ID to filter by
+            limit: Number of top performers per grade/stream
+            use_cache: Whether to use caching
+
+        Returns:
+            Dictionary containing enhanced top performers data
+        """
+        try:
+            # Generate cache key
+            cache_key = f"enhanced_top_performers_{grade_id}_{stream_id}_{term_id}_{assessment_type_id}_{limit}"
+
+            # Check cache first
+            if use_cache:
+                cached_result = get_cached_analytics(cache_key)
+                if cached_result:
+                    return cached_result
+
+            # Get all grades and streams if not specified
+            if not grade_id:
+                grades = Grade.query.all()
+            else:
+                grades = [Grade.query.get(grade_id)]
+
+            enhanced_performers = {}
+
+            for grade in grades:
+                if not grade:
+                    continue
+
+                grade_key = f"Grade {grade.name}"
+                enhanced_performers[grade_key] = {}
+
+                # Get streams for this grade
+                if not stream_id:
+                    streams = Stream.query.filter_by(grade_id=grade.id).all()
+                    if not streams:
+                        streams = [None]  # Handle grades without streams
+                else:
+                    streams = [Stream.query.get(stream_id)]
+
+                for stream in streams:
+                    stream_key = stream.name if stream else "No Stream"
+
+                    # Build query for this grade/stream combination
+                    query = db.session.query(
+                        Student.id,
+                        Student.name,
+                        Student.admission_number,
+                        Grade.name.label('grade_name'),
+                        Stream.name.label('stream_name'),
+                        func.avg(Mark.percentage).label('average_percentage'),
+                        func.count(Mark.id).label('total_marks'),
+                        func.min(Mark.percentage).label('min_percentage'),
+                        func.max(Mark.percentage).label('max_percentage')
+                    ).join(Mark, Student.id == Mark.student_id)\
+                     .join(Grade, Student.grade_id == Grade.id)\
+                     .outerjoin(Stream, Student.stream_id == Stream.id)\
+                     .filter(Student.grade_id == grade.id)
+
+                    if stream:
+                        query = query.filter(Student.stream_id == stream.id)
+                    else:
+                        query = query.filter(Student.stream_id.is_(None))
+
+                    # Apply filters
+                    if term_id:
+                        query = query.filter(Mark.term_id == term_id)
+                    if assessment_type_id:
+                        query = query.filter(Mark.assessment_type_id == assessment_type_id)
+
+                    # Group and order
+                    query = query.group_by(Student.id, Student.name, Student.admission_number,
+                                         Grade.name, Stream.name)
+                    query = query.having(func.count(Mark.id) >= 3)  # At least 3 marks
+                    query = query.order_by(desc(func.avg(Mark.percentage)))
+                    query = query.limit(limit)
+
+                    results = query.all()
+
+                    # Get detailed marks for each top performer
+                    performers_with_details = []
+                    for result in results:
+                        # Get individual subject marks
+                        marks_query = db.session.query(
+                            Subject.name.label('subject_name'),
+                            Mark.percentage,
+                            Mark.raw_mark,
+                            Mark.total_marks
+                        ).join(Subject, Mark.subject_id == Subject.id)\
+                         .filter(Mark.student_id == result.id)
+
+                        if term_id:
+                            marks_query = marks_query.filter(Mark.term_id == term_id)
+                        if assessment_type_id:
+                            marks_query = marks_query.filter(Mark.assessment_type_id == assessment_type_id)
+
+                        subject_marks = marks_query.all()
+
+                        performer_data = {
+                            'student_id': result.id,
+                            'name': result.name,
+                            'admission_number': result.admission_number,
+                            'grade_name': result.grade_name,
+                            'stream_name': result.stream_name or 'No Stream',
+                            'average_percentage': round(result.average_percentage, 2),
+                            'total_assessments': result.total_marks,
+                            'min_percentage': round(result.min_percentage, 2),
+                            'max_percentage': round(result.max_percentage, 2),
+                            'performance_category': cls._get_performance_category(result.average_percentage),
+                            'grade_letter': cls._get_grade_letter(result.average_percentage),
+                            'subject_marks': [
+                                {
+                                    'subject_name': mark.subject_name,
+                                    'percentage': round(mark.percentage, 2),
+                                    'raw_mark': mark.raw_mark,
+                                    'total_marks': mark.total_marks,
+                                    'grade_letter': cls._get_grade_letter(mark.percentage)
+                                }
+                                for mark in subject_marks
+                            ]
+                        }
+                        performers_with_details.append(performer_data)
+
+                    if performers_with_details:
+                        enhanced_performers[grade_key][stream_key] = performers_with_details
+
+            result_data = {
+                'enhanced_top_performers': enhanced_performers,
+                'total_grades_analyzed': len([k for k in enhanced_performers.keys()]),
+                'generated_at': time.time()
+            }
+
+            # Cache the result
+            if use_cache:
+                cache_analytics(cache_key, result_data, expiry=1800)  # 30 minutes
+
+            return result_data
+
+        except Exception as e:
+            print(f"Error getting enhanced top performers: {e}")
+            return {
+                'enhanced_top_performers': {},
+                'total_grades_analyzed': 0,
+                'error': str(e)
+            }
