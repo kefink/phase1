@@ -1,7 +1,9 @@
 /**
- * Academic Performance Analytics Dashboard
+ * Academic Performance Analytics Dashboard - UPDATED VERSION 20250609
  * Handles loading, displaying, and managing analytics data
  */
+
+console.log("🚀 Analytics Dashboard JavaScript loaded - UPDATED VERSION");
 
 // Global analytics state
 let analyticsData = {
@@ -19,6 +21,7 @@ let analyticsFilters = {
   assessmentTypeId: null,
   gradeId: null,
   streamId: null,
+  enhancedMode: false,
 };
 
 let availableOptions = {
@@ -71,21 +74,27 @@ async function initializeAnalyticsDashboard() {
 async function loadFilterOptions() {
   try {
     // Load terms
-    const termsResponse = await fetch("/api/analytics/terms");
+    const termsResponse = await fetch("/api/analytics/terms", {
+      credentials: "same-origin",
+    });
     if (termsResponse.ok) {
       const termsData = await termsResponse.json();
       availableOptions.terms = termsData.terms || [];
     }
 
     // Load assessment types
-    const assessmentResponse = await fetch("/api/analytics/assessment_types");
+    const assessmentResponse = await fetch("/api/analytics/assessment_types", {
+      credentials: "same-origin",
+    });
     if (assessmentResponse.ok) {
       const assessmentData = await assessmentResponse.json();
       availableOptions.assessmentTypes = assessmentData.assessment_types || [];
     }
 
     // Load grades (for headteacher view)
-    const gradesResponse = await fetch("/api/analytics/grades");
+    const gradesResponse = await fetch("/api/analytics/grades", {
+      credentials: "same-origin",
+    });
     if (gradesResponse.ok) {
       const gradesData = await gradesResponse.json();
       availableOptions.grades = gradesData.grades || [];
@@ -162,7 +171,10 @@ async function loadAnalyticsData() {
 
     // Load analytics data
     const response = await fetch(
-      `/api/analytics/comprehensive?${params.toString()}`
+      `/api/analytics/comprehensive?${params.toString()}`,
+      {
+        credentials: "same-origin",
+      }
     );
 
     if (!response.ok) {
@@ -191,16 +203,39 @@ async function loadAnalyticsData() {
 // ============================================================================
 
 function updateAnalyticsDashboard() {
+  console.log("🎯 updateAnalyticsDashboard called - UPDATED VERSION");
+
+  // Always load enhanced top performers regardless of comprehensive data
+  console.log("📊 Loading enhanced top performers independently...");
+  loadEnhancedTopPerformers();
+
+  // Check if comprehensive analytics has sufficient data
   if (!analyticsData.summary || !analyticsData.summary.has_sufficient_data) {
-    showNoDataState();
+    console.log(
+      "❌ No sufficient comprehensive data, but still loading enhanced analytics"
+    );
+    // Don't return early - still load enhanced analytics
+
+    // Only show no data state for summary cards, not the whole dashboard
+    const summaryCards = document.querySelectorAll(".summary-card");
+    summaryCards.forEach((card) => {
+      const valueElement = card.querySelector(".summary-value");
+      if (valueElement) {
+        valueElement.textContent = "-";
+      }
+    });
+
+    // Still load other enhanced analytics
+    updateSubjectPerformance();
+    loadClassStreamPerformance();
     return;
   }
 
+  console.log("✅ Sufficient comprehensive data found, updating dashboard");
   hideNoDataState();
   updateSummaryCards();
 
-  // Load enhanced analytics
-  loadEnhancedTopPerformers();
+  // Load other analytics
   updateSubjectPerformance();
   loadClassStreamPerformance();
 }
@@ -229,59 +264,17 @@ function updateSummaryCards() {
   });
 }
 
-function updateTopPerformers() {
-  const container = document.getElementById("top-performers-container");
-  if (!container) return;
-
-  if (
-    !analyticsData.topPerformers ||
-    analyticsData.topPerformers.length === 0
-  ) {
-    container.innerHTML =
-      '<div class="no-data-message">No top performers data available</div>';
-    return;
-  }
-
-  let html = "";
-  analyticsData.topPerformers.forEach((performer) => {
-    const rankClass =
-      performer.rank <= 3 ? `rank-${performer.rank}` : "rank-other";
-    const performanceClass = getPerformanceClass(
-      performer.performance_category
-    );
-
-    html += `
-            <div class="top-performer-card premium-card">
-                <div class="performer-rank ${rankClass}">
-                    <i class="fas fa-trophy"></i>
-                    <span>${performer.rank}</span>
-                </div>
-                <div class="performer-info">
-                    <div class="performer-name">${performer.name}</div>
-                    <div class="performer-details">
-                        <span><i class="fas fa-id-card"></i> ${performer.admission_number}</span>
-                        <span><i class="fas fa-chart-line"></i> ${performer.total_marks} marks</span>
-                    </div>
-                </div>
-                <div class="performer-metrics">
-                    <div class="performance-score">
-                        <strong>${performer.average_percentage}%</strong>
-                        <div class="grade-letter">${performer.grade_letter}</div>
-                    </div>
-                    <div class="performance-badge ${performanceClass}">
-                        ${performer.performance_category}
-                    </div>
-                </div>
-            </div>
-        `;
-  });
-
-  container.innerHTML = html;
-}
+// Old updateTopPerformers function removed - now using loadEnhancedTopPerformers instead
 
 function updateSubjectPerformance() {
   const container = document.getElementById("subject-performance-container");
   if (!container) return;
+
+  // Check if we should load enhanced subject performance
+  if (analyticsFilters.enhancedMode) {
+    loadEnhancedSubjectPerformance();
+    return;
+  }
 
   if (
     !analyticsData.subjectAnalytics ||
@@ -292,7 +285,15 @@ function updateSubjectPerformance() {
     return;
   }
 
-  let html = "";
+  let html = `
+    <div class="subject-performance-header">
+      <div class="performance-mode-toggle">
+        <button class="modern-btn btn-sm" onclick="toggleEnhancedSubjectMode()">
+          <i class="fas fa-chart-bar"></i> Enhanced Analysis
+        </button>
+      </div>
+    </div>
+  `;
 
   // Show top and least performing subjects prominently
   if (analyticsData.topSubject) {
@@ -440,10 +441,9 @@ function getPerformanceClass(category) {
 }
 
 function showLoadingState() {
-  const containers = [
-    "top-performers-container",
-    "subject-performance-container",
-  ];
+  // Only show loading for subject performance, not top performers
+  // Top performers will handle its own loading state
+  const containers = ["subject-performance-container"];
   containers.forEach((containerId) => {
     const container = document.getElementById(containerId);
     if (container) {
@@ -480,10 +480,9 @@ function hideNoDataState() {
 }
 
 function showAnalyticsError(message) {
-  const containers = [
-    "top-performers-container",
-    "subject-performance-container",
-  ];
+  // Only show error for subject performance, not top performers
+  // Top performers will handle its own error state
+  const containers = ["subject-performance-container"];
   containers.forEach((containerId) => {
     const container = document.getElementById(containerId);
     if (container) {
@@ -559,7 +558,10 @@ async function refreshAnalyticsData() {
       params.append("stream_id", analyticsFilters.streamId);
 
     const response = await fetch(
-      `/api/analytics/comprehensive?${params.toString()}`
+      `/api/analytics/comprehensive?${params.toString()}`,
+      {
+        credentials: "same-origin",
+      }
     );
 
     if (response.ok) {
@@ -580,8 +582,12 @@ async function refreshAnalyticsData() {
 // ============================================================================
 
 async function loadEnhancedTopPerformers() {
+  console.log("🚀 loadEnhancedTopPerformers called - UPDATED VERSION");
   const container = document.getElementById("top-performers-container");
-  if (!container) return;
+  if (!container) {
+    console.log("❌ top-performers-container not found");
+    return;
+  }
 
   try {
     // Show loading state
@@ -590,6 +596,7 @@ async function loadEnhancedTopPerformers() {
         <i class="fas fa-spinner fa-spin"></i> Loading enhanced top performers...
       </div>
     `;
+    console.log("📊 Loading enhanced top performers...");
 
     // Build query parameters
     const params = new URLSearchParams();
@@ -604,7 +611,10 @@ async function loadEnhancedTopPerformers() {
     params.append("limit", "5"); // Top 5 per grade/stream
 
     const response = await fetch(
-      `/api/analytics/enhanced-top-performers?${params.toString()}`
+      `/api/analytics/enhanced-top-performers?${params.toString()}`,
+      {
+        credentials: "same-origin",
+      }
     );
 
     if (!response.ok) {
@@ -660,65 +670,113 @@ function displayEnhancedTopPerformers(enhancedData) {
           <div class="performers-grid">`;
 
         performers.forEach((performer, index) => {
-          const rankIcon =
-            index === 0
-              ? "🥇"
-              : index === 1
-              ? "🥈"
-              : index === 2
-              ? "🥉"
-              : `#${index + 1}`;
+          const rankClass = index + 1 <= 3 ? `rank-${index + 1}` : "rank-other";
           const performanceClass = getPerformanceClass(
             performer.average_percentage
           );
 
+          // Calculate total marks display
+          const totalMarksDisplay =
+            performer.total_raw_marks && performer.total_max_marks
+              ? `${performer.total_raw_marks}/${performer.total_max_marks}`
+              : "N/A";
+
           html += `
-            <div class="enhanced-performer-card ${performanceClass}">
-              <div class="performer-header">
-                <div class="performer-rank">${rankIcon}</div>
-                <div class="performer-basic">
-                  <h6>${performer.name}</h6>
-                  <p class="admission-number">${performer.admission_number}</p>
+            <div class="enhanced-performer-card ${rankClass}" data-student-id="${
+            performer.student_id
+          }">
+              <!-- Clean Header -->
+              <div class="performer-card-header">
+                <div class="performer-rank-badge ${performanceClass}">
+                  ${index + 1}
                 </div>
-                <div class="performer-grade">
-                  <span class="grade-badge ${performanceClass}">${performer.grade_letter}</span>
-                  <span class="percentage">${performer.average_percentage}%</span>
+                <div class="performer-basic-info">
+                  <div class="performer-name">${performer.name}</div>
+                  <div class="performer-admission">${
+                    performer.admission_number
+                  }</div>
+                </div>
+                <div class="performer-grade-badge">
+                  ${performer.grade_letter}
                 </div>
               </div>
 
-              <div class="performer-details">
-                <div class="performance-summary">
-                  <div class="stat-mini">
-                    <span class="value">${performer.total_assessments}</span>
-                    <span class="label">Assessments</span>
+              <!-- Position and Class Info -->
+              <div class="performer-position">
+                <div class="position-info">
+                  <span class="position-rank">#${
+                    performer.class_position || index + 1
+                  }</span>
+                  <span class="position-text">of ${
+                    performer.total_students_in_class || "N/A"
+                  } students</span>
+                </div>
+                <div class="percentage-display">${
+                  performer.average_percentage
+                }%</div>
+              </div>
+
+              <!-- Summary Stats -->
+              <div class="performer-summary">
+                <div class="summary-item">
+                  <span class="summary-value">${totalMarksDisplay}</span>
+                  <span class="summary-label">Total Marks</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-value">${
+                    performer.total_assessments
+                  }</span>
+                  <span class="summary-label">Subjects</span>
+                </div>
+              </div>
+
+              <!-- Toggle Button -->
+              <button class="details-toggle" onclick="togglePerformerDetails('${
+                performer.student_id
+              }')">
+                <i class="fas fa-chevron-down"></i>
+                View Detailed Performance
+              </button>
+
+              <!-- Detailed Performance (Hidden by default) -->
+              <div class="performer-details" id="details-${
+                performer.student_id
+              }">
+                <div class="detailed-stats">
+                  <div class="detailed-stat">
+                    <span class="detailed-stat-value">${
+                      performer.min_percentage
+                    }%</span>
+                    <span class="detailed-stat-label">Lowest</span>
                   </div>
-                  <div class="stat-mini">
-                    <span class="value">${performer.min_percentage}%</span>
-                    <span class="label">Min</span>
+                  <div class="detailed-stat">
+                    <span class="detailed-stat-value">${
+                      performer.average_percentage
+                    }%</span>
+                    <span class="detailed-stat-label">Average</span>
                   </div>
-                  <div class="stat-mini">
-                    <span class="value">${performer.max_percentage}%</span>
-                    <span class="label">Max</span>
+                  <div class="detailed-stat">
+                    <span class="detailed-stat-value">${
+                      performer.max_percentage
+                    }%</span>
+                    <span class="detailed-stat-label">Highest</span>
                   </div>
                 </div>
 
-                <div class="subject-marks">
-                  <h6>Subject Performance:</h6>
-                  <div class="subjects-grid">`;
+                <div class="subject-performance-grid">`;
 
+          // Display subject performance in compact grid
           performer.subject_marks.forEach((subject) => {
-            const subjectClass = getPerformanceClass(subject.percentage);
+            const subjectGradeClass = getGradeClass(subject.grade_letter);
             html += `
-              <div class="subject-mark ${subjectClass}">
-                <span class="subject-name">${subject.subject_name}</span>
-                <span class="subject-grade">${subject.grade_letter}</span>
-                <span class="subject-percentage">${subject.percentage}%</span>
-                <span class="subject-raw">${subject.raw_marks}/${subject.total_marks}</span>
+              <div class="subject-item">
+                <div class="subject-name-small">${subject.subject_name}</div>
+                <div class="subject-grade-small ${subjectGradeClass}">${subject.grade_letter}</div>
+                <div class="subject-percentage-small">${subject.percentage}%</div>
               </div>`;
           });
 
           html += `
-                  </div>
                 </div>
               </div>
             </div>`;
@@ -733,6 +791,56 @@ function displayEnhancedTopPerformers(enhancedData) {
 
   html += "</div>";
   container.innerHTML = html;
+}
+
+// Helper function to get grade class for styling
+function getGradeClass(gradeLetter) {
+  switch (gradeLetter) {
+    case "EE1":
+      return "grade-ee1";
+    case "EE2":
+      return "grade-ee2";
+    case "ME1":
+      return "grade-me1";
+    case "ME2":
+      return "grade-me2";
+    case "AE1":
+      return "grade-ae1";
+    case "AE2":
+      return "grade-ae2";
+    case "BE1":
+      return "grade-be1";
+    case "BE2":
+      return "grade-be2";
+    default:
+      return "grade-default";
+  }
+}
+
+// Toggle function for performer details
+function togglePerformerDetails(studentId) {
+  const detailsElement = document.getElementById(`details-${studentId}`);
+  const toggleButton = document.querySelector(
+    `[data-student-id="${studentId}"] .details-toggle`
+  );
+
+  if (!detailsElement || !toggleButton) return;
+
+  const isExpanded = detailsElement.classList.contains("expanded");
+
+  if (isExpanded) {
+    // Collapse
+    detailsElement.classList.remove("expanded");
+    toggleButton.classList.remove("expanded");
+    toggleButton.innerHTML =
+      '<i class="fas fa-chevron-down"></i> View Detailed Performance';
+  } else {
+    // Expand
+    detailsElement.classList.add("expanded");
+    toggleButton.classList.add("expanded");
+    toggleButton.innerHTML =
+      '<i class="fas fa-chevron-up"></i> Hide Detailed Performance';
+  }
 }
 
 async function loadClassStreamPerformance() {
@@ -757,7 +865,10 @@ async function loadClassStreamPerformance() {
       params.append("assessment_type_id", analyticsFilters.assessmentTypeId);
 
     const response = await fetch(
-      `/api/analytics/class-stream-performance?${params.toString()}`
+      `/api/analytics/class-stream-performance?${params.toString()}`,
+      {
+        credentials: "same-origin",
+      }
     );
 
     if (!response.ok) {
@@ -903,3 +1014,249 @@ function displayClassStreamPerformance(data) {
   html += `</div>`;
   container.innerHTML = html;
 }
+
+// Enhanced Subject Performance Functions
+function toggleEnhancedSubjectMode() {
+  analyticsFilters.enhancedMode = !analyticsFilters.enhancedMode;
+  updateSubjectPerformance();
+}
+
+async function loadEnhancedSubjectPerformance() {
+  const container = document.getElementById("subject-performance-container");
+  if (!container) return;
+
+  try {
+    // Show loading state
+    container.innerHTML = `
+      <div class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i> Loading enhanced subject analytics...
+      </div>
+    `;
+
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (analyticsFilters.termId)
+      params.append("term_id", analyticsFilters.termId);
+    if (analyticsFilters.assessmentTypeId)
+      params.append("assessment_type_id", analyticsFilters.assessmentTypeId);
+    if (analyticsFilters.gradeId)
+      params.append("grade_id", analyticsFilters.gradeId);
+
+    const response = await fetch(
+      `/api/analytics/enhanced_subject_performance?${params.toString()}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.success) {
+      displayEnhancedSubjectPerformance(data);
+    } else {
+      throw new Error(
+        data.message || "Failed to load enhanced subject performance"
+      );
+    }
+  } catch (error) {
+    console.error("Error loading enhanced subject performance:", error);
+    container.innerHTML = `
+      <div class="error-state">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>Error loading enhanced subject analytics</p>
+        <button class="retry-btn" onclick="loadEnhancedSubjectPerformance()">
+          <i class="fas fa-redo"></i> Retry
+        </button>
+      </div>
+    `;
+  }
+}
+
+function displayEnhancedSubjectPerformance(data) {
+  const container = document.getElementById("subject-performance-container");
+  if (!container) return;
+
+  const { grade_subject_analytics, subject_stream_comparisons } = data;
+
+  if (
+    !grade_subject_analytics ||
+    Object.keys(grade_subject_analytics).length === 0
+  ) {
+    container.innerHTML = `
+      <div class="no-data-message">
+        <i class="fas fa-chart-bar"></i>
+        <p>No enhanced subject performance data available</p>
+        <button class="modern-btn btn-sm" onclick="toggleEnhancedSubjectMode()">
+          <i class="fas fa-arrow-left"></i> Back to Basic View
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  let html = `
+    <div class="enhanced-subject-performance">
+      <div class="subject-performance-header">
+        <div class="performance-mode-toggle">
+          <button class="modern-btn btn-sm" onclick="toggleEnhancedSubjectMode()">
+            <i class="fas fa-arrow-left"></i> Basic View
+          </button>
+        </div>
+      </div>
+
+      <div class="subject-performance-tabs">
+        <button class="tab-button active" onclick="switchSubjectTab('by-grade')">
+          <i class="fas fa-layer-group"></i> By Grade
+        </button>
+        <button class="tab-button" onclick="switchSubjectTab('by-subject')">
+          <i class="fas fa-book"></i> By Subject
+        </button>
+      </div>
+
+      <div id="by-grade-tab" class="tab-content active">
+        ${generateGradeSubjectView(grade_subject_analytics)}
+      </div>
+
+      <div id="by-subject-tab" class="tab-content">
+        ${generateSubjectComparisonView(subject_stream_comparisons)}
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+function generateGradeSubjectView(gradeSubjectData) {
+  let html = "";
+
+  Object.entries(gradeSubjectData).forEach(([gradeName, subjects]) => {
+    html += `
+      <div class="grade-subject-section">
+        <h3 class="grade-subject-title">
+          <i class="fas fa-layer-group"></i> ${gradeName}
+        </h3>
+        <div class="subjects-grid-enhanced">
+    `;
+
+    Object.entries(subjects).forEach(([subjectName, subjectData]) => {
+      const streams = subjectData.streams;
+      const gradeAverage = subjectData.grade_average;
+
+      html += `
+        <div class="subject-card-enhanced">
+          <div class="subject-header-enhanced">
+            <div class="subject-name-enhanced">${subjectName}</div>
+            <div class="subject-grade-average">${gradeAverage}%</div>
+          </div>
+          <div class="streams-comparison">
+      `;
+
+      Object.entries(streams).forEach(([streamName, streamData]) => {
+        const performanceClass = getPerformanceClass(
+          streamData.performance_category
+        );
+        html += `
+          <div class="stream-performance">
+            <div class="stream-name-enhanced">Stream ${streamName}</div>
+            <div class="stream-stats">
+              <div class="stream-average">${streamData.average_percentage}%</div>
+              <div class="stream-students">${streamData.student_count} students</div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+  });
+
+  return html;
+}
+
+function generateSubjectComparisonView(subjectStreamData) {
+  let html = "";
+
+  Object.entries(subjectStreamData).forEach(([subjectName, gradeData]) => {
+    html += `
+      <div class="grade-subject-section">
+        <h3 class="grade-subject-title">
+          <i class="fas fa-book"></i> ${subjectName}
+        </h3>
+    `;
+
+    Object.entries(gradeData).forEach(([gradeName, streams]) => {
+      if (Object.keys(streams).length > 1) {
+        html += `
+          <div class="subject-comparison-chart">
+            <div class="chart-title">${gradeName} - Stream Comparison</div>
+            <div class="comparison-bars">
+        `;
+
+        // Find max percentage for scaling
+        const maxPercentage = Math.max(
+          ...Object.values(streams).map((s) => s.average_percentage)
+        );
+
+        Object.entries(streams).forEach(([streamName, streamData]) => {
+          const barWidth =
+            (streamData.average_percentage / maxPercentage) * 100;
+          html += `
+            <div class="comparison-bar">
+              <div class="bar-label">Stream ${streamName}</div>
+              <div class="bar-container">
+                <div class="bar-fill" style="width: ${barWidth}%">
+                  <div class="bar-value">${streamData.average_percentage}%</div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        html += `
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    html += `
+      </div>
+    `;
+  });
+
+  return html;
+}
+
+function switchSubjectTab(tabName) {
+  // Remove active class from all tabs and content
+  document
+    .querySelectorAll(".tab-button")
+    .forEach((btn) => btn.classList.remove("active"));
+  document
+    .querySelectorAll(".tab-content")
+    .forEach((content) => content.classList.remove("active"));
+
+  // Add active class to selected tab and content
+  event.target.classList.add("active");
+  document.getElementById(`${tabName}-tab`).classList.add("active");
+}
+
+// Duplicate DOMContentLoaded listener removed - using the one at the top of the file
+
+// Test function to verify JavaScript is loaded
+function testEnhancedTopPerformers() {
+  console.log("🧪 Testing enhanced top performers manually...");
+  loadEnhancedTopPerformers();
+}
+
+// Make function available globally for testing
+window.testEnhancedTopPerformers = testEnhancedTopPerformers;

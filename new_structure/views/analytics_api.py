@@ -153,11 +153,64 @@ def get_subject_performance():
             'context': result.get('context', {}),
             'total_subjects_analyzed': result.get('total_subjects_analyzed', 0)
         })
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
             'message': f'Error getting subject performance: {str(e)}'
+        }), 500
+
+
+@analytics_api_bp.route('/enhanced_subject_performance')
+@analytics_required
+def get_enhanced_subject_performance():
+    """Get enhanced subject performance analytics with grade and stream comparisons."""
+    try:
+        # Get query parameters
+        grade_id = request.args.get('grade_id', type=int)
+        term_id = request.args.get('term_id', type=int)
+        assessment_type_id = request.args.get('assessment_type_id', type=int)
+
+        # Apply role-based filtering
+        role = get_role(session)
+        teacher_id = session.get('teacher_id')
+
+        if role == 'classteacher':
+            # Classteachers can only see analytics for their assigned classes
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
+
+            if not assignment_summary or not assignment_summary.get('has_assignments'):
+                return jsonify({
+                    'success': False,
+                    'message': 'No class assignments found for this teacher'
+                }), 403
+
+            assigned_classes = assignment_summary.get('assigned_classes', [])
+
+            # If no specific grade provided, use first assigned class
+            if not grade_id and assigned_classes:
+                first_class = assigned_classes[0]
+                grade_id = first_class.get('grade_id')
+
+        # Get enhanced subject performance data
+        result = AcademicAnalyticsService.get_enhanced_subject_performance_analytics(
+            grade_id=grade_id,
+            term_id=term_id,
+            assessment_type_id=assessment_type_id
+        )
+
+        return jsonify({
+            'success': True,
+            'grade_subject_analytics': result.get('grade_subject_analytics', {}),
+            'subject_stream_comparisons': result.get('subject_stream_comparisons', {}),
+            'context': result.get('context', {}),
+            'total_grades_analyzed': result.get('total_grades_analyzed', 0)
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error getting enhanced subject performance: {str(e)}'
         }), 500
 
 

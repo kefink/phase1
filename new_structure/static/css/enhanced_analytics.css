@@ -1,95 +1,499 @@
 /* Enhanced Analytics Styles for CBC Grading System */
 
+/* CSS Variables for Enhanced Analytics - New Color Palette */
+:root {
+  /* New Color Palette Variables */
+  --cream-light: #f5f1e8;
+  --teal-light: #7dd3c0;
+  --teal-medium: #4a9b8e;
+  --teal-dark: #2c5f5a;
+  --navy-dark: #1a2332;
+
+  /* Primary Colors */
+  --primary-color: var(--teal-medium);
+  --secondary-color: var(--teal-dark);
+  --accent-color: var(--teal-light);
+  --success-color: var(--teal-light);
+  --warning-color: #f4a261;
+  --error-color: #e76f51;
+  --info-color: var(--teal-medium);
+
+  /* Text Colors */
+  --text-primary: var(--navy-dark);
+  --text-secondary: var(--teal-dark);
+  --text-tertiary: var(--teal-medium);
+  --text-light: var(--cream-light);
+
+  /* Background Colors */
+  --bg-primary: var(--cream-light);
+  --bg-secondary: rgba(245, 241, 232, 0.8);
+  --bg-gradient: linear-gradient(
+    135deg,
+    var(--cream-light) 0%,
+    var(--teal-light) 50%,
+    var(--teal-medium) 100%
+  );
+  --card-bg: rgba(245, 241, 232, 0.9);
+  --card-bg-alt: rgba(125, 211, 192, 0.2);
+  --border-color: var(--teal-light);
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* Border Radius */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+}
+
 /* Enhanced Top Performers Styles */
 .enhanced-performers-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Global text visibility for analytics components */
+.analytics-component,
+.analytics-component *,
+.enhanced-performers-container,
+.enhanced-performers-container *,
+.grade-section,
+.grade-section * {
+  color: var(--text-primary);
+}
+
+/* Specific overrides for elements that should have different colors */
+.grade-badge,
+.subject-grade,
+.subject-grade-small,
+.performer-rank-badge,
+.performer-grade-badge {
+  color: var(--text-light) !important;
+}
+
+/* Primary color elements - use teal medium for visibility */
+.summary-value,
+.position-rank,
+.detailed-stat-value,
+.subject-percentage-small,
+.percentage,
+.stat-mini .value,
+.subject-percentage,
+.metric-value,
+.range-value {
+  color: var(--primary-color) !important;
+  font-weight: 600;
+}
+
+/* Success color elements - use teal light for visibility */
+.percentage-display {
+  color: var(--success-color) !important;
+  font-weight: 700;
 }
 
 .grade-section {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  backdrop-filter: blur(10px);
+  padding: var(--space-5);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 8px 32px rgba(44, 95, 90, 0.15);
+  transition: all 0.3s ease;
+}
+
+.grade-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
 .grade-title {
-  color: var(--primary-color);
-  font-size: 1.2rem;
-  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  font-weight: 700;
   margin-bottom: var(--space-4);
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--border-color);
 }
 
 .stream-section {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .stream-title {
   color: var(--text-secondary);
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 1.1rem;
+  font-weight: 600;
   margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--card-bg-alt);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Clean Performance Cards */
+.performers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.enhanced-performer-card {
+  background: linear-gradient(
+    135deg,
+    var(--card-bg) 0%,
+    var(--card-bg-alt) 100%
+  );
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 8px 32px rgba(44, 95, 90, 0.15);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  color: var(--text-primary);
+}
+
+/* Ensure all text in performer cards is visible */
+.enhanced-performer-card * {
+  color: inherit;
+}
+
+.enhanced-performer-card .performer-name,
+.enhanced-performer-card .performer-admission,
+.enhanced-performer-card .summary-label,
+.enhanced-performer-card .position-text,
+.enhanced-performer-card .detailed-stat-label,
+.enhanced-performer-card .subject-name-small {
+  color: var(--text-primary) !important;
+}
+
+.enhanced-performer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(44, 95, 90, 0.25);
+  border-color: var(--secondary-color);
+  background: linear-gradient(
+    135deg,
+    var(--card-bg) 0%,
+    var(--accent-color) 100%
+  );
+}
+
+/* Clean Card Header */
+.performer-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.performer-rank-badge {
+  font-size: 1.4rem;
+  font-weight: 800;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  color: var(--text-light);
+  min-width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(44, 95, 90, 0.4);
+}
+
+.performer-basic-info {
+  flex: 1;
+  margin-left: var(--space-3);
+}
+
+.performer-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1) 0;
+  line-height: 1.2;
+}
+
+.performer-admission {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-family: "Courier New", monospace;
+  background: var(--card-bg-alt);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  font-weight: 600;
+}
+
+.performer-grade-badge {
+  background: linear-gradient(
+    135deg,
+    var(--success-color),
+    var(--primary-color)
+  );
+  color: var(--text-light);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 15px rgba(44, 95, 90, 0.3);
+}
+
+/* Clean Performance Summary */
+.performer-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.summary-item {
+  text-align: center;
+  padding: var(--space-3);
+  background: var(--card-bg-alt);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.summary-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+.summary-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* Position and Class Info */
+.performer-position {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.position-info {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-.performers-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: var(--space-4);
+.position-rank {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-color);
 }
 
-.enhanced-performer-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
+.position-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.percentage-display {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--success-color);
+}
+
+/* Toggle Button for Details */
+.details-toggle {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-md);
-  padding: var(--space-4);
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  margin-top: var(--space-3);
 }
 
-.enhanced-performer-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+.details-toggle:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
 }
 
-.performer-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.details-toggle i {
+  margin-right: var(--space-1);
+  transition: transform 0.3s ease;
+}
+
+.details-toggle.expanded i {
+  transform: rotate(180deg);
+}
+
+/* Detailed Performance Section */
+.performer-details {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: none;
+}
+
+.performer-details.expanded {
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detailed-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
   margin-bottom: var(--space-3);
 }
 
-.performer-rank {
-  font-size: 1.5rem;
-  font-weight: bold;
+.detailed-stat {
+  text-align: center;
+  padding: var(--space-2);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.performer-basic h6 {
-  margin: 0;
+.detailed-stat-value {
   font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  display: block;
+}
+
+.detailed-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--space-1);
+}
+
+.subject-performance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-2);
+}
+
+.subject-item {
+  padding: var(--space-2);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.subject-name-small {
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-primary);
+  margin-bottom: var(--space-1);
+  line-height: 1.2;
 }
 
-.admission-number {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  margin: 0;
+.subject-grade-small {
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  font-weight: 600;
+  font-size: 0.7rem;
+  color: white;
+  margin-bottom: var(--space-1);
+  display: inline-block;
 }
 
-.performer-grade {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
+.subject-percentage-small {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Grade Color Classes - Updated for New Palette */
+.grade-ee1 {
+  background: linear-gradient(
+    135deg,
+    var(--success-color),
+    var(--primary-color)
+  );
+}
+.grade-ee2 {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+}
+.grade-me1 {
+  background: linear-gradient(135deg, var(--warning-color), #e09f3e);
+}
+.grade-me2 {
+  background: linear-gradient(135deg, #e09f3e, #d08c3e);
+}
+.grade-ae1 {
+  background: linear-gradient(135deg, var(--error-color), #d63447);
+}
+.grade-ae2 {
+  background: linear-gradient(135deg, #d63447, #c73650);
+}
+.grade-be1 {
+  background: linear-gradient(135deg, var(--navy-dark), #0f1419);
+}
+.grade-be2 {
+  background: linear-gradient(135deg, #0f1419, #0a0f14);
+}
+.grade-default {
+  background: linear-gradient(135deg, var(--teal-medium), var(--teal-dark));
 }
 
 .grade-badge {
@@ -216,12 +620,12 @@
 
 .stat-card.best-class {
   border-color: var(--success-color);
-  background: linear-gradient(135deg, var(--success-color)10, var(--card-bg));
+  background: linear-gradient(135deg, var(--success-color) 10, var(--card-bg));
 }
 
 .stat-card.lowest-class {
   border-color: var(--warning-color);
-  background: linear-gradient(135deg, var(--warning-color)10, var(--card-bg));
+  background: linear-gradient(135deg, var(--warning-color) 10, var(--card-bg));
 }
 
 .stat-value {
@@ -354,33 +758,41 @@
   color: var(--primary-color);
 }
 
-/* CBC Grading Colors */
+/* CBC Grading Colors - Updated for New Palette */
 .performance-exceeding-expectation,
 .grade-badge.performance-exceeding-expectation,
 .subject-grade.performance-exceeding-expectation {
-  background: linear-gradient(135deg, #10b981, #059669);
-  border-color: #10b981;
+  background: linear-gradient(
+    135deg,
+    var(--success-color),
+    var(--primary-color)
+  );
+  border-color: var(--success-color);
 }
 
 .performance-meeting-expectation,
 .grade-badge.performance-meeting-expectation,
 .subject-grade.performance-meeting-expectation {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  border-color: #3b82f6;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  border-color: var(--primary-color);
 }
 
 .performance-approaching-expectation,
 .grade-badge.performance-approaching-expectation,
 .subject-grade.performance-approaching-expectation {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  border-color: #f59e0b;
+  background: linear-gradient(135deg, var(--warning-color), #e09f3e);
+  border-color: var(--warning-color);
 }
 
 .performance-below-expectation,
 .grade-badge.performance-below-expectation,
 .subject-grade.performance-below-expectation {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  border-color: #ef4444;
+  background: linear-gradient(135deg, var(--error-color), #d63447);
+  border-color: var(--error-color);
 }
 
 /* Loading and Error States */
@@ -430,27 +842,291 @@
   transform: translateY(-1px);
 }
 
+/* Enhanced Subject Performance Styles */
+.enhanced-subject-performance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.subject-performance-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-button {
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tab-button.active {
+  color: var(--primary-color);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-button.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-color);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.grade-subject-section {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+  backdrop-filter: blur(15px);
+}
+
+.grade-subject-title {
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.subjects-grid-enhanced {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.subject-card-enhanced {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.subject-card-enhanced:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border-color: var(--primary-color);
+}
+
+.subject-header-enhanced {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.subject-name-enhanced {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.subject-grade-average {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  color: white;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.streams-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stream-performance {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--primary-color);
+}
+
+.stream-name-enhanced {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stream-stats {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.stream-average {
+  font-weight: 700;
+  color: var(--primary-color);
+  font-size: 1.1rem;
+}
+
+.stream-students {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.subject-comparison-chart {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chart-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+
+.comparison-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.comparison-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.bar-label {
+  min-width: 80px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.bar-container {
+  flex: 1;
+  height: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  border-radius: var(--radius-sm);
+  transition: width 0.8s ease;
+  position: relative;
+}
+
+.bar-value {
+  position: absolute;
+  right: var(--space-2);
+  top: 50%;
+  transform: translateY(-50%);
+  color: white;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .performers-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .performers-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .class-stream-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .overview-stats {
     grid-template-columns: 1fr;
   }
-  
+
   .subjects-grid {
     grid-template-columns: 1fr;
   }
-  
+
+  .subjects-grid-enhanced {
+    grid-template-columns: 1fr;
+  }
+
+  .enhanced-performer-card {
+    padding: var(--space-4);
+  }
+
   .subject-mark {
     grid-template-columns: 1fr;
     gap: var(--space-1);
     text-align: center;
+  }
+
+  .subject-performance-tabs {
+    flex-direction: column;
+  }
+
+  .stream-performance {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .comparison-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+
+  .bar-container {
+    width: 100%;
   }
 }

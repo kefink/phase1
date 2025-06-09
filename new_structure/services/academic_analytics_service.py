@@ -126,27 +126,27 @@ class AcademicAnalyticsService:
                                         use_cache: bool = True) -> Dict[str, Any]:
         """
         Get subject performance analytics including top and least performing subjects.
-        
+
         Args:
             grade_id: Grade ID to filter by
             stream_id: Stream ID to filter by
             term_id: Term ID to filter by
             assessment_type_id: Assessment type ID to filter by
             use_cache: Whether to use cached results
-            
+
         Returns:
             Dictionary containing subject performance analytics
         """
         try:
             # Generate cache key
             cache_key = f"subject_analytics_{grade_id}_{stream_id}_{term_id}_{assessment_type_id}"
-            
+
             # Check cache first
             if use_cache:
                 cached_result = get_cached_analytics(cache_key)
                 if cached_result:
                     return cached_result
-            
+
             # Build query for subject averages
             query = db.session.query(
                 Subject.id,
@@ -227,7 +227,7 @@ class AcademicAnalyticsService:
                 cache_analytics(cache_key, result_data, expiry=1800)  # 30 minutes
             
             return result_data
-            
+
         except Exception as e:
             print(f"Error getting subject analytics: {e}")
             return {
@@ -236,6 +236,151 @@ class AcademicAnalyticsService:
                 'least_performing_subject': None,
                 'context': {},
                 'total_subjects_analyzed': 0,
+                'error': str(e)
+            }
+
+    @classmethod
+    def get_enhanced_subject_performance_analytics(cls, grade_id: Optional[int] = None,
+                                                 term_id: Optional[int] = None,
+                                                 assessment_type_id: Optional[int] = None,
+                                                 use_cache: bool = True) -> Dict[str, Any]:
+        """
+        Get enhanced subject performance analytics with grade and stream comparisons.
+
+        Args:
+            grade_id: Grade ID to filter by (None for all grades)
+            term_id: Term ID to filter by
+            assessment_type_id: Assessment type ID to filter by
+            use_cache: Whether to use cached results
+
+        Returns:
+            Dictionary containing enhanced subject performance analytics
+        """
+        try:
+            # Generate cache key
+            cache_key = f"enhanced_subject_analytics_{grade_id}_{term_id}_{assessment_type_id}"
+
+            # Check cache first
+            if use_cache:
+                cached_result = get_cached_analytics(cache_key)
+                if cached_result:
+                    return cached_result
+
+            # Build base query
+            base_query = db.session.query(
+                Grade.id.label('grade_id'),
+                Grade.name.label('grade_name'),
+                Stream.id.label('stream_id'),
+                Stream.name.label('stream_name'),
+                Subject.id.label('subject_id'),
+                Subject.name.label('subject_name'),
+                func.avg(Mark.percentage).label('average_percentage'),
+                func.count(Mark.id).label('total_marks'),
+                func.min(Mark.percentage).label('min_percentage'),
+                func.max(Mark.percentage).label('max_percentage'),
+                func.count(func.distinct(Mark.student_id)).label('student_count')
+            ).join(Mark, Subject.id == Mark.subject_id)\
+             .join(Student, Mark.student_id == Student.id)\
+             .join(Stream, Student.stream_id == Stream.id)\
+             .join(Grade, Stream.grade_id == Grade.id)
+
+            # Apply filters
+            if grade_id:
+                base_query = base_query.filter(Grade.id == grade_id)
+            if term_id:
+                base_query = base_query.filter(Mark.term_id == term_id)
+            if assessment_type_id:
+                base_query = base_query.filter(Mark.assessment_type_id == assessment_type_id)
+
+            # Group by grade, stream, and subject
+            results = base_query.group_by(
+                Grade.id, Grade.name, Stream.id, Stream.name, Subject.id, Subject.name
+            ).having(func.count(Mark.id) > 0).all()
+
+            # Organize data by grade and subject
+            grade_subject_data = {}
+            subject_stream_comparisons = {}
+
+            for result in results:
+                grade_key = f"Grade {result.grade_name}"
+                subject_key = result.subject_name
+
+                # Initialize grade if not exists
+                if grade_key not in grade_subject_data:
+                    grade_subject_data[grade_key] = {}
+
+                # Initialize subject if not exists
+                if subject_key not in grade_subject_data[grade_key]:
+                    grade_subject_data[grade_key][subject_key] = {
+                        'subject_id': result.subject_id,
+                        'subject_name': result.subject_name,
+                        'streams': {},
+                        'grade_average': 0,
+                        'total_students': 0,
+                        'performance_category': ''
+                    }
+
+                # Add stream data
+                stream_data = {
+                    'stream_id': result.stream_id,
+                    'stream_name': result.stream_name or 'No Stream',
+                    'average_percentage': round(result.average_percentage, 2),
+                    'student_count': result.student_count,
+                    'total_marks': result.total_marks,
+                    'min_percentage': round(result.min_percentage, 2),
+                    'max_percentage': round(result.max_percentage, 2),
+                    'performance_category': cls._get_performance_category(result.average_percentage),
+                    'grade_letter': cls._get_grade_letter(result.average_percentage)
+                }
+
+                grade_subject_data[grade_key][subject_key]['streams'][result.stream_name or 'No Stream'] = stream_data
+
+                # For subject stream comparisons
+                if subject_key not in subject_stream_comparisons:
+                    subject_stream_comparisons[subject_key] = {}
+                if grade_key not in subject_stream_comparisons[subject_key]:
+                    subject_stream_comparisons[subject_key][grade_key] = {}
+
+                subject_stream_comparisons[subject_key][grade_key][result.stream_name or 'No Stream'] = stream_data
+
+            # Calculate grade averages for each subject
+            for grade_key, subjects in grade_subject_data.items():
+                for subject_key, subject_data in subjects.items():
+                    streams = subject_data['streams']
+                    if streams:
+                        total_weighted_avg = sum(
+                            stream['average_percentage'] * stream['student_count']
+                            for stream in streams.values()
+                        )
+                        total_students = sum(stream['student_count'] for stream in streams.values())
+
+                        if total_students > 0:
+                            grade_average = round(total_weighted_avg / total_students, 2)
+                            subject_data['grade_average'] = grade_average
+                            subject_data['total_students'] = total_students
+                            subject_data['performance_category'] = cls._get_performance_category(grade_average)
+
+            result_data = {
+                'grade_subject_analytics': grade_subject_data,
+                'subject_stream_comparisons': subject_stream_comparisons,
+                'context': cls._get_context_info(grade_id, None, term_id, assessment_type_id),
+                'total_grades_analyzed': len(grade_subject_data),
+                'generated_at': time.time()
+            }
+
+            # Cache the result
+            if use_cache:
+                cache_analytics(cache_key, result_data, expiry=1800)  # 30 minutes
+
+            return result_data
+
+        except Exception as e:
+            print(f"Error getting enhanced subject analytics: {e}")
+            return {
+                'grade_subject_analytics': {},
+                'subject_stream_comparisons': {},
+                'context': {},
+                'total_grades_analyzed': 0,
                 'error': str(e)
             }
     
@@ -578,7 +723,19 @@ class AcademicAnalyticsService:
 
                     # Get detailed marks for each top performer
                     performers_with_details = []
-                    for result in results:
+
+                    # Calculate total students in this class/stream for position context
+                    total_students_query = db.session.query(func.count(Student.id))\
+                        .filter(Student.grade_id == grade.id)
+
+                    if stream:
+                        total_students_query = total_students_query.filter(Student.stream_id == stream.id)
+                    else:
+                        total_students_query = total_students_query.filter(Student.stream_id.is_(None))
+
+                    total_students_in_class = total_students_query.scalar() or 0
+
+                    for index, result in enumerate(results):
                         # Get individual subject marks
                         marks_query = db.session.query(
                             Subject.name.label('subject_name'),
@@ -595,6 +752,13 @@ class AcademicAnalyticsService:
 
                         subject_marks = marks_query.all()
 
+                        # Calculate total marks and maximum possible marks
+                        total_raw_marks = sum(mark.raw_mark for mark in subject_marks if mark.raw_mark)
+                        total_max_marks = sum(mark.total_marks for mark in subject_marks if mark.total_marks)
+
+                        # Get class position (rank within the stream)
+                        class_position = index + 1
+
                         performer_data = {
                             'student_id': result.id,
                             'name': result.name,
@@ -607,6 +771,10 @@ class AcademicAnalyticsService:
                             'max_percentage': round(result.max_percentage, 2),
                             'performance_category': cls._get_performance_category(result.average_percentage),
                             'grade_letter': cls._get_grade_letter(result.average_percentage),
+                            'total_raw_marks': total_raw_marks,
+                            'total_max_marks': total_max_marks,
+                            'class_position': class_position,
+                            'total_students_in_class': total_students_in_class,
                             'subject_marks': [
                                 {
                                     'subject_name': mark.subject_name,
