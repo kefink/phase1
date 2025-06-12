@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Information - School Setup</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1f7d53;
+            --secondary-color: #18230f;
+            --accent-color: #4ade80;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+
+        .setup-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .setup-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .setup-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            color: white;
+            opacity: 0.5;
+            margin: 0 1rem;
+        }
+
+        .step.active {
+            opacity: 1;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .step.active .step-number {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .setup-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: var(--gray-500);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-600);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .help-text {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .setup-container {
+                padding: 1rem;
+            }
+
+            .setup-card {
+                padding: 2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .step-indicator {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <a href="{{ url_for('school_setup.setup_dashboard') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Setup Dashboard
+        </a>
+
+        <div class="setup-header">
+            <h1><i class="fas fa-clipboard-list"></i> Registration Information</h1>
+            <p>Step 2 of 6 - Enter official registration and location details</p>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step">
+                <div class="step-number"><i class="fas fa-check"></i></div>
+                <span>Basic Info</span>
+            </div>
+            <div class="step active">
+                <div class="step-number">2</div>
+                <span>Registration</span>
+            </div>
+        </div>
+
+        <div class="setup-card">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <!-- Official Registration Section -->
+                <div class="form-section">
+                    <h3><i class="fas fa-certificate"></i> Official Registration</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="registration_number" class="form-label">Registration Number</label>
+                            <input type="text" id="registration_number" name="registration_number" class="form-input" 
+                                   value="{{ setup.registration_number or '' }}"
+                                   placeholder="e.g., REG/2024/001">
+                            <div class="help-text">Official school registration number</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ministry_code" class="form-label">Ministry Code</label>
+                            <input type="text" id="ministry_code" name="ministry_code" class="form-input" 
+                                   value="{{ setup.ministry_code or '' }}"
+                                   placeholder="e.g., MIN/EDU/2024/001">
+                            <div class="help-text">Ministry of Education code</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Information Section -->
+                <div class="form-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Location Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="county" class="form-label">County</label>
+                            <select id="county" name="county" class="form-select">
+                                <option value="">Select County</option>
+                                <option value="Nairobi" {% if setup.county == 'Nairobi' %}selected{% endif %}>Nairobi</option>
+                                <option value="Mombasa" {% if setup.county == 'Mombasa' %}selected{% endif %}>Mombasa</option>
+                                <option value="Kisumu" {% if setup.county == 'Kisumu' %}selected{% endif %}>Kisumu</option>
+                                <option value="Nakuru" {% if setup.county == 'Nakuru' %}selected{% endif %}>Nakuru</option>
+                                <option value="Kiambu" {% if setup.county == 'Kiambu' %}selected{% endif %}>Kiambu</option>
+                                <option value="Machakos" {% if setup.county == 'Machakos' %}selected{% endif %}>Machakos</option>
+                                <option value="Meru" {% if setup.county == 'Meru' %}selected{% endif %}>Meru</option>
+                                <option value="Kakamega" {% if setup.county == 'Kakamega' %}selected{% endif %}>Kakamega</option>
+                                <option value="Uasin Gishu" {% if setup.county == 'Uasin Gishu' %}selected{% endif %}>Uasin Gishu</option>
+                                <option value="Nyeri" {% if setup.county == 'Nyeri' %}selected{% endif %}>Nyeri</option>
+                                <option value="Other" {% if setup.county == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                            <div class="help-text">Select your county</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sub_county" class="form-label">Sub-County</label>
+                            <input type="text" id="sub_county" name="sub_county" class="form-input" 
+                                   value="{{ setup.sub_county or '' }}"
+                                   placeholder="e.g., Westlands">
+                            <div class="help-text">Sub-county or district</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ward" class="form-label">Ward</label>
+                            <input type="text" id="ward" name="ward" class="form-input" 
+                                   value="{{ setup.ward or '' }}"
+                                   placeholder="e.g., Parklands">
+                            <div class="help-text">Electoral ward</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="constituency" class="form-label">Constituency</label>
+                            <input type="text" id="constituency" name="constituency" class="form-input" 
+                                   value="{{ setup.constituency or '' }}"
+                                   placeholder="e.g., Westlands Constituency">
+                            <div class="help-text">Parliamentary constituency</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- School Classification Section -->
+                <div class="form-section">
+                    <h3><i class="fas fa-tags"></i> School Classification</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="school_type" class="form-label">School Type</label>
+                            <select id="school_type" name="school_type" class="form-select">
+                                <option value="">Select School Type</option>
+                                <option value="Public" {% if setup.school_type == 'Public' %}selected{% endif %}>Public</option>
+                                <option value="Private" {% if setup.school_type == 'Private' %}selected{% endif %}>Private</option>
+                                <option value="Faith-based" {% if setup.school_type == 'Faith-based' %}selected{% endif %}>Faith-based</option>
+                                <option value="International" {% if setup.school_type == 'International' %}selected{% endif %}>International</option>
+                                <option value="Special Needs" {% if setup.school_type == 'Special Needs' %}selected{% endif %}>Special Needs</option>
+                            </select>
+                            <div class="help-text">Type of school ownership</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="school_category" class="form-label">School Category</label>
+                            <select id="school_category" name="school_category" class="form-select">
+                                <option value="">Select Category</option>
+                                <option value="Primary" {% if setup.school_category == 'Primary' %}selected{% endif %}>Primary School</option>
+                                <option value="Secondary" {% if setup.school_category == 'Secondary' %}selected{% endif %}>Secondary School</option>
+                                <option value="Mixed" {% if setup.school_category == 'Mixed' %}selected{% endif %}>Primary & Secondary</option>
+                                <option value="ECDE" {% if setup.school_category == 'ECDE' %}selected{% endif %}>Early Childhood Development</option>
+                                <option value="Vocational" {% if setup.school_category == 'Vocational' %}selected{% endif %}>Vocational Training</option>
+                            </select>
+                            <div class="help-text">Educational level offered</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="education_system" class="form-label">Education System</label>
+                            <select id="education_system" name="education_system" class="form-select">
+                                <option value="">Select System</option>
+                                <option value="CBC" {% if setup.education_system == 'CBC' %}selected{% endif %}>Competency Based Curriculum (CBC)</option>
+                                <option value="8-4-4" {% if setup.education_system == '8-4-4' %}selected{% endif %}>8-4-4 System</option>
+                                <option value="Cambridge" {% if setup.education_system == 'Cambridge' %}selected{% endif %}>Cambridge International</option>
+                                <option value="IB" {% if setup.education_system == 'IB' %}selected{% endif %}>International Baccalaureate</option>
+                                <option value="American" {% if setup.education_system == 'American' %}selected{% endif %}>American Curriculum</option>
+                                <option value="Other" {% if setup.education_system == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                            <div class="help-text">Curriculum system used</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{{ url_for('school_setup.basic_info') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Basic Info
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        Continue to Academic Config <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

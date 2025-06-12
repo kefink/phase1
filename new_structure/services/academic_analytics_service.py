@@ -20,7 +20,7 @@ class AcademicAnalyticsService:
     @classmethod
     def get_top_performers(cls, grade_id: Optional[int] = None, stream_id: Optional[int] = None,
                           term_id: Optional[int] = None, assessment_type_id: Optional[int] = None,
-                          limit: int = 5, use_cache: bool = True) -> Dict[str, Any]:
+                          limit: int = 5, view_type: str = 'summary', use_cache: bool = True) -> Dict[str, Any]:
         """
         Get top performing students for specified grade/stream.
         
@@ -37,7 +37,7 @@ class AcademicAnalyticsService:
         """
         try:
             # Generate cache key
-            cache_key = f"top_performers_{grade_id}_{stream_id}_{term_id}_{assessment_type_id}_{limit}"
+            cache_key = f"top_performers_{grade_id}_{stream_id}_{term_id}_{assessment_type_id}_{limit}_{view_type}"
             
             # Check cache first
             if use_cache:
@@ -147,7 +147,21 @@ class AcademicAnalyticsService:
                 if cached_result:
                     return cached_result
 
-            # Build query for subject averages
+            # Build query for subject averages with teacher information
+            try:
+                from ..models import TeacherSubjectAssignment, Teacher
+            except ImportError:
+                # Fallback if models are not available
+                print("Warning: TeacherSubjectAssignment model not available")
+                return {
+                    'subject_analytics': [],
+                    'top_subject': None,
+                    'least_performing_subject': None,
+                    'context': {},
+                    'total_subjects_analyzed': 0,
+                    'error': 'Teacher assignment data not available'
+                }
+
             query = db.session.query(
                 Subject.id,
                 Subject.name,
@@ -155,18 +169,40 @@ class AcademicAnalyticsService:
                 func.count(Mark.id).label('total_marks'),
                 func.min(Mark.percentage).label('min_percentage'),
                 func.max(Mark.percentage).label('max_percentage'),
-                func.count(func.distinct(Mark.student_id)).label('student_count')
+                func.count(func.distinct(Mark.student_id)).label('student_count'),
+                Teacher.first_name.label('teacher_first_name'),
+                Teacher.last_name.label('teacher_last_name'),
+                Teacher.username.label('teacher_username')
             ).join(Mark, Subject.id == Mark.subject_id)
             
-            # Apply filters
+            # Add teacher joins
             if grade_id or stream_id:
-                query = query.join(Student, Mark.student_id == Student.id)
-                
+                query = query.join(Student, Mark.student_id == Student.id)\
+                             .join(Stream, Student.stream_id == Stream.id)\
+                             .join(Grade, Stream.grade_id == Grade.id)\
+                             .outerjoin(TeacherSubjectAssignment,
+                                       and_(TeacherSubjectAssignment.subject_id == Subject.id,
+                                            TeacherSubjectAssignment.grade_id == Grade.id,
+                                            or_(TeacherSubjectAssignment.stream_id == Stream.id,
+                                                TeacherSubjectAssignment.stream_id.is_(None))))\
+                             .outerjoin(Teacher, TeacherSubjectAssignment.teacher_id == Teacher.id)
+
                 if grade_id:
-                    query = query.join(Stream, Student.stream_id == Stream.id).filter(Stream.grade_id == grade_id)
-                
+                    query = query.filter(Stream.grade_id == grade_id)
+
                 if stream_id:
                     query = query.filter(Student.stream_id == stream_id)
+            else:
+                # For school-wide analytics, still need teacher information
+                query = query.join(Student, Mark.student_id == Student.id)\
+                             .join(Stream, Student.stream_id == Stream.id)\
+                             .join(Grade, Stream.grade_id == Grade.id)\
+                             .outerjoin(TeacherSubjectAssignment,
+                                       and_(TeacherSubjectAssignment.subject_id == Subject.id,
+                                            TeacherSubjectAssignment.grade_id == Grade.id,
+                                            or_(TeacherSubjectAssignment.stream_id == Stream.id,
+                                                TeacherSubjectAssignment.stream_id.is_(None))))\
+                             .outerjoin(Teacher, TeacherSubjectAssignment.teacher_id == Teacher.id)
             
             if term_id:
                 query = query.filter(Mark.term_id == term_id)
@@ -174,8 +210,8 @@ class AcademicAnalyticsService:
             if assessment_type_id:
                 query = query.filter(Mark.assessment_type_id == assessment_type_id)
             
-            # Group by subject
-            query = query.group_by(Subject.id, Subject.name)
+            # Group by subject and teacher
+            query = query.group_by(Subject.id, Subject.name, Teacher.id, Teacher.first_name, Teacher.last_name, Teacher.username)
             query = query.having(func.count(Mark.id) >= 2)  # Minimum 2 marks for analysis (reduced from 5)
             
             # Execute query
@@ -193,6 +229,13 @@ class AcademicAnalyticsService:
             # Format results and sort
             subject_analytics = []
             for result in results:
+                # Format teacher name
+                teacher_name = "Not Assigned"
+                if result.teacher_first_name and result.teacher_last_name:
+                    teacher_name = f"{result.teacher_first_name} {result.teacher_last_name}"
+                elif result.teacher_username:
+                    teacher_name = result.teacher_username
+
                 analytics = {
                     'subject_id': result.id,
                     'subject_name': result.name,
@@ -202,7 +245,11 @@ class AcademicAnalyticsService:
                     'min_percentage': round(result.min_percentage, 2),
                     'max_percentage': round(result.max_percentage, 2),
                     'performance_category': cls._get_performance_category(result.average_percentage),
-                    'grade_letter': cls._get_grade_letter(result.average_percentage)
+                    'grade_letter': cls._get_grade_letter(result.average_percentage),
+                    'teacher_name': teacher_name,
+                    'teacher_first_name': result.teacher_first_name,
+                    'teacher_last_name': result.teacher_last_name,
+                    'teacher_username': result.teacher_username
                 }
                 subject_analytics.append(analytics)
             
@@ -266,7 +313,20 @@ class AcademicAnalyticsService:
                 if cached_result:
                     return cached_result
 
-            # Build base query
+            # Build base query with teacher information
+            try:
+                from ..models import TeacherSubjectAssignment, Teacher
+            except ImportError:
+                # Fallback if models are not available
+                print("Warning: TeacherSubjectAssignment model not available")
+                return {
+                    'grade_subject_analytics': {},
+                    'subject_stream_comparisons': {},
+                    'context': {},
+                    'total_grades_analyzed': 0,
+                    'error': 'Teacher assignment data not available'
+                }
+
             base_query = db.session.query(
                 Grade.id.label('grade_id'),
                 Grade.name.label('grade_name'),
@@ -278,11 +338,20 @@ class AcademicAnalyticsService:
                 func.count(Mark.id).label('total_marks'),
                 func.min(Mark.percentage).label('min_percentage'),
                 func.max(Mark.percentage).label('max_percentage'),
-                func.count(func.distinct(Mark.student_id)).label('student_count')
+                func.count(func.distinct(Mark.student_id)).label('student_count'),
+                Teacher.first_name.label('teacher_first_name'),
+                Teacher.last_name.label('teacher_last_name'),
+                Teacher.username.label('teacher_username')
             ).join(Mark, Subject.id == Mark.subject_id)\
              .join(Student, Mark.student_id == Student.id)\
              .join(Stream, Student.stream_id == Stream.id)\
-             .join(Grade, Stream.grade_id == Grade.id)
+             .join(Grade, Stream.grade_id == Grade.id)\
+             .outerjoin(TeacherSubjectAssignment,
+                       and_(TeacherSubjectAssignment.subject_id == Subject.id,
+                            TeacherSubjectAssignment.grade_id == Grade.id,
+                            or_(TeacherSubjectAssignment.stream_id == Stream.id,
+                                TeacherSubjectAssignment.stream_id.is_(None))))\
+             .outerjoin(Teacher, TeacherSubjectAssignment.teacher_id == Teacher.id)
 
             # Apply filters
             if grade_id:
@@ -292,9 +361,10 @@ class AcademicAnalyticsService:
             if assessment_type_id:
                 base_query = base_query.filter(Mark.assessment_type_id == assessment_type_id)
 
-            # Group by grade, stream, and subject
+            # Group by grade, stream, subject, and teacher
             results = base_query.group_by(
-                Grade.id, Grade.name, Stream.id, Stream.name, Subject.id, Subject.name
+                Grade.id, Grade.name, Stream.id, Stream.name, Subject.id, Subject.name,
+                Teacher.id, Teacher.first_name, Teacher.last_name, Teacher.username
             ).having(func.count(Mark.id) > 0).all()
 
             # Organize data by grade and subject
@@ -320,6 +390,13 @@ class AcademicAnalyticsService:
                         'performance_category': ''
                     }
 
+                # Format teacher name
+                teacher_name = "Not Assigned"
+                if result.teacher_first_name and result.teacher_last_name:
+                    teacher_name = f"{result.teacher_first_name} {result.teacher_last_name}"
+                elif result.teacher_username:
+                    teacher_name = result.teacher_username
+
                 # Add stream data
                 stream_data = {
                     'stream_id': result.stream_id,
@@ -330,7 +407,11 @@ class AcademicAnalyticsService:
                     'min_percentage': round(result.min_percentage, 2),
                     'max_percentage': round(result.max_percentage, 2),
                     'performance_category': cls._get_performance_category(result.average_percentage),
-                    'grade_letter': cls._get_grade_letter(result.average_percentage)
+                    'grade_letter': cls._get_grade_letter(result.average_percentage),
+                    'teacher_name': teacher_name,
+                    'teacher_first_name': result.teacher_first_name,
+                    'teacher_last_name': result.teacher_last_name,
+                    'teacher_username': result.teacher_username
                 }
 
                 grade_subject_data[grade_key][subject_key]['streams'][result.stream_name or 'No Stream'] = stream_data
@@ -759,17 +840,39 @@ class AcademicAnalyticsService:
                         # Get class position (rank within the stream)
                         class_position = index + 1
 
+                        # Get term and assessment type names for delete functionality
+                        # Always ensure we have valid values
+                        term_name = "All Terms"
+                        assessment_type_name = "All Assessments"
+
+                        if term_id:
+                            term = Term.query.get(term_id)
+                            term_name = term.name if term else f"Term {term_id}"
+
+                        if assessment_type_id:
+                            assessment_type = AssessmentType.query.get(assessment_type_id)
+                            assessment_type_name = (assessment_type.name if assessment_type
+                                                  else f"Assessment {assessment_type_id}")
+
                         performer_data = {
                             'student_id': result.id,
                             'name': result.name,
                             'admission_number': result.admission_number,
                             'grade_name': result.grade_name,
                             'stream_name': result.stream_name or 'No Stream',
+                            # Add fields needed for delete functionality
+                            'grade': (result.grade_name.replace('Grade ', '')
+                                    if result.grade_name else ''),
+                            'stream': (result.stream_name.replace('Stream ', '')
+                                     if result.stream_name else ''),
+                            'term': term_name,
+                            'assessment_type': assessment_type_name,
                             'average_percentage': round(result.average_percentage, 2),
                             'total_assessments': result.total_marks,
                             'min_percentage': round(result.min_percentage, 2),
                             'max_percentage': round(result.max_percentage, 2),
-                            'performance_category': cls._get_performance_category(result.average_percentage),
+                            'performance_category': cls._get_performance_category(
+                                result.average_percentage),
                             'grade_letter': cls._get_grade_letter(result.average_percentage),
                             'total_raw_marks': total_raw_marks,
                             'total_max_marks': total_max_marks,

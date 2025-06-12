@@ -21,19 +21,26 @@ A Flask-based web application for managing student records, grades, and reports 
 
 ## Login Credentials
 
-1. **Subject Teacher**:
+**Database has been cleaned of all test data!**
 
-   - Username: `teacher1`
-   - Password: `pass123`
+**Current Admin Account:**
 
-2. **Headteacher (Admin)**:
+- Username: `headteacher`
+- Password: `admin123`
 
-   - Username: `headteacher`
-   - Password: `admin123`
+**To add your own data:**
 
-3. **Class Teacher**:
-   - Username: `classteacher1`
-   - Password: `class123`
+1. Login as headteacher
+2. Use the admin interface to create your own:
+   - Grades and streams
+   - Subjects
+   - Terms and assessments
+   - Teachers
+   - Students
+3. Login as classteacher to upload marks
+4. View analytics with your real data
+
+See `FRESH_DATA_SETUP_GUIDE.md` for detailed instructions.
 
 ## Features
 

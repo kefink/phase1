@@ -981,6 +981,50 @@ def create_app(config_name='default'):
         except Exception as e:
             return f"❌ Error in complete database setup: {e}"
 
+    @app.route('/debug/test_school_config')
+    def debug_test_school_config():
+        """Test the school configuration integration."""
+        try:
+            from .services.school_config_service import SchoolConfigService
+
+            result = "<h2>🧪 School Configuration Integration Test</h2>"
+
+            # Test get_school_name
+            school_name = SchoolConfigService.get_school_name()
+            result += f"<h3>📋 get_school_name():</h3>"
+            result += f"<p><strong>{school_name}</strong></p>"
+
+            # Test get_school_info_dict
+            school_info = SchoolConfigService.get_school_info_dict()
+            result += f"<h3>📋 get_school_info_dict():</h3>"
+            result += "<ul>"
+            for key, value in school_info.items():
+                result += f"<li><strong>{key}:</strong> {value}</li>"
+            result += "</ul>"
+
+            # Check if using setup data
+            from .models.school_setup import SchoolSetup
+            setup = SchoolSetup.query.first()
+
+            if setup and setup.setup_completed:
+                result += f"<h3>✅ School Setup Status:</h3>"
+                result += f"<p>Setup completed: <strong>Yes</strong></p>"
+                result += f"<p>Setup school name: <strong>{setup.school_name}</strong></p>"
+                result += f"<p>Service school name: <strong>{school_name}</strong></p>"
+
+                if school_name.lower() == setup.school_name.lower():
+                    result += f"<p style='color: green; font-size: 18px;'>🎯 <strong>SUCCESS!</strong> Service is using setup data!</p>"
+                else:
+                    result += f"<p style='color: red; font-size: 18px;'>❌ <strong>ISSUE!</strong> Service is not using setup data!</p>"
+            else:
+                result += f"<h3>❌ School Setup Status:</h3>"
+                result += f"<p>Setup completed: <strong>No</strong></p>"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error testing school config: {e}"
+
     @app.route('/debug/check_new_structure_databases')
     def debug_check_new_structure_databases():
         """Check for databases specifically in the new_structure directory."""

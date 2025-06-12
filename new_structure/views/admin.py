@@ -33,13 +33,45 @@ def admin_required(f):
 def analytics_dashboard():
     """Dedicated analytics page for headteachers."""
     try:
-        # Get comprehensive analytics data
-        from ..services.analytics_service import AnalyticsService
-        analytics_data = AnalyticsService.get_headteacher_analytics()
+        # Get comprehensive analytics data - prioritize report-based analytics
+        try:
+            from ..services.report_based_analytics_service import ReportBasedAnalyticsService
+
+            # Try report-based analytics first
+            analytics_data = ReportBasedAnalyticsService.get_analytics_dashboard_data(
+                role='headteacher',
+                teacher_id=None
+            )
+
+            # If no report data available, fall back to traditional analytics
+            if not analytics_data.get('has_data', False):
+                from ..services.analytics_service import AnalyticsService
+                fallback_data = AnalyticsService.get_headteacher_analytics()
+
+                # Merge the data, prioritizing report-based structure
+                analytics_data.update({
+                    'grade_performance': fallback_data.get('grade_performance', []),
+                    'subject_performance': fallback_data.get('subject_performance', []),
+                    'top_students': fallback_data.get('top_students', []),
+                    'teacher_performance': fallback_data.get('teacher_performance', []),
+                    'summary': fallback_data.get('summary', {}),
+                    'has_data': fallback_data.get('has_data', False),
+                    'data_source': 'live_calculation'
+                })
+
+                flash('Analytics based on live data calculation. Encourage teachers to generate reports for more accurate insights.', 'info')
+            else:
+                flash('Analytics based on teacher-generated reports - reflecting actual academic workflow.', 'success')
+
+        except Exception as e:
+            print(f"Error loading report-based analytics: {e}")
+            # Fall back to traditional analytics
+            from ..services.analytics_service import AnalyticsService
+            analytics_data = AnalyticsService.get_headteacher_analytics()
 
         if 'error' in analytics_data:
             flash(f'Error loading analytics: {analytics_data["error"]}', 'error')
-            analytics_data = {'has_data': False, 'summary': {}, 'grade_performance': [], 'subject_performance': []}
+            analytics_data = {'has_data': False, 'summary': {}, 'grade_performance': [], 'subject_performance': [], 'data_source': 'error'}
 
         # Get filter options
         terms = [term.name for term in Term.query.all()]
@@ -245,6 +277,12 @@ def dashboard():
         'system_alerts': system_alerts
     }
 
+    # Get school configuration for dynamic display
+    school_info = SchoolConfigService.get_school_info_dict()
+
+    # Merge school info with dashboard stats
+    dashboard_stats.update(school_info)
+
     # Temporarily disable caching for debugging
     # cache_dashboard_stats(dashboard_stats)
 
@@ -308,19 +346,55 @@ def manage_teachers():
         elif 'delete_teacher' in request.form:
             teacher_id = request.form.get('teacher_id', type=int)
             if teacher_id:
-                teacher = Teacher.query.get(teacher_id)
-                if teacher:
-                    try:
-                        db.session.delete(teacher)
-                        db.session.commit()
+                try:
+                    from ..utils.database_utils import safe_delete_teacher
+
+                    result = safe_delete_teacher(teacher_id)
+
+                    if result['success']:
                         # Invalidate admin cache since data has changed
                         invalidate_admin_cache()
-                        success_message = f"Teacher '{teacher.username}' deleted successfully."
+                        success_message = result['message']
                         # Refresh teachers list
                         teachers = Teacher.query.all()
-                    except Exception as e:
-                        db.session.rollback()
-                        error_message = f"Error deleting teacher: {str(e)}"
+                    else:
+                        error_message = result['message']
+
+                except ImportError:
+                    # Fallback to original method if utils not available
+                    teacher = Teacher.query.get(teacher_id)
+                    if teacher:
+                        try:
+                            # First, manually delete related records to avoid cascade issues
+                            from sqlalchemy import text
+
+                            # Delete from teacher_subjects table if it exists
+                            try:
+                                db.session.execute(text("DELETE FROM teacher_subjects WHERE teacher_id = :teacher_id"),
+                                                 {"teacher_id": teacher_id})
+                            except Exception as e:
+                                print(f"Note: teacher_subjects table cleanup: {e}")
+
+                            # Delete from teacher_subject_assignment table
+                            try:
+                                db.session.execute(text("DELETE FROM teacher_subject_assignment WHERE teacher_id = :teacher_id"),
+                                                 {"teacher_id": teacher_id})
+                            except Exception as e:
+                                print(f"Note: teacher_subject_assignment table cleanup: {e}")
+
+                            # Now delete the teacher
+                            db.session.delete(teacher)
+                            db.session.commit()
+                            # Invalidate admin cache since data has changed
+                            invalidate_admin_cache()
+                            success_message = f"Teacher '{teacher.username}' deleted successfully."
+                            # Refresh teachers list
+                            teachers = Teacher.query.all()
+                        except Exception as e:
+                            db.session.rollback()
+                            error_message = f"Error deleting teacher: {str(e)}"
+                    else:
+                        error_message = "Teacher not found."
 
         # Edit teacher
         elif 'edit_teacher' in request.form:
@@ -501,12 +575,78 @@ def manage_teachers():
                         db.session.rollback()
                         error_message = f"Error deleting assignment: {str(e)}"
 
-    # Get all teacher assignments
-    assignments = TeacherSubjectAssignment.query.all()
+    # Get all teacher assignments using utility functions
+    try:
+        from ..utils.database_utils import get_teacher_assignments_safely, get_database_health
 
-    # Render the template with data
+        # Get assignments safely
+        assignments = get_teacher_assignments_safely()
+
+        # If no assignments and this is a GET request, check database health
+        if not assignments and request.method == 'GET':
+            health = get_database_health()
+
+            if health['status'] == 'needs_migration':
+                # Only show error message if there are actually missing tables
+                if 'teacher_subject_assignment' in health['missing_tables']:
+                    error_message = "Teacher assignment data is being initialized. Please refresh the page if this message persists."
+            elif health['status'] == 'critical':
+                error_message = "Database connection issue. Please check the system configuration."
+
+    except ImportError:
+        # Fallback to original method if utils not available
+        assignments = []
+        try:
+            assignments = TeacherSubjectAssignment.query.all()
+        except Exception as e:
+            print(f"Error querying teacher assignments: {e}")
+            if "no such table" in str(e).lower() and request.method == 'GET':
+                error_message = "Teacher assignment table not found. Please run database migration."
+
+    # Enhance teacher data with computed attributes
+    enhanced_teachers = []
+    for teacher in teachers:
+        # Get teacher's assignments
+        teacher_assignments = [a for a in assignments if a.teacher_id == teacher.id]
+
+        # Calculate total assignments
+        total_assignments = len(teacher_assignments)
+
+        # Get subjects taught
+        subjects_taught = []
+        class_assignments = []
+        is_class_teacher = False
+
+        for assignment in teacher_assignments:
+            # Get subject info
+            subject = next((s for s in subjects if s.id == assignment.subject_id), None)
+            if subject and subject.name not in subjects_taught:
+                subjects_taught.append(subject.name)
+
+            # Get class assignments (for class teachers)
+            if assignment.is_class_teacher:
+                is_class_teacher = True
+                grade = next((g for g in grades if g.id == assignment.grade_id), None)
+                stream = next((s for s in streams if s.id == assignment.stream_id), None) if assignment.stream_id else None
+
+                if grade:
+                    class_assignment = {
+                        'grade': grade.name,
+                        'stream': stream.name if stream else 'All Streams'
+                    }
+                    class_assignments.append(class_assignment)
+
+        # Add computed attributes to teacher object
+        teacher.total_assignments = total_assignments
+        teacher.subjects_taught = subjects_taught
+        teacher.class_assignments = class_assignments
+        teacher.is_class_teacher = is_class_teacher
+
+        enhanced_teachers.append(teacher)
+
+    # Render the template with enhanced data
     return render_template('manage_teachers.html',
-                          teachers=teachers,
+                          teachers=enhanced_teachers,
                           grades=grades,
                           streams=streams,
                           subjects=subjects,
@@ -742,12 +882,19 @@ def manage_grades_streams():
                 error_message = "Please enter a grade level."
             else:
                 # Check if grade already exists
-                existing_grade = Grade.query.filter_by(level=grade_level).first()
+                existing_grade = Grade.query.filter_by(name=grade_level).first()
                 if existing_grade:
                     error_message = f"Grade '{grade_level}' already exists."
                 else:
+                    # Determine education level based on grade
+                    education_level = "lower_primary"
+                    if "4" in grade_level or "5" in grade_level or "6" in grade_level:
+                        education_level = "upper_primary"
+                    elif "7" in grade_level or "8" in grade_level or "9" in grade_level:
+                        education_level = "junior_secondary"
+
                     # Create new grade
-                    new_grade = Grade(level=grade_level)
+                    new_grade = Grade(name=grade_level, education_level=education_level)
                     db.session.add(new_grade)
 
                     try:
@@ -1399,75 +1546,3 @@ def reports():
     ]
 
     return render_template('reports.html', report_types=report_types)
-
-@admin_bp.route('/school_configuration', methods=['GET', 'POST'])
-@admin_required
-def school_configuration():
-    """Route for managing school configuration settings."""
-    error_message = None
-    success_message = None
-
-    if request.method == 'POST':
-        try:
-            # Get form data
-            config_data = {
-                'school_name': request.form.get('school_name', '').strip(),
-                'school_motto': request.form.get('school_motto', '').strip(),
-                'school_address': request.form.get('school_address', '').strip(),
-                'school_phone': request.form.get('school_phone', '').strip(),
-                'school_email': request.form.get('school_email', '').strip(),
-                'school_website': request.form.get('school_website', '').strip(),
-                'current_academic_year': request.form.get('current_academic_year', '').strip(),
-                'current_term': request.form.get('current_term', '').strip(),
-                'headteacher_name': request.form.get('headteacher_name', '').strip(),
-                'deputy_headteacher_name': request.form.get('deputy_headteacher_name', '').strip(),
-                'use_streams': request.form.get('use_streams') == 'on',
-                'grading_system': request.form.get('grading_system', 'CBC'),
-                'show_position': request.form.get('show_position') == 'on',
-                'show_class_average': request.form.get('show_class_average') == 'on',
-                'show_subject_teacher': request.form.get('show_subject_teacher') == 'on',
-                'max_raw_marks_default': int(request.form.get('max_raw_marks_default', 100)),
-                'pass_mark_percentage': float(request.form.get('pass_mark_percentage', 50.0)),
-                'primary_color': request.form.get('primary_color', '#1f7d53'),
-                'secondary_color': request.form.get('secondary_color', '#18230f')
-            }
-
-            # Validate required fields
-            if not config_data['school_name']:
-                error_message = "School name is required."
-            elif not config_data['current_academic_year']:
-                error_message = "Current academic year is required."
-            elif not config_data['current_term']:
-                error_message = "Current term is required."
-            else:
-                # Handle logo upload
-                logo_file = request.files.get('logo_file')
-                if logo_file and logo_file.filename:
-                    try:
-                        filename = SchoolConfigService.save_logo(logo_file)
-                        if filename:
-                            config_data['logo_filename'] = filename
-                    except Exception as e:
-                        error_message = f"Error uploading logo: {str(e)}"
-
-                if not error_message:
-                    # Update configuration
-                    SchoolConfigService.update_school_config(**config_data)
-
-                    # Invalidate admin cache since configuration has changed
-                    invalidate_admin_cache()
-
-                    success_message = "School configuration updated successfully!"
-
-        except ValueError as e:
-            error_message = f"Invalid input: {str(e)}"
-        except Exception as e:
-            error_message = f"Error updating configuration: {str(e)}"
-
-    # Get current configuration
-    config = SchoolConfigService.get_school_config()
-
-    return render_template('school_configuration.html',
-                         config=config,
-                         error_message=error_message,
-                         success_message=success_message)

@@ -32,16 +32,16 @@ def debug_performance_data():
         print("\n=== ALL GRADES ===")
         all_grades = Grade.query.all()
         for grade in all_grades:
-            print(f"Grade: {grade.level} (ID: {grade.id})")
+            print(f"Grade: {grade.name} (ID: {grade.id})")
 
         # Check Grade 7 Y specifically
         print("\n=== GRADE 7 Y ANALYSIS ===")
-        grade_7 = Grade.query.filter_by(level='7').first()
+        grade_7 = Grade.query.filter_by(name='7').first()
         if not grade_7:
             # Try different variations
-            grade_7 = Grade.query.filter_by(level='Grade 7').first()
+            grade_7 = Grade.query.filter_by(name='Grade 7').first()
         if not grade_7:
-            grade_7 = Grade.query.filter_by(level='7th').first()
+            grade_7 = Grade.query.filter_by(name='7th').first()
 
         if grade_7:
             print(f"Grade 7 ID: {grade_7.id}")
@@ -80,7 +80,7 @@ def debug_performance_data():
                 # Check unique combinations for Grade 7 Y
                 print("\n=== UNIQUE COMBINATIONS FOR GRADE 7 Y ===")
                 combinations = db.session.query(
-                    Grade.level.label('grade'),
+                    Grade.name.label('grade'),
                     Stream.name.label('stream'),
                     Term.name.label('term'),
                     AssessmentType.name.label('assessment_type'),
@@ -99,7 +99,7 @@ def debug_performance_data():
                 ).join(
                     AssessmentType, Mark.assessment_type_id == AssessmentType.id
                 ).filter(
-                    Grade.level == '7',
+                    Grade.name == '7',
                     Stream.name == 'Y',
                     Mark.percentage.isnot(None),
                     Mark.raw_mark.isnot(None),

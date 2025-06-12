@@ -62,7 +62,22 @@
   gap: var(--space-4);
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
+  min-height: auto;
+  height: auto;
+}
+
+/* Better scrolling for analytics components */
+.analytics-component {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+.component-content {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
 }
 
 /* Global text visibility for analytics components */
@@ -112,6 +127,10 @@
   backdrop-filter: blur(15px);
   box-shadow: 0 8px 32px rgba(44, 95, 90, 0.15);
   transition: all 0.3s ease;
+  margin-bottom: var(--space-6);
+  overflow: visible;
+  height: auto;
+  min-height: auto;
 }
 
 .grade-section:hover {
@@ -133,6 +152,9 @@
 
 .stream-section {
   margin-bottom: var(--space-5);
+  overflow: visible;
+  height: auto;
+  min-height: auto;
 }
 
 .stream-title {
@@ -156,7 +178,7 @@
   gap: var(--space-4);
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .enhanced-performer-card {
@@ -170,13 +192,14 @@
   padding: var(--space-5);
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   backdrop-filter: blur(15px);
   box-shadow: 0 8px 32px rgba(44, 95, 90, 0.15);
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   color: var(--text-primary);
+  min-height: auto;
 }
 
 /* Ensure all text in performer cards is visible */
@@ -973,9 +996,9 @@
 
 .stream-performance {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-2) var(--space-3);
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
   background: rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-md);
   border-left: 4px solid var(--primary-color);
@@ -984,6 +1007,20 @@
 .stream-name-enhanced {
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.stream-teacher {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.stream-teacher i {
+  color: var(--primary-color);
+  font-size: 0.8rem;
 }
 
 .stream-stats {
@@ -1035,10 +1072,32 @@
 }
 
 .bar-label {
-  min-width: 80px;
+  min-width: 120px;
   font-weight: 600;
   color: var(--text-primary);
   font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.bar-label .stream-name {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.bar-label .teacher-name {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.bar-label .teacher-name i {
+  color: var(--primary-color);
+  font-size: 0.7rem;
 }
 
 .bar-container {
@@ -1077,6 +1136,11 @@
   .performers-grid {
     grid-template-columns: 1fr;
   }
+
+  .analytics-component {
+    overflow: visible !important;
+    max-height: none !important;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1102,6 +1166,8 @@
 
   .enhanced-performer-card {
     padding: var(--space-4);
+    overflow: visible;
+    height: auto;
   }
 
   .subject-mark {
@@ -1129,4 +1195,246 @@
   .bar-container {
     width: 100%;
   }
+
+  /* Better mobile scrolling */
+  .analytics-component {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  .component-content {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  .grade-section {
+    margin-bottom: var(--space-4);
+    overflow: visible;
+  }
+
+  .stream-section {
+    margin-bottom: var(--space-3);
+    overflow: visible;
+  }
+}
+
+/* Premium Enhancements */
+.enhanced-performer-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.enhanced-performer-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--success-color),
+    var(--primary-color)
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.enhanced-performer-card:hover::before {
+  opacity: 1;
+}
+
+/* Premium Summary/Detailed View Styles */
+.view-mode-summary .performer-detailed-view {
+  display: none !important;
+}
+
+.view-mode-detailed .performer-summary-compact {
+  display: none !important;
+}
+
+/* Summary View Compact Layout */
+.view-mode-summary .enhanced-performer-card {
+  padding: var(--space-3);
+  min-height: auto;
+}
+
+.view-mode-summary .performer-summary-compact {
+  display: flex !important;
+}
+
+/* Detailed View Full Layout */
+.view-mode-detailed .enhanced-performer-card {
+  padding: var(--space-5);
+  min-height: auto;
+}
+
+.view-mode-detailed .performer-detailed-view {
+  display: block !important;
+}
+
+/* Default state - show detailed view */
+.performer-summary-compact {
+  display: none;
+}
+
+.performer-detailed-view {
+  display: block;
+}
+
+/* Ensure content is not cut off */
+.performer-details,
+.detailed-stats,
+.subjects-grid,
+.subjects-grid-enhanced,
+.subject-performance-grid {
+  overflow: visible;
+  max-height: none;
+}
+
+/* Fix for content being cut off */
+.enhanced-performer-card {
+  min-height: fit-content;
+  height: auto;
+}
+
+.component-content {
+  overflow: visible;
+  max-height: none;
+}
+
+.performer-summary-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3);
+  background: var(--card-bg-alt);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}
+
+.summary-compact-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.summary-compact-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.summary-compact-admission {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-family: "Courier New", monospace;
+}
+
+.summary-compact-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+.summary-compact-total {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.summary-compact-percentage {
+  font-size: 0.9rem;
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+/* Enhanced Loading States */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.loading-state i {
+  margin-bottom: var(--space-3);
+  color: var(--primary-color);
+  font-size: 2rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Premium Filter Enhancements */
+.analytics-filters-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.analytics-filters-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+}
+
+/* Smooth Transitions for All Interactive Elements */
+.enhanced-performer-card,
+.summary-item,
+.insight-card,
+.grade-section,
+.stream-title,
+.details-toggle,
+.view-toggle-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Premium Hover Effects */
+.summary-item:hover,
+.insight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(44, 95, 90, 0.2);
+}
+
+/* Enhanced Focus States for Accessibility */
+.view-toggle-btn:focus,
+.details-toggle:focus,
+.modern-btn:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Premium Gradient Overlays */
+.grade-section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(125, 211, 192, 0.05) 100%
+  );
+  pointer-events: none;
+  border-radius: var(--radius-lg);
 }

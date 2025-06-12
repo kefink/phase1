@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Configuration - School Setup</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1f7d53;
+            --secondary-color: #18230f;
+            --accent-color: #4ade80;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+
+        .setup-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .setup-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .setup-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            color: white;
+            opacity: 0.5;
+            margin: 0 0.5rem;
+        }
+
+        .step.active {
+            opacity: 1;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .step.active .step-number {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .setup-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.2);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: var(--gray-500);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-600);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .help-text {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .setup-container {
+                padding: 1rem;
+            }
+
+            .setup-card {
+                padding: 2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .step-indicator {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <a href="{{ url_for('school_setup.setup_dashboard') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Setup Dashboard
+        </a>
+
+        <div class="setup-header">
+            <h1><i class="fas fa-graduation-cap"></i> Academic Configuration</h1>
+            <p>Step 3 of 6 - Configure academic settings and structure</p>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step">
+                <div class="step-number"><i class="fas fa-check"></i></div>
+                <span>Basic</span>
+            </div>
+            <div class="step">
+                <div class="step-number"><i class="fas fa-check"></i></div>
+                <span>Registration</span>
+            </div>
+            <div class="step active">
+                <div class="step-number">3</div>
+                <span>Academic</span>
+            </div>
+        </div>
+
+        <div class="setup-card">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <!-- Academic Year and Terms -->
+                <div class="form-section">
+                    <h3><i class="fas fa-calendar-alt"></i> Academic Year & Terms</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="current_academic_year" class="form-label">Current Academic Year</label>
+                            <input type="text" id="current_academic_year" name="current_academic_year" class="form-input" 
+                                   value="{{ setup.current_academic_year or '2024/2025' }}" required
+                                   placeholder="e.g., 2024/2025">
+                            <div class="help-text">Format: YYYY/YYYY</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="current_term" class="form-label">Current Term</label>
+                            <select id="current_term" name="current_term" class="form-select" required>
+                                <option value="">Select Current Term</option>
+                                <option value="Term 1" {% if setup.current_term == 'Term 1' %}selected{% endif %}>Term 1</option>
+                                <option value="Term 2" {% if setup.current_term == 'Term 2' %}selected{% endif %}>Term 2</option>
+                                <option value="Term 3" {% if setup.current_term == 'Term 3' %}selected{% endif %}>Term 3</option>
+                                <option value="Term 4" {% if setup.current_term == 'Term 4' %}selected{% endif %}>Term 4</option>
+                            </select>
+                            <div class="help-text">Which term is currently active</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="total_terms_per_year" class="form-label">Terms Per Year</label>
+                            <select id="total_terms_per_year" name="total_terms_per_year" class="form-select">
+                                <option value="2" {% if setup.total_terms_per_year == 2 %}selected{% endif %}>2 Terms</option>
+                                <option value="3" {% if setup.total_terms_per_year == 3 or not setup.total_terms_per_year %}selected{% endif %}>3 Terms</option>
+                                <option value="4" {% if setup.total_terms_per_year == 4 %}selected{% endif %}>4 Terms</option>
+                            </select>
+                            <div class="help-text">How many terms per academic year</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- School Structure -->
+                <div class="form-section">
+                    <h3><i class="fas fa-sitemap"></i> School Structure</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="lowest_grade" class="form-label">Lowest Grade</label>
+                            <select id="lowest_grade" name="lowest_grade" class="form-select">
+                                <option value="PP1" {% if setup.lowest_grade == 'PP1' %}selected{% endif %}>PP1 (Pre-Primary 1)</option>
+                                <option value="PP2" {% if setup.lowest_grade == 'PP2' %}selected{% endif %}>PP2 (Pre-Primary 2)</option>
+                                <option value="Grade 1" {% if setup.lowest_grade == 'Grade 1' %}selected{% endif %}>Grade 1</option>
+                                <option value="Grade 2" {% if setup.lowest_grade == 'Grade 2' %}selected{% endif %}>Grade 2</option>
+                                <option value="Grade 3" {% if setup.lowest_grade == 'Grade 3' %}selected{% endif %}>Grade 3</option>
+                            </select>
+                            <div class="help-text">Lowest grade level in your school</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="highest_grade" class="form-label">Highest Grade</label>
+                            <select id="highest_grade" name="highest_grade" class="form-select">
+                                <option value="Grade 6" {% if setup.highest_grade == 'Grade 6' %}selected{% endif %}>Grade 6</option>
+                                <option value="Grade 7" {% if setup.highest_grade == 'Grade 7' %}selected{% endif %}>Grade 7</option>
+                                <option value="Grade 8" {% if setup.highest_grade == 'Grade 8' %}selected{% endif %}>Grade 8</option>
+                                <option value="Grade 9" {% if setup.highest_grade == 'Grade 9' %}selected{% endif %}>Grade 9</option>
+                                <option value="Form 4" {% if setup.highest_grade == 'Form 4' %}selected{% endif %}>Form 4</option>
+                            </select>
+                            <div class="help-text">Highest grade level in your school</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Class Streams</label>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="uses_streams" name="uses_streams" 
+                                       {% if setup.uses_streams %}checked{% endif %}>
+                                <label for="uses_streams">Use class streams (A, B, C, etc.)</label>
+                            </div>
+                            <div class="help-text">Enable if you have multiple classes per grade</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assessment Configuration -->
+                <div class="form-section">
+                    <h3><i class="fas fa-chart-bar"></i> Assessment Configuration</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="grading_system" class="form-label">Grading System</label>
+                            <select id="grading_system" name="grading_system" class="form-select">
+                                <option value="CBC" {% if setup.grading_system == 'CBC' %}selected{% endif %}>CBC (Exceeding, Meeting, Approaching, Below)</option>
+                                <option value="Percentage" {% if setup.grading_system == 'Percentage' %}selected{% endif %}>Percentage (0-100%)</option>
+                                <option value="Letter" {% if setup.grading_system == 'Letter' %}selected{% endif %}>Letter Grades (A, B, C, D, E)</option>
+                                <option value="Points" {% if setup.grading_system == 'Points' %}selected{% endif %}>Points System</option>
+                            </select>
+                            <div class="help-text">How student performance is graded</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="max_raw_marks_default" class="form-label">Default Maximum Marks</label>
+                            <input type="number" id="max_raw_marks_default" name="max_raw_marks_default" class="form-input" 
+                                   value="{{ setup.max_raw_marks_default or 100 }}" min="1" max="1000">
+                            <div class="help-text">Default maximum marks for assessments</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pass_mark_percentage" class="form-label">Pass Mark Percentage</label>
+                            <input type="number" id="pass_mark_percentage" name="pass_mark_percentage" class="form-input" 
+                                   value="{{ setup.pass_mark_percentage or 50 }}" min="0" max="100" step="0.1">
+                            <div class="help-text">Minimum percentage to pass</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{{ url_for('school_setup.registration_info') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Registration
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        Continue to Branding <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

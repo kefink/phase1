@@ -147,6 +147,57 @@ function populateFilterDropdowns() {
       option.textContent = grade.name;
       gradeSelect.appendChild(option);
     });
+
+    // Add event listener for grade change to update streams
+    gradeSelect.addEventListener("change", updateStreamsForGrade);
+  }
+
+  // Initialize streams dropdown (empty initially)
+  const streamSelect = document.getElementById("analytics-stream-filter");
+  if (streamSelect) {
+    streamSelect.innerHTML = '<option value="">All Streams</option>';
+  }
+}
+
+// Function to update streams based on selected grade
+async function updateStreamsForGrade() {
+  const gradeSelect = document.getElementById("analytics-grade-filter");
+  const streamSelect = document.getElementById("analytics-stream-filter");
+
+  if (!gradeSelect || !streamSelect) return;
+
+  const selectedGradeId = gradeSelect.value;
+
+  // Reset streams dropdown
+  streamSelect.innerHTML = '<option value="">All Streams</option>';
+  analyticsFilters.streamId = null;
+
+  if (!selectedGradeId) {
+    return; // No grade selected, keep streams empty
+  }
+
+  try {
+    // Fetch streams for the selected grade
+    const response = await fetch(
+      `/api/analytics/streams?grade_id=${selectedGradeId}`,
+      {
+        credentials: "same-origin",
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const streams = data.streams || [];
+
+      streams.forEach((stream) => {
+        const option = document.createElement("option");
+        option.value = stream.id;
+        option.textContent = stream.name;
+        streamSelect.appendChild(option);
+      });
+    }
+  } catch (error) {
+    console.error("Error loading streams for grade:", error);
   }
 }
 
@@ -581,8 +632,10 @@ async function refreshAnalyticsData() {
 // ENHANCED ANALYTICS FUNCTIONS
 // ============================================================================
 
-async function loadEnhancedTopPerformers() {
-  console.log("🚀 loadEnhancedTopPerformers called - UPDATED VERSION");
+async function loadEnhancedTopPerformers(viewType = "summary") {
+  console.log("🚀 loadEnhancedTopPerformers called - UPDATED VERSION", {
+    viewType,
+  });
   const container = document.getElementById("top-performers-container");
   if (!container) {
     console.log("❌ top-performers-container not found");
@@ -609,6 +662,7 @@ async function loadEnhancedTopPerformers() {
     if (analyticsFilters.streamId)
       params.append("stream_id", analyticsFilters.streamId);
     params.append("limit", "5"); // Top 5 per grade/stream
+    params.append("view_type", viewType); // Add view type parameter
 
     const response = await fetch(
       `/api/analytics/enhanced-top-performers?${params.toString()}`,
@@ -685,85 +739,117 @@ function displayEnhancedTopPerformers(enhancedData) {
             <div class="enhanced-performer-card ${rankClass}" data-student-id="${
             performer.student_id
           }">
-              <!-- Clean Header -->
-              <div class="performer-card-header">
-                <div class="performer-rank-badge ${performanceClass}">
-                  ${index + 1}
-                </div>
-                <div class="performer-basic-info">
-                  <div class="performer-name">${performer.name}</div>
-                  <div class="performer-admission">${
+              <!-- Summary Compact View (for summary mode) -->
+              <div class="performer-summary-compact">
+                <div class="summary-compact-info">
+                  <div class="summary-compact-name">${performer.name}</div>
+                  <div class="summary-compact-admission">${
                     performer.admission_number
                   }</div>
                 </div>
-                <div class="performer-grade-badge">
-                  ${performer.grade_letter}
+                <div class="summary-compact-score">
+                  <div class="summary-compact-total">${totalMarksDisplay}</div>
+                  <div class="summary-compact-percentage">${
+                    performer.average_percentage
+                  }%</div>
+                </div>
+                <div class="performer-actions">
+                  ${getDeleteButtonHTML(
+                    performer.grade ||
+                      (performer.grade_name
+                        ? performer.grade_name.replace("Grade ", "")
+                        : "Unknown"),
+                    performer.stream ||
+                      (performer.stream_name
+                        ? performer.stream_name.replace("Stream ", "")
+                        : "Unknown"),
+                    performer.term || "All Terms",
+                    performer.assessment_type || "All Assessments"
+                  )}
                 </div>
               </div>
 
-              <!-- Position and Class Info -->
-              <div class="performer-position">
-                <div class="position-info">
-                  <span class="position-rank">#${
-                    performer.class_position || index + 1
-                  }</span>
-                  <span class="position-text">of ${
-                    performer.total_students_in_class || "N/A"
-                  } students</span>
-                </div>
-                <div class="percentage-display">${
-                  performer.average_percentage
-                }%</div>
-              </div>
-
-              <!-- Summary Stats -->
-              <div class="performer-summary">
-                <div class="summary-item">
-                  <span class="summary-value">${totalMarksDisplay}</span>
-                  <span class="summary-label">Total Marks</span>
-                </div>
-                <div class="summary-item">
-                  <span class="summary-value">${
-                    performer.total_assessments
-                  }</span>
-                  <span class="summary-label">Subjects</span>
-                </div>
-              </div>
-
-              <!-- Toggle Button -->
-              <button class="details-toggle" onclick="togglePerformerDetails('${
-                performer.student_id
-              }')">
-                <i class="fas fa-chevron-down"></i>
-                View Detailed Performance
-              </button>
-
-              <!-- Detailed Performance (Hidden by default) -->
-              <div class="performer-details" id="details-${
-                performer.student_id
-              }">
-                <div class="detailed-stats">
-                  <div class="detailed-stat">
-                    <span class="detailed-stat-value">${
-                      performer.min_percentage
-                    }%</span>
-                    <span class="detailed-stat-label">Lowest</span>
+              <!-- Detailed View (for detailed mode) -->
+              <div class="performer-detailed-view">
+                <!-- Clean Header -->
+                <div class="performer-card-header">
+                  <div class="performer-rank-badge ${performanceClass}">
+                    ${index + 1}
                   </div>
-                  <div class="detailed-stat">
-                    <span class="detailed-stat-value">${
-                      performer.average_percentage
-                    }%</span>
-                    <span class="detailed-stat-label">Average</span>
+                  <div class="performer-basic-info">
+                    <div class="performer-name">${performer.name}</div>
+                    <div class="performer-admission">${
+                      performer.admission_number
+                    }</div>
                   </div>
-                  <div class="detailed-stat">
-                    <span class="detailed-stat-value">${
-                      performer.max_percentage
-                    }%</span>
-                    <span class="detailed-stat-label">Highest</span>
+                  <div class="performer-grade-badge">
+                    ${performer.grade_letter}
                   </div>
                 </div>
 
-                <div class="subject-performance-grid">`;
+                <!-- Position and Class Info -->
+                <div class="performer-position">
+                  <div class="position-info">
+                    <span class="position-rank">#${
+                      performer.class_position || index + 1
+                    }</span>
+                    <span class="position-text">of ${
+                      performer.total_students_in_class || "N/A"
+                    } students</span>
+                  </div>
+                  <div class="percentage-display">${
+                    performer.average_percentage
+                  }%</div>
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="performer-summary">
+                  <div class="summary-item">
+                    <span class="summary-value">${totalMarksDisplay}</span>
+                    <span class="summary-label">Total Marks</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-value">${
+                      performer.total_assessments
+                    }</span>
+                    <span class="summary-label">Subjects</span>
+                  </div>
+                </div>
+
+                <!-- Toggle Button -->
+                <button class="details-toggle" onclick="togglePerformerDetails('${
+                  performer.student_id
+                }')">
+                  <i class="fas fa-chevron-down"></i>
+                  View Detailed Performance
+                </button>
+
+                <!-- Detailed Performance (Hidden by default) -->
+                <div class="performer-details" id="details-${
+                  performer.student_id
+                }">
+                  <div class="detailed-stats">
+                    <div class="detailed-stat">
+                      <span class="detailed-stat-value">${
+                        performer.min_percentage
+                      }%</span>
+                      <span class="detailed-stat-label">Lowest</span>
+                    </div>
+                    <div class="detailed-stat">
+                      <span class="detailed-stat-value">${
+                        performer.average_percentage
+                      }%</span>
+                      <span class="detailed-stat-label">Average</span>
+                    </div>
+                    <div class="detailed-stat">
+                      <span class="detailed-stat-value">${
+                        performer.max_percentage
+                      }%</span>
+                      <span class="detailed-stat-label">Highest</span>
+                    </div>
+                  </div>
+
+                  <div class="subject-performance-grid">`;
 
           // Display subject performance in compact grid
           performer.subject_marks.forEach((subject) => {
@@ -777,6 +863,23 @@ function displayEnhancedTopPerformers(enhancedData) {
           });
 
           html += `
+                  </div>
+
+                  <!-- Delete button for detailed view -->
+                  <div class="detailed-actions">
+                    ${getDeleteButtonHTML(
+                      performer.grade ||
+                        (performer.grade_name
+                          ? performer.grade_name.replace("Grade ", "")
+                          : "Unknown"),
+                      performer.stream ||
+                        (performer.stream_name
+                          ? performer.stream_name.replace("Stream ", "")
+                          : "Unknown"),
+                      performer.term || "All Terms",
+                      performer.assessment_type || "All Assessments"
+                    )}
+                  </div>
                 </div>
               </div>
             </div>`;
@@ -972,7 +1075,9 @@ function displayClassStreamPerformance(data) {
             <p class="stream-name">${classData.stream_name}</p>
           </div>
           <div class="class-grade">
-            <span class="grade-badge ${performanceClass}">${classData.grade_letter}</span>
+            <span class="grade-badge ${performanceClass}">${
+      classData.grade_letter
+    }</span>
           </div>
         </div>
 
@@ -1007,6 +1112,15 @@ function displayClassStreamPerformance(data) {
 
         <div class="performance-badge ${performanceClass}">
           ${classData.performance_category}
+        </div>
+
+        <div class="class-actions">
+          ${getDeleteButtonHTML(
+            classData.grade_name,
+            classData.stream_name,
+            classData.term_name || "Current Term",
+            classData.assessment_type_name || "Current Assessment"
+          )}
         </div>
       </div>`;
   });
@@ -1148,6 +1262,14 @@ function generateGradeSubjectView(gradeSubjectData) {
           <div class="subject-header-enhanced">
             <div class="subject-name-enhanced">${subjectName}</div>
             <div class="subject-grade-average">${gradeAverage}%</div>
+            <div class="subject-actions">
+              ${getDeleteButtonHTML(
+                gradeName,
+                "All Streams",
+                "Current Term",
+                subjectName
+              )}
+            </div>
           </div>
           <div class="streams-comparison">
       `;
@@ -1156,9 +1278,19 @@ function generateGradeSubjectView(gradeSubjectData) {
         const performanceClass = getPerformanceClass(
           streamData.performance_category
         );
+
+        // Format teacher information
+        const teacherInfo =
+          streamData.teacher_name && streamData.teacher_name !== "Not Assigned"
+            ? streamData.teacher_name
+            : "No teacher assigned";
+
         html += `
           <div class="stream-performance">
             <div class="stream-name-enhanced">Stream ${streamName}</div>
+            <div class="stream-teacher">
+              <i class="fas fa-user-tie"></i> ${teacherInfo}
+            </div>
             <div class="stream-stats">
               <div class="stream-average">${streamData.average_percentage}%</div>
               <div class="stream-students">${streamData.student_count} students</div>
@@ -1209,9 +1341,20 @@ function generateSubjectComparisonView(subjectStreamData) {
         Object.entries(streams).forEach(([streamName, streamData]) => {
           const barWidth =
             (streamData.average_percentage / maxPercentage) * 100;
+
+          // Format teacher information
+          const teacherInfo =
+            streamData.teacher_name &&
+            streamData.teacher_name !== "Not Assigned"
+              ? streamData.teacher_name
+              : "No teacher assigned";
+
           html += `
             <div class="comparison-bar">
-              <div class="bar-label">Stream ${streamName}</div>
+              <div class="bar-label">
+                <div class="stream-name">Stream ${streamName}</div>
+                <div class="teacher-name"><i class="fas fa-user-tie"></i> ${teacherInfo}</div>
+              </div>
               <div class="bar-container">
                 <div class="bar-fill" style="width: ${barWidth}%">
                   <div class="bar-value">${streamData.average_percentage}%</div>
@@ -1258,5 +1401,40 @@ function testEnhancedTopPerformers() {
   loadEnhancedTopPerformers();
 }
 
-// Make function available globally for testing
+// Helper function to generate delete button HTML for headteachers
+function getDeleteButtonHTML(grade, stream, term, assessmentType) {
+  // Check if user is headteacher
+  const isHeadteacher = window.isHeadteacher || false; // This should be set by the template
+
+  if (!isHeadteacher) {
+    return "";
+  }
+
+  // Debug logging
+  console.log("🗑️ Delete button parameters:", {
+    grade: grade,
+    stream: stream,
+    term: term,
+    assessmentType: assessmentType,
+  });
+
+  // Ensure all parameters have values
+  const safeGrade = grade || "Unknown";
+  const safeStream = stream || "Unknown";
+  const safeTerm = term || "Current Term";
+  const safeAssessmentType = assessmentType || "Current Assessment";
+
+  return `
+    <button class="delete-report-btn"
+            onclick="deleteReportFromAnalytics('${safeGrade}', '${safeStream}', '${safeTerm}', '${safeAssessmentType}')"
+            title="Delete this report and all associated marks">
+      <i class="fas fa-trash"></i>
+    </button>
+  `;
+}
+
+// Make functions available globally
 window.testEnhancedTopPerformers = testEnhancedTopPerformers;
+window.loadTopPerformers = loadEnhancedTopPerformers;
+window.updateStreamsForGrade = updateStreamsForGrade;
+window.getDeleteButtonHTML = getDeleteButtonHTML;

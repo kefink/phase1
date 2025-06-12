@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Health Check - Hillview School</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1f7d53 0%, #18230f 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #28a745;
+        }
+        
+        .status-card.warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        
+        .status-card.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .table th, .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .btn {
+            background: #1f7d53;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #18230f;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #1f7d53;
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Database Health Check</h1>
+            <p>Monitor and maintain database integrity</p>
+        </div>
+        
+        <div class="content">
+            <a href="{{ url_for('classteacher.dashboard') }}" class="back-link">← Back to Dashboard</a>
+            
+            {% if error_message %}
+            <div class="alert alert-error">
+                <strong>Error:</strong> {{ error_message }}
+            </div>
+            {% endif %}
+            
+            {% if success_message %}
+            <div class="alert alert-success">
+                <strong>Success:</strong> {{ success_message }}
+            </div>
+            {% endif %}
+            
+            <!-- Health Check Actions -->
+            <div class="grid">
+                <div class="card">
+                    <h3>🔍 Health Check</h3>
+                    <p>Run a comprehensive database health check to identify any issues.</p>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="check_health">
+                        <button type="submit" class="btn">Run Health Check</button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <h3>🛠️ Repair Database</h3>
+                    <p>Create any missing tables required for proper operation.</p>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="create_missing_tables">
+                        <button type="submit" class="btn btn-warning">Create Missing Tables</button>
+                    </form>
+                </div>
+            </div>
+            
+            {% if health_results %}
+            <!-- Health Results -->
+            <div class="status-card {% if health_results.status == 'error' %}error{% elif health_results.status == 'warning' %}warning{% endif %}">
+                <h3>📊 Database Status: {{ health_results.status|title }}</h3>
+                
+                {% if health_results.errors %}
+                <h4>❌ Errors:</h4>
+                <ul>
+                    {% for error in health_results.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                
+                {% if health_results.warnings %}
+                <h4>⚠️ Warnings:</h4>
+                <ul>
+                    {% for warning in health_results.warnings %}
+                    <li>{{ warning }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            
+            <!-- Table Information -->
+            {% if health_results.existing_tables %}
+            <div class="card">
+                <h3>📋 Database Tables</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Table Name</th>
+                            <th>Record Count</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for table in health_results.existing_tables %}
+                        <tr>
+                            <td>{{ table }}</td>
+                            <td>{{ health_results.table_counts.get(table, 'N/A') }}</td>
+                            <td>
+                                {% if table in health_results.missing_tables %}
+                                <span style="color: #dc3545;">❌ Missing</span>
+                                {% else %}
+                                <span style="color: #28a745;">✅ Present</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            
+            {% if health_results.missing_tables %}
+            <div class="card">
+                <h3>⚠️ Missing Tables</h3>
+                <p>The following tables are missing and may cause errors:</p>
+                <ul>
+                    {% for table in health_results.missing_tables %}
+                    <li><code>{{ table }}</code></li>
+                    {% endfor %}
+                </ul>
+                <p><em>Use the "Create Missing Tables" button above to fix this.</em></p>
+            </div>
+            {% endif %}
+            {% endif %}
+            
+            {% if creation_results %}
+            <div class="card">
+                <h3>🔧 Table Creation Results</h3>
+                {% if creation_results.tables_created %}
+                <h4>✅ Tables Created:</h4>
+                <ul>
+                    {% for table in creation_results.tables_created %}
+                    <li><code>{{ table }}</code></li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                
+                {% if creation_results.errors %}
+                <h4>❌ Errors:</h4>
+                <ul>
+                    {% for error in creation_results.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

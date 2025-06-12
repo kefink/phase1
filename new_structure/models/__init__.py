@@ -8,5 +8,7 @@ from .academic import (
     AssessmentType, Student, Mark
 )
 from .assignment import TeacherSubjectAssignment
+from .report_config import ReportConfiguration, ClassReportConfiguration, ReportTemplate
+from .school_setup import SchoolSetup, SchoolBranding, SchoolCustomization
 from .permission import ClassTeacherPermission, PermissionRequest
 from .function_permission import FunctionPermission, DefaultFunctionPermissions

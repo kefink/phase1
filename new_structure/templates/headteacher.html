@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Headteacher Dashboard - Kirima Primary School</title>
+    <title>
+      Headteacher Dashboard - {{ school_name or 'School Management System' }}
+    </title>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
@@ -1253,7 +1255,20 @@
           width: 100%;
         "
       >
-        <a href="#" class="navbar-brand">Kirima Primary School</a>
+        <a href="#" class="navbar-brand">
+          {% if logo_path and logo_path != 'hv.jpg' %}
+          <img
+            src="{{ url_for('static', filename=logo_path) }}"
+            alt="School Logo"
+            style="
+              height: 40px;
+              width: auto;
+              margin-right: 10px;
+              border-radius: 8px;
+            "
+          />
+          {% endif %} {{ school_name or 'School Management System' }}
+        </a>
         <ul class="navbar-nav">
           <li class="nav-item">
             <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
@@ -1318,8 +1333,8 @@
             </h1>
             <p class="dashboard-subtitle">
               <i class="fas fa-calendar-day"></i>
-              {{ current_academic_year or '2024/2025' }} Academic Year - {{
-              current_term.name if current_term else 'Term 1' }}
+              {{ current_academic_year or '2025/2026' }} Academic Year - {{
+              current_term or 'Term 1' }}
             </p>
           </div>
           <div class="header-actions">
@@ -2067,7 +2082,10 @@
 
       <!-- Footer -->
       <footer>
-        <p>Kirima Primary School powered by CbcTeachkit</p>
+        <p>
+          {{ school_name or 'School Management System' }} {{ report_footer or
+          'powered by CbcTeachkit' }}
+        </p>
       </footer>
     </div>
 

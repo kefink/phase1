@@ -794,7 +794,7 @@
                 >
                   <option value="">-- Select Grade --</option>
                   {% for grade in grades %}
-                  <option value="{{ grade.id }}">{{ grade.level }}</option>
+                  <option value="{{ grade.id }}">{{ grade.name }}</option>
                   {% endfor %}
                 </select>
               </div>
@@ -1198,7 +1198,7 @@
                 <tr>
                   <td>{{ assignment.teacher.username }}</td>
                   <td>{{ assignment.subject.name }}</td>
-                  <td>{{ assignment.grade.level }}</td>
+                  <td>{{ assignment.grade.name }}</td>
                   <td>
                     {{ assignment.stream.name if assignment.stream else 'All
                     Streams' }}
@@ -1498,7 +1498,7 @@
               <select name="advanced_grades[]" class="form-control" required onchange="updateAdvancedStreams(${combinationCounter})">
                 <option value="">-- Select Grade --</option>
                 {% for grade in grades %}
-                <option value="{{ grade.id }}">Grade {{ grade.level }}</option>
+                <option value="{{ grade.id }}">{{ grade.name }}</option>
                 {% endfor %}
               </select>
             </div>

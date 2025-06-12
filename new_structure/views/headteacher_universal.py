@@ -264,6 +264,7 @@ def proxy_export_subjects():
 def proxy_teacher_management_hub():
     """Proxy to teacher management hub."""
     session['headteacher_universal_access'] = True
+    session.permanent = True  # Ensure session persists across redirects
     return redirect(url_for('classteacher.teacher_management_hub'))
 
 @universal_bp.route('/proxy/manage_teachers')
@@ -271,6 +272,7 @@ def proxy_teacher_management_hub():
 def proxy_manage_teachers():
     """Proxy to teacher management."""
     session['headteacher_universal_access'] = True
+    session.permanent = True  # Ensure session persists across redirects
     return redirect(url_for('classteacher.manage_teachers'))
 
 @universal_bp.route('/proxy/assign_subjects')
@@ -278,6 +280,7 @@ def proxy_manage_teachers():
 def proxy_assign_subjects():
     """Proxy to subject assignment."""
     session['headteacher_universal_access'] = True
+    session.permanent = True  # Ensure session persists across redirects
     return redirect(url_for('classteacher.assign_subjects'))
 
 @universal_bp.route('/proxy/advanced_assignments')
@@ -302,6 +305,15 @@ def proxy_manage_terms_assessments():
     """Proxy to terms and assessments management."""
     session['headteacher_universal_access'] = True
     return redirect(url_for('classteacher.manage_terms_assessments'))
+
+# REPORT CONFIGURATION PROXIES
+@universal_bp.route('/proxy/report_configuration')
+@headteacher_required
+def proxy_report_configuration():
+    """Proxy to report configuration management."""
+    session['headteacher_universal_access'] = True
+    session.permanent = True  # Ensure session persists across redirects
+    return redirect(url_for('classteacher.report_configuration'))
 
 # MARKS MANAGEMENT PROXIES
 @universal_bp.route('/proxy/classteacher_dashboard')

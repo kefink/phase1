@@ -3,6 +3,7 @@ Class Teacher views for the Hillview School Management System.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, send_file, jsonify, make_response
 from werkzeug.security import generate_password_hash
+from sqlalchemy import text
 import pandas as pd
 import os
 from io import BytesIO
@@ -24,6 +25,8 @@ from ..services.cache_service import (
 from ..services.collaborative_marks_service import CollaborativeMarksService
 from ..services.grade_report_service import GradeReportService
 from ..services.enhanced_permission_service import EnhancedPermissionService, function_permission_required
+from ..services.report_config_service import ReportConfigService
+from ..utils.database_health import check_database_health, create_missing_tables, safe_table_operation
 from ..services.permission_service import PermissionService
 from ..models.function_permission import DefaultFunctionPermissions
 from functools import wraps
@@ -51,6 +54,7 @@ def classteacher_required(f):
     """
     Enhanced decorator to require class teacher authentication with function-level permissions.
     Only allows marks upload and report generation by default. Other functions require explicit permission.
+    Headteachers have universal access to all classteacher functions.
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -62,8 +66,12 @@ def classteacher_required(f):
 
         role = get_role(session)
 
-        # Allow headteacher universal access
-        if role == 'headteacher' and session.get('headteacher_universal_access'):
+        # HEADTEACHER UNIVERSAL ACCESS - Always allow headteachers to access all classteacher functions
+        if role == 'headteacher':
+            # Set the universal access flag if not already set
+            if not session.get('headteacher_universal_access'):
+                session['headteacher_universal_access'] = True
+                session.permanent = True  # Ensure session persists
             return f(*args, **kwargs)
 
         # For classteachers, check function-level permissions
@@ -92,7 +100,7 @@ def classteacher_required(f):
                     return jsonify({"success": False, "message": f"Permission denied for function: {function_name}"}), 403
                 return redirect(url_for('classteacher.permission_denied', function_name=function_name))
 
-        # Final fallback for non-classteacher roles
+        # Final fallback for non-classteacher/non-headteacher roles
         if request.is_json or request.headers.get('Content-Type') == 'application/json' or 'api' in request.endpoint or request.path.startswith('/classteacher/get_'):
             return jsonify({"success": False, "message": "Access denied", "redirect": url_for('auth.classteacher_login')}), 403
         return redirect(url_for('auth.classteacher_login'))
@@ -108,8 +116,12 @@ def teacher_or_classteacher_required(f):
 
         role = get_role(session)
 
-        # Allow headteacher universal access
-        if role == 'headteacher' and session.get('headteacher_universal_access'):
+        # HEADTEACHER UNIVERSAL ACCESS - Always allow headteachers
+        if role == 'headteacher':
+            # Set the universal access flag if not already set
+            if not session.get('headteacher_universal_access'):
+                session['headteacher_universal_access'] = True
+                session.permanent = True  # Ensure session persists
             return f(*args, **kwargs)
 
         if role not in ['teacher', 'classteacher']:
@@ -200,13 +212,38 @@ def analytics_dashboard():
             flash('Teacher not found.', 'error')
             return redirect(url_for('auth.classteacher_login'))
 
-        # Get analytics data
-        from ..services.analytics_service import AnalyticsService
-        analytics_data = AnalyticsService.get_classteacher_analytics(teacher_id)
+        # Get analytics data - prioritize report-based analytics
+        try:
+            from ..services.report_based_analytics_service import ReportBasedAnalyticsService
 
-        if 'error' in analytics_data:
-            flash(f'Error loading analytics: {analytics_data["error"]}', 'error')
-            analytics_data = {'has_data': False, 'summary': {}, 'top_students': [], 'subject_performance': []}
+            # Try report-based analytics first
+            analytics_data = ReportBasedAnalyticsService.get_analytics_dashboard_data(
+                role='classteacher',
+                teacher_id=teacher_id
+            )
+
+            # If no report data available, fall back to traditional analytics
+            if not analytics_data.get('has_data', False):
+                from ..services.analytics_service import AnalyticsService
+                fallback_data = AnalyticsService.get_classteacher_analytics(teacher_id)
+
+                # Merge the data, prioritizing report-based structure
+                analytics_data.update({
+                    'top_students': fallback_data.get('top_students', []),
+                    'subject_performance': fallback_data.get('subject_performance', []),
+                    'summary': fallback_data.get('summary', {}),
+                    'has_data': fallback_data.get('has_data', False),
+                    'data_source': 'live_calculation'
+                })
+
+                flash('Analytics based on live data calculation. Generate reports for more accurate insights.', 'info')
+            else:
+                flash('Analytics based on generated reports - reflecting actual academic workflow.', 'success')
+
+        except Exception as e:
+            print(f"Error loading analytics: {e}")
+            flash(f'Error loading analytics: {str(e)}', 'error')
+            analytics_data = {'has_data': False, 'summary': {}, 'top_students': [], 'subject_performance': [], 'data_source': 'error'}
 
         # Get filter options
         terms = [term.name for term in Term.query.all()]
@@ -1463,59 +1500,164 @@ def manage_students():
                         flash("Unsupported file format. Please upload a CSV or Excel file.", "error")
                         return redirect(request.url)
 
-                    # Check required columns
-                    required_columns = ['name', 'admission_number']
+                    # Normalize column names to handle variations
+                    df.columns = df.columns.str.strip().str.lower()
+
+                    # Map common column name variations
+                    column_mapping = {
+                        'student_name': 'name',
+                        'student name': 'name',
+                        'full_name': 'name',
+                        'full name': 'name',
+                        'addmission_number': 'admission_number',
+                        'addmission number': 'admission_number',
+                        'admission_no': 'admission_number',
+                        'admission no': 'admission_number',
+                        'adm_number': 'admission_number',
+                        'adm number': 'admission_number',
+                        'adm_no': 'admission_number',
+                        'adm no': 'admission_number',
+                        'reg_number': 'admission_number',
+                        'reg number': 'admission_number',
+                        'registration_number': 'admission_number',
+                        'registration number': 'admission_number'
+                    }
+
+                    # Apply column mapping
+                    df.rename(columns=column_mapping, inplace=True)
+
+                    # Check required columns after mapping
+                    required_columns = ['name']
+                    missing_columns = []
                     for col in required_columns:
                         if col not in df.columns:
-                            flash(f"Missing required column: {col}", "error")
-                            return redirect(request.url)
+                            missing_columns.append(col)
+
+                    if missing_columns:
+                        available_columns = list(df.columns)
+                        flash(f"Missing required column(s): {', '.join(missing_columns)}. Available columns: {', '.join(available_columns)}. Please ensure your file has a 'name' column.", "error")
+                        return redirect(request.url)
 
                     # Process each row
                     success_count = 0
                     error_count = 0
+                    error_details = []
 
-                    for _, row in df.iterrows():
-                        name = str(row['name']).strip()
-                        admission_number = str(row['admission_number']).strip()
+                    for index, row in df.iterrows():
+                        try:
+                            name = str(row['name']).strip()
 
-                        # Optional fields
-                        gender = str(row.get('gender', '')).strip().lower() if pd.notna(row.get('gender', '')) else 'unknown'
+                            # Handle admission number (might be missing or have different column name)
+                            admission_number = None
+                            if 'admission_number' in row and pd.notna(row['admission_number']):
+                                admission_number = str(row['admission_number']).strip()
 
-                        # Skip empty rows
-                        if not name or not admission_number:
+                            # If no admission number, generate one
+                            if not admission_number or admission_number == 'nan':
+                                # Generate admission number based on name and index
+                                name_part = ''.join(c for c in name.replace(' ', '')[:3] if c.isalnum()).upper()
+                                admission_number = f"ADM{name_part}{index+1:03d}"
+
+                            # Optional fields
+                            gender = str(row.get('gender', '')).strip().lower() if pd.notna(row.get('gender', '')) else 'unknown'
+
+                            # Handle grade and stream from Excel file
+                            excel_grade = None
+                            excel_stream = None
+
+                            if 'grade' in row and pd.notna(row['grade']):
+                                excel_grade = str(row['grade']).strip()
+
+                            if 'stream' in row and pd.notna(row['stream']):
+                                excel_stream = str(row['stream']).strip().upper()
+
+                            # Skip empty rows
+                            if not name:
+                                error_details.append(f"Row {index+1}: Missing student name")
+                                error_count += 1
+                                continue
+
+                            # Check if admission number already exists
+                            existing_student = Student.query.filter_by(admission_number=admission_number).first()
+                            if existing_student:
+                                error_details.append(f"Row {index+1}: Student with admission number {admission_number} already exists")
+                                error_count += 1
+                                continue
+
+                            # Determine stream_id
+                            final_stream_id = None
+
+                            # Priority 1: Use grade and stream from Excel file
+                            if excel_grade and excel_stream:
+                                # Find the stream based on grade and stream from Excel
+                                grade_obj = Grade.query.filter_by(name=excel_grade).first()
+                                if not grade_obj:
+                                    # Try variations like "Grade 1", "1", etc.
+                                    grade_variations = [
+                                        f"Grade {excel_grade}",
+                                        excel_grade.replace("Grade ", ""),
+                                        excel_grade
+                                    ]
+                                    for variation in grade_variations:
+                                        grade_obj = Grade.query.filter_by(name=variation).first()
+                                        if grade_obj:
+                                            break
+
+                                if grade_obj:
+                                    stream_obj = Stream.query.filter_by(grade_id=grade_obj.id, name=excel_stream).first()
+                                    if stream_obj:
+                                        final_stream_id = stream_obj.id
+                                    else:
+                                        error_details.append(f"Row {index+1}: Stream '{excel_stream}' not found for grade '{excel_grade}'")
+                                else:
+                                    error_details.append(f"Row {index+1}: Grade '{excel_grade}' not found")
+
+                            # Priority 2: Use teacher's assigned stream
+                            if not final_stream_id and stream_id:
+                                final_stream_id = stream_id
+
+                            # Priority 3: Use selected stream from form
+                            if not final_stream_id:
+                                selected_stream_id = request.form.get('stream')
+                                if selected_stream_id:
+                                    final_stream_id = selected_stream_id
+
+                            # Add new student
+                            student = Student(
+                                name=name,
+                                admission_number=admission_number,
+                                stream_id=final_stream_id if final_stream_id else None,
+                                gender=gender
+                            )
+                            db.session.add(student)
+                            success_count += 1
+
+                        except Exception as e:
+                            error_details.append(f"Row {index+1}: Error processing student - {str(e)}")
                             error_count += 1
                             continue
-
-                        # Check if admission number already exists
-                        existing_student = Student.query.filter_by(admission_number=admission_number).first()
-                        if existing_student:
-                            error_count += 1
-                            continue
-
-                        # Get stream_id from form if teacher is not assigned to a stream
-                        selected_stream_id = request.form.get('stream')
-
-                        # Use the teacher's assigned stream if available, otherwise use the selected stream
-                        final_stream_id = stream_id if stream_id else selected_stream_id
-
-                        # Stream is now optional
-
-                        # Add new student
-                        student = Student(
-                            name=name,
-                            admission_number=admission_number,
-                            stream_id=final_stream_id if final_stream_id else None,
-                            gender=gender
-                        )
-                        db.session.add(student)
-                        success_count += 1
 
                     db.session.commit()
 
+                    # Provide detailed feedback
                     if success_count > 0:
-                        flash(f"Successfully added {success_count} students. {error_count} errors encountered.", "success")
+                        success_msg = f"Successfully added {success_count} students."
+                        if error_count > 0:
+                            success_msg += f" {error_count} errors encountered."
+                        flash(success_msg, "success")
+
+                        # Show first few error details if any
+                        if error_details:
+                            error_summary = "; ".join(error_details[:3])  # Show first 3 errors
+                            if len(error_details) > 3:
+                                error_summary += f" ... and {len(error_details) - 3} more errors"
+                            flash(f"Error details: {error_summary}", "warning")
                     else:
-                        flash(f"No students added. {error_count} errors encountered.", "error")
+                        error_msg = f"No students added. {error_count} errors encountered."
+                        if error_details:
+                            error_summary = "; ".join(error_details[:5])  # Show first 5 errors
+                            error_msg += f" Details: {error_summary}"
+                        flash(error_msg, "error")
 
                     return redirect(url_for('classteacher.manage_students'))
 
@@ -2931,7 +3073,7 @@ def check_stream_status(grade, term, assessment_type):
     """API route to check if all streams in a grade have marks for a term and assessment type."""
     try:
         # Get the grade object
-        grade_obj = Grade.query.filter_by(level=grade).first()
+        grade_obj = Grade.query.filter_by(name=grade).first()
 
         if not grade_obj:
             return jsonify({"success": False, "message": f"Grade {grade} not found", "streams": []})
@@ -3248,7 +3390,7 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
 
     # If no cache or cache miss, generate the marksheet
     # Fetch grade and related data
-    grade_obj = Grade.query.filter_by(level=grade).first()
+    grade_obj = Grade.query.filter_by(name=grade).first()
     if not grade_obj:
         flash(f"Grade {grade} not found", "error")
         return redirect(url_for('classteacher.dashboard'))
@@ -3585,33 +3727,57 @@ def get_streams(grade_id):
 @classteacher_bp.route('/download_student_template', methods=['GET'])
 @classteacher_required
 def download_student_template():
-    """Route to download the student upload template."""
+    """Route to download the student upload template with enhanced options."""
     file_format = request.args.get('format', 'xlsx')
+    template_type = request.args.get('type', 'full')  # full, minimal, headers_only
+
+    # Determine template filename based on type and format
+    if template_type == 'minimal':
+        base_filename = 'student_upload_template_minimal'
+    elif template_type == 'headers_only' and file_format == 'csv':
+        base_filename = 'student_upload_template_headers_only'
+    else:
+        base_filename = 'student_upload_template'
 
     if file_format == 'csv':
-        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'student_upload_template.csv')
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', f'{base_filename}.csv')
         mimetype = 'text/csv'
-        filename = 'student_upload_template.csv'
+        filename = f'{base_filename}.csv'
     else:
-        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'student_upload_template.xlsx')
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', f'{base_filename}.xlsx')
         mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        filename = 'student_upload_template.xlsx'
+        filename = f'{base_filename}.xlsx'
 
     # Check if the template file exists
     if not os.path.exists(template_path):
         # If not, create it
         try:
-            from ..static.templates.student_upload_template import create_student_upload_template
-            create_student_upload_template()
+            from ..static.templates.student_upload_template import create_student_upload_template, create_minimal_student_template
+
+            if template_type == 'minimal':
+                create_minimal_student_template()
+            else:
+                create_student_upload_template()
+
+            # Check again if file was created
+            if not os.path.exists(template_path):
+                flash("Template file could not be created. Please try again.", "error")
+                return redirect(url_for('classteacher.manage_students'))
+
         except Exception as e:
             print(f"Error creating template: {str(e)}")
             flash("Error creating template file. Please try again.", "error")
             return redirect(url_for('classteacher.manage_students'))
 
+    # Set appropriate download filename with timestamp
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y%m%d")
+    download_filename = f"hillview_student_template_{template_type}_{timestamp}.{file_format}"
+
     return send_file(
         template_path,
         as_attachment=True,
-        download_name=filename,
+        download_name=download_filename,
         mimetype=mimetype
     )
 
@@ -4824,28 +4990,93 @@ def manage_subjects():
             elif not education_level:
                 error_message = "Please select an education level."
             else:
-                # Check if subject with same name and education level already exists
-                existing_subject = Subject.query.filter_by(name=subject_name, education_level=education_level).first()
-                if existing_subject:
-                    error_message = f"Subject '{subject_name}' already exists for {education_level.replace('_', ' ').title()}."
+                # Clean and validate subject name
+                subject_name = subject_name.strip()
+                if not subject_name:
+                    error_message = "Subject name cannot be empty."
                 else:
-                    new_subject = Subject(name=subject_name, education_level=education_level)
-                    db.session.add(new_subject)
-                    db.session.commit()
-                    success_message = f"Subject '{subject_name}' added successfully for {education_level.replace('_', ' ').title()}!"
+                    try:
+                        # Check if subject with same name and education level already exists
+                        existing_subject = Subject.query.filter_by(name=subject_name, education_level=education_level).first()
+                        if existing_subject:
+                            error_message = f"Subject '{subject_name}' already exists for {education_level.replace('_', ' ').title()}."
+                        else:
+                            new_subject = Subject(name=subject_name, education_level=education_level)
+                            db.session.add(new_subject)
+                            db.session.commit()
+                            success_message = f"Subject '{subject_name}' added successfully for {education_level.replace('_', ' ').title()}!"
+                    except Exception as e:
+                        db.session.rollback()
+                        if "UNIQUE constraint failed" in str(e):
+                            error_message = f"Subject '{subject_name}' already exists. Please choose a different name."
+                        else:
+                            error_message = f"Error adding subject: {str(e)}"
+                        print(f"Subject creation error: {e}")
 
         elif "delete_subject" in request.form:
             subject_id = request.form.get("subject_id")
             subject = Subject.query.get(subject_id)
             if subject:
-                # Check if subject has marks
-                marks = Mark.query.filter_by(subject_id=subject.id).all()
-                if marks:
-                    error_message = f"Cannot delete subject '{subject.name}' because it has marks associated with it."
-                else:
-                    db.session.delete(subject)
-                    db.session.commit()
-                    success_message = f"Subject '{subject.name}' deleted successfully!"
+                try:
+                    # Check if subject has marks
+                    marks = Mark.query.filter_by(subject_id=subject.id).all()
+                    if marks:
+                        error_message = f"Cannot delete subject '{subject.name}' because it has marks associated with it."
+                    else:
+                        # Clean up related data before deletion
+                        cleanup_count = 0
+
+                        # 1. Remove teacher-subject assignments
+                        try:
+                            from ..models.assignment import TeacherSubjectAssignment
+                            assignments = TeacherSubjectAssignment.query.filter_by(subject_id=subject.id).all()
+                            for assignment in assignments:
+                                db.session.delete(assignment)
+                                cleanup_count += 1
+                        except Exception as cleanup_error:
+                            print(f"Warning: Could not clean up assignments for subject {subject.id}: {cleanup_error}")
+
+                        # 2. Remove subject components (if table exists)
+                        try:
+                            from ..models.academic import SubjectComponent
+                            components = SubjectComponent.query.filter_by(subject_id=subject.id).all()
+                            for component in components:
+                                # Remove component marks first
+                                try:
+                                    from ..models.academic import ComponentMark
+                                    component_marks = ComponentMark.query.filter_by(component_id=component.id).all()
+                                    for mark in component_marks:
+                                        db.session.delete(mark)
+                                        cleanup_count += 1
+                                except Exception as component_mark_error:
+                                    print(f"Warning: Could not clean up component marks for component {component.id}: {component_mark_error}")
+
+                                db.session.delete(component)
+                                cleanup_count += 1
+                        except Exception as component_error:
+                            print(f"Warning: Could not clean up components for subject {subject.id}: {component_error}")
+
+                        # 3. Remove teacher-subject relationships (many-to-many)
+                        try:
+                            # Clear the many-to-many relationship
+                            subject.teachers.clear()
+                            cleanup_count += len(subject.teachers)
+                        except Exception as teacher_rel_error:
+                            print(f"Warning: Could not clear teacher relationships for subject {subject.id}: {teacher_rel_error}")
+
+                        if cleanup_count > 0:
+                            print(f"Cleaned up {cleanup_count} related records for subject {subject.id}")
+
+                        # Store subject name before deletion
+                        subject_name = subject.name
+                        db.session.delete(subject)
+                        db.session.commit()
+                        success_message = f"Subject '{subject_name}' deleted successfully!"
+
+                except Exception as e:
+                    db.session.rollback()
+                    error_message = f"Error deleting subject: {str(e)}"
+                    print(f"Subject deletion error: {e}")
             else:
                 error_message = "Subject not found."
 
@@ -4885,26 +5116,66 @@ def manage_subjects():
                 deleted_count = 0
                 not_deleted_count = 0
 
-                for subject_id in subject_ids:
-                    subject = Subject.query.get(subject_id)
-                    if subject:
-                        # Check if subject has marks
-                        marks = Mark.query.filter_by(subject_id=subject.id).all()
-                        if marks:
-                            not_deleted_count += 1
+                try:
+                    for subject_id in subject_ids:
+                        subject = Subject.query.get(subject_id)
+                        if subject:
+                            # Check if subject has marks
+                            marks = Mark.query.filter_by(subject_id=subject.id).all()
+                            if marks:
+                                not_deleted_count += 1
+                            else:
+                                # Clean up related data before deletion
+                                try:
+                                    # Remove teacher-subject assignments
+                                    from ..models.assignment import TeacherSubjectAssignment
+                                    assignments = TeacherSubjectAssignment.query.filter_by(subject_id=subject.id).all()
+                                    for assignment in assignments:
+                                        db.session.delete(assignment)
+
+                                    # Remove subject components
+                                    try:
+                                        from ..models.academic import SubjectComponent
+                                        components = SubjectComponent.query.filter_by(subject_id=subject.id).all()
+                                        for component in components:
+                                            # Remove component marks first
+                                            try:
+                                                from ..models.academic import ComponentMark
+                                                component_marks = ComponentMark.query.filter_by(component_id=component.id).all()
+                                                for mark in component_marks:
+                                                    db.session.delete(mark)
+                                            except Exception:
+                                                pass  # Component marks table might not exist
+                                            db.session.delete(component)
+                                    except Exception:
+                                        pass  # Component table might not exist
+
+                                    # Clear teacher relationships
+                                    try:
+                                        subject.teachers.clear()
+                                    except Exception:
+                                        pass  # Relationship might not work if tables missing
+
+                                except Exception as cleanup_error:
+                                    print(f"Warning: Could not clean up data for subject {subject.id}: {cleanup_error}")
+
+                                db.session.delete(subject)
+                                deleted_count += 1
+
+                    if deleted_count > 0:
+                        db.session.commit()
+                        success_message = f"Successfully deleted {deleted_count} subject(s)."
+
+                    if not_deleted_count > 0:
+                        if success_message:
+                            success_message += f" {not_deleted_count} subject(s) could not be deleted because they have marks associated with them."
                         else:
-                            db.session.delete(subject)
-                            deleted_count += 1
+                            error_message = f"Could not delete {not_deleted_count} subject(s) because they have marks associated with them."
 
-                if deleted_count > 0:
-                    db.session.commit()
-                    success_message = f"Successfully deleted {deleted_count} subject(s)."
-
-                if not_deleted_count > 0:
-                    if success_message:
-                        success_message += f" {not_deleted_count} subject(s) could not be deleted because they have marks associated with them."
-                    else:
-                        error_message = f"Could not delete {not_deleted_count} subject(s) because they have marks associated with them."
+                except Exception as e:
+                    db.session.rollback()
+                    error_message = f"Error during bulk deletion: {str(e)}"
+                    print(f"Bulk subject deletion error: {e}")
 
     # Mark newly added subjects
     for subject in subjects:
@@ -4946,11 +5217,18 @@ def manage_grades_streams():
         if "add_grade" in request.form:
             grade_level = request.form.get("grade_level")
             if grade_level:
-                existing_grade = Grade.query.filter_by(level=grade_level).first()
+                existing_grade = Grade.query.filter_by(name=grade_level).first()
                 if existing_grade:
                     error_message = f"Grade '{grade_level}' already exists."
                 else:
-                    new_grade = Grade(level=grade_level)
+                    # Determine education level based on grade
+                    education_level = "lower_primary"
+                    if "4" in grade_level or "5" in grade_level or "6" in grade_level:
+                        education_level = "upper_primary"
+                    elif "7" in grade_level or "8" in grade_level or "9" in grade_level:
+                        education_level = "junior_secondary"
+
+                    new_grade = Grade(name=grade_level, education_level=education_level)
                     db.session.add(new_grade)
                     db.session.commit()
                     success_message = f"Grade '{grade_level}' added successfully!"
@@ -4980,23 +5258,77 @@ def manage_grades_streams():
             grade_id = request.form.get("grade_id")
             grade = Grade.query.get(grade_id)
             if grade:
-                # Check if grade has streams
-                if grade.streams:
-                    # Delete all streams associated with this grade
-                    for stream in grade.streams:
-                        # Check if stream has students
-                        students = Student.query.filter_by(stream_id=stream.id).all()
-                        if students:
-                            # Unassign all students from this stream
-                            for student in students:
-                                student.stream_id = None
-                        # Delete the stream
-                        db.session.delete(stream)
+                try:
+                    # Check if grade has streams
+                    if grade.streams:
+                        # Delete all streams associated with this grade
+                        for stream in grade.streams:
+                            # Check if stream has students
+                            students = Student.query.filter_by(stream_id=stream.id).all()
+                            if students:
+                                # Unassign all students from this stream
+                                for student in students:
+                                    student.stream_id = None
 
-                # Now delete the grade
-                db.session.delete(grade)
-                db.session.commit()
-                success_message = f"Grade '{grade.name}' and all its streams deleted successfully!"
+                            # Clean up permissions and assignments for this stream
+                            try:
+                                from ..models.permission import ClassTeacherPermission
+                                from ..models.function_permission import FunctionPermission
+                                from ..models.assignment import TeacherSubjectAssignment
+
+                                # Remove permissions for this stream
+                                class_permissions = ClassTeacherPermission.query.filter_by(stream_id=stream.id).all()
+                                for permission in class_permissions:
+                                    db.session.delete(permission)
+
+                                function_permissions = FunctionPermission.query.filter_by(stream_id=stream.id).all()
+                                for permission in function_permissions:
+                                    db.session.delete(permission)
+
+                                # Remove assignments for this stream
+                                assignments = TeacherSubjectAssignment.query.filter_by(stream_id=stream.id).all()
+                                for assignment in assignments:
+                                    db.session.delete(assignment)
+
+                            except Exception as cleanup_error:
+                                print(f"Warning: Could not clean up data for stream {stream.id}: {cleanup_error}")
+
+                            # Delete the stream
+                            db.session.delete(stream)
+
+                    # Clean up grade-level permissions and assignments
+                    try:
+                        from ..models.permission import ClassTeacherPermission
+                        from ..models.function_permission import FunctionPermission
+                        from ..models.assignment import TeacherSubjectAssignment
+
+                        # Remove grade-level permissions
+                        grade_class_permissions = ClassTeacherPermission.query.filter_by(grade_id=grade.id).all()
+                        for permission in grade_class_permissions:
+                            db.session.delete(permission)
+
+                        grade_function_permissions = FunctionPermission.query.filter_by(grade_id=grade.id).all()
+                        for permission in grade_function_permissions:
+                            db.session.delete(permission)
+
+                        # Remove grade-level assignments
+                        grade_assignments = TeacherSubjectAssignment.query.filter_by(grade_id=grade.id).all()
+                        for assignment in grade_assignments:
+                            db.session.delete(assignment)
+
+                    except Exception as grade_cleanup_error:
+                        print(f"Warning: Could not clean up grade-level data for grade {grade.id}: {grade_cleanup_error}")
+
+                    # Now delete the grade
+                    grade_name = grade.name
+                    db.session.delete(grade)
+                    db.session.commit()
+                    success_message = f"Grade '{grade_name}' and all its streams deleted successfully!"
+
+                except Exception as e:
+                    db.session.rollback()
+                    error_message = f"Error deleting grade: {str(e)}"
+                    print(f"Grade deletion error: {e}")
             else:
                 error_message = "Grade not found."
 
@@ -5004,17 +5336,59 @@ def manage_grades_streams():
             stream_id = request.form.get("stream_id")
             stream = Stream.query.get(stream_id)
             if stream:
-                # Check if stream has students
-                students = Student.query.filter_by(stream_id=stream.id).all()
-                if students:
-                    # Unassign all students from this stream
-                    for student in students:
-                        student.stream_id = None
+                try:
+                    # Check if stream has students
+                    students = Student.query.filter_by(stream_id=stream.id).all()
+                    if students:
+                        # Unassign all students from this stream
+                        for student in students:
+                            student.stream_id = None
 
-                # Delete the stream
-                db.session.delete(stream)
-                db.session.commit()
-                success_message = f"Stream '{stream.name}' deleted successfully!"
+                    # Check and clean up related permissions (if tables exist)
+                    permissions_cleaned = 0
+                    try:
+                        from ..models.permission import ClassTeacherPermission
+                        from ..models.function_permission import FunctionPermission
+
+                        # Remove class teacher permissions for this stream
+                        class_permissions = ClassTeacherPermission.query.filter_by(stream_id=stream.id).all()
+                        for permission in class_permissions:
+                            db.session.delete(permission)
+                            permissions_cleaned += 1
+
+                        # Remove function permissions for this stream
+                        function_permissions = FunctionPermission.query.filter_by(stream_id=stream.id).all()
+                        for permission in function_permissions:
+                            db.session.delete(permission)
+                            permissions_cleaned += 1
+
+                        if permissions_cleaned > 0:
+                            print(f"Cleaned up {permissions_cleaned} permissions for stream {stream.id}")
+
+                    except Exception as perm_error:
+                        # Permission tables might not exist or have issues, continue anyway
+                        print(f"Warning: Could not clean up permissions for stream {stream.id}: {perm_error}")
+
+                    # Check and clean up teacher assignments
+                    try:
+                        from ..models.assignment import TeacherSubjectAssignment
+                        assignments = TeacherSubjectAssignment.query.filter_by(stream_id=stream.id).all()
+                        for assignment in assignments:
+                            db.session.delete(assignment)
+                    except Exception as assign_error:
+                        print(f"Warning: Could not clean up assignments for stream {stream.id}: {assign_error}")
+
+                    # Delete the stream
+                    stream_name = stream.name
+                    grade_name = stream.grade.name if stream.grade else "Unknown"
+                    db.session.delete(stream)
+                    db.session.commit()
+                    success_message = f"Stream '{stream_name}' from Grade {grade_name} deleted successfully!"
+
+                except Exception as e:
+                    db.session.rollback()
+                    error_message = f"Error deleting stream: {str(e)}"
+                    print(f"Stream deletion error: {e}")
             else:
                 error_message = "Stream not found."
 
@@ -5587,6 +5961,7 @@ def delete_term_ajax():
 def delete_assessment_ajax():
     """AJAX route for deleting an assessment type."""
     assessment_id = request.form.get("assessment_id")
+    force_delete = request.form.get("force_delete") == "true"
 
     if not assessment_id:
         return jsonify({"success": False, "message": "Assessment ID is required."})
@@ -5597,15 +5972,44 @@ def delete_assessment_ajax():
 
     # Check if assessment type has marks
     marks = Mark.query.filter_by(assessment_type_id=assessment.id).all()
-    if marks:
-        return jsonify({"success": False, "message": f"Cannot delete assessment type '{assessment.name}' because it has marks associated with it."})
 
-    # Store the name for the success message
-    assessment_name = assessment.name
+    # Check if user is headteacher (has universal access)
+    is_headteacher = session.get('headteacher_universal_access') or session.get('role') == 'headteacher'
 
-    # Delete the assessment type
-    db.session.delete(assessment)
-    db.session.commit()
+    if marks and not (is_headteacher and force_delete):
+        if is_headteacher:
+            return jsonify({
+                "success": False,
+                "message": f"Assessment type '{assessment.name}' has {len(marks)} marks associated with it. Use force delete to remove it along with all marks.",
+                "has_marks": True,
+                "marks_count": len(marks)
+            })
+        else:
+            return jsonify({"success": False, "message": f"Cannot delete assessment type '{assessment.name}' because it has marks associated with it."})
+
+    try:
+        # Store the name for the success message
+        assessment_name = assessment.name
+        marks_count = len(marks)
+
+        # If force delete and has marks, delete all associated marks first
+        if marks and is_headteacher and force_delete:
+            for mark in marks:
+                db.session.delete(mark)
+
+        # Delete the assessment type
+        db.session.delete(assessment)
+        db.session.commit()
+
+        # Prepare success message
+        if marks and force_delete:
+            success_message = f"Assessment type '{assessment_name}' and {marks_count} associated marks deleted successfully!"
+        else:
+            success_message = f"Assessment type '{assessment_name}' deleted successfully!"
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Error deleting assessment type: {str(e)}"})
 
     # Get updated statistics
     terms = Term.query.all()
@@ -5627,7 +6031,7 @@ def delete_assessment_ajax():
 
     return jsonify({
         "success": True,
-        "message": f"Assessment type '{assessment_name}' deleted successfully!",
+        "message": success_message,
         "stats": stats
     })
 
@@ -5821,21 +6225,33 @@ def add_assessment_ajax():
     if existing_assessment:
         return jsonify({"success": False, "message": f"Assessment type '{assessment_name}' already exists."})
 
-    # Create new assessment with additional fields if they exist in the model
-    new_assessment = AssessmentType(name=assessment_name)
+    # Create new assessment with proper field handling
+    try:
+        # Convert weight to float if provided, otherwise use default
+        weight_value = None
+        if assessment_weight:
+            try:
+                weight_value = float(assessment_weight)
+            except (ValueError, TypeError):
+                weight_value = 100.0  # Default weight
+        else:
+            weight_value = 100.0  # Default weight if not provided
 
-    # Add additional fields if they exist in the model
-    if hasattr(AssessmentType, 'weight') and assessment_weight:
-        new_assessment.weight = assessment_weight
+        new_assessment = AssessmentType(
+            name=assessment_name,
+            weight=weight_value,
+            category=assessment_group if assessment_group else 'General'
+        )
 
-    if hasattr(AssessmentType, 'group') and assessment_group:
-        new_assessment.group = assessment_group
+        # Add additional fields if they exist in the model
+        if hasattr(AssessmentType, 'show_on_reports'):
+            new_assessment.show_on_reports = show_on_reports
 
-    if hasattr(AssessmentType, 'show_on_reports'):
-        new_assessment.show_on_reports = show_on_reports
-
-    db.session.add(new_assessment)
-    db.session.commit()
+        db.session.add(new_assessment)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Error creating assessment type: {str(e)}"})
 
     # Get updated statistics
     terms = Term.query.all()
@@ -5952,22 +6368,34 @@ def manage_terms_assessments():
                 if existing_assessment:
                     error_message = f"Assessment type '{assessment_name}' already exists."
                 else:
-                    # Create new assessment with additional fields if they exist in the model
-                    new_assessment = AssessmentType(name=assessment_name)
+                    # Create new assessment with proper field handling
+                    try:
+                        # Convert weight to float if provided, otherwise use default
+                        weight_value = None
+                        if assessment_weight:
+                            try:
+                                weight_value = float(assessment_weight)
+                            except (ValueError, TypeError):
+                                weight_value = 100.0  # Default weight
+                        else:
+                            weight_value = 100.0  # Default weight if not provided
 
-                    # Add additional fields if they exist in the model
-                    if hasattr(AssessmentType, 'weight') and assessment_weight:
-                        new_assessment.weight = assessment_weight
+                        new_assessment = AssessmentType(
+                            name=assessment_name,
+                            weight=weight_value,
+                            category=assessment_group if assessment_group else 'General'
+                        )
 
-                    if hasattr(AssessmentType, 'group') and assessment_group:
-                        new_assessment.group = assessment_group
+                        # Add additional fields if they exist in the model
+                        if hasattr(AssessmentType, 'show_on_reports'):
+                            new_assessment.show_on_reports = show_on_reports
 
-                    if hasattr(AssessmentType, 'show_on_reports'):
-                        new_assessment.show_on_reports = show_on_reports
-
-                    db.session.add(new_assessment)
-                    db.session.commit()
-                    success_message = f"Assessment type '{assessment_name}' added successfully!"
+                        db.session.add(new_assessment)
+                        db.session.commit()
+                        success_message = f"Assessment type '{assessment_name}' added successfully!"
+                    except Exception as e:
+                        db.session.rollback()
+                        error_message = f"Error creating assessment type: {str(e)}"
             else:
                 error_message = "Please fill in the assessment type name."
 
@@ -5988,16 +6416,37 @@ def manage_terms_assessments():
 
         elif "delete_assessment" in request.form:
             assessment_id = request.form.get("assessment_id")
+            force_delete = request.form.get("force_delete") == "true"
             assessment = AssessmentType.query.get(assessment_id)
             if assessment:
                 # Check if assessment type has marks
                 marks = Mark.query.filter_by(assessment_type_id=assessment.id).all()
-                if marks:
-                    error_message = f"Cannot delete assessment type '{assessment.name}' because it has marks associated with it."
+
+                # Check if user is headteacher (has universal access)
+                is_headteacher = session.get('headteacher_universal_access') or session.get('role') == 'headteacher'
+
+                if marks and not (is_headteacher and force_delete):
+                    if is_headteacher:
+                        error_message = f"Assessment type '{assessment.name}' has {len(marks)} marks associated with it. Use force delete to remove it along with all marks."
+                    else:
+                        error_message = f"Cannot delete assessment type '{assessment.name}' because it has marks associated with it."
                 else:
-                    db.session.delete(assessment)
-                    db.session.commit()
-                    success_message = f"Assessment type '{assessment.name}' deleted successfully!"
+                    try:
+                        # If force delete and has marks, delete all associated marks first
+                        if marks and is_headteacher and force_delete:
+                            for mark in marks:
+                                db.session.delete(mark)
+
+                        db.session.delete(assessment)
+                        db.session.commit()
+
+                        if marks and force_delete:
+                            success_message = f"Assessment type '{assessment.name}' and {len(marks)} associated marks deleted successfully!"
+                        else:
+                            success_message = f"Assessment type '{assessment.name}' deleted successfully!"
+                    except Exception as e:
+                        db.session.rollback()
+                        error_message = f"Error deleting assessment type: {str(e)}"
             else:
                 error_message = "Assessment type not found."
 
@@ -6497,49 +6946,132 @@ def manage_teachers():
             username = request.form.get("username")
             password = request.form.get("password")
             role = request.form.get("role")
+            first_name = request.form.get("first_name", "").strip()
+            last_name = request.form.get("last_name", "").strip()
+            email = request.form.get("email", "").strip()
+            phone = request.form.get("phone", "").strip()
+            qualification = request.form.get("qualification", "").strip()
+            specialization = request.form.get("specialization", "").strip()
 
             if not username or not password or not role:
-                error_message = "Please fill in all required fields."
+                error_message = "Please fill in all required fields (username, password, role)."
             else:
                 # Check if teacher with same username already exists
                 if Teacher.query.filter_by(username=username).first():
                     error_message = f"A teacher with username '{username}' already exists."
                 else:
-                    new_teacher = Teacher(username=username, password=password, role=role)
-                    db.session.add(new_teacher)
-                    db.session.commit()
-                    success_message = f"Teacher '{username}' added successfully! You can now assign subjects to this teacher using the Bulk Assignments feature."
+                    try:
+                        # Generate employee ID
+                        cursor = db.session.execute(db.text("SELECT MAX(id) FROM teacher"))
+                        max_id = cursor.scalar() or 0
+                        employee_id = f"EMP{max_id + 1:03d}"
+
+                        new_teacher = Teacher(
+                            username=username,
+                            password=generate_password_hash(password),
+                            role=role,
+                            first_name=first_name if first_name else None,
+                            last_name=last_name if last_name else None,
+                            email=email if email else None,
+                            phone=phone if phone else None,
+                            employee_id=employee_id,
+                            qualification=qualification if qualification else None,
+                            specialization=specialization if specialization else None,
+                            date_joined=db.func.current_date(),
+                            is_active=True
+                        )
+                        db.session.add(new_teacher)
+                        db.session.commit()
+                        success_message = f"Teacher '{username}' added successfully with Employee ID: {employee_id}! You can now assign subjects to this teacher using the Bulk Assignments feature."
+                    except Exception as e:
+                        db.session.rollback()
+                        error_message = f"Error adding teacher: {str(e)}"
 
         elif "update_teacher" in request.form:
             teacher_id = request.form.get("edit_teacher_id")
             new_role = request.form.get("edit_role")
             new_password = request.form.get("edit_password")
+            first_name = request.form.get("edit_first_name", "").strip()
+            last_name = request.form.get("edit_last_name", "").strip()
+            email = request.form.get("edit_email", "").strip()
+            phone = request.form.get("edit_phone", "").strip()
+            qualification = request.form.get("edit_qualification", "").strip()
+            specialization = request.form.get("edit_specialization", "").strip()
 
             teacher = Teacher.query.get(teacher_id)
 
             if teacher:
-                # Update role
-                teacher.role = new_role
+                try:
+                    # Update basic fields
+                    teacher.role = new_role
+                    teacher.first_name = first_name if first_name else None
+                    teacher.last_name = last_name if last_name else None
+                    teacher.email = email if email else None
+                    teacher.phone = phone if phone else None
+                    teacher.qualification = qualification if qualification else None
+                    teacher.specialization = specialization if specialization else None
 
-                # Update password if provided
-                if new_password and new_password.strip():
-                    teacher.password = generate_password_hash(new_password)
+                    # Update password if provided
+                    if new_password and new_password.strip():
+                        teacher.password = generate_password_hash(new_password)
 
-                db.session.commit()
-                success_message = f"Teacher '{teacher.username}' updated successfully!"
+                    db.session.commit()
+                    success_message = f"Teacher '{teacher.username}' updated successfully!"
+                except Exception as e:
+                    db.session.rollback()
+                    error_message = f"Error updating teacher: {str(e)}"
             else:
                 error_message = "Teacher not found."
 
         elif "delete_teacher" in request.form:
             teacher_id = request.form.get("teacher_id")
-            teacher = Teacher.query.get(teacher_id)
 
-            if teacher:
-                db.session.delete(teacher)
-                db.session.commit()
-                success_message = f"Teacher '{teacher.username}' deleted successfully!"
+            if teacher_id:
+                try:
+                    from ..utils.database_utils import safe_delete_teacher
+
+                    result = safe_delete_teacher(teacher_id)
+
+                    if result['success']:
+                        success_message = result['message']
+                    else:
+                        error_message = result['message']
+
+                except ImportError:
+                    # Fallback to original method if utils not available
+                    teacher = Teacher.query.get(teacher_id)
+                    if teacher:
+                        try:
+                            # First, manually delete related records to avoid cascade issues
+                            from sqlalchemy import text
+
+                            # Delete from teacher_subjects table if it exists
+                            try:
+                                db.session.execute(text("DELETE FROM teacher_subjects WHERE teacher_id = :teacher_id"),
+                                                 {"teacher_id": teacher_id})
+                            except Exception as e:
+                                print(f"Note: teacher_subjects table cleanup: {e}")
+
+                            # Delete from teacher_subject_assignment table
+                            try:
+                                db.session.execute(text("DELETE FROM teacher_subject_assignment WHERE teacher_id = :teacher_id"),
+                                                 {"teacher_id": teacher_id})
+                            except Exception as e:
+                                print(f"Note: teacher_subject_assignment table cleanup: {e}")
+
+                            # Now delete the teacher
+                            db.session.delete(teacher)
+                            db.session.commit()
+                            success_message = f"Teacher '{teacher.username}' deleted successfully!"
+
+                        except Exception as e:
+                            db.session.rollback()
+                            print(f"Error deleting teacher: {e}")
+                            error_message = f"Error deleting teacher: {str(e)}"
+                    else:
+                        error_message = "Teacher not found."
             else:
-                error_message = "Teacher not found."
+                error_message = "Teacher ID is required."
 
         elif "delete_assignment" in request.form:
             assignment_id = request.form.get("assignment_id")
@@ -7848,3 +8380,150 @@ def generate_batch_grade_reports(grade_name, term, assessment_type):
         flash("Error generating batch reports.", "error")
         return redirect(url_for('classteacher.grade_streams_status',
                               grade_name=grade_name, term=term, assessment_type=assessment_type))
+
+
+@classteacher_bp.route('/database_health', methods=['GET', 'POST'])
+@classteacher_required
+def database_health():
+    """Route for checking and maintaining database health."""
+    health_results = None
+    creation_results = None
+    error_message = None
+    success_message = None
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == 'check_health':
+            try:
+                health_results = check_database_health()
+                if health_results['status'] == 'healthy':
+                    success_message = "Database health check passed! All systems operational."
+                elif health_results['status'] == 'warning':
+                    success_message = f"Database health check completed with warnings: {'; '.join(health_results['warnings'])}"
+                else:
+                    error_message = f"Database health check failed: {'; '.join(health_results['errors'])}"
+            except Exception as e:
+                error_message = f"Error during health check: {str(e)}"
+
+        elif action == 'create_missing_tables':
+            try:
+                creation_results = create_missing_tables()
+                if creation_results['success']:
+                    if creation_results['tables_created']:
+                        success_message = f"Successfully created missing tables: {', '.join(creation_results['tables_created'])}"
+                    else:
+                        success_message = "All required tables already exist."
+                else:
+                    error_message = f"Failed to create tables: {'; '.join(creation_results['errors'])}"
+            except Exception as e:
+                error_message = f"Error creating tables: {str(e)}"
+
+    # Always run a basic health check for display
+    try:
+        if not health_results:
+            health_results = check_database_health()
+    except Exception as e:
+        error_message = f"Error running health check: {str(e)}"
+        health_results = {'status': 'error', 'errors': [str(e)]}
+
+    return render_template(
+        'database_health.html',
+        health_results=health_results,
+        creation_results=creation_results,
+        error_message=error_message,
+        success_message=success_message
+    )
+
+@classteacher_bp.route('/report_configuration', methods=['GET', 'POST'])
+@classteacher_required
+def report_configuration():
+    """Configure report settings including staff assignments and term dates."""
+    try:
+        if request.method == 'POST':
+            # Handle form submission
+            term_name = request.form.get('term')
+            if not term_name:
+                flash('Please select a term.', 'error')
+                return redirect(url_for('classteacher.report_configuration'))
+
+            # Get term object
+            term = Term.query.filter_by(name=term_name).first()
+            if not term:
+                flash('Invalid term selected.', 'error')
+                return redirect(url_for('classteacher.report_configuration'))
+
+            # Prepare configuration data
+            config_data = {
+                'academic_year': request.form.get('academic_year'),
+                'term_start_date': request.form.get('term_start_date'),
+                'term_end_date': request.form.get('term_end_date'),
+                'closing_date': request.form.get('closing_date'),
+                'opening_date': request.form.get('opening_date'),
+                'headteacher_id': request.form.get('headteacher_id') or None,
+                'deputy_headteacher_id': request.form.get('deputy_headteacher_id') or None,
+                'principal_id': request.form.get('principal_id') or None,
+                'show_headteacher': 'show_headteacher' in request.form,
+                'show_deputy_headteacher': 'show_deputy_headteacher' in request.form,
+                'show_principal': 'show_principal' in request.form,
+                'show_class_teacher': 'show_class_teacher' in request.form,
+                'school_name': request.form.get('school_name'),
+                'school_address': request.form.get('school_address'),
+                'school_phone': request.form.get('school_phone'),
+                'school_email': request.form.get('school_email'),
+                'school_website': request.form.get('school_website'),
+                'report_footer': request.form.get('report_footer')
+            }
+
+            # Convert date strings to date objects
+            from datetime import datetime
+            date_fields = ['term_start_date', 'term_end_date', 'closing_date', 'opening_date']
+            for field in date_fields:
+                if config_data[field]:
+                    try:
+                        config_data[field] = datetime.strptime(config_data[field], '%Y-%m-%d').date()
+                    except ValueError:
+                        config_data[field] = None
+
+            # Update configuration
+            teacher_id = session.get('teacher_id')
+            ReportConfigService.update_report_config(term.id, config_data, teacher_id)
+
+            flash('Report configuration updated successfully!', 'success')
+            return redirect(url_for('classteacher.report_configuration'))
+
+        # GET request - show configuration form
+        # Get all terms for selection
+        terms = Term.query.all()
+
+        # Get current term configuration
+        current_term = request.args.get('term')
+        if not current_term and terms:
+            current_term = terms[0].name
+
+        config = None
+        if current_term:
+            config = ReportConfigService.get_report_config_for_term(current_term)
+
+        # Get all teachers for selection
+        teachers = ReportConfigService.get_all_teachers_for_selection()
+
+        # Organize teachers by role for easier selection
+        teachers_by_role = {
+            'headteacher': [t for t in teachers if 'head' in t['role'].lower()],
+            'deputy': [t for t in teachers if 'deputy' in t['role'].lower()],
+            'principal': [t for t in teachers if 'principal' in t['role'].lower()],
+            'all': teachers
+        }
+
+        return render_template('report_configuration.html',
+                             terms=terms,
+                             current_term=current_term,
+                             config=config,
+                             teachers=teachers,
+                             teachers_by_role=teachers_by_role)
+
+    except Exception as e:
+        print(f"Error in report configuration: {e}")
+        flash(f'Error loading report configuration: {str(e)}', 'error')
+        return redirect(url_for('classteacher.dashboard'))

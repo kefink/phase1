@@ -652,6 +652,19 @@
               <h4 class="quick-action-title">Teacher Assignments</h4>
               <p class="quick-action-desc">Manage teacher transfers</p>
             </a>
+
+            <a
+              href="{{ url_for('universal.proxy_report_configuration') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-user-cog"></i>
+              </div>
+              <h4 class="quick-action-title">Staff Report Settings</h4>
+              <p class="quick-action-desc">
+                Configure staff for report signatures
+              </p>
+            </a>
           </div>
         </div>
 
@@ -719,6 +732,19 @@
               <h4 class="quick-action-title">Grade Reports</h4>
               <p class="quick-action-desc">Multi-stream grade analysis</p>
             </a>
+
+            <a
+              href="{{ url_for('universal.proxy_report_configuration') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-cog"></i>
+              </div>
+              <h4 class="quick-action-title">Report Configuration</h4>
+              <p class="quick-action-desc">
+                Configure staff assignments and report settings
+              </p>
+            </a>
           </div>
         </div>
 
@@ -749,6 +775,32 @@
               <h4 class="quick-action-title">Terms & Assessments</h4>
               <p class="quick-action-desc">
                 Manage academic terms and assessments
+              </p>
+            </a>
+
+            <a
+              href="{{ url_for('universal.proxy_report_configuration') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-cog"></i>
+              </div>
+              <h4 class="quick-action-title">Report Configuration</h4>
+              <p class="quick-action-desc">
+                Configure staff assignments, term dates, and report settings
+              </p>
+            </a>
+
+            <a
+              href="{{ url_for('school_setup.setup_dashboard') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-school"></i>
+              </div>
+              <h4 class="quick-action-title">School Setup</h4>
+              <p class="quick-action-desc">
+                Complete school configuration for plug-and-play deployment
               </p>
             </a>
           </div>

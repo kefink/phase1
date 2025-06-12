@@ -914,39 +914,67 @@
       }
 
       function deleteAssessment(id, name) {
-        if (
-          confirm(
-            `Are you sure you want to delete the assessment type "${name}"? This action cannot be undone.`
-          )
-        ) {
-          // Create a form to submit the delete request
-          const form = document.createElement("form");
-          form.method = "POST";
-          form.action =
-            '{{ url_for("classteacher.manage_terms_assessments") }}';
+        // Check if user is headteacher (has universal access)
+        const isHeadteacher = {{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }};
 
-          const csrfToken = document.createElement("input");
-          csrfToken.type = "hidden";
-          csrfToken.name = "csrf_token";
-          csrfToken.value = "{{ csrf_token() }}";
+        let confirmMessage = `Are you sure you want to delete the assessment type "${name}"? This action cannot be undone.`;
+        let forceDelete = false;
 
-          const assessmentId = document.createElement("input");
-          assessmentId.type = "hidden";
-          assessmentId.name = "assessment_id";
-          assessmentId.value = id;
+        if (isHeadteacher) {
+          // For headteachers, offer force delete option
+          const userChoice = confirm(confirmMessage + "\n\nClick OK to proceed with normal delete, or Cancel to see force delete option.");
 
-          const deleteAction = document.createElement("input");
-          deleteAction.type = "hidden";
-          deleteAction.name = "delete_assessment";
-          deleteAction.value = "1";
-
-          form.appendChild(csrfToken);
-          form.appendChild(assessmentId);
-          form.appendChild(deleteAction);
-
-          document.body.appendChild(form);
-          form.submit();
+          if (!userChoice) {
+            // User clicked Cancel, offer force delete
+            const forceChoice = confirm(`Force delete "${name}"? This will delete the assessment type AND all associated marks. This action cannot be undone.`);
+            if (forceChoice) {
+              forceDelete = true;
+            } else {
+              return; // User cancelled
+            }
+          }
+        } else {
+          // Regular confirmation for non-headteachers
+          if (!confirm(confirmMessage)) {
+            return;
+          }
         }
+
+        // Create a form to submit the delete request
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = '{{ url_for("classteacher.manage_terms_assessments") }}';
+
+        const csrfToken = document.createElement("input");
+        csrfToken.type = "hidden";
+        csrfToken.name = "csrf_token";
+        csrfToken.value = "{{ csrf_token() }}";
+
+        const assessmentId = document.createElement("input");
+        assessmentId.type = "hidden";
+        assessmentId.name = "assessment_id";
+        assessmentId.value = id;
+
+        const deleteAction = document.createElement("input");
+        deleteAction.type = "hidden";
+        deleteAction.name = "delete_assessment";
+        deleteAction.value = "1";
+
+        // Add force delete flag if needed
+        if (forceDelete) {
+          const forceDeleteInput = document.createElement("input");
+          forceDeleteInput.type = "hidden";
+          forceDeleteInput.name = "force_delete";
+          forceDeleteInput.value = "true";
+          form.appendChild(forceDeleteInput);
+        }
+
+        form.appendChild(csrfToken);
+        form.appendChild(assessmentId);
+        form.appendChild(deleteAction);
+
+        document.body.appendChild(form);
+        form.submit();
       }
     </script>
   </body>

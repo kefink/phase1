@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Review & Complete - School Setup</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+          --primary-color: {{ setup.primary_color or '#1f7d53' }};
+          --secondary-color: {{ setup.secondary_color or '#18230f' }};
+          --accent-color: {{ setup.accent_color or '#4ade80' }};
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+          min-height: 100vh;
+          color: #1f2937;
+      }
+
+      .setup-container {
+          max-width: 1000px;
+          margin: 0 auto;
+          padding: 2rem;
+      }
+
+      .setup-header {
+          text-align: center;
+          margin-bottom: 2rem;
+          color: white;
+      }
+
+      .setup-header h1 {
+          font-size: 2.5rem;
+          margin-bottom: 0.5rem;
+          font-weight: 700;
+      }
+
+      .progress-section {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 15px;
+          padding: 1.5rem;
+          margin-bottom: 2rem;
+          text-align: center;
+          color: white;
+      }
+
+      .progress-bar {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 10px;
+          height: 20px;
+          margin: 1rem 0;
+          overflow: hidden;
+      }
+
+      .progress-fill {
+          background: var(--accent-color);
+          height: 100%;
+          border-radius: 10px;
+          transition: width 0.5s ease;
+      }
+
+      .setup-card {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          border-radius: 20px;
+          padding: 3rem;
+          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+          margin-bottom: 2rem;
+      }
+
+      .review-section {
+          margin-bottom: 2rem;
+          padding: 1.5rem;
+          background: #f9fafb;
+          border-radius: 12px;
+          border-left: 4px solid var(--primary-color);
+      }
+
+      .review-section h3 {
+          font-size: 1.3rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin-bottom: 1rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+      }
+
+      .review-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 1rem;
+      }
+
+      .review-item {
+          display: flex;
+          flex-direction: column;
+      }
+
+      .review-label {
+          font-weight: 600;
+          color: #374151;
+          font-size: 0.9rem;
+          margin-bottom: 0.25rem;
+      }
+
+      .review-value {
+          color: #1f2937;
+          font-size: 1rem;
+          padding: 0.5rem 0;
+          border-bottom: 1px solid #e5e7eb;
+      }
+
+      .review-value.empty {
+          color: #9ca3af;
+          font-style: italic;
+      }
+
+      .feature-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+      }
+
+      .feature-badge {
+          background: var(--accent-color);
+          color: white;
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 600;
+      }
+
+      .feature-badge.disabled {
+          background: #d1d5db;
+          color: #6b7280;
+      }
+
+      .logo-preview {
+          width: 80px;
+          height: 80px;
+          border: 2px solid #e5e7eb;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: white;
+      }
+
+      .logo-preview img {
+          max-width: 70px;
+          max-height: 70px;
+          object-fit: contain;
+      }
+
+      .color-samples {
+          display: flex;
+          gap: 0.5rem;
+      }
+
+      .color-sample {
+          width: 30px;
+          height: 30px;
+          border-radius: 6px;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .completion-section {
+          text-align: center;
+          padding: 2rem;
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+          border-radius: 15px;
+          border: 2px solid var(--accent-color);
+      }
+
+      .completion-icon {
+          font-size: 4rem;
+          color: var(--accent-color);
+          margin-bottom: 1rem;
+      }
+
+      .form-actions {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 2rem;
+          padding-top: 2rem;
+          border-top: 1px solid #e5e7eb;
+      }
+
+      .btn {
+          padding: 0.75rem 2rem;
+          border: none;
+          border-radius: 8px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: all 0.3s ease;
+      }
+
+      .btn-primary {
+          background: var(--primary-color);
+          color: white;
+          font-size: 1.1rem;
+          padding: 1rem 2.5rem;
+      }
+
+      .btn-primary:hover {
+          background: var(--secondary-color);
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-secondary {
+          background: #6b7280;
+          color: white;
+      }
+
+      .btn-secondary:hover {
+          background: #4b5563;
+      }
+
+      .edit-link {
+          color: var(--primary-color);
+          text-decoration: none;
+          font-size: 0.9rem;
+          font-weight: 600;
+      }
+
+      .edit-link:hover {
+          text-decoration: underline;
+      }
+
+      .back-link {
+          display: inline-block;
+          margin-bottom: 2rem;
+          color: white;
+          text-decoration: none;
+          padding: 0.5rem 1rem;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 25px;
+          transition: all 0.3s ease;
+      }
+
+      .back-link:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: translateX(-5px);
+      }
+
+      @media (max-width: 768px) {
+          .setup-container { padding: 1rem; }
+          .setup-card { padding: 2rem; }
+          .review-grid { grid-template-columns: 1fr; }
+          .form-actions { flex-direction: column; gap: 1rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="setup-container">
+      <a href="{{ url_for('school_setup.setup_dashboard') }}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Setup Dashboard
+      </a>
+
+      <div class="setup-header">
+        <h1><i class="fas fa-flag-checkered"></i> Review & Complete Setup</h1>
+        <p>Step 6 of 6 - Review your configuration and complete setup</p>
+      </div>
+
+      <!-- Progress Section -->
+      <div class="progress-section">
+        <h3>Setup Progress: {{ progress }}%</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: {{ progress }}%"></div>
+        </div>
+        <p>Almost there! Review your settings and complete the setup.</p>
+      </div>
+
+      <div class="setup-card">
+        <!-- Basic Information Review -->
+        <div class="review-section">
+          <h3>
+            <i class="fas fa-info-circle"></i> Basic Information
+            <a
+              href="{{ url_for('school_setup.basic_info') }}"
+              class="edit-link"
+              style="margin-left: auto"
+            >
+              <i class="fas fa-edit"></i> Edit
+            </a>
+          </h3>
+          <div class="review-grid">
+            <div class="review-item">
+              <div class="review-label">School Name</div>
+              <div class="review-value">
+                {{ setup.school_name or 'Not set' }}
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-label">School Motto</div>
+              <div
+                class="review-value {% if not setup.school_motto %}empty{% endif %}"
+              >
+                {{ setup.school_motto or 'Not set' }}
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-label">Phone</div>
+              <div
+                class="review-value {% if not setup.school_phone %}empty{% endif %}"
+              >
+                {{ setup.school_phone or 'Not set' }}
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-label">Email</div>
+              <div
+                class="review-value {% if not setup.school_email %}empty{% endif %}"
+              >
+                {{ setup.school_email or 'Not set' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Registration Information Review -->
+        <div class="review-section">
+          <h3>
+            <i class="fas fa-clipboard-list"></i> Registration Information
+            <a
+              href="{{ url_for('school_setup.registration_info') }}"
+              class="edit-link"
+              style="margin-left: auto"
+            >
+              <i class="fas fa-edit"></i> Edit
+            </a>
+          </h3>
+          <div class="review-grid">
+            <div class="review-item">
+              <div class="review-label">County</div>
+              <div
+                class="review-value {% if not setup.county %}empty{% endif %}"
+              >
+                {{ setup.county or 'Not set' }}
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-label">School Type</div>
+              <div
+                class="review-value {% if not setup.school_type %}empty{% endif %}"
+              >
+                {{ setup.school_type or 'Not set' }}
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-label">Education System</div>
+              <div
+                class="review-value {% if not setup.education_system %}empty{% endif %}"
+              >
+                {{ setup.education_system or 'Not set' }}
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-label">Registration Number</div>
+              <div
+                class="review-value {% if not setup.registration_number %}empty{% endif %}"
+              >
+                {{ setup.registration_number or 'Not set' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Configuration Review -->
+        <div class="review-section">
+          <h3>
+            <i class="fas fa-graduation-cap"></i> Academic Configuration
+            <a
+              href="{{ url_for('school_setup.academic_config') }}"
+              class="edit-link"
+              style="margin-left: auto"
+            >
+              <i class="fas fa-edit"></i> Edit
+            </a>
+          </h3>
+          <div class="review-grid">
+            <div class="review-item">
+              <div class="review-label">Academic Year</div>
+              <div class="review-value">
+                {{ setup.current_academic_year or 'Not set' }}
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-label">Current Term</div>
+              <div class="review-value">
+                {{ setup.current_term or 'Not set' }}
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-label">Grade Range</div>
+              <div class="review-value">
+                {{ setup.lowest_grade or 'PP1' }} - {{ setup.highest_grade or
+                'Grade 6' }}
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-label">Grading System</div>
+              <div class="review-value">
+                {{ setup.grading_system or 'CBC' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Branding Review -->
+        <div class="review-section">
+          <h3>
+            <i class="fas fa-palette"></i> Branding
+            <a
+              href="{{ url_for('school_setup.branding') }}"
+              class="edit-link"
+              style="margin-left: auto"
+            >
+              <i class="fas fa-edit"></i> Edit
+            </a>
+          </h3>
+          <div class="review-grid">
+            <div class="review-item">
+              <div class="review-label">School Logo</div>
+              <div class="logo-preview">
+                {% if setup.logo_filename %}
+                <img
+                  src="/static/uploads/logos/{{ setup.logo_filename }}"
+                  alt="School Logo"
+                />
+                {% else %}
+                <i class="fas fa-image" style="color: #9ca3af"></i>
+                {% endif %}
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-label">Color Scheme</div>
+              <div class="color-samples">
+                <div
+                  class="color-sample"
+                  style="background-color: {{ setup.primary_color or '#1f7d53' }};"
+                  title="Primary"
+                ></div>
+                <div
+                  class="color-sample"
+                  style="background-color: {{ setup.secondary_color or '#18230f' }};"
+                  title="Secondary"
+                ></div>
+                <div
+                  class="color-sample"
+                  style="background-color: {{ setup.accent_color or '#4ade80' }};"
+                  title="Accent"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Features Review -->
+        <div class="review-section">
+          <h3>
+            <i class="fas fa-cogs"></i> Features
+            <a
+              href="{{ url_for('school_setup.features') }}"
+              class="edit-link"
+              style="margin-left: auto"
+            >
+              <i class="fas fa-edit"></i> Edit
+            </a>
+          </h3>
+          <div class="feature-list">
+            <span
+              class="feature-badge {% if not customization.enable_analytics %}disabled{% endif %}"
+            >
+              Analytics
+            </span>
+            <span
+              class="feature-badge {% if not customization.enable_email_notifications %}disabled{% endif %}"
+            >
+              Email Notifications
+            </span>
+            <span
+              class="feature-badge {% if not customization.enable_parent_portal %}disabled{% endif %}"
+            >
+              Parent Portal
+            </span>
+            <span
+              class="feature-badge {% if not customization.enable_sms_notifications %}disabled{% endif %}"
+            >
+              SMS Notifications
+            </span>
+            <span
+              class="feature-badge {% if not customization.enable_mobile_app %}disabled{% endif %}"
+            >
+              Mobile App
+            </span>
+          </div>
+        </div>
+
+        <!-- Completion Section -->
+        <div class="completion-section">
+          <div class="completion-icon">
+            <i class="fas fa-rocket"></i>
+          </div>
+          <h2 style="color: var(--primary-color); margin-bottom: 1rem">
+            Ready to Launch!
+          </h2>
+          <p style="color: #374151; margin-bottom: 2rem; font-size: 1.1rem">
+            Your school system is configured and ready to use. Click the button
+            below to complete the setup and start managing your school with our
+            comprehensive system.
+          </p>
+
+          <form
+            method="POST"
+            action="{{ url_for('school_setup.complete_setup') }}"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-check-circle"></i> Complete Setup & Launch System
+            </button>
+          </form>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <a
+            href="{{ url_for('school_setup.features') }}"
+            class="btn btn-secondary"
+          >
+            <i class="fas fa-arrow-left"></i> Back to Features
+          </a>
+          <div style="color: #6b7280; font-size: 0.9rem">
+            <i class="fas fa-info-circle"></i>
+            You can always modify these settings later from the admin dashboard
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

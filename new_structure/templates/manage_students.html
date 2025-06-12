@@ -565,15 +565,55 @@
                         <label for="student_file">Upload Student List (CSV or Excel):</label>
                         <input type="file" name="student_file" id="student_file" accept=".csv,.xlsx" required>
                     </div>
-                    <p><small>Expected format: <code>name,admission_number,gender</code> (gender is optional)</small></p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <p><strong>📋 Flexible Column Support:</strong></p>
+                        <p><small><strong>Required:</strong> <code>name</code> (student name)</small></p>
+                        <p><small><strong>Optional:</strong> <code>admission_number</code>, <code>grade</code>, <code>stream</code>, <code>gender</code></small></p>
+                        <p><small><strong>Column Name Variations Supported:</strong></small></p>
+                        <ul style="font-size: 0.85em; margin: 5px 0; padding-left: 20px;">
+                            <li><strong>Name:</strong> name, student_name, full_name</li>
+                            <li><strong>Admission:</strong> admission_number, addmission_number, adm_number, reg_number</li>
+                            <li><strong>Grade:</strong> grade (will auto-assign to correct grade/stream)</li>
+                            <li><strong>Stream:</strong> stream (will auto-assign to correct stream)</li>
+                        </ul>
+                        <p><small>💡 <strong>Your file format works!</strong> The system will automatically handle your column names and generate admission numbers if missing.</small></p>
+                    </div>
                     <div class="template-links" style="margin-bottom: 15px;">
-                        <p><strong>Download Template:</strong></p>
-                        <a href="{{ url_for('classteacher.download_student_template', format='xlsx') }}" class="download-btn" style="display: inline-block; margin-right: 10px;">
-                            <i class="fa fa-download"></i> Excel Template
-                        </a>
-                        <a href="{{ url_for('classteacher.download_student_template', format='csv') }}" class="download-btn" style="display: inline-block;">
-                            <i class="fa fa-download"></i> CSV Template
-                        </a>
+                        <p><strong>📥 Download Templates:</strong></p>
+
+                        <!-- Full Templates with Sample Data -->
+                        <div style="margin-bottom: 10px;">
+                            <p style="font-weight: 600; margin-bottom: 5px; color: #1f7d53;">📋 Full Templates (with sample data):</p>
+                            <a href="{{ url_for('classteacher.download_student_template', format='xlsx', type='full') }}" class="download-btn" style="display: inline-block; margin-right: 10px;">
+                                <i class="fa fa-file-excel"></i> Excel Template (Full)
+                            </a>
+                            <a href="{{ url_for('classteacher.download_student_template', format='csv', type='full') }}" class="download-btn" style="display: inline-block;">
+                                <i class="fa fa-file-text"></i> CSV Template (Full)
+                            </a>
+                        </div>
+
+                        <!-- Minimal Templates -->
+                        <div style="margin-bottom: 10px;">
+                            <p style="font-weight: 600; margin-bottom: 5px; color: #6c757d;">📄 Minimal Templates (fewer examples):</p>
+                            <a href="{{ url_for('classteacher.download_student_template', format='xlsx', type='minimal') }}" class="download-btn" style="display: inline-block; margin-right: 10px; background: #6c757d;">
+                                <i class="fa fa-file-excel"></i> Excel (Minimal)
+                            </a>
+                            <a href="{{ url_for('classteacher.download_student_template', format='csv', type='minimal') }}" class="download-btn" style="display: inline-block; background: #6c757d;">
+                                <i class="fa fa-file-text"></i> CSV (Minimal)
+                            </a>
+                        </div>
+
+                        <!-- Headers Only -->
+                        <div>
+                            <p style="font-weight: 600; margin-bottom: 5px; color: #dc3545;">📝 Headers Only (blank template):</p>
+                            <a href="{{ url_for('classteacher.download_student_template', format='csv', type='headers_only') }}" class="download-btn" style="display: inline-block; background: #dc3545;">
+                                <i class="fa fa-file-text"></i> CSV (Headers Only)
+                            </a>
+                        </div>
+
+                        <div style="margin-top: 10px; padding: 10px; background: #e7f3ff; border-radius: 5px; font-size: 0.9em;">
+                            <strong>💡 Recommendation:</strong> Use the <strong>Full Excel Template</strong> for best experience - it includes instructions and formatting!
+                        </div>
                     </div>
                     <button type="submit" class="manage-btn">Upload Students</button>
                 </form>
@@ -760,14 +800,14 @@
                                 </thead>
                                 <tbody>
                                     {% for student in students %}
-                                        <tr data-grade="{{ student.stream.grade.level if student.stream else '' }}">
+                                        <tr data-grade="{{ student.stream.grade.name if student.stream else '' }}">
                                             <td class="checkbox-column">
                                                 <input type="checkbox" name="student_ids" value="{{ student.id }}" class="student-checkbox">
                                             </td>
                                             <td>{{ student.id }}</td>
                                             <td>{{ student.name }}</td>
                                             <td>{{ student.admission_number }}</td>
-                                            <td>{{ student.stream.grade.level if student.stream else 'N/A' }}</td>
+                                            <td>{{ student.stream.grade.name if student.stream else 'N/A' }}</td>
                                             <td>{{ student.stream.name if student.stream else 'No Stream' }}</td>
                                             <td>
                                                 <select name="gender_{{ student.id }}">

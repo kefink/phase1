@@ -149,7 +149,7 @@
                 <select name="grade_id" id="grade_id" class="form-control" required onchange="updateStreams()">
                   {% for grade in grades %}
                   <option value="{{ grade.id }}" {% if grade.id == assignment.grade_id %}selected{% endif %}>
-                    {{ grade.level }}
+                    {{ grade.name }}
                   </option>
                   {% endfor %}
                 </select>

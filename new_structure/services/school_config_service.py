@@ -1,9 +1,13 @@
 """
-School configuration service for the Hillview School Management System.
-Handles school-specific settings and customization.
+Enhanced School configuration service for plug-and-play deployment.
+Handles school-specific settings, branding, and customization.
 """
 import os
+import json
+from werkzeug.utils import secure_filename
+from PIL import Image
 from ..models import SchoolConfiguration
+from ..models.school_setup import SchoolSetup, SchoolBranding, SchoolCustomization
 from ..extensions import db
 from flask import current_app
 
@@ -24,12 +28,38 @@ class SchoolConfigService:
     @staticmethod
     def get_school_name():
         """Get the school name."""
+        # Check if enhanced school setup is completed and use that data
+        try:
+            from ..models.school_setup import SchoolSetup
+            setup = SchoolSetup.query.first()
+
+            if setup and setup.setup_completed and setup.school_name:
+                return setup.school_name
+        except ImportError:
+            pass
+        except Exception as e:
+            print(f"Error getting school name from setup: {e}")
+
+        # Fallback to old school configuration
         config = SchoolConfiguration.get_config()
         return config.school_name
     
     @staticmethod
     def get_school_logo_path():
         """Get the path to the school logo."""
+        # Check if enhanced school setup is completed and use that data
+        try:
+            from ..models.school_setup import SchoolSetup
+            setup = SchoolSetup.query.first()
+
+            if setup and setup.setup_completed and setup.logo_filename:
+                return f"images/{setup.logo_filename}"
+        except ImportError:
+            pass
+        except Exception as e:
+            print(f"Error getting school logo from setup: {e}")
+
+        # Fallback to old school configuration
         config = SchoolConfiguration.get_config()
         if config.logo_filename:
             return f"images/{config.logo_filename}"
@@ -164,6 +194,37 @@ class SchoolConfigService:
     @staticmethod
     def get_school_info_dict():
         """Get all school information as a dictionary for templates."""
+        # Check if enhanced school setup is completed and use that data
+        try:
+            from ..models.school_setup import SchoolSetup
+            setup = SchoolSetup.query.first()
+
+            if setup and setup.setup_completed:
+                # Use data from the completed school setup
+                return {
+                    'school_name': setup.school_name or 'School Management System',
+                    'school_motto': setup.school_motto,
+                    'school_address': setup.school_address,
+                    'school_phone': setup.school_phone,
+                    'school_email': setup.school_email,
+                    'school_website': setup.school_website,
+                    'current_academic_year': setup.current_academic_year,
+                    'current_term': setup.current_term,
+                    'headteacher_name': 'Head Teacher',  # TODO: Get from teacher table
+                    'deputy_headteacher_name': 'Deputy Head Teacher',  # TODO: Get from teacher table
+                    'logo_path': f"images/{setup.logo_filename}" if setup.logo_filename else 'hv.jpg',
+                    'primary_color': setup.primary_color,
+                    'secondary_color': setup.secondary_color,
+                    'uses_streams': setup.uses_streams,
+                    'grading_system': setup.grading_system,
+                    'report_footer': setup.report_footer or 'Powered by CbcTeachkit'
+                }
+        except ImportError:
+            pass
+        except Exception as e:
+            print(f"Error getting school setup data: {e}")
+
+        # Fallback to old school configuration
         config = SchoolConfiguration.get_config()
         return {
             'school_name': config.school_name,
@@ -180,5 +241,161 @@ class SchoolConfigService:
             'primary_color': config.primary_color,
             'secondary_color': config.secondary_color,
             'uses_streams': config.use_streams,
-            'grading_system': config.grading_system
+            'grading_system': config.grading_system,
+            'report_footer': 'Powered by CbcTeachkit'
+        }
+
+class EnhancedSchoolSetupService:
+    """Enhanced service for comprehensive school setup and configuration."""
+
+    @staticmethod
+    def get_school_setup():
+        """Get the current school setup configuration."""
+        return SchoolSetup.get_current_setup()
+
+    @staticmethod
+    def get_school_branding():
+        """Get the current school branding configuration."""
+        return SchoolBranding.get_current_branding()
+
+    @staticmethod
+    def get_school_customization():
+        """Get the current school customization settings."""
+        return SchoolCustomization.get_current_customization()
+
+    @staticmethod
+    def is_setup_completed():
+        """Check if the school setup has been completed."""
+        setup = SchoolSetup.get_current_setup()
+        return setup.setup_completed
+
+    @staticmethod
+    def get_setup_progress():
+        """Get the current setup progress as a percentage."""
+        setup = SchoolSetup.get_current_setup()
+
+        # Define required fields for complete setup
+        required_fields = [
+            'school_name', 'school_motto', 'school_address', 'school_phone',
+            'school_email', 'current_academic_year', 'current_term',
+            'county', 'sub_county', 'school_type', 'education_system'
+        ]
+
+        completed_fields = 0
+        for field in required_fields:
+            value = getattr(setup, field, None)
+            if value and str(value).strip():
+                completed_fields += 1
+
+        return int((completed_fields / len(required_fields)) * 100)
+
+    @staticmethod
+    def update_school_setup(step=None, **kwargs):
+        """Update school setup configuration."""
+        setup = SchoolSetup.get_current_setup()
+
+        # Update step if provided
+        if step:
+            setup.setup_step = step
+
+        # Update fields
+        setup.update_setup(**kwargs)
+
+        return setup
+
+    @staticmethod
+    def complete_setup(completed_by_id=None):
+        """Mark the school setup as completed."""
+        setup = SchoolSetup.get_current_setup()
+        setup.mark_setup_completed(completed_by_id)
+        return setup
+
+    @staticmethod
+    def save_school_logo(logo_file):
+        """Save and process school logo."""
+        if not logo_file or not logo_file.filename:
+            return None
+
+        try:
+            # Create uploads directory
+            upload_dir = os.path.join(current_app.static_folder, 'uploads', 'logos')
+            os.makedirs(upload_dir, exist_ok=True)
+
+            # Secure filename
+            filename = secure_filename(logo_file.filename)
+            timestamp = int(datetime.now().timestamp())
+            filename = f"school_logo_{timestamp}_{filename}"
+
+            # Save original file
+            filepath = os.path.join(upload_dir, filename)
+            logo_file.save(filepath)
+
+            # Process image (resize, optimize)
+            processed_filename = EnhancedSchoolSetupService._process_logo_image(filepath, filename)
+
+            # Update school setup
+            setup = SchoolSetup.get_current_setup()
+            setup.update_setup(logo_filename=processed_filename)
+
+            return processed_filename
+
+        except Exception as e:
+            print(f"Error saving logo: {e}")
+            return None
+
+    @staticmethod
+    def _process_logo_image(filepath, filename):
+        """Process and optimize logo image."""
+        try:
+            # Open and process image
+            with Image.open(filepath) as img:
+                # Convert to RGB if necessary
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    img = img.convert('RGB')
+
+                # Resize to standard logo size (maintain aspect ratio)
+                max_size = (200, 200)
+                img.thumbnail(max_size, Image.Resampling.LANCZOS)
+
+                # Save optimized version
+                optimized_filename = f"optimized_{filename}"
+                optimized_path = os.path.join(os.path.dirname(filepath), optimized_filename)
+                img.save(optimized_path, 'JPEG', quality=85, optimize=True)
+
+                # Remove original if different
+                if optimized_filename != filename:
+                    os.remove(filepath)
+
+                return optimized_filename
+
+        except Exception as e:
+            print(f"Error processing logo image: {e}")
+            return filename  # Return original filename if processing fails
+
+    @staticmethod
+    def get_comprehensive_school_info():
+        """Get comprehensive school information for templates and reports."""
+        setup = SchoolSetup.get_current_setup()
+        branding = SchoolBranding.get_current_branding()
+        customization = SchoolCustomization.get_current_customization()
+
+        return {
+            **setup.to_dict(),
+            'branding': {
+                'logo_filename': branding.logo_filename,
+                'primary_color': branding.primary_color,
+                'secondary_color': branding.secondary_color,
+                'accent_color': branding.accent_color,
+                'text_color': branding.text_color,
+                'background_color': branding.background_color,
+                'primary_font': branding.primary_font,
+                'secondary_font': branding.secondary_font
+            },
+            'features': {
+                'enable_analytics': customization.enable_analytics,
+                'enable_parent_portal': customization.enable_parent_portal,
+                'enable_sms_notifications': customization.enable_sms_notifications,
+                'enable_email_notifications': customization.enable_email_notifications,
+                'enable_mobile_app': customization.enable_mobile_app
+            }
         }

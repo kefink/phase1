@@ -12,6 +12,12 @@ class Config:
     basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'kirima_primary.db')
 
+    # Session configuration for better persistence
+    PERMANENT_SESSION_LIFETIME = 86400  # 24 hours in seconds
+    SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+
 
 class DevelopmentConfig(Config):
     """Configuration for development environment."""

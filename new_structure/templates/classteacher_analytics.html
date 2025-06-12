@@ -503,6 +503,55 @@
     loadAnalyticsData();
   }
 
+  // Delete report function for analytics (only for headteachers)
+  function deleteReportFromAnalytics(grade, stream, term, assessmentType) {
+    // Check if user is headteacher
+    const isHeadteacher = {{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }};
+
+    if (!isHeadteacher) {
+      showNotification("Only headteachers can delete reports from analytics.", "error");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete the report for ${grade} ${stream} in ${term} ${assessmentType}? This will delete all associated marks and cannot be undone.`)) {
+      return;
+    }
+
+    // Show loading state
+    showNotification("Deleting report...", "info");
+
+    // Create form data
+    const formData = new FormData();
+    formData.append('grade', grade);
+    formData.append('stream', stream);
+    formData.append('term', term);
+    formData.append('assessment_type', assessmentType);
+
+    // Send delete request
+    fetch('/api/analytics/delete_report', {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showNotification(data.message, "success");
+        // Refresh analytics data
+        loadAnalyticsData();
+      } else {
+        showNotification(data.message, "error");
+      }
+    })
+    .catch(error => {
+      console.error('Error deleting report:', error);
+      showNotification("Error deleting report. Please try again.", "error");
+    });
+  }
+
+  // Set headteacher flag for delete buttons
+  window.isHeadteacher = {{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }};
+
   // Initialize analytics when page loads
   document.addEventListener("DOMContentLoaded", function () {
     console.log("Classteacher analytics page - initializing dashboard");

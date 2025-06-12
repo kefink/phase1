@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Configuration - Hillview School</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/classteacher.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .config-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .config-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .config-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1f7d53;
+        }
+        
+        .config-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #1f7d53, #2d5a3d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .config-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .config-section h3 {
+            color: #1f7d53;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #1f7d53;
+            padding-bottom: 5px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #1f7d53;
+            box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #1f7d53, #2d5a3d);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(31, 125, 83, 0.3);
+        }
+        
+        .term-selector {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .teacher-select {
+            position: relative;
+        }
+        
+        .teacher-info {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+        
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="config-container">
+        <a href="{{ url_for('classteacher.dashboard') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="config-card">
+            <div class="config-header">
+                <h1><i class="fas fa-cog"></i> Report Configuration</h1>
+                <p>Configure staff assignments, term dates, and report settings</p>
+            </div>
+            
+            <!-- Term Selection -->
+            <div class="term-selector">
+                <h3><i class="fas fa-calendar"></i> Select Term to Configure</h3>
+                <form method="GET" style="display: inline-block;">
+                    <select name="term" class="form-control" onchange="this.form.submit()" style="width: auto; display: inline-block;">
+                        {% for term in terms %}
+                            <option value="{{ term.name }}" {% if term.name == current_term %}selected{% endif %}>
+                                {{ term.name.replace('_', ' ').title() }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+            
+            <!-- Configuration Form -->
+            <form method="POST">
+                <input type="hidden" name="term" value="{{ current_term }}">
+                
+                <!-- Academic Information -->
+                <div class="config-section">
+                    <h3><i class="fas fa-graduation-cap"></i> Academic Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="academic_year">Academic Year:</label>
+                            <input type="text" id="academic_year" name="academic_year" class="form-control" 
+                                   value="{{ config.academic_year if config else '2024/2025' }}" 
+                                   placeholder="e.g., 2024/2025">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Term Dates -->
+                <div class="config-section">
+                    <h3><i class="fas fa-calendar-alt"></i> Term Dates</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="term_start_date">Term Start Date:</label>
+                            <input type="date" id="term_start_date" name="term_start_date" class="form-control"
+                                   value="{{ config.term_start_date if config and config.term_start_date else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="term_end_date">Term End Date:</label>
+                            <input type="date" id="term_end_date" name="term_end_date" class="form-control"
+                                   value="{{ config.term_end_date if config and config.term_end_date else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="closing_date">Closing Date:</label>
+                            <input type="date" id="closing_date" name="closing_date" class="form-control"
+                                   value="{{ config.closing_date if config and config.closing_date else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="opening_date">Next Term Opening Date:</label>
+                            <input type="date" id="opening_date" name="opening_date" class="form-control"
+                                   value="{{ config.opening_date if config and config.opening_date else '' }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Staff Assignments -->
+                <div class="config-section">
+                    <h3><i class="fas fa-users"></i> Staff Assignments</h3>
+                    <div class="form-grid">
+                        <div class="form-group teacher-select">
+                            <label for="headteacher_id">Head Teacher:</label>
+                            <select id="headteacher_id" name="headteacher_id" class="form-control">
+                                <option value="">Select Head Teacher</option>
+                                {% for teacher in teachers_by_role.headteacher %}
+                                    <option value="{{ teacher.id }}" 
+                                            {% if config and config.headteacher_id == teacher.id %}selected{% endif %}>
+                                        {{ teacher.name }} ({{ teacher.employee_id }})
+                                    </option>
+                                {% endfor %}
+                                {% if not teachers_by_role.headteacher %}
+                                    {% for teacher in teachers_by_role.all %}
+                                        <option value="{{ teacher.id }}" 
+                                                {% if config and config.headteacher_id == teacher.id %}selected{% endif %}>
+                                            {{ teacher.name }} - {{ teacher.role }} ({{ teacher.employee_id }})
+                                        </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group teacher-select">
+                            <label for="deputy_headteacher_id">Deputy Head Teacher:</label>
+                            <select id="deputy_headteacher_id" name="deputy_headteacher_id" class="form-control">
+                                <option value="">Select Deputy Head Teacher</option>
+                                {% for teacher in teachers_by_role.deputy %}
+                                    <option value="{{ teacher.id }}" 
+                                            {% if config and config.deputy_headteacher_id == teacher.id %}selected{% endif %}>
+                                        {{ teacher.name }} ({{ teacher.employee_id }})
+                                    </option>
+                                {% endfor %}
+                                {% if not teachers_by_role.deputy %}
+                                    {% for teacher in teachers_by_role.all %}
+                                        <option value="{{ teacher.id }}" 
+                                                {% if config and config.deputy_headteacher_id == teacher.id %}selected{% endif %}>
+                                            {{ teacher.name }} - {{ teacher.role }} ({{ teacher.employee_id }})
+                                        </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group teacher-select">
+                            <label for="principal_id">Principal:</label>
+                            <select id="principal_id" name="principal_id" class="form-control">
+                                <option value="">Select Principal</option>
+                                {% for teacher in teachers_by_role.principal %}
+                                    <option value="{{ teacher.id }}" 
+                                            {% if config and config.principal_id == teacher.id %}selected{% endif %}>
+                                        {{ teacher.name }} ({{ teacher.employee_id }})
+                                    </option>
+                                {% endfor %}
+                                {% if not teachers_by_role.principal %}
+                                    {% for teacher in teachers_by_role.all %}
+                                        <option value="{{ teacher.id }}" 
+                                                {% if config and config.principal_id == teacher.id %}selected{% endif %}>
+                                            {{ teacher.name }} - {{ teacher.role }} ({{ teacher.employee_id }})
+                                        </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Report Visibility Settings -->
+                <div class="config-section">
+                    <h3><i class="fas fa-eye"></i> Report Visibility Settings</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Select which staff positions should appear on generated reports:</p>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="show_class_teacher" name="show_class_teacher" 
+                                   {% if not config or config.show_class_teacher %}checked{% endif %}>
+                            <label for="show_class_teacher">Show Class Teacher</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="show_headteacher" name="show_headteacher" 
+                                   {% if not config or config.show_headteacher %}checked{% endif %}>
+                            <label for="show_headteacher">Show Head Teacher</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="show_deputy_headteacher" name="show_deputy_headteacher" 
+                                   {% if not config or config.show_deputy_headteacher %}checked{% endif %}>
+                            <label for="show_deputy_headteacher">Show Deputy Head Teacher</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="show_principal" name="show_principal" 
+                                   {% if config and config.show_principal %}checked{% endif %}>
+                            <label for="show_principal">Show Principal</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Configuration
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

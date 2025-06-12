@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Features - School Setup</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #1f7d53;
+        --secondary-color: #18230f;
+        --accent-color: #4ade80;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color) 0%,
+          var(--secondary-color) 100%
+        );
+        min-height: 100vh;
+        color: #1f2937;
+      }
+
+      .setup-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .setup-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: white;
+      }
+
+      .setup-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+      }
+
+      .setup-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+      }
+
+      .form-section {
+        margin-bottom: 2rem;
+      }
+
+      .form-section h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-color);
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .feature-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .feature-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .feature-card.enabled {
+        border-color: var(--accent-color);
+        background: #f0fdf4;
+      }
+
+      .feature-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+      }
+
+      .feature-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: #1f2937;
+      }
+
+      .feature-toggle {
+        position: relative;
+        width: 50px;
+        height: 24px;
+        background: #d1d5db;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .feature-toggle.active {
+        background: var(--accent-color);
+      }
+
+      .feature-toggle::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+      }
+
+      .feature-toggle.active::after {
+        transform: translateX(26px);
+      }
+
+      .feature-description {
+        color: #6b7280;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .form-input,
+      .form-select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .form-input:focus,
+      .form-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .btn {
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-secondary {
+        background: #6b7280;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #4b5563;
+      }
+
+      .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+      }
+
+      .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-bottom: 2rem;
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 25px;
+        transition: all 0.3s ease;
+      }
+
+      .back-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateX(-5px);
+      }
+
+      @media (max-width: 768px) {
+        .setup-container {
+          padding: 1rem;
+        }
+        .setup-card {
+          padding: 2rem;
+        }
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+        .form-actions {
+          flex-direction: column;
+          gap: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="setup-container">
+      <a href="{{ url_for('school_setup.setup_dashboard') }}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Setup Dashboard
+      </a>
+
+      <div class="setup-header">
+        <h1><i class="fas fa-cogs"></i> Feature Configuration</h1>
+        <p>Step 5 of 6 - Enable features and configure settings</p>
+      </div>
+
+      <div class="setup-card">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div
+          class="alert alert-{{ 'error' if category == 'error' else 'success' }}"
+        >
+          <i
+            class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }}"
+          ></i>
+          {{ message }}
+        </div>
+        {% endfor %} {% endif %} {% endwith %}
+
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <!-- System Features -->
+          <div class="form-section">
+            <h3><i class="fas fa-toggle-on"></i> System Features</h3>
+            <div class="feature-grid">
+              <div
+                class="feature-card {% if customization.enable_analytics %}enabled{% endif %}"
+              >
+                <div class="feature-header">
+                  <div class="feature-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Analytics Dashboard
+                  </div>
+                  <label
+                    class="feature-toggle {% if customization.enable_analytics %}active{% endif %}"
+                  >
+                    <input
+                      type="checkbox"
+                      name="enable_analytics"
+                      style="display: none"
+                      {%
+                      if
+                      customization.enable_analytics
+                      %}checked{%
+                      endif
+                      %}
+                    />
+                  </label>
+                </div>
+                <div class="feature-description">
+                  Advanced analytics and reporting features for performance
+                  tracking and insights.
+                </div>
+              </div>
+
+              <div
+                class="feature-card {% if customization.enable_email_notifications %}enabled{% endif %}"
+              >
+                <div class="feature-header">
+                  <div class="feature-title">
+                    <i class="fas fa-envelope"></i>
+                    Email Notifications
+                  </div>
+                  <label
+                    class="feature-toggle {% if customization.enable_email_notifications %}active{% endif %}"
+                  >
+                    <input
+                      type="checkbox"
+                      name="enable_email_notifications"
+                      style="display: none"
+                      {%
+                      if
+                      customization.enable_email_notifications
+                      %}checked{%
+                      endif
+                      %}
+                    />
+                  </label>
+                </div>
+                <div class="feature-description">
+                  Send automated email notifications for reports, updates, and
+                  important announcements.
+                </div>
+              </div>
+
+              <div
+                class="feature-card {% if customization.enable_parent_portal %}enabled{% endif %}"
+              >
+                <div class="feature-header">
+                  <div class="feature-title">
+                    <i class="fas fa-users"></i>
+                    Parent Portal
+                  </div>
+                  <label
+                    class="feature-toggle {% if customization.enable_parent_portal %}active{% endif %}"
+                  >
+                    <input
+                      type="checkbox"
+                      name="enable_parent_portal"
+                      style="display: none"
+                      {%
+                      if
+                      customization.enable_parent_portal
+                      %}checked{%
+                      endif
+                      %}
+                    />
+                  </label>
+                </div>
+                <div class="feature-description">
+                  Allow parents to access their children's reports and school
+                  information online.
+                </div>
+              </div>
+
+              <div
+                class="feature-card {% if customization.enable_sms_notifications %}enabled{% endif %}"
+              >
+                <div class="feature-header">
+                  <div class="feature-title">
+                    <i class="fas fa-sms"></i>
+                    SMS Notifications
+                  </div>
+                  <label
+                    class="feature-toggle {% if customization.enable_sms_notifications %}active{% endif %}"
+                  >
+                    <input
+                      type="checkbox"
+                      name="enable_sms_notifications"
+                      style="display: none"
+                      {%
+                      if
+                      customization.enable_sms_notifications
+                      %}checked{%
+                      endif
+                      %}
+                    />
+                  </label>
+                </div>
+                <div class="feature-description">
+                  Send SMS notifications to parents and staff for urgent
+                  communications.
+                </div>
+              </div>
+
+              <div
+                class="feature-card {% if customization.enable_mobile_app %}enabled{% endif %}"
+              >
+                <div class="feature-header">
+                  <div class="feature-title">
+                    <i class="fas fa-mobile-alt"></i>
+                    Mobile App
+                  </div>
+                  <label
+                    class="feature-toggle {% if customization.enable_mobile_app %}active{% endif %}"
+                  >
+                    <input
+                      type="checkbox"
+                      name="enable_mobile_app"
+                      style="display: none"
+                      {%
+                      if
+                      customization.enable_mobile_app
+                      %}checked{%
+                      endif
+                      %}
+                    />
+                  </label>
+                </div>
+                <div class="feature-description">
+                  Enable mobile app integration for teachers, students, and
+                  parents.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Report Settings -->
+          <div class="form-section">
+            <h3><i class="fas fa-file-alt"></i> Report Settings</h3>
+            <div class="feature-grid">
+              <div class="form-group">
+                <label
+                  class="feature-toggle {% if setup.show_position %}active{% endif %}"
+                >
+                  <input
+                    type="checkbox"
+                    name="show_position"
+                    style="display: none"
+                    {%
+                    if
+                    setup.show_position
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <span style="margin-left: 60px">Show Student Position</span>
+                </label>
+              </div>
+
+              <div class="form-group">
+                <label
+                  class="feature-toggle {% if setup.show_class_average %}active{% endif %}"
+                >
+                  <input
+                    type="checkbox"
+                    name="show_class_average"
+                    style="display: none"
+                    {%
+                    if
+                    setup.show_class_average
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <span style="margin-left: 60px">Show Class Average</span>
+                </label>
+              </div>
+
+              <div class="form-group">
+                <label
+                  class="feature-toggle {% if setup.show_subject_teacher %}active{% endif %}"
+                >
+                  <input
+                    type="checkbox"
+                    name="show_subject_teacher"
+                    style="display: none"
+                    {%
+                    if
+                    setup.show_subject_teacher
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <span style="margin-left: 60px">Show Subject Teacher</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="report_footer" class="form-label"
+                >Report Footer</label
+              >
+              <input
+                type="text"
+                id="report_footer"
+                name="report_footer"
+                class="form-input"
+                value="{{ setup.report_footer or 'Powered by CbcTeachkit' }}"
+                placeholder="e.g., Powered by CbcTeachkit"
+              />
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <a
+              href="{{ url_for('school_setup.branding') }}"
+              class="btn btn-secondary"
+            >
+              <i class="fas fa-arrow-left"></i> Back to Branding
+            </a>
+            <button type="submit" class="btn btn-primary">
+              Continue to Review <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Handle toggle switches
+      document.querySelectorAll(".feature-toggle").forEach((toggle) => {
+        toggle.addEventListener("click", function () {
+          const checkbox = this.querySelector('input[type="checkbox"]');
+          checkbox.checked = !checkbox.checked;
+          this.classList.toggle("active", checkbox.checked);
+
+          const card = this.closest(".feature-card");
+          if (card) {
+            card.classList.toggle("enabled", checkbox.checked);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
