@@ -2070,6 +2070,10 @@ def preview_class_report(grade, stream, term, assessment_type):
     from ..services.staff_assignment_service import StaffAssignmentService
     staff_info = StaffAssignmentService.get_report_staff_info(grade, stream)
 
+    # Get school information for dynamic display
+    from ..services.school_config_service import SchoolConfigService
+    school_info = SchoolConfigService.get_school_info_dict()
+
     return render_template(
         'preview_class_report.html',
         grade=grade,
@@ -2090,7 +2094,8 @@ def preview_class_report(grade, stream, term, assessment_type):
         component_marks_data=component_marks_data,  # Pass component marks
         component_averages=component_averages,  # Pass component averages
         filtered_subjects=filtered_subjects,  # Pass filtered subject objects
-        staff_info=staff_info  # Pass staff information
+        staff_info=staff_info,  # Pass staff information
+        school_info=school_info  # Pass school information
     )
 
 @classteacher_bp.route('/edit_class_marks/<grade>/<stream>/<term>/<assessment_type>')
@@ -2772,6 +2777,10 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
     # Get logo URL
     logo_url = url_for('static', filename='images/kirima_logo.png')
 
+    # Get school information for dynamic display
+    from ..services.school_config_service import SchoolConfigService
+    school_info = SchoolConfigService.get_school_info_dict()
+
     return render_template(
         'print_individual_report.html',
         student_name=student.name,
@@ -2793,7 +2802,8 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         logo_url=logo_url,
         subject_averages=subject_averages,
         class_average=class_average,
-        class_size=overall_count
+        class_size=overall_count,
+        school_info=school_info  # Pass school information
     )
 
 @classteacher_bp.route('/preview_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')

@@ -652,8 +652,8 @@ class AcademicAnalyticsService:
                 func.min(Mark.percentage).label('min_percentage'),
                 func.max(Mark.percentage).label('max_percentage')
             ).join(Student, Mark.student_id == Student.id)\
-             .join(Grade, Student.grade_id == Grade.id)\
-             .outerjoin(Stream, Student.stream_id == Stream.id)
+             .join(Stream, Student.stream_id == Stream.id)\
+             .join(Grade, Stream.grade_id == Grade.id)
 
             # Apply filters
             if term_id:
@@ -734,10 +734,19 @@ class AcademicAnalyticsService:
             # Generate cache key
             cache_key = f"enhanced_top_performers_{grade_id}_{stream_id}_{term_id}_{assessment_type_id}_{limit}"
 
+            # Debug: Log the filters being applied
+            print(f"DEBUG ENHANCED TOP PERFORMERS: Filters applied:")
+            print(f"  - grade_id: {grade_id}")
+            print(f"  - stream_id: {stream_id}")
+            print(f"  - term_id: {term_id}")
+            print(f"  - assessment_type_id: {assessment_type_id}")
+            print(f"  - limit: {limit}")
+
             # Check cache first
             if use_cache:
                 cached_result = get_cached_analytics(cache_key)
                 if cached_result:
+                    print("DEBUG: Using cached result")
                     return cached_result
 
             # Get all grades and streams if not specified
@@ -778,9 +787,9 @@ class AcademicAnalyticsService:
                         func.min(Mark.percentage).label('min_percentage'),
                         func.max(Mark.percentage).label('max_percentage')
                     ).join(Mark, Student.id == Mark.student_id)\
-                     .join(Grade, Student.grade_id == Grade.id)\
-                     .outerjoin(Stream, Student.stream_id == Stream.id)\
-                     .filter(Student.grade_id == grade.id)
+                     .join(Stream, Student.stream_id == Stream.id)\
+                     .join(Grade, Stream.grade_id == Grade.id)\
+                     .filter(Stream.grade_id == grade.id)
 
                     if stream:
                         query = query.filter(Student.stream_id == stream.id)
@@ -807,7 +816,8 @@ class AcademicAnalyticsService:
 
                     # Calculate total students in this class/stream for position context
                     total_students_query = db.session.query(func.count(Student.id))\
-                        .filter(Student.grade_id == grade.id)
+                        .join(Stream, Student.stream_id == Stream.id)\
+                        .filter(Stream.grade_id == grade.id)
 
                     if stream:
                         total_students_query = total_students_query.filter(Student.stream_id == stream.id)
@@ -817,15 +827,17 @@ class AcademicAnalyticsService:
                     total_students_in_class = total_students_query.scalar() or 0
 
                     for index, result in enumerate(results):
-                        # Get individual subject marks
+                        # Get individual subject marks with SAME filtering as reports
                         marks_query = db.session.query(
                             Subject.name.label('subject_name'),
                             Mark.percentage,
                             Mark.raw_mark,
-                            Mark.total_marks
+                            Mark.total_marks,
+                            Mark.raw_total_marks  # Use raw_total_marks for consistency
                         ).join(Subject, Mark.subject_id == Subject.id)\
                          .filter(Mark.student_id == result.id)
 
+                        # Apply SAME filtering as used in the main query to ensure consistency
                         if term_id:
                             marks_query = marks_query.filter(Mark.term_id == term_id)
                         if assessment_type_id:
@@ -833,9 +845,19 @@ class AcademicAnalyticsService:
 
                         subject_marks = marks_query.all()
 
-                        # Calculate total marks and maximum possible marks
+                        # Calculate total marks and maximum possible marks using SAME logic as reports
+                        # Use raw_total_marks (max possible) instead of total_marks for consistency
                         total_raw_marks = sum(mark.raw_mark for mark in subject_marks if mark.raw_mark)
-                        total_max_marks = sum(mark.total_marks for mark in subject_marks if mark.total_marks)
+                        total_max_marks = sum(mark.raw_total_marks for mark in subject_marks if mark.raw_total_marks)
+
+                        # Debug: Log the filtering being applied
+                        if result.name == "JOYLINE WANJIKU":  # Debug for the specific student
+                            print(f"DEBUG ANALYTICS: Student {result.name}")
+                            print(f"  - Filters: term_id={term_id}, assessment_type_id={assessment_type_id}")
+                            print(f"  - Found {len(subject_marks)} subject marks")
+                            print(f"  - Total: {total_raw_marks}/{total_max_marks}")
+                            for mark in subject_marks:
+                                print(f"    * {mark.subject_name}: {mark.raw_mark}/{mark.raw_total_marks}")
 
                         # Get class position (rank within the stream)
                         class_position = index + 1
@@ -883,7 +905,7 @@ class AcademicAnalyticsService:
                                     'subject_name': mark.subject_name,
                                     'percentage': round(mark.percentage, 2),
                                     'raw_mark': mark.raw_mark,
-                                    'total_marks': mark.total_marks,
+                                    'total_marks': mark.raw_total_marks,  # Use raw_total_marks for consistency
                                     'grade_letter': cls._get_grade_letter(mark.percentage)
                                 }
                                 for mark in subject_marks

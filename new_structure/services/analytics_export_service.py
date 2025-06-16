@@ -419,3 +419,81 @@ class AnalyticsExportService:
         ]))
 
         return table
+
+    @classmethod
+    def export_to_pdf(cls, data: Dict[str, Any], data_type: str) -> str:
+        """Export data to PDF file and return file path."""
+        try:
+            # Create export directory if it doesn't exist
+            export_dir = os.path.join(current_app.root_path, 'exports')
+            os.makedirs(export_dir, exist_ok=True)
+
+            # Generate filename
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f'analytics_{data_type}_{timestamp}.pdf'
+            file_path = os.path.join(export_dir, filename)
+
+            # Generate PDF content
+            pdf_content = cls.export_analytics_pdf(data)
+
+            # Write to file
+            with open(file_path, 'wb') as f:
+                f.write(pdf_content)
+
+            return file_path
+
+        except Exception as e:
+            print(f"Error exporting to PDF: {e}")
+            raise
+
+    @classmethod
+    def export_to_excel(cls, data: Dict[str, Any], data_type: str) -> str:
+        """Export data to Excel file and return file path."""
+        try:
+            # Create export directory if it doesn't exist
+            export_dir = os.path.join(current_app.root_path, 'exports')
+            os.makedirs(export_dir, exist_ok=True)
+
+            # Generate filename
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f'analytics_{data_type}_{timestamp}.xlsx'
+            file_path = os.path.join(export_dir, filename)
+
+            # Generate Excel content
+            excel_content = cls.export_analytics_excel(data)
+
+            # Write to file
+            with open(file_path, 'wb') as f:
+                f.write(excel_content)
+
+            return file_path
+
+        except Exception as e:
+            print(f"Error exporting to Excel: {e}")
+            raise
+
+    @classmethod
+    def export_to_word(cls, data: Dict[str, Any], data_type: str) -> str:
+        """Export data to Word file and return file path."""
+        try:
+            # Create export directory if it doesn't exist
+            export_dir = os.path.join(current_app.root_path, 'exports')
+            os.makedirs(export_dir, exist_ok=True)
+
+            # Generate filename
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f'analytics_{data_type}_{timestamp}.docx'
+            file_path = os.path.join(export_dir, filename)
+
+            # Generate Word content
+            word_content = cls.export_analytics_word(data)
+
+            # Write to file
+            with open(file_path, 'wb') as f:
+                f.write(word_content)
+
+            return file_path
+
+        except Exception as e:
+            print(f"Error exporting to Word: {e}")
+            raise

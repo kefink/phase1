@@ -3,7 +3,7 @@ Analytics API routes for Academic Performance Analytics Dashboard.
 Provides REST API endpoints for analytics data.
 """
 
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, current_app
 from datetime import datetime
 from ..services.academic_analytics_service import AcademicAnalyticsService
 from ..services.role_based_data_service import RoleBasedDataService
@@ -936,14 +936,17 @@ def bulk_delete_reports():
 @analytics_api_bp.route('/top_subject_performers')
 @analytics_required
 def get_top_subject_performers():
-    """Get top 3 performers per subject per grade per stream."""
+    """Get top 3 performers per subject per grade per stream with enhanced filtering."""
     try:
         current_app.logger.info("Starting get_top_subject_performers request")
-        # Get query parameters
+        # Get query parameters with enhanced filtering
         grade_id = request.args.get('grade_id', type=int)
         stream_id = request.args.get('stream_id', type=int)
         term_id = request.args.get('term_id', type=int)
         assessment_type_id = request.args.get('assessment_type_id', type=int)
+        subject_id = request.args.get('subject_id', type=int)  # New filter
+        educational_level = request.args.get('educational_level')  # New filter
+        exam_type = request.args.get('exam_type')  # New filter
 
         # Apply role-based filtering
         role = get_role(session)
@@ -982,11 +985,11 @@ def get_top_subject_performers():
             base_query = base_query.join(Subject, Mark.subject_id == Subject.id)
             current_app.logger.info("Joined with Subject")
 
-            # Join with Stream through Student
+            # Join with Stream through Student (required - students must have streams)
             base_query = base_query.join(Stream, Student.stream_id == Stream.id)
             current_app.logger.info("Joined with Stream")
 
-            # Join with Grade through Stream
+            # Join with Grade through Stream (not directly through Student)
             base_query = base_query.join(Grade, Stream.grade_id == Grade.id)
             current_app.logger.info("Joined with Grade")
 
@@ -1031,6 +1034,16 @@ def get_top_subject_performers():
         if assessment_type_id:
             base_query = base_query.filter(AssessmentType.id == assessment_type_id)
 
+        # Apply additional filters for enhanced filtering
+        if subject_id:
+            base_query = base_query.filter(Subject.id == subject_id)
+        if educational_level:
+            # Filter by grade level (educational level)
+            base_query = base_query.filter(Grade.name.like(f'%{educational_level}%'))
+        if exam_type:
+            # Filter by assessment type (exam type)
+            base_query = base_query.filter(AssessmentType.name.like(f'%{exam_type}%'))
+
         # Get all combinations of grade, stream, subject
         try:
             combinations_query = base_query.with_entities(
@@ -1067,7 +1080,7 @@ def get_top_subject_performers():
 
         for combo in combinations:
             grade_key = f"Grade {combo.grade_name}"
-            stream_key = f"Stream {combo.stream_name}"
+            stream_key = f"Stream {combo.stream_name}" if combo.stream_name else "No Stream"
             subject_key = combo.subject_name
 
             if grade_key not in result:
@@ -1078,15 +1091,22 @@ def get_top_subject_performers():
             # Get top 3 performers for this combination
             top_performers_query = base_query.filter(
                 Grade.id == combo.grade_id,
-                Stream.id == combo.stream_id,
                 Subject.id == combo.subject_id
-            ).with_entities(
+            )
+
+            # Add stream filter only if stream exists
+            if combo.stream_id:
+                top_performers_query = top_performers_query.filter(Stream.id == combo.stream_id)
+            else:
+                top_performers_query = top_performers_query.filter(Student.stream_id.is_(None))
+
+            top_performers_query = top_performers_query.with_entities(
                 Student.id.label('student_id'),
                 Student.name.label('student_name'),
                 Student.admission_number.label('admission_number'),
-                Mark.mark.label('marks'),  # Fixed: use 'mark' instead of 'marks'
+                Mark.mark.label('marks'),
                 Mark.total_marks.label('total_marks'),
-                func.round((Mark.mark * 100.0 / Mark.total_marks), 2).label('percentage')  # Fixed: use 'mark' instead of 'marks'
+                func.round((Mark.mark * 100.0 / Mark.total_marks), 2).label('percentage')
             ).order_by(desc('percentage')).limit(3)
 
             top_performers = []
@@ -1106,13 +1126,23 @@ def get_top_subject_performers():
                     'position': len(top_performers) + 1
                 })
 
+            # Count total students for this combination
+            total_students_query = base_query.filter(
+                Grade.id == combo.grade_id,
+                Subject.id == combo.subject_id
+            )
+
+            # Add stream filter only if stream exists
+            if combo.stream_id:
+                total_students_query = total_students_query.filter(Stream.id == combo.stream_id)
+            else:
+                total_students_query = total_students_query.filter(Student.stream_id.is_(None))
+
+            total_students = total_students_query.with_entities(func.count(func.distinct(Student.id))).scalar()
+
             result[grade_key][stream_key][subject_key] = {
                 'top_performers': top_performers,
-                'total_students': base_query.filter(
-                    Grade.id == combo.grade_id,
-                    Stream.id == combo.stream_id,
-                    Subject.id == combo.subject_id
-                ).with_entities(func.count(func.distinct(Student.id))).scalar()
+                'total_students': total_students
             }
 
         return jsonify({
@@ -1583,6 +1613,106 @@ def get_enhanced_top_performers():
         return jsonify({
             'success': False,
             'message': f'Error getting enhanced top performers: {str(e)}'
+        }), 500
+
+
+@analytics_api_bp.route('/test_enhanced_top_performers')
+def test_enhanced_top_performers():
+    """Test enhanced top performers without authentication."""
+    try:
+        from ..services.academic_analytics_service import AcademicAnalyticsService
+
+        result = AcademicAnalyticsService.get_enhanced_top_performers(
+            grade_id=None,
+            stream_id=None,
+            term_id=None,
+            assessment_type_id=None,
+            limit=5
+        )
+
+        return jsonify({
+            'success': True,
+            'enhanced_top_performers': result.get('enhanced_top_performers', {}),
+            'total_grades_analyzed': result.get('total_grades_analyzed', 0),
+            'debug_info': 'Test endpoint without authentication'
+        })
+
+    except Exception as e:
+        import traceback
+        return jsonify({
+            'success': False,
+            'message': f'Error: {str(e)}',
+            'traceback': traceback.format_exc()
+        }), 500
+
+
+@analytics_api_bp.route('/export_data/<export_type>')
+@analytics_required
+def export_analytics_data_new(export_type):
+    """Export analytics data in various formats (pdf, excel, word)."""
+    try:
+        # Get query parameters
+        data_type = request.args.get('data_type', 'top_performers')  # top_performers, subject_performers, comprehensive
+        grade_id = request.args.get('grade_id', type=int)
+        stream_id = request.args.get('stream_id', type=int)
+        term_id = request.args.get('term_id', type=int)
+        assessment_type_id = request.args.get('assessment_type_id', type=int)
+
+        # Import export service
+        from ..services.analytics_export_service import AnalyticsExportService
+
+        # Get the data based on type
+        if data_type == 'top_performers':
+            from ..services.academic_analytics_service import AcademicAnalyticsService
+            data = AcademicAnalyticsService.get_enhanced_top_performers(
+                grade_id=grade_id,
+                stream_id=stream_id,
+                term_id=term_id,
+                assessment_type_id=assessment_type_id,
+                limit=10
+            )
+        elif data_type == 'subject_performers':
+            # Get top subject performers data
+            data = {'top_subject_performers': {}}  # Placeholder for now
+        else:
+            # Get comprehensive analytics
+            from ..services.academic_analytics_service import AcademicAnalyticsService
+            data = AcademicAnalyticsService.get_comprehensive_analytics(
+                grade_id=grade_id,
+                stream_id=stream_id,
+                term_id=term_id,
+                assessment_type_id=assessment_type_id
+            )
+
+        # Export the data
+        if export_type.lower() == 'pdf':
+            file_path = AnalyticsExportService.export_to_pdf(data, data_type)
+            mimetype = 'application/pdf'
+        elif export_type.lower() == 'excel':
+            file_path = AnalyticsExportService.export_to_excel(data, data_type)
+            mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        elif export_type.lower() == 'word':
+            file_path = AnalyticsExportService.export_to_word(data, data_type)
+            mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid export type. Supported: pdf, excel, word'
+            }), 400
+
+        # Return the file
+        from flask import send_file
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=f'analytics_{data_type}_{export_type}.{export_type}',
+            mimetype=mimetype
+        )
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error exporting analytics data: {str(e)}'
         }), 500
 
 

@@ -73,24 +73,85 @@
       .save-btn:hover {
         background-color: #219653;
       }
+      /* ENHANCED TABLE WRAPPER FOR HORIZONTAL SCROLLING */
+      .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: visible;
+        position: relative;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+        /* Ensure rightmost columns are fully visible */
+        padding-right: 20px;
+        margin-right: -20px;
+        /* Smooth scrolling */
+        scroll-behavior: smooth;
+        /* Ensure content is not clipped */
+        contain: none;
+      }
+
+      /* Add padding to ensure rightmost content is visible */
+      .table-wrapper::after {
+        content: "";
+        display: block;
+        width: 50px;
+        height: 1px;
+        float: right;
+        clear: both;
+      }
+
       table {
         width: 100%;
+        min-width: max-content;
         border-collapse: collapse;
         margin-bottom: 30px;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+        table-layout: auto;
+        /* Ensure table expands to accommodate all columns */
+        white-space: nowrap;
+        /* Add extra space for rightmost columns */
+        padding-right: 30px;
       }
+
       th,
       td {
         border: 1px solid #ddd;
         padding: 10px;
         text-align: center;
+        position: relative;
+        vertical-align: middle;
+        white-space: normal;
+        word-wrap: break-word;
+        min-width: 120px;
       }
+
       th {
         background-color: #3498db;
         color: white;
         font-weight: bold;
         font-size: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
       }
+
+      /* First column (student names) should be sticky */
+      th:first-child,
+      td:first-child {
+        position: sticky;
+        left: 0;
+        background: white;
+        z-index: 5;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      }
+
+      th:first-child {
+        background-color: #3498db;
+        color: white;
+        z-index: 15;
+      }
+
       tr:nth-child(even) {
         background-color: #f2f7ff;
       }
@@ -101,17 +162,163 @@
         text-align: left;
         font-weight: 500;
       }
-      input[type="number"] {
-        width: 60px;
-        padding: 5px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        text-align: center;
+
+      /* COMPREHENSIVE FIX: All table columns and input fields */
+      td {
+        position: relative;
+        overflow: visible;
+        min-width: 120px;
+        padding: 8px;
       }
-      input[type="number"]:focus {
-        border-color: #3498db;
-        outline: none;
-        box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+
+      /* Ensure all columns are properly visible */
+      td:nth-child(n + 3) {
+        background-color: #fff !important;
+        border: 1px solid #ddd !important;
+        position: relative !important;
+        z-index: 10 !important;
+        overflow: visible !important;
+        min-width: 140px !important;
+      }
+
+      /* Special highlighting for rightmost columns */
+      td:last-child,
+      td:nth-last-child(2),
+      td:nth-last-child(3) {
+        background-color: #fff8f0 !important;
+        border: 2px solid #ff6b35 !important;
+        position: relative !important;
+        z-index: 100 !important;
+        overflow: visible !important;
+        min-width: 150px !important;
+      }
+
+      /* ENHANCED INPUT FIELD STYLING - ALL INPUTS */
+      input[type="number"],
+      .component-mark-input,
+      .component-max-input,
+      .student-mark {
+        width: 80px !important;
+        height: 35px !important;
+        padding: 6px !important;
+        border: 1px solid #ddd !important;
+        border-radius: 4px !important;
+        text-align: center !important;
+        background-color: white !important;
+        color: #333 !important;
+        font-size: 14px !important;
+        pointer-events: auto !important;
+        cursor: text !important;
+        user-select: auto !important;
+        opacity: 1 !important;
+        z-index: 200 !important;
+        position: relative !important;
+        display: inline-block !important;
+        visibility: visible !important;
+        outline: none !important;
+        box-sizing: border-box !important;
+      }
+
+      /* CRITICAL FIX: Rightmost input fields with enhanced visibility */
+      td:last-child input[type="number"],
+      td:nth-last-child(2) input[type="number"],
+      td:nth-last-child(3) input[type="number"],
+      td:last-child .component-mark-input,
+      td:nth-last-child(2) .component-mark-input,
+      td:nth-last-child(3) .component-mark-input,
+      td:last-child .component-max-input,
+      td:nth-last-child(2) .component-max-input,
+      td:nth-last-child(3) .component-max-input,
+      td:last-child .student-mark,
+      td:nth-last-child(2) .student-mark,
+      td:nth-last-child(3) .student-mark {
+        width: 85px !important;
+        height: 38px !important;
+        padding: 8px !important;
+        border: 3px solid #ff6b35 !important;
+        border-radius: 6px !important;
+        background-color: #ffffff !important;
+        color: #333 !important;
+        font-size: 15px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        pointer-events: auto !important;
+        cursor: text !important;
+        user-select: auto !important;
+        opacity: 1 !important;
+        z-index: 1000 !important;
+        position: relative !important;
+        display: inline-block !important;
+        visibility: visible !important;
+        outline: none !important;
+        box-sizing: border-box !important;
+        transform: none !important;
+        clip: none !important;
+        clip-path: none !important;
+      }
+
+      /* ENHANCED FOCUS STATES FOR ALL INPUTS */
+      input[type="number"]:focus,
+      .component-mark-input:focus,
+      .component-max-input:focus,
+      .student-mark:focus {
+        border-color: #3498db !important;
+        outline: none !important;
+        box-shadow: 0 0 8px rgba(52, 152, 219, 0.6) !important;
+        background-color: #f0f8ff !important;
+        z-index: 2000 !important;
+      }
+
+      /* ENHANCED Focus state for rightmost inputs */
+      td:last-child input[type="number"]:focus,
+      td:nth-last-child(2) input[type="number"]:focus,
+      td:nth-last-child(3) input[type="number"]:focus,
+      td:last-child .component-mark-input:focus,
+      td:nth-last-child(2) .component-mark-input:focus,
+      td:nth-last-child(3) .component-mark-input:focus,
+      td:last-child .component-max-input:focus,
+      td:nth-last-child(2) .component-max-input:focus,
+      td:nth-last-child(3) .component-max-input:focus,
+      td:last-child .student-mark:focus,
+      td:nth-last-child(2) .student-mark:focus,
+      td:nth-last-child(3) .student-mark:focus {
+        background-color: #e3f2fd !important;
+        border: 4px solid #2196f3 !important;
+        box-shadow: 0 0 12px rgba(33, 150, 243, 0.8) !important;
+        z-index: 3000 !important;
+        transform: scale(1.05) !important;
+      }
+
+      /* COMPREHENSIVE Override for any disabled/readonly states */
+      input[disabled],
+      input[readonly],
+      .component-mark-input[disabled],
+      .component-mark-input[readonly],
+      .component-max-input[disabled],
+      .component-max-input[readonly],
+      .student-mark[disabled],
+      .student-mark[readonly] {
+        pointer-events: auto !important;
+        cursor: text !important;
+        opacity: 1 !important;
+        background-color: white !important;
+        color: #333 !important;
+        border: 1px solid #ddd !important;
+      }
+
+      /* Special override for rightmost disabled/readonly inputs */
+      td:last-child input[disabled],
+      td:nth-last-child(2) input[disabled],
+      td:nth-last-child(3) input[disabled],
+      td:last-child input[readonly],
+      td:nth-last-child(2) input[readonly],
+      td:nth-last-child(3) input[readonly] {
+        pointer-events: auto !important;
+        cursor: text !important;
+        opacity: 1 !important;
+        background-color: white !important;
+        color: #333 !important;
+        border: 3px solid #ff6b35 !important;
       }
       .alert {
         padding: 15px;
@@ -437,107 +644,146 @@
           </div>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 5%">S/N</th>
-              <th style="width: 20%">STUDENT NAME</th>
-              {% for subject in subject_names %}
-              <th>
-                {{ subject }}
-                <div
-                  style="font-size: 12px; font-weight: normal; margin-top: 5px"
-                >
-                  <span
-                    class="subject-info"
-                    id="subject_info_{{ subject_ids[loop.index0] }}"
-                    >Max Raw: {{ subject_total_marks.get(subject, 100) }}</span
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 5%">S/N</th>
+                <th style="width: 20%">STUDENT NAME</th>
+                {% for subject in subject_names %}
+                <th>
+                  {{ subject }}
+                  <div
+                    style="
+                      font-size: 12px;
+                      font-weight: normal;
+                      margin-top: 5px;
+                    "
                   >
-                </div>
-              </th>
-              {% endfor %}
-            </tr>
-          </thead>
-          <tbody>
-            {% for student_data in class_data %}
-            <tr>
-              <td>{{ loop.index }}</td>
-              <td class="student-name">{{ student_data.student.upper() }}</td>
-              {% for subject in subject_names %}
-              <td>
-                {% set subject_obj = subject_objects[loop.index0] %} {% if
-                subject_obj.is_composite %}
-                <div class="composite-subject-entry-container">
-                  <div class="composite-header">
-                    <span class="composite-title">{{ subject }}</span>
                     <span
-                      class="composite-percentage"
-                      id="percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
+                      class="subject-info"
+                      id="subject_info_{{ subject_ids[loop.index0] }}"
+                      >Max Raw: {{ subject_total_marks.get(subject, 100)
+                      }}</span
                     >
-                      {{ student_data.filtered_marks.get(subject, 0) | int }}%
-                    </span>
                   </div>
-
-                  <!-- Get components for this subject -->
-                  {% set components = subject_obj.get_components() %} {% for
-                  component in components %}
-                  <div class="composite-subject-entry">
-                    <div class="component-header">
-                      <span class="component-title">{{ component.name }}</span>
-                      <span class="component-weight"
-                        >({{ (component.weight * 100) | int }}%)</span
+                </th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for student_data in class_data %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td class="student-name">{{ student_data.student.upper() }}</td>
+                {% for subject in subject_names %}
+                <td>
+                  {% set subject_obj = subject_objects[loop.index0] %} {% if
+                  subject_obj.is_composite %}
+                  <div class="composite-subject-entry-container">
+                    <div class="composite-header">
+                      <span class="composite-title">{{ subject }}</span>
+                      <span
+                        class="composite-percentage"
+                        id="percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
                       >
+                        {{ student_data.filtered_marks.get(subject, 0) | int }}%
+                      </span>
                     </div>
-                    <div class="component-inputs">
-                      <div class="mark-input-container">
-                        {% set component_mark =
-                        get_component_mark(student_data.student_id,
-                        component.id) %}
-                        <input
-                          type="number"
-                          name="component_mark_{{ student_data.student_id }}_{{ component.id }}"
-                          value="{{ component_mark.raw_mark|int if component_mark else 0 }}"
-                          min="0"
-                          max="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
-                          data-max-mark="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
-                          data-weight="{{ component.weight }}"
-                          data-component-id="{{ component.id }}"
-                          data-subject-id="{{ subject_obj.id }}"
-                          class="component-mark-input"
-                          oninput="updateComponentPercentage('{{ student_data.student_id }}', '{{ component.id }}', '{{ subject_obj.id }}')"
-                        />
-                        <span class="mark-separator">/</span>
-                        <input
-                          type="number"
-                          name="component_max_{{ student_data.student_id }}_{{ component.id }}"
-                          value="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
-                          min="1"
-                          max="1000"
-                          class="component-max-input"
-                          oninput="updateComponentPercentage('{{ student_data.student_id }}', '{{ component.id }}', '{{ subject_obj.id }}')"
-                        />
+
+                    <!-- Get components for this subject -->
+                    {% set components = subject_obj.get_components() %} {% for
+                    component in components %}
+                    <div class="composite-subject-entry">
+                      <div class="component-header">
+                        <span class="component-title"
+                          >{{ component.name }}</span
+                        >
+                        <span class="component-weight"
+                          >({{ (component.weight * 100) | int }}%)</span
+                        >
                       </div>
+                      <div class="component-inputs">
+                        <div class="mark-input-container">
+                          {% set component_mark =
+                          get_component_mark(student_data.student_id,
+                          component.id) %}
+                          <input
+                            type="number"
+                            name="component_mark_{{ student_data.student_id }}_{{ component.id }}"
+                            value="{{ component_mark.raw_mark|int if component_mark else 0 }}"
+                            min="0"
+                            max="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
+                            data-max-mark="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
+                            data-weight="{{ component.weight }}"
+                            data-component-id="{{ component.id }}"
+                            data-subject-id="{{ subject_obj.id }}"
+                            class="component-mark-input"
+                            oninput="updateComponentPercentage('{{ student_data.student_id }}', '{{ component.id }}', '{{ subject_obj.id }}')"
+                          />
+                          <span class="mark-separator">/</span>
+                          <input
+                            type="number"
+                            name="component_max_{{ student_data.student_id }}_{{ component.id }}"
+                            value="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
+                            min="1"
+                            max="1000"
+                            class="component-max-input"
+                            oninput="updateComponentPercentage('{{ student_data.student_id }}', '{{ component.id }}', '{{ subject_obj.id }}')"
+                          />
+                        </div>
+                        <div class="percentage-display">
+                          <span
+                            id="component_percentage_{{ student_data.student_id }}_{{ component.id }}"
+                            class="percentage-value {% if component_mark and component_mark.percentage >= 75 %}performance-ee{% elif component_mark and component_mark.percentage >= 50 %}performance-me{% elif component_mark and component_mark.percentage >= 30 %}performance-ae{% elif component_mark %}performance-be{% endif %}"
+                          >
+                            {{ component_mark.percentage|round(1) if
+                            component_mark else 0 }}%
+                          </span>
+                          <div class="percentage-bar">
+                            <div
+                              class="percentage-fill"
+                              style="width: {{ component_mark.percentage if component_mark else 0 }}%"
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="composite-total">
+                      <span class="composite-total-label">Combined:</span>
                       <div class="percentage-display">
                         <span
-                          id="component_percentage_{{ student_data.student_id }}_{{ component.id }}"
-                          class="percentage-value {% if component_mark and component_mark.percentage >= 75 %}performance-ee{% elif component_mark and component_mark.percentage >= 50 %}performance-me{% elif component_mark and component_mark.percentage >= 30 %}performance-ae{% elif component_mark %}performance-be{% endif %}"
+                          id="percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
+                          class="percentage-value"
                         >
-                          {{ component_mark.percentage|round(1) if
-                          component_mark else 0 }}%
+                          {{ student_data.filtered_marks.get(subject, 0) | int
+                          }}%
                         </span>
                         <div class="percentage-bar">
                           <div
                             class="percentage-fill"
-                            style="width: {{ component_mark.percentage if component_mark else 0 }}%"
+                            style="width: {{ student_data.filtered_marks.get(subject, 0) }}%"
                           ></div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  {% endfor %}
-
-                  <div class="composite-total">
-                    <span class="composite-total-label">Combined:</span>
+                  {% else %}
+                  <div class="simplified-mark-entry">
+                    <div class="mark-input-container">
+                      <input
+                        type="number"
+                        name="mark_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
+                        value="{{ student_data.filtered_raw_marks.get(subject, 0) | int }}"
+                        min="0"
+                        max="{{ subject_total_marks.get(subject, 100) }}"
+                        data-max-mark="{{ subject_total_marks.get(subject, 100) }}"
+                        class="student-mark"
+                        oninput="updatePercentage('{{ student_data.student_id }}', '{{ subject_ids[loop.index0] }}', '{{ subject }}')"
+                      />
+                    </div>
                     <div class="percentage-display">
                       <span
                         id="percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
@@ -553,43 +799,14 @@
                       </div>
                     </div>
                   </div>
-                </div>
-                {% else %}
-                <div class="simplified-mark-entry">
-                  <div class="mark-input-container">
-                    <input
-                      type="number"
-                      name="mark_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
-                      value="{{ student_data.filtered_raw_marks.get(subject, 0) | int }}"
-                      min="0"
-                      max="{{ subject_total_marks.get(subject, 100) }}"
-                      data-max-mark="{{ subject_total_marks.get(subject, 100) }}"
-                      class="student-mark"
-                      oninput="updatePercentage('{{ student_data.student_id }}', '{{ subject_ids[loop.index0] }}', '{{ subject }}')"
-                    />
-                  </div>
-                  <div class="percentage-display">
-                    <span
-                      id="percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
-                      class="percentage-value"
-                    >
-                      {{ student_data.filtered_marks.get(subject, 0) | int }}%
-                    </span>
-                    <div class="percentage-bar">
-                      <div
-                        class="percentage-fill"
-                        style="width: {{ student_data.filtered_marks.get(subject, 0) }}%"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                {% endif %}
-              </td>
+                  {% endif %}
+                </td>
+                {% endfor %}
+              </tr>
               {% endfor %}
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
 
         <div class="action-buttons" style="justify-content: flex-end">
           <button type="submit" class="save-btn">Save Changes</button>
@@ -889,8 +1106,75 @@
         });
       }
 
+      // ENHANCED: Fix for rightmost column input accessibility
+      function ensureInputAccessibility() {
+        // Get all input fields
+        const allInputs = document.querySelectorAll(
+          'input[type="number"], .component-mark-input, .component-max-input, .student-mark'
+        );
+
+        allInputs.forEach((input, index) => {
+          // Remove any attributes that might disable the input
+          input.removeAttribute("disabled");
+          input.removeAttribute("readonly");
+          input.removeAttribute("tabindex");
+
+          // Ensure proper styling and accessibility
+          input.style.pointerEvents = "auto";
+          input.style.cursor = "text";
+          input.style.opacity = "1";
+          input.style.visibility = "visible";
+          input.style.display = "inline-block";
+          input.style.position = "relative";
+          input.style.zIndex = "1000";
+
+          // Add click event to ensure focus works
+          input.addEventListener("click", function (e) {
+            e.stopPropagation();
+            this.focus();
+            this.select();
+          });
+
+          // Add focus event for debugging
+          input.addEventListener("focus", function () {
+            console.log("Input focused:", this.name || this.className);
+            this.style.backgroundColor = "#e3f2fd";
+            this.style.border = "3px solid #2196f3";
+          });
+
+          // Add blur event
+          input.addEventListener("blur", function () {
+            this.style.backgroundColor = "white";
+            this.style.border = "1px solid #ddd";
+          });
+        });
+
+        // Special handling for rightmost columns
+        const rightmostInputs = document.querySelectorAll(
+          "td:last-child input, td:nth-last-child(2) input, td:nth-last-child(3) input"
+        );
+        rightmostInputs.forEach((input) => {
+          input.style.border = "3px solid #ff6b35";
+          input.style.backgroundColor = "white";
+          input.style.zIndex = "2000";
+          input.style.position = "relative";
+
+          // Double-check accessibility
+          input.addEventListener("mouseenter", function () {
+            this.style.cursor = "text";
+            this.style.pointerEvents = "auto";
+          });
+        });
+      }
+
       // Add event listeners to all total marks inputs
       document.addEventListener("DOMContentLoaded", function () {
+        // Run accessibility fix
+        ensureInputAccessibility();
+
+        // Re-run accessibility fix after a short delay to catch any dynamically loaded content
+        setTimeout(ensureInputAccessibility, 500);
+
         // Initialize all percentage displays for regular subjects
         const studentMarks = document.querySelectorAll(".student-mark");
         studentMarks.forEach((input) => {
@@ -1025,6 +1309,137 @@
             updateAllMarksForSubject(subjectId, subjectName);
           });
         });
+
+        // COMPREHENSIVE RIGHTMOST COLUMN FIX
+        function fixRightmostColumnsVisibility() {
+          console.log("🔧 FIXING RIGHTMOST COLUMNS VISIBILITY...");
+
+          // Fix table wrapper
+          const tableWrapper = document.querySelector(".table-wrapper");
+          if (tableWrapper) {
+            tableWrapper.style.cssText = `
+              overflow-x: auto !important;
+              overflow-y: visible !important;
+              position: relative !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              display: block !important;
+              visibility: visible !important;
+            `;
+          }
+
+          // Fix table
+          const table = document.querySelector(".table-wrapper table");
+          if (table) {
+            table.style.cssText = `
+              width: 100% !important;
+              min-width: max-content !important;
+              table-layout: auto !important;
+              border-collapse: collapse !important;
+              display: table !important;
+              visibility: visible !important;
+            `;
+          }
+
+          // Fix rightmost cells specifically
+          const rightmostCells = document.querySelectorAll(
+            "td:last-child, td:nth-last-child(2)"
+          );
+          rightmostCells.forEach((cell) => {
+            cell.style.cssText += `
+              background-color: #fff8f0 !important;
+              border: 2px solid #ff6b35 !important;
+              min-width: 140px !important;
+              max-width: 140px !important;
+              width: 140px !important;
+              display: table-cell !important;
+              visibility: visible !important;
+              position: relative !important;
+              z-index: 100 !important;
+              overflow: visible !important;
+            `;
+          });
+
+          // Fix all input fields in rightmost columns
+          const rightmostInputs = document.querySelectorAll(
+            "td:last-child input, td:nth-last-child(2) input"
+          );
+          rightmostInputs.forEach((input) => {
+            input.style.cssText = `
+              width: 80px !important;
+              height: 35px !important;
+              padding: 8px !important;
+              border: 2px solid #ff6b35 !important;
+              border-radius: 4px !important;
+              background-color: white !important;
+              color: #333 !important;
+              font-size: 14px !important;
+              font-weight: bold !important;
+              text-align: center !important;
+              pointer-events: auto !important;
+              cursor: text !important;
+              user-select: auto !important;
+              opacity: 1 !important;
+              z-index: 500 !important;
+              position: relative !important;
+              display: inline-block !important;
+              visibility: visible !important;
+              outline: none !important;
+            `;
+
+            // Remove problematic attributes
+            input.removeAttribute("disabled");
+            input.removeAttribute("readonly");
+            input.disabled = false;
+            input.readOnly = false;
+
+            // Add event listeners for better interaction
+            input.addEventListener("click", function (e) {
+              e.stopPropagation();
+              this.focus();
+              this.select();
+            });
+
+            input.addEventListener("focus", function (e) {
+              this.style.backgroundColor = "#e3f2fd !important";
+              this.style.borderColor = "#2196f3 !important";
+              this.select();
+            });
+
+            input.addEventListener("blur", function (e) {
+              this.style.backgroundColor = "white !important";
+              this.style.borderColor = "#ff6b35 !important";
+            });
+          });
+
+          console.log("✅ RIGHTMOST COLUMNS VISIBILITY FIXED!");
+        }
+
+        // Apply fixes immediately and repeatedly
+        fixRightmostColumnsVisibility();
+        setTimeout(fixRightmostColumnsVisibility, 500);
+        setTimeout(fixRightmostColumnsVisibility, 1500);
+
+        // Add scroll to rightmost columns button functionality
+        function scrollToRightmostColumns() {
+          const tableWrapper = document.querySelector(".table-wrapper");
+          if (tableWrapper) {
+            tableWrapper.scrollLeft = tableWrapper.scrollWidth;
+            console.log("📜 Scrolled to rightmost columns");
+          }
+        }
+
+        // Add a button to scroll to rightmost columns
+        const actionButtons = document.querySelector(".action-buttons");
+        if (actionButtons) {
+          const scrollButton = document.createElement("button");
+          scrollButton.type = "button";
+          scrollButton.className = "back-btn";
+          scrollButton.style.marginRight = "10px";
+          scrollButton.innerHTML = "➡️ Show Rightmost Columns";
+          scrollButton.onclick = scrollToRightmostColumns;
+          actionButtons.insertBefore(scrollButton, actionButtons.firstChild);
+        }
       });
     </script>
   </body>

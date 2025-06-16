@@ -10,3 +10,4 @@ from .student_service import (
 )
 from .permission_service import PermissionService, check_class_access_permission
 from .role_based_data_service import RoleBasedDataService
+from .flexible_subject_service import FlexibleSubjectService

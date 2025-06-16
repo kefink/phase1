@@ -375,6 +375,10 @@ def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, cl
 
             processed_class_data.append(processed_student)
 
+        # Get school information for dynamic display
+        from ..services.school_config_service import SchoolConfigService
+        school_info = SchoolConfigService.get_school_info_dict()
+
         # Render the template with the data
         html_content = render_template_string(
             template_content,
@@ -390,6 +394,7 @@ def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, cl
             subject_averages=subject_averages,
             class_average=class_average,
             staff_info=staff_info,  # Include staff information
+            school_info=school_info,  # Include school information
             print_mode=True  # Flag to indicate PDF generation
         )
 
@@ -537,14 +542,17 @@ def generate_class_report_pdf(grade, stream, term, assessment_type, class_data, 
     except Exception as e:
         print(f"Error adding logo: {str(e)}")
 
-    # Add school header (matching the HTML preview)
-    school_name = Paragraph("KIRIMA PRIMARY SCHOOL", school_name_style)
+    # Add school header using dynamic school information
+    from ..services.school_config_service import SchoolConfigService
+    school_info = SchoolConfigService.get_school_info_dict()
+
+    school_name = Paragraph(school_info.get('school_name', 'KIRIMA PRIMARY SCHOOL'), school_name_style)
     content.append(school_name)
 
-    school_address = Paragraph("P.O. BOX 123, KIRIMA | TEL: +254 123 456789", subtitle_style)
+    school_address = Paragraph(f"{school_info.get('school_address', 'P.O. BOX 123, KIRIMA')} | TEL: {school_info.get('school_phone', '+254 123 456789')}", subtitle_style)
     content.append(school_address)
 
-    school_contact = Paragraph("Email: info@kirimaprimary.ac.ke | Website: www.kirimaprimary.ac.ke", subtitle_style)
+    school_contact = Paragraph(f"Email: {school_info.get('school_email', 'info@kirimaprimary.ac.ke')} | Website: {school_info.get('school_website', 'www.kirimaprimary.ac.ke')}", subtitle_style)
     content.append(school_contact)
 
     # Add report title
@@ -728,9 +736,12 @@ def generate_class_report_pdf(grade, stream, term, assessment_type, class_data, 
     ]))
     content.append(signature_table)
 
-    # Add footer
+    # Add footer with dynamic school information
     current_date = datetime.now().strftime("%Y-%m-%d")
-    footer_text = Paragraph(f"Generated on: {current_date}<br/>Kirima Primary School | Powered by CbcTeachkit", subtitle_style)
+    # Debug: Check what school_info contains
+    print(f"DEBUG FOOTER: school_info = {school_info}")
+    school_name = school_info.get('school_name', 'School Name Not Set')
+    footer_text = Paragraph(f"Generated on: {current_date}<br/>{school_name} | Powered by CbcTeachkit", subtitle_style)
     content.append(Spacer(1, 0.25*inch))
     content.append(footer_text)
 
@@ -829,6 +840,10 @@ def generate_individual_report_pdf_from_html(student, grade, stream, term, asses
         term_obj = Term.query.filter_by(name=term).first()
         academic_year = term_obj.academic_year if term_obj and hasattr(term_obj, 'academic_year') and term_obj.academic_year else "2023"
 
+        # Get school information for dynamic display
+        from ..services.school_config_service import SchoolConfigService
+        school_info = SchoolConfigService.get_school_info_dict()
+
         # Render the template with the data
         html_content = render_template_string(
             template_content,
@@ -848,7 +863,8 @@ def generate_individual_report_pdf_from_html(student, grade, stream, term, asses
             total_possible_marks=total_possible_marks,
             total_points=total_points,
             admission_no=admission_no,
-            academic_year=academic_year
+            academic_year=academic_year,
+            school_info=school_info  # Include school information
         )
 
         # Generate PDF from HTML

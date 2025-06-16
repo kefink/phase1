@@ -1136,6 +1136,55 @@ data-driven decision making for Hillview School{% endblock %} {% block extra_css
         </div>
       </div>
 
+      <!-- Enhanced Filter Controls for Top Subject Performers -->
+      <div class="enhanced-filter-controls">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label for="subject-filter">Subject:</label>
+            <select id="subject-filter" class="filter-select">
+              <option value="">All Subjects</option>
+              <!-- Will be populated dynamically -->
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="educational-level-filter">Educational Level:</label>
+            <select id="educational-level-filter" class="filter-select">
+              <option value="">All Levels</option>
+              <option value="Grade 1">Grade 1</option>
+              <option value="Grade 2">Grade 2</option>
+              <option value="Grade 3">Grade 3</option>
+              <option value="Grade 4">Grade 4</option>
+              <option value="Grade 5">Grade 5</option>
+              <option value="Grade 6">Grade 6</option>
+              <option value="Grade 7">Grade 7</option>
+              <option value="Grade 8">Grade 8</option>
+              <option value="Grade 9">Grade 9</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="exam-type-filter">Exam Type:</label>
+            <select id="exam-type-filter" class="filter-select">
+              <option value="">All Exam Types</option>
+              <!-- Will be populated dynamically -->
+            </select>
+          </div>
+          <div class="filter-group">
+            <button
+              class="modern-btn btn-sm btn-primary"
+              onclick="applySubjectPerformersFilters()"
+            >
+              <i class="fas fa-filter"></i> Apply Filters
+            </button>
+            <button
+              class="modern-btn btn-sm btn-outline"
+              onclick="clearSubjectPerformersFilters()"
+            >
+              <i class="fas fa-times"></i> Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="component-content">
         <div class="top-performers-filter-info">
           <div class="filter-status">
@@ -1703,6 +1752,9 @@ data-driven decision making for Hillview School{% endblock %} {% block extra_css
     // Load top subject performers
     loadTopSubjectPerformers();
 
+    // Load filter options for subject performers
+    loadSubjectPerformersFilterOptions();
+
     // Initialize filter status display
     updateFilterStatusDisplay();
   }
@@ -1731,6 +1783,20 @@ data-driven decision making for Hillview School{% endblock %} {% block extra_css
         params.append("grade_id", analyticsFilters.gradeId);
       if (analyticsFilters.streamId)
         params.append("stream_id", analyticsFilters.streamId);
+
+      // Add enhanced filters
+      const subjectFilter = document.getElementById("subject-filter");
+      const educationalLevelFilter = document.getElementById(
+        "educational-level-filter"
+      );
+      const examTypeFilter = document.getElementById("exam-type-filter");
+
+      if (subjectFilter && subjectFilter.value)
+        params.append("subject_id", subjectFilter.value);
+      if (educationalLevelFilter && educationalLevelFilter.value)
+        params.append("educational_level", educationalLevelFilter.value);
+      if (examTypeFilter && examTypeFilter.value)
+        params.append("exam_type", examTypeFilter.value);
 
       const response = await fetch(
         `/api/analytics/top_subject_performers?${params.toString()}`,
@@ -2091,6 +2157,72 @@ data-driven decision making for Hillview School{% endblock %} {% block extra_css
     const display = document.getElementById("current-filters-display");
     if (display) {
       display.textContent = `Showing: ${gradeText}, ${streamText}, ${termText}, ${assessmentText}`;
+    }
+  }
+
+  // Enhanced Filter Functions for Top Subject Performers
+  function applySubjectPerformersFilters() {
+    console.log("Applying subject performers filters...");
+    loadTopSubjectPerformers();
+  }
+
+  function clearSubjectPerformersFilters() {
+    console.log("Clearing subject performers filters...");
+
+    // Clear filter selections
+    const subjectFilter = document.getElementById("subject-filter");
+    const educationalLevelFilter = document.getElementById(
+      "educational-level-filter"
+    );
+    const examTypeFilter = document.getElementById("exam-type-filter");
+
+    if (subjectFilter) subjectFilter.value = "";
+    if (educationalLevelFilter) educationalLevelFilter.value = "";
+    if (examTypeFilter) examTypeFilter.value = "";
+
+    // Reload data
+    loadTopSubjectPerformers();
+  }
+
+  // Load filter options
+  async function loadSubjectPerformersFilterOptions() {
+    try {
+      // Load subjects and assessment types
+      const response = await fetch("/api/analytics/context_options", {
+        credentials: "same-origin",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Populate subject filter
+          const subjectFilter = document.getElementById("subject-filter");
+          if (subjectFilter && data.options.subjects) {
+            subjectFilter.innerHTML = '<option value="">All Subjects</option>';
+            data.options.subjects.forEach((subject) => {
+              const option = document.createElement("option");
+              option.value = subject.id;
+              option.textContent = subject.name;
+              subjectFilter.appendChild(option);
+            });
+          }
+
+          // Populate exam type filter
+          const examTypeFilter = document.getElementById("exam-type-filter");
+          if (examTypeFilter && data.options.assessment_types) {
+            examTypeFilter.innerHTML =
+              '<option value="">All Exam Types</option>';
+            data.options.assessment_types.forEach((assessmentType) => {
+              const option = document.createElement("option");
+              option.value = assessmentType.name;
+              option.textContent = assessmentType.name;
+              examTypeFilter.appendChild(option);
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error loading filter options:", error);
     }
   }
 
@@ -3183,6 +3315,58 @@ data-driven decision making for Hillview School{% endblock %} {% block extra_css
     display: flex;
     gap: var(--space-3);
     justify-content: flex-end;
+  }
+
+  /* Enhanced Filter Controls */
+  .enhanced-filter-controls {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .filter-row {
+    display: flex;
+    gap: var(--space-3);
+    align-items: end;
+    flex-wrap: wrap;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 150px;
+  }
+
+  .filter-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+    opacity: 0.9;
+  }
+
+  .filter-select {
+    padding: var(--space-2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  }
+
+  .filter-select option {
+    background: var(--card-bg);
+    color: var(--text-color);
   }
 
   /* Top Subject Performers Styles */

@@ -271,10 +271,15 @@
         <div class="logo-container">
           <img src="{{ logo_url }}" alt="School Logo" />
         </div>
-        <h1>KIRIMA PRIMARY SCHOOL</h1>
-        <p>P.O. BOX 123, KIRIMA | TEL: +254 123 456789</p>
+        <h1>{{ school_info.school_name|default('KIRIMA PRIMARY SCHOOL') }}</h1>
         <p>
-          Email: info@kirimaprimary.ac.ke | Website: www.kirimaprimary.ac.ke
+          {{ school_info.school_address|default('P.O. BOX 123, KIRIMA') }} |
+          TEL: {{ school_info.school_phone|default('+254 123 456789') }}
+        </p>
+        <p>
+          Email: {{ school_info.school_email|default('info@kirimaprimary.ac.ke')
+          }} | Website: {{
+          school_info.school_website|default('www.kirimaprimary.ac.ke') }}
         </p>
         <p>
           ACADEMIC REPORT TERM {{ term.replace('_', ' ').upper() }} {{

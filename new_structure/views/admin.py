@@ -126,9 +126,12 @@ def dashboard():
     for stream in Stream.query.all():
         stream_marks = Mark.query.join(Student, Mark.student_id == Student.id).filter(Student.stream_id == stream.id).all()
         if stream_marks:
-            stream_avg = round(sum(mark.mark for mark in stream_marks) / len(stream_marks), 2)
-            stream_name = f"{stream.grade.name} {stream.name}" if stream.grade else stream.name
-            stream_performances[stream_name] = stream_avg
+            # Filter out marks with zero or null values
+            valid_marks = [mark.mark for mark in stream_marks if mark.mark is not None and mark.mark > 0]
+            if valid_marks:  # Only calculate if there are valid marks
+                stream_avg = round(sum(valid_marks) / len(valid_marks), 2)
+                stream_name = f"{stream.grade.name} {stream.name}" if stream.grade else stream.name
+                stream_performances[stream_name] = stream_avg
     if stream_performances:
         top_class = max(stream_performances, key=stream_performances.get)
         top_class_score = stream_performances[top_class]
@@ -140,8 +143,11 @@ def dashboard():
     for grade in Grade.query.all():
         grade_marks = Mark.query.join(Student, Mark.student_id == Student.id).join(Stream, Student.stream_id == Stream.id).filter(Stream.grade_id == grade.id).all()
         if grade_marks:
-            grade_avg = round(sum(mark.mark for mark in grade_marks) / len(grade_marks), 2)
-            grade_performances[grade.name] = grade_avg
+            # Filter out marks with zero or null values
+            valid_marks = [mark.mark for mark in grade_marks if mark.mark is not None and mark.mark > 0]
+            if valid_marks:  # Only calculate if there are valid marks
+                grade_avg = round(sum(valid_marks) / len(valid_marks), 2)
+                grade_performances[grade.name] = grade_avg
     if grade_performances:
         least_performing_grade = min(grade_performances, key=grade_performances.get)
         least_grade_score = grade_performances[least_performing_grade]
@@ -192,12 +198,25 @@ def dashboard():
     for subject in Subject.query.all():
         subject_marks = Mark.query.filter_by(subject_id=subject.id).all()
         if subject_marks:
-            subject_avg = round(sum(mark.percentage for mark in subject_marks if mark.percentage) / len([m for m in subject_marks if m.percentage]), 2)
-            subject_performance[subject.name] = {
-                'average': subject_avg,
-                'total_assessments': len(subject_marks),
-                'education_level': subject.education_level
-            }
+            # Get marks with valid percentages
+            marks_with_percentage = [m for m in subject_marks if m.percentage is not None and m.percentage > 0]
+
+            if marks_with_percentage:  # Only calculate if there are valid marks
+                subject_avg = round(sum(mark.percentage for mark in marks_with_percentage) / len(marks_with_percentage), 2)
+                subject_performance[subject.name] = {
+                    'average': subject_avg,
+                    'total_assessments': len(subject_marks),
+                    'valid_assessments': len(marks_with_percentage),
+                    'education_level': subject.education_level
+                }
+            else:
+                # Handle case where no valid marks exist
+                subject_performance[subject.name] = {
+                    'average': 0,
+                    'total_assessments': len(subject_marks),
+                    'valid_assessments': 0,
+                    'education_level': subject.education_level
+                }
 
     # Generate performance assessment data
     performance_data = generate_performance_assessment_data()

@@ -2254,7 +2254,14 @@
             const totalMarksGroup = document.getElementById('total-marks-group');
             const totalMarksInput = document.getElementById('total_marks');
 
-            if (subject === 'ENGLISH') {
+            console.log(`🎯 showCompositeConfig called for subject: ${subject}`);
+
+            // Simple case-insensitive detection for English and Kiswahili
+            const subjectUpper = subject.toUpperCase();
+
+            if (subjectUpper.includes('ENGLISH')) {
+                console.log('🎯 Detected English subject - showing composite interface');
+
                 // Show composite config for English
                 compositeConfig.style.display = 'block';
                 englishConfig.style.display = 'block';
@@ -2278,7 +2285,10 @@
 
                 debugLog('📚 Showing English composite configuration');
                 debugLog('🔒 Hiding total marks field for composite subject');
-            } else if (subject === 'KISWAHILI') {
+
+            } else if (subjectUpper.includes('KISWAHILI')) {
+                console.log('🎯 Detected Kiswahili subject - showing composite interface');
+
                 // Show composite config for Kiswahili
                 compositeConfig.style.display = 'block';
                 englishConfig.style.display = 'none';
@@ -2289,8 +2299,8 @@
                 totalMarksInput.removeAttribute('required');
 
                 // Set default values from backend or use defaults
-                const currentLughaMax = '{{ lugha_max_marks }}' || '60';
-                const currentInshaMax = '{{ insha_max_marks }}' || '40';
+                const currentLughaMax = '{{ lugha_max_marks }}' || '50';
+                const currentInshaMax = '{{ insha_max_marks }}' || '50';
 
                 document.getElementById('lugha_max').value = currentLughaMax;
                 document.getElementById('insha_max').value = currentInshaMax;
@@ -2302,7 +2312,10 @@
 
                 debugLog('📚 Showing Kiswahili composite configuration');
                 debugLog('🔒 Hiding total marks field for composite subject');
+
             } else {
+                console.log('🎯 Non-composite subject detected');
+
                 // Hide composite config for regular subjects
                 compositeConfig.style.display = 'none';
                 englishConfig.style.display = 'none';
@@ -2323,8 +2336,9 @@
         // Function to update component max marks and total
         function updateComponentMaxMarks() {
             const subject = document.getElementById('subject').value;
+            const subjectUpper = subject.toUpperCase();
 
-            if (subject === 'ENGLISH') {
+            if (subjectUpper.includes('ENGLISH')) {
                 const grammarMax = parseInt(document.getElementById('grammar_max').value) || 0;
                 const compositionMax = parseInt(document.getElementById('composition_max').value) || 0;
                 const total = grammarMax + compositionMax;
@@ -2359,7 +2373,7 @@
                 });
 
                 debugLog(`📊 English totals: Grammar ${grammarMax} + Composition ${compositionMax} = ${total}`);
-            } else if (subject === 'KISWAHILI') {
+            } else if (subjectUpper.includes('KISWAHILI')) {
                 const lughaMax = parseInt(document.getElementById('lugha_max').value) || 0;
                 const inshaMax = parseInt(document.getElementById('insha_max').value) || 0;
                 const total = lughaMax + inshaMax;
@@ -2862,6 +2876,72 @@
                 debugLog('📋 Not in marks entry mode');
             }
         });
+
+        // Helper functions for flexible subject system
+        function handleCompositeSubject(subjectType, subjectConfig) {
+            const compositeConfig = document.getElementById('composite-config');
+            const englishConfig = document.getElementById('english-config');
+            const kiswahiliConfig = document.getElementById('kiswahili-config');
+            const totalMarksGroup = document.getElementById('total-marks-group');
+            const totalMarksInput = document.getElementById('total_marks');
+
+            // Show composite config
+            compositeConfig.style.display = 'block';
+            totalMarksGroup.style.display = 'none';
+            totalMarksInput.removeAttribute('required');
+
+            if (subjectType === 'english') {
+                englishConfig.style.display = 'block';
+                kiswahiliConfig.style.display = 'none';
+
+                // Set component values from configuration
+                const grammarWeight = subjectConfig.components.find(c => c.name === 'Grammar')?.weight || 60;
+                const compositionWeight = subjectConfig.components.find(c => c.name === 'Composition')?.weight || 40;
+
+                document.getElementById('grammar_max').value = grammarWeight;
+                document.getElementById('composition_max').value = compositionWeight;
+                document.getElementById('hidden_grammar_max').value = grammarWeight;
+                document.getElementById('hidden_composition_max').value = compositionWeight;
+
+                updateComponentMaxMarks();
+                debugLog('📚 Showing English composite configuration');
+            } else if (subjectType === 'kiswahili') {
+                englishConfig.style.display = 'none';
+                kiswahiliConfig.style.display = 'block';
+
+                // Set component values from configuration
+                const lughaWeight = subjectConfig.components.find(c => c.name === 'Lugha')?.weight || 50;
+                const inshaWeight = subjectConfig.components.find(c => c.name === 'Insha')?.weight || 50;
+
+                document.getElementById('lugha_max').value = lughaWeight;
+                document.getElementById('insha_max').value = inshaWeight;
+                document.getElementById('hidden_lugha_max').value = lughaWeight;
+                document.getElementById('hidden_insha_max').value = inshaWeight;
+
+                updateComponentMaxMarks();
+                debugLog('📚 Showing Kiswahili composite configuration');
+            }
+        }
+
+        function handleNonCompositeSubject() {
+            const compositeConfig = document.getElementById('composite-config');
+            const englishConfig = document.getElementById('english-config');
+            const kiswahiliConfig = document.getElementById('kiswahili-config');
+            const totalMarksGroup = document.getElementById('total-marks-group');
+            const totalMarksInput = document.getElementById('total_marks');
+
+            // Hide composite config
+            compositeConfig.style.display = 'none';
+            englishConfig.style.display = 'none';
+            kiswahiliConfig.style.display = 'none';
+
+            // Show total marks field
+            totalMarksGroup.style.display = 'block';
+            totalMarksInput.setAttribute('required', 'required');
+            totalMarksInput.value = '';
+
+            debugLog('📚 Showing non-composite subject configuration');
+        }
     </script>
 </body>
 </html>

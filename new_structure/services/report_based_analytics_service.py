@@ -142,20 +142,28 @@ class ReportBasedAnalyticsService:
                 filtered_reports.append(report)
             
             if not filtered_reports:
+                # Fall back to live analytics when no cached reports are available
+                print("No cached reports found, falling back to live analytics")
+                from .academic_analytics_service import AcademicAnalyticsService
+
+                # Get live analytics data
+                live_analytics = AcademicAnalyticsService.get_comprehensive_analytics()
+
                 return {
                     'summary': {
                         'reports_analyzed': 0,
                         'classes_covered': 0,
-                        'students_analyzed': 0,
-                        'subjects_analyzed': 0,
+                        'students_analyzed': live_analytics.get('total_students_analyzed', 0),
+                        'subjects_analyzed': live_analytics.get('total_subjects_analyzed', 0),
                         'average_performance': 0
                     },
                     'class_performance': [],
-                    'subject_performance': [],
-                    'top_performers': [],
+                    'subject_performance': live_analytics.get('subject_analytics', []),
+                    'top_performers': live_analytics.get('top_performers', []),
                     'recent_activity': [],
-                    'has_data': False,
-                    'data_source': 'generated_reports'
+                    'has_data': live_analytics.get('total_students_analyzed', 0) > 0,
+                    'data_source': 'live_data_fallback',
+                    'message': 'No cached reports found. Showing live analytics data. Generate reports through Class Teacher interface to see report-based analytics.'
                 }
             
             # Process the filtered reports

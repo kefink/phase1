@@ -153,6 +153,203 @@
 
         /* Enhanced Dashboard Specific Styling */
 
+        /* ENHANCED TABLE WRAPPER FOR HORIZONTAL SCROLLING */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: visible;
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+            /* Ensure rightmost columns are fully visible */
+            padding-right: 20px;
+            margin-right: -20px;
+            /* Smooth scrolling */
+            scroll-behavior: smooth;
+            /* Ensure content is not clipped */
+            contain: none;
+        }
+
+        /* Add padding to ensure rightmost content is visible */
+        .table-wrapper::after {
+            content: "";
+            display: block;
+            width: 50px;
+            height: 1px;
+            float: right;
+            clear: both;
+        }
+
+        /* Enhanced table styling for better visibility */
+        .table-wrapper table {
+            width: 100%;
+            min-width: max-content;
+            table-layout: auto;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .table-wrapper th,
+        .table-wrapper td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+            min-width: 120px;
+            position: relative;
+        }
+
+        .table-wrapper th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Special styling for rightmost columns */
+        .table-wrapper td:last-child,
+        .table-wrapper td:nth-last-child(2),
+        .table-wrapper td:nth-last-child(3) {
+            background-color: #f8f9fa !important;
+            border: 1px solid #dee2e6 !important;
+            min-width: 120px !important;
+            max-width: 150px !important;
+            width: 120px !important;
+            position: relative !important;
+            z-index: 999 !important;
+            padding: 4px !important;
+            text-align: center !important;
+        }
+
+        /* Ensure rightmost column inputs are fully accessible */
+        .table-wrapper td:last-child input,
+        .table-wrapper td:nth-last-child(2) input,
+        .table-wrapper td:nth-last-child(3) input {
+            width: 100% !important;
+            min-width: 80px !important;
+            max-width: 120px !important;
+            height: 35px !important;
+            background-color: #ffffff !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 4px !important;
+            padding: 6px !important;
+            margin: 0 !important;
+            font-size: 14px !important;
+            font-weight: normal !important;
+            text-align: center !important;
+            z-index: 1000 !important;
+            position: relative !important;
+            display: block !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            cursor: text !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Force visibility for Creative Arts column specifically */
+        .table-wrapper th:last-child,
+        .table-wrapper td:last-child {
+            background-color: #f8f9fa !important;
+            border: 1px solid #dee2e6 !important;
+        }
+
+        /* COMPREHENSIVE INPUT FIELD FIXES */
+        .table-wrapper input[type="number"],
+        .student-mark,
+        .component-mark {
+            width: 100% !important;
+            min-width: 80px !important;
+            max-width: 120px !important;
+            height: 35px !important;
+            padding: 4px !important;
+            margin: 0 !important;
+            border: 2px solid #007bff !important;
+            border-radius: 4px !important;
+            text-align: center !important;
+            background-color: white !important;
+            color: #333 !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            pointer-events: auto !important;
+            cursor: text !important;
+            user-select: auto !important;
+            opacity: 1 !important;
+            z-index: 1000 !important;
+            position: relative !important;
+            display: block !important;
+            visibility: visible !important;
+            outline: none !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Input focus states */
+        .table-wrapper input[type="number"]:focus,
+        .student-mark:focus,
+        .component-mark:focus {
+            border-color: #28a745 !important;
+            background-color: #f8fff8 !important;
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5) !important;
+            transform: scale(1.02) !important;
+        }
+
+        /* Input hover states */
+        .table-wrapper input[type="number"]:hover,
+        .student-mark:hover,
+        .component-mark:hover {
+            border-color: #17a2b8 !important;
+            background-color: #f0f8ff !important;
+        }
+
+        /* Override any disabled/readonly states */
+        .table-wrapper input[disabled],
+        .table-wrapper input[readonly],
+        .student-mark[disabled],
+        .student-mark[readonly],
+        .component-mark[disabled],
+        .component-mark[readonly] {
+            pointer-events: auto !important;
+            cursor: text !important;
+            opacity: 1 !important;
+            background-color: white !important;
+            color: #333 !important;
+            border: 2px solid #007bff !important;
+        }
+
+        /* Animation for highlighting Creative Arts inputs */
+        @keyframes pulse {
+            0% {
+                background-color: #ffff00 !important;
+                transform: scale(1);
+            }
+            50% {
+                background-color: #ff6b35 !important;
+                transform: scale(1.05);
+            }
+            100% {
+                background-color: #ffff00 !important;
+                transform: scale(1);
+            }
+        }
+
+        /* Ensure Creative Arts inputs are always visible */
+        .creative-arts-input {
+            background-color: #ffffff !important;
+            border: 3px solid #ff0000 !important;
+            min-width: 130px !important;
+            width: 130px !important;
+            height: 40px !important;
+            font-size: 16px !important;
+            font-weight: bold !important;
+            z-index: 1001 !important;
+            position: relative !important;
+            display: block !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+        }
+
         /* Enhanced Sticky Navigation System */
         .enhanced-nav-system {
             position: sticky;
@@ -2109,7 +2306,7 @@
                         </table>
                     </div>
                     <div class="text-center mt-3">
-                        <button type="button" name="submit_marks" value="1" class="btn" id="submit-marks-btn">
+                        <button type="submit" name="submit_marks" value="1" class="btn" id="submit-marks-btn">
                             Submit All Marks
                         </button>
                     </div>
@@ -3946,29 +4143,7 @@
             });
         }
 
-        // Function to toggle subject visibility in the table
-        function toggleSubjectVisibility(checkbox, subjectId) {
-            const isChecked = checkbox.checked;
-            const subjectCells = document.querySelectorAll(`th[data-subject-id="${subjectId}"], td[data-subject-id="${subjectId}"]`);
-
-            subjectCells.forEach(cell => {
-                if (isChecked) {
-                    cell.style.display = '';
-                } else {
-                    cell.style.display = 'none';
-                }
-            });
-
-            // Also update the subject item styling
-            const subjectItem = checkbox.closest('.subject-mark-item');
-            if (subjectItem) {
-                if (isChecked) {
-                    subjectItem.classList.remove('disabled');
-                } else {
-                    subjectItem.classList.add('disabled');
-                }
-            }
-        }
+        // REMOVED DUPLICATE FUNCTION - Using the corrected version below
 
         // Function to update all marks for a subject when the total marks change
         function updateAllMarksForSubject(subject, subjectIndex) {
@@ -4982,14 +5157,19 @@
             // Add event listener for submit marks button
             if (submitMarksBtn) {
                 submitMarksBtn.addEventListener('click', function(e) {
-                    e.preventDefault(); // Prevent default form submission
                     console.log('Submit marks button clicked - validating form...');
 
-                    // Run validation
-                    if (validateAndSubmitForm()) {
-                        // If validation passes, submit the form
-                        submitMarksForm();
+                    // Run validation but don't prevent default submission
+                    const hasSelectedSubjects = addSelectedSubjectsToForm();
+
+                    if (!hasSelectedSubjects) {
+                        e.preventDefault(); // Only prevent if validation fails
+                        showValidationError('Please select at least one subject before submitting marks.');
+                        return false;
                     }
+
+                    // Allow normal form submission to proceed
+                    console.log('Form validation passed, allowing normal submission...');
                 });
             }
 
@@ -5032,29 +5212,49 @@
             });
         });
 
-        // Function to toggle subject visibility in the table
+        // Function to toggle subject visibility in the table (CORRECTED VERSION)
         function toggleSubjectVisibility(checkbox, subjectId) {
-            // Get all table cells for this subject
-            const subjectCells = document.querySelectorAll(`td [data-subject="${subjectId}"]`);
-            const subjectHeader = document.querySelector(`th[data-subject-id="${subjectId}"]`);
+            console.log(`🔧 Toggling subject visibility for ID: ${subjectId}, checked: ${checkbox.checked}`);
+
+            // Get the correct table cells and headers for this subject
+            const subjectHeaders = document.querySelectorAll(`th[data-subject-id="${subjectId}"]`);
+            const subjectCells = document.querySelectorAll(`td[data-subject-id="${subjectId}"]`);
             const subjectItem = checkbox.closest('.subject-mark-item');
+
+            console.log(`Found ${subjectHeaders.length} headers and ${subjectCells.length} cells for subject ${subjectId}`);
 
             if (checkbox.checked) {
                 // Show the subject
-                if (subjectHeader) subjectHeader.style.display = '';
-                subjectCells.forEach(cell => {
-                    const cellContainer = cell.closest('td');
-                    if (cellContainer) cellContainer.style.display = '';
+                subjectHeaders.forEach(header => {
+                    header.style.display = '';
+                    console.log(`✅ Showed header for subject ${subjectId}`);
                 });
-                if (subjectItem) subjectItem.classList.remove('disabled');
+
+                subjectCells.forEach(cell => {
+                    cell.style.display = '';
+                    console.log(`✅ Showed cell for subject ${subjectId}`);
+                });
+
+                if (subjectItem) {
+                    subjectItem.classList.remove('disabled');
+                    console.log(`✅ Enabled subject item for ${subjectId}`);
+                }
             } else {
                 // Hide the subject
-                if (subjectHeader) subjectHeader.style.display = 'none';
-                subjectCells.forEach(cell => {
-                    const cellContainer = cell.closest('td');
-                    if (cellContainer) cellContainer.style.display = 'none';
+                subjectHeaders.forEach(header => {
+                    header.style.display = 'none';
+                    console.log(`❌ Hidden header for subject ${subjectId}`);
                 });
-                if (subjectItem) subjectItem.classList.add('disabled');
+
+                subjectCells.forEach(cell => {
+                    cell.style.display = 'none';
+                    console.log(`❌ Hidden cell for subject ${subjectId}`);
+                });
+
+                if (subjectItem) {
+                    subjectItem.classList.add('disabled');
+                    console.log(`❌ Disabled subject item for ${subjectId}`);
+                }
             }
         }
 
@@ -5743,6 +5943,844 @@
     </script>
 
     <!-- Note: Analytics Dashboard JavaScript is loaded only on the dedicated analytics page -->
+
+    <!-- COMPREHENSIVE RIGHTMOST COLUMN VISIBILITY FIXES -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 APPLYING COMPREHENSIVE RIGHTMOST COLUMN FIXES...');
+
+            // COMPREHENSIVE INPUT FIELD ACCESSIBILITY FIX
+            function ensureAllInputsAreAccessible() {
+                console.log('🔧 ENSURING ALL INPUTS ARE ACCESSIBLE...');
+
+                // Get all input fields in the marks table
+                const allInputs = document.querySelectorAll('.table-wrapper input[type="number"], .student-mark, .component-mark');
+                console.log(`Found ${allInputs.length} input fields to fix`);
+
+                allInputs.forEach((input, index) => {
+                    // Remove any attributes that might disable the input
+                    input.removeAttribute('disabled');
+                    input.removeAttribute('readonly');
+                    input.disabled = false;
+                    input.readOnly = false;
+
+                    // Ensure proper styling and accessibility
+                    input.style.cssText += `
+                        pointer-events: auto !important;
+                        cursor: text !important;
+                        opacity: 1 !important;
+                        visibility: visible !important;
+                        display: inline-block !important;
+                        position: relative !important;
+                        z-index: 1000 !important;
+                        background-color: white !important;
+                        border: 2px solid #007bff !important;
+                        color: #333 !important;
+                        font-weight: bold !important;
+                    `;
+
+                    // Add event listeners for better interaction
+                    input.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        this.focus();
+                        this.select();
+                        console.log(`Input clicked: ${this.name || this.className}`);
+                    });
+
+                    input.addEventListener('focus', function() {
+                        this.style.borderColor = '#28a745';
+                        this.style.backgroundColor = '#f8fff8';
+                        this.style.boxShadow = '0 0 5px rgba(40, 167, 69, 0.5)';
+                        console.log(`Input focused: ${this.name || this.className}`);
+                    });
+
+                    input.addEventListener('blur', function() {
+                        this.style.borderColor = '#007bff';
+                        this.style.backgroundColor = 'white';
+                        this.style.boxShadow = 'none';
+                    });
+
+                    input.addEventListener('input', function() {
+                        console.log(`Input changed: ${this.name} = ${this.value}`);
+                        // Trigger the existing percentage update function if it exists
+                        if (typeof updatePercentage === 'function') {
+                            updatePercentage(this);
+                        }
+                    });
+                });
+
+                // SPECIAL FIX FOR RIGHTMOST COLUMN (Creative Arts & Sports)
+                const rightmostInputs = document.querySelectorAll('td:last-child input[type="number"]');
+                console.log(`🎨 Found ${rightmostInputs.length} rightmost column inputs to fix`);
+
+                rightmostInputs.forEach((input, index) => {
+                    console.log(`🎨 Fixing rightmost input ${index + 1}: ${input.name}`);
+
+                    // Force remove all restrictions
+                    input.removeAttribute('disabled');
+                    input.removeAttribute('readonly');
+                    input.disabled = false;
+                    input.readOnly = false;
+
+                    // Clear any hardcoded values and reset to 0
+                    if (input.value === '50') {
+                        input.value = '0';
+                        console.log(`🎨 Reset hardcoded value from 50 to 0 for input: ${input.name}`);
+                    }
+
+                    // Apply clean styling to ensure visibility and functionality
+                    input.style.cssText = `
+                        width: 100% !important;
+                        min-width: 80px !important;
+                        max-width: 120px !important;
+                        height: 35px !important;
+                        padding: 6px !important;
+                        margin: 0 !important;
+                        border: 1px solid #ced4da !important;
+                        border-radius: 4px !important;
+                        text-align: center !important;
+                        background-color: white !important;
+                        color: #333 !important;
+                        font-size: 14px !important;
+                        font-weight: normal !important;
+                        pointer-events: auto !important;
+                        cursor: text !important;
+                        user-select: auto !important;
+                        opacity: 1 !important;
+                        z-index: 1000 !important;
+                        position: relative !important;
+                        display: block !important;
+                        visibility: visible !important;
+                        outline: none !important;
+                        box-sizing: border-box !important;
+                    `;
+
+                    // Add specific event listeners for rightmost inputs
+                    input.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        console.log(`🎨 Rightmost input clicked: ${this.name}`);
+                        this.focus();
+                        this.select();
+                    });
+
+                    input.addEventListener('focus', function() {
+                        console.log(`🎨 Rightmost input focused: ${this.name}`);
+                        this.style.borderColor = '#007bff';
+                        this.style.backgroundColor = '#e3f2fd';
+                        this.style.boxShadow = '0 0 5px rgba(0, 123, 255, 0.5)';
+                    });
+
+                    input.addEventListener('input', function() {
+                        console.log(`🎨 Rightmost input changed: ${this.name} = ${this.value}`);
+                        // Mark as user-modified so we don't reset it
+                        this.setAttribute('data-user-modified', 'true');
+                        // Trigger percentage update
+                        if (typeof updatePercentage === 'function') {
+                            updatePercentage(this);
+                        }
+                    });
+
+                    input.addEventListener('keydown', function(e) {
+                        console.log(`🎨 Key pressed in rightmost input: ${e.key}`);
+                        // Allow all input
+                        return true;
+                    });
+
+                    // Add click handler to the parent cell to redirect clicks to the input
+                    const parentCell = input.closest('td');
+                    if (parentCell) {
+                        parentCell.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log(`🎨 Cell clicked, focusing input: ${input.name}`);
+                            input.focus();
+                            input.select();
+                        });
+
+                        // Ensure the cell has proper styling
+                        parentCell.style.cssText += `
+                            cursor: text !important;
+                            padding: 2px !important;
+                        `;
+                    }
+                });
+
+                console.log(`✅ Fixed ${allInputs.length} input fields for accessibility`);
+            }
+
+            // Debug function to analyze table structure
+            function debugTableStructure() {
+                console.log('🔍 DEBUGGING TABLE STRUCTURE...');
+
+                const table = document.querySelector('.table-wrapper table');
+                if (table) {
+                    const headers = table.querySelectorAll('th');
+                    const rows = table.querySelectorAll('tbody tr');
+
+                    console.log(`📊 Table has ${headers.length} headers and ${rows.length} rows`);
+
+                    headers.forEach((header, index) => {
+                        const subjectId = header.getAttribute('data-subject-id');
+                        console.log(`Header ${index + 1}: "${header.textContent.trim()}" (ID: ${subjectId})`);
+                        if (index === headers.length - 1) {
+                            console.log(`🎨 LAST HEADER: "${header.textContent.trim()}" (ID: ${subjectId})`);
+                        }
+                    });
+
+                    if (rows.length > 0) {
+                        const firstRow = rows[0];
+                        const cells = firstRow.querySelectorAll('td');
+                        console.log(`📊 First row has ${cells.length} cells`);
+
+                        cells.forEach((cell, index) => {
+                            const subjectId = cell.getAttribute('data-subject-id');
+                            const input = cell.querySelector('input');
+                            if (input) {
+                                console.log(`Cell ${index + 1}: Subject ID="${subjectId}", Input name="${input.name}"`);
+                                if (index === cells.length - 1) {
+                                    console.log(`🎨 LAST CELL: Subject ID="${subjectId}", Input name="${input.name}"`);
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    console.log('❌ No table found');
+                }
+            }
+
+            // Test function to verify column mapping
+            function testColumnMapping() {
+                console.log('🧪 TESTING COLUMN MAPPING...');
+
+                const checkboxes = document.querySelectorAll('.subject-checkbox');
+                console.log(`Found ${checkboxes.length} subject checkboxes`);
+
+                checkboxes.forEach((checkbox, index) => {
+                    const subjectId = checkbox.getAttribute('data-subject-id');
+                    const subjectName = checkbox.nextElementSibling?.textContent || 'Unknown';
+
+                    // Find corresponding table elements
+                    const headers = document.querySelectorAll(`th[data-subject-id="${subjectId}"]`);
+                    const cells = document.querySelectorAll(`td[data-subject-id="${subjectId}"]`);
+
+                    console.log(`Checkbox ${index + 1}: "${subjectName}" (ID: ${subjectId})`);
+                    console.log(`  - Found ${headers.length} headers and ${cells.length} cells`);
+
+                    if (headers.length === 0 || cells.length === 0) {
+                        console.error(`❌ MAPPING ERROR: No table elements found for subject "${subjectName}" (ID: ${subjectId})`);
+                    } else {
+                        console.log(`✅ Mapping OK for "${subjectName}"`);
+                    }
+                });
+            }
+
+            // Function to populate all input fields with sample data
+            function populateSampleData() {
+                console.log('📝 POPULATING SAMPLE DATA...');
+
+                const allInputs = document.querySelectorAll('.table-wrapper input[type="number"]');
+                console.log(`Found ${allInputs.length} input fields to populate`);
+
+                allInputs.forEach((input, index) => {
+                    const subjectId = input.getAttribute('data-subject') || 'unknown';
+                    const studentName = input.getAttribute('data-student') || 'unknown';
+                    const maxMark = parseInt(input.getAttribute('max')) || 100;
+
+                    // Generate sample mark (70-95% of max mark)
+                    const sampleMark = Math.floor(maxMark * (0.7 + Math.random() * 0.25));
+
+                    // Force set the value
+                    input.value = sampleMark;
+                    input.setAttribute('value', sampleMark);
+
+                    // Trigger events to update percentages
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+
+                    console.log(`📝 Set ${studentName} - Subject ${subjectId}: ${sampleMark}/${maxMark}`);
+
+                    // Special handling for Creative Arts (subject ID 19)
+                    if (subjectId === '19') {
+                        console.log(`🎨 CREATIVE ARTS INPUT: Set value ${sampleMark} for ${studentName}`);
+
+                        // Extra aggressive setting for Creative Arts
+                        setTimeout(() => {
+                            input.value = sampleMark;
+                            input.style.backgroundColor = '#90EE90'; // Light green to show it's populated
+                        }, 100);
+                    }
+                });
+
+                console.log(`✅ Populated ${allInputs.length} input fields with sample data`);
+            }
+
+            // COMPREHENSIVE RIGHTMOST COLUMN FIX
+            function fixRightmostColumnsVisibility() {
+                console.log('🔧 FIXING RIGHTMOST COLUMNS VISIBILITY...');
+
+                // Fix table wrapper
+                const tableWrapper = document.querySelector('.table-wrapper');
+                if (tableWrapper) {
+                    tableWrapper.style.cssText = `
+                        overflow-x: auto !important;
+                        overflow-y: visible !important;
+                        position: relative !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        display: block !important;
+                        visibility: visible !important;
+                        padding-right: 50px !important;
+                    `;
+                    console.log('✅ Table wrapper fixed');
+                }
+
+                // Fix table
+                const table = document.querySelector('.table-wrapper table');
+                if (table) {
+                    table.style.cssText = `
+                        width: 100% !important;
+                        min-width: max-content !important;
+                        table-layout: auto !important;
+                        border-collapse: collapse !important;
+                        display: table !important;
+                        visibility: visible !important;
+                    `;
+                    console.log('✅ Table fixed');
+                }
+
+                // AGGRESSIVE FIX FOR CREATIVE ARTS COLUMN
+                const allCells = document.querySelectorAll('.table-wrapper td, .table-wrapper th');
+                console.log(`Found ${allCells.length} total cells`);
+
+                // Find and fix the last column (Creative Arts)
+                const lastColumnCells = document.querySelectorAll('.table-wrapper td:last-child, .table-wrapper th:last-child');
+                console.log(`Found ${lastColumnCells.length} last column cells`);
+
+                lastColumnCells.forEach((cell, index) => {
+                    cell.style.cssText += `
+                        background-color: #ffebcd !important;
+                        border: 4px solid #ff0000 !important;
+                        min-width: 150px !important;
+                        width: 150px !important;
+                        display: table-cell !important;
+                        visibility: visible !important;
+                        position: relative !important;
+                        z-index: 1000 !important;
+                        box-shadow: 0 0 15px rgba(255, 0, 0, 0.7) !important;
+                    `;
+                    console.log(`✅ Fixed last column cell ${index + 1}`);
+                });
+
+                // Fix rightmost cells specifically
+                const rightmostCells = document.querySelectorAll(
+                    'td:last-child, td:nth-last-child(2)'
+                );
+                rightmostCells.forEach((cell) => {
+                    cell.style.cssText += `
+                        background-color: #fff8f0 !important;
+                        border: 2px solid #ff6b35 !important;
+                        min-width: 140px !important;
+                        max-width: 140px !important;
+                        width: 140px !important;
+                        display: table-cell !important;
+                        visibility: visible !important;
+                        position: relative !important;
+                        z-index: 100 !important;
+                        overflow: visible !important;
+                    `;
+                });
+
+                // AGGRESSIVE FIX FOR CREATIVE ARTS INPUT FIELDS (Subject ID: 19)
+                const creativeArtsInputs = document.querySelectorAll('td[data-subject-id="19"] input, td:last-child input');
+                console.log(`Found ${creativeArtsInputs.length} Creative Arts input fields`);
+
+                creativeArtsInputs.forEach((input, index) => {
+                    // Force remove any restrictions
+                    input.removeAttribute('disabled');
+                    input.removeAttribute('readonly');
+                    input.removeAttribute('tabindex');
+                    input.style.pointerEvents = 'auto';
+                    input.style.userSelect = 'auto';
+
+                    // Apply aggressive styling
+                    input.style.cssText = `
+                        width: 130px !important;
+                        height: 40px !important;
+                        display: block !important;
+                        visibility: visible !important;
+                        background-color: #ffffff !important;
+                        border: 3px solid #ff0000 !important;
+                        border-radius: 6px !important;
+                        padding: 10px !important;
+                        font-size: 16px !important;
+                        font-weight: bold !important;
+                        z-index: 1001 !important;
+                        position: relative !important;
+                        pointer-events: auto !important;
+                        opacity: 1 !important;
+                        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5) !important;
+                        margin: 2px !important;
+                        user-select: auto !important;
+                        -webkit-user-select: auto !important;
+                        -moz-user-select: auto !important;
+                        -ms-user-select: auto !important;
+                    `;
+
+                    // Force enable the input
+                    input.disabled = false;
+                    input.readOnly = false;
+
+                    // Add comprehensive event listeners
+                    input.addEventListener('focus', function() {
+                        console.log(`🎯 Creative Arts input ${index + 1} focused:`, this.name);
+                        this.style.backgroundColor = '#e3f2fd';
+                        this.style.border = '4px solid #2196f3';
+                        this.disabled = false;
+                        this.readOnly = false;
+                    });
+
+                    input.addEventListener('blur', function() {
+                        console.log(`🎯 Creative Arts input ${index + 1} blurred:`, this.name, 'Value:', this.value);
+                        this.style.backgroundColor = '#ffffff';
+                        this.style.border = '3px solid #ff0000';
+                    });
+
+                    input.addEventListener('input', function() {
+                        console.log(`🎯 Creative Arts input ${index + 1} changed:`, this.value);
+                    });
+
+                    input.addEventListener('keydown', function(e) {
+                        console.log(`🎯 Creative Arts input ${index + 1} keydown:`, e.key);
+                        // Allow all number keys, backspace, delete, tab, enter, arrows
+                        if (e.key === 'Tab' || e.key === 'Enter' || e.key === 'Backspace' || e.key === 'Delete' ||
+                            e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
+                            (e.key >= '0' && e.key <= '9')) {
+                            return true;
+                        }
+                        return true; // Allow all keys for testing
+                    });
+
+                    input.addEventListener('click', function() {
+                        console.log(`🎯 Creative Arts input ${index + 1} clicked`);
+                        this.focus();
+                        this.select(); // Select all text for easy editing
+                    });
+
+                    // Test if we can set a value programmatically
+                    const testValue = '50';
+                    input.value = testValue;
+                    console.log(`✅ Fixed Creative Arts input ${index + 1}: ${input.name}, Test value set: ${input.value}`);
+                });
+
+                // Fix all other rightmost inputs
+                const otherRightmostInputs = document.querySelectorAll(
+                    'td:nth-last-child(2) input, td:nth-last-child(3) input'
+                );
+                otherRightmostInputs.forEach((input) => {
+                    input.style.cssText += `
+                        width: 100% !important;
+                        max-width: 120px !important;
+                        min-width: 80px !important;
+                        display: block !important;
+                        visibility: visible !important;
+                        background-color: #fff !important;
+                        border: 2px solid #007bff !important;
+                        border-radius: 4px !important;
+                        padding: 8px !important;
+                        font-size: 14px !important;
+                        z-index: 101 !important;
+                        position: relative !important;
+                        pointer-events: auto !important;
+                    `;
+                });
+
+                console.log(`✅ Fixed ${rightmostCells.length} rightmost cells and ${rightmostInputs.length} inputs`);
+            }
+
+            // Function to scroll to rightmost columns
+            function scrollToRightmostColumns() {
+                const tableWrapper = document.querySelector('.table-wrapper');
+                if (tableWrapper) {
+                    // Force scroll to the absolute right
+                    tableWrapper.scrollLeft = tableWrapper.scrollWidth - tableWrapper.clientWidth;
+                    console.log('📜 Scrolled to rightmost columns');
+
+                    // Also try to focus on the first Creative Arts input
+                    setTimeout(() => {
+                        const creativeArtsInput = document.querySelector('td:last-child input');
+                        if (creativeArtsInput) {
+                            creativeArtsInput.focus();
+                            creativeArtsInput.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'end' });
+                            console.log('🎯 Focused on Creative Arts input');
+                        }
+                    }, 500);
+                }
+            }
+
+            // Function specifically for Creative Arts column
+            function focusCreativeArtsColumn() {
+                console.log('🎨 FOCUSING ON CREATIVE ARTS COLUMN...');
+
+                const tableWrapper = document.querySelector('.table-wrapper');
+                if (tableWrapper) {
+                    // Scroll to the rightmost position
+                    tableWrapper.scrollLeft = tableWrapper.scrollWidth;
+                }
+
+                // Find and highlight all Creative Arts inputs
+                const creativeArtsInputs = document.querySelectorAll('td[data-subject-id="19"] input, td:last-child input');
+                creativeArtsInputs.forEach((input, index) => {
+                    // Force enable the input
+                    input.disabled = false;
+                    input.readOnly = false;
+                    input.removeAttribute('disabled');
+                    input.removeAttribute('readonly');
+
+                    input.style.cssText += `
+                        animation: pulse 2s infinite !important;
+                        background-color: #ffff00 !important;
+                        border: 5px solid #ff0000 !important;
+                        pointer-events: auto !important;
+                    `;
+
+                    if (index === 0) {
+                        input.focus();
+                        input.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'end' });
+
+                        // Try to set a test value
+                        setTimeout(() => {
+                            input.value = '75';
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                            console.log(`🎨 Set test value 75 in first Creative Arts input: ${input.value}`);
+                        }, 500);
+                    }
+                });
+
+                console.log(`🎨 Highlighted ${creativeArtsInputs.length} Creative Arts inputs`);
+            }
+
+            // Function to force test Creative Arts input
+            function forceTestCreativeArts() {
+                console.log('🔧 FORCE TESTING CREATIVE ARTS INPUTS...');
+
+                const creativeArtsInputs = document.querySelectorAll('td[data-subject-id="19"] input, td:last-child input');
+                console.log(`Found ${creativeArtsInputs.length} Creative Arts inputs to test`);
+
+                creativeArtsInputs.forEach((input, index) => {
+                    console.log(`Testing input ${index + 1}:`);
+                    console.log(`  - Name: ${input.name}`);
+                    console.log(`  - Disabled: ${input.disabled}`);
+                    console.log(`  - ReadOnly: ${input.readOnly}`);
+                    console.log(`  - Current value: ${input.value}`);
+                    console.log(`  - Max: ${input.max}`);
+
+                    // Force enable
+                    input.disabled = false;
+                    input.readOnly = false;
+
+                    // Try to set value
+                    const testValue = 80 + index;
+                    input.value = testValue;
+
+                    console.log(`  - After setting ${testValue}: ${input.value}`);
+
+                    // Test if we can type
+                    input.focus();
+                    input.select();
+
+                    // Simulate typing
+                    const event = new KeyboardEvent('keydown', { key: '9' });
+                    input.dispatchEvent(event);
+
+                    console.log(`  - After simulated typing: ${input.value}`);
+                });
+            }
+
+            // SIMPLE RIGHTMOST COLUMN FIX FUNCTION
+            function fixRightmostColumnInputs() {
+                console.log('🎨 SIMPLE FIX FOR RIGHTMOST COLUMN INPUTS...');
+
+                // Target the rightmost column inputs specifically
+                const rightmostInputs = document.querySelectorAll('td:last-child input[type="number"]');
+                console.log(`Found ${rightmostInputs.length} rightmost inputs`);
+
+                rightmostInputs.forEach((input, index) => {
+                    // Reset hardcoded values
+                    if (input.value === '50') {
+                        input.value = '0';
+                    }
+
+                    // Ensure the input is fully functional
+                    input.disabled = false;
+                    input.readOnly = false;
+                    input.removeAttribute('disabled');
+                    input.removeAttribute('readonly');
+
+                    // Get the parent cell
+                    const parentCell = input.closest('td');
+
+                    // Simple clean styling with proper clickable area
+                    input.style.cssText = `
+                        width: 100% !important;
+                        min-width: 80px !important;
+                        height: 35px !important;
+                        border: 1px solid #ced4da !important;
+                        background-color: white !important;
+                        pointer-events: auto !important;
+                        cursor: text !important;
+                        display: block !important;
+                        padding: 6px !important;
+                        margin: 0 !important;
+                        text-align: center !important;
+                        border-radius: 4px !important;
+                        box-sizing: border-box !important;
+                        position: relative !important;
+                        z-index: 1000 !important;
+                        font-size: 14px !important;
+                        font-weight: normal !important;
+                    `;
+
+                    // Make the entire cell clickable
+                    if (parentCell) {
+                        parentCell.style.cssText += `
+                            cursor: text !important;
+                            padding: 6px !important;
+                            text-align: center !important;
+                            background-color: #f8f9fa !important;
+                        `;
+
+                        // Remove existing click handlers and add new one
+                        parentCell.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            input.focus();
+                            input.select();
+                        };
+                    }
+
+                    console.log(`Fixed rightmost input ${index + 1}: ${input.name}`);
+                });
+            }
+
+            // Apply fixes immediately and repeatedly
+            ensureAllInputsAreAccessible();
+            fixRightmostColumnInputs();
+            fixRightmostColumnsVisibility();
+            setTimeout(() => {
+                ensureAllInputsAreAccessible();
+                fixRightmostColumnInputs();
+                fixRightmostColumnsVisibility();
+                debugTableStructure();
+                testColumnMapping();
+            }, 500);
+            setTimeout(() => {
+                ensureAllInputsAreAccessible();
+                fixRightmostColumnInputs();
+                fixRightmostColumnsVisibility();
+                debugTableStructure();
+                testColumnMapping();
+            }, 1500);
+            setTimeout(() => {
+                ensureAllInputsAreAccessible();
+                fixRightmostColumnInputs();
+                fixRightmostColumnsVisibility();
+                debugTableStructure();
+                testColumnMapping();
+            }, 3000);
+
+            // Set up periodic checks for rightmost column inputs
+            setInterval(() => {
+                const rightmostInputs = document.querySelectorAll('td:last-child input[type="number"]');
+                if (rightmostInputs.length > 0) {
+                    rightmostInputs.forEach(input => {
+                        // Reset hardcoded values
+                        if (input.value === '50' && !input.hasAttribute('data-user-modified')) {
+                            input.value = '0';
+                            console.log('🔧 Reset hardcoded value 50 to 0');
+                        }
+
+                        // Ensure the input is always accessible
+                        if (input.disabled || input.readOnly ||
+                            input.style.display === 'none' ||
+                            input.style.visibility === 'hidden' ||
+                            input.style.pointerEvents === 'none') {
+
+                            console.log('🔧 Re-fixing inaccessible rightmost input');
+                            input.disabled = false;
+                            input.readOnly = false;
+                            input.removeAttribute('disabled');
+                            input.removeAttribute('readonly');
+
+                            input.style.cssText = `
+                                width: 100% !important;
+                                min-width: 80px !important;
+                                max-width: 120px !important;
+                                height: 35px !important;
+                                display: block !important;
+                                visibility: visible !important;
+                                pointer-events: auto !important;
+                                cursor: text !important;
+                                background-color: white !important;
+                                border: 1px solid #ced4da !important;
+                                z-index: 1000 !important;
+                                position: relative !important;
+                                color: #333 !important;
+                                font-weight: normal !important;
+                                padding: 6px !important;
+                                margin: 0 !important;
+                                text-align: center !important;
+                                border-radius: 4px !important;
+                                box-sizing: border-box !important;
+                            `;
+                        }
+                    });
+                }
+            }, 1000); // Check every 1 second
+
+            // Add scroll to rightmost columns button functionality
+            const uploadSection = document.getElementById('upload-marks-section');
+            if (uploadSection) {
+                // Create scroll button
+                const scrollButton = document.createElement('button');
+                scrollButton.type = 'button';
+                scrollButton.className = 'modern-btn btn-outline';
+                scrollButton.style.cssText = `
+                    margin: 5px;
+                    background-color: #ff6b35;
+                    color: white;
+                    border: none;
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                `;
+                scrollButton.innerHTML = '➡️ Show Rightmost Columns';
+                scrollButton.onclick = scrollToRightmostColumns;
+
+                // Create Creative Arts focus button
+                const creativeArtsButton = document.createElement('button');
+                creativeArtsButton.type = 'button';
+                creativeArtsButton.className = 'modern-btn btn-outline';
+                creativeArtsButton.style.cssText = `
+                    margin: 5px;
+                    background-color: #ff0000;
+                    color: white;
+                    border: none;
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                `;
+                creativeArtsButton.innerHTML = '🎨 Focus Creative Arts';
+                creativeArtsButton.onclick = focusCreativeArtsColumn;
+
+                // Create test mapping button
+                const testMappingButton = document.createElement('button');
+                testMappingButton.type = 'button';
+                testMappingButton.className = 'modern-btn btn-outline';
+                testMappingButton.style.cssText = `
+                    margin: 5px;
+                    background-color: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                `;
+                testMappingButton.innerHTML = '🧪 Test Column Mapping';
+                testMappingButton.onclick = testColumnMapping;
+
+                // Create sample data button
+                const sampleDataButton = document.createElement('button');
+                sampleDataButton.type = 'button';
+                sampleDataButton.className = 'modern-btn btn-outline';
+                sampleDataButton.style.cssText = `
+                    margin: 5px;
+                    background-color: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                `;
+                sampleDataButton.innerHTML = '📝 Fill Sample Data';
+                sampleDataButton.onclick = populateSampleData;
+
+                // Create force test button
+                const forceTestButton = document.createElement('button');
+                forceTestButton.type = 'button';
+                forceTestButton.className = 'modern-btn btn-outline';
+                forceTestButton.style.cssText = `
+                    margin: 5px;
+                    background-color: #dc3545;
+                    color: white;
+                    border: none;
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                `;
+                forceTestButton.innerHTML = '🔧 Force Test Creative Arts';
+                forceTestButton.onclick = forceTestCreativeArts;
+
+                // Create simple rightmost fix button
+                const simpleFixButton = document.createElement('button');
+                simpleFixButton.type = 'button';
+                simpleFixButton.className = 'modern-btn btn-outline';
+                simpleFixButton.style.cssText = `
+                    margin: 5px;
+                    background-color: #6f42c1;
+                    color: white;
+                    border: none;
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                `;
+                simpleFixButton.innerHTML = '🎯 Fix Input Fields';
+                simpleFixButton.onclick = fixRightmostColumnInputs;
+
+                // Insert the buttons after the form header
+                const cardHeader = uploadSection.querySelector('.card-header');
+                if (cardHeader) {
+                    cardHeader.appendChild(scrollButton);
+                    cardHeader.appendChild(creativeArtsButton);
+                    cardHeader.appendChild(testMappingButton);
+                    cardHeader.appendChild(sampleDataButton);
+                    cardHeader.appendChild(forceTestButton);
+                    cardHeader.appendChild(simpleFixButton);
+                }
+            }
+
+            // Re-apply fixes when marks form is loaded
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        const addedNodes = Array.from(mutation.addedNodes);
+                        const hasTable = addedNodes.some(node =>
+                            node.nodeType === 1 &&
+                            (node.classList?.contains('table-wrapper') || node.querySelector?.('.table-wrapper'))
+                        );
+
+                        if (hasTable) {
+                            console.log('🔄 Table detected, re-applying fixes...');
+                            setTimeout(() => {
+                                ensureAllInputsAreAccessible();
+                                fixRightmostColumnInputs();
+                                fixRightmostColumnsVisibility();
+                                debugTableStructure();
+                            }, 100);
+                        }
+                    }
+                });
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+
+            console.log('✅ RIGHTMOST COLUMN FIXES APPLIED SUCCESSFULLY');
+        });
+    </script>
 
 </body>
 </html>
