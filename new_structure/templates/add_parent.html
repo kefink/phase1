@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Parent - Hillview School</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .add-parent-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        
+        .form-body {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .info-box h4 {
+            color: #1976d2;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-box p {
+            margin: 0;
+            color: #424242;
+            line-height: 1.5;
+        }
+        
+        .validation-error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="add-parent-container">
+        <div class="form-header">
+            <h1><i class="fas fa-user-plus"></i> Add New Parent</h1>
+            <p>Create a new parent account for the school portal</p>
+        </div>
+        
+        <div class="form-body">
+            <div class="info-box">
+                <h4><i class="fas fa-info-circle"></i> Important Information</h4>
+                <p>
+                    A temporary password will be generated for the parent. Please share this password 
+                    with the parent and ask them to change it after their first login. The parent will 
+                    need to verify their email address before they can access the portal.
+                </p>
+            </div>
+            
+            <form method="POST" id="addParentForm">
+                <div class="form-group">
+                    <label for="first_name" class="form-label">
+                        First Name <span class="required">*</span>
+                    </label>
+                    <input type="text" 
+                           id="first_name" 
+                           name="first_name" 
+                           class="form-control" 
+                           required 
+                           placeholder="Enter parent's first name">
+                    <div class="validation-error" id="first_name_error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="last_name" class="form-label">
+                        Last Name <span class="required">*</span>
+                    </label>
+                    <input type="text" 
+                           id="last_name" 
+                           name="last_name" 
+                           class="form-control" 
+                           required 
+                           placeholder="Enter parent's last name">
+                    <div class="validation-error" id="last_name_error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        Email Address <span class="required">*</span>
+                    </label>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           class="form-control" 
+                           required 
+                           placeholder="Enter parent's email address">
+                    <div class="validation-error" id="email_error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone" class="form-label">
+                        Phone Number
+                    </label>
+                    <input type="tel" 
+                           id="phone" 
+                           name="phone" 
+                           class="form-control" 
+                           placeholder="Enter parent's phone number (optional)">
+                    <div class="validation-error" id="phone_error"></div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Create Parent Account
+                    </button>
+                </div>
+            </form>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ url_for('parent_management.dashboard') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }}" 
+                         style="margin-bottom: 10px; padding: 15px; border-radius: 8px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 400px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            {% if category == 'success' %}
+                                <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                            {% elif category == 'error' %}
+                                <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
+                            {% elif category == 'info' %}
+                                <i class="fas fa-info-circle" style="color: #17a2b8;"></i>
+                            {% endif %}
+                            <span>{{ message }}</span>
+                        </div>
+                        <button type="button" class="close" onclick="this.parentElement.parentElement.remove();" 
+                                style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 1.2em; cursor: pointer;">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <script>
+        // Form validation
+        document.getElementById('addParentForm').addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Clear previous errors
+            document.querySelectorAll('.validation-error').forEach(el => el.textContent = '');
+            
+            // Validate first name
+            const firstName = document.getElementById('first_name').value.trim();
+            if (!firstName) {
+                document.getElementById('first_name_error').textContent = 'First name is required';
+                isValid = false;
+            }
+            
+            // Validate last name
+            const lastName = document.getElementById('last_name').value.trim();
+            if (!lastName) {
+                document.getElementById('last_name_error').textContent = 'Last name is required';
+                isValid = false;
+            }
+            
+            // Validate email
+            const email = document.getElementById('email').value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email) {
+                document.getElementById('email_error').textContent = 'Email address is required';
+                isValid = false;
+            } else if (!emailRegex.test(email)) {
+                document.getElementById('email_error').textContent = 'Please enter a valid email address';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+        
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(function() {
+            const flashMessages = document.querySelector('.flash-messages');
+            if (flashMessages) {
+                flashMessages.style.opacity = '0';
+                flashMessages.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => flashMessages.remove(), 500);
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

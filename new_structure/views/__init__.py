@@ -35,6 +35,16 @@ except ImportError as e:
     parent_mgmt_bp_available = False
     print(f"❌ Warning: Could not import parent management blueprint: {e}")
 
+# Import email configuration blueprint with error handling
+try:
+    from .email_config import email_config_bp
+    email_config_bp_available = True
+    print("✅ Email configuration blueprint imported successfully")
+except ImportError as e:
+    email_config_bp = None
+    email_config_bp_available = False
+    print(f"❌ Warning: Could not import email configuration blueprint: {e}")
+
 # List of all blueprints to register with the app
 blueprints = [
     auth_bp, teacher_bp, classteacher_bp, admin_bp,
@@ -52,5 +62,10 @@ if parent_bp_available and parent_simple_bp:
 if parent_mgmt_bp_available and parent_management_bp:
     blueprints.append(parent_management_bp)
     print("✅ Parent management blueprint added to registration list")
+
+# Add email configuration blueprint if available
+if email_config_bp_available and email_config_bp:
+    blueprints.append(email_config_bp)
+    print("✅ Email configuration blueprint added to registration list")
 
 print(f"📋 Total blueprints to register: {len(blueprints)}")

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View Parent - {{ parent.get_full_name() }} - Hillview School</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      .view-parent-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 20px;
+      }
+
+      .parent-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .parent-info h1 {
+        margin: 0 0 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .parent-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .detail-card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-title {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .info-row:last-child {
+        border-bottom: none;
+      }
+
+      .info-label {
+        font-weight: bold;
+        color: #666;
+      }
+
+      .info-value {
+        color: #333;
+      }
+
+      .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: bold;
+      }
+
+      .status-active {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .status-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      .status-verified {
+        background-color: #cce5ff;
+        color: #004085;
+      }
+
+      .status-unverified {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+
+      .children-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .child-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border: 1px solid #e1e5e9;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+      }
+
+      .child-item:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .child-info {
+        flex: 1;
+      }
+
+      .child-name {
+        font-weight: bold;
+        color: #333;
+        font-size: 1.1em;
+      }
+
+      .child-details {
+        color: #666;
+        font-size: 0.9em;
+        margin-top: 5px;
+      }
+
+      .relationship-badge {
+        background-color: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+
+      .btn-danger {
+        background-color: #dc3545;
+        color: white;
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.9em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .btn-danger:hover {
+        background-color: #c82333;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        margin-right: 10px;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary:hover {
+        background: #5a6268;
+      }
+
+      .email-log-item {
+        padding: 12px;
+        border-left: 4px solid #667eea;
+        background: #f8f9fa;
+        margin-bottom: 10px;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .email-subject {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .email-meta {
+        color: #666;
+        font-size: 0.9em;
+        margin-top: 5px;
+      }
+
+      .no-data {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        padding: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="view-parent-container">
+      <!-- Parent Header -->
+      <div class="parent-header">
+        <div class="parent-info">
+          <h1>
+            <i class="fas fa-user"></i>
+            {{ parent.get_full_name() }}
+          </h1>
+          <p>{{ parent.email }}</p>
+        </div>
+        <div class="parent-actions">
+          <a
+            href="{{ url_for('parent_management.toggle_parent_status', parent_id=parent.id) }}"
+            class="btn-primary"
+          >
+            <i class="fas fa-{{ 'pause' if parent.is_active else 'play' }}"></i>
+            {{ 'Deactivate' if parent.is_active else 'Activate' }}
+          </a>
+        </div>
+      </div>
+
+      <!-- Parent Details -->
+      <div class="parent-details">
+        <!-- Account Information -->
+        <div class="detail-card">
+          <h2 class="card-title">
+            <i class="fas fa-info-circle"></i> Account Information
+          </h2>
+          <div class="info-row">
+            <span class="info-label">Full Name:</span>
+            <span class="info-value">{{ parent.get_full_name() }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value">{{ parent.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Phone:</span>
+            <span class="info-value">{{ parent.phone or 'Not provided' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Status:</span>
+            <span class="info-value">
+              <span
+                class="status-badge {{ 'status-active' if parent.is_active else 'status-inactive' }}"
+              >
+                {{ 'Active' if parent.is_active else 'Inactive' }}
+              </span>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email Verified:</span>
+            <span class="info-value">
+              <span
+                class="status-badge {{ 'status-verified' if parent.is_verified else 'status-unverified' }}"
+              >
+                {{ 'Verified' if parent.is_verified else 'Unverified' }}
+              </span>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Created:</span>
+            <span class="info-value"
+              >{{ parent.created_at.strftime('%B %d, %Y') if parent.created_at
+              else 'Unknown' }}</span
+            >
+          </div>
+          <div class="info-row">
+            <span class="info-label">Last Login:</span>
+            <span class="info-value"
+              >{{ parent.last_login.strftime('%B %d, %Y at %I:%M %p') if
+              parent.last_login else 'Never' }}</span
+            >
+          </div>
+        </div>
+
+        <!-- Notification Preferences -->
+        <div class="detail-card">
+          <h2 class="card-title">
+            <i class="fas fa-bell"></i> Notification Preferences
+          </h2>
+          <div class="info-row">
+            <span class="info-label">Email Notifications:</span>
+            <span class="info-value">
+              <span
+                class="status-badge {{ 'status-active' if parent.email_notifications else 'status-inactive' }}"
+              >
+                {{ 'Enabled' if parent.email_notifications else 'Disabled' }}
+              </span>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Frequency:</span>
+            <span class="info-value"
+              >{{ parent.notification_frequency.title() }}</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Linked Children -->
+      <div class="detail-card">
+        <h2 class="card-title">
+          <i class="fas fa-users"></i> Linked Children ({{ children|length }})
+        </h2>
+        {% if children %}
+        <ul class="children-list">
+          {% for link, student, grade, stream in children %}
+          <li class="child-item">
+            <div class="child-info">
+              <div class="child-name">{{ student.name }}</div>
+              <div class="child-details">
+                {{ student.admission_number }} • {{ grade.name }} {{ stream.name
+                }}
+                <span class="relationship-badge"
+                  >{{ link.relationship_type.title() }}</span
+                >
+                {% if link.is_primary_contact %}
+                <span
+                  class="relationship-badge"
+                  style="background-color: #fff3cd; color: #856404"
+                  >Primary Contact</span
+                >
+                {% endif %}
+              </div>
+            </div>
+            <div class="child-actions">
+              <a
+                href="{{ url_for('parent_management.unlink_parent_student', link_id=link.id) }}"
+                class="btn-danger"
+                onclick="return confirm('Are you sure you want to unlink this parent from {{ student.name }}?')"
+              >
+                <i class="fas fa-unlink"></i> Unlink
+              </a>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="no-data">
+          <i
+            class="fas fa-user-graduate"
+            style="font-size: 3em; color: #ccc; margin-bottom: 15px"
+          ></i>
+          <p>No children linked to this parent yet.</p>
+          <a
+            href="{{ url_for('parent_management.link_parent_student') }}"
+            class="btn-primary"
+          >
+            <i class="fas fa-link"></i> Link Student
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Email History -->
+      <div class="detail-card">
+        <h2 class="card-title">
+          <i class="fas fa-envelope"></i> Recent Email History
+        </h2>
+        {% if email_logs %} {% for log in email_logs %}
+        <div class="email-log-item">
+          <div class="email-subject">{{ log.subject }}</div>
+          <div class="email-meta">
+            <i class="fas fa-calendar"></i> {{ log.created_at.strftime('%B %d,
+            %Y at %I:%M %p') }} • <i class="fas fa-tag"></i> {{
+            log.email_type.replace('_', ' ').title() }} •
+            <i
+              class="fas fa-{{ 'check' if log.status == 'sent' else 'clock' if log.status == 'pending' else 'times' }}"
+            ></i>
+            {{ log.status.title() }}
+          </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="no-data">
+          <i
+            class="fas fa-envelope"
+            style="font-size: 3em; color: #ccc; margin-bottom: 15px"
+          ></i>
+          <p>No email history available.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Back Button -->
+      <div style="text-align: center; margin-top: 30px">
+        <a
+          href="{{ url_for('parent_management.dashboard') }}"
+          class="btn-secondary"
+        >
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div
+      class="flash-messages"
+      style="position: fixed; top: 20px; right: 20px; z-index: 1000"
+    >
+      {% for category, message in messages %}
+      <div
+        class="alert alert-{{ 'danger' if category == 'error' else category }}"
+        style="
+          margin-bottom: 10px;
+          padding: 15px;
+          border-radius: 8px;
+          background: white;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          max-width: 400px;
+        "
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="close"
+          onclick="this.parentElement.remove();"
+          style="
+            float: right;
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+          "
+        >
+          &times;
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
+    <script>
+      // Auto-hide flash messages
+      setTimeout(function () {
+        const flashMessages = document.querySelector(".flash-messages");
+        if (flashMessages) {
+          flashMessages.style.opacity = "0";
+          flashMessages.style.transition = "opacity 0.5s ease";
+          setTimeout(() => flashMessages.remove(), 500);
+        }
+      }, 5000);
+    </script>
+  </body>
+</html>

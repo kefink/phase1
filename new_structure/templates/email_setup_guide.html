@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Setup Guide - Hillview School</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .guide-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        
+        .guide-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .guide-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .step-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .step-desc {
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .warning-box h5 {
+            color: #856404;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .info-box h5 {
+            color: #1976d2;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="guide-container">
+        <!-- Header -->
+        <div class="guide-header">
+            <h1><i class="fas fa-book"></i> Email Setup Guide</h1>
+            <p>Complete guide to configure parent email notifications</p>
+        </div>
+
+        <!-- Gmail Setup -->
+        <div class="guide-section">
+            <h2 class="section-title">
+                <i class="fab fa-google"></i> Gmail Setup (Recommended)
+            </h2>
+            
+            <ol class="step-list">
+                <li class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Enable 2-Factor Authentication</div>
+                        <div class="step-desc">
+                            Go to your Google Account settings and enable 2-factor authentication. This is required to generate app passwords.
+                        </div>
+                    </div>
+                </li>
+                
+                <li class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Generate App Password</div>
+                        <div class="step-desc">
+                            In your Google Account settings, go to Security → App passwords → Generate new app password for "Mail".
+                        </div>
+                        <div class="warning-box">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Important</h5>
+                            <p>Use the generated app password, NOT your regular Gmail password!</p>
+                        </div>
+                    </div>
+                </li>
+                
+                <li class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Configure SMTP Settings</div>
+                        <div class="step-desc">Use these settings for Gmail:</div>
+                        <div class="code-block">
+SMTP Server: smtp.gmail.com
+SMTP Port: 587
+Username: your-email@gmail.com
+Password: [Your App Password]
+Use TLS: Yes
+                        </div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <!-- Environment Variables -->
+        <div class="guide-section">
+            <h2 class="section-title">
+                <i class="fas fa-cog"></i> Setting Environment Variables
+            </h2>
+            
+            <div class="info-box">
+                <h5><i class="fas fa-info-circle"></i> Why Environment Variables?</h5>
+                <p>Environment variables keep your email credentials secure and separate from your code.</p>
+            </div>
+            
+            <ol class="step-list">
+                <li class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Create .env File (Recommended)</div>
+                        <div class="step-desc">
+                            Create a file named <code>.env</code> in your project root directory:
+                        </div>
+                        <div class="code-block">
+# Email Configuration
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-school-email@gmail.com
+SMTP_PASSWORD=your-app-password-here
+SMTP_USE_TLS=true
+BASE_URL=http://localhost:5000
+                        </div>
+                    </div>
+                </li>
+                
+                <li class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Alternative: System Environment Variables</div>
+                        <div class="step-desc">
+                            You can also set these as system environment variables:
+                        </div>
+                        <div class="code-block">
+# Windows (Command Prompt)
+set SMTP_SERVER=smtp.gmail.com
+set SMTP_PORT=587
+set SMTP_USERNAME=your-email@gmail.com
+set SMTP_PASSWORD=your-app-password
+
+# Windows (PowerShell)
+$env:SMTP_SERVER="smtp.gmail.com"
+$env:SMTP_PORT="587"
+
+# Linux/Mac
+export SMTP_SERVER=smtp.gmail.com
+export SMTP_PORT=587
+                        </div>
+                    </div>
+                </li>
+                
+                <li class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Restart Application</div>
+                        <div class="step-desc">
+                            After setting environment variables, restart your application for changes to take effect.
+                        </div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <!-- Testing -->
+        <div class="guide-section">
+            <h2 class="section-title">
+                <i class="fas fa-paper-plane"></i> Testing Your Configuration
+            </h2>
+            
+            <ol class="step-list">
+                <li class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Use the Configuration Form</div>
+                        <div class="step-desc">
+                            Go to Email Configuration → SMTP Settings and enter your details. The system will generate the environment variables for you.
+                        </div>
+                    </div>
+                </li>
+                
+                <li class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Send Test Email</div>
+                        <div class="step-desc">
+                            Use the "Send Test Email" button in the Email Configuration dashboard to verify your settings work.
+                        </div>
+                    </div>
+                </li>
+                
+                <li class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Check Email Logs</div>
+                        <div class="step-desc">
+                            Monitor the email logs to see if emails are being sent successfully.
+                        </div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="guide-section">
+            <h2 class="section-title">
+                <i class="fas fa-wrench"></i> Troubleshooting
+            </h2>
+            
+            <div class="step-item">
+                <div class="step-number">!</div>
+                <div class="step-content">
+                    <div class="step-title">Authentication Failed</div>
+                    <div class="step-desc">
+                        Make sure you're using an App Password for Gmail, not your regular password.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step-item">
+                <div class="step-number">!</div>
+                <div class="step-content">
+                    <div class="step-title">Connection Timeout</div>
+                    <div class="step-desc">
+                        Check your firewall settings and ensure port 587 is not blocked.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step-item">
+                <div class="step-number">!</div>
+                <div class="step-content">
+                    <div class="step-title">Environment Variables Not Working</div>
+                    <div class="step-desc">
+                        Restart your application after setting environment variables. Check that the .env file is in the correct location.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{{ url_for('email_config.smtp_settings') }}" class="btn-primary">
+                <i class="fas fa-cog"></i> Configure SMTP Settings
+            </a>
+            <a href="{{ url_for('email_config.dashboard') }}" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Email Dashboard
+            </a>
+        </div>
+    </div>
+</body>
+</html>
