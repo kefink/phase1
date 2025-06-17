@@ -630,6 +630,36 @@
               <h4 class="quick-action-title">Manage Teachers</h4>
               <p class="quick-action-desc">Add, edit teacher records</p>
             </a>
+          </div>
+        </div>
+
+        <!-- Parent Management -->
+        <div class="management-category">
+          <h3><i class="fas fa-user-friends"></i> Parent Management</h3>
+          <div class="quick-actions-grid">
+            <a
+              href="{{ url_for('parent_management.dashboard') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-user-friends"></i>
+              </div>
+              <h4 class="quick-action-title">Parent Dashboard</h4>
+              <p class="quick-action-desc">Manage parent accounts and links</p>
+            </a>
+
+            <a
+              href="{{ url_for('parent_management.add_parent') }}"
+              class="quick-action-card"
+            >
+              <div class="quick-action-icon">
+                <i class="fas fa-user-plus"></i>
+              </div>
+              <h4 class="quick-action-title">Add Parent</h4>
+              <p class="quick-action-desc">Create new parent account</p>
+            </a>
+          </div>
+        </div>
 
             <a
               href="{{ url_for('universal.proxy_assign_subjects') }}"

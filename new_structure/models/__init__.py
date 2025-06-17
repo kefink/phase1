@@ -12,3 +12,13 @@ from .report_config import ReportConfiguration, ClassReportConfiguration, Report
 from .school_setup import SchoolSetup, SchoolBranding, SchoolCustomization
 from .permission import ClassTeacherPermission, PermissionRequest
 from .function_permission import FunctionPermission, DefaultFunctionPermissions
+
+# Import parent portal models (with error handling for backward compatibility)
+try:
+    from .parent import Parent, ParentStudent, ParentEmailLog, EmailTemplate
+except ImportError:
+    # Parent models not available yet
+    Parent = None
+    ParentStudent = None
+    ParentEmailLog = None
+    EmailTemplate = None

@@ -33,6 +33,9 @@ def create_app(config_name='default'):
     from .views import blueprints
     for blueprint in blueprints:
         app.register_blueprint(blueprint)
+        # Exempt parent portal from CSRF protection
+        if hasattr(blueprint, 'name') and 'parent' in blueprint.name:
+            csrf.exempt(blueprint)
 
     # Register middleware
     MarkSanitizerMiddleware(app)

@@ -2644,6 +2644,33 @@ def download_class_report(grade, stream, term, assessment_type):
         staff_info=staff_info
     )
 
+    # Notify parents if report generation was successful and notification is requested
+    notify_parents = request.form.get('notify_parents') == 'on'
+    if pdf_file and notify_parents:
+        try:
+            from ..services.parent_notification_service import ParentNotificationService
+            notification_result = ParentNotificationService.notify_parents_of_new_results(
+                grade=grade,
+                stream=stream,
+                term=term,
+                assessment_type=assessment_type,
+                report_file_path=pdf_file
+            )
+
+            if notification_result.get('success'):
+                if notification_result.get('notifications_sent', 0) > 0:
+                    flash(f"✅ Report generated and {notification_result['notifications_sent']} parent(s) notified via email", 'success')
+                else:
+                    flash("✅ Report generated successfully (no parents to notify)", 'success')
+
+                if notification_result.get('notifications_failed', 0) > 0:
+                    flash(f"⚠️ {notification_result['notifications_failed']} parent notification(s) failed", 'warning')
+            else:
+                flash(f"✅ Report generated successfully. Parent notification failed: {notification_result.get('error', 'Unknown error')}", 'warning')
+
+        except Exception as e:
+            flash(f"✅ Report generated successfully. Parent notification error: {str(e)}", 'warning')
+
     if not pdf_file:
         flash(f"Failed to generate report for {grade} Stream {stream[-1]} in {term} {assessment_type}", "error")
         return redirect(url_for('classteacher.dashboard'))
