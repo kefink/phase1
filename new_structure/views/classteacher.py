@@ -272,7 +272,10 @@ def dashboard():
 
     if not teacher:
         flash("Teacher not found.", "error")
-        return render_template("classteacher.html")
+        # Get school information for error case
+        from ..services.school_config_service import SchoolConfigService
+        school_info = SchoolConfigService.get_school_info_dict()
+        return render_template("classteacher.html", school_info=school_info)
 
     # Get role-based assignment summary for classteacher
     teacher_id = session.get('teacher_id')
@@ -1023,9 +1026,14 @@ def dashboard():
     total_subjects = Subject.query.count()
     total_grades = Grade.query.count()
 
+    # Get school information
+    from ..services.school_config_service import SchoolConfigService
+    school_info = SchoolConfigService.get_school_info_dict()
+
     # Render the class teacher dashboard
     return render_template(
         "classteacher.html",
+        school_info=school_info,
         grades=grades,
         grades_dict=grades_dict,
         terms=terms,

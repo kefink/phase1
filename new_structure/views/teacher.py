@@ -412,6 +412,10 @@ def dashboard():
                     elif component.name == "Insha":
                         insha_max_marks = str(component.max_raw_mark or 40)
 
+    # Get school information
+    from ..services.school_config_service import SchoolConfigService
+    school_info = SchoolConfigService.get_school_info_dict()
+
     # Render the teacher dashboard
     return render_template(
         "teacher.html",
@@ -419,6 +423,7 @@ def dashboard():
         grades_dict=grades_dict,
         subjects_by_education_level=subjects_by_education_level,
         terms=terms,
+        school_info=school_info,
         assessment_types=assessment_types,
         students=students,
         education_level=education_level,

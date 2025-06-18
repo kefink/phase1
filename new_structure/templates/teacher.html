@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard - Kirima Primary School</title>
+    <title>Teacher Dashboard - {{ school_info.school_name|default('School Management System') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -1450,7 +1450,7 @@
     {% endif %}
 
     <nav class="navbar">
-        <a href="#" class="navbar-brand">Kirima Primary School</a>
+        <a href="#" class="navbar-brand">{{ school_info.school_name|default('School Management System') }}</a>
         <ul class="navbar-nav">
             <li class="nav-item">
                 <a href="{{ url_for('teacher.dashboard') }}" class="nav-link">
@@ -2037,7 +2037,7 @@
     </div>
 
     <footer>
-        <p>© 2025 Kirima Primary School - All Rights Reserved</p>
+        <p>© 2025 {{ school_info.school_name|default('School Management System') }} - All Rights Reserved</p>
     </footer>
 
     <script>

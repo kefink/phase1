@@ -27800,3 +27800,449 @@
 2025-06-17 18:11:49,017 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 18:11:49] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
 2025-06-17 18:11:55,931 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 18:11:55] "GET /admin_login HTTP/1.1" 200 -
 2025-06-17 18:11:56,101 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 18:11:56] "[36mGET /static/css/modern_classteacher.css HTTP/1.1[0m" 304 -
+2025-06-17 21:07:45,601 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:07:45] "GET / HTTP/1.1" 200 -
+2025-06-17 21:07:47,673 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:07:47] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:07:49,734 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-06-17 21:07:49,745 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:07:49] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-06-17 21:07:52,829 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:07:52] "[32mGET /classteacher HTTP/1.1[0m" 308 -
+2025-06-17 21:07:55,276 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:07:55] "[32mGET /classteacher/ HTTP/1.1[0m" 302 -
+2025-06-17 21:07:57,444 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:07:57] "GET /classteacher_login HTTP/1.1" 200 -
+2025-06-17 21:07:59,507 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:07:59] "[33mGET /classteacher/upload_marks HTTP/1.1[0m" 404 -
+2025-06-17 21:08:01,558 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:01] "[33mGET /classteacher/generate_reports HTTP/1.1[0m" 404 -
+2025-06-17 21:08:03,633 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:03] "[33mGET /classteacher/view_students HTTP/1.1[0m" 404 -
+2025-06-17 21:08:05,698 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:05] "[32mGET /classteacher/analytics HTTP/1.1[0m" 302 -
+2025-06-17 21:08:07,740 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:07] "GET /classteacher_login HTTP/1.1" 200 -
+2025-06-17 21:08:10,794 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:10] "[33mGET /parent_login HTTP/1.1[0m" 404 -
+2025-06-17 21:08:12,837 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:12] "[33mGET /parent HTTP/1.1[0m" 404 -
+2025-06-17 21:08:14,886 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:14] "[33mGET /parent/student_reports HTTP/1.1[0m" 404 -
+2025-06-17 21:08:16,948 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:16] "[32mGET /parent/profile HTTP/1.1[0m" 302 -
+2025-06-17 21:08:19,178 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:19] "GET /parent/login HTTP/1.1" 200 -
+2025-06-17 21:08:22,233 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:22] "[33mGET /api/grades HTTP/1.1[0m" 404 -
+2025-06-17 21:08:24,291 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:24] "[33mGET /api/streams HTTP/1.1[0m" 404 -
+2025-06-17 21:08:26,334 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:26] "[33mGET /api/subjects HTTP/1.1[0m" 404 -
+2025-06-17 21:08:28,356 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:28] "[33mGET /api/students HTTP/1.1[0m" 404 -
+2025-06-17 21:08:30,381 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:30] "[33mGET /api/teachers HTTP/1.1[0m" 404 -
+2025-06-17 21:08:33,452 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:33] "[33mGET /headteacher/view_grades HTTP/1.1[0m" 404 -
+2025-06-17 21:08:35,485 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:35] "[33mGET /headteacher/view_streams HTTP/1.1[0m" 404 -
+2025-06-17 21:08:37,530 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:37] "[33mGET /headteacher/view_subjects HTTP/1.1[0m" 404 -
+2025-06-17 21:08:39,624 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:39] "[33mGET /headteacher/view_teachers HTTP/1.1[0m" 404 -
+2025-06-17 21:08:41,667 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:41] "[33mGET /headteacher/view_students HTTP/1.1[0m" 404 -
+2025-06-17 21:08:44,735 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:44] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-06-17 21:08:46,782 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:46] "[33mGET /static/js/main.js HTTP/1.1[0m" 404 -
+2025-06-17 21:08:48,853 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:08:48] "[33mGET /static/images/logo.png HTTP/1.1[0m" 404 -
+2025-06-17 21:09:26,962 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:09:26] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:09:27,057 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:09:27] "[36mGET /static/css/modern_classteacher.css HTTP/1.1[0m" 304 -
+2025-06-17 21:12:51,862 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:12:51] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:12:53,914 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-06-17 21:12:53,916 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:12:53] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-06-17 21:12:57,693 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:12:57] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:13:00,224 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-06-17 21:13:00,226 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:13:00] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-06-17 21:13:03,286 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:13:03] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 21:13:05,331 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:13:05] "[32mGET /headteacher/ HTTP/1.1[0m" 302 -
+2025-06-17 21:13:07,393 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:13:07] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:13:10,437 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-06-17 21:13:10,439 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:13:10] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-06-17 21:13:12,478 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:13:12] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 21:20:28,125 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:20:28] "GET / HTTP/1.1" 200 -
+2025-06-17 21:20:30,171 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:20:30] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:20:32,454 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:20:32] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 21:20:34,594 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:20:34] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 21:20:36,648 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:20:36] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:20:38,673 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:20:38] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 21:20:40,750 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:20:40] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 21:20:42,784 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:20:42] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:20:44,831 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:20:44] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 21:20:46,906 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:20:46] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 21:21:16,045 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:21:16] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 21:21:16,054 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:21:16] "[32mGET /headteacher/ HTTP/1.1[0m" 302 -
+2025-06-17 21:21:16,304 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:21:16] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:21:16,728 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:21:16] "[36mGET /static/css/modern_classteacher.css HTTP/1.1[0m" 304 -
+2025-06-17 21:21:31,716 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:21:31] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 21:21:32,012 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:21:32] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 21:21:32,426 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:21:32] "GET /headteacher/?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2025-06-17 21:21:32,427 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:21:32] "GET /headteacher/?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2025-06-17 21:21:32,678 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:21:32] "GET /headteacher/?__debugger__=yes&cmd=resource&f=console.png&s=JxsYZc1tyogbL3Orvui7 HTTP/1.1" 200 -
+2025-06-17 21:21:32,899 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:21:32] "GET /headteacher/?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2025-06-17 21:24:51,174 - new_structure - INFO - Application logging configured
+2025-06-17 21:24:54,194 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 21:24:54,206 - new_structure - INFO - Application initialized
+2025-06-17 21:24:54,332 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.100:5000
+2025-06-17 21:24:54,332 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-06-17 21:24:54,341 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 21:24:55,971 - new_structure - INFO - Application logging configured
+2025-06-17 21:24:57,017 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 21:24:57,026 - new_structure - INFO - Application initialized
+2025-06-17 21:24:57,053 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 21:24:57,064 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 21:27:22,200 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:27:22] "GET / HTTP/1.1" 200 -
+2025-06-17 21:27:24,237 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:27:24] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:27:26,293 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:27:26] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 21:27:28,334 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:27:28] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 21:27:30,411 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:27:30] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 21:47:41,576 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:47:41] "GET / HTTP/1.1" 200 -
+2025-06-17 21:47:43,613 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:47:43] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:47:45,675 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:47:45] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 21:47:47,737 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:47:47] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 21:47:49,985 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:47:49] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 21:52:07,869 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:52:07] "GET / HTTP/1.1" 200 -
+2025-06-17 21:52:09,923 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:52:09] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:52:11,984 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:52:11] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 21:52:14,055 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:52:14] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 21:52:16,481 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:52:16] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 21:56:43,040 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:56:43] "GET / HTTP/1.1" 200 -
+2025-06-17 21:56:45,064 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:56:45] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 21:56:47,136 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:56:47] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 21:56:49,162 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:56:49] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 21:56:51,345 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 21:56:51] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 22:05:16,581 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:05:16] "GET / HTTP/1.1" 200 -
+2025-06-17 22:05:18,616 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:05:18] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 22:05:20,672 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:05:20] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 22:05:22,738 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:05:22] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 22:05:24,960 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:05:24] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 22:25:38,518 - new_structure - INFO - Application logging configured
+2025-06-17 22:25:40,195 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 22:25:40,213 - new_structure - INFO - Application initialized
+2025-06-17 22:25:40,294 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.100:5000
+2025-06-17 22:25:40,295 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-06-17 22:25:40,299 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 22:25:42,146 - new_structure - INFO - Application logging configured
+2025-06-17 22:25:43,685 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 22:25:43,705 - new_structure - INFO - Application initialized
+2025-06-17 22:25:43,758 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 22:25:43,773 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 22:27:33,088 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:33] "GET / HTTP/1.1" 200 -
+2025-06-17 22:27:35,138 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:35] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 22:27:37,431 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:37] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 22:27:39,471 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:39] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 22:27:41,841 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:41] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 22:27:44,050 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:44] "GET /headteacher/analytics HTTP/1.1" 200 -
+2025-06-17 22:27:46,318 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:46] "GET /headteacher/manage_teachers HTTP/1.1" 200 -
+2025-06-17 22:27:48,415 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:48] "[33mGET /headteacher/manage_students HTTP/1.1[0m" 404 -
+2025-06-17 22:27:50,471 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:50] "[33mGET /headteacher/universal_access HTTP/1.1[0m" 404 -
+2025-06-17 22:27:52,529 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:52] "[33mGET /headteacher/staff_management HTTP/1.1[0m" 404 -
+2025-06-17 22:27:54,575 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:54] "[33mGET /headteacher/school_setup HTTP/1.1[0m" 404 -
+2025-06-17 22:27:56,640 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:56] "[33mGET /headteacher/parent_management HTTP/1.1[0m" 404 -
+2025-06-17 22:27:58,680 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:27:58] "[32mGET /classteacher HTTP/1.1[0m" 308 -
+2025-06-17 22:28:01,021 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:01] "GET /classteacher/ HTTP/1.1" 200 -
+2025-06-17 22:28:03,206 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:03] "[33mGET /classteacher/upload_marks HTTP/1.1[0m" 404 -
+2025-06-17 22:28:05,254 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:05] "[33mGET /classteacher/generate_reports HTTP/1.1[0m" 404 -
+2025-06-17 22:28:07,316 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:07] "[33mGET /classteacher/view_students HTTP/1.1[0m" 404 -
+2025-06-17 22:28:09,469 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:09] "GET /classteacher/analytics HTTP/1.1" 200 -
+2025-06-17 22:28:11,543 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:11] "[32mGET /teacher HTTP/1.1[0m" 308 -
+2025-06-17 22:28:13,593 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:13] "[32mGET /teacher/ HTTP/1.1[0m" 302 -
+2025-06-17 22:28:15,633 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:15] "GET /teacher_login HTTP/1.1" 200 -
+2025-06-17 22:28:17,674 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:17] "[33mGET /teacher/my_subjects HTTP/1.1[0m" 404 -
+2025-06-17 22:28:19,720 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:19] "[33mGET /teacher/upload_marks HTTP/1.1[0m" 404 -
+2025-06-17 22:28:21,745 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:21] "[33mGET /teacher/view_students HTTP/1.1[0m" 404 -
+2025-06-17 22:28:23,769 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:23] "[33mGET /parent HTTP/1.1[0m" 404 -
+2025-06-17 22:28:25,801 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:25] "[33mGET /parent/student_reports HTTP/1.1[0m" 404 -
+2025-06-17 22:28:27,842 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:27] "[33mGET /parent/student_progress HTTP/1.1[0m" 404 -
+2025-06-17 22:28:29,870 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:29] "[32mGET /parent/profile HTTP/1.1[0m" 302 -
+2025-06-17 22:28:31,936 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:28:31] "GET /parent/login HTTP/1.1" 200 -
+2025-06-17 22:33:00,176 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:00] "GET / HTTP/1.1" 200 -
+2025-06-17 22:33:02,227 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:02] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 22:33:04,293 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:04] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 22:33:06,359 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:06] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 22:33:08,630 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:08] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 22:33:10,705 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:10] "GET /headteacher/analytics HTTP/1.1" 200 -
+2025-06-17 22:33:12,986 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:12] "GET /headteacher/manage_teachers HTTP/1.1" 200 -
+2025-06-17 22:33:15,220 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:15] "[35m[1mGET /headteacher/manage_subjects HTTP/1.1[0m" 500 -
+2025-06-17 22:33:17,312 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:17] "GET /headteacher/manage_grades_streams HTTP/1.1" 200 -
+2025-06-17 22:33:19,625 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:19] "GET /headteacher/manage_terms_assessments HTTP/1.1" 200 -
+2025-06-17 22:33:21,745 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:21] "GET /headteacher/reports HTTP/1.1" 200 -
+2025-06-17 22:33:23,824 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:23] "[33mGET /headteacher/universal_access HTTP/1.1[0m" 404 -
+2025-06-17 22:33:25,900 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:25] "[32mGET /classteacher HTTP/1.1[0m" 308 -
+2025-06-17 22:33:28,034 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:28] "GET /classteacher/ HTTP/1.1" 200 -
+2025-06-17 22:33:30,321 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:30] "GET /classteacher/analytics HTTP/1.1" 200 -
+2025-06-17 22:33:32,443 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:32] "[32mGET /teacher HTTP/1.1[0m" 308 -
+2025-06-17 22:33:34,481 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:34] "[32mGET /teacher/ HTTP/1.1[0m" 302 -
+2025-06-17 22:33:36,546 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:36] "GET /teacher_login HTTP/1.1" 200 -
+2025-06-17 22:33:38,619 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:38] "[32mGET /parent/profile HTTP/1.1[0m" 302 -
+2025-06-17 22:33:40,670 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:40] "GET /parent/login HTTP/1.1" 200 -
+2025-06-17 22:33:42,775 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:42] "[32mGET /parent/dashboard HTTP/1.1[0m" 302 -
+2025-06-17 22:33:44,847 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:44] "GET /parent/login HTTP/1.1" 200 -
+2025-06-17 22:33:46,952 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:46] "[33mGET /subject_config HTTP/1.1[0m" 404 -
+2025-06-17 22:33:49,000 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:49] "[33mGET /parent_management HTTP/1.1[0m" 404 -
+2025-06-17 22:33:51,042 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:33:51] "[33mGET /permission HTTP/1.1[0m" 404 -
+2025-06-17 22:35:30,949 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:30] "GET / HTTP/1.1" 200 -
+2025-06-17 22:35:32,995 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:32] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 22:35:35,080 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:35] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 22:35:37,161 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:37] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 22:35:39,444 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:39] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 22:35:41,528 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:41] "GET /headteacher/analytics HTTP/1.1" 200 -
+2025-06-17 22:35:43,810 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:43] "GET /headteacher/manage_teachers HTTP/1.1" 200 -
+2025-06-17 22:35:45,942 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:45] "[35m[1mGET /headteacher/manage_subjects HTTP/1.1[0m" 500 -
+2025-06-17 22:35:48,058 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:48] "GET /headteacher/manage_grades_streams HTTP/1.1" 200 -
+2025-06-17 22:35:50,207 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:50] "GET /headteacher/manage_terms_assessments HTTP/1.1" 200 -
+2025-06-17 22:35:52,337 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:52] "GET /headteacher/reports HTTP/1.1" 200 -
+2025-06-17 22:35:54,415 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:54] "[33mGET /headteacher/universal_access HTTP/1.1[0m" 404 -
+2025-06-17 22:35:56,472 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:56] "[32mGET /classteacher HTTP/1.1[0m" 308 -
+2025-06-17 22:35:58,550 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:35:58] "GET /classteacher/ HTTP/1.1" 200 -
+2025-06-17 22:36:00,784 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:00] "GET /classteacher/analytics HTTP/1.1" 200 -
+2025-06-17 22:36:02,973 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:02] "[32mGET /teacher HTTP/1.1[0m" 308 -
+2025-06-17 22:36:05,012 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:05] "[32mGET /teacher/ HTTP/1.1[0m" 302 -
+2025-06-17 22:36:07,054 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:07] "GET /teacher_login HTTP/1.1" 200 -
+2025-06-17 22:36:09,124 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:09] "[32mGET /parent/profile HTTP/1.1[0m" 302 -
+2025-06-17 22:36:11,197 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:11] "GET /parent/login HTTP/1.1" 200 -
+2025-06-17 22:36:13,312 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:13] "[32mGET /parent/dashboard HTTP/1.1[0m" 302 -
+2025-06-17 22:36:15,370 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:15] "GET /parent/login HTTP/1.1" 200 -
+2025-06-17 22:36:17,486 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:17] "[33mGET /subject_config HTTP/1.1[0m" 404 -
+2025-06-17 22:36:19,533 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:19] "[33mGET /parent_management HTTP/1.1[0m" 404 -
+2025-06-17 22:36:21,595 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:36:21] "[33mGET /permission HTTP/1.1[0m" 404 -
+2025-06-17 22:45:38,493 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:45:38] "GET / HTTP/1.1" 200 -
+2025-06-17 22:45:40,540 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:45:40] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 22:45:42,576 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:45:42] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 22:45:44,646 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:45:44] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 22:45:46,860 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:45:46] "[35m[1mGET /headteacher/ HTTP/1.1[0m" 500 -
+2025-06-17 22:47:44,231 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\mysql_migration\\fix_dashboard_schema.py', reloading
+2025-06-17 22:47:44,929 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 22:47:46,727 - new_structure - INFO - Application logging configured
+2025-06-17 22:47:48,085 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 22:47:48,100 - new_structure - INFO - Application initialized
+2025-06-17 22:47:48,129 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 22:47:48,138 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 22:49:13,110 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:49:13] "GET / HTTP/1.1" 200 -
+2025-06-17 22:49:15,346 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:49:15] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 22:49:17,669 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:49:17] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 22:49:19,711 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:49:19] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 22:49:22,235 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:49:22] "GET /headteacher/ HTTP/1.1" 200 -
+2025-06-17 22:53:20,477 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:53:20] "[35m[1mGET /headteacher/manage_subjects HTTP/1.1[0m" 500 -
+2025-06-17 22:53:20,840 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:53:20] "GET /headteacher/manage_subjects?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2025-06-17 22:53:20,885 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:53:20] "GET /headteacher/manage_subjects?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2025-06-17 22:53:21,200 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:53:21] "GET /headteacher/manage_subjects?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2025-06-17 22:53:22,080 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:53:22] "GET /headteacher/manage_subjects?__debugger__=yes&cmd=resource&f=console.png&s=uzbPFXPZyRiCa2NXeRnc HTTP/1.1" 200 -
+2025-06-17 22:53:22,882 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 22:53:22] "GET /headteacher/manage_subjects?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2025-06-17 22:59:04,292 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\__init__.py', reloading
+2025-06-17 22:59:04,679 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 22:59:06,508 - new_structure - INFO - Application logging configured
+2025-06-17 22:59:08,105 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 22:59:08,119 - new_structure - INFO - Application initialized
+2025-06-17 22:59:08,148 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 22:59:08,161 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 22:59:27,107 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\__init__.py', reloading
+2025-06-17 22:59:27,511 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 22:59:29,149 - new_structure - INFO - Application logging configured
+2025-06-17 22:59:30,354 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 22:59:30,365 - new_structure - INFO - Application initialized
+2025-06-17 22:59:30,396 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 22:59:30,409 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 22:59:53,707 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\subject_config_api.py', reloading
+2025-06-17 22:59:54,060 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 22:59:56,226 - new_structure - INFO - Application logging configured
+2025-06-17 22:59:58,076 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 22:59:58,097 - new_structure - INFO - Application initialized
+2025-06-17 22:59:58,128 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 22:59:58,138 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:00:16,110 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\subject_config_api.py', reloading
+2025-06-17 23:00:16,454 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:00:18,289 - new_structure - INFO - Application logging configured
+2025-06-17 23:00:19,662 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:00:19,673 - new_structure - INFO - Application initialized
+2025-06-17 23:00:19,699 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:00:19,708 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:00:34,346 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\subject_config_api.py', reloading
+2025-06-17 23:00:34,818 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:00:36,729 - new_structure - INFO - Application logging configured
+2025-06-17 23:00:37,972 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:00:37,984 - new_structure - INFO - Application initialized
+2025-06-17 23:00:38,014 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:00:38,028 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:00:54,796 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\subject_config_api.py', reloading
+2025-06-17 23:00:55,158 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:00:56,887 - new_structure - INFO - Application logging configured
+2025-06-17 23:00:58,230 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:00:58,240 - new_structure - INFO - Application initialized
+2025-06-17 23:00:58,266 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:00:58,278 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:01:15,080 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\subject_config_api.py', reloading
+2025-06-17 23:01:15,542 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:01:17,600 - new_structure - INFO - Application logging configured
+2025-06-17 23:01:18,926 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:01:18,942 - new_structure - INFO - Application initialized
+2025-06-17 23:01:18,967 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:01:18,977 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:01:31,646 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\subject_config_api.py', reloading
+2025-06-17 23:01:32,095 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:01:34,271 - new_structure - INFO - Application logging configured
+2025-06-17 23:01:35,489 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:01:35,500 - new_structure - INFO - Application initialized
+2025-06-17 23:01:35,524 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:01:35,537 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:04:59,578 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\headteacher_universal.py', reloading
+2025-06-17 23:05:00,044 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:05:02,456 - new_structure - INFO - Application logging configured
+2025-06-17 23:05:03,999 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:05:04,039 - new_structure - INFO - Application initialized
+2025-06-17 23:05:04,084 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:05:04,098 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:05:18,903 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\headteacher_universal.py', reloading
+2025-06-17 23:05:19,347 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:05:21,311 - new_structure - INFO - Application logging configured
+2025-06-17 23:05:22,850 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:05:22,865 - new_structure - INFO - Application initialized
+2025-06-17 23:05:22,897 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:05:22,911 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:05:58,789 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\teacher.py', reloading
+2025-06-17 23:05:59,194 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:06:01,456 - new_structure - INFO - Application logging configured
+2025-06-17 23:06:02,790 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:06:02,808 - new_structure - INFO - Application initialized
+2025-06-17 23:06:02,841 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:06:02,851 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:08:34,326 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\classteacher.py', reloading
+2025-06-17 23:08:35,030 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:08:38,181 - new_structure - INFO - Application logging configured
+2025-06-17 23:08:40,278 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:08:40,295 - new_structure - INFO - Application initialized
+2025-06-17 23:08:40,328 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:08:40,345 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:08:52,072 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\classteacher.py', reloading
+2025-06-17 23:08:52,510 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:08:55,209 - new_structure - INFO - Application logging configured
+2025-06-17 23:08:57,081 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:08:57,096 - new_structure - INFO - Application initialized
+2025-06-17 23:08:57,124 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:08:57,137 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:12:32,735 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:32] "GET / HTTP/1.1" 200 -
+2025-06-17 23:12:34,820 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:34] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 23:12:37,116 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:37] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 23:12:39,157 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:39] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-17 23:12:41,649 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:41] "GET /headteacher/ HTTP/1.1" 200 -
+2025-06-17 23:12:44,012 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:44] "GET /headteacher/analytics HTTP/1.1" 200 -
+2025-06-17 23:12:46,304 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:46] "GET /headteacher/manage_teachers HTTP/1.1" 200 -
+2025-06-17 23:12:48,479 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:48] "[35m[1mGET /headteacher/manage_subjects HTTP/1.1[0m" 500 -
+2025-06-17 23:12:50,619 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:50] "GET /headteacher/manage_grades_streams HTTP/1.1" 200 -
+2025-06-17 23:12:52,865 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:52] "GET /headteacher/manage_terms_assessments HTTP/1.1" 200 -
+2025-06-17 23:12:54,960 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:54] "GET /headteacher/reports HTTP/1.1" 200 -
+2025-06-17 23:12:57,050 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:57] "[32mGET /headteacher/universal_access HTTP/1.1[0m" 302 -
+2025-06-17 23:12:59,346 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:12:59] "GET /universal/dashboard HTTP/1.1" 200 -
+2025-06-17 23:13:01,474 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:01] "[32mGET /classteacher HTTP/1.1[0m" 308 -
+2025-06-17 23:13:03,801 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:03] "GET /classteacher/ HTTP/1.1" 200 -
+2025-06-17 23:13:06,072 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:06] "GET /classteacher/analytics HTTP/1.1" 200 -
+2025-06-17 23:13:08,173 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:08] "[32mGET /teacher HTTP/1.1[0m" 308 -
+2025-06-17 23:13:10,234 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:10] "[32mGET /teacher/ HTTP/1.1[0m" 302 -
+2025-06-17 23:13:12,283 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:12] "GET /teacher_login HTTP/1.1" 200 -
+2025-06-17 23:13:14,364 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:14] "[32mGET /parent/profile HTTP/1.1[0m" 302 -
+2025-06-17 23:13:16,437 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:16] "GET /parent/login HTTP/1.1" 200 -
+2025-06-17 23:13:18,500 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:18] "[32mGET /parent/dashboard HTTP/1.1[0m" 302 -
+2025-06-17 23:13:20,540 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:20] "GET /parent/login HTTP/1.1" 200 -
+2025-06-17 23:13:22,607 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:22] "[32mGET /subject_config HTTP/1.1[0m" 302 -
+2025-06-17 23:13:24,758 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:24] "GET /subject-configuration HTTP/1.1" 200 -
+2025-06-17 23:13:26,913 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:26] "[32mGET /parent_management HTTP/1.1[0m" 302 -
+2025-06-17 23:13:28,961 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:28] "[32mGET /parent_management/dashboard HTTP/1.1[0m" 302 -
+2025-06-17 23:13:31,137 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:31] "GET /headteacher/ HTTP/1.1" 200 -
+2025-06-17 23:13:33,423 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:13:33] "[35m[1mGET /permission HTTP/1.1[0m" 500 -
+2025-06-17 23:33:58,243 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:33:58] "GET /admin_login HTTP/1.1" 200 -
+2025-06-17 23:34:00,322 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:34:00] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-17 23:34:02,407 - werkzeug - INFO - 127.0.0.1 - - [17/Jun/2025 23:34:02] "[35m[1mGET /headteacher/manage_subjects HTTP/1.1[0m" 500 -
+2025-06-17 23:39:48,147 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-06-17 23:39:48,805 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:39:51,778 - new_structure - INFO - Application logging configured
+2025-06-17 23:39:53,971 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:39:54,011 - new_structure - INFO - Application initialized
+2025-06-17 23:39:54,074 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:39:54,087 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:40:08,981 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-06-17 23:40:09,446 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:40:11,930 - new_structure - INFO - Application logging configured
+2025-06-17 23:40:13,521 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:40:13,534 - new_structure - INFO - Application initialized
+2025-06-17 23:40:13,563 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:40:13,571 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:40:30,361 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-06-17 23:40:30,769 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:40:32,873 - new_structure - INFO - Application logging configured
+2025-06-17 23:40:34,307 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:40:34,328 - new_structure - INFO - Application initialized
+2025-06-17 23:40:34,360 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:40:34,369 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-17 23:40:53,346 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-06-17 23:40:54,166 - werkzeug - INFO -  * Restarting with stat
+2025-06-17 23:40:56,679 - new_structure - INFO - Application logging configured
+2025-06-17 23:40:58,455 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-17 23:40:58,472 - new_structure - INFO - Application initialized
+2025-06-17 23:40:58,502 - werkzeug - WARNING -  * Debugger is active!
+2025-06-17 23:40:58,514 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-18 00:15:45,415 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 00:15:45] "GET /admin_login HTTP/1.1" 200 -
+2025-06-18 00:15:47,744 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 00:15:47] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-18 00:15:49,892 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 00:15:49] "[35m[1mGET /headteacher/manage_subjects HTTP/1.1[0m" 500 -
+2025-06-18 00:16:19,610 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-06-18 00:16:20,222 - werkzeug - INFO -  * Restarting with stat
+2025-06-18 00:16:22,999 - new_structure - INFO - Application logging configured
+2025-06-18 00:16:24,806 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-18 00:16:24,824 - new_structure - INFO - Application initialized
+2025-06-18 00:16:24,858 - werkzeug - WARNING -  * Debugger is active!
+2025-06-18 00:16:24,868 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-18 00:17:43,896 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 00:17:43] "GET /admin_login HTTP/1.1" 200 -
+2025-06-18 00:17:46,282 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 00:17:46] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-18 00:17:48,361 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 00:17:48] "[35m[1mGET /headteacher/manage_subjects HTTP/1.1[0m" 500 -
+2025-06-18 00:18:07,363 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-06-18 00:18:07,904 - werkzeug - INFO -  * Restarting with stat
+2025-06-18 00:18:10,864 - new_structure - INFO - Application logging configured
+2025-06-18 00:18:12,413 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-18 00:18:12,422 - new_structure - INFO - Application initialized
+2025-06-18 00:18:12,449 - werkzeug - WARNING -  * Debugger is active!
+2025-06-18 00:18:12,460 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-18 03:53:06,045 - werkzeug - INFO -  * Detected change in 'E:\\CBC\\hillview_mvp\\new_structure\\views\\admin.py', reloading
+2025-06-18 03:53:06,559 - werkzeug - INFO -  * Restarting with stat
+2025-06-18 03:53:09,669 - new_structure - INFO - Application logging configured
+2025-06-18 03:53:11,131 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-18 03:53:11,144 - new_structure - INFO - Application initialized
+2025-06-18 03:53:11,178 - werkzeug - WARNING -  * Debugger is active!
+2025-06-18 03:53:11,191 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-18 03:59:06,143 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 03:59:06] "GET /admin_login HTTP/1.1" 200 -
+2025-06-18 03:59:08,749 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 03:59:08] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-18 03:59:11,013 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 03:59:11] "GET /headteacher/manage_subjects HTTP/1.1" 200 -
+2025-06-18 04:06:21,183 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:06:21] "GET /admin_login HTTP/1.1" 200 -
+2025-06-18 04:06:23,271 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:06:23] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-18 04:06:25,358 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:06:25] "GET /headteacher/manage_subjects HTTP/1.1" 200 -
+2025-06-18 04:42:50,089 - new_structure - INFO - Application logging configured
+2025-06-18 04:42:54,561 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-18 04:42:54,579 - new_structure - INFO - Application initialized
+2025-06-18 04:42:54,715 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.106:5000
+2025-06-18 04:42:54,716 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-06-18 04:42:54,724 - werkzeug - INFO -  * Restarting with stat
+2025-06-18 04:42:57,700 - new_structure - INFO - Application logging configured
+2025-06-18 04:42:59,974 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-06-18 04:43:00,008 - new_structure - INFO - Application initialized
+2025-06-18 04:43:00,140 - werkzeug - WARNING -  * Debugger is active!
+2025-06-18 04:43:00,158 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-06-18 04:43:35,884 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:43:35] "GET / HTTP/1.1" 200 -
+2025-06-18 04:43:37,956 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:43:37] "GET /admin_login HTTP/1.1" 200 -
+2025-06-18 04:43:40,777 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:43:40] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-06-18 04:43:42,850 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:43:42] "[32mGET /headteacher HTTP/1.1[0m" 308 -
+2025-06-18 04:43:45,728 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:43:45] "GET /headteacher/ HTTP/1.1" 200 -
+2025-06-18 04:43:48,364 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:43:48] "GET /headteacher/analytics HTTP/1.1" 200 -
+2025-06-18 04:43:51,062 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:43:51] "GET /headteacher/manage_teachers HTTP/1.1" 200 -
+2025-06-18 04:43:53,523 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:43:53] "GET /headteacher/manage_subjects HTTP/1.1" 200 -
+2025-06-18 04:43:55,959 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:43:55] "GET /headteacher/manage_grades_streams HTTP/1.1" 200 -
+2025-06-18 04:43:58,509 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:43:58] "GET /headteacher/manage_terms_assessments HTTP/1.1" 200 -
+2025-06-18 04:44:00,823 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:00] "GET /headteacher/reports HTTP/1.1" 200 -
+2025-06-18 04:44:03,009 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:03] "[32mGET /headteacher/universal_access HTTP/1.1[0m" 302 -
+2025-06-18 04:44:05,549 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:05] "GET /universal/dashboard HTTP/1.1" 200 -
+2025-06-18 04:44:07,675 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:07] "[32mGET /classteacher HTTP/1.1[0m" 308 -
+2025-06-18 04:44:10,041 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:10] "GET /classteacher/ HTTP/1.1" 200 -
+2025-06-18 04:44:12,355 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:12] "GET /classteacher/analytics HTTP/1.1" 200 -
+2025-06-18 04:44:14,587 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:14] "[32mGET /teacher HTTP/1.1[0m" 308 -
+2025-06-18 04:44:16,655 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:16] "[32mGET /teacher/ HTTP/1.1[0m" 302 -
+2025-06-18 04:44:18,736 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:18] "GET /teacher_login HTTP/1.1" 200 -
+2025-06-18 04:44:20,823 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:20] "[32mGET /parent/profile HTTP/1.1[0m" 302 -
+2025-06-18 04:44:22,924 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:22] "GET /parent/login HTTP/1.1" 200 -
+2025-06-18 04:44:25,042 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:25] "[32mGET /parent/dashboard HTTP/1.1[0m" 302 -
+2025-06-18 04:44:27,124 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:27] "GET /parent/login HTTP/1.1" 200 -
+2025-06-18 04:44:29,217 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:29] "[32mGET /subject_config HTTP/1.1[0m" 302 -
+2025-06-18 04:44:32,330 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:32] "GET /subject-configuration HTTP/1.1" 200 -
+2025-06-18 04:44:34,683 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:34] "[32mGET /parent_management HTTP/1.1[0m" 302 -
+2025-06-18 04:44:36,774 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:36] "[32mGET /parent_management/dashboard HTTP/1.1[0m" 302 -
+2025-06-18 04:44:39,282 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:39] "GET /headteacher/ HTTP/1.1" 200 -
+2025-06-18 04:44:41,758 - werkzeug - INFO - 127.0.0.1 - - [18/Jun/2025 04:44:41] "[35m[1mGET /permission HTTP/1.1[0m" 500 -

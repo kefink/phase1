@@ -1,292 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports Dashboard - Kirima Primary School</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/headteacher.css') }}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Reports Dashboard - {{ school_info.school_name|default('School Management
+      System') }}
+    </title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/headteacher.css') }}"
+    />
     <style>
-        .reports-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+      .reports-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
 
-        .reports-header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 30px;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border-radius: 15px;
-        }
+      .reports-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 30px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border-radius: 15px;
+      }
 
-        .reports-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
+      .reports-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+      }
 
-        .report-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
+      .report-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
 
-        .report-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            border-color: #28a745;
-        }
+      .report-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-color: #28a745;
+      }
 
-        .report-icon {
-            font-size: 48px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
+      .report-icon {
+        font-size: 48px;
+        text-align: center;
+        margin-bottom: 15px;
+      }
 
-        .report-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            text-align: center;
-        }
+      .report-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        text-align: center;
+      }
 
-        .report-description {
-            color: #6c757d;
-            text-align: center;
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
+      .report-description {
+        color: #6c757d;
+        text-align: center;
+        line-height: 1.5;
+        margin-bottom: 20px;
+      }
 
-        .report-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
+      .report-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
 
-        .report-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
+      .report-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
 
-        .report-btn-primary {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-        }
+      .report-btn-primary {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+      }
 
-        .report-btn-primary:hover {
-            background: linear-gradient(135deg, #20c997, #17a2b8);
-            transform: translateY(-1px);
-            color: white;
-            text-decoration: none;
-        }
+      .report-btn-primary:hover {
+        background: linear-gradient(135deg, #20c997, #17a2b8);
+        transform: translateY(-1px);
+        color: white;
+        text-decoration: none;
+      }
 
-        .report-btn-secondary {
-            background: #f8f9fa;
-            color: #6c757d;
-            border: 1px solid #dee2e6;
-        }
+      .report-btn-secondary {
+        background: #f8f9fa;
+        color: #6c757d;
+        border: 1px solid #dee2e6;
+      }
 
-        .report-btn-secondary:hover {
-            background: #e9ecef;
-            color: #495057;
-            text-decoration: none;
-        }
+      .report-btn-secondary:hover {
+        background: #e9ecef;
+        color: #495057;
+        text-decoration: none;
+      }
 
-        .recent-reports {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border: 2px solid #e9ecef;
-        }
+      .recent-reports {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border: 2px solid #e9ecef;
+      }
 
-        .recent-reports h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 20px;
-            border-bottom: 2px solid #28a745;
-            padding-bottom: 10px;
-        }
+      .recent-reports h3 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        font-size: 20px;
+        border-bottom: 2px solid #28a745;
+        padding-bottom: 10px;
+      }
 
-        .recent-report-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
+      .recent-report-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #e9ecef;
+      }
 
-        .recent-report-item:last-child {
-            border-bottom: none;
-        }
+      .recent-report-item:last-child {
+        border-bottom: none;
+      }
 
-        .recent-report-info {
-            flex: 1;
-        }
+      .recent-report-info {
+        flex: 1;
+      }
 
-        .recent-report-title {
-            font-weight: 500;
-            color: #2c3e50;
-            margin-bottom: 4px;
-        }
+      .recent-report-title {
+        font-weight: 500;
+        color: #2c3e50;
+        margin-bottom: 4px;
+      }
 
-        .recent-report-meta {
-            font-size: 12px;
-            color: #6c757d;
-        }
+      .recent-report-meta {
+        font-size: 12px;
+        color: #6c757d;
+      }
 
-        .recent-report-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            background: #d4edda;
-            color: #155724;
-        }
+      .recent-report-status {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        background: #d4edda;
+        color: #155724;
+      }
 
-        .back-button {
-            display: inline-block;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
+      .back-button {
+        display: inline-block;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+      }
 
-        .back-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            text-decoration: none;
-            color: white;
-        }
+      .back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        text-decoration: none;
+        color: white;
+      }
 
-        .coming-soon {
-            background: #fff3cd;
-            color: #856404;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-top: 10px;
-            text-align: center;
-        }
+      .coming-soon {
+        background: #fff3cd;
+        color: #856404;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-top: 10px;
+        text-align: center;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="reports-container">
-        <a href="{{ url_for('admin.dashboard') }}" class="back-button">
-            ← Back to Dashboard
-        </a>
+      <a href="{{ url_for('admin.dashboard') }}" class="back-button">
+        ← Back to Dashboard
+      </a>
 
-        <div class="reports-header">
-            <h1>📋 Comprehensive Reports Dashboard</h1>
-            <p>Generate detailed reports for academic analysis and administrative purposes</p>
+      <div class="reports-header">
+        <h1>📋 Comprehensive Reports Dashboard</h1>
+        <p>
+          Generate detailed reports for academic analysis and administrative
+          purposes
+        </p>
+      </div>
+
+      <!-- Available Report Types -->
+      <div class="reports-grid">
+        {% for report in report_types %}
+        <div class="report-card" onclick="generateReport('{{ report.id }}')">
+          <div class="report-icon">{{ report.icon }}</div>
+          <div class="report-title">{{ report.title }}</div>
+          <div class="report-description">{{ report.description }}</div>
+          <div class="report-actions">
+            <button
+              class="report-btn report-btn-primary"
+              onclick="generateReport('{{ report.id }}')"
+            >
+              Generate Report
+            </button>
+            <button
+              class="report-btn report-btn-secondary"
+              onclick="previewReport('{{ report.id }}')"
+            >
+              Preview
+            </button>
+          </div>
+          <div class="coming-soon">Coming Soon - Advanced Reporting</div>
         </div>
+        {% endfor %}
+      </div>
 
-        <!-- Available Report Types -->
-        <div class="reports-grid">
-            {% for report in report_types %}
-            <div class="report-card" onclick="generateReport('{{ report.id }}')">
-                <div class="report-icon">{{ report.icon }}</div>
-                <div class="report-title">{{ report.title }}</div>
-                <div class="report-description">{{ report.description }}</div>
-                <div class="report-actions">
-                    <button class="report-btn report-btn-primary" onclick="generateReport('{{ report.id }}')">
-                        Generate Report
-                    </button>
-                    <button class="report-btn report-btn-secondary" onclick="previewReport('{{ report.id }}')">
-                        Preview
-                    </button>
-                </div>
-                <div class="coming-soon">Coming Soon - Advanced Reporting</div>
+      <!-- Recent Reports -->
+      {% if recent_reports %}
+      <div class="recent-reports">
+        <h3>📄 Recent Reports</h3>
+        {% for report in recent_reports %}
+        <div class="recent-report-item">
+          <div class="recent-report-info">
+            <div class="recent-report-title">{{ report.title }}</div>
+            <div class="recent-report-meta">
+              {{ report.date }} | {{ report.type }}
             </div>
-            {% endfor %}
+          </div>
+          <div class="recent-report-status">{{ report.status }}</div>
         </div>
+        {% endfor %}
+      </div>
+      {% endif %}
 
-        <!-- Recent Reports -->
-        {% if recent_reports %}
-        <div class="recent-reports">
-            <h3>📄 Recent Reports</h3>
-            {% for report in recent_reports %}
-            <div class="recent-report-item">
-                <div class="recent-report-info">
-                    <div class="recent-report-title">{{ report.title }}</div>
-                    <div class="recent-report-meta">{{ report.date }} | {{ report.type }}</div>
-                </div>
-                <div class="recent-report-status">{{ report.status }}</div>
+      <!-- Quick Actions -->
+      <div class="recent-reports" style="margin-top: 30px">
+        <h3>⚡ Quick Report Actions</h3>
+        <div class="recent-report-item">
+          <div class="recent-report-info">
+            <div class="recent-report-title">
+              Current Term Performance Summary
             </div>
-            {% endfor %}
+            <div class="recent-report-meta">
+              Generate a quick overview of current term performance
+            </div>
+          </div>
+          <button
+            class="report-btn report-btn-primary"
+            onclick="generateQuickReport('current_term')"
+          >
+            Generate Now
+          </button>
         </div>
-        {% endif %}
-
-        <!-- Quick Actions -->
-        <div class="recent-reports" style="margin-top: 30px;">
-            <h3>⚡ Quick Report Actions</h3>
-            <div class="recent-report-item">
-                <div class="recent-report-info">
-                    <div class="recent-report-title">Current Term Performance Summary</div>
-                    <div class="recent-report-meta">Generate a quick overview of current term performance</div>
-                </div>
-                <button class="report-btn report-btn-primary" onclick="generateQuickReport('current_term')">
-                    Generate Now
-                </button>
+        <div class="recent-report-item">
+          <div class="recent-report-info">
+            <div class="recent-report-title">Grade Level Comparison</div>
+            <div class="recent-report-meta">
+              Compare performance across all grade levels
             </div>
-            <div class="recent-report-item">
-                <div class="recent-report-info">
-                    <div class="recent-report-title">Grade Level Comparison</div>
-                    <div class="recent-report-meta">Compare performance across all grade levels</div>
-                </div>
-                <button class="report-btn report-btn-primary" onclick="generateQuickReport('grade_comparison')">
-                    Generate Now
-                </button>
-            </div>
-            <div class="recent-report-item">
-                <div class="recent-report-info">
-                    <div class="recent-report-title">Subject Performance Analysis</div>
-                    <div class="recent-report-meta">Detailed analysis of all subjects</div>
-                </div>
-                <button class="report-btn report-btn-primary" onclick="generateQuickReport('subject_analysis')">
-                    Generate Now
-                </button>
-            </div>
+          </div>
+          <button
+            class="report-btn report-btn-primary"
+            onclick="generateQuickReport('grade_comparison')"
+          >
+            Generate Now
+          </button>
         </div>
+        <div class="recent-report-item">
+          <div class="recent-report-info">
+            <div class="recent-report-title">Subject Performance Analysis</div>
+            <div class="recent-report-meta">
+              Detailed analysis of all subjects
+            </div>
+          </div>
+          <button
+            class="report-btn report-btn-primary"
+            onclick="generateQuickReport('subject_analysis')"
+          >
+            Generate Now
+          </button>
+        </div>
+      </div>
 
-        <!-- Footer -->
-        <footer style="text-align: center; margin-top: 40px; padding: 20px; color: #6c757d;">
-            <p>Kirima Primary School powered by CbcTeachkit</p>
-        </footer>
+      <!-- Footer -->
+      <footer
+        style="
+          text-align: center;
+          margin-top: 40px;
+          padding: 20px;
+          color: #6c757d;
+        "
+      >
+        <p>
+          {{ school_info.school_name|default('School Management System') }}
+          powered by CbcTeachkit
+        </p>
+      </footer>
     </div>
 
     <script>
-        function generateReport(reportId) {
-            alert(`Generating ${reportId} report... This feature will be available soon!`);
-        }
+      function generateReport(reportId) {
+        alert(
+          `Generating ${reportId} report... This feature will be available soon!`
+        );
+      }
 
-        function previewReport(reportId) {
-            alert(`Previewing ${reportId} report... This feature will be available soon!`);
-        }
+      function previewReport(reportId) {
+        alert(
+          `Previewing ${reportId} report... This feature will be available soon!`
+        );
+      }
 
-        function generateQuickReport(reportType) {
-            alert(`Generating ${reportType} quick report... This feature will be available soon!`);
-        }
+      function generateQuickReport(reportType) {
+        alert(
+          `Generating ${reportType} quick report... This feature will be available soon!`
+        );
+      }
     </script>
-</body>
+  </body>
 </html>

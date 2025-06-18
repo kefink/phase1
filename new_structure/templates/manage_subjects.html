@@ -721,19 +721,19 @@
           <div class="pagination-container">
             <ul class="pagination">
               {% if pagination.has_prev %}
-                <li><a href="{{ url_for('classteacher.manage_subjects', page=1, education_level=current_education_level, search=search_query) }}">&laquo; First</a></li>
-                <li><a href="{{ url_for('classteacher.manage_subjects', page=pagination.prev_num, education_level=current_education_level, search=search_query) }}">&lsaquo; Previous</a></li>
+                <li><a href="{{ url_for('admin.manage_subjects', page=1, education_level=current_education_level, search=search_query) }}">&laquo; First</a></li>
+                <li><a href="{{ url_for('admin.manage_subjects', page=pagination.prev_num, education_level=current_education_level, search=search_query) }}">&lsaquo; Previous</a></li>
               {% else %}
                 <li class="disabled"><span>&laquo; First</span></li>
                 <li class="disabled"><span>&lsaquo; Previous</span></li>
               {% endif %}
 
-              {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+              {% for page_num in pagination.iter_pages %}
                 {% if page_num %}
                   {% if page_num == pagination.page %}
                     <li class="active"><span>{{ page_num }}</span></li>
                   {% else %}
-                    <li><a href="{{ url_for('classteacher.manage_subjects', page=page_num, education_level=current_education_level, search=search_query) }}">{{ page_num }}</a></li>
+                    <li><a href="{{ url_for('admin.manage_subjects', page=page_num, education_level=current_education_level, search=search_query) }}">{{ page_num }}</a></li>
                   {% endif %}
                 {% else %}
                   <li class="disabled"><span>...</span></li>
@@ -741,8 +741,8 @@
               {% endfor %}
 
               {% if pagination.has_next %}
-                <li><a href="{{ url_for('classteacher.manage_subjects', page=pagination.next_num, education_level=current_education_level, search=search_query) }}">Next &rsaquo;</a></li>
-                <li><a href="{{ url_for('classteacher.manage_subjects', page=pagination.pages, education_level=current_education_level, search=search_query) }}">Last &raquo;</a></li>
+                <li><a href="{{ url_for('admin.manage_subjects', page=pagination.next_num, education_level=current_education_level, search=search_query) }}">Next &rsaquo;</a></li>
+                <li><a href="{{ url_for('admin.manage_subjects', page=pagination.pages, education_level=current_education_level, search=search_query) }}">Last &raquo;</a></li>
               {% else %}
                 <li class="disabled"><span>Next &rsaquo;</span></li>
                 <li class="disabled"><span>Last &raquo;</span></li>

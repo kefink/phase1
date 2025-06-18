@@ -15,21 +15,34 @@ subject_config_api = Blueprint('subject_config_api', __name__)
 def subject_configuration_page():
     """Display subject configuration management page."""
     try:
-        # Get all configurations directly from database
-        import sqlite3
+        # Get all configurations directly from MySQL database
+        import mysql.connector
+        import json
         import os
 
-        db_path = 'kirima_primary.db'
-        if not os.path.exists(db_path):
+        # Load MySQL credentials
+        creds_path = os.path.join('mysql_migration', 'mysql_credentials.json')
+        if not os.path.exists(creds_path):
             return f"""
             <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
                 <h2 style="color: #dc3545;">Database Error</h2>
-                <p>Database file not found: {db_path}</p>
+                <p>MySQL credentials not found: {creds_path}</p>
                 <a href="javascript:history.back()" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go Back</a>
             </div>
             """, 500
 
-        conn = sqlite3.connect(db_path)
+        with open(creds_path, 'r') as f:
+            creds = json.load(f)
+
+        connection_params = {
+            'host': creds['host'],
+            'database': creds['database_name'],
+            'user': creds['username'],
+            'password': creds['password'],
+            'port': creds['port']
+        }
+
+        conn = mysql.connector.connect(**connection_params)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -97,25 +110,38 @@ def toggle_composite_mode():
                 'message': 'Missing required parameters'
             }), 400
 
-        # Direct database update without service class
-        import sqlite3
+        # Direct MySQL database update
+        import mysql.connector
+        import json
         import os
 
-        db_path = 'kirima_primary.db'
-        if not os.path.exists(db_path):
+        # Load MySQL credentials
+        creds_path = os.path.join('mysql_migration', 'mysql_credentials.json')
+        if not os.path.exists(creds_path):
             return jsonify({
                 'success': False,
-                'message': 'Database not found'
+                'message': 'MySQL credentials not found'
             }), 500
 
-        conn = sqlite3.connect(db_path)
+        with open(creds_path, 'r') as f:
+            creds = json.load(f)
+
+        connection_params = {
+            'host': creds['host'],
+            'database': creds['database_name'],
+            'user': creds['username'],
+            'password': creds['password'],
+            'port': creds['port']
+        }
+
+        conn = mysql.connector.connect(**connection_params)
         cursor = conn.cursor()
 
         # Get current configuration
         cursor.execute("""
             SELECT component_1_name, component_1_weight, component_2_name, component_2_weight
             FROM subject_configuration
-            WHERE LOWER(subject_name) = LOWER(?) AND education_level = ?
+            WHERE LOWER(subject_name) = LOWER(%s) AND education_level = %s
         """, (subject_name, education_level))
 
         config = cursor.fetchone()
@@ -143,47 +169,54 @@ def toggle_composite_mode():
             component_2_name = config[2]
             component_2_weight = config[3]
 
-        # Update configuration
+        # Update configuration (MySQL syntax)
         cursor.execute("""
-            INSERT OR REPLACE INTO subject_configuration
+            INSERT INTO subject_configuration
             (subject_name, education_level, is_composite, component_1_name, component_1_weight,
-             component_2_name, component_2_weight, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+             component_2_name, component_2_weight)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+            is_composite = VALUES(is_composite),
+            component_1_name = VALUES(component_1_name),
+            component_1_weight = VALUES(component_1_weight),
+            component_2_name = VALUES(component_2_name),
+            component_2_weight = VALUES(component_2_weight),
+            updated_at = CURRENT_TIMESTAMP
         """, (subject_name.lower(), education_level, is_composite,
               component_1_name, component_1_weight, component_2_name, component_2_weight))
 
-        # Update actual subjects in database
+        # Update actual subjects in database (MySQL syntax)
         cursor.execute("""
             UPDATE subject
-            SET is_composite = ?
-            WHERE LOWER(name) LIKE '%' || ? || '%' AND education_level = ?
+            SET is_composite = %s
+            WHERE LOWER(name) LIKE CONCAT('%%', %s, '%%') AND education_level = %s
         """, (is_composite, subject_name.lower(), education_level))
 
         # Get subject IDs that match
         cursor.execute("""
             SELECT id FROM subject
-            WHERE LOWER(name) LIKE '%' || ? || '%' AND education_level = ?
+            WHERE LOWER(name) LIKE CONCAT('%%', %s, '%%') AND education_level = %s
         """, (subject_name.lower(), education_level))
 
         subject_ids = [row[0] for row in cursor.fetchall()]
 
         # Update components for each matching subject
         for subject_id in subject_ids:
-            # Remove existing components
-            cursor.execute("DELETE FROM subject_component WHERE subject_id = ?", (subject_id,))
+            # Remove existing components (MySQL syntax)
+            cursor.execute("DELETE FROM subject_component WHERE subject_id = %s", (subject_id,))
 
             if is_composite:
                 # Add new components
                 if component_1_name:
                     cursor.execute("""
                         INSERT INTO subject_component (subject_id, name, weight)
-                        VALUES (?, ?, ?)
+                        VALUES (%s, %s, %s)
                     """, (subject_id, component_1_name, component_1_weight))
 
                 if component_2_name:
                     cursor.execute("""
                         INSERT INTO subject_component (subject_id, name, weight)
-                        VALUES (?, ?, ?)
+                        VALUES (%s, %s, %s)
                     """, (subject_id, component_2_name, component_2_weight))
 
         conn.commit()

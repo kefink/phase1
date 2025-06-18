@@ -36,9 +36,14 @@ def dashboard():
         # Get comprehensive dashboard data
         dashboard_data = HeadteacherUniversalService.get_universal_dashboard_data()
 
+        # Get school information
+        from ..services.school_config_service import SchoolConfigService
+        school_info = SchoolConfigService.get_school_info_dict()
+
         return render_template(
             'headteacher_universal.html',
             dashboard_data=dashboard_data,
+            school_info=school_info,
             page_title="Universal Class Management"
         )
 
@@ -68,9 +73,14 @@ def dashboard():
             'teacher_assignments': []
         }
 
+        # Get school information for fallback
+        from ..services.school_config_service import SchoolConfigService
+        school_info = SchoolConfigService.get_school_info_dict()
+
         return render_template(
             'headteacher_universal.html',
             dashboard_data=dashboard_data,
+            school_info=school_info,
             page_title="Universal Class Management"
         )
 

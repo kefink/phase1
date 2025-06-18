@@ -680,17 +680,51 @@ def manage_subjects():
     error_message = None
     success_message = None
 
-    # Check if we're just viewing (GET request) and have cached subject data
-    if request.method == 'GET':
-        cached_subjects = get_cached_subject_list()
-        if cached_subjects:
-            return render_template('manage_subjects.html', **cached_subjects)
+    # Disable caching temporarily to fix pagination issue
+    # if request.method == 'GET':
+    #     cached_subjects = get_cached_subject_list()
+    #     if cached_subjects:
+    #         return render_template('manage_subjects.html', **cached_subjects)
 
-    # Get all subjects
-    subjects = Subject.query.all()
+    # Get pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 20  # Number of subjects per page
+    search_query = request.args.get('search', '')
+    education_level_filter = request.args.get('education_level', '')
 
-    # Get education levels for filtering
-    education_levels = list(set([subject.education_level for subject in subjects]))
+    # Build query with filters
+    query = Subject.query
+
+    if search_query:
+        query = query.filter(Subject.name.contains(search_query))
+
+    if education_level_filter:
+        query = query.filter(Subject.education_level == education_level_filter)
+
+    # Get paginated subjects
+    pagination_obj = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+    subjects = pagination_obj.items
+
+    # Create a simple pagination dict for template
+    pagination = {
+        'page': pagination_obj.page,
+        'pages': pagination_obj.pages,
+        'per_page': pagination_obj.per_page,
+        'total': pagination_obj.total,
+        'has_prev': pagination_obj.has_prev,
+        'has_next': pagination_obj.has_next,
+        'prev_num': pagination_obj.prev_num,
+        'next_num': pagination_obj.next_num,
+        'iter_pages': list(pagination_obj.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2))
+    }
+
+    # Get all subjects for education levels (not filtered)
+    all_subjects = Subject.query.all()
+    education_levels = list(set([subject.education_level for subject in all_subjects]))
 
     # Handle form submissions
     if request.method == 'POST':
@@ -719,10 +753,17 @@ def manage_subjects():
                         # Invalidate admin cache since data has changed
                         invalidate_admin_cache()
                         success_message = f"Subject '{subject_name}' added successfully."
-                        # Refresh subjects list
-                        subjects = Subject.query.all()
+                        # Refresh subjects list with pagination
+                        query = Subject.query
+                        if search_query:
+                            query = query.filter(Subject.name.contains(search_query))
+                        if education_level_filter:
+                            query = query.filter(Subject.education_level == education_level_filter)
+                        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+                        subjects = pagination.items
                         # Update education levels
-                        education_levels = list(set([subject.education_level for subject in subjects]))
+                        all_subjects = Subject.query.all()
+                        education_levels = list(set([subject.education_level for subject in all_subjects]))
                     except Exception as e:
                         db.session.rollback()
                         error_message = f"Error adding subject: {str(e)}"
@@ -744,10 +785,17 @@ def manage_subjects():
                             # Invalidate admin cache since data has changed
                             invalidate_admin_cache()
                             success_message = f"Subject '{subject.name}' deleted successfully."
-                            # Refresh subjects list
-                            subjects = Subject.query.all()
+                            # Refresh subjects list with pagination
+                            query = Subject.query
+                            if search_query:
+                                query = query.filter(Subject.name.contains(search_query))
+                            if education_level_filter:
+                                query = query.filter(Subject.education_level == education_level_filter)
+                            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+                            subjects = pagination.items
                             # Update education levels
-                            education_levels = list(set([subject.education_level for subject in subjects]))
+                            all_subjects = Subject.query.all()
+                            education_levels = list(set([subject.education_level for subject in all_subjects]))
                         except Exception as e:
                             db.session.rollback()
                             error_message = f"Error deleting subject: {str(e)}"
@@ -868,6 +916,9 @@ def manage_subjects():
     subject_data = {
         'subjects': subjects,
         'education_levels': education_levels,
+        'pagination': pagination,
+        'search_query': search_query,
+        'current_education_level': education_level_filter,
         'error_message': error_message,
         'success_message': success_message
     }
@@ -1564,4 +1615,8 @@ def reports():
         }
     ]
 
-    return render_template('reports.html', report_types=report_types)
+    # Get school information
+    from ..services.school_config_service import SchoolConfigService
+    school_info = SchoolConfigService.get_school_info_dict()
+
+    return render_template('reports.html', report_types=report_types, school_info=school_info)
