@@ -5,16 +5,29 @@ Integrates all security modules and provides centralized security controls.
 
 import logging
 from flask import Flask
-from .sql_injection_protection import SQLInjectionProtection, sql_injection_protection
-from .xss_protection import XSSProtection, xss_protection
-from .access_control import AccessControlProtection, require_role, require_resource_permission
-from .csrf_protection import CSRFProtection, init_csrf_protection
-from .security_config import SecurityConfiguration, init_security_config
-from .idor_protection import IDORProtection, protect_object_access
-from .rce_protection import RCEProtection, rce_protection
-from .file_upload_security import FileUploadSecurity, secure_file_upload
-from .file_inclusion_protection import FileInclusionProtection, file_inclusion_protection
-from .ssrf_protection import SSRFProtection, ssrf_protection
+try:
+    from .sql_injection_protection import SQLInjectionProtection, sql_injection_protection
+    from .xss_protection import XSSProtection, xss_protection
+    from .access_control import AccessControlProtection, require_role, require_resource_permission
+    from .csrf_protection import CSRFProtection, init_csrf_protection
+    from .security_config import SecurityConfiguration, init_security_config
+    from .idor_protection import IDORProtection, protect_object_access
+    from .rce_protection import RCEProtection, rce_protection
+    from .file_upload_security import FileUploadSecurity, secure_file_upload
+    from .file_inclusion_protection import FileInclusionProtection, file_inclusion_protection
+    from .ssrf_protection import SSRFProtection, ssrf_protection
+except ImportError:
+    # Fallback for direct imports
+    from sql_injection_protection import SQLInjectionProtection, sql_injection_protection
+    from xss_protection import XSSProtection, xss_protection
+    from access_control import AccessControlProtection, require_role, require_resource_permission
+    from csrf_protection import CSRFProtection, init_csrf_protection
+    from security_config import SecurityConfiguration, init_security_config
+    from idor_protection import IDORProtection, protect_object_access
+    from rce_protection import RCEProtection, rce_protection
+    from file_upload_security import FileUploadSecurity, secure_file_upload
+    from file_inclusion_protection import FileInclusionProtection, file_inclusion_protection
+    from ssrf_protection import SSRFProtection, ssrf_protection
 
 class SecurityManager:
     """Central security manager for the application."""
