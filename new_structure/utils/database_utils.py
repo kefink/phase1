@@ -1,9 +1,13 @@
 """
 Database utility functions for the Hillview School Management System.
+Enhanced with connection pooling and scalability features.
 """
 import sqlite3
+import os
+from typing import Optional, Dict, Any, List
 from sqlalchemy import text
 from ..extensions import db
+from .db_pool import initialize_pool, get_db_connection, get_pool_stats, close_pool
 
 def check_table_exists(table_name):
     """
@@ -368,3 +372,211 @@ def get_database_health():
         health['recommendations'].append('Database connection failed - check database file and permissions')
 
     return health
+
+# Connection Pool Management Functions
+def initialize_database_pool(database_path: str = None, min_connections: int = 5,
+                            max_connections: int = 20, max_idle_time: int = 300):
+    """
+    Initialize database connection pool for improved scalability
+
+    Args:
+        database_path: Path to database file
+        min_connections: Minimum connections to maintain
+        max_connections: Maximum connections allowed
+        max_idle_time: Maximum idle time before closing connection
+    """
+    if database_path is None:
+        # Use default database path
+        database_path = os.path.join(os.path.dirname(__file__), '..', 'kirima_primary.db')
+
+    try:
+        initialize_pool(database_path, min_connections, max_connections, max_idle_time)
+        print(f"✅ Database connection pool initialized: {database_path}")
+        print(f"   Pool size: {min_connections}-{max_connections} connections")
+        return True
+    except Exception as e:
+        print(f"❌ Failed to initialize connection pool: {e}")
+        return False
+
+def get_pooled_connection(timeout: int = 30):
+    """
+    Get a connection from the pool
+
+    Args:
+        timeout: Connection timeout in seconds
+
+    Returns:
+        Pooled database connection or None
+    """
+    try:
+        return get_db_connection(timeout)
+    except Exception as e:
+        print(f"❌ Failed to get pooled connection: {e}")
+        return None
+
+def get_database_pool_stats() -> Dict[str, Any]:
+    """
+    Get database connection pool statistics
+
+    Returns:
+        Dictionary with pool statistics
+    """
+    try:
+        stats = get_pool_stats()
+        return {
+            'pool_enabled': True,
+            'stats': stats,
+            'health': 'healthy' if stats.get('failed_requests', 0) == 0 else 'degraded'
+        }
+    except Exception as e:
+        return {
+            'pool_enabled': False,
+            'error': str(e),
+            'health': 'unavailable'
+        }
+
+def close_database_pool():
+    """Close the database connection pool"""
+    try:
+        close_pool()
+        print("✅ Database connection pool closed")
+        return True
+    except Exception as e:
+        print(f"❌ Error closing connection pool: {e}")
+        return False
+
+def execute_with_pool(query: str, params: tuple = (), fetch_one: bool = False,
+                     fetch_all: bool = False, commit: bool = False):
+    """
+    Execute query using connection pool
+
+    Args:
+        query: SQL query to execute
+        params: Query parameters
+        fetch_one: Whether to fetch one result
+        fetch_all: Whether to fetch all results
+        commit: Whether to commit the transaction
+
+    Returns:
+        Query result or None
+    """
+    conn = get_pooled_connection()
+    if not conn:
+        return None
+
+    try:
+        cursor = conn.execute(query, params)
+
+        if fetch_one:
+            result = cursor.fetchone()
+        elif fetch_all:
+            result = cursor.fetchall()
+        else:
+            result = cursor.rowcount
+
+        if commit:
+            conn.commit()
+
+        return result
+
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Query execution error: {e}")
+        return None
+    finally:
+        conn.close()
+
+def batch_execute_with_pool(queries: List[Dict[str, Any]], commit: bool = True):
+    """
+    Execute multiple queries in a batch using connection pool
+
+    Args:
+        queries: List of query dictionaries with 'query' and 'params' keys
+        commit: Whether to commit all queries as a transaction
+
+    Returns:
+        Dictionary with execution results
+    """
+    conn = get_pooled_connection()
+    if not conn:
+        return {'success': False, 'error': 'Could not get database connection'}
+
+    results = {
+        'success': False,
+        'executed_queries': 0,
+        'failed_queries': 0,
+        'errors': []
+    }
+
+    try:
+        for i, query_info in enumerate(queries):
+            try:
+                query = query_info.get('query', '')
+                params = query_info.get('params', ())
+
+                conn.execute(query, params)
+                results['executed_queries'] += 1
+
+            except Exception as e:
+                results['failed_queries'] += 1
+                results['errors'].append(f"Query {i+1}: {str(e)}")
+
+        if commit and results['failed_queries'] == 0:
+            conn.commit()
+            results['success'] = True
+        elif results['failed_queries'] > 0:
+            conn.rollback()
+
+    except Exception as e:
+        conn.rollback()
+        results['errors'].append(f"Batch execution error: {str(e)}")
+    finally:
+        conn.close()
+
+    return results
+
+def optimize_database_performance():
+    """
+    Apply database performance optimizations
+
+    Returns:
+        Dictionary with optimization results
+    """
+    optimizations = {
+        'applied': [],
+        'failed': [],
+        'success': False
+    }
+
+    # SQLite performance optimizations
+    optimization_queries = [
+        {'query': 'PRAGMA journal_mode=WAL', 'description': 'Enable WAL mode'},
+        {'query': 'PRAGMA synchronous=NORMAL', 'description': 'Set synchronous mode'},
+        {'query': 'PRAGMA cache_size=10000', 'description': 'Increase cache size'},
+        {'query': 'PRAGMA temp_store=MEMORY', 'description': 'Store temp data in memory'},
+        {'query': 'PRAGMA mmap_size=268435456', 'description': 'Enable memory mapping'},
+        {'query': 'ANALYZE', 'description': 'Update query planner statistics'}
+    ]
+
+    conn = get_pooled_connection()
+    if not conn:
+        optimizations['failed'].append('Could not get database connection')
+        return optimizations
+
+    try:
+        for opt in optimization_queries:
+            try:
+                conn.execute(opt['query'])
+                optimizations['applied'].append(opt['description'])
+            except Exception as e:
+                optimizations['failed'].append(f"{opt['description']}: {str(e)}")
+
+        conn.commit()
+        optimizations['success'] = len(optimizations['failed']) == 0
+
+    except Exception as e:
+        optimizations['failed'].append(f"General optimization error: {str(e)}")
+    finally:
+        conn.close()
+
+    return optimizations

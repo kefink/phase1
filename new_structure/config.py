@@ -1,8 +1,10 @@
 """
 Configuration settings for the Hillview School Management System.
-Updated for MySQL database.
+Enhanced with scalability features and multi-environment support.
 """
 import os
+from typing import Optional
+from pathlib import Path
 
 class Config:
     """Base configuration class with settings common to all environments."""
@@ -37,6 +39,59 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
 
+    # Redis Configuration for Caching and Sessions
+    REDIS_HOST = os.environ.get('REDIS_HOST') or 'localhost'
+    REDIS_PORT = int(os.environ.get('REDIS_PORT') or 6379)
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+    REDIS_DB = int(os.environ.get('REDIS_DB') or 0)
+    REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}" if REDIS_PASSWORD else f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+
+    # Cache Configuration
+    CACHE_TYPE = 'redis'
+    CACHE_DEFAULT_TIMEOUT = 3600  # 1 hour
+    CACHE_KEY_PREFIX = 'hillview:'
+
+    # Rate Limiting Configuration
+    RATELIMIT_ENABLED = True
+    RATELIMIT_STORAGE_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/1"
+    RATELIMIT_DEFAULT = "100 per hour"
+    RATELIMIT_HEADERS_ENABLED = True
+
+    # Background Tasks Configuration (Celery/RQ)
+    CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/2"
+    CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/3"
+    CELERY_TASK_SERIALIZER = 'json'
+    CELERY_RESULT_SERIALIZER = 'json'
+    CELERY_ACCEPT_CONTENT = ['json']
+    CELERY_TIMEZONE = 'UTC'
+    CELERY_ENABLE_UTC = True
+
+    # File Upload Configuration
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
+    UPLOAD_FOLDER = 'uploads'
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'xlsx', 'xls', 'csv'}
+
+    # Logging Configuration
+    LOG_LEVEL = 'INFO'
+    LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    LOG_FILE = None  # Set in environment-specific configs
+
+    # Security Configuration
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_TIME_LIMIT = 3600  # 1 hour
+
+    # Application Configuration
+    APP_NAME = 'Hillview School Management System'
+    APP_VERSION = '2.0.0'
+
+    @classmethod
+    def init_app(cls, app):
+        """Initialize application with configuration"""
+        # Create necessary directories
+        directories = ['logs', 'uploads', 'static/uploads', 'instance', 'backups']
+        for directory in directories:
+            Path(directory).mkdir(parents=True, exist_ok=True)
+
 
 class DevelopmentConfig(Config):
     """Configuration for development environment."""
@@ -45,16 +100,83 @@ class DevelopmentConfig(Config):
     APPLICATION_ROOT = '/'
     PREFERRED_URL_SCHEME = 'http'
 
+    # Development-specific overrides
+    CACHE_TYPE = 'simple'  # Use simple cache for development
+    RATELIMIT_ENABLED = False  # Disable rate limiting in development
+    LOG_LEVEL = 'DEBUG'
+    WTF_CSRF_ENABLED = False  # Disable CSRF for easier development
+
+    # Use SQLite for development if MySQL not available
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(os.path.dirname(__file__), 'kirima_primary.db')
+
+    @classmethod
+    def init_app(cls, app):
+        """Initialize development app"""
+        super().init_app(app)
+        # Additional development setup
+        app.logger.setLevel(cls.LOG_LEVEL)
+
 
 class TestingConfig(Config):
     """Configuration for testing environment."""
     TESTING = True
+    DEBUG = True
+
+    # Testing-specific overrides
+    CACHE_TYPE = 'null'  # Disable caching for testing
+    RATELIMIT_ENABLED = False
+    WTF_CSRF_ENABLED = False
+    LOG_LEVEL = 'ERROR'
+
+    # Use in-memory SQLite for testing
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
 
 
 class ProductionConfig(Config):
     """Configuration for production environment."""
     DEBUG = False
     SESSION_COOKIE_SECURE = True
+
+    # Production-specific overrides
+    RATELIMIT_DEFAULT = "200 per hour"
+    LOG_LEVEL = 'WARNING'
+    LOG_FILE = '/var/log/hillview/app.log'
+
+    # Enhanced security for production
+    WTF_CSRF_TIME_LIMIT = 7200  # 2 hours
+    PERMANENT_SESSION_LIFETIME = 7200  # 2 hours
+
+    # Production database with enhanced connection pooling
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 20,
+        'pool_timeout': 30,
+        'pool_recycle': 7200,
+        'pool_pre_ping': True,
+        'max_overflow': 40
+    }
+
+    @classmethod
+    def init_app(cls, app):
+        """Initialize production app"""
+        super().init_app(app)
+
+        # Configure production logging
+        import logging
+        from logging.handlers import RotatingFileHandler
+
+        if cls.LOG_FILE:
+            file_handler = RotatingFileHandler(
+                cls.LOG_FILE, maxBytes=10*1024*1024, backupCount=10
+            )
+            file_handler.setFormatter(logging.Formatter(cls.LOG_FORMAT))
+            file_handler.setLevel(logging.INFO)
+            app.logger.addHandler(file_handler)
+            app.logger.setLevel(logging.INFO)
 
 
 # Configuration dictionary
@@ -64,3 +186,30 @@ config = {
     'production': ProductionConfig,
     'default': DevelopmentConfig
 }
+
+def get_config(config_name: Optional[str] = None):
+    """
+    Get configuration based on environment
+
+    Args:
+        config_name: Configuration name (development, production, testing)
+
+    Returns:
+        Configuration class
+    """
+    if config_name is None:
+        config_name = os.environ.get('FLASK_ENV', 'development')
+
+    return config.get(config_name, config['default'])
+
+def is_development() -> bool:
+    """Check if running in development environment"""
+    return os.environ.get('FLASK_ENV', 'development') == 'development'
+
+def is_production() -> bool:
+    """Check if running in production environment"""
+    return os.environ.get('FLASK_ENV') == 'production'
+
+def is_testing() -> bool:
+    """Check if running in testing environment"""
+    return os.environ.get('FLASK_ENV') == 'testing'
