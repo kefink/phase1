@@ -496,6 +496,310 @@
             gap: 15px;
         }
 
+        /* Mobile-First Responsive Enhancements for Classteacher Dashboard */
+        @media (max-width: 480px) {
+            .modern-container {
+                padding: 0.75rem;
+            }
+
+            /* Mobile Navigation */
+            .enhanced-nav-system {
+                position: relative;
+            }
+
+            .nav-container {
+                flex-direction: column;
+                gap: 0.75rem;
+                padding: 0.75rem;
+            }
+
+            .nav-brand {
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .nav-main {
+                flex-direction: column;
+                width: 100%;
+                gap: 0.5rem;
+            }
+
+            .nav-item {
+                width: 100%;
+                justify-content: center;
+                padding: 0.75rem;
+                border-radius: 0.5rem;
+            }
+
+            .nav-secondary {
+                padding: 0.5rem 0;
+            }
+
+            .nav-quick-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .quick-action {
+                width: 100%;
+                justify-content: center;
+                padding: 0.5rem;
+            }
+
+            /* Mobile Dashboard Grid */
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .dashboard-full-width {
+                grid-column: 1;
+            }
+
+            /* Mobile Tab Container */
+            .tab-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .main-tab {
+                padding: 0.75rem;
+                text-align: center;
+                border-radius: 0.5rem;
+                border: 1px solid #ddd;
+                border-bottom: 1px solid #ddd;
+                margin-bottom: 0.5rem;
+            }
+
+            .main-tab.active {
+                background-color: #007BFF;
+                color: white;
+                border-color: #007BFF;
+            }
+
+            /* Mobile Quick Actions */
+            .quick-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.75rem;
+            }
+
+            .quick-action-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 0.75rem;
+                font-size: 0.875rem;
+            }
+
+            /* Mobile Table Wrapper */
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                border-radius: 0.5rem;
+                margin: 0;
+                padding-right: 0;
+            }
+
+            .table-wrapper table {
+                min-width: 600px;
+                font-size: 0.75rem;
+            }
+
+            .table-wrapper th,
+            .table-wrapper td {
+                padding: 0.5rem;
+                min-width: 80px;
+            }
+
+            .table-wrapper input[type="number"],
+            .student-mark,
+            .component-mark {
+                min-width: 60px !important;
+                max-width: 80px !important;
+                height: 30px !important;
+                font-size: 12px !important;
+                padding: 2px !important;
+            }
+
+            /* Mobile Cards */
+            .modern-card {
+                padding: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .card-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+
+            .card-title {
+                font-size: 1rem;
+            }
+
+            /* Mobile Section Titles */
+            .section-title {
+                font-size: 1rem;
+                text-align: center;
+            }
+
+            /* Mobile Floating Actions */
+            .floating-action-system {
+                bottom: 15px;
+                right: 15px;
+                gap: 10px;
+            }
+
+            .fab-main {
+                width: 50px;
+                height: 50px;
+                font-size: 1.25rem;
+            }
+
+            .fab-secondary {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
+            }
+
+            /* Mobile Forms */
+            .form-group {
+                margin-bottom: 0.75rem;
+            }
+
+            .form-control {
+                padding: 0.75rem;
+                font-size: 1rem; /* Prevent zoom on iOS */
+            }
+
+            .btn {
+                padding: 0.75rem 1rem;
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            /* Mobile Modals */
+            .modal-dialog {
+                margin: 0.75rem;
+                max-width: calc(100vw - 1.5rem);
+            }
+
+            .modal-content {
+                border-radius: 0.5rem;
+            }
+
+            .modal-header {
+                padding: 0.75rem;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .modal-body {
+                padding: 0.75rem;
+            }
+
+            .modal-footer {
+                padding: 0.75rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+            }
+        }
+
+        /* Small Mobile Devices */
+        @media (max-width: 360px) {
+            .modern-container {
+                padding: 0.5rem;
+            }
+
+            .nav-container {
+                padding: 0.5rem;
+            }
+
+            .nav-item {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .quick-action-btn {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .table-wrapper th,
+            .table-wrapper td {
+                padding: 0.25rem;
+                min-width: 60px;
+            }
+
+            .table-wrapper input[type="number"],
+            .student-mark,
+            .component-mark {
+                min-width: 50px !important;
+                max-width: 60px !important;
+                height: 25px !important;
+                font-size: 10px !important;
+            }
+        }
+
+        /* Tablet Portrait */
+        @media (max-width: 768px) and (min-width: 481px) {
+            .nav-main {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-item {
+                flex: 1;
+                min-width: 120px;
+                justify-content: center;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .quick-actions {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+
+            .tab-container {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .main-tab {
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
+            }
+        }
+
+        /* Tablet Landscape */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .nav-main {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+            }
+
+            .quick-actions {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+            }
+        }
+
         .fab-main {
             width: 65px;
             height: 65px;
@@ -1305,7 +1609,12 @@
                     <span>Class Teacher</span>
                 </a>
 
-                <nav class="nav-main">
+                <!-- Mobile Navigation Toggle -->
+                <button class="mobile-nav-toggle" onclick="toggleClassteacherNav()" style="display: none;">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <nav class="nav-main" id="classteacherNav">
                     <button type="button" onclick="navigateToFeature('upload-marks')" class="nav-item" data-feature="upload-marks">
                         <i class="fas fa-upload"></i>
                         <span>Upload Marks</span>
@@ -6794,6 +7103,64 @@
 
             console.log('✅ RIGHTMOST COLUMN FIXES APPLIED SUCCESSFULLY');
         });
+
+        // Mobile Navigation Toggle for Classteacher
+        function toggleClassteacherNav() {
+            const classteacherNav = document.getElementById('classteacherNav');
+            const toggleBtn = document.querySelector('.mobile-nav-toggle i');
+
+            if (classteacherNav.classList.contains('show')) {
+                classteacherNav.classList.remove('show');
+                toggleBtn.className = 'fas fa-bars';
+            } else {
+                classteacherNav.classList.add('show');
+                toggleBtn.className = 'fas fa-times';
+            }
+        }
+
+        // Close mobile nav when clicking outside
+        document.addEventListener('click', function(event) {
+            const navSystem = document.querySelector('.enhanced-nav-system');
+            const classteacherNav = document.getElementById('classteacherNav');
+            const toggleBtn = document.querySelector('.mobile-nav-toggle');
+
+            if (!navSystem.contains(event.target) && classteacherNav.classList.contains('show')) {
+                classteacherNav.classList.remove('show');
+                toggleBtn.querySelector('i').className = 'fas fa-bars';
+            }
+        });
+
+        // Handle window resize for classteacher nav
+        window.addEventListener('resize', function() {
+            const classteacherNav = document.getElementById('classteacherNav');
+            const toggleBtn = document.querySelector('.mobile-nav-toggle i');
+
+            if (window.innerWidth > 768 && classteacherNav.classList.contains('show')) {
+                classteacherNav.classList.remove('show');
+                toggleBtn.className = 'fas fa-bars';
+            }
+        });
+
+        // Show/hide mobile nav toggle based on screen size
+        function updateMobileNavToggle() {
+            const toggleBtn = document.querySelector('.mobile-nav-toggle');
+            if (toggleBtn) {
+                if (window.innerWidth <= 768) {
+                    toggleBtn.style.display = 'block';
+                } else {
+                    toggleBtn.style.display = 'none';
+                    // Ensure nav is visible on larger screens
+                    const classteacherNav = document.getElementById('classteacherNav');
+                    if (classteacherNav) {
+                        classteacherNav.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        // Initialize mobile nav toggle visibility
+        updateMobileNavToggle();
+        window.addEventListener('resize', updateMobileNavToggle);
     </script>
 
 </body>

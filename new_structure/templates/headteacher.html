@@ -112,6 +112,10 @@
         z-index: 1000;
         backdrop-filter: blur(10px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
       }
 
       .navbar-brand {
@@ -1242,6 +1246,210 @@
         gap: 1rem;
         justify-content: flex-end;
       }
+
+      /* Mobile-First Responsive Enhancements for Headteacher Dashboard */
+      @media (max-width: 480px) {
+        .navbar {
+          padding: 0.75rem;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .navbar-brand {
+          font-size: 1.125rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .navbar-nav {
+          flex-direction: column;
+          width: 100%;
+          gap: 0.5rem;
+        }
+
+        .nav-link {
+          padding: 0.75rem;
+          text-align: center;
+          width: 100%;
+          border-radius: 0.5rem;
+        }
+
+        .logout-btn {
+          width: 100%;
+          text-align: center;
+          margin-top: 0.5rem;
+        }
+
+        .dashboard-container {
+          padding: 0.75rem;
+        }
+
+        .section-header {
+          flex-direction: column;
+          text-align: center;
+          gap: 0.75rem;
+        }
+
+        .section-header h2 {
+          font-size: 1.25rem;
+        }
+
+        .dashboard-actions {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .action-btn {
+          width: 100%;
+          justify-content: center;
+          padding: 0.75rem;
+        }
+
+        /* Mobile Stats Grid */
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+        }
+
+        .stat-card {
+          padding: 0.75rem;
+          text-align: center;
+        }
+
+        /* Mobile Filter Panel */
+        .filter-panel {
+          margin: 0.75rem 0;
+        }
+
+        .filter-content {
+          padding: 0.75rem;
+        }
+
+        .filter-grid {
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+        }
+
+        .filter-actions {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .filter-actions .action-btn {
+          width: 100%;
+        }
+
+        /* Mobile Dashboard Header */
+        .dashboard-header .header-content {
+          flex-direction: column;
+          text-align: center;
+          gap: 0.75rem;
+        }
+
+        .dashboard-title {
+          font-size: 1.25rem;
+        }
+
+        .dashboard-subtitle {
+          font-size: 0.875rem;
+        }
+
+        .quick-stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.5rem;
+          width: 100%;
+        }
+
+        .quick-stat {
+          text-align: center;
+        }
+
+        .quick-stat-value {
+          font-size: 1rem;
+        }
+
+        .quick-stat-label {
+          font-size: 0.7rem;
+        }
+
+        /* Mobile Highlights */
+        .highlights-grid {
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+        }
+
+        .highlight-card {
+          padding: 0.75rem;
+          text-align: center;
+        }
+
+        .highlight-value {
+          font-size: 1.25rem;
+        }
+
+        /* Mobile Calendar Overview */
+        .calendar-overview {
+          padding: 0.75rem;
+        }
+
+        .term-header {
+          flex-direction: column;
+          text-align: center;
+          gap: 0.5rem;
+        }
+
+        .term-name {
+          font-size: 1.125rem;
+        }
+
+        .assessments-grid {
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+        }
+
+        .assessment-card {
+          padding: 0.75rem;
+          flex-direction: column;
+          text-align: center;
+          gap: 0.5rem;
+        }
+
+        .assessment-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1rem;
+        }
+
+        /* Mobile System Alerts */
+        .system-alert {
+          padding: 0.75rem;
+          flex-direction: column;
+          text-align: center;
+          gap: 0.5rem;
+        }
+
+        .alert-indicator {
+          min-width: auto;
+        }
+
+        .alert-indicator .alert-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1rem;
+        }
+
+        .alert-actions {
+          flex-direction: row;
+          gap: 0.5rem;
+          width: 100%;
+        }
+
+        .alert-btn {
+          flex: 1;
+          padding: 0.5rem;
+          font-size: 0.75rem;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1269,7 +1477,13 @@
           />
           {% endif %} {{ school_name or 'School Management System' }}
         </a>
-        <ul class="navbar-nav">
+
+        <!-- Mobile Navigation Toggle -->
+        <button class="mobile-nav-toggle" onclick="toggleMobileNav()">
+          <i class="fas fa-bars"></i>
+        </button>
+
+        <ul class="navbar-nav" id="navbarNav">
           <li class="nav-item">
             <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
               <i class="fas fa-chart-line"></i>
@@ -3253,6 +3467,43 @@
             });
           }
         });
+      });
+
+      // Mobile Navigation Toggle
+      function toggleMobileNav() {
+        const navbarNav = document.getElementById('navbarNav');
+        const toggleBtn = document.querySelector('.mobile-nav-toggle i');
+
+        if (navbarNav.classList.contains('show')) {
+          navbarNav.classList.remove('show');
+          toggleBtn.className = 'fas fa-bars';
+        } else {
+          navbarNav.classList.add('show');
+          toggleBtn.className = 'fas fa-times';
+        }
+      }
+
+      // Close mobile nav when clicking outside
+      document.addEventListener('click', function(event) {
+        const navbar = document.querySelector('.navbar');
+        const navbarNav = document.getElementById('navbarNav');
+        const toggleBtn = document.querySelector('.mobile-nav-toggle');
+
+        if (!navbar.contains(event.target) && navbarNav.classList.contains('show')) {
+          navbarNav.classList.remove('show');
+          toggleBtn.querySelector('i').className = 'fas fa-bars';
+        }
+      });
+
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        const navbarNav = document.getElementById('navbarNav');
+        const toggleBtn = document.querySelector('.mobile-nav-toggle i');
+
+        if (window.innerWidth > 768 && navbarNav.classList.contains('show')) {
+          navbarNav.classList.remove('show');
+          toggleBtn.className = 'fas fa-bars';
+        }
       });
 
       // Initialize dashboard on load

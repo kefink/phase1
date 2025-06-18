@@ -498,6 +498,521 @@
             font-size: 16px;
             color: var(--color-sage-green);
             font-weight: bold;
+        }
+
+        /* Mobile-First Responsive Enhancements for Subject Teacher Dashboard */
+        @media (max-width: 480px) {
+            /* Mobile Navigation */
+            .navbar {
+                position: relative;
+                padding: var(--spacing-sm);
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+
+            .navbar-brand {
+                font-size: 1.125rem;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            .navbar-nav {
+                flex-direction: column;
+                width: 100%;
+                gap: var(--spacing-xs);
+            }
+
+            .nav-link {
+                padding: var(--spacing-sm);
+                text-align: center;
+                width: 100%;
+                border-radius: var(--radius-sm);
+            }
+
+            .logout-btn {
+                width: 100%;
+                justify-content: center;
+                margin-top: var(--spacing-xs);
+            }
+
+            /* Mobile Container */
+            .container {
+                padding: var(--spacing-sm);
+                max-width: 100%;
+            }
+
+            /* Mobile Page Header */
+            .page-header {
+                padding: var(--spacing-sm);
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .page-title {
+                font-size: 1.125rem;
+            }
+
+            .page-subtitle {
+                font-size: 0.75rem;
+            }
+
+            /* Mobile Dashboard Cards */
+            .dashboard-card {
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .card-header {
+                padding: var(--spacing-sm);
+                flex-direction: column;
+                text-align: center;
+                gap: var(--spacing-xs);
+            }
+
+            .card-header span {
+                font-size: 0.875rem;
+            }
+
+            .card-header small {
+                font-size: 0.7rem;
+            }
+
+            /* Mobile Forms */
+            .login-form {
+                padding: var(--spacing-sm);
+                grid-template-columns: 1fr;
+                gap: var(--spacing-sm);
+            }
+
+            .form-group label {
+                font-size: 0.7rem;
+            }
+
+            .form-group select,
+            .form-group input {
+                padding: var(--spacing-sm);
+                font-size: 1rem; /* Prevent zoom on iOS */
+            }
+
+            /* Mobile Buttons */
+            .btn {
+                padding: var(--spacing-sm) var(--spacing-md);
+                font-size: 0.875rem;
+                width: 100%;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            .btn-outline {
+                padding: var(--spacing-sm) var(--spacing-md);
+                width: 100%;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            /* Mobile Alerts */
+            .alert {
+                padding: var(--spacing-sm);
+                margin: var(--spacing-sm) 0;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            /* Mobile Composite Components */
+            .composite-components-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-sm);
+            }
+
+            .component-column {
+                padding: var(--spacing-sm);
+                min-height: 60px;
+            }
+
+            .component-mark {
+                padding: var(--spacing-sm);
+                font-size: 14px;
+            }
+
+            .component-percentage {
+                font-size: 11px;
+                padding: 2px 4px;
+            }
+
+            .overall-percentage {
+                font-size: 14px;
+            }
+
+            /* Mobile Performance Indicators */
+            .percentage-cell {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                font-size: 0.75rem;
+            }
+
+            /* Mobile Tables */
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .table {
+                min-width: 600px;
+                font-size: 0.75rem;
+            }
+
+            .table th,
+            .table td {
+                padding: var(--spacing-xs);
+                white-space: nowrap;
+            }
+        }
+
+        /* Small Mobile Devices */
+        @media (max-width: 360px) {
+            .container {
+                padding: var(--spacing-xs);
+            }
+
+            .navbar {
+                padding: var(--spacing-xs);
+            }
+
+            .navbar-brand {
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 1rem;
+            }
+
+            .card-header span {
+                font-size: 0.8rem;
+            }
+
+            .btn {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                font-size: 0.8rem;
+            }
+
+            .component-mark {
+                font-size: 12px;
+            }
+
+            .percentage-cell {
+                font-size: 0.7rem;
+                padding: 2px 4px;
+            }
+        }
+
+        /* Tablet Portrait */
+        @media (max-width: 768px) and (min-width: 481px) {
+            .navbar {
+                flex-direction: row;
+                padding: var(--spacing-md);
+            }
+
+            .navbar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: var(--spacing-sm);
+            }
+
+            .nav-link {
+                width: auto;
+                min-width: 100px;
+            }
+
+            .logout-btn {
+                width: auto;
+            }
+
+            .container {
+                padding: var(--spacing-md);
+            }
+
+            .login-form {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .composite-components-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .btn {
+                width: auto;
+                display: inline-flex;
+            }
+        }
+
+        /* Tablet Landscape */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .container {
+                padding: var(--spacing-lg);
+            }
+
+            .login-form {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .composite-components-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        }
+
+        /* Mobile-First Responsive Enhancements for Subject Teacher Dashboard */
+        @media (max-width: 480px) {
+            /* Mobile Navigation */
+            .navbar {
+                position: relative;
+                padding: var(--spacing-sm);
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+
+            .navbar-brand {
+                font-size: 1.125rem;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            .navbar-nav {
+                flex-direction: column;
+                width: 100%;
+                gap: var(--spacing-xs);
+            }
+
+            .nav-link {
+                padding: var(--spacing-sm);
+                text-align: center;
+                width: 100%;
+                border-radius: var(--radius-sm);
+            }
+
+            .logout-btn {
+                width: 100%;
+                justify-content: center;
+                margin-top: var(--spacing-xs);
+            }
+
+            /* Mobile Container */
+            .container {
+                padding: var(--spacing-sm);
+                max-width: 100%;
+            }
+
+            /* Mobile Page Header */
+            .page-header {
+                padding: var(--spacing-sm);
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .page-title {
+                font-size: 1.125rem;
+            }
+
+            .page-subtitle {
+                font-size: 0.75rem;
+            }
+
+            /* Mobile Dashboard Cards */
+            .dashboard-card {
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .card-header {
+                padding: var(--spacing-sm);
+                flex-direction: column;
+                text-align: center;
+                gap: var(--spacing-xs);
+            }
+
+            .card-header span {
+                font-size: 0.875rem;
+            }
+
+            .card-header small {
+                font-size: 0.7rem;
+            }
+
+            /* Mobile Forms */
+            .login-form {
+                padding: var(--spacing-sm);
+                grid-template-columns: 1fr;
+                gap: var(--spacing-sm);
+            }
+
+            .form-group label {
+                font-size: 0.7rem;
+            }
+
+            .form-group select,
+            .form-group input {
+                padding: var(--spacing-sm);
+                font-size: 1rem; /* Prevent zoom on iOS */
+            }
+
+            /* Mobile Buttons */
+            .btn {
+                padding: var(--spacing-sm) var(--spacing-md);
+                font-size: 0.875rem;
+                width: 100%;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            .btn-outline {
+                padding: var(--spacing-sm) var(--spacing-md);
+                width: 100%;
+                justify-content: center;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            /* Mobile Composite Components */
+            .composite-components-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-sm);
+            }
+
+            .component-column {
+                padding: var(--spacing-sm);
+                min-height: 60px;
+            }
+
+            .component-mark {
+                padding: var(--spacing-sm);
+                font-size: 14px;
+            }
+
+            .component-percentage {
+                font-size: 11px;
+                padding: 2px 4px;
+            }
+
+            .overall-percentage {
+                font-size: 14px;
+            }
+
+            /* Mobile Performance Indicators */
+            .percentage-cell {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                font-size: 0.75rem;
+            }
+
+            /* Mobile Alerts */
+            .alert {
+                padding: var(--spacing-sm);
+                margin: var(--spacing-sm) 0;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .alert::before {
+                margin-bottom: var(--spacing-xs);
+            }
+        }
+
+        /* Small Mobile Devices */
+        @media (max-width: 360px) {
+            .container {
+                padding: var(--spacing-xs);
+            }
+
+            .navbar {
+                padding: var(--spacing-xs);
+            }
+
+            .navbar-brand {
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 1rem;
+            }
+
+            .card-header {
+                padding: var(--spacing-xs);
+            }
+
+            .login-form {
+                padding: var(--spacing-xs);
+            }
+
+            .btn {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                font-size: 0.8rem;
+            }
+
+            .component-column {
+                padding: var(--spacing-xs);
+                min-height: 50px;
+            }
+
+            .component-mark {
+                font-size: 12px;
+            }
+        }
+
+        /* Tablet Portrait */
+        @media (max-width: 768px) and (min-width: 481px) {
+            .navbar {
+                flex-direction: row;
+                padding: var(--spacing-md);
+            }
+
+            .navbar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: var(--spacing-sm);
+            }
+
+            .nav-link {
+                width: auto;
+                min-width: 100px;
+            }
+
+            .logout-btn {
+                width: auto;
+                margin-top: 0;
+            }
+
+            .container {
+                padding: var(--spacing-md);
+            }
+
+            .login-form {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--spacing-md);
+            }
+
+            .composite-components-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--spacing-md);
+            }
+
+            .btn {
+                width: auto;
+                margin-bottom: 0;
+            }
+
+            .btn-outline {
+                width: auto;
+                margin-bottom: 0;
+            }
+        }
+
+        /* Tablet Landscape */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .container {
+                padding: var(--spacing-lg);
+                max-width: 900px;
+            }
+
+            .login-form {
+                grid-template-columns: repeat(3, 1fr);
+                gap: var(--spacing-lg);
+            }
+
+            .composite-components-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: var(--spacing-lg);
+            }
+        }
             background: var(--color-glass-mint);
             padding: 8px 12px;
             border-radius: var(--radius-sm);
@@ -1451,7 +1966,13 @@
 
     <nav class="navbar">
         <a href="#" class="navbar-brand">{{ school_info.school_name|default('School Management System') }}</a>
-        <ul class="navbar-nav">
+
+        <!-- Mobile Navigation Toggle -->
+        <button class="mobile-nav-toggle" onclick="toggleTeacherNav()" style="display: none;">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <ul class="navbar-nav" id="teacherNav">
             <li class="nav-item">
                 <a href="{{ url_for('teacher.dashboard') }}" class="nav-link">
                     <i class="fas fa-tachometer-alt"></i>
@@ -2942,6 +3463,64 @@
 
             debugLog('📚 Showing non-composite subject configuration');
         }
+
+        // Mobile Navigation Toggle for Teacher
+        function toggleTeacherNav() {
+            const teacherNav = document.getElementById('teacherNav');
+            const toggleBtn = document.querySelector('.mobile-nav-toggle i');
+
+            if (teacherNav.classList.contains('show')) {
+                teacherNav.classList.remove('show');
+                toggleBtn.className = 'fas fa-bars';
+            } else {
+                teacherNav.classList.add('show');
+                toggleBtn.className = 'fas fa-times';
+            }
+        }
+
+        // Close mobile nav when clicking outside
+        document.addEventListener('click', function(event) {
+            const navbar = document.querySelector('.navbar');
+            const teacherNav = document.getElementById('teacherNav');
+            const toggleBtn = document.querySelector('.mobile-nav-toggle');
+
+            if (!navbar.contains(event.target) && teacherNav.classList.contains('show')) {
+                teacherNav.classList.remove('show');
+                toggleBtn.querySelector('i').className = 'fas fa-bars';
+            }
+        });
+
+        // Handle window resize for teacher nav
+        window.addEventListener('resize', function() {
+            const teacherNav = document.getElementById('teacherNav');
+            const toggleBtn = document.querySelector('.mobile-nav-toggle i');
+
+            if (window.innerWidth > 768 && teacherNav.classList.contains('show')) {
+                teacherNav.classList.remove('show');
+                toggleBtn.className = 'fas fa-bars';
+            }
+        });
+
+        // Show/hide mobile nav toggle based on screen size
+        function updateTeacherMobileNavToggle() {
+            const toggleBtn = document.querySelector('.mobile-nav-toggle');
+            if (toggleBtn) {
+                if (window.innerWidth <= 768) {
+                    toggleBtn.style.display = 'block';
+                } else {
+                    toggleBtn.style.display = 'none';
+                    // Ensure nav is visible on larger screens
+                    const teacherNav = document.getElementById('teacherNav');
+                    if (teacherNav) {
+                        teacherNav.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        // Initialize mobile nav toggle visibility
+        updateTeacherMobileNavToggle();
+        window.addEventListener('resize', updateTeacherMobileNavToggle);
     </script>
 </body>
 </html>

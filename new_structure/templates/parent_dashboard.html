@@ -1,447 +1,837 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Parent Dashboard - Hillview School</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        body {
-            background: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        
+      body {
+        background: #f8f9fa;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      .navbar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .navbar-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+      }
+
+      .navbar-brand {
+        font-size: 1.5em;
+        font-weight: bold;
+      }
+
+      .navbar-menu {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+      }
+
+      .navbar-menu a {
+        color: white;
+        text-decoration: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+
+      .navbar-menu a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .dashboard-container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 20px;
+      }
+
+      .welcome-section {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .welcome-title {
+        font-size: 2em;
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      .welcome-subtitle {
+        color: #666;
+        font-size: 1.1em;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+      }
+
+      .dashboard-card {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+      }
+
+      .card-icon {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+      }
+
+      .card-title {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+      }
+
+      .children-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .child-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border: 1px solid #e1e5e9;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .child-item:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .child-info {
+        flex: 1;
+      }
+
+      .child-name {
+        font-weight: bold;
+        color: #333;
+        font-size: 1.1em;
+        margin-bottom: 5px;
+      }
+
+      .child-details {
+        color: #666;
+        font-size: 0.9em;
+      }
+
+      .child-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.9em;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .no-children {
+        text-align: center;
+        color: #666;
+        padding: 40px 20px;
+      }
+
+      .no-children i {
+        font-size: 4em;
+        color: #ddd;
+        margin-bottom: 20px;
+      }
+
+      .email-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .email-item {
+        padding: 15px;
+        border-left: 4px solid #667eea;
+        background: #f8f9fa;
+        margin-bottom: 10px;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .email-subject {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+      }
+
+      .email-meta {
+        color: #666;
+        font-size: 0.9em;
+      }
+
+      .no-emails {
+        text-align: center;
+        color: #666;
+        padding: 30px 20px;
+        font-style: italic;
+      }
+
+      .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .quick-action {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        color: #333;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+      }
+
+      .quick-action:hover {
+        background: #e9ecef;
+        border-color: #667eea;
+        transform: translateY(-2px);
+      }
+
+      .quick-action i {
+        font-size: 2em;
+        color: #667eea;
+        margin-bottom: 10px;
+      }
+
+      .quick-action-title {
+        font-weight: bold;
+        margin: 0;
+      }
+
+      .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: bold;
+      }
+
+      .status-verified {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .status-unverified {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+
+      /* Mobile-First Responsive Enhancements for Parent Portal */
+      @media (max-width: 480px) {
+        /* Mobile Navigation */
         .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          padding: 10px 0;
         }
-        
+
         .navbar-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
+          flex-direction: column;
+          gap: 15px;
+          padding: 0 15px;
         }
-        
+
         .navbar-brand {
-            font-size: 1.5em;
-            font-weight: bold;
+          font-size: 1.2em;
+          text-align: center;
         }
-        
+
         .navbar-menu {
-            display: flex;
-            gap: 20px;
-            align-items: center;
+          flex-direction: column;
+          gap: 10px;
+          width: 100%;
         }
-        
+
         .navbar-menu a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+          padding: 12px 15px;
+          text-align: center;
+          width: 100%;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.1);
         }
-        
-        .navbar-menu a:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
-        
+
+        /* Mobile Container */
         .dashboard-container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
+          margin: 15px auto;
+          padding: 0 15px;
         }
-        
+
+        /* Mobile Welcome Section */
         .welcome-section {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            text-align: center;
+          padding: 20px 15px;
+          margin-bottom: 20px;
+          text-align: center;
         }
-        
+
         .welcome-title {
-            font-size: 2em;
-            color: #333;
-            margin-bottom: 10px;
+          font-size: 1.5em;
+          margin-bottom: 8px;
         }
-        
+
         .welcome-subtitle {
-            color: #666;
-            font-size: 1.1em;
+          font-size: 1em;
         }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-        }
-        
-        .dashboard-card {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-        
-        .card-icon {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5em;
-        }
-        
-        .card-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #333;
-            margin: 0;
-        }
-        
-        .children-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .child-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border: 1px solid #e1e5e9;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .child-item:hover {
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-        
-        .child-info {
-            flex: 1;
-        }
-        
-        .child-name {
-            font-weight: bold;
-            color: #333;
-            font-size: 1.1em;
-            margin-bottom: 5px;
-        }
-        
-        .child-details {
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .child-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        .no-children {
-            text-align: center;
-            color: #666;
-            padding: 40px 20px;
-        }
-        
-        .no-children i {
-            font-size: 4em;
-            color: #ddd;
-            margin-bottom: 20px;
-        }
-        
-        .email-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .email-item {
-            padding: 15px;
-            border-left: 4px solid #667eea;
-            background: #f8f9fa;
-            margin-bottom: 10px;
-            border-radius: 0 8px 8px 0;
-        }
-        
-        .email-subject {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        
-        .email-meta {
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .no-emails {
-            text-align: center;
-            color: #666;
-            padding: 30px 20px;
-            font-style: italic;
-        }
-        
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .quick-action {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            text-decoration: none;
-            color: #333;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .quick-action:hover {
-            background: #e9ecef;
-            border-color: #667eea;
-            transform: translateY(-2px);
-        }
-        
-        .quick-action i {
-            font-size: 2em;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-        
-        .quick-action-title {
-            font-weight: bold;
-            margin: 0;
-        }
-        
+
         .status-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: bold;
+          display: block;
+          margin-top: 10px;
+          padding: 8px 12px;
+          font-size: 0.9em;
         }
-        
-        .status-verified {
-            background-color: #d4edda;
-            color: #155724;
+
+        /* Mobile Dashboard Grid */
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
         }
-        
-        .status-unverified {
-            background-color: #fff3cd;
-            color: #856404;
+
+        /* Mobile Dashboard Cards */
+        .dashboard-card {
+          padding: 20px 15px;
+          margin-bottom: 0;
         }
+
+        .card-header {
+          flex-direction: column;
+          text-align: center;
+          gap: 10px;
+          margin-bottom: 20px;
+        }
+
+        .card-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1.2em;
+        }
+
+        .card-title {
+          font-size: 1.1em;
+        }
+
+        /* Mobile Children List */
+        .child-item {
+          flex-direction: column;
+          gap: 15px;
+          padding: 15px;
+          text-align: center;
+        }
+
+        .child-info {
+          text-align: center;
+        }
+
+        .child-name {
+          font-size: 1em;
+        }
+
+        .child-details {
+          font-size: 0.85em;
+        }
+
+        .child-actions {
+          justify-content: center;
+          width: 100%;
+        }
+
+        .btn-primary {
+          padding: 10px 20px;
+          font-size: 0.9em;
+          width: 100%;
+          text-align: center;
+        }
+
+        /* Mobile No Children */
+        .no-children {
+          padding: 30px 15px;
+        }
+
+        .no-children i {
+          font-size: 3em;
+        }
+
+        /* Mobile Email List */
+        .email-item {
+          padding: 12px;
+          margin-bottom: 8px;
+        }
+
+        .email-subject {
+          font-size: 0.9em;
+          margin-bottom: 8px;
+        }
+
+        .email-meta {
+          font-size: 0.8em;
+        }
+
+        /* Mobile Quick Actions */
+        .quick-actions {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+          margin-top: 15px;
+        }
+
+        .quick-action {
+          padding: 15px 10px;
+          text-align: center;
+        }
+
+        .quick-action i {
+          font-size: 1.5em;
+          margin-bottom: 8px;
+        }
+
+        .quick-action-title {
+          font-size: 0.85em;
+        }
+
+        /* Mobile Flash Messages */
+        .alert {
+          margin: 0 -15px 15px -15px;
+          border-radius: 0;
+        }
+      }
+
+      /* Small Mobile Devices */
+      @media (max-width: 360px) {
+        .navbar-content {
+          padding: 0 10px;
+        }
+
+        .dashboard-container {
+          padding: 0 10px;
+        }
+
+        .welcome-section {
+          padding: 15px 10px;
+        }
+
+        .welcome-title {
+          font-size: 1.3em;
+        }
+
+        .dashboard-card {
+          padding: 15px 10px;
+        }
+
+        .card-icon {
+          width: 35px;
+          height: 35px;
+          font-size: 1em;
+        }
+
+        .card-title {
+          font-size: 1em;
+        }
+
+        .child-item {
+          padding: 12px;
+        }
+
+        .quick-actions {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .quick-action {
+          padding: 12px 8px;
+        }
+
+        .quick-action i {
+          font-size: 1.3em;
+        }
+
+        .quick-action-title {
+          font-size: 0.8em;
+        }
+      }
+
+      /* Tablet Portrait */
+      @media (max-width: 768px) and (min-width: 481px) {
+        .navbar-content {
+          padding: 0 20px;
+        }
+
+        .navbar-menu {
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 15px;
+        }
+
+        .navbar-menu a {
+          width: auto;
+          min-width: 120px;
+        }
+
+        .dashboard-container {
+          padding: 0 20px;
+        }
+
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+          gap: 25px;
+        }
+
+        .quick-actions {
+          grid-template-columns: repeat(4, 1fr);
+          gap: 15px;
+        }
+
+        .child-item {
+          flex-direction: row;
+          text-align: left;
+        }
+
+        .child-info {
+          text-align: left;
+        }
+
+        .child-actions {
+          justify-content: flex-end;
+          width: auto;
+        }
+
+        .btn-primary {
+          width: auto;
+        }
+      }
+
+      /* Tablet Landscape */
+      @media (max-width: 1024px) and (min-width: 769px) {
+        .dashboard-container {
+          padding: 0 30px;
+        }
+
+        .dashboard-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 30px;
+        }
+
+        .quick-actions {
+          grid-template-columns: repeat(4, 1fr);
+          gap: 20px;
+        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="navbar-content">
-            <div class="navbar-brand">
-                <i class="fas fa-graduation-cap"></i> Hillview School - Parent Portal
-            </div>
-            <div class="navbar-menu">
-                <a href="{{ url_for('parent.dashboard') }}">
-                    <i class="fas fa-home"></i> Dashboard
-                </a>
-                <a href="{{ url_for('parent.children') }}">
-                    <i class="fas fa-users"></i> My Children
-                </a>
-                <a href="{{ url_for('parent.profile') }}">
-                    <i class="fas fa-user"></i> Profile
-                </a>
-                <a href="{{ url_for('parent.logout') }}">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </div>
+      <div class="navbar-content">
+        <div class="navbar-brand">
+          <i class="fas fa-graduation-cap"></i> Hillview School - Parent Portal
         </div>
+
+        <!-- Mobile Navigation Toggle -->
+        <button
+          class="mobile-nav-toggle"
+          onclick="toggleParentNav()"
+          style="
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+          "
+        >
+          <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="navbar-menu" id="parentNav">
+          <a href="{{ url_for('parent.dashboard') }}">
+            <i class="fas fa-home"></i> Dashboard
+          </a>
+          <a href="{{ url_for('parent.children') }}">
+            <i class="fas fa-users"></i> My Children
+          </a>
+          <a href="{{ url_for('parent.profile') }}">
+            <i class="fas fa-user"></i> Profile
+          </a>
+          <a href="{{ url_for('parent.logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </div>
     </nav>
 
     <div class="dashboard-container">
-        <!-- Welcome Section -->
-        <div class="welcome-section">
-            <h1 class="welcome-title">Welcome, {{ parent.get_full_name() }}!</h1>
-            <p class="welcome-subtitle">
-                Stay connected with your children's academic progress
-                {% if not parent.is_verified %}
-                    <span class="status-badge status-unverified">
-                        <i class="fas fa-exclamation-triangle"></i> Email not verified
-                    </span>
-                {% else %}
-                    <span class="status-badge status-verified">
-                        <i class="fas fa-check-circle"></i> Account verified
-                    </span>
-                {% endif %}
+      <!-- Welcome Section -->
+      <div class="welcome-section">
+        <h1 class="welcome-title">Welcome, {{ parent.get_full_name() }}!</h1>
+        <p class="welcome-subtitle">
+          Stay connected with your children's academic progress {% if not
+          parent.is_verified %}
+          <span class="status-badge status-unverified">
+            <i class="fas fa-exclamation-triangle"></i> Email not verified
+          </span>
+          {% else %}
+          <span class="status-badge status-verified">
+            <i class="fas fa-check-circle"></i> Account verified
+          </span>
+          {% endif %}
+        </p>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div style="margin-bottom: 20px">
+        {% for category, message in messages %}
+        <div
+          class="alert alert-{{ 'danger' if category == 'error' else category }}"
+          style="
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          "
+        >
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
+      <!-- Dashboard Grid -->
+      <div class="dashboard-grid">
+        <!-- My Children -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <div class="card-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <h2 class="card-title">My Children ({{ children|length }})</h2>
+          </div>
+
+          {% if children %}
+          <ul class="children-list">
+            {% for link, student, grade, stream in children %}
+            <li class="child-item">
+              <div class="child-info">
+                <div class="child-name">{{ student.name }}</div>
+                <div class="child-details">
+                  {{ student.admission_number }} • {{ grade.name }} {{
+                  stream.name }}
+                </div>
+              </div>
+              <div class="child-actions">
+                <a href="#" class="btn-primary">
+                  <i class="fas fa-chart-line"></i> View Progress
+                </a>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <div class="no-children">
+            <i class="fas fa-user-graduate"></i>
+            <p>No children linked to your account yet.</p>
+            <p style="font-size: 0.9em; color: #999">
+              Please contact the school office to link your children to your
+              account.
             </p>
+          </div>
+          {% endif %}
         </div>
 
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div style="margin-bottom: 20px;">
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else category }}" 
-                             style="padding: 15px; border-radius: 8px; margin-bottom: 10px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <!-- Dashboard Grid -->
-        <div class="dashboard-grid">
-            <!-- My Children -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h2 class="card-title">My Children ({{ children|length }})</h2>
-                </div>
-                
-                {% if children %}
-                    <ul class="children-list">
-                        {% for link, student, grade, stream in children %}
-                        <li class="child-item">
-                            <div class="child-info">
-                                <div class="child-name">{{ student.name }}</div>
-                                <div class="child-details">
-                                    {{ student.admission_number }} • {{ grade.name }} {{ stream.name }}
-                                </div>
-                            </div>
-                            <div class="child-actions">
-                                <a href="#" class="btn-primary">
-                                    <i class="fas fa-chart-line"></i> View Progress
-                                </a>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <div class="no-children">
-                        <i class="fas fa-user-graduate"></i>
-                        <p>No children linked to your account yet.</p>
-                        <p style="font-size: 0.9em; color: #999;">
-                            Please contact the school office to link your children to your account.
-                        </p>
-                    </div>
-                {% endif %}
+        <!-- Recent Notifications -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <div class="card-icon">
+              <i class="fas fa-bell"></i>
             </div>
+            <h2 class="card-title">Recent Notifications</h2>
+          </div>
 
-            <!-- Recent Notifications -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <h2 class="card-title">Recent Notifications</h2>
-                </div>
-                
-                {% if recent_emails %}
-                    <ul class="email-list">
-                        {% for email in recent_emails %}
-                        <li class="email-item">
-                            <div class="email-subject">{{ email.subject }}</div>
-                            <div class="email-meta">
-                                <i class="fas fa-calendar"></i> {{ email.created_at.strftime('%B %d, %Y') }}
-                                • <i class="fas fa-tag"></i> {{ email.email_type.replace('_', ' ').title() }}
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <div class="no-emails">
-                        <i class="fas fa-envelope"></i>
-                        <p>No recent notifications</p>
-                    </div>
-                {% endif %}
-            </div>
+          {% if recent_emails %}
+          <ul class="email-list">
+            {% for email in recent_emails %}
+            <li class="email-item">
+              <div class="email-subject">{{ email.subject }}</div>
+              <div class="email-meta">
+                <i class="fas fa-calendar"></i> {{ email.created_at.strftime('%B
+                %d, %Y') }} • <i class="fas fa-tag"></i> {{
+                email.email_type.replace('_', ' ').title() }}
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <div class="no-emails">
+            <i class="fas fa-envelope"></i>
+            <p>No recent notifications</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="dashboard-card" style="margin-top: 30px">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-bolt"></i>
+          </div>
+          <h2 class="card-title">Quick Actions</h2>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="dashboard-card" style="margin-top: 30px;">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <h2 class="card-title">Quick Actions</h2>
-            </div>
-            
-            <div class="quick-actions">
-                <a href="{{ url_for('parent.children') }}" class="quick-action">
-                    <i class="fas fa-users"></i>
-                    <p class="quick-action-title">View Children</p>
-                </a>
-                <a href="{{ url_for('parent.profile') }}" class="quick-action">
-                    <i class="fas fa-user-edit"></i>
-                    <p class="quick-action-title">Update Profile</p>
-                </a>
-                <a href="#" class="quick-action">
-                    <i class="fas fa-download"></i>
-                    <p class="quick-action-title">Download Reports</p>
-                </a>
-                <a href="#" class="quick-action">
-                    <i class="fas fa-envelope"></i>
-                    <p class="quick-action-title">Contact School</p>
-                </a>
-            </div>
+        <div class="quick-actions">
+          <a href="{{ url_for('parent.children') }}" class="quick-action">
+            <i class="fas fa-users"></i>
+            <p class="quick-action-title">View Children</p>
+          </a>
+          <a href="{{ url_for('parent.profile') }}" class="quick-action">
+            <i class="fas fa-user-edit"></i>
+            <p class="quick-action-title">Update Profile</p>
+          </a>
+          <a href="#" class="quick-action">
+            <i class="fas fa-download"></i>
+            <p class="quick-action-title">Download Reports</p>
+          </a>
+          <a href="#" class="quick-action">
+            <i class="fas fa-envelope"></i>
+            <p class="quick-action-title">Contact School</p>
+          </a>
         </div>
+      </div>
     </div>
 
     <script>
-        // Auto-hide flash messages
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                alert.style.opacity = '0';
-                alert.style.transition = 'opacity 0.5s ease';
-                setTimeout(() => alert.remove(), 500);
-            });
-        }, 5000);
+      // Auto-hide flash messages
+      setTimeout(function () {
+        const alerts = document.querySelectorAll(".alert");
+        alerts.forEach((alert) => {
+          alert.style.opacity = "0";
+          alert.style.transition = "opacity 0.5s ease";
+          setTimeout(() => alert.remove(), 500);
+        });
+      }, 5000);
+
+      // Mobile Navigation Toggle for Parent Portal
+      function toggleParentNav() {
+        const parentNav = document.getElementById("parentNav");
+        const toggleBtn = document.querySelector(".mobile-nav-toggle i");
+
+        if (parentNav.classList.contains("show")) {
+          parentNav.classList.remove("show");
+          toggleBtn.className = "fas fa-bars";
+        } else {
+          parentNav.classList.add("show");
+          toggleBtn.className = "fas fa-times";
+        }
+      }
+
+      // Close mobile nav when clicking outside
+      document.addEventListener("click", function (event) {
+        const navbar = document.querySelector(".navbar");
+        const parentNav = document.getElementById("parentNav");
+        const toggleBtn = document.querySelector(".mobile-nav-toggle");
+
+        if (
+          !navbar.contains(event.target) &&
+          parentNav.classList.contains("show")
+        ) {
+          parentNav.classList.remove("show");
+          toggleBtn.querySelector("i").className = "fas fa-bars";
+        }
+      });
+
+      // Handle window resize for parent nav
+      window.addEventListener("resize", function () {
+        const parentNav = document.getElementById("parentNav");
+        const toggleBtn = document.querySelector(".mobile-nav-toggle i");
+
+        if (window.innerWidth > 768 && parentNav.classList.contains("show")) {
+          parentNav.classList.remove("show");
+          toggleBtn.className = "fas fa-bars";
+        }
+      });
+
+      // Show/hide mobile nav toggle based on screen size
+      function updateParentMobileNavToggle() {
+        const toggleBtn = document.querySelector(".mobile-nav-toggle");
+        if (toggleBtn) {
+          if (window.innerWidth <= 768) {
+            toggleBtn.style.display = "block";
+          } else {
+            toggleBtn.style.display = "none";
+            // Ensure nav is visible on larger screens
+            const parentNav = document.getElementById("parentNav");
+            if (parentNav) {
+              parentNav.classList.remove("show");
+            }
+          }
+        }
+      }
+
+      // Initialize mobile nav toggle visibility
+      updateParentMobileNavToggle();
+      window.addEventListener("resize", updateParentMobileNavToggle);
     </script>
-</body>
+  </body>
 </html>
