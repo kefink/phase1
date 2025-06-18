@@ -7,6 +7,7 @@ from .extensions import db, csrf
 from .config import config
 from .logging_config import setup_logging
 from .middleware import MarkSanitizerMiddleware
+from .security.security_manager import security_manager
 
 def create_app(config_name='default'):
     """Create and configure the Flask application.
@@ -28,6 +29,9 @@ def create_app(config_name='default'):
     # Initialize extensions
     db.init_app(app)
     csrf.init_app(app)
+
+    # Initialize comprehensive security
+    security_manager.init_app(app)
 
     # Register blueprints
     from .views import blueprints
