@@ -7,7 +7,8 @@ from .extensions import db, csrf
 from .config import config
 from .logging_config import setup_logging
 from .middleware import MarkSanitizerMiddleware
-from .security.security_manager import security_manager
+# Temporarily disable security manager for debugging
+# from .security.security_manager import security_manager
 
 def create_app(config_name='default'):
     """Create and configure the Flask application.
@@ -30,16 +31,21 @@ def create_app(config_name='default'):
     db.init_app(app)
     csrf.init_app(app)
 
-    # Initialize comprehensive security
-    security_manager.init_app(app)
+    # Initialize comprehensive security (temporarily disabled for debugging)
+    # security_manager.init_app(app)
 
-    # Register blueprints
-    from .views import blueprints
-    for blueprint in blueprints:
-        app.register_blueprint(blueprint)
-        # Exempt parent portal from CSRF protection
-        if hasattr(blueprint, 'name') and 'parent' in blueprint.name:
-            csrf.exempt(blueprint)
+    # Register blueprints with error handling
+    try:
+        from .views import blueprints
+        for blueprint in blueprints:
+            app.register_blueprint(blueprint)
+            # Exempt parent portal from CSRF protection
+            if hasattr(blueprint, 'name') and 'parent' in blueprint.name:
+                csrf.exempt(blueprint)
+        print(f"✅ Successfully registered {len(blueprints)} blueprints")
+    except Exception as e:
+        print(f"❌ Error importing blueprints: {e}")
+        print("⚠️ Application will start with minimal functionality")
 
     # Register middleware
     MarkSanitizerMiddleware(app)

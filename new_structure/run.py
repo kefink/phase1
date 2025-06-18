@@ -15,10 +15,12 @@ try:
     print("🔄 Starting Hillview School Management System...")
     print("📍 Current directory:", os.getcwd())
 
+    print("🔍 Attempting to import create_app...")
     # Import create_app from the new_structure package
     from new_structure import create_app
     print("✅ Successfully imported create_app")
 
+    print("🔍 Attempting to create Flask app...")
     # Create the Flask application
     app = create_app('development')
     print("✅ Successfully created Flask app")
