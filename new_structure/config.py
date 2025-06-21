@@ -3,6 +3,7 @@ Configuration settings for the Hillview School Management System.
 Enhanced with scalability features and multi-environment support.
 """
 import os
+import urllib.parse
 from typing import Optional
 from pathlib import Path
 
@@ -14,8 +15,8 @@ class Config:
     # MySQL Configuration
     MYSQL_HOST = os.environ.get('MYSQL_HOST') or 'localhost'
     MYSQL_PORT = int(os.environ.get('MYSQL_PORT') or 3306)
-    MYSQL_USER = os.environ.get('MYSQL_USER') or 'hillview_demo001_user'
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or 'hillview_demo_pass_2024'
+    MYSQL_USER = os.environ.get('MYSQL_USER') or 'root'
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or urllib.parse.quote_plus('@2494/lK')
     MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE') or 'hillview_demo001'
     
     # SQLAlchemy MySQL URI
@@ -106,9 +107,8 @@ class DevelopmentConfig(Config):
     LOG_LEVEL = 'DEBUG'
     WTF_CSRF_ENABLED = False  # Disable CSRF for easier development
 
-    # Use SQLite for development if MySQL not available
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(os.path.dirname(__file__), 'kirima_primary.db')
+    # Use MySQL for development (inherits from base Config class)
+    # SQLALCHEMY_DATABASE_URI is inherited from Config class - MySQL configuration
 
     @classmethod
     def init_app(cls, app):

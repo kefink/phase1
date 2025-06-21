@@ -95,6 +95,8 @@ def analytics_dashboard():
 @admin_required
 def dashboard():
     """Route for the admin/headteacher dashboard."""
+    print(f"DEBUG: Admin dashboard accessed")
+    print(f"DEBUG: Session contents: {dict(session)}")
     # Temporarily disable cache to ensure fresh data
     # cached_stats = get_cached_dashboard_stats()
     # if cached_stats:

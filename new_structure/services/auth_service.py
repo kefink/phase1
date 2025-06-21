@@ -1,21 +1,42 @@
 """
 Authentication services for the Hillview School Management System.
 """
+import logging
 from ..models import Teacher
+
+logger = logging.getLogger(__name__)
 
 def authenticate_teacher(username, password, role):
     """
     Authenticate a teacher with the given credentials.
-    
+
     Args:
         username: The teacher's username
         password: The teacher's password
         role: The teacher's role (headteacher, teacher, classteacher)
-        
+
     Returns:
         Teacher object if authentication is successful, None otherwise
     """
-    return Teacher.query.filter_by(username=username, password=password, role=role).first()
+    try:
+        return Teacher.query.filter_by(username=username, password=password, role=role).first()
+    except Exception as e:
+        logger.error(f"Authentication error: {e}")
+        # If there's a database error, try to initialize the database
+        try:
+            from ..utils.database_init import check_database_integrity, initialize_database_completely
+
+            status = check_database_integrity()
+            if status['status'] != 'healthy':
+                logger.info("Database not healthy, attempting initialization...")
+                result = initialize_database_completely()
+                if result['success']:
+                    logger.info("Database initialized successfully, retrying authentication...")
+                    return Teacher.query.filter_by(username=username, password=password, role=role).first()
+        except Exception as init_error:
+            logger.error(f"Database initialization error: {init_error}")
+
+        return None
 
 def get_teacher_by_id(teacher_id):
     """

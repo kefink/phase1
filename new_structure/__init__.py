@@ -31,6 +31,33 @@ def create_app(config_name='default'):
     db.init_app(app)
     csrf.init_app(app)
 
+    # Initialize database with tables and default data
+    with app.app_context():
+        try:
+            from .utils.database_init import initialize_database_completely, check_database_integrity
+
+            # Check if database needs initialization
+            status = check_database_integrity()
+
+            if status['status'] != 'healthy':
+                print("Database needs initialization...")
+                result = initialize_database_completely()
+
+                if result['success']:
+                    print("Database initialized successfully!")
+                    print(f"   Teachers: {result['status']['teacher_count']}")
+                    print(f"   Subjects: {result['status']['subject_count']}")
+                    print(f"   Grades: {result['status']['grade_count']}")
+                    print(f"   Streams: {result['status']['stream_count']}")
+                else:
+                    print(f"Database initialization failed: {result.get('error', 'Unknown error')}")
+            else:
+                print("Database is healthy and ready!")
+
+        except Exception as e:
+            print(f"Database initialization error: {e}")
+            print("   Application will continue but may have limited functionality")
+
     # Initialize comprehensive security (temporarily disabled for debugging)
     # security_manager.init_app(app)
 
@@ -75,10 +102,55 @@ def create_app(config_name='default'):
     # Import the classteacher blueprint
     from .views.classteacher import classteacher_bp
 
+    # Add a simple health check route
+    @app.route('/health')
+    def health_check():
+        """Simple health check route"""
+        try:
+            from .utils.database_init import check_database_integrity
+            status = check_database_integrity()
+
+            if status['status'] == 'healthy':
+                return f"""
+                <h2>✅ System Health Check</h2>
+                <p><strong>Status:</strong> <span style="color: green;">Healthy</span></p>
+                <p><strong>Teachers:</strong> {status['teacher_count']}</p>
+                <p><strong>Subjects:</strong> {status['subject_count']}</p>
+                <p><strong>Grades:</strong> {status['grade_count']}</p>
+                <p><strong>Streams:</strong> {status['stream_count']}</p>
+                <p><a href="/">🏠 Go to Login Page</a></p>
+                """
+            else:
+                return f"""
+                <h2>⚠️ System Health Check</h2>
+                <p><strong>Status:</strong> <span style="color: red;">{status['status']}</span></p>
+                <p><a href="/debug/initialize_database" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">🔄 Initialize Database</a></p>
+                <p><a href="/">🏠 Go to Login Page</a></p>
+                """
+        except Exception as e:
+            return f"""
+            <h2>❌ System Health Check</h2>
+            <p><strong>Status:</strong> <span style="color: red;">Error</span></p>
+            <p><strong>Error:</strong> {str(e)}</p>
+            <p><a href="/debug/initialize_database" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">🔄 Initialize Database</a></p>
+            """
+
     # Register error handlers
     @app.errorhandler(500)
     def internal_server_error(e):
         app.logger.error(f"Internal Server Error: {str(e)}")
+        # Check if it's a database error and provide helpful message
+        error_str = str(e)
+        if "no such table" in error_str.lower() or "database" in error_str.lower():
+            return f"""
+            <h2>🔧 Database Error Detected</h2>
+            <p>It looks like there's a database issue. This usually means the database tables haven't been created yet.</p>
+            <p><strong>Quick Fix:</strong></p>
+            <p><a href="/debug/initialize_database" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">🔄 Initialize Database</a></p>
+            <p><a href="/debug/check_tables" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">📋 Check Database Tables</a></p>
+            <hr>
+            <p><strong>Error Details:</strong> {error_str}</p>
+            """, 500
         return "Internal Server Error", 500
 
     # Temporary routes for debugging user issues
@@ -1552,6 +1624,165 @@ def create_app(config_name='default'):
 
         except Exception as e:
             return f"❌ Error performing cleanup: {e}"
+
+    @app.route('/debug/initialize_database')
+    def debug_initialize_database():
+        """Debug route to manually initialize the database."""
+        try:
+            from .utils.database_init import initialize_database_completely, check_database_integrity
+
+            # Check current status
+            current_status = check_database_integrity()
+
+            result = "<h2>🔄 Database Initialization</h2>"
+            result += f"<h3>📊 Current Status:</h3>"
+            result += f"<ul>"
+            result += f"<li>Tables Exist: {'✅' if current_status['tables_exist'] else '❌'}</li>"
+            result += f"<li>Has Data: {'✅' if current_status['has_data'] else '❌'}</li>"
+            result += f"<li>Teachers: {current_status.get('teacher_count', 0)}</li>"
+            result += f"<li>Subjects: {current_status.get('subject_count', 0)}</li>"
+            result += f"<li>Grades: {current_status.get('grade_count', 0)}</li>"
+            result += f"<li>Streams: {current_status.get('stream_count', 0)}</li>"
+            result += f"<li>Status: {current_status['status']}</li>"
+            result += f"</ul>"
+
+            if current_status['status'] != 'healthy':
+                result += f"<h3>🔧 Initializing Database...</h3>"
+
+                init_result = initialize_database_completely()
+
+                if init_result['success']:
+                    result += f"<p style='color: green;'>✅ <strong>Database initialized successfully!</strong></p>"
+                    result += f"<ul>"
+                    result += f"<li>Teachers: {init_result['status']['teacher_count']}</li>"
+                    result += f"<li>Subjects: {init_result['status']['subject_count']}</li>"
+                    result += f"<li>Grades: {init_result['status']['grade_count']}</li>"
+                    result += f"<li>Streams: {init_result['status']['stream_count']}</li>"
+                    result += f"</ul>"
+                    result += f"<p><strong>Default Users Created:</strong></p>"
+                    result += f"<ul>"
+                    result += f"<li><strong>headteacher</strong> / admin123 (Headteacher)</li>"
+                    result += f"<li><strong>classteacher1</strong> / class123 (Class Teacher)</li>"
+                    result += f"<li><strong>kevin</strong> / kev123 (Class Teacher)</li>"
+                    result += f"<li><strong>telvo</strong> / telvo123 (Subject Teacher)</li>"
+                    result += f"</ul>"
+                    result += f"<p><a href='/'>🏠 Go to Login Page</a></p>"
+                else:
+                    result += f"<p style='color: red;'>❌ <strong>Database initialization failed:</strong> {init_result.get('error', 'Unknown error')}</p>"
+            else:
+                result += f"<p style='color: green;'>✅ <strong>Database is already healthy!</strong></p>"
+                result += f"<p><a href='/debug/check_users'>👥 Check Users</a></p>"
+                result += f"<p><a href='/'>🏠 Go to Login Page</a></p>"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error during database initialization: {str(e)}"
+
+    @app.route('/debug/repair_database')
+    def debug_repair_database():
+        """Debug route to repair the database."""
+        try:
+            from .utils.database_init import repair_database
+
+            result = "<h2>🔧 Database Repair</h2>"
+
+            repair_result = repair_database()
+
+            if repair_result['success']:
+                result += f"<p style='color: green;'>✅ <strong>Database repaired successfully!</strong></p>"
+                result += f"<h3>📊 Before Repair:</h3><ul>"
+                before = repair_result['before']
+                result += f"<li>Tables Exist: {'✅' if before['tables_exist'] else '❌'}</li>"
+                result += f"<li>Has Data: {'✅' if before['has_data'] else '❌'}</li>"
+                result += f"<li>Status: {before['status']}</li>"
+                result += f"</ul>"
+
+                result += f"<h3>📊 After Repair:</h3><ul>"
+                after = repair_result['after']
+                result += f"<li>Tables Exist: {'✅' if after['tables_exist'] else '❌'}</li>"
+                result += f"<li>Has Data: {'✅' if after['has_data'] else '❌'}</li>"
+                result += f"<li>Teachers: {after.get('teacher_count', 0)}</li>"
+                result += f"<li>Subjects: {after.get('subject_count', 0)}</li>"
+                result += f"<li>Status: {after['status']}</li>"
+                result += f"</ul>"
+
+                result += f"<p><a href='/'>🏠 Go to Login Page</a></p>"
+            else:
+                result += f"<p style='color: red;'>❌ <strong>Database repair failed:</strong> {repair_result.get('error', 'Unknown error')}</p>"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error during database repair: {str(e)}"
+
+    @app.route('/debug/test_login')
+    def debug_test_login():
+        """Debug route to test login functionality."""
+        try:
+            from .services.auth_service import authenticate_teacher
+            from .models.user import Teacher
+
+            result = "<h2>🔍 Login Test</h2>"
+
+            # Test database connection
+            try:
+                teacher_count = Teacher.query.count()
+                result += f"<p>✅ Database connection: OK ({teacher_count} teachers found)</p>"
+            except Exception as e:
+                result += f"<p>❌ Database connection: FAILED - {e}</p>"
+                return result
+
+            # Test authentication for each default user
+            test_users = [
+                ('headteacher', 'admin123', 'headteacher'),
+                ('classteacher1', 'class123', 'classteacher'),
+                ('kevin', 'kev123', 'classteacher'),
+                ('telvo', 'telvo123', 'teacher')
+            ]
+
+            result += "<h3>🧪 Authentication Tests:</h3><ul>"
+
+            for username, password, role in test_users:
+                try:
+                    teacher = authenticate_teacher(username, password, role)
+                    if teacher:
+                        result += f"<li>✅ <strong>{username}</strong> / {password} ({role}) - SUCCESS</li>"
+                    else:
+                        result += f"<li>❌ <strong>{username}</strong> / {password} ({role}) - FAILED</li>"
+                except Exception as e:
+                    result += f"<li>❌ <strong>{username}</strong> / {password} ({role}) - ERROR: {e}</li>"
+
+            result += "</ul>"
+
+            # Test session functionality
+            result += "<h3>🔧 Session Test:</h3>"
+            try:
+                from flask import session
+                session['test_key'] = 'test_value'
+                if session.get('test_key') == 'test_value':
+                    result += "<p>✅ Session functionality: OK</p>"
+                else:
+                    result += "<p>❌ Session functionality: FAILED</p>"
+            except Exception as e:
+                result += f"<p>❌ Session functionality: ERROR - {e}</p>"
+
+            # Test URL generation
+            result += "<h3>🔗 URL Generation Test:</h3>"
+            try:
+                from flask import url_for
+                admin_url = url_for('admin.dashboard')
+                classteacher_url = url_for('classteacher.dashboard')
+                result += f"<p>✅ Admin dashboard URL: {admin_url}</p>"
+                result += f"<p>✅ Classteacher dashboard URL: {classteacher_url}</p>"
+            except Exception as e:
+                result += f"<p>❌ URL generation: ERROR - {e}</p>"
+
+            result += f"<p><a href='/'>🏠 Go to Login Page</a></p>"
+            return result
+
+        except Exception as e:
+            return f"❌ Error during login test: {str(e)}"
 
     # Log application startup
     app.logger.info("Application initialized")

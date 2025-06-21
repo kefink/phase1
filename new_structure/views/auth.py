@@ -26,19 +26,35 @@ def index():
 def admin_login():
     """Route for headteacher login."""
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        print(f"DEBUG: Admin login attempt - Username: '{username}', Password: '{password}'")
+
         teacher = authenticate_teacher(username, password, 'headteacher')
-        
+
+        print(f"DEBUG: Admin authentication result - Teacher: {teacher}")
+
         if teacher:
+            print(f"DEBUG: Setting admin session - Teacher ID: {teacher.id}, Role: headteacher")
             session['teacher_id'] = teacher.id
             session['role'] = 'headteacher'
             session.permanent = True
-            return redirect(url_for('admin.dashboard'))
-        
+
+            print(f"DEBUG: Admin session set, redirecting to dashboard")
+            print(f"DEBUG: Session contents: {dict(session)}")
+
+            try:
+                redirect_url = url_for('admin.dashboard')
+                print(f"DEBUG: Redirect URL: {redirect_url}")
+                return redirect(redirect_url)
+            except Exception as e:
+                print(f"DEBUG: Error generating redirect URL: {e}")
+                return f"Error: Could not redirect to dashboard. Error: {e}"
+
+        print(f"DEBUG: Admin authentication failed")
         return render_template('admin_login.html', error='Invalid credentials')
-    
+
     return render_template('admin_login.html')
 
 @auth_bp.route('/teacher_login', methods=['GET', 'POST'])
@@ -80,8 +96,16 @@ def classteacher_login():
             session['teacher_id'] = teacher.id
             session['role'] = 'classteacher'
             session.permanent = True
-            print(f"DEBUG: Redirecting to classteacher dashboard")
-            return redirect(url_for('classteacher.dashboard'))
+
+            print(f"DEBUG: Session set, contents: {dict(session)}")
+
+            try:
+                redirect_url = url_for('classteacher.dashboard')
+                print(f"DEBUG: Classteacher redirect URL: {redirect_url}")
+                return redirect(redirect_url)
+            except Exception as e:
+                print(f"DEBUG: Error generating classteacher redirect URL: {e}")
+                return f"Error: Could not redirect to classteacher dashboard. Error: {e}"
 
         print(f"DEBUG: Authentication failed - returning error")
         return render_template('classteacher_login.html', error='Invalid credentials')

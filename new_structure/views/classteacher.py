@@ -266,9 +266,14 @@ def analytics_dashboard():
 @classteacher_required
 def dashboard():
     """Route for the class teacher dashboard."""
+    print(f"DEBUG: Classteacher dashboard accessed")
+    print(f"DEBUG: Session contents: {dict(session)}")
+
     # Get the teacher
     teacher_id = session.get('teacher_id')
+    print(f"DEBUG: Teacher ID from session: {teacher_id}")
     teacher = Teacher.query.get(teacher_id)
+    print(f"DEBUG: Teacher object: {teacher}")
 
     if not teacher:
         flash("Teacher not found.", "error")
