@@ -150,6 +150,9 @@ class TestingConfig(Config):
     RATELIMIT_ENABLED = False
     WTF_CSRF_ENABLED = False
     LOG_LEVEL = 'ERROR'
+    FORCE_HTTPS = False
+    STRICT_ROLE_ENFORCEMENT = False  # Relaxed for testing
+    SECRET_KEY = 'test-secret-key-for-testing'
 
     # Use in-memory SQLite for testing
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
