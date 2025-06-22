@@ -728,7 +728,7 @@
                 <li class="disabled"><span>&lsaquo; Previous</span></li>
               {% endif %}
 
-              {% for page_num in pagination.iter_pages %}
+              {% for page_num in pagination.iter_pages() %}
                 {% if page_num %}
                   {% if page_num == pagination.page %}
                     <li class="active"><span>{{ page_num }}</span></li>
