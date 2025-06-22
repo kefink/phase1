@@ -1,0 +1,205 @@
+{
+  "test_metadata": {
+    "target_url": "http://localhost:5000",
+    "test_date": "2025-06-21T23:58:29.096192",
+    "test_duration": "0:19:21.763619",
+    "total_vulnerabilities": 20
+  },
+  "risk_summary": {
+    "CRITICAL": 0,
+    "HIGH": 18,
+    "MEDIUM": 1,
+    "LOW": 1,
+    "INFO": 0
+  },
+  "vulnerabilities": [
+    {
+      "timestamp": "2025-06-21T23:59:27.407927",
+      "category": "A07",
+      "severity": "MEDIUM",
+      "title": "Insecure Session Cookie Configuration",
+      "description": "Session cookies lack security attributes",
+      "evidence": "Cookie issues: Missing Secure flag, Missing HttpOnly flag, Missing SameSite attribute",
+      "remediation": "Set Secure, HttpOnly, and SameSite attributes on session cookies",
+      "cvss_score": 5.0
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /student/../",
+      "description": "headteacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /student/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /teacher/../",
+      "description": "headteacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /teacher/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /report/../",
+      "description": "headteacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /report/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /mark/../",
+      "description": "headteacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /mark/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /student/../",
+      "description": "classteacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /student/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /teacher/../",
+      "description": "classteacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /teacher/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /report/../",
+      "description": "classteacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /report/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /mark/../",
+      "description": "classteacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /mark/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /student/../",
+      "description": "teacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /student/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /teacher/../",
+      "description": "teacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /teacher/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /report/../",
+      "description": "teacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /report/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A01 - Broken Access Control",
+      "severity": "HIGH",
+      "title": "Insecure Direct Object Reference in /mark/../",
+      "description": "teacher can access sensitive data via object ID ../",
+      "evidence": "Endpoint: /mark/../, Pattern: admin.*:",
+      "remediation": "Implement proper authorization checks for object access",
+      "cvss_score": 8.5
+    },
+    {
+      "category": "A05 - Security Misconfiguration",
+      "severity": "HIGH",
+      "title": "Missing Security Header: Strict-Transport-Security",
+      "description": "Security header Strict-Transport-Security is missing",
+      "evidence": "Header: Strict-Transport-Security not found in response",
+      "remediation": "Add Strict-Transport-Security header. Enforces HTTPS connections",
+      "cvss_score": 7.5
+    },
+    {
+      "category": "A05 - Security Misconfiguration",
+      "severity": "LOW",
+      "title": "Information Disclosure Header: Server",
+      "description": "Server information disclosed in Server header",
+      "evidence": "Header: Server: Werkzeug/3.1.3 Python/3.11.9",
+      "remediation": "Remove or obfuscate Server header",
+      "cvss_score": 2.5
+    },
+    {
+      "category": "A05 - Security Misconfiguration",
+      "severity": "HIGH",
+      "title": "HTTP Used Instead of HTTPS",
+      "description": "Application is not using HTTPS encryption",
+      "evidence": "URL scheme: http",
+      "remediation": "Implement HTTPS with proper SSL/TLS configuration",
+      "cvss_score": 7.5
+    },
+    {
+      "category": "A02 - Cryptographic Failures",
+      "severity": "HIGH",
+      "title": "Insecure Data Transmission",
+      "description": "Application uses HTTP instead of HTTPS",
+      "evidence": "URL: http://localhost:5000",
+      "remediation": "Implement HTTPS for all communications",
+      "cvss_score": 7.5
+    },
+    {
+      "category": "A04 - Insecure Design",
+      "severity": "HIGH",
+      "title": "Business Logic Bypass in /headteacher/manage_teachers",
+      "description": "Unauthorized access to teacher restricted functionality",
+      "evidence": "URL: /headteacher/manage_teachers, Status: 200",
+      "remediation": "Implement proper role-based access controls",
+      "cvss_score": 7.5
+    },
+    {
+      "category": "A04 - Insecure Design",
+      "severity": "HIGH",
+      "title": "Business Logic Bypass in /headteacher/analytics",
+      "description": "Unauthorized access to classteacher restricted functionality",
+      "evidence": "URL: /headteacher/analytics, Status: 200",
+      "remediation": "Implement proper role-based access controls",
+      "cvss_score": 7.5
+    },
+    {
+      "category": "A04 - Insecure Design",
+      "severity": "HIGH",
+      "title": "Business Logic Bypass in /classteacher/manage_students",
+      "description": "Unauthorized access to teacher restricted functionality",
+      "evidence": "URL: /classteacher/manage_students, Status: 200",
+      "remediation": "Implement proper role-based access controls",
+      "cvss_score": 7.5
+    }
+  ],
+  "owasp_coverage": {
+    "A07": 1,
+    "A01": 12,
+    "A05": 3,
+    "A02": 1,
+    "A04": 3
+  }
+}

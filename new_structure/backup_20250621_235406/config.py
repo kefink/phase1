@@ -8,21 +8,6 @@ from typing import Optional
 from pathlib import Path
 
 class Config:
-    # ULTRA-SECURE SESSION CONFIGURATION - FIXES 1 VULNERABILITY
-    SESSION_COOKIE_SECURE = True           # HTTPS only
-    SESSION_COOKIE_HTTPONLY = True        # No JavaScript access
-    SESSION_COOKIE_SAMESITE = 'Strict'    # Strict CSRF protection
-    PERMANENT_SESSION_LIFETIME = 1800     # 30 minutes timeout
-    SESSION_COOKIE_NAME = 'hillview_secure_session'
-    
-    # HTTPS ENFORCEMENT - FIXES 1 VULNERABILITY
-    FORCE_HTTPS = True  # Enable in production
-    
-    # STRICT SECURITY SETTINGS
-    STRICT_ROLE_ENFORCEMENT = True
-    SESSION_PROTECTION = 'strong'
-    WTF_CSRF_TIME_LIMIT = 3600  # 1 hour CSRF token lifetime
-
     # Secure Session Configuration
     SESSION_COOKIE_SECURE = False  # Set to True when using HTTPS
     SESSION_COOKIE_HTTPONLY = True
@@ -235,29 +220,3 @@ def is_production() -> bool:
 def is_testing() -> bool:
     """Check if running in testing environment"""
     return os.environ.get('FLASK_ENV') == 'testing'
-
-# PRODUCTION SECURITY CONFIGURATION
-class ProductionConfig(Config):
-    """Production configuration with maximum security."""
-    
-    # Force HTTPS
-    FORCE_HTTPS = True
-    
-    # Ultra-secure session settings
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Strict'
-    PERMANENT_SESSION_LIFETIME = 1800  # 30 minutes
-    
-    # Strict security enforcement
-    STRICT_ROLE_ENFORCEMENT = True
-    SESSION_PROTECTION = 'strong'
-    
-    # Security headers
-    SECURITY_HEADERS = {
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-        'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
-        'X-XSS-Protection': '1; mode=block',
-        'Referrer-Policy': 'strict-origin-when-cross-origin'
-    }
