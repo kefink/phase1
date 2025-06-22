@@ -95,8 +95,6 @@ def analytics_dashboard():
 @admin_required
 def dashboard():
     """Route for the admin/headteacher dashboard."""
-    print(f"DEBUG: Admin dashboard accessed")
-    print(f"DEBUG: Session contents: {dict(session)}")
     # Temporarily disable cache to ensure fresh data
     # cached_stats = get_cached_dashboard_stats()
     # if cached_stats:
@@ -222,9 +220,6 @@ def dashboard():
 
     # Generate performance assessment data
     performance_data = generate_performance_assessment_data()
-    print(f"DEBUG: Generated {len(performance_data)} performance records")
-    if performance_data:
-        print(f"DEBUG: First record: {performance_data[0]}")
 
     # Performance alerts
     performance_alerts = []
@@ -1014,20 +1009,22 @@ def manage_grades_streams():
             if grade_id:
                 grade = Grade.query.get(grade_id)
                 if grade:
-                    # Check if grade has streams
-                    streams_in_grade = Stream.query.filter_by(grade_id=grade_id).first()
-                    if streams_in_grade:
-                        error_message = f"Cannot delete grade '{grade.name}' because it has streams. Delete the streams first."
-                    else:
-                        try:
-                            db.session.delete(grade)
-                            db.session.commit()
-                            success_message = f"Grade '{grade.name}' deleted successfully."
-                            # Refresh grades list
-                            grades = Grade.query.all()
-                        except Exception as e:
-                            db.session.rollback()
-                            error_message = f"Error deleting grade: {str(e)}"
+                    try:
+                        # Delete all streams associated with this grade first
+                        streams_in_grade = Stream.query.filter_by(grade_id=grade_id).all()
+                        for stream in streams_in_grade:
+                            db.session.delete(stream)
+
+                        # Now delete the grade
+                        grade_name = grade.name
+                        db.session.delete(grade)
+                        db.session.commit()
+                        success_message = f"Grade '{grade_name}' and its streams deleted successfully."
+                        # Refresh grades list
+                        grades = Grade.query.all()
+                    except Exception as e:
+                        db.session.rollback()
+                        error_message = f"Error deleting grade: {str(e)}"
 
         # Delete stream
         elif 'delete_stream' in request.form:

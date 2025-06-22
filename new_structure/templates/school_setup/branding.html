@@ -277,16 +277,18 @@
                 Upload your school logo (PNG, JPG, or SVG recommended)
               </div>
 
-              <div class="logo-preview">
+              <div class="logo-preview" id="logo-preview">
                 {% if setup.logo_filename %}
                 <img
                   src="/static/uploads/logos/{{ setup.logo_filename }}"
                   alt="School Logo"
+                  id="logo-image"
                 />
                 {% else %}
                 <i
                   class="fas fa-image"
                   style="font-size: 2rem; color: #9ca3af"
+                  id="logo-placeholder"
                 ></i>
                 {% endif %}
               </div>
@@ -381,6 +383,46 @@
     </div>
 
     <script>
+      // Logo preview functionality
+      document
+        .getElementById("logo_file")
+        .addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          const preview = document.getElementById("logo-preview");
+
+          if (file) {
+            // Check if file is an image
+            if (file.type.startsWith("image/")) {
+              const reader = new FileReader();
+
+              reader.onload = function (e) {
+                // Remove existing content
+                preview.innerHTML = "";
+
+                // Create new image element
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.alt = "School Logo Preview";
+                img.id = "logo-image";
+                img.style.maxWidth = "90px";
+                img.style.maxHeight = "90px";
+                img.style.objectFit = "contain";
+
+                preview.appendChild(img);
+              };
+
+              reader.readAsDataURL(file);
+            } else {
+              alert("Please select a valid image file (PNG, JPG, JPEG, SVG)");
+              event.target.value = "";
+            }
+          } else {
+            // Reset to placeholder if no file selected
+            preview.innerHTML =
+              '<i class="fas fa-image" style="font-size: 2rem; color: #9ca3af" id="logo-placeholder"></i>';
+          }
+        });
+
       // Update color previews when colors change
       document
         .getElementById("primary_color")

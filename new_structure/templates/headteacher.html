@@ -134,12 +134,6 @@
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       }
 
-      .navbar-brand::before {
-        content: "🏫";
-        font-size: 1.8rem;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-      }
-
       .navbar-nav {
         display: flex;
         list-style: none;
@@ -1464,9 +1458,10 @@
         "
       >
         <a href="#" class="navbar-brand">
-          {% if logo_path and logo_path != 'hv.jpg' %}
+          {% if school_info.logo_url and school_info.logo_url !=
+          '/static/images/default_logo.png' %}
           <img
-            src="{{ url_for('static', filename=logo_path) }}"
+            src="{{ school_info.logo_url }}"
             alt="School Logo"
             style="
               height: 40px;
@@ -1475,7 +1470,8 @@
               border-radius: 8px;
             "
           />
-          {% endif %} {{ school_name or 'School Management System' }}
+          {% endif %} {{ school_info.school_name or 'Hillview School Management
+          System' }}
         </a>
 
         <!-- Mobile Navigation Toggle -->
@@ -2315,8 +2311,8 @@
       <!-- Footer -->
       <footer>
         <p>
-          {{ school_name or 'School Management System' }} {{ report_footer or
-          'powered by CbcTeachkit' }}
+          © 2025 {{ school_info.school_name or 'School Management System' }}. {{
+          school_info.report_footer or 'Powered by Hillview SMS' }}
         </p>
       </footer>
     </div>

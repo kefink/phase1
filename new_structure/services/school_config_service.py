@@ -4,6 +4,7 @@ Handles school-specific settings, branding, and customization.
 """
 import os
 import json
+from datetime import datetime
 from werkzeug.utils import secure_filename
 from PIL import Image
 from ..models import SchoolConfiguration
@@ -53,7 +54,7 @@ class SchoolConfigService:
             setup = SchoolSetup.query.first()
 
             if setup and setup.setup_completed and setup.logo_filename:
-                return f"images/{setup.logo_filename}"
+                return f"uploads/logos/{setup.logo_filename}"
         except ImportError:
             pass
         except Exception as e:
@@ -212,7 +213,7 @@ class SchoolConfigService:
                     'current_term': setup.current_term,
                     'headteacher_name': 'Head Teacher',  # TODO: Get from teacher table
                     'deputy_headteacher_name': 'Deputy Head Teacher',  # TODO: Get from teacher table
-                    'logo_path': f"images/{setup.logo_filename}" if setup.logo_filename else 'hv.jpg',
+                    'logo_path': f"uploads/logos/{setup.logo_filename}" if setup.logo_filename else 'hv.jpg',
                     'primary_color': setup.primary_color,
                     'secondary_color': setup.secondary_color,
                     'uses_streams': setup.uses_streams,

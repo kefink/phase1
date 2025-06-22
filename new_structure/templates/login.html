@@ -418,10 +418,29 @@
       <!-- School Header -->
       <div class="school-header">
         <div class="school-logo">
+          {% if school_info.logo_url and school_info.logo_url !=
+          '/static/images/default_logo.png' %}
+          <img
+            src="{{ school_info.logo_url }}"
+            alt="School Logo"
+            style="
+              width: 60px;
+              height: 60px;
+              border-radius: 50%;
+              object-fit: cover;
+            "
+          />
+          {% else %}
           <i class="fas fa-graduation-cap"></i>
+          {% endif %}
         </div>
-        <h1 class="school-name">Kirima Primary School</h1>
-        <p class="school-tagline">Excellence in Education • Modern Learning</p>
+        <h1 class="school-name">
+          {{ school_info.school_name or 'Hillview School' }}
+        </h1>
+        <p class="school-tagline">
+          {{ school_info.school_motto or 'Excellence in Education • Modern
+          Learning' }}
+        </p>
       </div>
 
       <!-- Login Options -->
@@ -490,7 +509,8 @@
       <!-- Footer -->
       <div class="footer">
         <p class="footer-text">
-          © 2025 Kirima Primary School. All rights reserved.
+          © 2025 {{ school_info.school_name or 'Hillview School' }}. All rights
+          reserved.
         </p>
         <div class="footer-links">
           <a href="#" class="footer-link">Help</a>

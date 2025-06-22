@@ -247,6 +247,61 @@
             transform: translateX(-5px);
         }
 
+        /* Grading System Styles */
+        .grading-preview {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .grade-band {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .grade-band .grade {
+            font-weight: 600;
+            min-width: 40px;
+        }
+
+        .grade-band .range {
+            color: #64748b;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .secondary-grading {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .custom-grading {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .custom-grading h4 {
+            margin: 0 0 0.5rem 0;
+            color: #92400e;
+        }
+
         @media (max-width: 768px) {
             .setup-container {
                 padding: 1rem;
@@ -257,6 +312,10 @@
             }
 
             .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .checkbox-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -392,31 +451,87 @@
                 <!-- Assessment Configuration -->
                 <div class="form-section">
                     <h3><i class="fas fa-chart-bar"></i> Assessment Configuration</h3>
+
+                    <!-- Primary Grading System -->
+                    <div class="form-group">
+                        <label for="grading_system" class="form-label">Primary Grading System</label>
+                        <select id="grading_system" name="grading_system" class="form-select" onchange="updateGradingPreview()">
+                            <option value="CBC" {% if setup.grading_system == 'CBC' %}selected{% endif %}>CBC - Competency Based Curriculum</option>
+                            <option value="Percentage" {% if setup.grading_system == 'Percentage' %}selected{% endif %}>Percentage System (0-100%)</option>
+                            <option value="Letter" {% if setup.grading_system == 'Letter' %}selected{% endif %}>Letter Grades (A, B, C, D, E)</option>
+                            <option value="Points" {% if setup.grading_system == 'Points' %}selected{% endif %}>Points System</option>
+                            <option value="Custom" {% if setup.grading_system == 'Custom' %}selected{% endif %}>Custom Grading System</option>
+                        </select>
+                        <div class="help-text">Primary system for grading student performance</div>
+                    </div>
+
+                    <!-- Grading System Preview -->
+                    <div id="grading-preview" class="grading-preview">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+
+                    <!-- Multiple Grading Systems Option -->
+                    <div class="form-group">
+                        <label class="form-label">Additional Grading Systems</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="show_multiple_grades" name="show_multiple_grades"
+                                   {% if show_multiple_grades_session %}checked{% endif %} onchange="toggleSecondaryGrading()">
+                            <label for="show_multiple_grades">Enable multiple grading systems for comparison</label>
+                        </div>
+                        <div class="help-text">Show results in multiple grading formats (e.g., CBC + Percentage)</div>
+                    </div>
+
+                    <!-- Secondary Grading Systems -->
+                    <div id="secondary-grading" class="secondary-grading" style="display: {% if show_multiple_grades_session %}block{% else %}none{% endif %};">
+                        <label class="form-label">Secondary Grading Systems (Select up to 2)</label>
+                        <div class="checkbox-grid">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="secondary_cbc" name="secondary_grading_systems" value="CBC"
+                                       {% if secondary_systems and 'CBC' in secondary_systems %}checked{% endif %}>
+                                <label for="secondary_cbc">CBC System</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="secondary_percentage" name="secondary_grading_systems" value="Percentage"
+                                       {% if secondary_systems and 'Percentage' in secondary_systems %}checked{% endif %}>
+                                <label for="secondary_percentage">Percentage System</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="secondary_letter" name="secondary_grading_systems" value="Letter"
+                                       {% if secondary_systems and 'Letter' in secondary_systems %}checked{% endif %}>
+                                <label for="secondary_letter">Letter Grades</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="secondary_points" name="secondary_grading_systems" value="Points"
+                                       {% if secondary_systems and 'Points' in secondary_systems %}checked{% endif %}>
+                                <label for="secondary_points">Points System</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assessment Settings -->
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="grading_system" class="form-label">Grading System</label>
-                            <select id="grading_system" name="grading_system" class="form-select">
-                                <option value="CBC" {% if setup.grading_system == 'CBC' %}selected{% endif %}>CBC (Exceeding, Meeting, Approaching, Below)</option>
-                                <option value="Percentage" {% if setup.grading_system == 'Percentage' %}selected{% endif %}>Percentage (0-100%)</option>
-                                <option value="Letter" {% if setup.grading_system == 'Letter' %}selected{% endif %}>Letter Grades (A, B, C, D, E)</option>
-                                <option value="Points" {% if setup.grading_system == 'Points' %}selected{% endif %}>Points System</option>
-                            </select>
-                            <div class="help-text">How student performance is graded</div>
-                        </div>
-
-                        <div class="form-group">
                             <label for="max_raw_marks_default" class="form-label">Default Maximum Marks</label>
-                            <input type="number" id="max_raw_marks_default" name="max_raw_marks_default" class="form-input" 
+                            <input type="number" id="max_raw_marks_default" name="max_raw_marks_default" class="form-input"
                                    value="{{ setup.max_raw_marks_default or 100 }}" min="1" max="1000">
                             <div class="help-text">Default maximum marks for assessments</div>
                         </div>
 
                         <div class="form-group">
                             <label for="pass_mark_percentage" class="form-label">Pass Mark Percentage</label>
-                            <input type="number" id="pass_mark_percentage" name="pass_mark_percentage" class="form-input" 
+                            <input type="number" id="pass_mark_percentage" name="pass_mark_percentage" class="form-input"
                                    value="{{ setup.pass_mark_percentage or 50 }}" min="0" max="100" step="0.1">
                             <div class="help-text">Minimum percentage to pass</div>
                         </div>
+                    </div>
+
+                    <!-- Custom Grading System -->
+                    <div id="custom-grading" class="custom-grading" style="display: {% if setup.grading_system == 'Custom' %}block{% else %}none{% endif %};">
+                        <h4><i class="fas fa-cog"></i> Custom Grading System</h4>
+                        <div class="help-text">Define your own grading bands and criteria</div>
+                        <button type="button" class="btn btn-secondary" onclick="openCustomGradingModal()">
+                            <i class="fas fa-plus"></i> Configure Custom Grading
+                        </button>
                     </div>
                 </div>
 
@@ -432,5 +547,119 @@
             </form>
         </div>
     </div>
+
+    <script>
+        // Grading system data
+        const gradingSystems = {
+            'CBC': {
+                name: 'CBC (Competency Based Curriculum)',
+                bands: [
+                    { grade: 'E.E', name: 'Exceeds Expectations', range: '80-100%', color: '#10b981' },
+                    { grade: 'M.E', name: 'Meets Expectations', range: '60-79%', color: '#3b82f6' },
+                    { grade: 'A.E', name: 'Approaches Expectations', range: '40-59%', color: '#f59e0b' },
+                    { grade: 'B.E', name: 'Below Expectations', range: '0-39%', color: '#ef4444' }
+                ]
+            },
+            'Percentage': {
+                name: 'Percentage System',
+                bands: [
+                    { grade: 'A', name: 'Excellent', range: '90-100%', color: '#10b981' },
+                    { grade: 'B', name: 'Very Good', range: '80-89%', color: '#3b82f6' },
+                    { grade: 'C', name: 'Good', range: '70-79%', color: '#8b5cf6' },
+                    { grade: 'D', name: 'Satisfactory', range: '60-69%', color: '#f59e0b' },
+                    { grade: 'E', name: 'Needs Improvement', range: '0-59%', color: '#ef4444' }
+                ]
+            },
+            'Letter': {
+                name: 'Letter Grades',
+                bands: [
+                    { grade: 'A+', name: 'Outstanding', range: '95-100%', color: '#10b981' },
+                    { grade: 'A', name: 'Excellent', range: '85-94%', color: '#059669' },
+                    { grade: 'B+', name: 'Very Good', range: '75-84%', color: '#3b82f6' },
+                    { grade: 'B', name: 'Good', range: '65-74%', color: '#1d4ed8' },
+                    { grade: 'C+', name: 'Above Average', range: '55-64%', color: '#8b5cf6' },
+                    { grade: 'C', name: 'Average', range: '45-54%', color: '#7c3aed' },
+                    { grade: 'D', name: 'Below Average', range: '35-44%', color: '#f59e0b' },
+                    { grade: 'F', name: 'Fail', range: '0-34%', color: '#ef4444' }
+                ]
+            },
+            'Points': {
+                name: 'Points System',
+                bands: [
+                    { grade: '5', name: 'Excellent', range: '90-100%', color: '#10b981' },
+                    { grade: '4', name: 'Very Good', range: '80-89%', color: '#3b82f6' },
+                    { grade: '3', name: 'Good', range: '70-79%', color: '#8b5cf6' },
+                    { grade: '2', name: 'Satisfactory', range: '60-69%', color: '#f59e0b' },
+                    { grade: '1', name: 'Needs Improvement', range: '0-59%', color: '#ef4444' }
+                ]
+            }
+        };
+
+        function updateGradingPreview() {
+            const selectedSystem = document.getElementById('grading_system').value;
+            const previewDiv = document.getElementById('grading-preview');
+            const customDiv = document.getElementById('custom-grading');
+
+            if (selectedSystem === 'Custom') {
+                previewDiv.innerHTML = '<p><i class="fas fa-info-circle"></i> Configure your custom grading system below.</p>';
+                customDiv.style.display = 'block';
+                return;
+            } else {
+                customDiv.style.display = 'none';
+            }
+
+            if (gradingSystems[selectedSystem]) {
+                const system = gradingSystems[selectedSystem];
+                let html = `<h4><i class="fas fa-chart-bar"></i> ${system.name} Preview</h4>`;
+
+                system.bands.forEach(band => {
+                    html += `
+                        <div class="grade-band" style="background-color: ${band.color}20; border-left: 4px solid ${band.color};">
+                            <span class="grade">${band.grade}</span>
+                            <span class="name">${band.name}</span>
+                            <span class="range">${band.range}</span>
+                        </div>
+                    `;
+                });
+
+                previewDiv.innerHTML = html;
+            }
+        }
+
+        function toggleSecondaryGrading() {
+            const checkbox = document.getElementById('show_multiple_grades');
+            const secondaryDiv = document.getElementById('secondary-grading');
+
+            if (checkbox.checked) {
+                secondaryDiv.style.display = 'block';
+            } else {
+                secondaryDiv.style.display = 'none';
+                // Uncheck all secondary options
+                document.querySelectorAll('input[name="secondary_grading_systems"]').forEach(cb => {
+                    cb.checked = false;
+                });
+            }
+        }
+
+        function openCustomGradingModal() {
+            alert('Custom grading system configuration will be available in the next step. For now, please select from the available systems.');
+        }
+
+        // Limit secondary grading systems to 2
+        document.addEventListener('DOMContentLoaded', function() {
+            updateGradingPreview();
+
+            const secondaryCheckboxes = document.querySelectorAll('input[name="secondary_grading_systems"]');
+            secondaryCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const checkedBoxes = document.querySelectorAll('input[name="secondary_grading_systems"]:checked');
+                    if (checkedBoxes.length > 2) {
+                        this.checked = false;
+                        alert('You can select a maximum of 2 secondary grading systems.');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

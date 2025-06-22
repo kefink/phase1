@@ -93,10 +93,7 @@
             transform: translateY(-1px);
         }
 
-        .navbar-brand::before {
-            content: "🏫";
-            font-size: 1.75rem;
-        }
+
 
         .navbar-nav {
             display: flex;
@@ -1965,7 +1962,22 @@
     {% endif %}
 
     <nav class="navbar">
-        <a href="#" class="navbar-brand">{{ school_info.school_name|default('School Management System') }}</a>
+        <a href="#" class="navbar-brand">
+            {% if school_info.logo_url and school_info.logo_url != '/static/images/default_logo.png' %}
+            <img
+                src="{{ school_info.logo_url }}"
+                alt="School Logo"
+                style="
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    margin-right: 8px;
+                "
+            />
+            {% endif %}
+            {{ school_info.school_name|default('Hillview School') }} - Subject Teacher
+        </a>
 
         <!-- Mobile Navigation Toggle -->
         <button class="mobile-nav-toggle" onclick="toggleTeacherNav()" style="display: none;">

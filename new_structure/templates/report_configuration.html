@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Configuration - Hillview School</title>
+    <title>Report Configuration - {{ school_info.school_name or 'Hillview School' }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classteacher.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>

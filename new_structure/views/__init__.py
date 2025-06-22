@@ -20,31 +20,25 @@ from .missing_routes import missing_routes_bp
 try:
     from .parent_simple import parent_simple_bp
     parent_bp_available = True
-    print("✅ Parent portal blueprint imported successfully")
-except ImportError as e:
+except ImportError:
     parent_simple_bp = None
     parent_bp_available = False
-    print(f"❌ Warning: Could not import parent portal blueprint: {e}")
 
 # Import parent management blueprint with error handling
 try:
     from .parent_management import parent_management_bp
     parent_mgmt_bp_available = True
-    print("✅ Parent management blueprint imported successfully")
-except ImportError as e:
+except ImportError:
     parent_management_bp = None
     parent_mgmt_bp_available = False
-    print(f"❌ Warning: Could not import parent management blueprint: {e}")
 
 # Import email configuration blueprint with error handling
 try:
     from .email_config import email_config_bp
     email_config_bp_available = True
-    print("✅ Email configuration blueprint imported successfully")
-except ImportError as e:
+except ImportError:
     email_config_bp = None
     email_config_bp_available = False
-    print(f"❌ Warning: Could not import email configuration blueprint: {e}")
 
 # List of all blueprints to register with the app
 blueprints = [
@@ -57,16 +51,11 @@ blueprints = [
 # Add parent blueprint if available
 if parent_bp_available and parent_simple_bp:
     blueprints.append(parent_simple_bp)
-    print("✅ Parent portal blueprint added to registration list")
 
 # Add parent management blueprint if available
 if parent_mgmt_bp_available and parent_management_bp:
     blueprints.append(parent_management_bp)
-    print("✅ Parent management blueprint added to registration list")
 
 # Add email configuration blueprint if available
 if email_config_bp_available and email_config_bp:
     blueprints.append(email_config_bp)
-    print("✅ Email configuration blueprint added to registration list")
-
-print(f"📋 Total blueprints to register: {len(blueprints)}")

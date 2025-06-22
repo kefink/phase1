@@ -1,293 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parent Portal Login - Hillview School</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Parent Portal Login - {{ school_info.school_name or 'Hillview School' }}
+    </title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        .login-container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-            width: 100%;
-            max-width: 400px;
-        }
-        
-        .login-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px 30px;
-            text-align: center;
-        }
-        
-        .login-header h1 {
-            margin: 0 0 10px 0;
-            font-size: 2em;
-            font-weight: 300;
-        }
-        
-        .login-header p {
-            margin: 0;
-            opacity: 0.9;
-            font-size: 1.1em;
-        }
-        
-        .login-form {
-            padding: 40px 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-            position: relative;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-        }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .form-icon {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-            font-size: 1.2em;
-        }
-        
-        .btn-login {
-            width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-        
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-        }
-        
-        .login-links {
-            text-align: center;
-            margin-top: 20px;
-        }
-        
-        .login-links a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-        
-        .login-links a:hover {
-            color: #764ba2;
-        }
-        
-        .divider {
-            text-align: center;
-            margin: 20px 0;
-            position: relative;
-        }
-        
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #e1e5e9;
-        }
-        
-        .divider span {
-            background: white;
-            padding: 0 15px;
-            color: #999;
-            font-size: 0.9em;
-        }
-        
-        .alert {
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 0.9em;
-        }
-        
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .alert-info {
-            background: #cce5ff;
-            color: #004085;
-            border: 1px solid #b3d7ff;
-        }
-        
-        .alert-warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-        
-        .school-info {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e1e5e9;
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #999;
-            cursor: pointer;
-            font-size: 1.1em;
-        }
-        
-        .password-toggle:hover {
-            color: #667eea;
-        }
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .login-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .login-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 30px;
+        text-align: center;
+      }
+
+      .login-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 2em;
+        font-weight: 300;
+      }
+
+      .login-header p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 1.1em;
+      }
+
+      .login-form {
+        padding: 40px 30px;
+      }
+
+      .form-group {
+        margin-bottom: 25px;
+        position: relative;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 15px 20px;
+        border: 2px solid #e1e5e9;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .form-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 1.2em;
+      }
+
+      .btn-login {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+      }
+
+      .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .login-links {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .login-links a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      .login-links a:hover {
+        color: #764ba2;
+      }
+
+      .divider {
+        text-align: center;
+        margin: 20px 0;
+        position: relative;
+      }
+
+      .divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e1e5e9;
+      }
+
+      .divider span {
+        background: white;
+        padding: 0 15px;
+        color: #999;
+        font-size: 0.9em;
+      }
+
+      .alert {
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 0.9em;
+      }
+
+      .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .alert-info {
+        background: #cce5ff;
+        color: #004085;
+        border: 1px solid #b3d7ff;
+      }
+
+      .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+      }
+
+      .school-info {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e1e5e9;
+        color: #666;
+        font-size: 0.9em;
+      }
+
+      .password-toggle {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        font-size: 1.1em;
+      }
+
+      .password-toggle:hover {
+        color: #667eea;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="login-container">
-        <div class="login-header">
-            <h1><i class="fas fa-user-friends"></i> Parent Portal</h1>
-            <p>Access your children's academic progress</p>
+      <div class="login-header">
+        <h1><i class="fas fa-user-friends"></i> Parent Portal</h1>
+        <p>Access your children's academic progress</p>
+      </div>
+
+      <div class="login-form">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div
+          class="alert alert-{{ 'error' if category == 'error' else category }}"
+        >
+          {{ message }}
         </div>
-        
-        <div class="login-form">
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'error' if category == 'error' else category }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            
-            <form method="POST">
-                <div class="form-group">
-                    <input type="email" 
-                           name="email" 
-                           class="form-control" 
-                           placeholder="Email Address"
-                           required>
-                    <i class="fas fa-envelope form-icon"></i>
-                </div>
-                
-                <div class="form-group">
-                    <input type="password" 
-                           name="password" 
-                           id="password"
-                           class="form-control" 
-                           placeholder="Password"
-                           required>
-                    <button type="button" class="password-toggle" onclick="togglePassword()">
-                        <i class="fas fa-eye" id="password-icon"></i>
-                    </button>
-                </div>
-                
-                <button type="submit" class="btn-login">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
-                </button>
-            </form>
-            
-            <div class="login-links">
-                <a href="{{ url_for('parent.forgot_password') }}">
-                    <i class="fas fa-key"></i> Forgot Password?
-                </a>
-            </div>
-            
-            <div class="divider">
-                <span>New to the portal?</span>
-            </div>
-            
-            <div class="login-links">
-                <a href="{{ url_for('parent.register') }}">
-                    <i class="fas fa-user-plus"></i> Create Parent Account
-                </a>
-            </div>
-            
-            <div class="school-info">
-                <p><strong>Hillview School</strong></p>
-                <p>For support, please contact the school office</p>
-            </div>
+        {% endfor %} {% endif %} {% endwith %}
+
+        <form method="POST">
+          <div class="form-group">
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              placeholder="Email Address"
+              required
+            />
+            <i class="fas fa-envelope form-icon"></i>
+          </div>
+
+          <div class="form-group">
+            <input
+              type="password"
+              name="password"
+              id="password"
+              class="form-control"
+              placeholder="Password"
+              required
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              onclick="togglePassword()"
+            >
+              <i class="fas fa-eye" id="password-icon"></i>
+            </button>
+          </div>
+
+          <button type="submit" class="btn-login">
+            <i class="fas fa-sign-in-alt"></i> Sign In
+          </button>
+        </form>
+
+        <div class="login-links">
+          <a href="{{ url_for('parent.forgot_password') }}">
+            <i class="fas fa-key"></i> Forgot Password?
+          </a>
         </div>
+
+        <div class="divider">
+          <span>New to the portal?</span>
+        </div>
+
+        <div class="login-links">
+          <a href="{{ url_for('parent.register') }}">
+            <i class="fas fa-user-plus"></i> Create Parent Account
+          </a>
+        </div>
+
+        <div class="school-info">
+          <p>
+            <strong>{{ school_info.school_name or 'Hillview School' }}</strong>
+          </p>
+          <p>For support, please contact the school office</p>
+        </div>
+      </div>
     </div>
 
     <script>
-        function togglePassword() {
-            const passwordField = document.getElementById('password');
-            const passwordIcon = document.getElementById('password-icon');
-            
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                passwordIcon.className = 'fas fa-eye-slash';
-            } else {
-                passwordField.type = 'password';
-                passwordIcon.className = 'fas fa-eye';
-            }
+      function togglePassword() {
+        const passwordField = document.getElementById("password");
+        const passwordIcon = document.getElementById("password-icon");
+
+        if (passwordField.type === "password") {
+          passwordField.type = "text";
+          passwordIcon.className = "fas fa-eye-slash";
+        } else {
+          passwordField.type = "password";
+          passwordIcon.className = "fas fa-eye";
         }
-        
-        // Auto-hide flash messages after 5 seconds
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                alert.style.opacity = '0';
-                alert.style.transition = 'opacity 0.5s ease';
-                setTimeout(() => alert.remove(), 500);
-            });
-        }, 5000);
+      }
+
+      // Auto-hide flash messages after 5 seconds
+      setTimeout(function () {
+        const alerts = document.querySelectorAll(".alert");
+        alerts.forEach((alert) => {
+          alert.style.opacity = "0";
+          alert.style.transition = "opacity 0.5s ease";
+          setTimeout(() => alert.remove(), 500);
+        });
+      }, 5000);
     </script>
-</body>
+  </body>
 </html>

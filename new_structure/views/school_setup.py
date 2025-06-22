@@ -2,7 +2,8 @@
 Enhanced School Setup views for plug-and-play deployment.
 """
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import session
 from werkzeug.utils import secure_filename
 from ..models.school_setup import SchoolSetup, SchoolBranding, SchoolCustomization
 from ..services.school_config_service import EnhancedSchoolSetupService
@@ -18,14 +19,15 @@ def headteacher_required(f):
     """Decorator to require headteacher authentication."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not is_authenticated(session):
+        from flask import session as flask_session
+        if not is_authenticated(flask_session):
             return redirect(url_for('auth.admin_login'))
-        
-        role = get_role(session)
+
+        role = get_role(flask_session)
         if role != 'headteacher':
             flash('Access denied. This feature is only available to headteachers.', 'error')
             return redirect(url_for('auth.admin_login'))
-        
+
         return f(*args, **kwargs)
     return decorated_function
 
@@ -125,17 +127,32 @@ def academic_config():
                 'max_raw_marks_default': int(request.form.get('max_raw_marks_default', 100)),
                 'pass_mark_percentage': float(request.form.get('pass_mark_percentage', 50.0))
             }
-            
+
+            # Store secondary grading systems in session for now
+            secondary_systems = request.form.getlist('secondary_grading_systems')
+            show_multiple_grades = 'show_multiple_grades' in request.form
+
+            session['secondary_grading_systems'] = secondary_systems
+            session['show_multiple_grades'] = show_multiple_grades
+
             EnhancedSchoolSetupService.update_school_setup(step=4, **data)
             flash('Academic configuration saved successfully!', 'success')
-            
+
             return redirect(url_for('school_setup.branding'))
-            
+
         except Exception as e:
             flash(f'Error saving configuration: {str(e)}', 'error')
-    
+
     setup = EnhancedSchoolSetupService.get_school_setup()
-    return render_template('school_setup/academic_config.html', setup=setup)
+
+    # Get secondary grading systems from session for now
+    secondary_systems = session.get('secondary_grading_systems', [])
+    show_multiple_grades = session.get('show_multiple_grades', False)
+
+    return render_template('school_setup/academic_config.html',
+                         setup=setup,
+                         secondary_systems=secondary_systems,
+                         show_multiple_grades_session=show_multiple_grades)
 
 @school_setup_bp.route('/branding', methods=['GET', 'POST'])
 @headteacher_required

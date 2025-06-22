@@ -18,8 +18,8 @@ class ClassTeacherPermission(db.Model):
     teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False)
     
     # Class/Stream assignment
-    grade_id = db.Column(db.Integer, db.ForeignKey('grade.id'), nullable=False)
-    stream_id = db.Column(db.Integer, db.ForeignKey('stream.id'), nullable=True)  # NULL for single classes
+    grade_id = db.Column(db.Integer, nullable=True)  # Temporarily remove FK constraint
+    stream_id = db.Column(db.Integer, nullable=True)  # Temporarily remove FK constraint
     
     # Permission management
     granted_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False)  # Headteacher ID
@@ -38,11 +38,11 @@ class ClassTeacherPermission(db.Model):
     # Notes/Comments
     notes = db.Column(db.Text, nullable=True)
     
-    # Relationships
+    # Relationships (temporarily commented out due to FK issues)
     teacher = db.relationship('Teacher', foreign_keys=[teacher_id], backref='class_permissions')
     granted_by_teacher = db.relationship('Teacher', foreign_keys=[granted_by])
-    grade = db.relationship('Grade', backref='permission_assignments')
-    stream = db.relationship('Stream', backref='permission_assignments')
+    # grade = db.relationship('Grade', backref='permission_assignments')
+    # stream = db.relationship('Stream', backref='permission_assignments')
     
     def __repr__(self):
         stream_info = f" Stream {self.stream.name}" if self.stream else ""

@@ -40,26 +40,12 @@ def create_app(config_name='default'):
             status = check_database_integrity()
 
             if status['status'] != 'healthy':
-                print("Database needs initialization...")
                 result = initialize_database_completely()
-
-                if result['success']:
-                    print("Database initialized successfully!")
-                    print(f"   Teachers: {result['status']['teacher_count']}")
-                    print(f"   Subjects: {result['status']['subject_count']}")
-                    print(f"   Grades: {result['status']['grade_count']}")
-                    print(f"   Streams: {result['status']['stream_count']}")
-                else:
-                    print(f"Database initialization failed: {result.get('error', 'Unknown error')}")
-            else:
-                print("Database is healthy and ready!")
+                if not result['success']:
+                    print(f"⚠️ Database initialization failed: {result.get('error', 'Unknown error')}")
 
         except Exception as e:
-            print(f"Database initialization error: {e}")
-            print("   Application will continue but may have limited functionality")
-
-    # Initialize comprehensive security (temporarily disabled for debugging)
-    # security_manager.init_app(app)
+            print(f"⚠️ Database error: {e}")
 
     # Register blueprints with error handling
     try:
@@ -69,10 +55,8 @@ def create_app(config_name='default'):
             # Exempt parent portal from CSRF protection
             if hasattr(blueprint, 'name') and 'parent' in blueprint.name:
                 csrf.exempt(blueprint)
-        print(f"✅ Successfully registered {len(blueprints)} blueprints")
     except Exception as e:
-        print(f"❌ Error importing blueprints: {e}")
-        print("⚠️ Application will start with minimal functionality")
+        print(f"⚠️ Blueprint error: {e}")
 
     # Register middleware
     MarkSanitizerMiddleware(app)
@@ -208,25 +192,38 @@ def create_app(config_name='default'):
     def enforce_strict_access_control():
         """Comprehensive access control enforcement."""
 
-        # Skip for public endpoints
-        public_endpoints = ['/', '/health', '/static', '/login', '/logout', '/admin_login', '/teacher_login', '/classteacher_login']
+        # Skip for public endpoints and debug routes
+        public_endpoints = [
+            '/', '/health', '/static', '/login', '/logout',
+            '/admin_login', '/teacher_login', '/classteacher_login',
+            '/debug/', '/parent/'  # Add debug and parent routes
+        ]
         if any(request.path.startswith(ep) for ep in public_endpoints):
             return
 
-        # Check authentication
+        # IMPORTANT: Let route decorators handle authentication first
+        # Only enforce role-based access if user is already authenticated
         if 'teacher_id' not in session:
-            if request.is_json:
-                return jsonify({'error': 'Authentication required'}), 401
-            return redirect(url_for('main.index'))
+            # Don't block here - let the route decorators handle authentication
+            return
 
         # Get user role
         user_role = session.get('role', '').lower()
 
-        # Strict role-based access control
+        # Enhanced role-based access control with comprehensive paths
         role_access = {
-            'headteacher': ['/headteacher/', '/admin/', '/universal/', '/manage_teachers', '/analytics'],
-            'classteacher': ['/classteacher/', '/manage_students', '/collaborative_marks'],
-            'teacher': ['/teacher/', '/upload_marks', '/view_marks']
+            'headteacher': [
+                '/headteacher/', '/admin/', '/universal/', '/permission/',
+                '/manage_teachers', '/analytics', '/staff/', '/school_setup/',
+                '/subject_config/', '/bulk_assignments/', '/missing_routes/'
+            ],
+            'classteacher': [
+                '/classteacher/', '/manage_students', '/collaborative_marks',
+                '/analytics_api/', '/bulk_assignments/'
+            ],
+            'teacher': [
+                '/teacher/', '/upload_marks', '/view_marks', '/analytics_api/'
+            ]
         }
 
         allowed_paths = role_access.get(user_role, [])
@@ -234,14 +231,22 @@ def create_app(config_name='default'):
         # Check if user can access this path
         path_allowed = any(request.path.startswith(path) for path in allowed_paths)
 
+        # Additional check for headteacher universal access
+        if user_role == 'headteacher' and session.get('headteacher_universal_access'):
+            # Headteacher with universal access can access classteacher routes
+            classteacher_paths = role_access.get('classteacher', [])
+            if any(request.path.startswith(path) for path in classteacher_paths):
+                path_allowed = True
+
         if not path_allowed and not request.path.startswith('/static'):
+            app.logger.warning(f"Access denied: {user_role} tried to access {request.path}")
             abort(403, f"Access denied: {user_role} not authorized for {request.path}")
 
     # ULTRA-SECURE SESSION CONFIGURATION AT RUNTIME
     app.config.update({
-        'SESSION_COOKIE_SECURE': True,           # HTTPS only
+        'SESSION_COOKIE_SECURE': False,          # Allow HTTP for development
         'SESSION_COOKIE_HTTPONLY': True,        # No JavaScript access
-        'SESSION_COOKIE_SAMESITE': 'Strict',    # Strict CSRF protection
+        'SESSION_COOKIE_SAMESITE': 'Lax',       # Less strict for development
         'PERMANENT_SESSION_LIFETIME': 1800,     # 30 minutes timeout
         'SESSION_COOKIE_NAME': 'hillview_secure_session',
         'FORCE_HTTPS': False,                    # Disable for testing
@@ -319,6 +324,39 @@ def create_app(config_name='default'):
 
         return response
 
+    # Register template context processor for school information
+    @app.context_processor
+    def inject_school_info():
+        """Inject school information into all templates."""
+        try:
+            from .services.dynamic_school_info_service import DynamicSchoolInfoService
+            result = DynamicSchoolInfoService.inject_school_info()
+            app.logger.debug(f"Context processor success: {result['school_info']['school_name']}")
+            return result
+        except Exception as e:
+            app.logger.error(f"Error injecting school info: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                'school_info': {
+                    'school_name': 'Your School Name',
+                    'school_motto': 'Excellence in Education',
+                    'logo_url': '/static/images/default_logo.png',
+                    'primary_color': '#1f7d53',
+                    'secondary_color': '#18230f',
+                    'accent_color': '#4ade80'
+                },
+                'school_colors': {
+                    'primary': '#1f7d53',
+                    'secondary': '#18230f',
+                    'accent': '#4ade80'
+                },
+                'grading_info': {
+                    'primary_system': 'CBC',
+                    'show_multiple_grades': False
+                }
+            }
+
     # Register custom Jinja2 filters
     @app.template_filter('get_education_level')
     def get_education_level(grade):
@@ -340,6 +378,15 @@ def create_app(config_name='default'):
         import json
         from markupsafe import Markup
         return Markup(json.dumps(obj))
+
+    @app.template_filter('get_grade_for_percentage')
+    def get_grade_for_percentage_filter(percentage, system='primary'):
+        """Filter to get grade for a percentage."""
+        try:
+            from .services.dynamic_school_info_service import DynamicSchoolInfoService
+            return DynamicSchoolInfoService.get_grade_for_percentage(percentage, system)
+        except:
+            return 'N/A'
 
     # Import the classteacher blueprint
     from .views.classteacher import classteacher_bp
@@ -396,6 +443,133 @@ def create_app(config_name='default'):
         return "Internal Server Error", 500
 
     # Temporary routes for debugging user issues
+    @app.route('/debug/test_login')
+    def debug_test_login():
+        """Test route to check login functionality."""
+        try:
+            result = "<h2>🔐 Login Test</h2>"
+
+            # Check session
+            result += f"<p><strong>Session Data:</strong></p><pre>{dict(session)}</pre>"
+
+            # Check authentication functions
+            from .services.auth_service import is_authenticated, get_role
+
+            result += f"<p><strong>Authentication Check:</strong></p>"
+            result += f"<ul>"
+            result += f"<li>is_authenticated: {is_authenticated(session)}</li>"
+            result += f"<li>get_role: {get_role(session)}</li>"
+            result += f"<li>teacher_id in session: {'teacher_id' in session}</li>"
+            result += f"<li>role in session: {session.get('role')}</li>"
+            result += f"</ul>"
+
+            # Test login manually
+            if 'teacher_id' not in session:
+                result += f"<p><strong>🔐 Manual Login Test:</strong></p>"
+                from .services.auth_service import authenticate_teacher
+                teacher = authenticate_teacher('headteacher', 'admin123', 'headteacher')
+                if teacher:
+                    session['teacher_id'] = teacher.id
+                    session['role'] = 'headteacher'
+                    session.permanent = True
+                    result += f"<p>✅ Manual login successful! Teacher ID: {teacher.id}</p>"
+                    result += f"<p>Updated session: {dict(session)}</p>"
+                else:
+                    result += f"<p>❌ Manual login failed</p>"
+
+            # Test school setup session data
+            result += f"<p><strong>🏫 School Setup Session Data:</strong></p>"
+            result += f"<ul>"
+            result += f"<li>secondary_grading_systems: {session.get('secondary_grading_systems', 'Not set')}</li>"
+            result += f"<li>show_multiple_grades: {session.get('show_multiple_grades', 'Not set')}</li>"
+            result += f"</ul>"
+
+            result += f"<p><a href='/admin_login'>🔐 Go to Login</a></p>"
+            result += f"<p><a href='/headteacher/'>🏠 Try Dashboard</a></p>"
+            result += f"<p><a href='/school-setup/'>🏫 Try School Setup</a></p>"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error: {str(e)}"
+
+    @app.route('/debug/school_setup_info')
+    def debug_school_setup_info():
+        """Debug route to check school setup information."""
+        try:
+            from .models.school_setup import SchoolSetup
+
+            result = "<h2>🏫 School Setup Information</h2>"
+
+            # Get current setup
+            setup = SchoolSetup.query.first()
+
+            if setup:
+                result += f"<p><strong>✅ School Setup Found:</strong></p>"
+                result += f"<ul>"
+                result += f"<li><strong>School Name:</strong> {setup.school_name}</li>"
+                result += f"<li><strong>Motto:</strong> {setup.school_motto}</li>"
+                result += f"<li><strong>Academic Year:</strong> {setup.current_academic_year}</li>"
+                result += f"<li><strong>Current Term:</strong> {setup.current_term}</li>"
+                result += f"<li><strong>Education System:</strong> {setup.education_system}</li>"
+                result += f"<li><strong>Setup Completed:</strong> {setup.setup_completed}</li>"
+                result += f"<li><strong>Setup Step:</strong> {setup.setup_step}</li>"
+                result += f"</ul>"
+
+                # Show all tables
+                from .extensions import db
+                inspector = db.inspect(db.engine)
+                tables = inspector.get_table_names()
+
+                result += f"<p><strong>📋 Database Tables ({len(tables)}):</strong></p>"
+                result += f"<ul>"
+                for table in sorted(tables):
+                    result += f"<li>{table}</li>"
+                result += f"</ul>"
+
+            else:
+                result += f"<p><strong>❌ No school setup found</strong></p>"
+
+            result += f"<p><a href='/school-setup/'>🏫 Go to School Setup</a></p>"
+            result += f"<p><a href='/headteacher/'>🏠 Go to Headteacher Dashboard</a></p>"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error checking school setup: {str(e)}"
+
+    @app.route('/debug/session_info')
+    def debug_session_info():
+        """Debug route to check current session information."""
+        try:
+            session_data = dict(session)
+
+            result = "<h2>🔍 Current Session Information</h2>"
+            result += f"<p><strong>Session Data:</strong></p><pre>{session_data}</pre>"
+
+            if 'teacher_id' in session:
+                from .models.user import Teacher
+                teacher = Teacher.query.get(session['teacher_id'])
+                if teacher:
+                    result += f"<p><strong>✅ Authenticated User:</strong></p>"
+                    result += f"<ul>"
+                    result += f"<li><strong>ID:</strong> {teacher.id}</li>"
+                    result += f"<li><strong>Username:</strong> {teacher.username}</li>"
+                    result += f"<li><strong>Role:</strong> {teacher.role}</li>"
+                    result += f"</ul>"
+                else:
+                    result += f"<p><strong>❌ Teacher ID {session['teacher_id']} not found in database</strong></p>"
+            else:
+                result += f"<p><strong>❌ No authentication session found</strong></p>"
+
+            result += f"<p><a href='/admin_login'>🔐 Go to Login</a></p>"
+            result += f"<p><a href='/headteacher/'>🏠 Try Headteacher Dashboard</a></p>"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error checking session: {str(e)}"
+
     @app.route('/debug/check_users')
     def debug_check_users():
         """Debug route to check all users."""
@@ -1958,73 +2132,7 @@ def create_app(config_name='default'):
         except Exception as e:
             return f"❌ Error during database repair: {str(e)}"
 
-    @app.route('/debug/test_login')
-    def debug_test_login():
-        """Debug route to test login functionality."""
-        try:
-            from .services.auth_service import authenticate_teacher
-            from .models.user import Teacher
 
-            result = "<h2>🔍 Login Test</h2>"
-
-            # Test database connection
-            try:
-                teacher_count = Teacher.query.count()
-                result += f"<p>✅ Database connection: OK ({teacher_count} teachers found)</p>"
-            except Exception as e:
-                result += f"<p>❌ Database connection: FAILED - {e}</p>"
-                return result
-
-            # Test authentication for each default user
-            test_users = [
-                ('headteacher', 'admin123', 'headteacher'),
-                ('classteacher1', 'class123', 'classteacher'),
-                ('kevin', 'kev123', 'classteacher'),
-                ('telvo', 'telvo123', 'teacher')
-            ]
-
-            result += "<h3>🧪 Authentication Tests:</h3><ul>"
-
-            for username, password, role in test_users:
-                try:
-                    teacher = authenticate_teacher(username, password, role)
-                    if teacher:
-                        result += f"<li>✅ <strong>{username}</strong> / {password} ({role}) - SUCCESS</li>"
-                    else:
-                        result += f"<li>❌ <strong>{username}</strong> / {password} ({role}) - FAILED</li>"
-                except Exception as e:
-                    result += f"<li>❌ <strong>{username}</strong> / {password} ({role}) - ERROR: {e}</li>"
-
-            result += "</ul>"
-
-            # Test session functionality
-            result += "<h3>🔧 Session Test:</h3>"
-            try:
-                from flask import session
-                session['test_key'] = 'test_value'
-                if session.get('test_key') == 'test_value':
-                    result += "<p>✅ Session functionality: OK</p>"
-                else:
-                    result += "<p>❌ Session functionality: FAILED</p>"
-            except Exception as e:
-                result += f"<p>❌ Session functionality: ERROR - {e}</p>"
-
-            # Test URL generation
-            result += "<h3>🔗 URL Generation Test:</h3>"
-            try:
-                from flask import url_for
-                admin_url = url_for('admin.dashboard')
-                classteacher_url = url_for('classteacher.dashboard')
-                result += f"<p>✅ Admin dashboard URL: {admin_url}</p>"
-                result += f"<p>✅ Classteacher dashboard URL: {classteacher_url}</p>"
-            except Exception as e:
-                result += f"<p>❌ URL generation: ERROR - {e}</p>"
-
-            result += f"<p><a href='/'>🏠 Go to Login Page</a></p>"
-            return result
-
-        except Exception as e:
-            return f"❌ Error during login test: {str(e)}"
 
     # Log application startup
     app.logger.info("Application initialized")

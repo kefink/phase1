@@ -1605,8 +1605,22 @@
         <div class="nav-primary">
             <div class="nav-container">
                 <a href="#" class="nav-brand">
+                    {% if school_info.logo_url and school_info.logo_url != '/static/images/default_logo.png' %}
+                    <img
+                        src="{{ school_info.logo_url }}"
+                        alt="School Logo"
+                        style="
+                            width: 32px;
+                            height: 32px;
+                            border-radius: 50%;
+                            object-fit: cover;
+                            margin-right: 8px;
+                        "
+                    />
+                    {% else %}
                     <i class="fas fa-chalkboard-teacher"></i>
-                    <span>Class Teacher</span>
+                    {% endif %}
+                    <span>{{ school_info.school_name or 'Hillview School' }} - Class Teacher</span>
                 </a>
 
                 <!-- Mobile Navigation Toggle -->
