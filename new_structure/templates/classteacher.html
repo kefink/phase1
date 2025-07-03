@@ -315,21 +315,21 @@
             opacity: 1 !important;
             background-color: white !important;
             color: #333 !important;
-            border: 2px solid #007bff !important;
+            border: 2px solid #e9ecef !important;
         }
 
-        /* Animation for highlighting Creative Arts inputs */
+        /* Animation for highlighting inputs */
         @keyframes pulse {
             0% {
-                background-color: #ffff00 !important;
+                background-color: #e3f2fd !important;
                 transform: scale(1);
             }
             50% {
-                background-color: #ff6b35 !important;
-                transform: scale(1.05);
+                background-color: #bbdefb !important;
+                transform: scale(1.02);
             }
             100% {
-                background-color: #ffff00 !important;
+                background-color: #e3f2fd !important;
                 transform: scale(1);
             }
         }
@@ -6614,15 +6614,15 @@
                 );
                 rightmostCells.forEach((cell) => {
                     cell.style.cssText += `
-                        background-color: #fff8f0 !important;
-                        border: 2px solid #ff6b35 !important;
+                        background-color: #ffffff !important;
+                        border: 1px solid #e9ecef !important;
                         min-width: 140px !important;
                         max-width: 140px !important;
                         width: 140px !important;
                         display: table-cell !important;
                         visibility: visible !important;
                         position: relative !important;
-                        z-index: 100 !important;
+                        z-index: auto !important;
                         overflow: visible !important;
                     `;
                 });
@@ -6983,7 +6983,7 @@
                 scrollButton.className = 'modern-btn btn-outline';
                 scrollButton.style.cssText = `
                     margin: 5px;
-                    background-color: #ff6b35;
+                    background-color: #3498db;
                     color: white;
                     border: none;
                     padding: 10px 15px;

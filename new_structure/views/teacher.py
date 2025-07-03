@@ -569,3 +569,41 @@ def generate_subject_report():
     except Exception as e:
         flash(f"Error generating report: {str(e)}", "error")
         return redirect(url_for('teacher.dashboard'))
+
+@teacher_bp.route('/api/check-composite/<subject>/<education_level>')
+@teacher_required
+def check_composite_subject(subject, education_level):
+    """Check if a subject is composite for the given education level."""
+    try:
+        from ..services.flexible_subject_service import FlexibleSubjectService
+
+        # Check if subject is composite
+        is_composite = FlexibleSubjectService.is_subject_composite(subject, education_level)
+
+        if is_composite:
+            # Get component configuration
+            components = FlexibleSubjectService.get_subject_components(subject, education_level)
+            config = FlexibleSubjectService.get_subject_configuration(subject, education_level)
+
+            return jsonify({
+                'success': True,
+                'is_composite': True,
+                'subject_type': FlexibleSubjectService.detect_subject_type(subject),
+                'components': components,
+                'config': config
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'is_composite': False,
+                'subject_type': FlexibleSubjectService.detect_subject_type(subject),
+                'components': [],
+                'config': None
+            })
+
+    except Exception as e:
+        print(f"Error checking if subject is composite: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }), 500

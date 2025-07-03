@@ -1261,10 +1261,20 @@
             border-color: var(--color-deep-teal);
         }
 
-        /* Ocean Marble Input validation styles */
+        /* Clean input validation styles - no red borders */
         input[type="number"]:invalid {
-            border-color: var(--color-error);
-            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.25);
+            border-color: #e9ecef !important;
+            box-shadow: none !important;
+        }
+
+        /* Override any browser default validation styling */
+        input[type="number"] {
+            border: 2px solid #e9ecef !important;
+        }
+
+        input[type="number"]:focus {
+            border-color: #3498db !important;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1) !important;
         }
 
         input[type="number"]:valid {
@@ -1726,6 +1736,23 @@
             background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
         }
 
+        /* CRITICAL FIX: Override any red borders on last column inputs */
+        td:last-child input[type="number"],
+        td:nth-last-child(1) input[type="number"],
+        .table-wrapper td:last-child input,
+        .table-wrapper td:nth-last-child(1) input {
+            border: 2px solid #e9ecef !important;
+            background-color: #ffffff !important;
+        }
+
+        td:last-child input[type="number"]:focus,
+        td:nth-last-child(1) input[type="number"]:focus,
+        .table-wrapper td:last-child input:focus,
+        .table-wrapper td:nth-last-child(1) input:focus {
+            border-color: #3498db !important;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1) !important;
+        }
+
         .component-percentage {
             font-size: 0.875rem;
             font-weight: 600;
@@ -1950,6 +1977,287 @@
             content: "🏫";
             margin-right: var(--spacing-sm);
             font-size: 1.25rem;
+        }
+
+        /* CLEAN MARKS UPLOAD FORM STYLING */
+        .marks-upload-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+
+        .marks-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .marks-header h3 {
+            color: #2c3e50;
+            margin: 0 0 12px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .marks-info {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .info-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .students-marks-table {
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .header-cell {
+            padding: 16px;
+            text-align: center;
+        }
+
+        .header-cell small {
+            display: block;
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .table-body {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .student-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s ease;
+        }
+
+        .student-row:hover {
+            background-color: #f1f3f4;
+        }
+
+        .student-cell {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+
+        .student-number {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .marks-cell {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* COMPOSITE SUBJECT STYLING */
+        .composite-marks-entry {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .component-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .component-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #495057;
+            margin: 0;
+        }
+
+        .total-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            background: #e3f2fd;
+            border-radius: 6px;
+            min-width: 80px;
+        }
+
+        .total-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1976d2;
+        }
+
+        .total-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1976d2;
+        }
+
+        .percentage {
+            font-size: 0.8rem;
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        /* REGULAR SUBJECT STYLING */
+        .regular-marks-entry {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .percentage-display {
+            background: #e8f5e8;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        /* CLEAN INPUT STYLING */
+        .clean-mark-input {
+            width: 80px;
+            height: 40px;
+            padding: 8px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            background: white;
+            color: #495057;
+            transition: all 0.2s ease;
+        }
+
+        .clean-mark-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            background: #f8f9ff;
+        }
+
+        .clean-mark-input:valid {
+            border-color: #28a745;
+            background: #f8fff8;
+        }
+
+        .clean-mark-input::placeholder {
+            color: #adb5bd;
+            font-weight: normal;
+        }
+
+        /* FORM ACTIONS */
+        .form-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            padding-top: 24px;
+            border-top: 2px solid #f1f3f4;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .marks-upload-container {
+                padding: 16px;
+                margin: 10px;
+            }
+
+            .table-header,
+            .student-row {
+                grid-template-columns: 1fr;
+            }
+
+            .composite-marks-entry {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .marks-info {
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -2286,14 +2594,21 @@
                 </div>
             </form>
             {% else %}
-            <!-- Enhanced form for entering student marks with composite subject support -->
-            <div id="pupils-list" class="pupils-list" style="grid-column: span 2;">
-                <h3>Enter Marks for {{ subject }} - Grade {{ grade }} Stream {{ stream }}</h3>
-                <div id="subject-type-info" class="subject-type-info"></div>
+            <!-- COMPLETELY REBUILT MARKS UPLOAD FORM -->
+            <div class="marks-upload-container">
+                <div class="marks-header">
+                    <h3>📝 Enter Marks for {{ subject }}</h3>
+                    <div class="marks-info">
+                        <span class="info-badge">Grade {{ grade }}</span>
+                        <span class="info-badge">Stream {{ stream }}</span>
+                        <span class="info-badge">{{ term }}</span>
+                        <span class="info-badge">{{ assessment_type }}</span>
+                        <span class="info-badge">Max: {{ total_marks }} marks</span>
+                    </div>
+                </div>
 
-                <form method="POST" action="{{ url_for('teacher.dashboard') }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <!-- Keep existing form fields as hidden fields -->
+                <form method="POST" action="{{ url_for('teacher.dashboard') }}" class="clean-marks-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="education_level" value="{{ education_level }}">
                     <input type="hidden" name="subject" value="{{ subject }}">
                     <input type="hidden" name="grade" value="{{ grade }}">
@@ -2301,176 +2616,113 @@
                     <input type="hidden" name="term" value="{{ term }}">
                     <input type="hidden" name="assessment_type" value="{{ assessment_type }}">
                     <input type="hidden" name="total_marks" value="{{ total_marks }}">
+                    <input type="hidden" name="grammar_max_marks" value="{{ grammar_max_marks }}">
+                    <input type="hidden" name="composition_max_marks" value="{{ composition_max_marks }}">
+                    <input type="hidden" name="lugha_max_marks" value="{{ lugha_max_marks }}">
+                    <input type="hidden" name="insha_max_marks" value="{{ insha_max_marks }}">
 
-                    <!-- Hidden fields for composite subject configuration -->
-                    <input type="hidden" id="hidden_grammar_max" name="grammar_max_marks" value="{{ grammar_max_marks }}">
-                    <input type="hidden" id="hidden_composition_max" name="composition_max_marks" value="{{ composition_max_marks }}">
-                    <input type="hidden" id="hidden_lugha_max" name="lugha_max_marks" value="{{ lugha_max_marks }}">
-                    <input type="hidden" id="hidden_insha_max" name="insha_max_marks" value="{{ insha_max_marks }}">
+                    <!-- CLEAN STUDENTS TABLE -->
+                    <div class="students-marks-table">
+                        <div class="table-header">
+                            <div class="header-cell student-header">Student Name</div>
+                            <div class="header-cell marks-header">
+                                {{ subject }} Marks
+                                <small>(Max: {{ total_marks }})</small>
+                            </div>
+                        </div>
 
-                    <!-- Proven table structure adapted from classteacher -->
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Student Name</th>
-                                    {% set subject_obj = namespace(obj=none) %}
-                                    {% if education_level and subject %}
-                                        {% for s in subjects_by_education_level[education_level] %}
-                                            {% if s == subject %}
-                                                {% set subject_obj.obj = {'name': subject, 'id': loop.index, 'is_composite': subject in ['ENGLISH', 'KISWAHILI']} %}
-                                            {% endif %}
-                                        {% endfor %}
+                        <div class="table-body">
+                            {% for student in students %}
+                            <div class="student-row" data-student-id="{{ loop.index }}">
+                                <div class="student-cell">
+                                    <div class="student-name">{{ student.name }}</div>
+                                    <div class="student-number">#{{ loop.index }}</div>
+                                </div>
+                                <div class="marks-cell">
+                                    {% if subject in ['ENGLISH', 'KISWAHILI'] %}
+                                    <!-- COMPOSITE SUBJECT LAYOUT -->
+                                    <div class="composite-marks-entry">
+                                        {% if subject == 'ENGLISH' %}
+                                        <div class="component-group">
+                                            <label>Grammar</label>
+                                            <input type="number"
+                                                   name="component_{{ student.name.replace(' ', '_') }}_1"
+                                                   class="clean-mark-input grammar-input"
+                                                   min="0"
+                                                   max="{{ grammar_max_marks }}"
+                                                   placeholder="0"
+                                                   data-student="{{ student.name.replace(' ', '_') }}"
+                                                   data-component="grammar">
+                                        </div>
+                                        <div class="component-group">
+                                            <label>Composition</label>
+                                            <input type="number"
+                                                   name="component_{{ student.name.replace(' ', '_') }}_2"
+                                                   class="clean-mark-input composition-input"
+                                                   min="0"
+                                                   max="{{ composition_max_marks }}"
+                                                   placeholder="0"
+                                                   data-student="{{ student.name.replace(' ', '_') }}"
+                                                   data-component="composition">
+                                        </div>
+                                        {% elif subject == 'KISWAHILI' %}
+                                        <div class="component-group">
+                                            <label>Lugha</label>
+                                            <input type="number"
+                                                   name="component_{{ student.name.replace(' ', '_') }}_1"
+                                                   class="clean-mark-input lugha-input"
+                                                   min="0"
+                                                   max="{{ lugha_max_marks }}"
+                                                   placeholder="0"
+                                                   data-student="{{ student.name.replace(' ', '_') }}"
+                                                   data-component="lugha">
+                                        </div>
+                                        <div class="component-group">
+                                            <label>Insha</label>
+                                            <input type="number"
+                                                   name="component_{{ student.name.replace(' ', '_') }}_2"
+                                                   class="clean-mark-input insha-input"
+                                                   min="0"
+                                                   max="{{ insha_max_marks }}"
+                                                   placeholder="0"
+                                                   data-student="{{ student.name.replace(' ', '_') }}"
+                                                   data-component="insha">
+                                        </div>
+                                        {% endif %}
+                                        <div class="total-display">
+                                            <span class="total-label">Total:</span>
+                                            <span class="total-value" id="total_{{ student.name.replace(' ', '_') }}">0</span>
+                                            <span class="percentage" id="percentage_{{ student.name.replace(' ', '_') }}">0%</span>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <!-- REGULAR SUBJECT LAYOUT -->
+                                    <div class="regular-marks-entry">
+                                        <input type="number"
+                                               name="mark_{{ student.name.replace(' ', '_') }}_{{ subject }}"
+                                               class="clean-mark-input regular-input"
+                                               min="0"
+                                               max="{{ total_marks }}"
+                                               placeholder="Enter marks"
+                                               data-student="{{ student.name.replace(' ', '_') }}"
+                                               data-max="{{ total_marks }}">
+                                        <div class="percentage-display">
+                                            <span id="percentage_{{ student.name.replace(' ', '_') }}">0%</span>
+                                        </div>
+                                    </div>
                                     {% endif %}
-                                    <th class="{% if subject_obj.obj and subject_obj.obj.is_composite %}composite-subject-header{% endif %}" data-subject-id="{{ subject_obj.obj.id if subject_obj.obj else '' }}">
-                                        {{ subject }}
-                                        <div style="font-size: 12px; font-weight: normal; margin-top: 5px;">
-                                            <span class="subject-info">Max Raw: {{ total_marks }}</span>
-                                        </div>
-                                        {% if subject_obj.obj and subject_obj.obj.is_composite %}
-                                        <div class="component-headers">
-                                            {% if subject == 'ENGLISH' %}
-                                            <div class="component-header-item">Grammar</div>
-                                            <div class="component-header-item">Composition</div>
-                                            {% elif subject == 'KISWAHILI' %}
-                                            <div class="component-header-item">Lugha</div>
-                                            <div class="component-header-item">Insha</div>
-                                            {% endif %}
-                                            <div class="component-header-item overall-header">Overall</div>
-                                        </div>
-                                        {% endif %}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for student in students %}
-                                <tr>
-                                    <td>{{ student.name }}</td>
-                                    <td>
-                                        {% if subject in ['ENGLISH', 'KISWAHILI'] %}
-                                        <!-- Composite subject entry - clean layout without repetitive labels -->
-                                        <div class="composite-subject-entry-clean">
-                                            <div class="composite-components-row">
-                                                {% if subject == 'ENGLISH' %}
-                                                <!-- Grammar input -->
-                                                <div class="component-input-cell">
-                                                    <input type="number"
-                                                        name="component_{{ student.name.replace(' ', '_') }}_1"
-                                                        value=""
-                                                        min="0"
-                                                        max="{{ grammar_max_marks }}"
-                                                        placeholder="0-{{ grammar_max_marks }}"
-                                                        required
-                                                        class="student-mark component-mark grammar-input"
-                                                        data-student="{{ student.name.replace(' ', '_') }}"
-                                                        data-subject="2"
-                                                        data-component="1"
-                                                        data-component-weight="0.6"
-                                                        data-max-mark="{{ grammar_max_marks }}"
-                                                        oninput="updateComponentPercentage(this); calculateOverallSubjectMark('{{ student.name.replace(' ', '_') }}', '2')">
-                                                    <div class="component-percentage" id="component_percentage_{{ student.name.replace(' ', '_') }}_2_1">0%</div>
-                                                </div>
-                                                <!-- Composition input -->
-                                                <div class="component-input-cell">
-                                                    <input type="number"
-                                                        name="component_{{ student.name.replace(' ', '_') }}_2"
-                                                        value=""
-                                                        min="0"
-                                                        max="{{ composition_max_marks }}"
-                                                        placeholder="0-{{ composition_max_marks }}"
-                                                        required
-                                                        class="student-mark component-mark composition-input"
-                                                        data-student="{{ student.name.replace(' ', '_') }}"
-                                                        data-subject="2"
-                                                        data-component="2"
-                                                        data-component-weight="0.4"
-                                                        data-max-mark="{{ composition_max_marks }}"
-                                                        oninput="updateComponentPercentage(this); calculateOverallSubjectMark('{{ student.name.replace(' ', '_') }}', '2')">
-                                                    <div class="component-percentage" id="component_percentage_{{ student.name.replace(' ', '_') }}_2_2">0%</div>
-                                                </div>
-                                                {% elif subject == 'KISWAHILI' %}
-                                                <!-- Lugha input -->
-                                                <div class="component-input-cell">
-                                                    <input type="number"
-                                                        name="component_{{ student.name.replace(' ', '_') }}_3"
-                                                        value=""
-                                                        min="0"
-                                                        max="{{ lugha_max_marks }}"
-                                                        placeholder="0-{{ lugha_max_marks }}"
-                                                        required
-                                                        class="student-mark component-mark lugha-input"
-                                                        data-student="{{ student.name.replace(' ', '_') }}"
-                                                        data-subject="7"
-                                                        data-component="3"
-                                                        data-component-weight="0.6"
-                                                        data-max-mark="{{ lugha_max_marks }}"
-                                                        oninput="updateComponentPercentage(this); calculateOverallSubjectMark('{{ student.name.replace(' ', '_') }}', '7')">
-                                                    <div class="component-percentage" id="component_percentage_{{ student.name.replace(' ', '_') }}_7_3">0%</div>
-                                                </div>
-                                                <!-- Insha input -->
-                                                <div class="component-input-cell">
-                                                    <input type="number"
-                                                        name="component_{{ student.name.replace(' ', '_') }}_4"
-                                                        value=""
-                                                        min="0"
-                                                        max="{{ insha_max_marks }}"
-                                                        placeholder="0-{{ insha_max_marks }}"
-                                                        required
-                                                        class="student-mark component-mark insha-input"
-                                                        data-student="{{ student.name.replace(' ', '_') }}"
-                                                        data-subject="7"
-                                                        data-component="4"
-                                                        data-component-weight="0.4"
-                                                        data-max-mark="{{ insha_max_marks }}"
-                                                        oninput="updateComponentPercentage(this); calculateOverallSubjectMark('{{ student.name.replace(' ', '_') }}', '7')">
-                                                    <div class="component-percentage" id="component_percentage_{{ student.name.replace(' ', '_') }}_7_4">0%</div>
-                                                </div>
-                                                {% endif %}
-                                                <!-- Overall percentage -->
-                                                <div class="component-input-cell overall-cell">
-                                                    <div class="overall-percentage" id="overall_percentage_{{ student.name.replace(' ', '_') }}_{{ '2' if subject == 'ENGLISH' else '7' }}">0%</div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Hidden fields for the overall subject mark (calculated from components) -->
-                                            <input type="hidden"
-                                                name="mark_{{ student.name.replace(' ', '_') }}_{{ '2' if subject == 'ENGLISH' else '7' }}"
-                                                id="overall_mark_{{ student.name.replace(' ', '_') }}_{{ '2' if subject == 'ENGLISH' else '7' }}"
-                                                value="0">
-                                            <input type="hidden"
-                                                name="hidden_percentage_{{ student.name.replace(' ', '_') }}_{{ '2' if subject == 'ENGLISH' else '7' }}"
-                                                id="hidden_percentage_{{ student.name.replace(' ', '_') }}_{{ '2' if subject == 'ENGLISH' else '7' }}"
-                                                value="0">
-                                        </div>
-                                        {% else %}
-                                        <!-- Regular subject entry -->
-                                        <div class="simplified-mark-entry">
-                                            <div class="mark-input-container">
-                                                <input type="number"
-                                                    name="mark_{{ student.name.replace(' ', '_') }}_1"
-                                                    value="0"
-                                                    min="0"
-                                                    max="{{ total_marks }}"
-                                                    required
-                                                    class="student-mark"
-                                                    data-student="{{ student.name.replace(' ', '_') }}"
-                                                    data-subject="1"
-                                                    data-max-mark="{{ total_marks }}"
-                                                    oninput="updateRegularSubjectPercentage(this)">
-                                            </div>
-                                            <div class="mark-percentage" id="percentage_{{ student.name.replace(' ', '_') }}_1">0%</div>
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                    <div class="text-center mt-3">
-                        <button type="submit" name="submit_marks" value="1" class="btn">
-                            <i class="fas fa-check-circle"></i>
-                            Submit Marks
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="window.location.reload()">
+                            <i class="fas fa-undo"></i> Reset Form
+                        </button>
+                        <button type="submit" name="submit_marks" value="1" class="btn-primary">
+                            <i class="fas fa-save"></i> Submit All Marks
                         </button>
                     </div>
                 </form>
@@ -2762,6 +3014,15 @@
                                 debugLog('🔍 Components: ' + data.subject.components.length);
                             }
                             showSubjectInfo(data.subject);
+
+                            // Setup marks table if we're in marks entry mode
+                            const pupilsList = document.getElementById('pupils-list');
+                            if (pupilsList) {
+                                debugLog('📝 Setting up marks table for subject: ' + selectedSubject);
+                                setTimeout(() => {
+                                    setupMarksTable();
+                                }, 200);
+                            }
                         } else {
                             debugLog('❌ Error fetching subject info: ' + data.message);
                             currentSubjectInfo = null;
@@ -2780,89 +3041,109 @@
         }
 
         // Function to show/hide composite configuration and total marks field
-        function showCompositeConfig(subject) {
+        async function showCompositeConfig(subject) {
             const compositeConfig = document.getElementById('composite-config');
             const englishConfig = document.getElementById('english-config');
             const kiswahiliConfig = document.getElementById('kiswahili-config');
             const totalMarksGroup = document.getElementById('total-marks-group');
             const totalMarksInput = document.getElementById('total_marks');
+            const educationLevel = document.getElementById('education_level').value;
 
-            console.log(`🎯 showCompositeConfig called for subject: ${subject}`);
+            console.log(`🎯 showCompositeConfig called for subject: ${subject}, education level: ${educationLevel}`);
 
-            // Simple case-insensitive detection for English and Kiswahili
-            const subjectUpper = subject.toUpperCase();
-
-            if (subjectUpper.includes('ENGLISH')) {
-                console.log('🎯 Detected English subject - showing composite interface');
-
-                // Show composite config for English
-                compositeConfig.style.display = 'block';
-                englishConfig.style.display = 'block';
-                kiswahiliConfig.style.display = 'none';
-
-                // Hide total marks field and remove required attribute
-                totalMarksGroup.style.display = 'none';
-                totalMarksInput.removeAttribute('required');
-
-                // Set default values from backend or use defaults
-                const currentGrammarMax = '{{ grammar_max_marks }}' || '60';
-                const currentCompositionMax = '{{ composition_max_marks }}' || '40';
-
-                document.getElementById('grammar_max').value = currentGrammarMax;
-                document.getElementById('composition_max').value = currentCompositionMax;
-                updateComponentMaxMarks();
-
-                // Immediately update hidden fields with current values
-                document.getElementById('hidden_grammar_max').value = currentGrammarMax;
-                document.getElementById('hidden_composition_max').value = currentCompositionMax;
-
-                debugLog('📚 Showing English composite configuration');
-                debugLog('🔒 Hiding total marks field for composite subject');
-
-            } else if (subjectUpper.includes('KISWAHILI')) {
-                console.log('🎯 Detected Kiswahili subject - showing composite interface');
-
-                // Show composite config for Kiswahili
-                compositeConfig.style.display = 'block';
-                englishConfig.style.display = 'none';
-                kiswahiliConfig.style.display = 'block';
-
-                // Hide total marks field and remove required attribute
-                totalMarksGroup.style.display = 'none';
-                totalMarksInput.removeAttribute('required');
-
-                // Set default values from backend or use defaults
-                const currentLughaMax = '{{ lugha_max_marks }}' || '50';
-                const currentInshaMax = '{{ insha_max_marks }}' || '50';
-
-                document.getElementById('lugha_max').value = currentLughaMax;
-                document.getElementById('insha_max').value = currentInshaMax;
-                updateComponentMaxMarks();
-
-                // Immediately update hidden fields with current values
-                document.getElementById('hidden_lugha_max').value = currentLughaMax;
-                document.getElementById('hidden_insha_max').value = currentInshaMax;
-
-                debugLog('📚 Showing Kiswahili composite configuration');
-                debugLog('🔒 Hiding total marks field for composite subject');
-
-            } else {
-                console.log('🎯 Non-composite subject detected');
-
-                // Hide composite config for regular subjects
+            if (!educationLevel) {
+                console.log('⚠️ No education level selected, hiding composite config');
                 compositeConfig.style.display = 'none';
                 englishConfig.style.display = 'none';
                 kiswahiliConfig.style.display = 'none';
-
-                // Show total marks field and add required attribute
                 totalMarksGroup.style.display = 'block';
                 totalMarksInput.setAttribute('required', 'required');
+                return;
+            }
 
-                // Clear the total marks field for manual entry
+            try {
+                // Check if subject is composite using the API
+                const apiEndpoint = '{{ session.role }}' === 'headteacher' ?
+                    `/universal/api/check-composite/${encodeURIComponent(subject)}/${encodeURIComponent(educationLevel)}` :
+                    `/teacher/api/check-composite/${encodeURIComponent(subject)}/${encodeURIComponent(educationLevel)}`;
+
+                const response = await fetch(apiEndpoint);
+                const data = await response.json();
+
+                if (data.success && data.is_composite) {
+                    console.log('🎯 Subject is composite - showing composite interface');
+
+                    // Show composite config
+                    compositeConfig.style.display = 'block';
+                    totalMarksGroup.style.display = 'none';
+                    totalMarksInput.removeAttribute('required');
+
+                    if (data.subject_type === 'english') {
+                        englishConfig.style.display = 'block';
+                        kiswahiliConfig.style.display = 'none';
+
+                        // Set values from configuration
+                        const grammarComponent = data.components.find(c => c.name === 'Grammar');
+                        const compositionComponent = data.components.find(c => c.name === 'Composition');
+
+                        const grammarMax = grammarComponent ? (grammarComponent.weight * 100) : 60;
+                        const compositionMax = compositionComponent ? (compositionComponent.weight * 100) : 40;
+
+                        document.getElementById('grammar_max').value = grammarMax;
+                        document.getElementById('composition_max').value = compositionMax;
+                        document.getElementById('hidden_grammar_max').value = grammarMax;
+                        document.getElementById('hidden_composition_max').value = compositionMax;
+
+                        debugLog('📚 Showing English composite configuration from database');
+
+                    } else if (data.subject_type === 'kiswahili') {
+                        englishConfig.style.display = 'none';
+                        kiswahiliConfig.style.display = 'block';
+
+                        // Set values from configuration
+                        const lughaComponent = data.components.find(c => c.name === 'Lugha');
+                        const inshaComponent = data.components.find(c => c.name === 'Insha');
+
+                        const lughaMax = lughaComponent ? (lughaComponent.weight * 100) : 50;
+                        const inshaMax = inshaComponent ? (inshaComponent.weight * 100) : 50;
+
+                        document.getElementById('lugha_max').value = lughaMax;
+                        document.getElementById('insha_max').value = inshaMax;
+                        document.getElementById('hidden_lugha_max').value = lughaMax;
+                        document.getElementById('hidden_insha_max').value = inshaMax;
+
+                        debugLog('📚 Showing Kiswahili composite configuration from database');
+                    }
+
+                    // Update component max marks
+                    updateComponentMaxMarks();
+
+                } else {
+                    console.log('🎯 Subject is not composite - showing regular interface');
+
+                    // Hide composite config for regular subjects
+                    compositeConfig.style.display = 'none';
+                    englishConfig.style.display = 'none';
+                    kiswahiliConfig.style.display = 'none';
+
+                    // Show total marks field and add required attribute
+                    totalMarksGroup.style.display = 'block';
+                    totalMarksInput.setAttribute('required', 'required');
+                    totalMarksInput.value = '';
+
+                    debugLog('📚 Hiding composite configuration for regular subject');
+                }
+
+            } catch (error) {
+                console.error('❌ Error checking if subject is composite:', error);
+
+                // Fallback to regular subject interface
+                compositeConfig.style.display = 'none';
+                englishConfig.style.display = 'none';
+                kiswahiliConfig.style.display = 'none';
+                totalMarksGroup.style.display = 'block';
+                totalMarksInput.setAttribute('required', 'required');
                 totalMarksInput.value = '';
-
-                debugLog('📚 Hiding composite configuration');
-                debugLog('🔓 Showing total marks field for regular subject');
             }
         }
 
@@ -3029,9 +3310,18 @@
                     if (gradeId) {
                         console.log(`📋 Using fallback grade ID: ${gradeId}`);
 
-                        fetch(`/teacher/get_streams/${gradeId}`)
+                        // Use appropriate API endpoint based on user role
+                        const apiEndpoint = '{{ session.role }}' === 'headteacher' ?
+                            `/universal/api/streams/${gradeId}` :
+                            `/teacher/get_streams/${gradeId}`;
+
+                        fetch(apiEndpoint)
                             .then(response => {
                                 console.log(`📡 Response status: ${response.status}`);
+                                if (response.status === 403) {
+                                    console.error('❌ 403 Forbidden - trying alternative endpoint');
+                                    return fetch(`/universal/api/streams/${gradeId}`).then(r => r.json());
+                                }
                                 return response.json();
                             })
                             .then(data => {
@@ -3064,96 +3354,168 @@
             }
         }
 
-        // Function to setup composite subject marks table
-        function setupCompositeMarksTable() {
-            debugLog('🔧 setupCompositeMarksTable called');
-            debugLog('📊 currentSubjectInfo: ' + (currentSubjectInfo ? JSON.stringify(currentSubjectInfo) : 'null'));
+        // Function to setup marks table based on subject configuration
+        function setupMarksTable() {
+            debugLog('🔧 setupMarksTable called');
 
-            if (!currentSubjectInfo || !currentSubjectInfo.is_composite) {
-                debugLog('❌ Not a composite subject or no subject info');
+            const educationLevel = document.getElementById('education_level').value;
+            const subject = document.getElementById('subject').value;
+
+            if (!educationLevel || !subject) {
+                debugLog('❌ Missing education level or subject');
                 return;
             }
 
-            const tableHeader = document.getElementById('table-header');
-            const tableBody = document.getElementById('table-body');
-            const subjectTypeInfo = document.getElementById('subject-type-info');
+            // Get all marks entry cells
+            const marksCells = document.querySelectorAll('.marks-entry-cell');
+            debugLog(`🎯 Found ${marksCells.length} marks entry cells`);
 
-            debugLog('🎯 Table elements found: header=' + !!tableHeader + ', body=' + !!tableBody + ', info=' + !!subjectTypeInfo);
+            // Check if subject is composite using the API
+            const apiEndpoint = '{{ session.role }}' === 'headteacher' ?
+                `/universal/api/check-composite/${encodeURIComponent(subject)}/${encodeURIComponent(educationLevel)}` :
+                `/teacher/api/check-composite/${encodeURIComponent(subject)}/${encodeURIComponent(educationLevel)}`;
 
-            if (!tableHeader || !tableBody) {
-                debugLog('❌ Required table elements not found');
-                return;
-            }
+            fetch(apiEndpoint)
+                .then(response => response.json())
+                .then(data => {
+                    debugLog('📊 Subject configuration: ' + JSON.stringify(data));
 
-            // Update subject type info
-            if (subjectTypeInfo) {
-                subjectTypeInfo.innerHTML = `
-                    <div class="composite-info">
-                        <h4>📚 Composite Subject: ${currentSubjectInfo.name}</h4>
-                        <p>Enter raw marks for each component. Final percentage will be calculated from total raw marks.</p>
+                    if (data.success && data.is_composite) {
+                        debugLog('🎯 Setting up composite subject marks entry');
+                        setupCompositeMarksEntry(marksCells, data);
+                    } else {
+                        debugLog('🎯 Setting up regular subject marks entry');
+                        setupRegularMarksEntry(marksCells);
+                    }
+                })
+                .catch(error => {
+                    debugLog('❌ Error checking subject configuration: ' + error);
+                    // Fallback to regular marks entry
+                    setupRegularMarksEntry(marksCells);
+                });
+        }
+
+        // Function to setup composite marks entry
+        function setupCompositeMarksEntry(marksCells, subjectConfig) {
+            const totalMarks = document.getElementById('total_marks').value || 100;
+
+            marksCells.forEach(cell => {
+                const studentKey = cell.getAttribute('data-student');
+
+                let cellHTML = '<div class="composite-subject-entry-clean">';
+                cellHTML += '<div class="composite-components-row">';
+
+                // Add component inputs
+                subjectConfig.components.forEach((component, index) => {
+                    cellHTML += `
+                        <div class="component-input-cell">
+                            <input type="number"
+                                   name="component_${studentKey}_${index + 1}"
+                                   min="0"
+                                   max="${component.weight}"
+                                   placeholder="0-${component.weight}"
+                                   required
+                                   class="student-mark component-mark"
+                                   data-student="${studentKey}"
+                                   data-component="${component.name}"
+                                   data-max-mark="${component.weight}"
+                                   oninput="updateCompositePercentage('${studentKey}')">
+                            <small>${component.name}</small>
+                        </div>
+                    `;
+                });
+
+                // Add total and percentage display
+                cellHTML += `
+                    <div class="component-input-cell overall-cell">
+                        <div class="total-marks" id="total_marks_${studentKey}">0/${getTotalComponentMarks(subjectConfig)}</div>
+                        <div class="percentage" id="percentage_${studentKey}">0%</div>
                     </div>
                 `;
-            }
 
-            // Update table header for composite subjects
-            let headerHTML = '<tr><th>Student Name</th>';
-            currentSubjectInfo.components.forEach(comp => {
-                headerHTML += `<th>${comp.name}<br><small>(Max: ${comp.max_raw_mark} marks)</small></th>`;
-            });
-            headerHTML += '<th>Total Raw Marks</th><th>Percentage</th></tr>';
-            tableHeader.innerHTML = headerHTML;
-            debugLog('✅ Table header updated for composite subject');
+                cellHTML += '</div></div>';
 
-            // Update table body for composite subjects
-            const existingRows = tableBody.querySelectorAll('tr');
-            debugLog('🔍 Found existing rows: ' + existingRows.length);
+                // Add hidden fields for form submission
+                cellHTML += `
+                    <input type="hidden" name="mark_${studentKey}_composite" id="mark_${studentKey}" value="0">
+                    <input type="hidden" name="percentage_${studentKey}" id="hidden_percentage_${studentKey}" value="0">
+                `;
 
-            let bodyHTML = '';
-
-            existingRows.forEach((row, index) => {
-                const studentNameCell = row.querySelector('td');
-                if (studentNameCell) {
-                    const studentName = studentNameCell.textContent.trim();
-                    const studentKey = studentName.replace(/\s+/g, '_');
-
-                    debugLog('🎓 Processing student ' + (index + 1) + ': ' + studentName + ' (key: ' + studentKey + ')');
-
-                    bodyHTML += `<tr data-student="${studentKey}">`;
-                    bodyHTML += `<td>${studentName}</td>`;
-
-                    currentSubjectInfo.components.forEach((comp, compIndex) => {
-                        debugLog('📝 Adding component ' + (compIndex + 1) + ': ' + comp.name + ' (max: ' + comp.max_raw_mark + ')');
-                        bodyHTML += `
-                            <td class="component-input-cell">
-                                <input type="number"
-                                       name="component_${studentKey}_${comp.id}"
-                                       min="0"
-                                       max="${comp.max_raw_mark}"
-                                       placeholder="0"
-                                       oninput="updateCompositePercentage('${studentKey}')"
-                                       required>
-                            </td>
-                        `;
-                    });
-
-                    bodyHTML += `<td class="total-marks-cell" id="total_marks_${studentKey}">0/${getTotalMaxMarks()}</td>`;
-                    bodyHTML += `<td class="percentage-cell" id="composite_percentage_${studentKey}">0%</td>`;
-                    bodyHTML += '</tr>';
-                }
+                cell.innerHTML = cellHTML;
             });
 
-            debugLog('🔧 Generated body HTML length: ' + bodyHTML.length);
-            debugLog('🔧 Generated body HTML preview: ' + bodyHTML.substring(0, 200) + '...');
+            debugLog('✅ Composite marks entry setup complete');
+        }
 
-            if (bodyHTML) {
-                tableBody.innerHTML = bodyHTML;
-                debugLog('✅ Composite table body updated with component inputs');
+        // Function to setup regular marks entry
+        function setupRegularMarksEntry(marksCells) {
+            const totalMarks = document.getElementById('total_marks').value || 100;
 
-                // Verify the inputs were created
-                const componentInputs = tableBody.querySelectorAll('input[name^="component_"]');
-                debugLog('🎯 Component inputs created: ' + componentInputs.length);
-            } else {
-                debugLog('❌ No students found to update composite table');
+            marksCells.forEach(cell => {
+                const studentKey = cell.getAttribute('data-student');
+
+                const cellHTML = `
+                    <div class="simplified-mark-entry">
+                        <div class="mark-input-container">
+                            <input type="number"
+                                   name="mark_${studentKey}_1"
+                                   min="0"
+                                   max="${totalMarks}"
+                                   placeholder="0-${totalMarks}"
+                                   required
+                                   class="student-mark"
+                                   data-student="${studentKey}"
+                                   data-max-mark="${totalMarks}"
+                                   oninput="updateRegularPercentage('${studentKey}', this.value, ${totalMarks})">
+                        </div>
+                        <div class="mark-percentage" id="percentage_${studentKey}">0%</div>
+                    </div>
+                `;
+
+                cell.innerHTML = cellHTML;
+            });
+
+            debugLog('✅ Regular marks entry setup complete');
+        }
+
+        // Helper function to get total component marks
+        function getTotalComponentMarks(subjectConfig) {
+            return subjectConfig.components.reduce((total, comp) => total + comp.weight, 0);
+        }
+
+        // Function to update composite percentage
+        function updateCompositePercentage(studentKey) {
+            const componentInputs = document.querySelectorAll(`input[data-student="${studentKey}"].component-mark`);
+            let totalRawMarks = 0;
+            let totalMaxMarks = 0;
+
+            componentInputs.forEach(input => {
+                const rawMark = parseInt(input.value) || 0;
+                const maxMark = parseInt(input.getAttribute('data-max-mark')) || 0;
+                totalRawMarks += rawMark;
+                totalMaxMarks += maxMark;
+            });
+
+            const percentage = totalMaxMarks > 0 ? (totalRawMarks / totalMaxMarks) * 100 : 0;
+
+            // Update displays
+            const totalDisplay = document.getElementById(`total_marks_${studentKey}`);
+            const percentageDisplay = document.getElementById(`percentage_${studentKey}`);
+            const hiddenMark = document.getElementById(`mark_${studentKey}`);
+            const hiddenPercentage = document.getElementById(`hidden_percentage_${studentKey}`);
+
+            if (totalDisplay) totalDisplay.textContent = `${totalRawMarks}/${totalMaxMarks}`;
+            if (percentageDisplay) percentageDisplay.textContent = `${Math.round(percentage)}%`;
+            if (hiddenMark) hiddenMark.value = totalRawMarks;
+            if (hiddenPercentage) hiddenPercentage.value = percentage.toFixed(2);
+        }
+
+        // Function to update regular percentage
+        function updateRegularPercentage(studentKey, rawMark, maxMark) {
+            const percentage = maxMark > 0 ? (rawMark / maxMark) * 100 : 0;
+            const percentageDisplay = document.getElementById(`percentage_${studentKey}`);
+            if (percentageDisplay) {
+                percentageDisplay.textContent = `${Math.round(percentage)}%`;
             }
         }
 
@@ -3302,10 +3664,177 @@
             }
         }
 
+        // CLEAN MARKS FORM FUNCTIONALITY
+        function initializeCleanMarksForm() {
+            console.log('🎯 Initializing clean marks form...');
+
+            // Add event listeners to all mark inputs
+            const markInputs = document.querySelectorAll('.clean-mark-input');
+            console.log(`Found ${markInputs.length} mark input fields`);
+
+            markInputs.forEach(input => {
+                // Add input event listener for real-time updates
+                input.addEventListener('input', function() {
+                    updateStudentTotals(this);
+                });
+
+                // Add focus event for better UX
+                input.addEventListener('focus', function() {
+                    this.select();
+                });
+
+                // Add validation
+                input.addEventListener('blur', function() {
+                    validateInput(this);
+                });
+            });
+        }
+
+        function updateStudentTotals(input) {
+            const studentId = input.getAttribute('data-student');
+            if (!studentId) return;
+
+            // Check if this is a composite subject
+            const isComposite = input.closest('.composite-marks-entry') !== null;
+
+            if (isComposite) {
+                updateCompositeTotal(studentId);
+            } else {
+                updateRegularPercentage(studentId, input);
+            }
+        }
+
+        function updateCompositeTotal(studentId) {
+            const compositeContainer = document.querySelector(`[data-student="${studentId}"] .composite-marks-entry`);
+            if (!compositeContainer) return;
+
+            const inputs = compositeContainer.querySelectorAll('.clean-mark-input');
+            let total = 0;
+            let maxTotal = 0;
+
+            inputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                const max = parseFloat(input.getAttribute('max')) || 0;
+                total += value;
+                maxTotal += max;
+            });
+
+            // Update total display
+            const totalElement = document.getElementById(`total_${studentId}`);
+            const percentageElement = document.getElementById(`percentage_${studentId}`);
+
+            if (totalElement) {
+                totalElement.textContent = total.toFixed(1);
+            }
+
+            if (percentageElement) {
+                const percentage = maxTotal > 0 ? (total / maxTotal * 100) : 0;
+                percentageElement.textContent = percentage.toFixed(1) + '%';
+
+                // Update color based on performance
+                updatePerformanceColor(percentageElement, percentage);
+            }
+        }
+
+        function updateRegularPercentage(studentId, input) {
+            const value = parseFloat(input.value) || 0;
+            const max = parseFloat(input.getAttribute('data-max')) || 100;
+            const percentage = max > 0 ? (value / max * 100) : 0;
+
+            const percentageElement = document.getElementById(`percentage_${studentId}`);
+            if (percentageElement) {
+                percentageElement.textContent = percentage.toFixed(1) + '%';
+                updatePerformanceColor(percentageElement, percentage);
+            }
+        }
+
+        function updatePerformanceColor(element, percentage) {
+            // Remove existing classes
+            element.classList.remove('excellent', 'good', 'average', 'below-average');
+
+            // Add appropriate class based on percentage
+            if (percentage >= 80) {
+                element.classList.add('excellent');
+                element.style.color = '#28a745';
+            } else if (percentage >= 60) {
+                element.classList.add('good');
+                element.style.color = '#17a2b8';
+            } else if (percentage >= 40) {
+                element.classList.add('average');
+                element.style.color = '#ffc107';
+            } else {
+                element.classList.add('below-average');
+                element.style.color = '#dc3545';
+            }
+        }
+
+        function validateInput(input) {
+            const value = parseFloat(input.value);
+            const max = parseFloat(input.getAttribute('max'));
+            const min = parseFloat(input.getAttribute('min')) || 0;
+
+            if (isNaN(value)) {
+                input.style.borderColor = '#6c757d';
+                return;
+            }
+
+            if (value < min || value > max) {
+                input.style.borderColor = '#dc3545';
+                input.style.backgroundColor = '#fff5f5';
+
+                // Show validation message
+                showValidationMessage(input, `Value must be between ${min} and ${max}`);
+            } else {
+                input.style.borderColor = '#28a745';
+                input.style.backgroundColor = '#f8fff8';
+                hideValidationMessage(input);
+            }
+        }
+
+        function showValidationMessage(input, message) {
+            // Remove existing message
+            hideValidationMessage(input);
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'validation-message';
+            messageDiv.textContent = message;
+            messageDiv.style.cssText = `
+                position: absolute;
+                background: #dc3545;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                z-index: 1000;
+                margin-top: 2px;
+                white-space: nowrap;
+            `;
+
+            input.parentNode.style.position = 'relative';
+            input.parentNode.appendChild(messageDiv);
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => hideValidationMessage(input), 3000);
+        }
+
+        function hideValidationMessage(input) {
+            const existingMessage = input.parentNode.querySelector('.validation-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
             debugLog('🚀 Teacher dashboard loaded!');
             debugLog('📊 Subjects by education level: ' + JSON.stringify(subjectsByEducationLevel));
+
+            // Initialize clean marks form if present
+            const marksContainer = document.querySelector('.marks-upload-container');
+            if (marksContainer) {
+                console.log('🎯 Clean marks form detected - initializing...');
+                initializeCleanMarksForm();
+            }
 
             // Check for error messages
             {% if error_message %}
@@ -3365,46 +3894,14 @@
                 handleSubjectSelection();
             }
 
-            // Check if we're in marks entry mode and setup composite table
+            // Check if we're in marks entry mode and setup marks table
             const pupilsList = document.getElementById('pupils-list');
             if (pupilsList) {
-                debugLog('📝 In marks entry mode');
-                // We're in marks entry mode, get subject from hidden field
-                const subjectHidden = document.querySelector('input[name="subject"]');
-                if (subjectHidden && subjectHidden.value) {
-                    debugLog('🔍 Fetching subject info for: ' + subjectHidden.value);
-                    // Fetch subject info and setup table
-                    fetch(`/teacher/get_subject_info/${encodeURIComponent(subjectHidden.value)}`)
-                        .then(response => {
-                            debugLog('📡 Subject info response status: ' + response.status);
-                            return response.json();
-                        })
-                        .then(data => {
-                            debugLog('📊 Subject info data: ' + JSON.stringify(data));
-                            if (data.success) {
-                                currentSubjectInfo = data.subject;
-                                debugLog('🎯 Subject is composite: ' + data.subject.is_composite);
-                                debugLog('🎯 Subject components: ' + JSON.stringify(data.subject.components));
-
-                                if (data.subject.is_composite) {
-                                    debugLog('🔧 Setting up composite marks table');
-                                    // Add a small delay to ensure DOM is ready
-                                    setTimeout(() => {
-                                        setupCompositeMarksTable();
-                                    }, 100);
-                                } else {
-                                    debugLog('📖 Regular subject - using standard table');
-                                }
-                            } else {
-                                debugLog('❌ Failed to get subject info: ' + data.message);
-                            }
-                        })
-                        .catch(error => {
-                            debugLog('❌ Error fetching subject info for marks entry: ' + error);
-                        });
-                } else {
-                    debugLog('❌ No subject hidden field found');
-                }
+                debugLog('📝 In marks entry mode - setting up marks table');
+                // Add a small delay to ensure DOM is ready
+                setTimeout(() => {
+                    setupMarksTable();
+                }, 100);
             } else {
                 debugLog('📋 Not in marks entry mode');
             }

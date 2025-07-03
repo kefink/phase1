@@ -5,7 +5,9 @@ across all grades and streams with intelligent class structure detection.
 from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for, flash
 from ..services.headteacher_universal_service import HeadteacherUniversalService
 from ..services.class_structure_service import ClassStructureService
+from ..services.flexible_subject_service import FlexibleSubjectService
 from ..services import is_authenticated, get_role
+from ..models.academic import Stream
 from functools import wraps
 
 # Create blueprint
@@ -332,6 +334,52 @@ def proxy_classteacher_dashboard():
     """Proxy to classteacher dashboard for marks upload."""
     session['headteacher_universal_access'] = True
     return redirect(url_for('classteacher.dashboard'))
+
+# API ROUTES FOR HEADTEACHER ACCESS
+@universal_bp.route('/api/streams/<int:grade_id>')
+@headteacher_required
+def get_streams_for_grade(grade_id):
+    """API endpoint for headteachers to get streams for a grade."""
+    try:
+        streams = Stream.query.filter_by(grade_id=grade_id).all()
+        return jsonify({
+            'success': True,
+            'streams': [{'id': stream.id, 'name': stream.name} for stream in streams]
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@universal_bp.route('/api/check-composite/<subject>/<education_level>')
+@headteacher_required
+def check_composite_subject(subject, education_level):
+    """API endpoint for headteachers to check if a subject is composite."""
+    try:
+        # Get subject configuration
+        config = FlexibleSubjectService.get_subject_configuration(subject, education_level)
+
+        if config and config['is_composite']:
+            # Get components
+            components = FlexibleSubjectService.get_subject_components(subject, education_level)
+            subject_type = FlexibleSubjectService.detect_subject_type(subject)
+
+            return jsonify({
+                'success': True,
+                'is_composite': True,
+                'subject_type': subject_type,
+                'components': components,
+                'config': config
+            })
+
+        return jsonify({
+            'success': True,
+            'is_composite': False,
+            'subject_type': 'other',
+            'components': [],
+            'config': None
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 @universal_bp.route('/proxy/download_marks_template')
 @headteacher_required
