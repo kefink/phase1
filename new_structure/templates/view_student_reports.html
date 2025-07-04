@@ -212,12 +212,13 @@
         >
           View Class Report
         </a>
-        <a
-          href="{{ url_for('classteacher.generate_all_individual_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}"
+        <button
+          onclick="downloadAllIndividualReports('{{ grade }}', '{{ stream }}', '{{ term }}', '{{ assessment_type }}')"
           class="download-all-btn"
+          id="downloadAllBtn"
         >
           Download All Reports (ZIP)
-        </a>
+        </button>
       </div>
 
       <div class="info-box">
@@ -318,5 +319,119 @@
       </div>
       {% endif %}
     </div>
+
+    <script>
+        // Function to download all individual reports as ZIP
+        async function downloadAllIndividualReports(grade, stream, term, assessmentType) {
+            const downloadBtn = document.getElementById('downloadAllBtn');
+            const originalText = downloadBtn.innerHTML;
+
+            try {
+                // Show loading state
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating ZIP...';
+                downloadBtn.disabled = true;
+
+                // Make the request
+                const response = await fetch(`/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    // If response is not ok, try to get error message
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+
+                // Check if response is actually a ZIP file
+                const contentType = response.headers.get('Content-Type');
+                if (!contentType || !contentType.includes('application/zip')) {
+                    // This might be a redirect response (HTML), show appropriate message
+                    throw new Error('No reports could be generated. Please ensure students have marks for the selected term and assessment type.');
+                }
+
+                // Get filename from response headers
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = `Individual_Reports_${grade.replace(' ', '_')}_${stream}_${term}_${assessmentType}_${new Date().toISOString().slice(0, 10)}.zip`;
+
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                    if (filenameMatch) {
+                        filename = filenameMatch[1];
+                    }
+                }
+
+                // Download the file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                // Show success message
+                showNotification('ZIP file downloaded successfully!', 'success');
+
+            } catch (error) {
+                console.error('Download error:', error);
+                showNotification(error.message || 'Error downloading ZIP file. Please try again.', 'error');
+            } finally {
+                // Restore button state
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+            }
+        }
+
+        // Notification function
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                z-index: 10000;
+                max-width: 400px;
+                word-wrap: break-word;
+            `;
+            notification.textContent = message;
+
+            // Add close button
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '×';
+            closeBtn.style.cssText = `
+                background: none;
+                border: none;
+                color: white;
+                font-size: 20px;
+                font-weight: bold;
+                margin-left: 10px;
+                cursor: pointer;
+                padding: 0;
+                line-height: 1;
+            `;
+            closeBtn.onclick = () => notification.remove();
+            notification.appendChild(closeBtn);
+
+            // Add to page
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+    </script>
   </body>
 </html>

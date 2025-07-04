@@ -19,68 +19,228 @@
         font-family: "Poppins", sans-serif;
         margin: 0;
         padding: 20px;
-        background-color: #f4f4f4;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
       }
+
       .report-container {
-        max-width: 800px;
+        max-width: 900px;
         margin: 0 auto;
-        background-color: white;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15),
+          0 0 0 1px rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
       }
+
       .header {
         text-align: center;
         margin-bottom: 20px;
+        padding: 20px 0;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border-radius: 15px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
       }
+
+      .header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 100%
+        );
+        pointer-events: none;
+      }
+
+      .logo-wrapper {
+        flex-shrink: 0;
+        z-index: 2;
+        order: 2;
+        margin-left: auto;
+        padding-right: 20px;
+      }
+
+      .header-logo {
+        max-width: 70px;
+        max-height: 70px;
+        min-width: 35px;
+        min-height: 35px;
+        width: auto;
+        height: auto;
+        border-radius: 12px;
+        border: 3px solid rgba(255, 255, 255, 0.4);
+        object-fit: contain;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .school-info {
+        flex: 1;
+        z-index: 2;
+        order: 1;
+        text-align: center;
+      }
+
       .header h1 {
-        margin: 0;
+        margin: 0 0 8px 0;
         font-size: 24px;
-        color: #333;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        letter-spacing: 1px;
       }
+
       .header p {
-        margin: 5px 0;
-        font-size: 16px;
-        color: #555;
-      }
-      .student-details p {
-        margin: 5px 0;
+        margin: 4px 0;
         font-size: 14px;
+        opacity: 0.95;
+        font-weight: 500;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
       }
+
+      .student-details {
+        background: linear-gradient(
+          135deg,
+          rgba(76, 175, 80, 0.1) 0%,
+          rgba(139, 195, 74, 0.1) 100%
+        );
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(76, 175, 80, 0.2);
+      }
+
+      .student-details p {
+        margin: 4px 0;
+        font-size: 14px;
+        font-weight: 500;
+        color: #2e7d32;
+      }
+
       table {
         width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        background: white;
       }
+
       th,
       td {
-        border: 1px solid #ddd;
-        padding: 8px;
+        padding: 8px 6px;
         text-align: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 12px;
       }
+
       th {
-        background-color: #4caf50;
+        background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
         color: white;
-        font-weight: bold;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 13px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
       }
+
       tr:nth-child(even) {
-        background-color: #f9f9f9;
+        background: linear-gradient(
+          135deg,
+          rgba(76, 175, 80, 0.03) 0%,
+          rgba(139, 195, 74, 0.03) 100%
+        );
       }
+
+      tr:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(76, 175, 80, 0.08) 0%,
+          rgba(139, 195, 74, 0.08) 100%
+        );
+        transform: translateY(-1px);
+        transition: all 0.3s ease;
+      }
+
+      .component-row {
+        background: rgba(255, 193, 7, 0.05) !important;
+        font-style: italic;
+      }
+
+      .component-name {
+        padding-left: 25px !important;
+        font-size: 13px;
+        color: #f57c00;
+      }
+
       .remarks {
-        margin-top: 20px;
+        margin-top: 15px;
+        background: linear-gradient(
+          135deg,
+          rgba(33, 150, 243, 0.05) 0%,
+          rgba(30, 136, 229, 0.05) 100%
+        );
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid rgba(33, 150, 243, 0.1);
       }
+
       .remarks h3 {
-        font-size: 16px;
-        color: #333;
-      }
-      .remarks p {
-        margin: 5px 0;
         font-size: 14px;
+        color: #1976d2;
+        margin-bottom: 8px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
       }
+
+      .remarks h3::before {
+        content: "📝";
+        font-size: 12px;
+      }
+
+      .remarks p {
+        margin: 6px 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #424242;
+      }
+
       .footer {
         text-align: center;
-        margin-top: 20px;
-        font-size: 12px;
-        color: #777;
+        margin-top: 15px;
+        padding: 10px;
+        background: linear-gradient(
+          135deg,
+          rgba(96, 125, 139, 0.1) 0%,
+          rgba(69, 90, 100, 0.1) 100%
+        );
+        border-radius: 8px;
+        border: 1px solid rgba(96, 125, 139, 0.2);
+      }
+
+      .footer p {
+        margin: 3px 0;
+        font-size: 11px;
+        color: #546e7a;
+        font-weight: 500;
       }
       .back-btn {
         display: inline-block;
@@ -120,31 +280,19 @@
         font-size: 0.85em;
       }
 
-      /* Print styles */
+      /* Print styles for single-page optimization */
       @media print {
-        /* Remove all browser-generated content */
+        /* Single page setup with minimal margins */
         @page {
-          size: portrait;
-          margin: 1cm;
+          size: A4 portrait;
+          margin: 0.5cm;
           /* Remove headers and footers completely */
-          @top-left {
-            content: "";
-          }
-          @top-center {
-            content: "";
-          }
-          @top-right {
-            content: "";
-          }
-          @bottom-left {
-            content: "";
-          }
-          @bottom-center {
-            content: "";
-          }
-          @bottom-right {
-            content: "";
-          }
+          @top-left { content: ""; }
+          @top-center { content: ""; }
+          @top-right { content: ""; }
+          @bottom-left { content: ""; }
+          @bottom-center { content: ""; }
+          @bottom-right { content: ""; }
         }
 
         /* Reset all styles for clean printing */
@@ -154,10 +302,99 @@
           print-color-adjust: exact !important;
         }
 
-        html {
+        html, body {
           margin: 0 !important;
           padding: 0 !important;
+          height: auto !important;
+          font-size: 10pt !important;
         }
+
+        .report-container {
+          max-width: none !important;
+          margin: 0 !important;
+          padding: 10px !important;
+          background: white !important;
+          box-shadow: none !important;
+          border: none !important;
+          border-radius: 0 !important;
+          page-break-inside: avoid;
+        }
+
+        .header {
+          margin-bottom: 10px !important;
+          padding: 10px 0 !important;
+          page-break-inside: avoid;
+        }
+
+        .header h1 {
+          font-size: 18pt !important;
+          margin: 0 0 5px 0 !important;
+        }
+
+        .header p {
+          font-size: 10pt !important;
+          margin: 2px 0 !important;
+        }
+
+        .student-details {
+          padding: 8px !important;
+          margin-bottom: 8px !important;
+          page-break-inside: avoid;
+        }
+
+        .student-details p {
+          font-size: 10pt !important;
+          margin: 2px 0 !important;
+        }
+
+        table {
+          margin-bottom: 8px !important;
+          font-size: 9pt !important;
+          page-break-inside: avoid;
+        }
+
+        th, td {
+          padding: 4px 3px !important;
+          font-size: 9pt !important;
+        }
+
+        .remarks {
+          margin-top: 8px !important;
+          padding: 8px !important;
+          page-break-inside: avoid;
+        }
+
+        .remarks h3 {
+          font-size: 11pt !important;
+          margin-bottom: 4px !important;
+        }
+
+        .remarks p {
+          font-size: 9pt !important;
+          margin: 3px 0 !important;
+          line-height: 1.2 !important;
+        }
+
+        .footer {
+          margin-top: 8px !important;
+          padding: 5px !important;
+          page-break-inside: avoid;
+        }
+
+        .footer p {
+          font-size: 8pt !important;
+          margin: 1px 0 !important;
+        }
+
+        .back-btn {
+          display: none !important;
+        }
+
+        /* Ensure no page breaks within critical sections */
+        .header, .student-details, table, .remarks, .footer {
+          page-break-inside: avoid;
+        }
+      }
 
         body {
           background-color: white !important;
@@ -264,22 +501,48 @@
         </button>
       </div>
       <div class="header">
-        <div class="logo-container">
+        <!-- School Logo Section -->
+        <div class="logo-wrapper">
+          {% if school_info.logo_filename %}
           <img
-            src="{{ url_for('static', filename='images/kirima_logo.png') }}"
-            alt="School Logo"
-            style="max-width: 150px; height: auto; margin-bottom: 10px"
+            src="{{ url_for('static', filename='uploads/logos/' + school_info.logo_filename) }}"
+            alt="{{ school_info.school_name|default('School') }} Logo"
+            class="header-logo"
+            id="schoolLogo"
+            onerror="showLogoFallback(this)"
+            onload="adjustLogoStyle(this)"
           />
+          {% else %}
+          <!-- Use the known Hillview logo file -->
+          <img
+            src="{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}"
+            alt="{{ school_info.school_name|default('School') }} Logo"
+            class="header-logo"
+            id="schoolLogo"
+            onerror="showLogoFallback(this)"
+            onload="adjustLogoStyle(this)"
+          />
+          {% endif %}
         </div>
-        <h1>KIRIMA PRIMARY SCHOOL</h1>
-        <p>P.O. BOX 123, KIRIMA | TEL: +254 123 456789</p>
-        <p>
-          Email: info@kirimaprimary.ac.ke | Website: www.kirimaprimary.ac.ke
-        </p>
-        <p>
-          ACADEMIC REPORT TERM {{ term.replace('_', ' ').upper() }} {{
-          academic_year|default('2023') }}
-        </p>
+
+        <!-- School Information Section -->
+        <div class="school-info">
+          <h1>{{ school_info.school_name|default('SCHOOL NAME')|upper }}</h1>
+          <p>
+            {{ school_info.postal_address|default('P.O. BOX 123, LOCATION') }}{%
+            if school_info.school_phone %} | TEL: {{ school_info.school_phone
+            }}{% endif %}
+          </p>
+          <p>
+            {% if school_info.school_email %}Email: {{ school_info.school_email
+            }}{% endif %}{% if school_info.school_website %} | Website: {{
+            school_info.school_website }}{% endif %}
+          </p>
+          <p>
+            ACADEMIC REPORT TERM {{ term.replace('_', ' ').upper() }} {{
+            academic_year|default('2025') }}
+          </p>
+        </div>
       </div>
 
       <div class="student-details">
@@ -309,6 +572,7 @@
             <th>{{ assessment_type.replace('_', ' ').title() }}</th>
             {% endif %}
             <th>Subject Remarks</th>
+            <th>Teacher</th>
           </tr>
         </thead>
         <tbody>
@@ -332,6 +596,10 @@
             </td>
             {% endif %}
             <td>{{ row.remarks | replace(' (TBD)', '') }}</td>
+            <td>
+              {{ subject_teachers.get(row.subject, {}).get('username', 'Not
+              Assigned') if subject_teachers else 'Not Assigned' }}
+            </td>
           </tr>
 
           <!-- Show component breakdown for composite subjects -->
@@ -369,6 +637,9 @@
             <td class="component-label">
               {{ component_data.remarks | replace(' (TBD)', '') }}
             </td>
+            <td class="component-teacher">
+              <!-- Empty cell for component rows -->
+            </td>
           </tr>
           {% endfor %} {% endif %} {% endfor %}
           <tr>
@@ -385,6 +656,7 @@
             <td>{{ total | int }}</td>
             {% endif %}
             <td></td>
+            <td></td>
           </tr>
         </tbody>
       </table>
@@ -392,24 +664,132 @@
       <div class="remarks">
         <h3>Class Teacher's Remarks:</h3>
         <p>
-          Well done! With continued focus and consistency, you have the
-          potential to achieve even more.
+          {% if avg_percentage >= 80 %} Excellent work! You are exceeding
+          expectations. Keep up the outstanding performance and continue to
+          challenge yourself. {% elif avg_percentage >= 60 %} Good progress! You
+          are meeting expectations. With continued focus and consistency, you
+          have the potential to achieve even more. {% elif avg_percentage >= 40
+          %} You are approaching expectations. Keep working hard and seek help
+          where needed to improve your performance. {% else %} You need to put
+          in more effort to meet expectations. Please seek additional support
+          and practice regularly. {% endif %}
         </p>
-        <p>Class Teacher: Moses Barasa</p>
+        <p>
+          Class Teacher: {{ staff_info.class_teacher_name|default('Not
+          Assigned') }}
+        </p>
+
         <h3>Head Teacher's Remarks:</h3>
         <p>
-          Great progress! Your growing confidence is evident - keep practicing,
-          and you'll excel even further.
+          {% if avg_percentage >= 80 %} Outstanding performance! Your dedication
+          and hard work are evident. Continue to excel and be an inspiration to
+          others. {% elif avg_percentage >= 60 %} Great progress! Your growing
+          confidence is evident - keep practicing, and you'll excel even
+          further. {% elif avg_percentage >= 40 %} There is room for
+          improvement. Focus on your studies and seek guidance from your
+          teachers. {% else %} Significant improvement is needed. Please work
+          closely with your teachers and parents to enhance your performance. {%
+          endif %}
         </p>
-        <p>Head Teacher Name: Mr. Paul Mwangi</p>
+        <p>
+          Head Teacher Name: {{ staff_info.headteacher_name|default('Head
+          Teacher') }}
+        </p>
         <p>Head Teacher Signature: ____________________</p>
-        <p>Next Term Begins on: TBD</p>
+        <p>
+          Next Term Begins on: {{
+          term_info.next_term_opening_date|default('TBD') }}
+        </p>
       </div>
 
       <div class="footer">
         <p>Generated on: {{ current_date }}</p>
-        <p>Kirima School powered by CbcTeachkit</p>
+        <p>
+          {{ school_info.school_name|default('School') }} powered by {{
+          school_info.report_footer|default('Hillview SMS') }}
+        </p>
       </div>
     </div>
+
+    <script>
+      // Logo handling functions
+      function showLogoFallback(img) {
+        const logoWrapper = img.parentElement;
+        const schoolName =
+          "{{ school_info.school_name|default('SCHOOL')|first }}";
+
+        // Create fallback element
+        const fallback = document.createElement("div");
+        fallback.className = "logo-fallback";
+        fallback.textContent = schoolName;
+        fallback.style.cssText = `
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #1976d2, #42a5f5);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          font-weight: bold;
+          text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+          border: 3px solid rgba(255,255,255,0.4);
+          box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        `;
+
+        // Replace image with fallback
+        logoWrapper.replaceChild(fallback, img);
+      }
+
+      function adjustLogoStyle(img) {
+        const width = img.naturalWidth;
+        const height = img.naturalHeight;
+        const aspectRatio = width / height;
+
+        // Automatic size classification
+        const maxDimension = Math.max(width, height);
+        if (maxDimension <= 200) {
+          img.classList.add("small");
+        } else if (maxDimension <= 400) {
+          img.classList.add("medium");
+        } else {
+          img.classList.add("large");
+        }
+
+        // Shape detection
+        if (Math.abs(aspectRatio - 1) < 0.1) {
+          img.style.borderRadius = "50%";
+        } else if (aspectRatio > 1.5 || aspectRatio < 0.67) {
+          img.style.borderRadius = "8px";
+        }
+      }
+
+      // Print functionality
+      function printReport() {
+        window.print();
+      }
+
+      // Enhanced print styles
+      window.addEventListener("beforeprint", function () {
+        document.body.style.background = "white";
+        const container = document.querySelector(".report-container");
+        if (container) {
+          container.style.boxShadow = "none";
+          container.style.border = "none";
+          container.style.background = "white";
+        }
+      });
+
+      window.addEventListener("afterprint", function () {
+        document.body.style.background = "";
+        const container = document.querySelector(".report-container");
+        if (container) {
+          container.style.boxShadow = "";
+          container.style.border = "";
+          container.style.background = "";
+        }
+      });
+    </script>
   </body>
 </html>

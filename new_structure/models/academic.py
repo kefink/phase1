@@ -144,13 +144,18 @@ class Mark(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     term_id = db.Column(db.Integer, db.ForeignKey('term.id'), nullable=False)
     assessment_type_id = db.Column(db.Integer, db.ForeignKey('assessment_type.id'), nullable=False)
+    grade_id = db.Column(db.Integer, db.ForeignKey('grade.id'), nullable=False)  # Required field from database
+    stream_id = db.Column(db.Integer, db.ForeignKey('stream.id'), nullable=True)  # Optional field from database
     # Match actual database structure
-    mark = db.Column(db.Float, nullable=False)
-    total_marks = db.Column(db.Float, nullable=False)
-    raw_mark = db.Column(db.Float, nullable=False)
-    raw_total_marks = db.Column(db.Float, nullable=False)  # Match database column name
-    percentage = db.Column(db.Float, nullable=False)
+    mark = db.Column(db.Float, nullable=True)  # Allow NULL as per database
+    total_marks = db.Column(db.Float, nullable=True)  # Allow NULL as per database
+    raw_mark = db.Column(db.Float, nullable=True)  # Allow NULL as per database
+    raw_total_marks = db.Column(db.Float, nullable=True)  # Allow NULL as per database
+    percentage = db.Column(db.Float, nullable=True)  # Allow NULL as per database
     grade_letter = db.Column(db.String(5), nullable=True)  # Match database column
+    is_uploaded = db.Column(db.Boolean, default=False)  # Match database column
+    uploaded_by_teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)  # Match database
+    upload_date = db.Column(db.DateTime, nullable=True)  # Match database
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     # Relationship with component marks
     component_marks = db.relationship('ComponentMark', backref='mark', lazy=True)

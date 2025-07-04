@@ -2259,6 +2259,372 @@
                 justify-content: center;
             }
         }
+
+        /* BRAND NEW MARKS FORM STYLING - COMPLETELY REBUILT */
+        .new-marks-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 24px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .form-header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .subject-title h2 {
+            color: #2d3748;
+            margin: 0 0 8px 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .subject-details {
+            color: #718096;
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .marks-summary {
+            display: flex;
+            gap: 16px;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+            min-width: 80px;
+        }
+
+        .summary-item .label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .summary-item .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .new-marks-form {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .marks-grid-container {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .grid-header {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+        }
+
+        .student-column-header,
+        .marks-column-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .marks-column-header {
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .marks-grid-body {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .student-marks-row {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .student-marks-row:hover {
+            background: #f7fafc;
+        }
+
+        .student-info-column {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #fafafa;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .student-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .student-details {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .student-meta {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .marks-input-column {
+            padding: 20px;
+            background: white;
+        }
+
+        .composite-inputs-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .component-input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .component-label {
+            min-width: 100px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
+        .new-mark-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .new-mark-input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            background: #f7fafc;
+        }
+
+        .new-mark-input:valid {
+            border-color: #48bb78;
+        }
+
+        .new-mark-input.component-input {
+            max-width: 120px;
+        }
+
+        .total-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .total-text {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .total-number {
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .total-percent {
+            background: #4299e1;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .regular-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .regular-input {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .percentage-indicator span {
+            background: #48bb78;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .new-form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 32px;
+            padding: 24px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-top: 3px solid #4299e1;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .reset-btn,
+        .validate-btn,
+        .submit-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .reset-btn {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #c53030;
+            transform: translateY(-2px);
+        }
+
+        .validate-btn {
+            background: #ed8936;
+            color: white;
+        }
+
+        .validate-btn:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+        }
+
+        .form-summary {
+            display: flex;
+            gap: 24px;
+        }
+
+        .summary-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        /* NEW FORM RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .new-marks-container {
+                padding: 16px;
+                margin: 10px 0;
+            }
+
+            .form-header-section {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .grid-header,
+            .student-marks-row {
+                grid-template-columns: 1fr;
+            }
+
+            .student-info-column {
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .new-form-actions {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2594,21 +2960,27 @@
                 </div>
             </form>
             {% else %}
-            <!-- COMPLETELY REBUILT MARKS UPLOAD FORM -->
-            <div class="marks-upload-container">
-                <div class="marks-header">
-                    <h3>📝 Enter Marks for {{ subject }}</h3>
-                    <div class="marks-info">
-                        <span class="info-badge">Grade {{ grade }}</span>
-                        <span class="info-badge">Stream {{ stream }}</span>
-                        <span class="info-badge">{{ term }}</span>
-                        <span class="info-badge">{{ assessment_type }}</span>
-                        <span class="info-badge">Max: {{ total_marks }} marks</span>
+            <!-- BRAND NEW MARKS UPLOAD FORM - COMPLETELY REBUILT -->
+            <div class="new-marks-container">
+                <div class="form-header-section">
+                    <div class="subject-title">
+                        <h2>📚 {{ subject }} - Marks Entry</h2>
+                        <p class="subject-details">Grade {{ grade }} {{ stream }} | {{ term }} | {{ assessment_type }}</p>
+                    </div>
+                    <div class="marks-summary">
+                        <div class="summary-item">
+                            <span class="label">Total Marks:</span>
+                            <span class="value">{{ total_marks }}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Students:</span>
+                            <span class="value">{{ students|length }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <form method="POST" action="{{ url_for('teacher.dashboard') }}" class="clean-marks-form">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <form method="POST" action="{{ url_for('teacher.dashboard') }}" class="new-marks-form" id="newMarksForm">
+                    {{ csrf_token() }}
                     <input type="hidden" name="education_level" value="{{ education_level }}">
                     <input type="hidden" name="subject" value="{{ subject }}">
                     <input type="hidden" name="grade" value="{{ grade }}">
@@ -2621,92 +2993,95 @@
                     <input type="hidden" name="lugha_max_marks" value="{{ lugha_max_marks }}">
                     <input type="hidden" name="insha_max_marks" value="{{ insha_max_marks }}">
 
-                    <!-- CLEAN STUDENTS TABLE -->
-                    <div class="students-marks-table">
-                        <div class="table-header">
-                            <div class="header-cell student-header">Student Name</div>
-                            <div class="header-cell marks-header">
-                                {{ subject }} Marks
-                                <small>(Max: {{ total_marks }})</small>
+                    <!-- BRAND NEW STUDENT MARKS GRID -->
+                    <div class="marks-grid-container">
+                        <div class="grid-header">
+                            <div class="student-column-header">
+                                <i class="fas fa-users"></i>
+                                <span>Students</span>
+                            </div>
+                            <div class="marks-column-header">
+                                <i class="fas fa-edit"></i>
+                                <span>{{ subject }} Marks (Max: {{ total_marks }})</span>
                             </div>
                         </div>
 
-                        <div class="table-body">
+                        <div class="marks-grid-body">
                             {% for student in students %}
-                            <div class="student-row" data-student-id="{{ loop.index }}">
-                                <div class="student-cell">
-                                    <div class="student-name">{{ student.name }}</div>
-                                    <div class="student-number">#{{ loop.index }}</div>
+                            <div class="student-marks-row" data-student="{{ student.id }}">
+                                <div class="student-info-column">
+                                    <div class="student-avatar">{{ student.name[0] }}</div>
+                                    <div class="student-details">
+                                        <div class="student-name">{{ student.name }}</div>
+                                        <div class="student-meta">Student #{{ loop.index }}</div>
+                                    </div>
                                 </div>
-                                <div class="marks-cell">
+                                <div class="marks-input-column">
                                     {% if subject in ['ENGLISH', 'KISWAHILI'] %}
-                                    <!-- COMPOSITE SUBJECT LAYOUT -->
-                                    <div class="composite-marks-entry">
+                                    <!-- COMPOSITE SUBJECT INPUTS -->
+                                    <div class="composite-inputs-wrapper">
                                         {% if subject == 'ENGLISH' %}
-                                        <div class="component-group">
-                                            <label>Grammar</label>
-                                            <input type="number"
-                                                   name="component_{{ student.name.replace(' ', '_') }}_1"
-                                                   class="clean-mark-input grammar-input"
+                                        <div class="component-input-group">
+                                            <label class="component-label">Grammar</label>
                                                    min="0"
                                                    max="{{ grammar_max_marks }}"
-                                                   placeholder="0"
+                                                   placeholder="Grammar"
                                                    data-student="{{ student.name.replace(' ', '_') }}"
                                                    data-component="grammar">
                                         </div>
-                                        <div class="component-group">
-                                            <label>Composition</label>
+                                        <div class="component-input-group">
+                                            <label class="component-label">Composition</label>
                                             <input type="number"
                                                    name="component_{{ student.name.replace(' ', '_') }}_2"
-                                                   class="clean-mark-input composition-input"
+                                                   class="new-mark-input component-input"
                                                    min="0"
                                                    max="{{ composition_max_marks }}"
-                                                   placeholder="0"
+                                                   placeholder="Composition"
                                                    data-student="{{ student.name.replace(' ', '_') }}"
                                                    data-component="composition">
                                         </div>
                                         {% elif subject == 'KISWAHILI' %}
-                                        <div class="component-group">
-                                            <label>Lugha</label>
+                                        <div class="component-input-group">
+                                            <label class="component-label">Lugha</label>
                                             <input type="number"
                                                    name="component_{{ student.name.replace(' ', '_') }}_1"
-                                                   class="clean-mark-input lugha-input"
+                                                   class="new-mark-input component-input"
                                                    min="0"
                                                    max="{{ lugha_max_marks }}"
-                                                   placeholder="0"
+                                                   placeholder="Lugha"
                                                    data-student="{{ student.name.replace(' ', '_') }}"
                                                    data-component="lugha">
                                         </div>
-                                        <div class="component-group">
-                                            <label>Insha</label>
+                                        <div class="component-input-group">
+                                            <label class="component-label">Insha</label>
                                             <input type="number"
                                                    name="component_{{ student.name.replace(' ', '_') }}_2"
-                                                   class="clean-mark-input insha-input"
+                                                   class="new-mark-input component-input"
                                                    min="0"
                                                    max="{{ insha_max_marks }}"
-                                                   placeholder="0"
+                                                   placeholder="Insha"
                                                    data-student="{{ student.name.replace(' ', '_') }}"
                                                    data-component="insha">
                                         </div>
                                         {% endif %}
-                                        <div class="total-display">
-                                            <span class="total-label">Total:</span>
-                                            <span class="total-value" id="total_{{ student.name.replace(' ', '_') }}">0</span>
-                                            <span class="percentage" id="percentage_{{ student.name.replace(' ', '_') }}">0%</span>
+                                        <div class="total-indicator">
+                                            <span class="total-text">Total: </span>
+                                            <span class="total-number" id="total_{{ student.name.replace(' ', '_') }}">0</span>
+                                            <span class="total-percent" id="percentage_{{ student.name.replace(' ', '_') }}">0%</span>
                                         </div>
                                     </div>
                                     {% else %}
-                                    <!-- REGULAR SUBJECT LAYOUT -->
-                                    <div class="regular-marks-entry">
+                                    <!-- REGULAR SUBJECT INPUT -->
+                                    <div class="regular-input-wrapper">
                                         <input type="number"
                                                name="mark_{{ student.name.replace(' ', '_') }}_{{ subject }}"
-                                               class="clean-mark-input regular-input"
+                                               class="new-mark-input regular-input"
                                                min="0"
                                                max="{{ total_marks }}"
-                                               placeholder="Enter marks"
+                                               placeholder="Enter {{ subject }} marks"
                                                data-student="{{ student.name.replace(' ', '_') }}"
                                                data-max="{{ total_marks }}">
-                                        <div class="percentage-display">
+                                        <div class="percentage-indicator">
                                             <span id="percentage_{{ student.name.replace(' ', '_') }}">0%</span>
                                         </div>
                                     </div>
@@ -2717,13 +3092,32 @@
                         </div>
                     </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn-secondary" onclick="window.location.reload()">
-                            <i class="fas fa-undo"></i> Reset Form
-                        </button>
-                        <button type="submit" name="submit_marks" value="1" class="btn-primary">
-                            <i class="fas fa-save"></i> Submit All Marks
-                        </button>
+                    <!-- FORM ACTIONS -->
+                    <div class="new-form-actions">
+                        <div class="action-buttons">
+                            <button type="button" class="reset-btn" onclick="resetNewForm()">
+                                <i class="fas fa-refresh"></i>
+                                <span>Reset All</span>
+                            </button>
+                            <button type="button" class="validate-btn" onclick="validateNewForm()">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Validate</span>
+                            </button>
+                            <button type="submit" name="submit_marks" value="1" class="submit-btn">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Submit Marks</span>
+                            </button>
+                        </div>
+                        <div class="form-summary">
+                            <div class="summary-stat">
+                                <span class="stat-label">Total Students:</span>
+                                <span class="stat-value">{{ students|length }}</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="stat-label">Completed:</span>
+                                <span class="stat-value" id="completedCount">0</span>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -3824,16 +4218,178 @@
             }
         }
 
+        // NEW FORM FUNCTIONS FOR COMPLETELY REBUILT MARKS FORM
+        function resetNewForm() {
+            const form = document.getElementById('newMarksForm');
+            if (form) {
+                // Reset all input fields
+                const inputs = form.querySelectorAll('.new-mark-input');
+                inputs.forEach(input => {
+                    input.value = '';
+                    input.style.borderColor = '#e2e8f0';
+                });
+
+                // Reset all totals and percentages
+                const totals = form.querySelectorAll('[id^="total_"]');
+                const percentages = form.querySelectorAll('[id^="percentage_"]');
+
+                totals.forEach(total => total.textContent = '0');
+                percentages.forEach(percentage => percentage.textContent = '0%');
+
+                // Update completed count
+                updateCompletedCount();
+
+                console.log('✅ New form reset successfully');
+            }
+        }
+
+        function validateNewForm() {
+            const form = document.getElementById('newMarksForm');
+            if (!form) return false;
+
+            let isValid = true;
+            let errorCount = 0;
+            const inputs = form.querySelectorAll('.new-mark-input');
+
+            inputs.forEach(input => {
+                const value = parseFloat(input.value);
+                const max = parseFloat(input.getAttribute('max'));
+
+                if (input.value && (isNaN(value) || value < 0 || value > max)) {
+                    input.style.borderColor = '#e53e3e';
+                    isValid = false;
+                    errorCount++;
+                } else {
+                    input.style.borderColor = input.value ? '#48bb78' : '#e2e8f0';
+                }
+            });
+
+            if (isValid) {
+                showMessage('✅ All marks are valid!', 'success');
+            } else {
+                showMessage(`❌ Found ${errorCount} invalid marks. Please check highlighted fields.`, 'error');
+            }
+
+            return isValid;
+        }
+
+        function updateCompletedCount() {
+            const form = document.getElementById('newMarksForm');
+            if (!form) return;
+
+            const rows = form.querySelectorAll('.student-marks-row');
+            let completed = 0;
+
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('.new-mark-input');
+                let hasValue = false;
+
+                inputs.forEach(input => {
+                    if (input.value && input.value.trim() !== '') {
+                        hasValue = true;
+                    }
+                });
+
+                if (hasValue) completed++;
+            });
+
+            const completedElement = document.getElementById('completedCount');
+            if (completedElement) {
+                completedElement.textContent = completed;
+            }
+        }
+
+        function initializeNewMarksForm() {
+            const form = document.getElementById('newMarksForm');
+            if (!form) return;
+
+            console.log('🎯 Initializing new marks form...');
+
+            // Add event listeners to all input fields
+            const inputs = form.querySelectorAll('.new-mark-input');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const studentKey = this.getAttribute('data-student');
+
+                    if (this.classList.contains('component-input')) {
+                        // Handle composite subject calculations
+                        calculateCompositeTotal(studentKey);
+                    } else {
+                        // Handle regular subject percentage
+                        calculateRegularPercentage(studentKey, this);
+                    }
+
+                    updateCompletedCount();
+                });
+
+                input.addEventListener('blur', function() {
+                    validateInput(this);
+                });
+            });
+
+            console.log('✅ New marks form initialized successfully');
+        }
+
+        function calculateCompositeTotal(studentKey) {
+            const componentInputs = document.querySelectorAll(`[data-student="${studentKey}"].component-input`);
+            let total = 0;
+
+            componentInputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+
+            const totalElement = document.getElementById(`total_${studentKey}`);
+            const percentageElement = document.getElementById(`percentage_${studentKey}`);
+
+            if (totalElement) totalElement.textContent = total;
+            if (percentageElement) {
+                const percentage = total; // Assuming total marks = 100
+                percentageElement.textContent = `${percentage}%`;
+            }
+        }
+
+        function calculateRegularPercentage(studentKey, input) {
+            const value = parseFloat(input.value) || 0;
+            const max = parseFloat(input.getAttribute('data-max')) || 100;
+            const percentage = Math.round((value / max) * 100);
+
+            const percentageElement = document.getElementById(`percentage_${studentKey}`);
+            if (percentageElement) {
+                percentageElement.textContent = `${percentage}%`;
+            }
+        }
+
+        function validateInput(input) {
+            const value = parseFloat(input.value);
+            const max = parseFloat(input.getAttribute('max'));
+
+            if (input.value && (isNaN(value) || value < 0 || value > max)) {
+                input.style.borderColor = '#e53e3e';
+                return false;
+            } else {
+                input.style.borderColor = input.value ? '#48bb78' : '#e2e8f0';
+                return true;
+            }
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
             debugLog('🚀 Teacher dashboard loaded!');
             debugLog('📊 Subjects by education level: ' + JSON.stringify(subjectsByEducationLevel));
 
-            // Initialize clean marks form if present
+            // Initialize clean marks form if present (old form)
             const marksContainer = document.querySelector('.marks-upload-container');
             if (marksContainer) {
                 console.log('🎯 Clean marks form detected - initializing...');
                 initializeCleanMarksForm();
+            }
+
+            // Initialize new marks form if present (new form)
+            const newMarksContainer = document.querySelector('.new-marks-container');
+            if (newMarksContainer) {
+                console.log('🎯 New marks form detected - initializing...');
+                initializeNewMarksForm();
             }
 
             // Check for error messages

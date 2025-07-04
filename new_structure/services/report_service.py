@@ -536,11 +536,21 @@ def generate_class_report_pdf(grade, stream, term, assessment_type, class_data, 
     # Add school logo
     from reportlab.platypus import Image
     try:
-        logo_path = 'new_structure/static/images/kirima_logo.png'
+        # Get dynamic logo path from school setup
+        from ..services.school_config_service import SchoolConfigService
+        logo_filename = SchoolConfigService.get_school_logo_path()
+        logo_path = f'new_structure/static/{logo_filename}'
         logo = Image(logo_path, width=1.5*inch, height=1.5*inch)
         content.append(logo)
     except Exception as e:
         print(f"Error adding logo: {str(e)}")
+        # Fallback to default logo if dynamic logo fails
+        try:
+            fallback_logo_path = 'new_structure/static/hv.jpg'
+            logo = Image(fallback_logo_path, width=1.5*inch, height=1.5*inch)
+            content.append(logo)
+        except Exception as fallback_error:
+            print(f"Error adding fallback logo: {str(fallback_error)}")
 
     # Add school header using dynamic school information
     from ..services.school_config_service import SchoolConfigService

@@ -615,9 +615,13 @@ def dashboard():
                                                 subject_id=subject.id,
                                                 term_id=term_obj.id,
                                                 assessment_type_id=assessment_type_obj.id,
+                                                grade_id=student.grade_id,  # Required field from database
+                                                stream_id=student.stream_id,  # Optional field from database
                                                 percentage=percentage_value,
                                                 raw_mark=(percentage_value / 100) * total_marks,
-                                                max_raw_mark=total_marks
+                                                raw_total_marks=total_marks,  # Use correct field name
+                                                mark=(percentage_value / 100) * total_marks,  # For backward compatibility
+                                                total_marks=total_marks  # For backward compatibility
                                             )
                                             db.session.add(new_mark)
                                             db.session.flush()  # Flush to get the ID of the new mark
@@ -729,10 +733,12 @@ def dashboard():
                                                         subject_id=subject.id,
                                                         term_id=term_obj.id,
                                                         assessment_type_id=assessment_type_obj.id,
+                                                        grade_id=student.grade_id,  # Required field from database
+                                                        stream_id=student.stream_id,  # Optional field from database
                                                         mark=raw_mark,  # Old field name
                                                         total_marks=subject_total_marks,  # Old field name
                                                         raw_mark=raw_mark,  # New field name
-                                                        max_raw_mark=subject_total_marks,  # New field name
+                                                        raw_total_marks=subject_total_marks,  # Use correct field name
                                                         percentage=percentage_value
                                                     )
                                                     db.session.add(new_mark)
@@ -1358,11 +1364,19 @@ def manage_students():
 
                     # Stream is now optional, so we don't need to check if it's provided
 
+                    # Get grade_id from stream if stream_id is provided
+                    grade_id = None
+                    if final_stream_id:
+                        stream = Stream.query.get(final_stream_id)
+                        if stream:
+                            grade_id = stream.grade_id
+
                     # Add new student
                     student = Student(
                         name=name,
                         admission_number=admission_number,
                         stream_id=final_stream_id if final_stream_id else None,
+                        grade_id=grade_id,  # Set grade_id based on stream
                         gender=gender.lower() if gender else "unknown"
                     )
                     db.session.add(student)
@@ -2087,6 +2101,10 @@ def preview_class_report(grade, stream, term, assessment_type):
     from ..services.school_config_service import SchoolConfigService
     school_info = SchoolConfigService.get_school_info_dict()
 
+    # Get dynamic logo URL from school setup
+    logo_path = SchoolConfigService.get_school_logo_path()
+    logo_url = url_for('static', filename=logo_path)
+
     return render_template(
         'preview_class_report.html',
         grade=grade,
@@ -2108,7 +2126,8 @@ def preview_class_report(grade, stream, term, assessment_type):
         component_averages=component_averages,  # Pass component averages
         filtered_subjects=filtered_subjects,  # Pass filtered subject objects
         staff_info=staff_info,  # Pass staff information
-        school_info=school_info  # Pass school information
+        school_info=school_info,  # Pass school information
+        logo_url=logo_url  # Pass dynamic logo URL
     )
 
 @classteacher_bp.route('/edit_class_marks/<grade>/<stream>/<term>/<assessment_type>')
@@ -2426,9 +2445,11 @@ def update_class_marks(grade, stream, term, assessment_type):
                             subject_id=subject.id,
                             term_id=term_obj.id,
                             assessment_type_id=assessment_type_obj.id,
+                            grade_id=student.grade_id,  # Required field from database
+                            stream_id=student.stream_id,  # Optional field from database
                             percentage=overall_percentage,
                             raw_mark=(overall_percentage / 100) * 100,
-                            max_raw_mark=100,
+                            raw_total_marks=100,  # Use correct field name
                             mark=(overall_percentage / 100) * 100,  # Old field name
                             total_marks=100  # Old field name
                         )
@@ -2795,7 +2816,8 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
             "entrance": mark,
             "mid_term": mark,
             "end_term": mark,
-            "avg": mark,
+            "current_assessment": mark,  # Add current_assessment field
+            "avg": mark,  # Use 'avg' to match preview route
             "remarks": get_performance_remarks(mark, class_data_result.get("total_marks", 100))
         })
 
@@ -2814,16 +2836,35 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
     from datetime import datetime
     current_date = datetime.now().strftime("%Y-%m-%d")
 
-    # Get logo URL
-    logo_url = url_for('static', filename='images/kirima_logo.png')
-
     # Get school information for dynamic display
     from ..services.school_config_service import SchoolConfigService
     school_info = SchoolConfigService.get_school_info_dict()
 
+    # Get dynamic logo URL from school setup
+    logo_path = SchoolConfigService.get_school_logo_path()
+    logo_url = url_for('static', filename=logo_path)
+
+    # Get staff information for dynamic teacher names
+    from ..services.staff_assignment_service import StaffAssignmentService
+    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream)
+
+    # Get subject teachers mapping for the teacher column
+    subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream)
+
+    # Initialize composite_data as empty dict (will be populated if needed)
+    composite_data = {}
+
+    # Get term information (placeholder for future implementation)
+    term_info = {
+        'next_term_opening_date': 'TBD',  # This can be configured later
+        'current_term': term,
+        'academic_year': academic_year
+    }
+
     return render_template(
-        'print_individual_report.html',
-        student_name=student.name,
+        'preview_individual_report.html',
+        student=student,
+        student_data=student_data,  # Add student_data like preview route
         grade=grade,
         stream=stream,
         term=term,
@@ -2831,6 +2872,7 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         education_level=education_level,
         current_date=current_date,
         table_data=table_data,
+        composite_data=composite_data,
         total=total_marks,
         avg_percentage=avg_percentage,
         mean_grade=mean_grade,
@@ -2839,11 +2881,12 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         total_points=total_points,
         admission_no=admission_no,
         academic_year=academic_year,
+        print_mode=True,  # Add print_mode like preview route
+        school_info=school_info,
         logo_url=logo_url,
-        subject_averages=subject_averages,
-        class_average=class_average,
-        class_size=overall_count,
-        school_info=school_info  # Pass school information
+        staff_info=staff_info,
+        term_info=term_info,
+        subject_teachers=subject_teachers
     )
 
 @classteacher_bp.route('/preview_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
@@ -3094,6 +3137,28 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
     from datetime import datetime
     current_date = datetime.now().strftime("%Y-%m-%d")
 
+    # Get school information for dynamic display
+    from ..services.school_config_service import SchoolConfigService
+    school_info = SchoolConfigService.get_school_info_dict()
+
+    # Get dynamic logo URL from school setup
+    logo_path = SchoolConfigService.get_school_logo_path()
+    logo_url = url_for('static', filename=logo_path)
+
+    # Get staff information for dynamic teacher names
+    from ..services.staff_assignment_service import StaffAssignmentService
+    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream)
+
+    # Get subject teachers mapping for the teacher column
+    subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream)
+
+    # Get term information (placeholder for future implementation)
+    term_info = {
+        'next_term_opening_date': 'TBD',  # This can be configured later
+        'current_term': term,
+        'academic_year': academic_year
+    }
+
     return render_template(
         'preview_individual_report.html',
         student=student,
@@ -3114,7 +3179,12 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
         total_points=total_points,
         admission_no=admission_no,
         academic_year=academic_year,
-        print_mode=print_mode
+        print_mode=print_mode,
+        school_info=school_info,  # Pass school information
+        logo_url=logo_url,       # Pass dynamic logo URL
+        staff_info=staff_info,   # Pass staff information
+        term_info=term_info,     # Pass term information
+        subject_teachers=subject_teachers  # Pass subject teachers mapping
     )
 
 @classteacher_bp.route('/api/check_stream_status/<grade>/<term>/<assessment_type>', methods=['GET'])
@@ -4128,6 +4198,14 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
         # Get current date
         current_date = datetime.now().strftime("%Y-%m-%d")
 
+        # Get school information for dynamic display
+        from ..services.school_config_service import SchoolConfigService
+        school_info = SchoolConfigService.get_school_info_dict()
+
+        # Get dynamic logo URL from school setup
+        logo_path = SchoolConfigService.get_school_logo_path()
+        logo_url = url_for('static', filename=logo_path)
+
         # Read the template file
         template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'preview_individual_report.html')
         with open(template_path, 'r', encoding='utf-8') as f:
@@ -4157,6 +4235,20 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
         """
         template_content = template_content.replace('</head>', f'{print_css}</head>')
 
+        # Get staff information for dynamic teacher names
+        from ..services.staff_assignment_service import StaffAssignmentService
+        staff_info = StaffAssignmentService.get_report_staff_info(grade, stream)
+
+        # Get subject teachers mapping for the teacher column
+        subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream)
+
+        # Get term information (placeholder for future implementation)
+        term_info = {
+            'next_term_opening_date': 'TBD',  # This can be configured later
+            'current_term': term,
+            'academic_year': academic_year
+        }
+
         # Render the template with the same data as preview
         html_content = render_template_string(
             template_content,
@@ -4178,7 +4270,12 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
             total_points=total_points,
             admission_no=admission_no,
             academic_year=academic_year,
-            print_mode=True
+            print_mode=True,
+            school_info=school_info,  # Pass school information
+            logo_url=logo_url,       # Pass dynamic logo URL
+            staff_info=staff_info,   # Pass staff information
+            term_info=term_info,     # Pass term information
+            subject_teachers=subject_teachers  # Pass subject teachers mapping
         )
 
         # Generate PDF
@@ -4503,6 +4600,14 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
         # Get current date
         current_date = datetime.now().strftime("%Y-%m-%d")
 
+        # Get school information for dynamic display
+        from ..services.school_config_service import SchoolConfigService
+        school_info = SchoolConfigService.get_school_info_dict()
+
+        # Get dynamic logo URL from school setup
+        logo_path = SchoolConfigService.get_school_logo_path()
+        logo_url = url_for('static', filename=logo_path)
+
         # Read the template file and render it (same as preview)
         template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'preview_individual_report.html')
         with open(template_path, 'r', encoding='utf-8') as f:
@@ -4529,7 +4634,9 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
             total_points=total_points,
             admission_no=admission_no,
             academic_year=academic_year,
-            print_mode=True  # Enable print mode for clean output
+            print_mode=True,  # Enable print mode for clean output
+            school_info=school_info,  # Pass school information
+            logo_url=logo_url  # Pass dynamic logo URL
         )
 
         # Generate file
@@ -4613,7 +4720,11 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
         if not (stream_obj and term_obj and assessment_type_obj):
-            flash("Invalid grade, stream, term, or assessment type", "error")
+            error_msg = "Invalid grade, stream, term, or assessment type"
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                return jsonify({'error': error_msg}), 400
+            flash(error_msg, "error")
             return redirect(url_for('classteacher.dashboard'))
 
         # Get students in this stream
@@ -4621,7 +4732,11 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         print(f"📊 Found {len(students)} students in {grade} Stream {stream[-1]}")
 
         if not students:
-            flash(f"No students found for {grade} Stream {stream[-1]}", "error")
+            error_msg = f"No students found for {grade} Stream {stream[-1]}"
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                return jsonify({'error': error_msg}), 400
+            flash(error_msg, "error")
             return redirect(url_for('classteacher.dashboard'))
 
         # Check if we can generate PDFs (optional - will fallback to text if not available)
@@ -4698,7 +4813,11 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         print(f"📊 Generation complete: {successful_reports} successful, {failed_reports} failed")
 
         if successful_reports == 0:
-            flash(f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}.", "error")
+            error_msg = f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}."
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                return jsonify({'error': error_msg}), 400
+            flash(error_msg, "error")
             return redirect(url_for('classteacher.dashboard'))
 
         flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", "success")
@@ -4715,7 +4834,11 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         print(f"💥 Critical error in ZIP generation: {str(e)}")
         import traceback
         traceback.print_exc()
-        flash(f"Error generating reports: {str(e)}", "error")
+        error_msg = f"Error generating reports: {str(e)}"
+        # Check if this is an AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'error': error_msg}), 500
+        flash(error_msg, "error")
         return redirect(url_for('classteacher.dashboard'))
 
 @classteacher_bp.route('/download_class_list', methods=['GET'])
@@ -8245,10 +8368,12 @@ def submit_subject_marks(grade_id, stream_id, subject_id, term_id, assessment_ty
                             subject_id=subject.id,
                             term_id=term.id,
                             assessment_type_id=assessment_type.id,
+                            grade_id=student.grade_id,  # Required field from database
+                            stream_id=student.stream_id,  # Optional field from database
                             mark=raw_mark,
                             total_marks=sanitized_total_marks,
                             raw_mark=raw_mark,
-                            max_raw_mark=sanitized_total_marks,
+                            raw_total_marks=sanitized_total_marks,  # Use correct field name
                             percentage=percentage
                         )
                         db.session.add(new_mark)

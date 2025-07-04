@@ -283,11 +283,13 @@ def dashboard():
                                                 subject_id=subject_obj.id,
                                                 term_id=term_obj.id,
                                                 assessment_type_id=assessment_type_obj.id,
+                                                grade_id=student.grade_id,  # Required field from database
+                                                stream_id=student.stream_id,  # Optional field from database
                                                 percentage=percentage_value,
                                                 raw_mark=(percentage_value / 100) * total_marks,
-                                                max_raw_mark=total_marks,
-                                                mark=(percentage_value / 100) * total_marks,
-                                                total_marks=total_marks
+                                                raw_total_marks=total_marks,  # Use correct field name
+                                                mark=(percentage_value / 100) * total_marks,  # For backward compatibility
+                                                total_marks=total_marks  # For backward compatibility
                                             )
                                             db.session.add(new_mark)
                                             db.session.flush()  # Get the ID

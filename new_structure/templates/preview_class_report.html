@@ -13,44 +13,243 @@
     />
     <style>
       body {
-        font-family: "Poppins", sans-serif;
+        font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
         margin: 0;
-        padding: 20px;
-        background-color: #f4f4f4;
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: #333;
+        font-size: 12px;
+        min-height: 100vh;
       }
       .report-container {
         max-width: 100%;
         margin: 0 auto;
-        background-color: white;
-        padding: 30px;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
+        background: white;
+        padding: 0;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
       }
       .header {
-        text-align: center;
-        margin-bottom: 30px;
-        padding-bottom: 15px;
-        position: relative;
+        background: linear-gradient(
+          135deg,
+          #1e3c72 0%,
+          #2a5298 50%,
+          #4a90e2 100%
+        );
+        color: white;
+        padding: 20px 30px;
+        margin: 0;
         display: flex;
-        flex-direction: column;
+        justify-content: space-between;
         align-items: center;
+        font-weight: bold;
+        position: relative;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       }
 
-      .header:after {
+      .header::before {
         content: "";
         position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
         bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80%;
-        height: 2px;
         background: linear-gradient(
-          to right,
-          transparent,
-          #3498db,
-          transparent
+          45deg,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 100%
         );
+        pointer-events: none;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 1;
+      }
+
+      .header-logo {
+        max-width: 80px;
+        max-height: 80px;
+        min-width: 40px;
+        min-height: 40px;
+        width: auto;
+        height: auto;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        object-fit: contain;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 4px;
+        transition: all 0.3s ease;
+      }
+
+      .header-logo.circular {
+        border-radius: 50%;
+      }
+
+      .header-logo.square {
+        border-radius: 8px;
+      }
+
+      .header-logo.rounded {
+        border-radius: 12px;
+      }
+
+      /* Adaptive logo sizing based on content */
+      .header-logo.small {
+        max-width: 50px;
+        max-height: 50px;
+      }
+
+      .header-logo.medium {
+        max-width: 70px;
+        max-height: 70px;
+      }
+
+      .header-logo.large {
+        max-width: 90px;
+        max-height: 90px;
+      }
+
+      /* Logo container for better positioning */
+      .logo-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 60px;
+        padding: 5px;
+        position: relative;
+      }
+
+      /* Fallback for missing logos */
+      .logo-fallback {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.9),
+          rgba(255, 255, 255, 0.7)
+        );
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: #1e3c72;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Color adaptation for different logo backgrounds */
+      .header-logo.dark-bg {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(255, 255, 255, 0.6);
+      }
+
+      .header-logo.light-bg {
+        background: rgba(0, 0, 0, 0.05);
+        border-color: rgba(0, 0, 0, 0.1);
+      }
+
+      .header-logo.transparent-bg {
+        background: transparent;
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      /* Enhanced print logo styling */
+      @media print {
+        .header-logo {
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+          max-width: 70px !important;
+          max-height: 70px !important;
+        }
+
+        .logo-wrapper {
+          min-width: 50px !important;
+        }
+
+        .logo-fallback {
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      .header-right {
+        text-align: right;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        z-index: 1;
+      }
+
+      .school-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .school-name {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .school-details {
+        font-size: 11px;
+        opacity: 0.95;
+        font-weight: 400;
+        line-height: 1.4;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      }
+
+      .class-info-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 15px 30px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      .class-info-left {
+        display: flex;
+        gap: 40px;
+      }
+
+      .class-info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 15px;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+
+      .class-info-label {
+        color: #495057;
+        font-weight: 500;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .class-info-value {
+        color: #1e3c72;
+        font-weight: 700;
+        font-size: 13px;
       }
 
       .logo-container {
@@ -118,28 +317,216 @@
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 30px;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
-        table-layout: auto;
+        margin: 0;
+        font-size: 11px;
+        background: white;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 12px 12px;
+        overflow: hidden;
       }
       th,
       td {
-        border: 1px solid #ddd;
-        padding: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        padding: 8px 6px;
         text-align: center;
-        white-space: nowrap;
+        font-size: 10px;
       }
       th {
-        background-color: #3498db;
+        background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
         color: white;
-        font-weight: bold;
+        font-weight: 700;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 12px 6px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        position: relative;
+      }
+
+      th::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #1e3c72, #2a5298, #4a90e2);
+      }
+
+      .subject-header {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        width: 25px;
+        min-width: 25px;
+        max-width: 25px;
+      }
+
+      .performance-summary {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 20px 30px;
+        margin-top: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      .performance-summary h3 {
+        margin: 0 0 15px 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e3c72;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .performance-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        font-size: 12px;
+      }
+
+      .performance-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 15px 12px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .performance-item::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+      }
+
+      .performance-item.exceeding {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+      }
+
+      .performance-item.exceeding::before {
+        background: linear-gradient(90deg, #28a745, #20c997);
+      }
+
+      .performance-item.meeting {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+      }
+
+      .performance-item.meeting::before {
+        background: linear-gradient(90deg, #ffc107, #fd7e14);
+      }
+
+      .performance-item.approaching {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+      }
+
+      .performance-item.approaching::before {
+        background: linear-gradient(90deg, #dc3545, #e74c3c);
+      }
+
+      .performance-item.below {
+        background: linear-gradient(135deg, #f5c6cb 0%, #f1b0b7 100%);
+      }
+
+      .performance-item.below::before {
+        background: linear-gradient(90deg, #721c24, #a71e34);
+      }
+
+      .performance-item span {
+        font-size: 10px;
+        color: #495057;
+        text-align: center;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .performance-item strong {
         font-size: 14px;
+        font-weight: 700;
+        color: #2c3e50;
       }
-      tr:nth-child(even) {
-        background-color: #f2f7ff;
+
+      .signature-section {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        padding: 30px;
+        font-size: 12px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
       }
-      tr:hover {
-        background-color: #e8f4fc;
+
+      .signature-item {
+        text-align: center;
+        flex: 1;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 12px;
+        margin: 0 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+
+      .signature-item strong {
+        color: #1e3c72;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 15px;
+        display: block;
+      }
+
+      .signature-line {
+        border-bottom: 2px solid #1e3c72;
+        width: 180px;
+        margin: 25px auto 10px;
+        position: relative;
+      }
+
+      .signature-line::after {
+        content: "✓";
+        position: absolute;
+        right: -20px;
+        top: -15px;
+        color: #28a745;
+        font-weight: bold;
+        font-size: 16px;
+      }
+      tbody tr:nth-child(even) {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      }
+
+      tbody tr:hover {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        transform: translateY(-1px);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .student-row td:first-child {
+        font-weight: 700;
+        text-align: center;
+        width: 40px;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        font-size: 11px;
+      }
+
+      .student-row td:nth-child(2) {
+        text-align: left;
+        padding-left: 12px;
+        font-weight: 600;
+        min-width: 180px;
+        font-size: 11px;
+        color: #2c3e50;
       }
       .student-name {
         text-align: left;
@@ -184,11 +571,17 @@
         background-color: #f9f9f9;
       }
       .stats {
-        margin-top: 30px;
-        padding: 20px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        border-left: 5px solid #3498db;
+        margin-top: 40px;
+        padding: 25px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.9) 0%,
+          rgba(248, 249, 250, 0.9) 100%
+        );
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid rgba(52, 152, 219, 0.2);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
       }
       .stats h3 {
         margin-top: 0;
@@ -224,12 +617,29 @@
         color: #721c24;
       }
       .footer {
-        margin-top: 30px;
+        margin-top: 40px;
         text-align: center;
         font-size: 0.9em;
         color: #7f8c8d;
-        border-top: 1px solid #ecf0f1;
-        padding-top: 20px;
+        border-top: 2px solid transparent;
+        border-image: linear-gradient(
+            90deg,
+            transparent,
+            #3498db,
+            #9b59b6,
+            #3498db,
+            transparent
+          )
+          1;
+        padding-top: 25px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.5) 0%,
+          rgba(248, 249, 250, 0.5) 100%
+        );
+        border-radius: 10px;
+        margin-top: 30px;
+        padding: 20px;
       }
       /* Subject Teachers Section */
       .subject-teachers-section {
@@ -471,7 +881,7 @@
         /* Remove all browser-generated content */
         @page {
           size: landscape;
-          margin: 1cm;
+          margin: 0.8cm 0.5cm;
           /* Remove headers and footers completely */
           @top-left {
             content: "";
@@ -506,22 +916,24 @@
         }
 
         body {
-          background-color: white !important;
+          background: white !important;
           padding: 0 !important;
           margin: 0 !important;
-          font-size: 12pt !important;
-          font-family: Arial, sans-serif !important;
+          font-size: 11pt !important;
+          font-family: "Poppins", Arial, sans-serif !important;
           -webkit-print-color-adjust: exact !important;
           color-adjust: exact !important;
         }
 
         .report-container {
           box-shadow: none !important;
-          padding: 0 !important;
+          padding: 15px !important;
           max-width: 100% !important;
           margin: 0 !important;
-          background-color: white !important;
+          background: white !important;
           border-radius: 0 !important;
+          backdrop-filter: none !important;
+          border: none !important;
         }
 
         /* Hide all non-essential elements */
@@ -539,18 +951,22 @@
         .header {
           margin-bottom: 20px !important;
           page-break-inside: avoid !important;
+          background: white !important;
+          border: 1px solid #ddd !important;
+          padding: 15px !important;
         }
 
         .school-logo {
-          max-width: 150px !important;
+          max-width: 120px !important;
           height: auto !important;
         }
 
         .stats {
-          background-color: white !important;
-          border-left: 2px solid #3498db !important;
+          background: white !important;
+          border: 1px solid #ddd !important;
           break-inside: avoid !important;
           page-break-inside: avoid !important;
+          backdrop-filter: none !important;
         }
 
         .stat-item {
@@ -562,6 +978,15 @@
           width: 100% !important;
           page-break-inside: auto !important;
           border-collapse: collapse !important;
+          font-size: 10pt !important;
+          margin-bottom: 20px !important;
+        }
+
+        th,
+        td {
+          padding: 6px 4px !important;
+          font-size: 9pt !important;
+          border: 1px solid #ddd !important;
         }
 
         tr {
@@ -620,6 +1045,52 @@
           color: white !important;
           -webkit-print-color-adjust: exact !important;
         }
+
+        /* Premium print color preservation */
+        .header {
+          background: linear-gradient(
+            135deg,
+            #1e3c72 0%,
+            #2a5298 50%,
+            #4a90e2 100%
+          ) !important;
+        }
+
+        .class-info-item {
+          background: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .performance-item.exceeding {
+          background: linear-gradient(
+            135deg,
+            #d4edda 0%,
+            #c3e6cb 100%
+          ) !important;
+        }
+
+        .performance-item.meeting {
+          background: linear-gradient(
+            135deg,
+            #fff3cd 0%,
+            #ffeaa7 100%
+          ) !important;
+        }
+
+        .performance-item.approaching {
+          background: linear-gradient(
+            135deg,
+            #f8d7da 0%,
+            #f5c6cb 100%
+          ) !important;
+        }
+
+        .performance-item.below {
+          background: linear-gradient(
+            135deg,
+            #f5c6cb 0%,
+            #f1b0b7 100%
+          ) !important;
+        }
       }
     </style>
     <script>
@@ -650,6 +1121,147 @@
           modal.style.display = "none";
         }
       };
+
+      // Function to automatically adjust logo styling based on image properties
+      function adjustLogoStyle(img) {
+        if (!img || !img.complete) return;
+
+        const width = img.naturalWidth;
+        const height = img.naturalHeight;
+        const aspectRatio = width / height;
+
+        // Remove existing size classes
+        img.classList.remove("small", "medium", "large");
+        img.classList.remove("circular", "square", "rounded");
+
+        // Determine size based on image dimensions
+        const maxDimension = Math.max(width, height);
+        if (maxDimension <= 200) {
+          img.classList.add("small");
+        } else if (maxDimension <= 400) {
+          img.classList.add("medium");
+        } else {
+          img.classList.add("large");
+        }
+
+        // Determine shape based on aspect ratio
+        if (Math.abs(aspectRatio - 1) < 0.1) {
+          // Nearly square (aspect ratio close to 1:1)
+          if (isCircularLogo(img)) {
+            img.classList.add("circular");
+          } else {
+            img.classList.add("rounded");
+          }
+        } else {
+          // Rectangular
+          img.classList.add("square");
+        }
+
+        // Adjust for very wide or very tall logos
+        if (aspectRatio > 2) {
+          // Very wide logo
+          img.style.maxWidth = "120px";
+          img.style.maxHeight = "40px";
+        } else if (aspectRatio < 0.5) {
+          // Very tall logo
+          img.style.maxWidth = "40px";
+          img.style.maxHeight = "80px";
+        }
+
+        // Add loading animation completion
+        img.style.opacity = "1";
+        img.style.transform = "scale(1)";
+      }
+
+      // Helper function to detect if logo appears circular
+      function isCircularLogo(img) {
+        // This is a simple heuristic - in practice, you might want more sophisticated detection
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+
+        try {
+          ctx.drawImage(img, 0, 0);
+          // Simple check: if corners are mostly transparent/white, likely circular
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+
+          // Check corner pixels for transparency/whiteness
+          const corners = [
+            [0, 0], // top-left
+            [canvas.width - 1, 0], // top-right
+            [0, canvas.height - 1], // bottom-left
+            [canvas.width - 1, canvas.height - 1], // bottom-right
+          ];
+
+          let transparentCorners = 0;
+          corners.forEach(([x, y]) => {
+            const index = (y * canvas.width + x) * 4;
+            const alpha = data[index + 3];
+            const r = data[index];
+            const g = data[index + 1];
+            const b = data[index + 2];
+
+            // Check if corner is transparent or very light
+            if (alpha < 50 || (r > 240 && g > 240 && b > 240)) {
+              transparentCorners++;
+            }
+          });
+
+          return transparentCorners >= 3; // If 3+ corners are transparent/white, likely circular
+        } catch (e) {
+          // If canvas operations fail (CORS, etc.), default to rounded
+          return false;
+        }
+      }
+
+      // Function to show logo fallback when image fails to load
+      function showLogoFallback(img) {
+        const logoWrapper = img.parentElement;
+        const schoolName = "{{ school_info.school_name|default('SCHOOL') }}";
+        const fallbackLetter = schoolName.charAt(0).toUpperCase();
+
+        // Hide the failed image
+        img.style.display = "none";
+
+        // Create and show fallback
+        const fallback = document.createElement("div");
+        fallback.className = "logo-fallback";
+        fallback.textContent = fallbackLetter;
+        fallback.id = "logoFallback";
+
+        logoWrapper.appendChild(fallback);
+      }
+
+      // Initialize logo styling on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        const logo = document.getElementById("schoolLogo");
+        const fallback = document.getElementById("logoFallback");
+
+        if (logo) {
+          // Add initial loading styles
+          logo.style.opacity = "0";
+          logo.style.transform = "scale(0.8)";
+          logo.style.transition = "all 0.3s ease";
+
+          if (logo.complete) {
+            adjustLogoStyle(logo);
+          }
+        }
+
+        if (fallback) {
+          // Animate fallback appearance
+          fallback.style.opacity = "0";
+          fallback.style.transform = "scale(0.8)";
+          fallback.style.transition = "all 0.3s ease";
+
+          setTimeout(() => {
+            fallback.style.opacity = "1";
+            fallback.style.transform = "scale(1)";
+          }, 100);
+        }
+      });
 
       // Function to toggle printing instructions
       function toggleInstructions() {
@@ -916,46 +1528,69 @@
         </div>
       </div>
       <div class="header">
-        <div class="logo-container">
-          <img
-            src="{{ url_for('static', filename='images/kirima_logo.png') }}"
-            alt="Kirima Primary School Logo"
-            class="school-logo"
-          />
+        <div class="header-left">
+          <div class="logo-wrapper">
+            {% if school_info.logo_filename %}
+            <img
+              src="{{ url_for('static', filename='uploads/logos/' + school_info.logo_filename) }}"
+              alt="{{ school_info.school_name|default('School') }} Logo"
+              class="header-logo"
+              id="schoolLogo"
+              onerror="showLogoFallback(this)"
+              onload="adjustLogoStyle(this)"
+            />
+            {% else %}
+            <!-- Temporary: Use the known Hillview logo file -->
+            <img
+              src="{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}"
+              alt="{{ school_info.school_name|default('School') }} Logo"
+              class="header-logo"
+              id="schoolLogo"
+              onerror="showLogoFallback(this)"
+              onload="adjustLogoStyle(this)"
+            />
+            {% endif %}
+          </div>
+          <div class="school-info">
+            <div class="school-name">
+              {{ school_info.school_name|default('HILLVIEW SCHOOL') }}
+            </div>
+            <div class="school-details">
+              {{ school_info.school_address|default('Kiambu Road, Ruaka Estate,
+              Ruiru') }} | {{ school_info.school_phone|default('+254705204870')
+              }} | {{
+              school_info.school_email|default('info@hillviewschool.ac.ke') }}
+            </div>
+          </div>
         </div>
-        <div class="school-info">
-          <h1>
-            {{ school_info.school_name|default('KIRIMA PRIMARY SCHOOL') }}
-          </h1>
-          <p>
-            {{ school_info.school_address|default('P.O. BOX 123, KIRIMA') }} |
-            TEL: {{ school_info.school_phone|default('+254 123 456789') }}
-          </p>
-          <p>
-            Email: {{
-            school_info.school_email|default('info@kirimaprimary.ac.ke') }} |
-            Website: {{
-            school_info.school_website|default('www.kirimaprimary.ac.ke') }}
-          </p>
+        <div class="header-right">{{ education_level.upper() }} MARKSHEET</div>
+      </div>
+
+      <div class="class-info-section">
+        <div class="class-info-left">
+          <div class="class-info-item">
+            <span class="class-info-label">GRADE:</span>
+            <span class="class-info-value"
+              >{{ grade.replace('Grade ', '') }}</span
+            >
+          </div>
+          <div class="class-info-item">
+            <span class="class-info-label">STREAM:</span>
+            <span class="class-info-value"
+              >{{ stream.replace('Stream ', '') }}</span
+            >
+          </div>
+          <div class="class-info-item">
+            <span class="class-info-label">TERM:</span>
+            <span class="class-info-value"
+              >{{ term.replace('_', ' ').upper() }}</span
+            >
+          </div>
+          <div class="class-info-item">
+            <span class="class-info-label">ASSESSMENT:</span>
+            <span class="class-info-value">{{ assessment_type.upper() }}</span>
+          </div>
         </div>
-        <div class="report-title">{{ education_level.upper() }} MARKSHEET</div>
-        <p class="report-subtitle">
-          <span class="report-detail"
-            >GRADE: {{ grade.replace('Grade ', '') }}</span
-          >
-          |
-          <span class="report-detail"
-            >STREAM: {{ stream.replace('Stream ', '') }}</span
-          >
-          |
-          <span class="report-detail"
-            >TERM: {{ term.replace('_', ' ').upper() }}</span
-          >
-          |
-          <span class="report-detail"
-            >ASSESSMENT: {{ assessment_type.upper() }}</span
-          >
-        </p>
       </div>
 
       <!-- Table wrapper for horizontal scroll on very small screens -->
@@ -963,40 +1598,30 @@
         <table>
           <thead>
             <tr>
-              <th rowspan="2">S/N</th>
-              <th rowspan="2">STUDENT NAME</th>
-              {% for subject_name in subject_names %} {% set subject_obj =
-              filtered_subjects | selectattr('name', 'equalto', subject_name) |
-              first %} {% if subject_obj and subject_obj.is_composite %} {% set
-              components = subject_components.get(subject_name, []) %}
-              <th colspan="{{ components|length + 1 }}">
-                {{ subject_name.upper() }}
-              </th>
-              {% else %}
-              <th rowspan="2">{{ abbreviated_subjects[loop.index0] }}</th>
-              {% endif %} {% endfor %}
-              <th style="width: 8%" rowspan="2">TOTAL</th>
-              <th style="width: 8%" rowspan="2">AVG %</th>
-              <th style="width: 6%" rowspan="2">GRD</th>
-              <th style="width: 6%" rowspan="2">RANK</th>
-            </tr>
-            <tr>
+              <th>S/N</th>
+              <th>STUDENT NAME</th>
               {% for subject_name in subject_names %} {% set subject_obj =
               filtered_subjects | selectattr('name', 'equalto', subject_name) |
               first %} {% if subject_obj and subject_obj.is_composite %} {% set
               components = subject_components.get(subject_name, []) %} {% for
               component in components %}
-              <th style="font-size: 11px">{{ component.name[:4].upper() }}</th>
-              {% endfor %}
-              <th style="font-size: 11px; background-color: #e8f4fc">TOTAL</th>
+              <th class="subject-header">{{ component.name[:4].upper() }}</th>
+              {% endfor %} {% else %}
+              <th class="subject-header">
+                {{ abbreviated_subjects[loop.index0] }}
+              </th>
               {% endif %} {% endfor %}
+              <th>TOTAL</th>
+              <th>AVG %</th>
+              <th style="background: #4a90e2; color: white">GRD</th>
+              <th style="background: #f0ad4e; color: white">RANK</th>
             </tr>
           </thead>
           <tbody>
             {% for student_data in class_data %}
-            <tr>
+            <tr class="student-row">
               <td>{{ student_data.index }}</td>
-              <td class="student-name">{{ student_data.student.upper() }}</td>
+              <td>{{ student_data.student.upper() }}</td>
               {% for subject_name in subject_names %} {% set subject_obj =
               filtered_subjects | selectattr('name', 'equalto', subject_name) |
               first %} {% if subject_obj and subject_obj.is_composite %} {% set
@@ -1081,24 +1706,24 @@
       </div>
       <!-- Close table wrapper -->
 
-      <div class="stats">
+      <div class="performance-summary">
         <h3>Performance Summary</h3>
-        <div class="stats-grid">
-          <div class="stat-item exceeding">
-            <strong>EE1/EE2 (Exceeding Expectation, ≥75%):</strong> {{
-            stats.exceeding }} learners
+        <div class="performance-grid">
+          <div class="performance-item exceeding">
+            <span>EE1/EE2 (Exceeding Expectation, ≥75%)</span>
+            <strong>{{ stats.exceeding }} learners</strong>
           </div>
-          <div class="stat-item meeting">
-            <strong>ME1/ME2 (Meeting Expectation, 41-74%):</strong> {{
-            stats.meeting }} learners
+          <div class="performance-item meeting">
+            <span>ME1/ME2 (Meeting Expectation, 41-74%)</span>
+            <strong>{{ stats.meeting }} learners</strong>
           </div>
-          <div class="stat-item approaching">
-            <strong>AE1/AE2 (Approaching Expectation, 21-40%):</strong> {{
-            stats.approaching }} learners
+          <div class="performance-item approaching">
+            <span>AE1/AE2 (Approaching Expectation, 21-40%)</span>
+            <strong>{{ stats.approaching }} learners</strong>
           </div>
-          <div class="stat-item below">
-            <strong>BE1/BE2 (Below Expectation, <21%):</strong> {{ stats.below
-            }} learners
+          <div class="performance-item below">
+            <span>BE1/BE2 (Below Expectation, <21%)</span>
+            <strong>{{ stats.below }} learners</strong>
           </div>
         </div>
       </div>
@@ -1122,32 +1747,33 @@
       {% endif %}
 
       <div class="signature-section">
-        <div class="signature-box">
+        <div class="signature-item">
+          <strong>Class Teacher</strong>
           <div class="signature-line"></div>
-          <p>Class Teacher</p>
-          {% if staff_info and staff_info.class_teacher %}
-          <p class="teacher-name">{{ staff_info.class_teacher.name }}</p>
-          {% endif %}
+          {% if staff_info and staff_info.class_teacher %} {{
+          staff_info.class_teacher.name }} {% else %} Not Assigned {% endif %}
         </div>
-        <div class="signature-box">
+        <div class="signature-item">
+          <strong>Deputy Head Teacher</strong>
           <div class="signature-line"></div>
-          <p>Deputy Head Teacher</p>
-          {% if staff_info and staff_info.deputy_headteacher %}
-          <p class="teacher-name">{{ staff_info.deputy_headteacher.name }}</p>
-          {% endif %}
+          {% if staff_info and staff_info.deputy_headteacher %} {{
+          staff_info.deputy_headteacher.name }} {% else %} Not Assigned {% endif
+          %}
         </div>
-        <div class="signature-box">
+        <div class="signature-item">
+          <strong>Head Teacher</strong>
           <div class="signature-line"></div>
-          <p>Head Teacher</p>
-          {% if staff_info and staff_info.headteacher %}
-          <p class="teacher-name">{{ staff_info.headteacher.name }}</p>
-          {% endif %}
+          {% if staff_info and staff_info.headteacher %} {{
+          staff_info.headteacher.name }} {% else %} Head Teacher {% endif %}
         </div>
       </div>
 
       <div class="footer">
         <p>Generated on: {{ current_date }}</p>
-        <p>Kirima Primary School | Powered by CbcTeachkit</p>
+        <p>
+          {{ school_info.school_name|default('School Management System') }} | {{
+          school_info.report_footer|default('Powered by CbcTeachkit') }}
+        </p>
       </div>
     </div>
   </body>

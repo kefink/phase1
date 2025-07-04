@@ -43,13 +43,13 @@ def get_student_by_admission_number(admission_number):
 def add_student(name, admission_number, stream_id, gender):
     """
     Add a new student.
-    
+
     Args:
         name: The student's name
         admission_number: The student's admission number
         stream_id: The stream ID
         gender: The student's gender
-        
+
     Returns:
         Dictionary with success status and message or student object
     """
@@ -57,24 +57,32 @@ def add_student(name, admission_number, stream_id, gender):
     existing_student = get_student_by_admission_number(admission_number)
     if existing_student:
         return {"success": False, "message": f"Admission number '{admission_number}' is already in use."}
-    
+
     # Check if student name already exists in the stream
     if stream_id:
         existing_student = Student.query.filter_by(name=name, stream_id=stream_id).first()
         if existing_student:
             return {"success": False, "message": f"Student '{name}' already exists in this stream."}
-    
+
+    # Get grade_id from stream if stream_id is provided
+    grade_id = None
+    if stream_id:
+        stream = Stream.query.get(stream_id)
+        if stream:
+            grade_id = stream.grade_id
+
     # Create new student
     student = Student(
         name=name,
         admission_number=admission_number,
         stream_id=stream_id,
+        grade_id=grade_id,  # Set grade_id based on stream
         gender=gender.lower() if gender else "unknown"
     )
-    
+
     db.session.add(student)
     db.session.commit()
-    
+
     return {"success": True, "student": student}
 
 def update_student(student_id, name=None, admission_number=None, stream_id=None, gender=None):
@@ -107,6 +115,13 @@ def update_student(student_id, name=None, admission_number=None, stream_id=None,
     
     if stream_id is not None:
         student.stream_id = stream_id
+        # Update grade_id based on new stream
+        if stream_id:
+            stream = Stream.query.get(stream_id)
+            if stream:
+                student.grade_id = stream.grade_id
+        else:
+            student.grade_id = None
     
     if gender:
         student.gender = gender.lower()
