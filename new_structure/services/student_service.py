@@ -3,6 +3,7 @@ Student management services for the Hillview School Management System.
 """
 from ..models import Student, Stream, Grade, Mark
 from ..extensions import db
+from sqlalchemy import text
 
 def get_students_by_stream(stream_id):
     """
@@ -133,22 +134,67 @@ def update_student(student_id, name=None, admission_number=None, stream_id=None,
 def delete_student(student_id):
     """
     Delete a student.
-    
+
     Args:
         student_id: The student ID
-        
+
     Returns:
         Dictionary with success status and message
     """
+    from ..models.academic import ComponentMark
+    from sqlalchemy import text
+
     student = get_student_by_id(student_id)
     if not student:
         return {"success": False, "message": "Student not found."}
-    
-    # Delete associated marks
-    Mark.query.filter_by(student_id=student.id).delete()
-    
-    # Delete the student
-    db.session.delete(student)
-    db.session.commit()
-    
-    return {"success": True, "message": f"Student '{student.name}' deleted successfully."}
+
+    try:
+        # TEMPORARY FIX: Disable parent email log queries during deletion
+        # This prevents schema errors while parent portal is being developed
+
+        # First delete parent-student relationships using raw SQL to avoid ORM issues
+        try:
+            # Check if parent_student table exists
+            result = db.session.execute(text("SHOW TABLES LIKE 'parent_student'"))
+            if result.fetchone():
+                # Use raw SQL to avoid triggering parent email log queries
+                db.session.execute(
+                    text("DELETE FROM parent_student WHERE student_id = :student_id"),
+                    {"student_id": student.id}
+                )
+                print(f"Deleted parent-student relationships for student {student.id}")
+        except Exception as parent_error:
+            # Parent table might not exist or have schema issues, continue with deletion
+            print(f"Warning: Could not delete parent relationships: {parent_error}")
+
+        # Delete any parent email logs using raw SQL to avoid ORM schema issues
+        try:
+            result = db.session.execute(text("SHOW TABLES LIKE 'parent_email_log'"))
+            if result.fetchone():
+                # Use raw SQL to avoid column schema issues
+                db.session.execute(
+                    text("DELETE FROM parent_email_log WHERE student_id = :student_id"),
+                    {"student_id": student.id}
+                )
+                print(f"Deleted parent email logs for student {student.id}")
+        except Exception as email_log_error:
+            # Email log table might have schema issues, continue with deletion
+            print(f"Warning: Could not delete parent email logs: {email_log_error}")
+
+        # Delete component marks that reference the marks
+        marks = Mark.query.filter_by(student_id=student.id).all()
+        for mark in marks:
+            # Delete component marks first
+            ComponentMark.query.filter_by(mark_id=mark.id).delete()
+
+        # Then delete the marks
+        Mark.query.filter_by(student_id=student.id).delete()
+
+        # Finally delete the student
+        db.session.delete(student)
+        db.session.commit()
+
+        return {"success": True, "message": f"Student '{student.name}' deleted successfully."}
+    except Exception as e:
+        db.session.rollback()
+        return {"success": False, "message": f"Error deleting student: {str(e)}"}

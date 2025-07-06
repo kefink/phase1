@@ -10,6 +10,7 @@ from ..services.role_based_data_service import RoleBasedDataService
 from ..services.report_based_analytics_service import ReportBasedAnalyticsService
 from ..services import is_authenticated, get_role
 from ..models import Term, AssessmentType, Grade, Stream
+from ..models.academic import ComponentMark
 from functools import wraps
 
 # Create analytics API blueprint
@@ -587,6 +588,9 @@ def delete_report_from_analytics():
         deleted_count = len(marks_to_delete)
 
         for mark in marks_to_delete:
+            # Delete component marks first
+            ComponentMark.query.filter_by(mark_id=mark.id).delete()
+            # Delete the mark
             db.session.delete(mark)
 
         # Commit the changes
@@ -898,6 +902,9 @@ def bulk_delete_reports():
 
         # Delete marks
         for mark in marks_to_delete:
+            # Delete component marks first
+            ComponentMark.query.filter_by(mark_id=mark.id).delete()
+            # Delete the mark
             db.session.delete(mark)
 
         # Commit the changes

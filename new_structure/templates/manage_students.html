@@ -640,7 +640,7 @@
                         </div>
                         <div class="form-group">
                             <label for="filter_educational_level">Educational Level:</label>
-                            <select name="educational_level" id="filter_educational_level">
+                            <select name="educational_level" id="filter_educational_level" onchange="updateFilterGrades()">
                                 <option value="">All Levels</option>
                                 {% for level in educational_levels %}
                                     <option value="{{ level }}" {% if request.args.get('educational_level') == level %}selected{% endif %}>
@@ -651,7 +651,7 @@
                         </div>
                         <div class="form-group">
                             <label for="filter_grade">Grade:</label>
-                            <select name="grade_id" id="filter_grade">
+                            <select name="grade_id" id="filter_grade" onchange="updateFilterStreams()">
                                 <option value="">All Grades</option>
                                 {% for grade_obj in grades %}
                                     <option value="{{ grade_obj.id }}" {% if request.args.get('grade_id')|int == grade_obj.id %}selected{% endif %}>
@@ -909,13 +909,9 @@
             updateStreams();
             updateBulkStreams();
 
-            // Initialize filter form stream dropdown
-            const filterGradeSelect = document.getElementById('filter_grade');
-            if (filterGradeSelect) {
-                filterGradeSelect.addEventListener('change', updateFilterStreams);
-                // Initialize filter streams on page load
-                updateFilterStreams();
-            }
+            // Initialize filter form dropdowns on page load
+            updateFilterGrades(); // This will also clear streams
+            updateFilterStreams();
 
             // Initialize download form stream dropdown
             const downloadGradeSelect = document.getElementById('download_grade');
@@ -1006,11 +1002,32 @@
             streamSelect.appendChild(noStreamOption);
 
             if (gradeId) {
-                fetch(`/classteacher/get_streams/${gradeId}`)
-                    .then(response => response.json())
+                // Determine the correct API endpoint based on current user role and session
+                const isHeadteacher = window.location.pathname.includes('/headteacher/') ||
+                                    window.location.pathname.includes('/universal/') ||
+                                    '{{ session.headteacher_universal_access }}' === 'True';
+                const apiEndpoint = isHeadteacher ?
+                    `/universal/api/streams/${gradeId}` :
+                    `/classteacher/get_streams/${gradeId}`;
+
+                fetch(apiEndpoint)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.streams && data.streams.length > 0) {
-                            data.streams.forEach(stream => {
+                        // Handle different response formats
+                        let streams = [];
+                        if (data.success && data.streams) {
+                            streams = data.streams;
+                        } else if (data.streams) {
+                            streams = data.streams;
+                        }
+
+                        if (streams && streams.length > 0) {
+                            streams.forEach(stream => {
                                 const option = document.createElement('option');
                                 option.value = stream.id;
                                 option.textContent = stream.name;
@@ -1038,11 +1055,32 @@
             streamSelect.appendChild(noStreamOption);
 
             if (gradeId) {
-                fetch(`/classteacher/get_streams/${gradeId}`)
-                    .then(response => response.json())
+                // Determine the correct API endpoint based on current user role and session
+                const isHeadteacher = window.location.pathname.includes('/headteacher/') ||
+                                    window.location.pathname.includes('/universal/') ||
+                                    '{{ session.headteacher_universal_access }}' === 'True';
+                const apiEndpoint = isHeadteacher ?
+                    `/universal/api/streams/${gradeId}` :
+                    `/classteacher/get_streams/${gradeId}`;
+
+                fetch(apiEndpoint)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.streams && data.streams.length > 0) {
-                            data.streams.forEach(stream => {
+                        // Handle different response formats
+                        let streams = [];
+                        if (data.success && data.streams) {
+                            streams = data.streams;
+                        } else if (data.streams) {
+                            streams = data.streams;
+                        }
+
+                        if (streams && streams.length > 0) {
+                            streams.forEach(stream => {
                                 const option = document.createElement('option');
                                 option.value = stream.id;
                                 option.textContent = stream.name;
@@ -1053,6 +1091,45 @@
                     .catch(error => {
                         console.error('Error fetching streams:', error);
                     });
+            }
+        }
+
+        function updateFilterGrades() {
+            const educationalLevel = document.getElementById('filter_educational_level').value;
+            const gradeSelect = document.getElementById('filter_grade');
+            const streamSelect = document.getElementById('filter_stream');
+
+            console.log('Updating filter grades for educational level:', educationalLevel);
+
+            // Clear grade dropdown
+            gradeSelect.innerHTML = '<option value="">All Grades</option>';
+
+            // Clear stream dropdown
+            streamSelect.innerHTML = '<option value="">All Streams</option>';
+
+            if (educationalLevel) {
+                // Filter grades based on educational level
+                const allowedGrades = educationalLevelMapping[educationalLevel] || [];
+                console.log('Allowed grades for', educationalLevel, ':', allowedGrades);
+
+                allGrades.forEach(grade => {
+                    if (allowedGrades.includes(grade.name)) {
+                        const option = document.createElement('option');
+                        option.value = grade.id;
+                        option.textContent = grade.name;
+                        gradeSelect.appendChild(option);
+                    }
+                });
+
+                console.log('Updated filter grade dropdown with', gradeSelect.options.length - 1, 'grades');
+            } else {
+                // If no educational level selected, show all grades
+                allGrades.forEach(grade => {
+                    const option = document.createElement('option');
+                    option.value = grade.id;
+                    option.textContent = grade.name;
+                    gradeSelect.appendChild(option);
+                });
             }
         }
 
@@ -1071,11 +1148,42 @@
             streamSelect.appendChild(allStreamsOption);
 
             if (gradeId) {
-                fetch(`/classteacher/get_streams/${gradeId}`)
-                    .then(response => response.json())
+                // Determine the correct API endpoint based on current user role and session
+                const isHeadteacher = window.location.pathname.includes('/headteacher/') ||
+                                    window.location.pathname.includes('/universal/') ||
+                                    '{{ session.headteacher_universal_access }}' === 'True';
+                const apiEndpoint = isHeadteacher ?
+                    `/universal/api/streams/${gradeId}` :
+                    `/classteacher/get_streams/${gradeId}`;
+
+                console.log(`🔍 Stream API Debug:`);
+                console.log(`   URL path: ${window.location.pathname}`);
+                console.log(`   Session headteacher_universal_access: '{{ session.headteacher_universal_access }}'`);
+                console.log(`   Is headteacher: ${isHeadteacher}`);
+                console.log(`   API endpoint: ${apiEndpoint}`);
+
+                fetch(apiEndpoint)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.streams && data.streams.length > 0) {
-                            data.streams.forEach(stream => {
+                        console.log('Streams data received:', data);
+
+                        // Handle different response formats
+                        let streams = [];
+                        if (data.success && data.streams) {
+                            // Headteacher API format
+                            streams = data.streams;
+                        } else if (data.streams) {
+                            // Classteacher API format
+                            streams = data.streams;
+                        }
+
+                        if (streams && streams.length > 0) {
+                            streams.forEach(stream => {
                                 const option = document.createElement('option');
                                 option.value = stream.id;
                                 option.textContent = stream.name;
@@ -1084,10 +1192,30 @@
                                 }
                                 streamSelect.appendChild(option);
                             });
+                            console.log(`Added ${streams.length} streams to dropdown`);
+                        } else {
+                            console.log('No streams found for this grade');
                         }
                     })
                     .catch(error => {
                         console.error('Error fetching streams:', error);
+                        console.error('API endpoint used:', apiEndpoint);
+                        console.error('Grade ID:', gradeId);
+
+                        // Show user-friendly error message
+                        const errorOption = document.createElement('option');
+                        errorOption.value = "";
+                        errorOption.textContent = "Error loading streams";
+                        errorOption.disabled = true;
+                        streamSelect.appendChild(errorOption);
+
+                        // Show detailed error in console for debugging
+                        console.log('Full error details:', {
+                            error: error,
+                            endpoint: apiEndpoint,
+                            gradeId: gradeId,
+                            isHeadteacher: window.location.pathname.includes('/headteacher/') || window.location.pathname.includes('/universal/')
+                        });
                     });
             }
         }
@@ -1110,11 +1238,32 @@
             if (gradeId) {
                 streamSelect.disabled = false;
 
-                fetch(`/classteacher/get_streams/${gradeId}`)
-                    .then(response => response.json())
+                // Determine the correct API endpoint based on current user role and session
+                const isHeadteacher = window.location.pathname.includes('/headteacher/') ||
+                                    window.location.pathname.includes('/universal/') ||
+                                    '{{ session.headteacher_universal_access }}' === 'True';
+                const apiEndpoint = isHeadteacher ?
+                    `/universal/api/streams/${gradeId}` :
+                    `/classteacher/get_streams/${gradeId}`;
+
+                fetch(apiEndpoint)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.streams && data.streams.length > 0) {
-                            data.streams.forEach(stream => {
+                        // Handle different response formats
+                        let streams = [];
+                        if (data.success && data.streams) {
+                            streams = data.streams;
+                        } else if (data.streams) {
+                            streams = data.streams;
+                        }
+
+                        if (streams && streams.length > 0) {
+                            streams.forEach(stream => {
                                 const option = document.createElement('option');
                                 option.value = stream.id;
                                 option.textContent = stream.name;

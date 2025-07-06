@@ -283,8 +283,8 @@ def dashboard():
                                                 subject_id=subject_obj.id,
                                                 term_id=term_obj.id,
                                                 assessment_type_id=assessment_type_obj.id,
-                                                grade_id=student.grade_id,  # Required field from database
-                                                stream_id=student.stream_id,  # Optional field from database
+                                                grade_id=stream_obj.grade_id,  # Use grade from stream_obj (from form)
+                                                stream_id=stream_obj.id,  # Use stream from stream_obj (from form)
                                                 percentage=percentage_value,
                                                 raw_mark=(percentage_value / 100) * total_marks,
                                                 raw_total_marks=total_marks,  # Use correct field name
@@ -361,6 +361,8 @@ def dashboard():
                                                     subject_id=subject_obj.id,
                                                     term_id=term_obj.id,
                                                     assessment_type_id=assessment_type_obj.id,
+                                                    grade_id=stream_obj.grade_id,  # Use grade from stream_obj (from form)
+                                                    stream_id=stream_obj.id,  # Use stream from stream_obj (from form)
                                                     percentage=percentage,
                                                     raw_mark=mark,
                                                     max_raw_mark=total_marks,

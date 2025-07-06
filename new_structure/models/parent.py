@@ -48,9 +48,9 @@ class Parent(db.Model):
     reset_token = db.Column(db.String(100), nullable=True)
     reset_token_expires = db.Column(db.DateTime, nullable=True)
     
-    # Relationships
+    # Relationships - TEMPORARILY DISABLED (parent portal under development)
     children = db.relationship('ParentStudent', back_populates='parent', lazy=True)
-    email_logs = db.relationship('ParentEmailLog', back_populates='parent', lazy=True)
+    # email_logs = db.relationship('ParentEmailLog', back_populates='parent', lazy=True)
     
     def set_password(self, password):
         """Set password hash."""
@@ -114,37 +114,38 @@ class ParentStudent(db.Model):
         return f'<ParentStudent parent_id={self.parent_id} student_id={self.student_id}>'
 
 
-class ParentEmailLog(db.Model):
-    """Log of all emails sent to parents."""
-    __tablename__ = 'parent_email_log'
+# TEMPORARILY DISABLED - Parent portal under development
+# class ParentEmailLog(db.Model):
+#     """Log of all emails sent to parents."""
+#     __tablename__ = 'parent_email_log'
 
-    id = db.Column(db.Integer, primary_key=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey('parent.id'), nullable=False)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=True)  # For result notifications
+#     id = db.Column(db.Integer, primary_key=True)
+#     parent_id = db.Column(db.Integer, db.ForeignKey('parent.id'), nullable=False)
+#     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=True)  # For result notifications
 
-    # Email details
-    email_type = db.Column(db.String(50), nullable=False)  # verification, reset, result_notification
-    subject = db.Column(db.String(200), nullable=False)
-    recipient_email = db.Column(db.String(120), nullable=False)
+#     # Email details
+#     email_type = db.Column(db.String(50), nullable=False)  # verification, reset, result_notification
+#     subject = db.Column(db.String(200), nullable=False)
+#     recipient_email = db.Column(db.String(120), nullable=False)
 
-    # Status tracking
-    status = db.Column(db.String(20), default='pending')  # pending, sent, failed, bounced
-    sent_at = db.Column(db.DateTime, nullable=True)
-    error_message = db.Column(db.Text, nullable=True)
+#     # Status tracking
+#     status = db.Column(db.String(20), default='pending')  # pending, sent, failed, bounced
+#     sent_at = db.Column(db.DateTime, nullable=True)
+#     error_message = db.Column(db.Text, nullable=True)
 
-    # Content reference
-    template_id = db.Column(db.Integer, db.ForeignKey('email_template.id'), nullable=True)
+#     # Content reference
+#     template_id = db.Column(db.Integer, db.ForeignKey('email_template.id'), nullable=True)
 
-    # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+#     # Timestamps
+#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relationships
-    parent = db.relationship('Parent', back_populates='email_logs')
-    student = db.relationship('Student', backref='parent_emails')
-    template = db.relationship('EmailTemplate', backref='email_logs')
+#     # Relationships
+#     parent = db.relationship('Parent', back_populates='email_logs')
+#     student = db.relationship('Student', backref='parent_emails')
+#     template = db.relationship('EmailTemplate', backref='email_logs')
 
-    def __repr__(self):
-        return f'<ParentEmailLog {self.email_type} to {self.recipient_email}>'
+#     def __repr__(self):
+#         return f'<ParentEmailLog {self.email_type} to {self.recipient_email}>'
 
 
 class EmailTemplate(db.Model):

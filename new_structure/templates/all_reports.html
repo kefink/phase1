@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>All Reports - Kirima Primary School</title>
+    <title>All Reports - {{ school_info.school_name|default('Hillview School') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
@@ -107,41 +107,117 @@
 
         .report-actions {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: center;
+            margin-top: 15px;
         }
 
+        /* Responsive design for action buttons */
+        @media (max-width: 768px) {
+            .report-actions {
+                gap: 8px;
+            }
+
+            .action-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+                min-width: 80px;
+            }
+
+            .action-btn span:last-child {
+                display: none;
+            }
+
+            .action-btn {
+                min-width: 45px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .report-actions {
+                justify-content: center;
+                gap: 6px;
+            }
+        }
+
+        /* High specificity action button styles to override any conflicts */
+        .report-actions .action-btn,
         .action-btn {
-            padding: 8px 16px;
-            border-radius: 4px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            transition: opacity 0.2s;
+            padding: 10px 16px !important;
+            border-radius: 8px !important;
+            border: none !important;
+            color: white !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+            min-width: 90px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            background: none !important; /* Reset any background */
         }
 
         .action-btn:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+            color: white;
         }
 
+        .report-actions .edit-btn,
         .edit-btn {
-            background-color: #17a2b8;
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+            border: 2px solid transparent !important;
         }
 
+        .report-actions .edit-btn:hover,
+        .edit-btn:hover {
+            background: linear-gradient(135deg, #138496 0%, #117a8b 100%) !important;
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3) !important;
+        }
+
+        .report-actions .view-btn,
         .view-btn {
-            background-color: #007bff;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+            border: 2px solid transparent !important;
         }
 
+        .report-actions .view-btn:hover,
+        .view-btn:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%) !important;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3) !important;
+        }
+
+        .report-actions .print-btn,
         .print-btn {
-            background-color: #28a745;
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+            border: 2px solid transparent !important;
         }
 
+        .report-actions .print-btn:hover,
+        .print-btn:hover {
+            background: linear-gradient(135deg, #1e7e34 0%, #155724 100%) !important;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3) !important;
+        }
+
+        .report-actions .delete-btn,
         .delete-btn {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%) !important;
+            border: 2px solid transparent !important;
+        }
+
+        .report-actions .delete-btn:hover,
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #bd2130 0%, #a71e2a 100%) !important;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
         }
 
         .badge {
@@ -233,7 +309,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="#" class="navbar-brand">Kirima Primary School</a>
+        <a href="#" class="navbar-brand">{{ school_info.school_name|default('Hillview School') }}</a>
         <ul class="navbar-nav">
             <li class="nav-item"><a href="{{ url_for('classteacher.dashboard') }}" class="nav-link">Dashboard</a></li>
             <li class="nav-item"><a href="#" class="nav-link">Reports</a></li>
@@ -331,17 +407,21 @@
                         </div>
                     </div>
                     <div class="report-actions">
-                        <a href="{{ url_for('classteacher.edit_class_marks', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn edit-btn">
-                            <i>✏️</i> Edit
+                        <a href="{{ url_for('classteacher.edit_class_marks', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn edit-btn" title="Edit marks for this report">
+                            <span style="font-size: 16px;">✏️</span>
+                            <span>Edit</span>
                         </a>
-                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn view-btn">
-                            <i>👁️</i> View
+                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn view-btn" title="View report preview">
+                            <span style="font-size: 16px;">👁️</span>
+                            <span>View</span>
                         </a>
-                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn print-btn">
-                            <i>🖨️</i> Print
+                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn print-btn" title="Print this report">
+                            <span style="font-size: 16px;">🖨️</span>
+                            <span>Print</span>
                         </a>
-                        <button onclick="confirmDeleteReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')" class="action-btn delete-btn">
-                            <i>🗑️</i> Delete
+                        <button onclick="confirmDeleteReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')" class="action-btn delete-btn" title="Delete this report permanently">
+                            <span style="font-size: 16px;">🗑️</span>
+                            <span>Delete</span>
                         </button>
                     </div>
                 </div>
@@ -406,7 +486,7 @@
     </div>
 
     <footer>
-        <p>© 2025 Kirima Primary School - All Rights Reserved</p>
+        <p>© 2025 {{ school_info.school_name|default('Hillview School') }} - All Rights Reserved</p>
     </footer>
 
     <script>

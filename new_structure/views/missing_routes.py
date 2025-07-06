@@ -15,11 +15,19 @@ def subject_config():
     """Subject configuration page."""
     return redirect(url_for('subject_config_api.subject_configuration_page'))
 
+# TEMPORARILY DISABLED - Parent portal under development
+# @missing_routes_bp.route('/parent_management')
+# @admin_required
+# def parent_management():
+#     """Parent management page."""
+#     return redirect(url_for('parent_management.dashboard'))
+
 @missing_routes_bp.route('/parent_management')
 @admin_required
 def parent_management():
-    """Parent management page."""
-    return redirect(url_for('parent_management.dashboard'))
+    """Parent management page - temporarily disabled."""
+    flash('Parent management is temporarily disabled while under development.', 'info')
+    return redirect(url_for('admin.dashboard'))
 
 @missing_routes_bp.route('/permission')
 @admin_required

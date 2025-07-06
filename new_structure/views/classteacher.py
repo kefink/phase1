@@ -9,7 +9,7 @@ import os
 from io import BytesIO
 from werkzeug.utils import secure_filename
 from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark, Teacher, TeacherSubjectAssignment
-from ..models.academic import SubjectMarksStatus
+from ..models.academic import SubjectMarksStatus, ComponentMark
 from ..utils.constants import educational_level_mapping
 from ..services import is_authenticated, get_role, get_class_report_data, generate_individual_report, generate_class_report_pdf, RoleBasedDataService
 from ..services.report_service import generate_class_report_pdf_from_html
@@ -615,8 +615,8 @@ def dashboard():
                                                 subject_id=subject.id,
                                                 term_id=term_obj.id,
                                                 assessment_type_id=assessment_type_obj.id,
-                                                grade_id=student.grade_id,  # Required field from database
-                                                stream_id=student.stream_id,  # Optional field from database
+                                                grade_id=stream_obj.grade_id,  # Use grade from stream_obj (from form)
+                                                stream_id=stream_obj.id,  # Use stream from stream_obj (from form)
                                                 percentage=percentage_value,
                                                 raw_mark=(percentage_value / 100) * total_marks,
                                                 raw_total_marks=total_marks,  # Use correct field name
@@ -1390,12 +1390,54 @@ def manage_students():
             if student_id:
                 student = Student.query.get(student_id)
                 if student:
-                    # Delete associated marks
-                    Mark.query.filter_by(student_id=student.id).delete()
-                    # Delete the student
-                    db.session.delete(student)
-                    db.session.commit()
-                    flash(f"Student '{student.name}' deleted successfully.", "success")
+                    try:
+                        # TEMPORARY FIX: Use raw SQL to avoid parent email log schema issues
+
+                        # First delete parent-student relationships using raw SQL
+                        try:
+                            # Check if parent_student table exists
+                            result = db.session.execute(text("SHOW TABLES LIKE 'parent_student'"))
+                            if result.fetchone():
+                                # Use raw SQL to avoid triggering parent email log queries
+                                db.session.execute(
+                                    text("DELETE FROM parent_student WHERE student_id = :student_id"),
+                                    {"student_id": student.id}
+                                )
+                                print(f"Deleted parent-student relationships for student {student.id}")
+                        except Exception as parent_error:
+                            # Parent table might not exist or have schema issues, continue with deletion
+                            print(f"Warning: Could not delete parent relationships: {parent_error}")
+
+                        # Delete any parent email logs using raw SQL to avoid ORM schema issues
+                        try:
+                            result = db.session.execute(text("SHOW TABLES LIKE 'parent_email_log'"))
+                            if result.fetchone():
+                                # Use raw SQL to avoid column schema issues
+                                db.session.execute(
+                                    text("DELETE FROM parent_email_log WHERE student_id = :student_id"),
+                                    {"student_id": student.id}
+                                )
+                                print(f"Deleted parent email logs for student {student.id}")
+                        except Exception as email_log_error:
+                            # Email log table might have schema issues, continue with deletion
+                            print(f"Warning: Could not delete parent email logs: {email_log_error}")
+
+                        # Delete component marks that reference the marks
+                        marks = Mark.query.filter_by(student_id=student.id).all()
+                        for mark in marks:
+                            # Delete component marks first
+                            ComponentMark.query.filter_by(mark_id=mark.id).delete()
+
+                        # Then delete the marks
+                        Mark.query.filter_by(student_id=student.id).delete()
+
+                        # Finally delete the student
+                        db.session.delete(student)
+                        db.session.commit()
+                        flash(f"Student '{student.name}' deleted successfully.", "success")
+                    except Exception as e:
+                        db.session.rollback()
+                        flash(f"Error deleting student: {str(e)}", "error")
                     return redirect(url_for('classteacher.manage_students'))
 
         # Bulk delete students
@@ -1403,20 +1445,63 @@ def manage_students():
             student_ids = request.form.getlist('student_ids')
             if student_ids:
                 deleted_count = 0
-                for student_id in student_ids:
-                    student = Student.query.get(student_id)
-                    if student:
-                        # Delete associated marks
-                        Mark.query.filter_by(student_id=student.id).delete()
-                        # Delete the student
-                        db.session.delete(student)
-                        deleted_count += 1
+                try:
+                    for student_id in student_ids:
+                        student = Student.query.get(student_id)
+                        if student:
+                            # TEMPORARY FIX: Use raw SQL to avoid parent email log schema issues
 
-                if deleted_count > 0:
-                    db.session.commit()
-                    flash(f"Successfully deleted {deleted_count} student(s).", "success")
-                else:
-                    flash("No students were deleted.", "error")
+                            # First delete parent-student relationships using raw SQL
+                            try:
+                                # Check if parent_student table exists
+                                result = db.session.execute(text("SHOW TABLES LIKE 'parent_student'"))
+                                if result.fetchone():
+                                    # Use raw SQL to avoid triggering parent email log queries
+                                    db.session.execute(
+                                        text("DELETE FROM parent_student WHERE student_id = :student_id"),
+                                        {"student_id": student.id}
+                                    )
+                                    print(f"Deleted parent-student relationships for student {student.id}")
+                            except Exception as parent_error:
+                                # Parent table might not exist or have schema issues, continue with deletion
+                                print(f"Warning: Could not delete parent relationships: {parent_error}")
+
+                            # Delete any parent email logs using raw SQL to avoid ORM schema issues
+                            try:
+                                result = db.session.execute(text("SHOW TABLES LIKE 'parent_email_log'"))
+                                if result.fetchone():
+                                    # Use raw SQL to avoid column schema issues
+                                    db.session.execute(
+                                        text("DELETE FROM parent_email_log WHERE student_id = :student_id"),
+                                        {"student_id": student.id}
+                                    )
+                                    print(f"Deleted parent email logs for student {student.id}")
+                            except Exception as email_log_error:
+                                # Email log table might have schema issues, continue with deletion
+                                print(f"Warning: Could not delete parent email logs: {email_log_error}")
+
+                            # Delete component marks that reference the marks
+                            marks = Mark.query.filter_by(student_id=student.id).all()
+                            for mark in marks:
+                                # Delete component marks first
+                                ComponentMark.query.filter_by(mark_id=mark.id).delete()
+
+                            # Then delete the marks
+                            Mark.query.filter_by(student_id=student.id).delete()
+
+                            # Finally delete the student
+                            db.session.delete(student)
+                            deleted_count += 1
+
+                    if deleted_count > 0:
+                        db.session.commit()
+                        flash(f"Successfully deleted {deleted_count} student(s).", "success")
+                    else:
+                        flash("No students were deleted.", "error")
+
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error deleting students: {str(e)}", "error")
 
                 return redirect(url_for('classteacher.manage_students'))
 
@@ -2445,8 +2530,8 @@ def update_class_marks(grade, stream, term, assessment_type):
                             subject_id=subject.id,
                             term_id=term_obj.id,
                             assessment_type_id=assessment_type_obj.id,
-                            grade_id=student.grade_id,  # Required field from database
-                            stream_id=student.stream_id,  # Optional field from database
+                            grade_id=stream_obj.grade_id,  # Use grade from stream_obj (from URL)
+                            stream_id=stream_obj.id,  # Use stream from stream_obj (from URL)
                             percentage=overall_percentage,
                             raw_mark=(overall_percentage / 100) * 100,
                             raw_total_marks=100,  # Use correct field name
@@ -2525,6 +2610,8 @@ def update_class_marks(grade, stream, term, assessment_type):
                                 subject_id=subject.id,
                                 term_id=term_obj.id,
                                 assessment_type_id=assessment_type_obj.id,
+                                grade_id=stream_obj.grade_id,  # Use grade from stream_obj (from URL)
+                                stream_id=stream_obj.id,  # Use stream from stream_obj (from URL)
                                 mark=raw_mark,  # Old field name
                                 total_marks=max_raw_mark,  # Old field name
                                 raw_mark=raw_mark,  # New field name
@@ -2549,7 +2636,9 @@ def update_class_marks(grade, stream, term, assessment_type):
         db.session.rollback()
         flash(f"Error updating marks: {str(e)}", "error")
 
-    return redirect(url_for('classteacher.dashboard'))
+    # Redirect back to the preview report page where the success message will be visible
+    return redirect(url_for('classteacher.preview_class_report',
+                          grade=grade, stream=stream, term=term, assessment_type=assessment_type))
 
 @classteacher_bp.route('/download_class_report/<grade>/<stream>/<term>/<assessment_type>')
 @teacher_or_classteacher_required
@@ -3794,13 +3883,22 @@ def delete_marksheet(grade, stream, term, assessment_type):
 
         subject_ids = [subject.id for subject in subjects]
 
-        # Delete all marks for these students, subjects, term, and assessment type
-        deleted_count = Mark.query.filter(
+        # Get marks to delete first (to handle component marks)
+        marks_to_delete = Mark.query.filter(
             Mark.student_id.in_(student_ids),
             Mark.subject_id.in_(subject_ids),
             Mark.term_id == term_obj.id,
             Mark.assessment_type_id == assessment_type_obj.id
-        ).delete(synchronize_session=False)
+        ).all()
+
+        deleted_count = len(marks_to_delete)
+
+        # Delete component marks first, then marks
+        for mark in marks_to_delete:
+            # Delete component marks first
+            ComponentMark.query.filter_by(mark_id=mark.id).delete()
+            # Delete the mark
+            db.session.delete(mark)
 
         # Commit the changes
         db.session.commit()
@@ -8097,12 +8195,21 @@ def delete_report(grade, stream, term, assessment_type):
         students = Student.query.filter_by(stream_id=stream_obj.id).all()
         student_ids = [student.id for student in students]
 
-        # Delete all marks for these students in the specified term and assessment type
-        deleted_count = Mark.query.filter(
+        # Get marks to delete first (to handle component marks)
+        marks_to_delete = Mark.query.filter(
             Mark.student_id.in_(student_ids),
             Mark.term_id == term_obj.id,
             Mark.assessment_type_id == assessment_type_obj.id
-        ).delete(synchronize_session=False)
+        ).all()
+
+        deleted_count = len(marks_to_delete)
+
+        # Delete component marks first, then marks
+        for mark in marks_to_delete:
+            # Delete component marks first
+            ComponentMark.query.filter_by(mark_id=mark.id).delete()
+            # Delete the mark
+            db.session.delete(mark)
 
         # Commit the changes
         db.session.commit()
@@ -8368,8 +8475,8 @@ def submit_subject_marks(grade_id, stream_id, subject_id, term_id, assessment_ty
                             subject_id=subject.id,
                             term_id=term.id,
                             assessment_type_id=assessment_type.id,
-                            grade_id=student.grade_id,  # Required field from database
-                            stream_id=student.stream_id,  # Optional field from database
+                            grade_id=grade.id,  # Use grade from function parameters
+                            stream_id=stream.id,  # Use stream from function parameters
                             mark=raw_mark,
                             total_marks=sanitized_total_marks,
                             raw_mark=raw_mark,

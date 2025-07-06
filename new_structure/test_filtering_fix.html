@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Educational Level Filtering</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        select { margin: 10px; padding: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Educational Level Filtering Test</h1>
+    
+    <div class="test-section">
+        <h3>Filter Form Test</h3>
+        <label>Educational Level:</label>
+        <select id="filter_educational_level" onchange="updateFilterGrades()">
+            <option value="">All Levels</option>
+            <option value="lower_primary">Lower Primary</option>
+            <option value="upper_primary">Upper Primary</option>
+            <option value="junior_secondary">Junior Secondary</option>
+        </select>
+        
+        <label>Grade:</label>
+        <select id="filter_grade" onchange="updateFilterStreams()">
+            <option value="">All Grades</option>
+        </select>
+        
+        <label>Stream:</label>
+        <select id="filter_stream">
+            <option value="">All Streams</option>
+        </select>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Results</h3>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        // Mock data similar to what the actual page uses
+        const allGrades = [
+            {"id": 21, "name": "Grade 9"},
+            {"id": 22, "name": "Grade 8"}, 
+            {"id": 23, "name": "Grade 7"},
+            {"id": 24, "name": "Grade 6"},
+            {"id": 25, "name": "Grade 5"},
+            {"id": 26, "name": "Grade 4"},
+            {"id": 27, "name": "Grade 3"},
+            {"id": 28, "name": "Grade 2"},
+            {"id": 29, "name": "Grade 1"}
+        ];
+        
+        const educationalLevelMapping = {
+            "lower_primary": ["Grade 1", "Grade 2", "Grade 3"],
+            "upper_primary": ["Grade 4", "Grade 5", "Grade 6"], 
+            "junior_secondary": ["Grade 7", "Grade 8", "Grade 9"]
+        };
+
+        function updateFilterGrades() {
+            const educationalLevel = document.getElementById('filter_educational_level').value;
+            const gradeSelect = document.getElementById('filter_grade');
+            const streamSelect = document.getElementById('filter_stream');
+            const resultsDiv = document.getElementById('test-results');
+            
+            console.log('Updating filter grades for educational level:', educationalLevel);
+            
+            // Clear grade dropdown
+            gradeSelect.innerHTML = '<option value="">All Grades</option>';
+            
+            // Clear stream dropdown
+            streamSelect.innerHTML = '<option value="">All Streams</option>';
+            
+            let resultMessage = `<div class="result">Educational Level: <strong>${educationalLevel || 'All Levels'}</strong><br>`;
+            
+            if (educationalLevel) {
+                // Filter grades based on educational level
+                const allowedGrades = educationalLevelMapping[educationalLevel] || [];
+                console.log('Allowed grades for', educationalLevel, ':', allowedGrades);
+                
+                let addedGrades = [];
+                allGrades.forEach(grade => {
+                    if (allowedGrades.includes(grade.name)) {
+                        const option = document.createElement('option');
+                        option.value = grade.id;
+                        option.textContent = grade.name;
+                        gradeSelect.appendChild(option);
+                        addedGrades.push(grade.name);
+                    }
+                });
+                
+                resultMessage += `Grades Added: ${addedGrades.join(', ')}<br>`;
+                resultMessage += `Total Grades: ${addedGrades.length}</div>`;
+                
+                if (addedGrades.length > 0) {
+                    resultsDiv.innerHTML = `<div class="success">${resultMessage}</div>`;
+                } else {
+                    resultsDiv.innerHTML = `<div class="error">${resultMessage}No grades found!</div>`;
+                }
+                
+                console.log('Updated filter grade dropdown with', gradeSelect.options.length - 1, 'grades');
+            } else {
+                // If no educational level selected, show all grades
+                let allGradeNames = [];
+                allGrades.forEach(grade => {
+                    const option = document.createElement('option');
+                    option.value = grade.id;
+                    option.textContent = grade.name;
+                    gradeSelect.appendChild(option);
+                    allGradeNames.push(grade.name);
+                });
+                
+                resultMessage += `All Grades Added: ${allGradeNames.join(', ')}<br>`;
+                resultMessage += `Total Grades: ${allGradeNames.length}</div>`;
+                resultsDiv.innerHTML = `<div class="success">${resultMessage}</div>`;
+            }
+        }
+
+        function updateFilterStreams() {
+            const gradeId = document.getElementById('filter_grade').value;
+            const streamSelect = document.getElementById('filter_stream');
+            const resultsDiv = document.getElementById('test-results');
+            
+            // Mock stream update (in real app this would fetch from server)
+            streamSelect.innerHTML = '<option value="">All Streams</option>';
+            
+            if (gradeId) {
+                // Add mock streams
+                const mockStreams = ['Stream A', 'Stream B', 'Stream C'];
+                mockStreams.forEach(streamName => {
+                    const option = document.createElement('option');
+                    option.value = streamName.toLowerCase().replace(' ', '_');
+                    option.textContent = streamName;
+                    streamSelect.appendChild(option);
+                });
+                
+                const currentResult = resultsDiv.innerHTML;
+                resultsDiv.innerHTML = currentResult.replace('</div>', `<br>Streams Updated: ${mockStreams.join(', ')}</div>`);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFilterGrades();
+            
+            // Add test buttons
+            const testSection = document.querySelector('.test-section:last-child');
+            testSection.innerHTML += `
+                <button onclick="testJuniorSecondary()" style="margin: 5px; padding: 10px;">Test Junior Secondary</button>
+                <button onclick="testUpperPrimary()" style="margin: 5px; padding: 10px;">Test Upper Primary</button>
+                <button onclick="testLowerPrimary()" style="margin: 5px; padding: 10px;">Test Lower Primary</button>
+                <button onclick="testAllLevels()" style="margin: 5px; padding: 10px;">Test All Levels</button>
+            `;
+        });
+
+        function testJuniorSecondary() {
+            document.getElementById('filter_educational_level').value = 'junior_secondary';
+            updateFilterGrades();
+        }
+
+        function testUpperPrimary() {
+            document.getElementById('filter_educational_level').value = 'upper_primary';
+            updateFilterGrades();
+        }
+
+        function testLowerPrimary() {
+            document.getElementById('filter_educational_level').value = 'lower_primary';
+            updateFilterGrades();
+        }
+
+        function testAllLevels() {
+            document.getElementById('filter_educational_level').value = '';
+            updateFilterGrades();
+        }
+    </script>
+</body>
+</html>

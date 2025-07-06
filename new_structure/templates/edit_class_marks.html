@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Edit Class Marks - Kirima Primary School</title>
+    <title>
+      Edit Class Marks - {{ school_info.school_name|default('Hillview School')
+      }}
+    </title>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
       rel="stylesheet"
@@ -102,6 +105,54 @@
         clear: both;
       }
 
+      /* Scroll indicator to help users know they can scroll horizontally */
+      .scroll-indicator {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 11px;
+        font-weight: 600;
+        z-index: 10;
+        animation: slideInOut 3s infinite;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+      }
+
+      @keyframes slideInOut {
+        0%,
+        100% {
+          opacity: 0.7;
+          transform: translateX(0);
+        }
+        50% {
+          opacity: 1;
+          transform: translateX(-5px);
+        }
+      }
+
+      /* Better scrollbar styling */
+      .table-wrapper::-webkit-scrollbar {
+        height: 12px;
+      }
+
+      .table-wrapper::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 6px;
+      }
+
+      .table-wrapper::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border-radius: 6px;
+        border: 2px solid #f8f9fa;
+      }
+
+      .table-wrapper::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+      }
+
       table {
         width: 100%;
         min-width: max-content;
@@ -112,18 +163,39 @@
         white-space: nowrap;
         /* Add extra space for rightmost columns */
         padding-right: 30px;
+        font-size: 12px; /* Smaller overall font */
       }
 
       th,
       td {
         border: 1px solid #ddd;
-        padding: 10px;
+        padding: 2px 4px; /* Further reduced - vertical 2px, horizontal 4px */
         text-align: center;
         position: relative;
         vertical-align: middle;
         white-space: normal;
         word-wrap: break-word;
-        min-width: 120px;
+        min-width: 80px;
+        line-height: 1.2; /* Tight line height */
+      }
+
+      /* ULTRA COMPACT S/N COLUMN (first column) */
+      td:first-child {
+        min-width: 30px; /* Very narrow for S/N numbers */
+        text-align: center;
+        padding: 1px 4px; /* Ultra tight padding */
+        font-size: 11px; /* Small font for numbers */
+        line-height: 1.1;
+      }
+
+      /* ULTRA COMPACT STUDENT NAME COLUMN (second column) */
+      td:nth-child(2) {
+        min-width: 120px; /* Reduced from 150px */
+        text-align: left;
+        padding: 2px 6px; /* Much tighter padding */
+        font-weight: 500;
+        font-size: 12px; /* Smaller font */
+        line-height: 1.1; /* Very tight line height */
       }
 
       th {
@@ -150,6 +222,11 @@
         background-color: #3498db;
         color: white;
         z-index: 15;
+      }
+
+      /* ULTRA COMPACT TABLE ROWS - MATCH UPLOAD FORM */
+      tr {
+        height: 28px; /* Fixed compact row height */
       }
 
       tr:nth-child(even) {
@@ -219,40 +296,55 @@
         box-sizing: border-box !important;
       }
 
-      /* FIXED: Clean styling for all input fields including rightmost columns */
-      td:last-child input[type="number"],
-      td:nth-last-child(2) input[type="number"],
-      td:nth-last-child(3) input[type="number"],
-      td:last-child .component-mark-input,
-      td:nth-last-child(2) .component-mark-input,
-      td:nth-last-child(3) .component-mark-input,
-      td:last-child .component-max-input,
-      td:nth-last-child(2) .component-max-input,
-      td:nth-last-child(3) .component-max-input,
-      td:last-child .student-mark,
-      td:nth-last-child(2) .student-mark,
-      td:nth-last-child(3) .student-mark {
-        width: 80px !important;
-        height: 35px !important;
-        padding: 6px !important;
-        border: 2px solid #e9ecef !important;
-        border-radius: 5px !important;
+      /* Professional styling for all input fields - properly sized */
+      input[type="number"],
+      .component-mark-input,
+      .component-max-input,
+      .student-mark {
+        width: 70px !important;
+        height: 32px !important;
+        padding: 4px 8px !important;
+        border: 1px solid #ced4da !important;
+        border-radius: 4px !important;
         background-color: #ffffff !important;
-        color: #333 !important;
-        font-size: 14px !important;
-        font-weight: normal !important;
+        color: #495057 !important;
+        font-size: 13px !important;
+        font-weight: 400 !important;
         text-align: center !important;
-        pointer-events: auto !important;
-        cursor: text !important;
-        user-select: auto !important;
-        opacity: 1 !important;
-        z-index: auto !important;
-        position: relative !important;
-        display: inline-block !important;
-        visibility: visible !important;
-        outline: none !important;
         box-sizing: border-box !important;
-        transition: border-color 0.3s ease !important;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: textfield !important;
+      }
+
+      /* ULTRA HIGH SPECIFICITY - OVERRIDE MAIN CSS FILE STYLES */
+      .container .table-wrapper table tbody tr td input[type="number"],
+      .container .table-wrapper input[type="number"],
+      .container .mark-input-container input[type="number"],
+      .container .component-inputs input[type="number"],
+      .container .simplified-mark-entry input[type="number"],
+      .container .composite-subject-entry input[type="number"],
+      .container input[name*="mark_"],
+      .container input[name*="component_mark_"],
+      .container input[name*="component_max_"],
+      body .container input[type="number"],
+      html body .container input[type="number"] {
+        width: 70px !important;
+        height: 32px !important;
+        max-width: 70px !important;
+        min-width: 70px !important;
+        padding: 4px 8px !important;
+        border: 1px solid #ced4da !important;
+        border-radius: 4px !important;
+        background-color: #ffffff !important;
+        color: #495057 !important;
+        font-size: 13px !important;
+        font-weight: 400 !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: textfield !important;
       }
 
       /* CLEAN FOCUS STATES FOR ALL INPUTS */
@@ -358,11 +450,12 @@
       }
 
       .subject-mark-item input {
-        width: 100%;
-        padding: 8px;
+        width: 80px;
+        padding: 6px 8px;
         border: 1px solid #ced4da;
         border-radius: 4px;
-        font-size: 14px;
+        font-size: 13px;
+        text-align: center;
       }
 
       .subject-mark-item input:focus {
@@ -381,24 +474,25 @@
 
       .mark-input-container {
         display: flex;
-        justify-content: center;
-        width: 100%;
-        margin-bottom: 5px;
+        align-items: center;
+        gap: 2px; /* Reduced gap */
+        margin-bottom: 0; /* Remove margin */
+        flex: 1; /* Take available space */
       }
 
       .mark-input-container input {
-        width: 60px;
+        width: 35px; /* Reduced from 60px */
         text-align: center;
-        padding: 5px;
+        padding: 2px; /* Reduced from 5px */
         border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
+        border-radius: 3px;
+        font-size: 11px; /* Reduced from 14px */
       }
 
       .mark-input-container input:focus {
         border-color: #3498db;
         outline: none;
-        box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        box-shadow: 0 0 3px rgba(52, 152, 219, 0.3); /* Reduced shadow */
       }
 
       .subject-info {
@@ -411,22 +505,25 @@
       .percentage-display {
         display: flex;
         flex-direction: column;
-        width: 100%;
         align-items: center;
+        gap: 1px; /* Minimal gap */
+        flex-shrink: 0; /* Prevent shrinking */
+        min-width: 40px; /* Minimum width */
       }
 
       .percentage-value {
-        font-size: 12px;
-        margin-bottom: 2px;
+        font-size: 9px; /* Reduced from 12px */
+        margin-bottom: 1px; /* Reduced from 2px */
         font-weight: bold;
+        line-height: 1;
       }
 
       .percentage-bar {
-        height: 4px;
+        height: 3px; /* Reduced from 4px */
         background-color: #e9ecef;
         border-radius: 2px;
         overflow: hidden;
-        width: 100%;
+        width: 30px; /* Fixed width instead of 100% */
       }
 
       .percentage-fill {
@@ -452,14 +549,14 @@
         background-color: #dc3545;
       }
 
-      /* Composite subject styles */
+      /* COMPACT COMPOSITE SUBJECT STYLES - BASED ON UPLOAD FORM */
       .composite-subject-entry-container {
         display: flex;
         flex-direction: column;
         width: 100%;
-        padding: 5px;
+        padding: 2px; /* Reduced from 5px */
         background-color: #f8f9fa;
-        border-radius: 4px;
+        border-radius: 3px;
         border: 1px solid #e9ecef;
       }
 
@@ -467,65 +564,71 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 5px;
-        padding-bottom: 5px;
+        margin-bottom: 2px; /* Reduced from 5px */
+        padding-bottom: 2px; /* Reduced from 5px */
         border-bottom: 1px solid #e9ecef;
       }
 
       .composite-title {
         font-weight: bold;
-        font-size: 12px;
+        font-size: 11px; /* Reduced from 12px */
         color: #495057;
       }
 
       .composite-percentage {
         font-weight: bold;
-        font-size: 12px;
+        font-size: 11px; /* Reduced from 12px */
         color: #495057;
       }
 
       .composite-subject-entry {
         display: flex;
-        flex-direction: column;
-        margin-bottom: 8px;
-        padding: 5px;
+        flex-direction: row; /* Changed from column to row for compactness */
+        align-items: center;
+        margin-bottom: 3px; /* Reduced from 8px */
+        padding: 2px; /* Reduced from 5px */
         background-color: #ffffff;
-        border-radius: 4px;
+        border-radius: 3px;
         border: 1px solid #e9ecef;
+        gap: 4px; /* Add gap between elements */
       }
 
       .component-header {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 5px;
+        gap: 4px; /* Add gap instead of justify-content */
+        margin-bottom: 0; /* Remove margin */
+        flex-shrink: 0; /* Prevent shrinking */
       }
 
       .component-title {
-        font-size: 11px;
+        font-size: 10px; /* Reduced from 11px */
         color: #6c757d;
+        white-space: nowrap;
       }
 
       .component-weight {
-        font-size: 10px;
+        font-size: 9px; /* Reduced from 10px */
         color: #6c757d;
         font-style: italic;
       }
 
       .component-inputs {
         display: flex;
-        flex-direction: column;
-        gap: 3px;
+        flex-direction: row; /* Changed from column to row */
+        align-items: center;
+        gap: 2px; /* Reduced gap */
+        flex: 1; /* Take remaining space */
       }
 
       .component-mark-input,
       .component-max-input {
-        width: 40px;
+        width: 30px; /* Reduced from 40px */
         text-align: center;
-        padding: 3px;
+        padding: 2px; /* Reduced from 3px */
         border: 1px solid #ced4da;
         border-radius: 3px;
-        font-size: 12px;
+        font-size: 10px; /* Reduced from 12px */
       }
 
       .mark-separator {
@@ -537,13 +640,13 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 5px;
-        padding-top: 5px;
+        margin-top: 2px; /* Reduced from 5px */
+        padding-top: 2px; /* Reduced from 5px */
         border-top: 1px solid #e9ecef;
       }
 
       .composite-total-label {
-        font-size: 11px;
+        font-size: 10px; /* Reduced from 11px */
         font-weight: bold;
         color: #495057;
       }
@@ -557,12 +660,88 @@
         color: #721c24;
         border: 1px solid #f5c6cb;
       }
+
+      /* Responsive design for mobile devices */
+      @media (max-width: 768px) {
+        .container {
+          padding: 15px;
+        }
+
+        .marks-table-container {
+          padding-right: 10px;
+          margin-right: -10px;
+        }
+
+        th,
+        td {
+          padding: 6px;
+          font-size: 12px;
+          min-width: 80px;
+        }
+
+        td:first-child {
+          min-width: 120px;
+        }
+
+        input[type="number"],
+        .component-mark-input,
+        .component-max-input,
+        .student-mark {
+          width: 60px !important;
+          height: 28px !important;
+          font-size: 12px !important;
+        }
+
+        .subject-mark-item input {
+          width: 70px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header h1 {
+          font-size: 18px;
+        }
+
+        .header p {
+          font-size: 12px;
+        }
+
+        th,
+        td {
+          padding: 4px;
+          font-size: 11px;
+        }
+
+        input[type="number"],
+        .component-mark-input,
+        .component-max-input,
+        .student-mark {
+          width: 50px !important;
+          height: 26px !important;
+          font-size: 11px !important;
+        }
+      }
+
+      /* FINAL OVERRIDE - HIGHEST PRIORITY TO ENSURE PROPER INPUT SIZING */
+      * input[type="number"] {
+        width: 70px !important;
+        height: 32px !important;
+        max-width: 70px !important;
+        min-width: 70px !important;
+      }
+
+      /* Subject total marks should be wider */
+      .subject-total-marks {
+        width: 80px !important;
+        max-width: 80px !important;
+        min-width: 80px !important;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>KIRIMA PRIMARY SCHOOL</h1>
+        <h1>{{ school_info.school_name|default('HILLVIEW SCHOOL')|upper }}</h1>
         <p>EDIT CLASS MARKS</p>
         <p>
           GRADE {{ grade }} - {{ education_level.upper() }} | STREAM: {{ stream
@@ -619,7 +798,31 @@
           </div>
         </div>
 
+        <!-- Helpful instruction for users -->
+        <div
+          style="
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span style="font-size: 18px">📋</span>
+            <div>
+              <strong style="color: #1976d2">Multiple Subjects Table</strong>
+              <p style="margin: 5px 0 0 0; color: #666; font-size: 13px">
+                This table contains {{ subject_names|length }} subjects. Use
+                horizontal scroll or the blue indicator to navigate between all
+                subjects.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div class="table-wrapper">
+          <div class="scroll-indicator">← Scroll to see all subjects →</div>
           <table>
             <thead>
               <tr>
@@ -1267,6 +1470,67 @@
           actionButtons.insertBefore(scrollButton, actionButtons.firstChild);
         }
       });
+
+      // Manage scroll indicator visibility and behavior
+      function manageScrollIndicator() {
+        const tableWrapper = document.querySelector(".table-wrapper");
+        const scrollIndicator = document.querySelector(".scroll-indicator");
+
+        if (tableWrapper && scrollIndicator) {
+          // Check if horizontal scrolling is needed
+          const needsScroll =
+            tableWrapper.scrollWidth > tableWrapper.clientWidth;
+
+          if (!needsScroll) {
+            // Hide indicator if no scrolling needed
+            scrollIndicator.style.display = "none";
+          } else {
+            // Show indicator and add click functionality
+            scrollIndicator.style.display = "block";
+
+            // Add click to scroll functionality
+            scrollIndicator.addEventListener("click", function () {
+              const currentScroll = tableWrapper.scrollLeft;
+              const maxScroll =
+                tableWrapper.scrollWidth - tableWrapper.clientWidth;
+
+              if (currentScroll < maxScroll / 2) {
+                // Scroll to right
+                tableWrapper.scrollTo({
+                  left: maxScroll,
+                  behavior: "smooth",
+                });
+                this.textContent = "← Scroll back to start";
+              } else {
+                // Scroll to left
+                tableWrapper.scrollTo({
+                  left: 0,
+                  behavior: "smooth",
+                });
+                this.textContent = "← Scroll to see all subjects →";
+              }
+            });
+
+            // Update indicator text based on scroll position
+            tableWrapper.addEventListener("scroll", function () {
+              const currentScroll = this.scrollLeft;
+              const maxScroll = this.scrollWidth - this.clientWidth;
+
+              if (currentScroll > maxScroll * 0.8) {
+                scrollIndicator.textContent = "← Scroll back to start";
+              } else {
+                scrollIndicator.textContent = "← Scroll to see all subjects →";
+              }
+            });
+          }
+        }
+      }
+
+      // Initialize scroll indicator management
+      manageScrollIndicator();
+
+      // Re-check on window resize
+      window.addEventListener("resize", manageScrollIndicator);
     </script>
   </body>
 </html>
