@@ -1137,6 +1137,34 @@
     </div>
 
     <script>
+      // Function to get the correct teacher streams API endpoint based on current context
+      function getTeacherStreamsEndpoint(gradeId) {
+        // Check if we're in headteacher universal context
+        if (window.location.pathname.includes("/universal/")) {
+          return `/universal/api/streams/${gradeId}`;
+        }
+        // Check if we're in headteacher context (admin routes)
+        else if (
+          window.location.pathname.includes("/headteacher/") ||
+          window.location.pathname.includes("/admin/")
+        ) {
+          return `/admin/api/teacher_streams/${gradeId}`;
+        }
+        // Default to classteacher endpoint
+        return `/classteacher/teacher_streams/${gradeId}`;
+      }
+
+      // Function to extract streams from response data (handles different response formats)
+      function extractStreamsFromResponse(data) {
+        // Handle different response formats
+        if (data.streams) {
+          return data.streams; // Admin blueprint format: {streams: [...]}
+        } else if (data.success && data.streams) {
+          return data.streams; // Universal blueprint format: {success: true, streams: [...]}
+        }
+        return []; // Fallback to empty array
+      }
+
       function updateStreams() {
         console.log("updateStreams called");
         const gradeId = document.getElementById("grade").value;
@@ -1147,11 +1175,17 @@
         streamSelect.innerHTML = '<option value="">Select Stream</option>';
 
         if (gradeId) {
-          // Fetch streams for the selected grade via an API call
-          fetch(`/classteacher/teacher_streams/${gradeId}`)
+          // Fetch streams for the selected grade using dynamic endpoint
+          const endpoint = getTeacherStreamsEndpoint(gradeId);
+          console.log("Using teacher streams endpoint:", endpoint);
+
+          fetch(endpoint, {
+            credentials: "same-origin",
+          })
             .then((response) => response.json())
             .then((data) => {
-              data.streams.forEach((stream) => {
+              const streams = extractStreamsFromResponse(data);
+              streams.forEach((stream) => {
                 const option = document.createElement("option");
                 option.value = stream.id;
                 option.textContent = stream.name;
@@ -1160,6 +1194,38 @@
             })
             .catch((error) => {
               console.error("Error fetching streams:", error);
+              // Fallback: try the other endpoint if first one fails
+              const fallbackEndpoint = gradeId
+                ? endpoint.includes("/headteacher/")
+                  ? `/classteacher/teacher_streams/${gradeId}`
+                  : `/headteacher/api/teacher_streams/${gradeId}`
+                : null;
+
+              if (fallbackEndpoint) {
+                console.log(
+                  "Trying teacher streams fallback endpoint:",
+                  fallbackEndpoint
+                );
+                fetch(fallbackEndpoint, {
+                  credentials: "same-origin",
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    const streams = extractStreamsFromResponse(data);
+                    streams.forEach((stream) => {
+                      const option = document.createElement("option");
+                      option.value = stream.id;
+                      option.textContent = stream.name;
+                      streamSelect.appendChild(option);
+                    });
+                  })
+                  .catch((fallbackError) => {
+                    console.error(
+                      "Teacher streams fallback endpoint also failed:",
+                      fallbackError
+                    );
+                  });
+              }
             });
         }
       }

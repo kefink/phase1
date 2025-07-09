@@ -19,12 +19,24 @@ def authenticate_teacher(username, password, role):
         Teacher object if authentication is successful, None otherwise
     """
     try:
-        return Teacher.query.filter_by(username=username, password=password, role=role).first()
+        # Find teacher by username and role first
+        teacher = Teacher.query.filter_by(username=username, role=role).first()
+
+        if teacher and teacher.check_password(password):
+            logger.info("Authentication successful for %s with role %s", username, role)
+            return teacher
+        else:
+            logger.warning("Authentication failed for %s with role %s", username, role)
+            return None
+
     except Exception as e:
         logger.error(f"Authentication error: {e}")
         # If there's a database error, try to initialize the database
         try:
-            from ..utils.database_init import check_database_integrity, initialize_database_completely
+            from ..utils.database_init import (
+                check_database_integrity,
+                initialize_database_completely
+            )
 
             status = check_database_integrity()
             if status['status'] != 'healthy':
@@ -32,9 +44,12 @@ def authenticate_teacher(username, password, role):
                 result = initialize_database_completely()
                 if result['success']:
                     logger.info("Database initialized successfully, retrying authentication...")
-                    return Teacher.query.filter_by(username=username, password=password, role=role).first()
+                    # Retry authentication after database initialization
+                    teacher = Teacher.query.filter_by(username=username, role=role).first()
+                    if teacher and teacher.check_password(password):
+                        return teacher
         except Exception as init_error:
-            logger.error(f"Database initialization error: {init_error}")
+            logger.error("Database initialization error: %s", init_error)
 
         return None
 

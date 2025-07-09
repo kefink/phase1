@@ -17,14 +17,26 @@ def headteacher_required(f):
     """Decorator to require headteacher authentication."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        print(f"=== HEADTEACHER_REQUIRED DEBUG ===")
+        print(f"Function: {f.__name__}")
+        print(f"Request path: {request.path}")
+        print(f"Session teacher_id: {session.get('teacher_id')}")
+        print(f"Session role: {session.get('role')}")
+        print(f"Is authenticated: {is_authenticated(session)}")
+
         if not is_authenticated(session):
+            print("❌ Authentication failed - redirecting to login")
             return redirect(url_for('auth.admin_login'))
-        
+
         role = get_role(session)
+        print(f"User role: {role}")
+
         if role != 'headteacher':
+            print(f"❌ Role check failed - expected 'headteacher', got '{role}'")
             flash('Access denied. This feature is only available to headteachers.', 'error')
             return redirect(url_for('auth.admin_login'))
-        
+
+        print(f"✅ Headteacher access granted to function: {f.__name__}")
         return f(*args, **kwargs)
     return decorated_function
 
@@ -334,6 +346,15 @@ def proxy_classteacher_dashboard():
     """Proxy to classteacher dashboard for marks upload."""
     session['headteacher_universal_access'] = True
     return redirect(url_for('classteacher.dashboard'))
+
+
+
+# DEBUG ROUTE FOR TESTING STREAMS API
+@universal_bp.route('/debug/streams-test')
+@headteacher_required
+def debug_streams_test():
+    """Debug page to test streams API endpoints."""
+    return render_template('debug_streams_test.html')
 
 # API ROUTES FOR HEADTEACHER ACCESS
 @universal_bp.route('/api/streams/<int:grade_id>')

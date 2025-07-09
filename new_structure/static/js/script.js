@@ -225,18 +225,52 @@ function initGlobalFormFunctions() {
     const formGroup = streamSelect.closest(".form-group");
 
     if (selectedGrade) {
-      // Fetch streams from the server
-      fetch(`/classteacher/get_streams_by_level/${selectedGrade}`)
+      // Function to get the correct streams API endpoint based on current context
+      function getStreamsEndpoint(grade) {
+        // Check if we're in headteacher universal context
+        if (window.location.pathname.includes("/universal/")) {
+          return `/universal/api/streams/${grade}`;
+        }
+        // Check if we're in headteacher context (admin routes)
+        else if (
+          window.location.pathname.includes("/headteacher/") ||
+          window.location.pathname.includes("/admin/")
+        ) {
+          return `/admin/api/streams/${grade}`;
+        }
+        // Default to classteacher endpoint
+        return `/classteacher/get_streams_by_level/${grade}`;
+      }
+
+      // Function to extract streams from response data (handles different response formats)
+      function extractStreamsFromResponse(data) {
+        // Handle different response formats
+        if (data.streams) {
+          return data.streams; // Admin blueprint format: {streams: [...]}
+        } else if (data.success && data.streams) {
+          return data.streams; // Universal blueprint format: {success: true, streams: [...]}
+        }
+        return []; // Fallback to empty array
+      }
+
+      // Fetch streams from the server using dynamic endpoint
+      const endpoint = getStreamsEndpoint(selectedGrade);
+      console.log("Script.js using endpoint:", endpoint);
+
+      fetch(endpoint, {
+        credentials: "same-origin",
+      })
         .then((response) => response.json())
         .then((data) => {
-          if (data.success && data.streams) {
+          const streams = extractStreamsFromResponse(data);
+          if (streams && streams.length > 0) {
             console.log(
               `Populating streams for grade ${selectedGrade}:`,
-              data.streams
+              streams
             );
 
             // Add the new options
-            data.streams.forEach((stream) => {
+            streams.forEach((stream) => {
               const option = document.createElement("option");
               option.value = `Stream ${stream.name}`;
               option.textContent = `Stream ${stream.name}`;
@@ -246,16 +280,53 @@ function initGlobalFormFunctions() {
             formGroup.classList.add("success");
             formGroup.classList.remove("error");
           } else {
-            console.error(
-              "Error fetching streams:",
-              data.message || "Unknown error"
-            );
-            formGroup.classList.add("error");
+            console.log("No streams found for grade", selectedGrade);
+            formGroup.classList.remove("error");
           }
         })
         .catch((error) => {
           console.error("Error fetching streams:", error);
-          formGroup.classList.add("error");
+          // Fallback: try the other endpoint if first one fails
+          const fallbackEndpoint = selectedGrade
+            ? endpoint.includes("/universal/")
+              ? `/classteacher/get_streams_by_level/${selectedGrade}`
+              : endpoint.includes("/admin/")
+              ? `/classteacher/get_streams_by_level/${selectedGrade}`
+              : `/universal/api/streams/${selectedGrade}`
+            : null;
+
+          if (fallbackEndpoint) {
+            console.log(
+              "Script.js trying fallback endpoint:",
+              fallbackEndpoint
+            );
+            fetch(fallbackEndpoint, {
+              credentials: "same-origin",
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                const streams = extractStreamsFromResponse(data);
+                if (streams && streams.length > 0) {
+                  streams.forEach((stream) => {
+                    const option = document.createElement("option");
+                    option.value = `Stream ${stream.name}`;
+                    option.textContent = `Stream ${stream.name}`;
+                    streamSelect.appendChild(option);
+                  });
+                  formGroup.classList.add("success");
+                  formGroup.classList.remove("error");
+                }
+              })
+              .catch((fallbackError) => {
+                console.error(
+                  "Script.js fallback endpoint also failed:",
+                  fallbackError
+                );
+                formGroup.classList.add("error");
+              });
+          } else {
+            formGroup.classList.add("error");
+          }
         });
     } else {
       console.log("No grade selected - clearing streams");

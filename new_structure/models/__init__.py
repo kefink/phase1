@@ -7,7 +7,7 @@ from ..extensions import db
 from .user import Teacher, teacher_subjects
 from .academic import (
     SchoolConfiguration, Subject, Grade, Stream, Term,
-    AssessmentType, Student, Mark
+    AssessmentType, Student, Mark, StudentPromotionHistory
 )
 from .assignment import TeacherSubjectAssignment
 from .report_config import ReportConfiguration, ClassReportConfiguration, ReportTemplate

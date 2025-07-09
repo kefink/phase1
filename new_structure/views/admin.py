@@ -1619,3 +1619,189 @@ def reports():
     school_info = SchoolConfigService.get_school_info_dict()
 
     return render_template('reports.html', report_types=report_types, school_info=school_info)
+
+
+# ============================================================================
+# STUDENT PROMOTION ROUTES
+# ============================================================================
+
+
+@admin_bp.route('/api/streams/<int:grade_id>')
+@admin_required
+def get_streams_for_grade(grade_id):
+    """API endpoint for headteachers to get streams for a grade."""
+    try:
+        streams = Stream.query.filter_by(grade_id=grade_id).all()
+        return jsonify({
+            'streams': [{'id': stream.id, 'name': stream.name} for stream in streams]
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/api/teacher_streams/<int:grade_id>')
+@admin_required
+def get_teacher_streams(grade_id):
+    """API endpoint for headteachers to get streams for a grade (teacher management)."""
+    try:
+        streams = Stream.query.filter_by(grade_id=grade_id).all()
+        return jsonify({
+            'streams': [{'id': stream.id, 'name': stream.name} for stream in streams]
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/api/streams_by_level/<grade>')
+@admin_required
+def get_streams_by_level(grade):
+    """API endpoint for headteachers to get streams by grade level."""
+    try:
+        # Handle both "Grade X" format and just "X" format
+        if grade.isdigit():
+            grade_name = f"Grade {grade}"
+        else:
+            grade_name = grade
+
+        grade_obj = Grade.query.filter_by(name=grade_name).first()
+        if grade_obj:
+            streams = Stream.query.filter_by(grade_id=grade_obj.id).all()
+            return jsonify({
+                'success': True,
+                'streams': [{'id': stream.id, 'name': stream.name} for stream in streams]
+            })
+        return jsonify({'success': False, 'streams': []})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/create-test-students')
+@admin_required
+def create_test_students():
+    """Create test students in different grades for promotion testing."""
+    try:
+        from ..models.academic import Student, Grade, Stream
+
+        # Get grades (excluding Grade 9)
+        grades = Grade.query.filter(Grade.name != 'Grade 9').all()
+        if not grades:
+            return "No grades found (excluding Grade 9)"
+
+        # Get a stream
+        stream = Stream.query.first()
+        if not stream:
+            return "No streams found"
+
+        # Create test students
+        test_students = []
+        for i, grade in enumerate(grades[:3]):  # Create students in first 3 grades
+            for j in range(2):  # 2 students per grade
+                student = Student(
+                    name=f"Test Student {grade.name} {j+1}",
+                    grade_id=grade.id,
+                    stream_id=stream.id,
+                    is_active=True
+                )
+                db.session.add(student)
+                test_students.append(f"{student.name} - {grade.name}")
+
+        db.session.commit()
+
+        return f"<h2>Test Students Created Successfully!</h2><ul>{''.join([f'<li>{s}</li>' for s in test_students])}</ul><p><a href='/headteacher/student-promotion'>Go to Student Promotion</a></p>"
+
+    except Exception as e:
+        return f"Error creating test students: {str(e)}"
+
+@admin_bp.route('/student-promotion')
+@admin_required
+def student_promotion():
+    """Display student promotion management interface with filtering and pagination."""
+    try:
+        from ..services.student_promotion_service import StudentPromotionService
+        from ..services.school_config_service import SchoolConfigService
+
+        # Get current academic year (you can make this configurable)
+        current_academic_year = "2024-2025"
+
+        # Get filter parameters from request
+        education_level = request.args.get('education_level')
+        grade_id = request.args.get('grade_id', type=int)
+        stream_id = request.args.get('stream_id', type=int)
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+
+        # Get promotion preview data with filters and pagination
+        promotion_data = StudentPromotionService.get_promotion_preview_data(
+            academic_year=current_academic_year,
+            education_level=education_level,
+            grade_id=grade_id,
+            stream_id=stream_id,
+            page=page,
+            per_page=per_page
+        )
+
+        # Get filter options
+        filter_options = StudentPromotionService.get_filter_options()
+
+        # Get school information
+        school_info = SchoolConfigService.get_school_info_dict()
+
+        return render_template('student_promotion.html',
+                             promotion_data=promotion_data,
+                             filter_options=filter_options,
+                             school_info=school_info,
+                             academic_year=current_academic_year)
+
+    except Exception as e:
+        flash(f'Error loading student promotion data: {str(e)}', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+
+@admin_bp.route('/student-promotion/process', methods=['POST'])
+@admin_required
+def process_promotion():
+    """Process bulk student promotions."""
+    try:
+        from ..services.student_promotion_service import StudentPromotionService
+
+        # Get form data
+        academic_year = request.form.get('academic_year', '2024-2025')
+        promotion_actions = {}
+
+        # Parse promotion actions from form
+        for key, value in request.form.items():
+            if key.startswith('promotion_action_'):
+                student_id = int(key.replace('promotion_action_', ''))
+                promotion_actions[student_id] = value
+
+        # Get teacher ID from session
+        teacher_id = session.get('teacher_id')
+        if not teacher_id:
+            flash('Authentication error. Please log in again.', 'error')
+            return redirect(url_for('auth.admin_login'))
+
+        # Prepare promotion data in the expected format
+        promotion_data = {
+            'academic_year_to': academic_year,  # Changed from 'academic_year' to 'academic_year_to'
+            'students': []
+        }
+
+        # Convert promotion actions to the expected format
+        for student_id, action in promotion_actions.items():
+            promotion_data['students'].append({
+                'student_id': int(student_id),  # Ensure student_id is integer
+                'action': action
+            })
+
+        # Process the promotions
+        result = StudentPromotionService.process_bulk_promotion(
+            promotion_data=promotion_data,
+            promoted_by_teacher_id=teacher_id
+        )
+
+        if result['success']:
+            flash(f"✅ Successfully processed {result['processed_count']} student promotions!", 'success')
+        else:
+            flash(f"❌ Error processing promotions: {result['message']}", 'error')
+
+    except Exception as e:
+        flash(f'Error processing student promotions: {str(e)}', 'error')
+
+    return redirect(url_for('admin.student_promotion'))

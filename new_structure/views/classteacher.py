@@ -58,20 +58,31 @@ def classteacher_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        print(f"=== CLASSTEACHER_REQUIRED DEBUG ===")
+        print(f"Function: {f.__name__}")
+        print(f"Request path: {request.path}")
+        print(f"Session teacher_id: {session.get('teacher_id')}")
+        print(f"Session role: {session.get('role')}")
+        print(f"Is authenticated: {is_authenticated(session)}")
+
         if not is_authenticated(session):
+            print("❌ Authentication failed")
             # Check if this is an AJAX/API request
             if request.is_json or request.headers.get('Content-Type') == 'application/json' or 'api' in request.endpoint or request.path.startswith('/classteacher/get_'):
                 return jsonify({"success": False, "message": "Authentication required", "redirect": url_for('auth.classteacher_login')}), 401
             return redirect(url_for('auth.classteacher_login'))
 
         role = get_role(session)
+        print(f"User role: {role}")
 
         # HEADTEACHER UNIVERSAL ACCESS - Always allow headteachers to access all classteacher functions
         if role == 'headteacher':
+            print("✅ Headteacher detected - granting universal access")
             # Set the universal access flag if not already set
             if not session.get('headteacher_universal_access'):
                 session['headteacher_universal_access'] = True
                 session.permanent = True  # Ensure session persists
+            print(f"✅ Allowing headteacher access to function: {f.__name__}")
             return f(*args, **kwargs)
 
         # For classteachers, check function-level permissions
@@ -8011,6 +8022,7 @@ def remove_assignment():
             flash("Error removing assignment. The teacher_subject_assignment table may not exist.", "error")
 
     return redirect(url_for('classteacher.assign_subjects'))
+
 
 @classteacher_bp.route('/get_grade_streams/<int:grade_id>', methods=['GET'])
 @classteacher_required

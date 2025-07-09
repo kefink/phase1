@@ -135,7 +135,97 @@ class Student(db.Model):
     stream_id = db.Column(db.Integer, db.ForeignKey('stream.id'), nullable=True)
     grade_id = db.Column(db.Integer, db.ForeignKey('grade.id'), nullable=True)
     gender = db.Column(db.String(10), nullable=False, default="Unknown")
+
+    # Student Promotion Fields
+    promotion_status = db.Column(db.String(20), default='active')  # active, promoted, repeated, transferred, graduated
+    academic_year = db.Column(db.String(10), nullable=True)  # e.g., "2024-2025"
+    date_last_promoted = db.Column(db.DateTime, nullable=True)
+    is_eligible_for_promotion = db.Column(db.Boolean, default=True)
+    promotion_notes = db.Column(db.Text, nullable=True)
+
+    # Relationships
+    grade = db.relationship('Grade', lazy=True)
+    # Note: 'stream' relationship is already defined by Stream.students backref
     marks = db.relationship('Mark', backref='student', lazy=True)
+    promotion_history = db.relationship('StudentPromotionHistory', backref='student', lazy=True)
+
+    def is_final_grade(self):
+        """Check if student is in final grade (Grade 9 for junior secondary)."""
+        if self.grade_id:
+            grade = Grade.query.get(self.grade_id)
+            return grade and grade.name.upper() in ['GRADE 9', '9', 'FORM 4', 'CLASS 8']
+        return False
+
+    def get_next_grade(self):
+        """Get the next grade name for promotion."""
+        if not self.grade_id:
+            return None
+
+        try:
+            current_grade = self.grade
+            if not current_grade:
+                return None
+
+            # Define grade progression mapping
+            grade_progression = {
+                'PP1': 'PP2',
+                'PP2': 'GRADE 1',
+                'GRADE 1': 'GRADE 2',
+                'GRADE 2': 'GRADE 3',
+                'GRADE 3': 'GRADE 4',
+                'GRADE 4': 'GRADE 5',
+                'GRADE 5': 'GRADE 6',
+                'GRADE 6': 'GRADE 7',
+                'GRADE 7': 'GRADE 8',
+                'GRADE 8': 'GRADE 9',
+                'GRADE 9': None  # Final grade - graduates
+            }
+
+            current_name = current_grade.name.upper()
+            return grade_progression.get(current_name)
+        except Exception:
+            return None
+
+    def can_be_promoted(self):
+        """Check if student can be promoted to next grade."""
+        if self.promotion_status != 'active' and self.promotion_status is not None:
+            return False
+        if not self.is_eligible_for_promotion:
+            return False
+        return not self.is_final_grade()
+
+    def get_promotion_data(self):
+        """Get student data formatted for promotion operations."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'admission_number': self.admission_number,
+            'current_grade': self.grade_id,
+            'current_stream': self.stream_id,
+            'promotion_status': self.promotion_status,
+            'is_eligible': self.is_eligible_for_promotion,
+            'is_final_grade': self.is_final_grade(),
+            'academic_year': self.academic_year,
+            'promotion_notes': self.promotion_notes
+        }
+
+    def to_dict(self):
+        """Convert student object to dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'admission_number': self.admission_number,
+            'grade_id': self.grade_id,
+            'stream_id': self.stream_id,
+            'gender': self.gender,
+            'promotion_status': self.promotion_status,
+            'academic_year': self.academic_year,
+            'date_last_promoted': self.date_last_promoted.isoformat() if self.date_last_promoted else None,
+            'is_eligible_for_promotion': self.is_eligible_for_promotion,
+            'promotion_notes': self.promotion_notes,
+            'current_grade': self.grade.name if self.grade else None,
+            'current_stream': self.stream.name if self.stream else None
+        }
 
 class Mark(db.Model):
     """Mark model representing student grades for subjects."""
@@ -414,3 +504,64 @@ class SubjectMarksStatus(db.Model):
             print(f"Error updating subject marks status: {str(e)}")
             db.session.rollback()
             return None
+
+
+class StudentPromotionHistory(db.Model):
+    """Model to track student promotion history."""
+    __tablename__ = 'student_promotion_history'
+
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    promotion_date = db.Column(db.DateTime, default=db.func.current_timestamp())
+    academic_year = db.Column(db.String(10), nullable=False)  # e.g., "2024-2025"
+
+    # Previous grade/stream information
+    from_grade_id = db.Column(db.Integer, db.ForeignKey('grade.id'), nullable=True)
+    from_stream_id = db.Column(db.Integer, db.ForeignKey('stream.id'), nullable=True)
+
+    # New grade/stream information (null for graduates/transfers)
+    to_grade_id = db.Column(db.Integer, db.ForeignKey('grade.id'), nullable=True)
+    to_stream_id = db.Column(db.Integer, db.ForeignKey('stream.id'), nullable=True)
+
+    # Promotion details
+    promotion_type = db.Column(db.String(20), nullable=False)  # promote, repeat, transfer, graduate
+    promotion_reason = db.Column(db.Text, nullable=True)
+    processed_by_teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False)
+
+    # Additional tracking
+    batch_id = db.Column(db.String(50), nullable=True)  # For bulk promotions
+    notes = db.Column(db.Text, nullable=True)
+
+    # Relationships
+    from_grade = db.relationship('Grade', foreign_keys=[from_grade_id], lazy=True)
+    to_grade = db.relationship('Grade', foreign_keys=[to_grade_id], lazy=True)
+    from_stream = db.relationship('Stream', foreign_keys=[from_stream_id], lazy=True)
+    to_stream = db.relationship('Stream', foreign_keys=[to_stream_id], lazy=True)
+    processed_by = db.relationship('Teacher', backref='processed_promotions', lazy=True)
+
+    def to_dict(self):
+        """Convert promotion history record to dictionary."""
+        return {
+            'id': self.id,
+            'student_id': self.student_id,
+            'student_name': self.student.name if self.student else None,
+            'promotion_date': self.promotion_date.isoformat() if self.promotion_date else None,
+            'academic_year': self.academic_year,
+            'from_grade_id': self.from_grade_id,
+            'from_stream_id': self.from_stream_id,
+            'to_grade_id': self.to_grade_id,
+            'to_stream_id': self.to_stream_id,
+            'from_grade_name': self.from_grade.name if self.from_grade else None,
+            'from_stream_name': self.from_stream.name if self.from_stream else None,
+            'to_grade_name': self.to_grade.name if self.to_grade else None,
+            'to_stream_name': self.to_stream.name if self.to_stream else None,
+            'promotion_type': self.promotion_type,
+            'promotion_reason': self.promotion_reason,
+            'processed_by_teacher_id': self.processed_by_teacher_id,
+            'processed_by_name': self.processed_by.name if self.processed_by else None,
+            'batch_id': self.batch_id,
+            'notes': self.notes
+        }
+
+    def __repr__(self):
+        return f'<StudentPromotionHistory {self.student_id}: {self.promotion_type} on {self.promotion_date}>'

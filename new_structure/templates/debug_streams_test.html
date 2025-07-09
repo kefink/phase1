@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Streams API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .endpoint { font-family: monospace; background: #e9ecef; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Streams API Test</h1>
+    <p>This page will test the streams API endpoints to identify authentication issues.</p>
+    
+    <div class="test-section info">
+        <h3>📊 Test Data Available:</h3>
+        <ul>
+            <li><strong>Grade 9</strong> (ID: 21) - Streams: B, G, Y</li>
+            <li><strong>Grade 8</strong> (ID: 22) - Streams: B, G, Y</li>
+            <li><strong>Grade 7</strong> (ID: 23) - Streams: B, G, Y</li>
+            <li><strong>Grade 1</strong> (ID: 24) - Streams: B, Y</li>
+            <li><strong>Grade 4</strong> (ID: 25) - Streams: B, Y, G</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 API Endpoint Tests</h3>
+        
+        <h4>Test 1: Classteacher Endpoint (with credentials)</h4>
+        <button onclick="testClassteacherEndpoint()">Test /classteacher/get_grade_streams/21</button>
+        <div id="classteacher-result"></div>
+        
+        <h4>Test 2: Universal Endpoint (with credentials)</h4>
+        <button onclick="testUniversalEndpoint()">Test /universal/api/streams/21</button>
+        <div id="universal-result"></div>
+        
+        <h4>Test 3: Classteacher Endpoint (without credentials)</h4>
+        <button onclick="testClassteacherEndpointNoCredentials()">Test /classteacher/get_grade_streams/21 (No Credentials)</button>
+        <div id="classteacher-no-creds-result"></div>
+        
+        <h4>Test 4: Session Check</h4>
+        <button onclick="checkSession()">Check Current Session</button>
+        <div id="session-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 Test Results Summary</h3>
+        <div id="summary"></div>
+    </div>
+
+    <script>
+        let testResults = [];
+
+        function logResult(testName, success, data, error = null) {
+            testResults.push({ testName, success, data, error });
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('summary');
+            let html = '<h4>Results:</h4><ul>';
+            testResults.forEach(result => {
+                const status = result.success ? '✅' : '❌';
+                html += `<li>${status} ${result.testName}</li>`;
+            });
+            html += '</ul>';
+            summary.innerHTML = html;
+        }
+
+        async function testClassteacherEndpoint() {
+            const resultDiv = document.getElementById('classteacher-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch('/classteacher/get_grade_streams/21', {
+                    credentials: 'same-origin'
+                });
+                
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    data = responseText;
+                }
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h5>✅ Success (Status: ${response.status})</h5>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    logResult('Classteacher Endpoint (with credentials)', true, data);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h5>❌ Failed (Status: ${response.status})</h5>
+                            <pre>${typeof data === 'string' ? data : JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    logResult('Classteacher Endpoint (with credentials)', false, data, `Status: ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h5>❌ Network Error</h5>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+                logResult('Classteacher Endpoint (with credentials)', false, null, error.message);
+            }
+        }
+
+        async function testUniversalEndpoint() {
+            const resultDiv = document.getElementById('universal-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch('/universal/api/streams/21', {
+                    credentials: 'same-origin'
+                });
+                
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    data = responseText;
+                }
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h5>✅ Success (Status: ${response.status})</h5>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    logResult('Universal Endpoint (with credentials)', true, data);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h5>❌ Failed (Status: ${response.status})</h5>
+                            <pre>${typeof data === 'string' ? data : JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    logResult('Universal Endpoint (with credentials)', false, data, `Status: ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h5>❌ Network Error</h5>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+                logResult('Universal Endpoint (with credentials)', false, null, error.message);
+            }
+        }
+
+        async function testClassteacherEndpointNoCredentials() {
+            const resultDiv = document.getElementById('classteacher-no-creds-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch('/classteacher/get_grade_streams/21');
+                
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    data = responseText;
+                }
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h5>✅ Success (Status: ${response.status})</h5>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    logResult('Classteacher Endpoint (no credentials)', true, data);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h5>❌ Failed (Status: ${response.status}) - Expected</h5>
+                            <pre>${typeof data === 'string' ? data : JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    logResult('Classteacher Endpoint (no credentials)', false, data, `Status: ${response.status} (Expected)`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h5>❌ Network Error</h5>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+                logResult('Classteacher Endpoint (no credentials)', false, null, error.message);
+            }
+        }
+
+        async function checkSession() {
+            const resultDiv = document.getElementById('session-result');
+            resultDiv.innerHTML = '<p>Checking session...</p>';
+            
+            try {
+                const response = await fetch('/universal/dashboard', {
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h5>✅ Session Valid (Status: ${response.status})</h5>
+                            <p>You are authenticated and can access universal dashboard</p>
+                        </div>
+                    `;
+                    logResult('Session Check', true, 'Authenticated');
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h5>❌ Session Invalid (Status: ${response.status})</h5>
+                            <p>You are not authenticated or session expired</p>
+                        </div>
+                    `;
+                    logResult('Session Check', false, null, `Status: ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h5>❌ Network Error</h5>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+                logResult('Session Check', false, null, error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <title>
+      Student Promotion Management - {{ school_info.school_name or 'Hillview
+      School' }}
+    </title>
+
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Modern CSS Framework -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
+    />
+
+    <style>
+      /* Student Promotion Specific Styles */
+      :root {
+        --promotion-primary: #667eea;
+        --promotion-secondary: #764ba2;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+      }
+
+      .page-container {
+        background: linear-gradient(
+          135deg,
+          var(--promotion-primary) 0%,
+          var(--promotion-secondary) 100%
+        );
+        min-height: 100vh;
+        padding: var(--space-6);
+      }
+
+      .promotion-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: var(--radius-2xl);
+        padding: var(--space-8);
+        margin-bottom: var(--space-6);
+        box-shadow: var(--shadow-xl);
+      }
+
+      .promotion-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-4);
+        margin-bottom: var(--space-6);
+      }
+
+      .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-xl);
+        padding: var(--space-6);
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+        transition: all 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+      }
+
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--promotion-primary);
+        margin-bottom: var(--space-2);
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      .promotion-controls {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: var(--radius-2xl);
+        padding: var(--space-6);
+        margin-bottom: var(--space-6);
+        box-shadow: var(--shadow-xl);
+      }
+
+      /* Filter Controls */
+      .filter-form {
+        margin-top: var(--space-4);
+      }
+
+      .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+        align-items: end;
+      }
+
+      .filter-item {
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+      }
+
+      .filter-item label {
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: var(--space-2);
+        font-size: 0.9rem;
+      }
+
+      .filter-item select {
+        padding: var(--space-2) var(--space-3);
+        border: 2px solid rgba(103, 126, 234, 0.2);
+        border-radius: var(--radius-lg);
+        background: white;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+      }
+
+      .filter-item select:focus {
+        outline: none;
+        border-color: var(--promotion-primary);
+        box-shadow: 0 0 0 3px rgba(103, 126, 234, 0.1);
+      }
+
+      .btn-filter {
+        padding: var(--space-2) var(--space-4);
+        border: none;
+        border-radius: var(--radius-lg);
+        background: var(--promotion-primary);
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: 0.9rem;
+      }
+
+      .btn-filter:hover {
+        background: var(--promotion-secondary);
+        transform: translateY(-2px);
+      }
+
+      .btn-clear {
+        background: var(--warning-color) !important;
+        text-decoration: none;
+      }
+
+      .btn-clear:hover {
+        background: #d97706 !important;
+      }
+
+      /* Pagination Controls */
+      .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+      }
+
+      .pagination-info {
+        flex: 1;
+      }
+
+      .btn-pagination {
+        padding: var(--space-2) var(--space-4);
+        border: 2px solid var(--promotion-primary);
+        border-radius: var(--radius-lg);
+        background: white;
+        color: var(--promotion-primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .btn-pagination:hover {
+        background: var(--promotion-primary);
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      .page-info {
+        padding: var(--space-2) var(--space-4);
+        background: rgba(103, 126, 234, 0.1);
+        border-radius: var(--radius-lg);
+        color: var(--promotion-primary);
+        font-weight: 600;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .filter-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .filter-item {
+          min-width: auto;
+        }
+
+        .pagination-controls {
+          flex-direction: column;
+          gap: var(--space-2);
+        }
+
+        .pagination-info {
+          text-align: center;
+        }
+      }
+
+      .control-group {
+        display: flex;
+        gap: var(--space-4);
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .academic-year-selector {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .academic-year-selector select {
+        padding: var(--space-3);
+        border-radius: var(--radius-lg);
+        border: 2px solid var(--border-color);
+        background: white;
+        font-weight: 500;
+      }
+
+      .promotion-actions {
+        display: flex;
+        gap: var(--space-3);
+      }
+
+      .btn-promotion {
+        padding: var(--space-3) var(--space-6);
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .btn-primary {
+        background: var(--promotion-primary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--promotion-secondary);
+        transform: translateY(-1px);
+      }
+
+      .btn-success {
+        background: var(--success-color);
+        color: white;
+      }
+
+      .btn-warning {
+        background: var(--warning-color);
+        color: white;
+      }
+
+      .grade-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: var(--radius-2xl);
+        margin-bottom: var(--space-6);
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+      }
+
+      .grade-header {
+        background: linear-gradient(
+          135deg,
+          var(--promotion-primary),
+          var(--promotion-secondary)
+        );
+        color: white;
+        padding: var(--space-6);
+        display: flex;
+        justify-content: between;
+        align-items: center;
+      }
+
+      .grade-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+      }
+
+      .grade-summary {
+        display: flex;
+        gap: var(--space-4);
+        font-size: 0.875rem;
+      }
+
+      .students-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .students-table th,
+      .students-table td {
+        padding: var(--space-4);
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .students-table th {
+        background: rgba(var(--promotion-primary-rgb), 0.1);
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .students-table tr:hover {
+        background: rgba(var(--promotion-primary-rgb), 0.05);
+      }
+
+      .student-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      .promotion-select {
+        padding: var(--space-2);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        background: white;
+        min-width: 120px;
+      }
+
+      .stream-select {
+        padding: var(--space-2);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        background: white;
+        min-width: 100px;
+      }
+
+      .notes-input {
+        padding: var(--space-2);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        background: white;
+        min-width: 150px;
+        font-size: 0.875rem;
+      }
+
+      .status-badge {
+        padding: var(--space-1) var(--space-3);
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .status-eligible {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success-color);
+      }
+
+      .status-final {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning-color);
+      }
+
+      .status-inactive {
+        background: rgba(107, 114, 128, 0.1);
+        color: var(--text-secondary);
+      }
+
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .loading-spinner {
+        background: white;
+        padding: var(--space-8);
+        border-radius: var(--radius-2xl);
+        text-align: center;
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--border-color);
+        border-top: 4px solid var(--promotion-primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto var(--space-4);
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        .page-container {
+          padding: var(--space-4);
+        }
+
+        .promotion-header {
+          padding: var(--space-6);
+        }
+
+        .promotion-stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .control-group {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .promotion-actions {
+          justify-content: center;
+        }
+
+        .students-table {
+          font-size: 0.875rem;
+        }
+
+        .students-table th,
+        .students-table td {
+          padding: var(--space-2);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      <div class="content-wrapper">
+        <!-- Header -->
+        <div class="promotion-header">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: var(--space-4);
+            "
+          >
+            <div>
+              <h1
+                style="
+                  margin: 0;
+                  color: var(--text-primary);
+                  font-size: 2rem;
+                  font-weight: 800;
+                "
+              >
+                <i
+                  class="fas fa-graduation-cap"
+                  style="
+                    color: var(--promotion-primary);
+                    margin-right: var(--space-3);
+                  "
+                ></i>
+                Student Promotion Management
+              </h1>
+              <p
+                style="
+                  margin: var(--space-2) 0 0;
+                  color: var(--text-secondary);
+                  font-size: 1rem;
+                "
+              >
+                Manage student promotions for Academic Year {{
+                promotion_data.academic_year or '2024' }}
+              </p>
+            </div>
+            <div>
+              <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="btn-promotion btn-primary"
+              >
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+              </a>
+            </div>
+          </div>
+
+          <!-- Promotion Statistics -->
+          <div class="promotion-stats">
+            <div class="stat-card">
+              <div class="stat-number">
+                {{ promotion_data.promotion_summary.total_students or 0 }}
+              </div>
+              <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">
+                {{ promotion_data.promotion_summary.eligible_for_promotion or 0
+                }}
+              </div>
+              <div class="stat-label">Eligible for Promotion</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">
+                {{ promotion_data.promotion_summary.final_grade_students or 0 }}
+              </div>
+              <div class="stat-label">Final Grade (Grade 9)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">
+                {{ promotion_data.students_by_grade|length or 0 }}
+              </div>
+              <div class="stat-label">Grade Levels</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="promotion-controls">
+          <div class="control-group">
+            <h3 style="color: var(--text-primary); margin-bottom: var(--space-4);">
+              <i class="fas fa-filter"></i> Filter Students
+            </h3>
+            <form method="GET" action="{{ url_for('admin.student_promotion') }}" class="filter-form">
+              <div class="filter-row">
+                <div class="filter-item">
+                  <label for="education_level">Education Level:</label>
+                  <select id="education_level" name="education_level" onchange="this.form.submit()">
+                    <option value="">All Levels</option>
+                    {% for level in filter_options.education_levels %}
+                    <option value="{{ level }}" {% if promotion_data.filters.education_level == level %}selected{% endif %}>
+                      {{ level }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="filter-item">
+                  <label for="grade_id">Grade:</label>
+                  <select id="grade_id" name="grade_id" onchange="this.form.submit()">
+                    <option value="">All Grades</option>
+                    {% for grade in filter_options.grades %}
+                    <option value="{{ grade.id }}" {% if promotion_data.filters.grade_id == grade.id %}selected{% endif %}>
+                      {{ grade.name }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="filter-item">
+                  <label for="stream_id">Stream:</label>
+                  <select id="stream_id" name="stream_id" onchange="this.form.submit()">
+                    <option value="">All Streams</option>
+                    {% for stream in filter_options.streams %}
+                    <option value="{{ stream.id }}" {% if promotion_data.filters.stream_id == stream.id %}selected{% endif %}>
+                      {{ stream.name }} ({{ stream.grade_name }})
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="filter-item">
+                  <label for="per_page">Per Page:</label>
+                  <select id="per_page" name="per_page" onchange="this.form.submit()">
+                    <option value="25" {% if promotion_data.pagination.per_page == 25 %}selected{% endif %}>25</option>
+                    <option value="50" {% if promotion_data.pagination.per_page == 50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if promotion_data.pagination.per_page == 100 %}selected{% endif %}>100</option>
+                  </select>
+                </div>
+
+                <div class="filter-item">
+                  <button type="submit" class="btn-filter">
+                    <i class="fas fa-search"></i> Apply Filters
+                  </button>
+                  <a href="{{ url_for('admin.student_promotion') }}" class="btn-filter btn-clear">
+                    <i class="fas fa-times"></i> Clear
+                  </a>
+                </div>
+              </div>
+
+              <!-- Preserve current page when filtering -->
+              <input type="hidden" name="page" value="1">
+            </form>
+          </div>
+        </div>
+
+        <!-- Promotion Controls -->
+        <div class="promotion-controls">
+          <div class="control-group">
+            <div class="academic-year-selector">
+              <label
+                for="academic-year"
+                style="font-weight: 600; color: var(--text-primary)"
+              >
+                Promote to Academic Year:
+              </label>
+              <select id="academic-year" name="academic_year_to">
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+              </select>
+            </div>
+
+            <div class="promotion-actions">
+              <button
+                type="button"
+                class="btn-promotion btn-primary"
+                onclick="selectAllEligible()"
+              >
+                <i class="fas fa-check-double"></i>
+                Select All Eligible
+              </button>
+              <button
+                type="button"
+                class="btn-promotion btn-warning"
+                onclick="clearAllSelections()"
+              >
+                <i class="fas fa-times"></i>
+                Clear Selections
+              </button>
+              <button
+                type="button"
+                class="btn-promotion btn-success"
+                onclick="processPromotions()"
+              >
+                <i class="fas fa-rocket"></i>
+                Process Promotions
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Students by Grade -->
+        {% if promotion_data.success and promotion_data.students_by_grade %} {%
+        for grade_name, grade_data in promotion_data.students_by_grade.items()
+        %}
+        <div class="grade-section">
+          <div class="grade-header">
+            <div>
+              <h2 class="grade-title">{{ grade_name }}</h2>
+            </div>
+            <div class="grade-summary">
+              <span
+                ><i class="fas fa-users"></i> {{ grade_data.total_count }}
+                students</span
+              >
+              <span
+                ><i class="fas fa-arrow-up"></i> {{ grade_data.eligible_count }}
+                eligible</span
+              >
+              {% if grade_data.final_grade_count > 0 %}
+              <span
+                ><i class="fas fa-graduation-cap"></i> {{
+                grade_data.final_grade_count }} graduating</span
+              >
+              {% endif %}
+            </div>
+          </div>
+
+          <div style="padding: var(--space-6)">
+            <table class="students-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px">
+                    <input
+                      type="checkbox"
+                      class="student-checkbox grade-select-all"
+                      data-grade="{{ grade_name }}"
+                      onchange="toggleGradeSelection('{{ grade_name }}')"
+                    />
+                  </th>
+                  <th>Student Name</th>
+                  <th>Admission No.</th>
+                  <th>Current Stream</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                  <th>Target Grade</th>
+                  <th>Target Stream</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for student in grade_data.students %}
+                <tr
+                  data-student-id="{{ student.id }}"
+                  data-grade="{{ grade_name }}"
+                >
+                  <td>
+                    <input
+                      type="checkbox"
+                      class="student-checkbox student-select"
+                      data-student-id="{{ student.id }}"
+                      data-grade="{{ grade_name }}"
+                      {%
+                      if
+                      student.can_be_promoted
+                      %}checked{%
+                      endif
+                      %}
+                      onchange="updateStudentSelection({{ student.id }})"
+                    />
+                  </td>
+                  <td style="font-weight: 600">{{ student.name }}</td>
+                  <td>{{ student.admission_number }}</td>
+                  <td>{{ student.stream_name or 'No Stream' }}</td>
+                  <td>
+                    {% if student.is_final_grade %}
+                    <span class="status-badge status-final">Final Grade</span>
+                    {% elif student.can_be_promoted %}
+                    <span class="status-badge status-eligible">Eligible</span>
+                    {% else %}
+                    <span class="status-badge status-inactive"
+                      >Not Eligible</span
+                    >
+                    {% endif %}
+                  </td>
+                  <td>
+                    <select
+                      class="promotion-select"
+                      data-student-id="{{ student.id }}"
+                      onchange="updatePromotionAction({{ student.id }})"
+                    >
+                      {% if student.is_final_grade %}
+                      <option value="graduate" selected>Graduate</option>
+                      <option value="repeat">Repeat Grade</option>
+                      <option value="transfer">Transfer</option>
+                      {% else %}
+                      <option
+                        value="promote"
+                        {%
+                        if
+                        student.can_be_promoted
+                        %}selected{%
+                        endif
+                        %}
+                      >
+                        Promote
+                      </option>
+                      <option value="repeat">Repeat Grade</option>
+                      <option value="transfer">Transfer</option>
+                      {% endif %}
+                    </select>
+                  </td>
+                  <td>
+                    <span
+                      class="target-grade"
+                      data-student-id="{{ student.id }}"
+                    >
+                      {% if student.next_grade and not student.is_final_grade %}
+                      {{ student.next_grade }} {% else %} N/A {% endif %}
+                    </span>
+                  </td>
+                  <td>
+                    <select
+                      class="stream-select"
+                      data-student-id="{{ student.id }}"
+                      style="{% if student.is_final_grade %}display: none;{% endif %}"
+                    >
+                      <option value="">Select Stream</option>
+                      <!-- Streams will be populated by JavaScript -->
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      class="notes-input"
+                      data-student-id="{{ student.id }}"
+                      placeholder="Optional notes..."
+                    />
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% endfor %}
+
+        <!-- Pagination Controls -->
+        {% if promotion_data.pagination and promotion_data.pagination.total_pages > 1 %}
+        <div class="promotion-controls">
+          <div class="control-group">
+            <div class="pagination-info">
+              <p style="color: var(--text-primary); margin: 0;">
+                Showing {{ ((promotion_data.pagination.page - 1) * promotion_data.pagination.per_page) + 1 }}
+                to {{ [promotion_data.pagination.page * promotion_data.pagination.per_page, promotion_data.pagination.total] | min }}
+                of {{ promotion_data.pagination.total }} students
+              </p>
+            </div>
+
+            <div class="pagination-controls">
+              {% if promotion_data.pagination.has_prev %}
+              <a href="{{ url_for('admin.student_promotion',
+                        page=promotion_data.pagination.prev_num,
+                        education_level=promotion_data.filters.education_level,
+                        grade_id=promotion_data.filters.grade_id,
+                        stream_id=promotion_data.filters.stream_id,
+                        per_page=promotion_data.pagination.per_page) }}"
+                 class="btn-pagination">
+                <i class="fas fa-chevron-left"></i> Previous
+              </a>
+              {% endif %}
+
+              <span class="page-info">
+                Page {{ promotion_data.pagination.page }} of {{ promotion_data.pagination.total_pages }}
+              </span>
+
+              {% if promotion_data.pagination.has_next %}
+              <a href="{{ url_for('admin.student_promotion',
+                        page=promotion_data.pagination.next_num,
+                        education_level=promotion_data.filters.education_level,
+                        grade_id=promotion_data.filters.grade_id,
+                        stream_id=promotion_data.filters.stream_id,
+                        per_page=promotion_data.pagination.per_page) }}"
+                 class="btn-pagination">
+                Next <i class="fas fa-chevron-right"></i>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="grade-section">
+          <div style="padding: var(--space-8); text-align: center">
+            <i
+              class="fas fa-exclamation-triangle"
+              style="
+                font-size: 3rem;
+                color: var(--warning-color);
+                margin-bottom: var(--space-4);
+              "
+            ></i>
+            <h3
+              style="color: var(--text-primary); margin-bottom: var(--space-2)"
+            >
+              No Students Found
+            </h3>
+            <div style="color: var(--text-secondary); line-height: 1.6;">
+              {% if promotion_data.error %}
+              <p style="margin-bottom: var(--space-4); color: var(--error-color);">
+                <strong>Error:</strong> {{ promotion_data.error }}
+              </p>
+              {% else %}
+              <p style="margin-bottom: var(--space-4);">
+                No active students available for promotion with the current filters.
+              </p>
+              <div style="background: rgba(255, 193, 7, 0.1); padding: var(--space-4); border-radius: var(--radius-lg); margin: var(--space-4) 0; text-align: left;">
+                <p style="margin: 0; color: #856404; font-weight: 600;">Possible reasons:</p>
+                <ul style="margin: var(--space-2) 0 0 var(--space-4); color: #856404;">
+                  <li>No students have been added to the system yet</li>
+                  <li>Students don't have grade assignments</li>
+                  <li>All students are in Grade 9 (final grade - no promotion needed)</li>
+                  <li>Current filters are too restrictive</li>
+                </ul>
+              </div>
+              <div style="margin-top: var(--space-6);">
+                <a href="{{ url_for('admin.student_promotion') }}" class="btn-clear" style="text-decoration: none; display: inline-block; margin-right: var(--space-2);">
+                  <i class="fas fa-refresh"></i> Clear All Filters
+                </a>
+                <a href="{{ url_for('admin.students') }}" class="btn-filter" style="text-decoration: none; display: inline-block;">
+                  <i class="fas fa-users"></i> Manage Students
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <h3 style="margin: 0; color: var(--text-primary)">
+          Processing Promotions...
+        </h3>
+        <p style="margin: var(--space-2) 0 0; color: var(--text-secondary)">
+          Please wait while we update student records.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      // Global variables
+      let promotionData = {{ promotion_data | tojson }};
+      let selectedStudents = new Map();
+      let availableStreams = promotionData.available_streams || {};
+
+      // Initialize page
+      document.addEventListener('DOMContentLoaded', function() {
+          initializeStreamSelectors();
+          initializeSelectedStudents();
+      });
+
+      function initializeStreamSelectors() {
+          // Populate stream selectors based on target grades
+          document.querySelectorAll('.stream-select').forEach(select => {
+              const studentId = select.dataset.studentId;
+              const targetGradeSpan = document.querySelector(`.target-grade[data-student-id="${studentId}"]`);
+              const targetGrade = targetGradeSpan ? targetGradeSpan.textContent.trim() : '';
+
+              if (targetGrade && availableStreams[targetGrade]) {
+                  select.innerHTML = '<option value="">Select Stream</option>';
+                  availableStreams[targetGrade].forEach(stream => {
+                      const option = document.createElement('option');
+                      option.value = stream.id;
+                      option.textContent = stream.name;
+                      select.appendChild(option);
+                  });
+              }
+          });
+      }
+
+      function initializeSelectedStudents() {
+          // Initialize selected students map with eligible students
+          document.querySelectorAll('.student-select:checked').forEach(checkbox => {
+              const studentId = parseInt(checkbox.dataset.studentId);
+              const grade = checkbox.dataset.grade;
+
+              // Find student data
+              const studentData = findStudentData(studentId, grade);
+              if (studentData) {
+                  selectedStudents.set(studentId, {
+                      ...studentData,
+                      action: studentData.is_final_grade ? 'graduate' : 'promote',
+                      notes: ''
+                  });
+              }
+          });
+      }
+
+      function findStudentData(studentId, grade) {
+          if (promotionData.students_by_grade && promotionData.students_by_grade[grade]) {
+              return promotionData.students_by_grade[grade].students.find(s => s.id === studentId);
+          }
+          return null;
+      }
+
+      function toggleGradeSelection(grade) {
+          const gradeCheckbox = document.querySelector(`.grade-select-all[data-grade="${grade}"]`);
+          const studentCheckboxes = document.querySelectorAll(`.student-select[data-grade="${grade}"]`);
+
+          studentCheckboxes.forEach(checkbox => {
+              checkbox.checked = gradeCheckbox.checked;
+              updateStudentSelection(parseInt(checkbox.dataset.studentId));
+          });
+      }
+
+      function updateStudentSelection(studentId) {
+          const checkbox = document.querySelector(`.student-select[data-student-id="${studentId}"]`);
+          const grade = checkbox.dataset.grade;
+
+          if (checkbox.checked) {
+              const studentData = findStudentData(studentId, grade);
+              if (studentData) {
+                  selectedStudents.set(studentId, {
+                      ...studentData,
+                      action: studentData.is_final_grade ? 'graduate' : 'promote',
+                      notes: ''
+                  });
+              }
+          } else {
+              selectedStudents.delete(studentId);
+          }
+      }
+
+      function updatePromotionAction(studentId) {
+          const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+          const streamSelect = document.querySelector(`.stream-select[data-student-id="${studentId}"]`);
+          const targetGradeSpan = document.querySelector(`.target-grade[data-student-id="${studentId}"]`);
+
+          const action = actionSelect.value;
+
+          // Update selected student data
+          if (selectedStudents.has(studentId)) {
+              selectedStudents.get(studentId).action = action;
+          }
+
+          // Show/hide stream selector based on action
+          if (action === 'promote') {
+              streamSelect.style.display = 'block';
+              targetGradeSpan.style.display = 'inline';
+          } else {
+              streamSelect.style.display = 'none';
+              if (action === 'repeat') {
+                  targetGradeSpan.textContent = 'Same Grade';
+              } else if (action === 'transfer' || action === 'graduate') {
+                  targetGradeSpan.textContent = 'N/A';
+              }
+          }
+      }
+
+      function selectAllEligible() {
+          document.querySelectorAll('.student-select').forEach(checkbox => {
+              const studentId = parseInt(checkbox.dataset.studentId);
+              const grade = checkbox.dataset.grade;
+              const studentData = findStudentData(studentId, grade);
+
+              if (studentData && (studentData.can_be_promoted || studentData.is_final_grade)) {
+                  checkbox.checked = true;
+                  updateStudentSelection(studentId);
+              }
+          });
+      }
+
+      function clearAllSelections() {
+          document.querySelectorAll('.student-select').forEach(checkbox => {
+              checkbox.checked = false;
+          });
+          document.querySelectorAll('.grade-select-all').forEach(checkbox => {
+              checkbox.checked = false;
+          });
+          selectedStudents.clear();
+      }
+
+      function processPromotions() {
+          if (selectedStudents.size === 0) {
+              alert('Please select at least one student for promotion.');
+              return;
+          }
+
+          // Collect promotion data
+          const academicYearTo = document.getElementById('academic-year').value;
+          const studentsData = [];
+
+          selectedStudents.forEach((studentData, studentId) => {
+              const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+              const streamSelect = document.querySelector(`.stream-select[data-student-id="${studentId}"]`);
+              const notesInput = document.querySelector(`.notes-input[data-student-id="${studentId}"]`);
+
+              const action = actionSelect.value;
+              let promotionRecord = {
+                  student_id: studentId,
+                  action: action,
+                  notes: notesInput.value.trim()
+              };
+
+              // Add target grade and stream for promotions
+              if (action === 'promote') {
+                  const nextGrade = studentData.next_grade;
+                  if (nextGrade) {
+                      // Find grade ID by name
+                      const gradeId = findGradeIdByName(nextGrade);
+                      if (gradeId) {
+                          promotionRecord.to_grade_id = gradeId;
+                          if (streamSelect.value) {
+                              promotionRecord.to_stream_id = parseInt(streamSelect.value);
+                          }
+                      }
+                  }
+              }
+
+              studentsData.push(promotionRecord);
+          });
+
+          const promotionPayload = {
+              academic_year_to: academicYearTo,
+              students: studentsData
+          };
+
+          // Show loading overlay
+          document.getElementById('loadingOverlay').style.display = 'flex';
+
+          // Send promotion request
+          fetch('{{ url_for("admin.process_promotion") }}', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+              },
+              body: JSON.stringify(promotionPayload)
+          })
+          .then(response => response.json())
+          .then(data => {
+              document.getElementById('loadingOverlay').style.display = 'none';
+
+              if (data.success) {
+                  alert(`Promotion completed successfully!\n\nProcessed: ${data.processed_count} students\nPromoted: ${data.promoted_count}\nRepeated: ${data.repeated_count}\nTransferred: ${data.transferred_count}\nGraduated: ${data.graduated_count}`);
+                  location.reload(); // Refresh the page to show updated data
+              } else {
+                  alert(`Promotion failed: ${data.error}`);
+                  if (data.errors && data.errors.length > 0) {
+                      console.error('Promotion errors:', data.errors);
+                  }
+              }
+          })
+          .catch(error => {
+              document.getElementById('loadingOverlay').style.display = 'none';
+              alert(`Error processing promotions: ${error.message}`);
+              console.error('Error:', error);
+          });
+      }
+
+      function findGradeIdByName(gradeName) {
+          // This would need to be populated with actual grade data
+          // For now, return a placeholder - this should be enhanced with real data
+          const gradeMap = {
+              'Grade 1': 1, 'Grade 2': 2, 'Grade 3': 3, 'Grade 4': 4,
+              'Grade 5': 5, 'Grade 6': 6, 'Grade 7': 7, 'Grade 8': 8, 'Grade 9': 9
+          };
+          return gradeMap[gradeName] || null;
+      }
+
+      // Update notes for selected students
+      document.addEventListener('input', function(e) {
+          if (e.target.classList.contains('notes-input')) {
+              const studentId = parseInt(e.target.dataset.studentId);
+              if (selectedStudents.has(studentId)) {
+                  selectedStudents.get(studentId).notes = e.target.value.trim();
+              }
+          }
+      });
+
+      // Update stream selection for selected students
+      document.addEventListener('change', function(e) {
+          if (e.target.classList.contains('stream-select')) {
+              const studentId = parseInt(e.target.dataset.studentId);
+              if (selectedStudents.has(studentId)) {
+                  selectedStudents.get(studentId).to_stream_id = parseInt(e.target.value) || null;
+              }
+          }
+      });
+    </script>
+  </body>
+</html>

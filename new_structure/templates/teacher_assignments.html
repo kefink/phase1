@@ -1239,6 +1239,32 @@
     </div>
 
     <script>
+      // Function to get the correct streams API endpoint based on current context
+      function getStreamsEndpoint(gradeId) {
+        // Check if we're in headteacher universal context
+        if (window.location.pathname.includes('/universal/')) {
+          return `/universal/api/streams/${gradeId}`;
+        }
+        // Check if we're in headteacher context (admin routes)
+        else if (window.location.pathname.includes('/headteacher/') ||
+            window.location.pathname.includes('/admin/')) {
+          return `/admin/api/streams/${gradeId}`;
+        }
+        // Default to classteacher endpoint
+        return `/classteacher/get_grade_streams/${gradeId}`;
+      }
+
+      // Function to extract streams from response data (handles different response formats)
+      function extractStreamsFromResponse(data) {
+        // Handle different response formats
+        if (data.streams) {
+          return data.streams; // Admin blueprint format: {streams: [...]}
+        } else if (data.success && data.streams) {
+          return data.streams; // Universal blueprint format: {success: true, streams: [...]}
+        }
+        return []; // Fallback to empty array
+      }
+
       // Function to update streams based on selected grade
       function updateStreams() {
         console.log("updateStreams called");
@@ -1250,11 +1276,17 @@
         streamSelect.innerHTML = '<option value="">-- All Streams --</option>';
 
         if (gradeId) {
-          // Fetch streams for the selected grade
-          fetch(`/classteacher/get_grade_streams/${gradeId}`)
+          // Fetch streams for the selected grade using dynamic endpoint
+          const endpoint = getStreamsEndpoint(gradeId);
+          console.log("Using endpoint:", endpoint);
+
+          fetch(endpoint, {
+            credentials: 'same-origin'
+          })
             .then((response) => response.json())
             .then((data) => {
-              data.streams.forEach((stream) => {
+              const streams = extractStreamsFromResponse(data);
+              streams.forEach((stream) => {
                 const option = document.createElement("option");
                 option.value = stream.id;
                 option.textContent = stream.name;
@@ -1263,6 +1295,33 @@
             })
             .catch((error) => {
               console.error("Error fetching streams:", error);
+              // Fallback: try the other endpoint if first one fails
+              const fallbackEndpoint = gradeId ?
+                (endpoint.includes('/universal/') ?
+                  `/classteacher/get_grade_streams/${gradeId}` :
+                  endpoint.includes('/admin/') ?
+                  `/classteacher/get_grade_streams/${gradeId}` :
+                  `/universal/api/streams/${gradeId}`) : null;
+
+              if (fallbackEndpoint) {
+                console.log("Trying fallback endpoint:", fallbackEndpoint);
+                fetch(fallbackEndpoint, {
+                  credentials: 'same-origin'
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    const streams = extractStreamsFromResponse(data);
+                    streams.forEach((stream) => {
+                      const option = document.createElement("option");
+                      option.value = stream.id;
+                      option.textContent = stream.name;
+                      streamSelect.appendChild(option);
+                    });
+                  })
+                  .catch((fallbackError) => {
+                    console.error("Fallback endpoint also failed:", fallbackError);
+                  });
+              }
             });
         }
       }
@@ -1287,7 +1346,9 @@
         summaryDiv.style.display = "block";
 
         // Fetch the teacher's assignments
-        fetch(`/classteacher/get_teacher_assignments/${teacherId}`)
+        fetch(`/classteacher/get_teacher_assignments/${teacherId}`, {
+          credentials: 'same-origin'
+        })
           .then((response) => response.json())
           .then((data) => {
             if (data.assignments && data.assignments.length > 0) {
@@ -1372,7 +1433,9 @@
         previewDiv.style.display = "block";
 
         // Fetch the teacher's assignments
-        fetch(`/classteacher/get_teacher_assignments/${teacherId}`)
+        fetch(`/classteacher/get_teacher_assignments/${teacherId}`, {
+          credentials: 'same-origin'
+        })
           .then((response) => response.json())
           .then((data) => {
             if (data.assignments && data.assignments.length > 0) {
@@ -1543,11 +1606,17 @@
         streamSelect.innerHTML = '<option value="">-- All Streams --</option>';
 
         if (gradeId) {
-          // Fetch streams for the selected grade
-          fetch(`/classteacher/get_grade_streams/${gradeId}`)
+          // Fetch streams for the selected grade using dynamic endpoint
+          const endpoint = getStreamsEndpoint(gradeId);
+          console.log("Advanced streams using endpoint:", endpoint);
+
+          fetch(endpoint, {
+            credentials: 'same-origin'
+          })
             .then((response) => response.json())
             .then((data) => {
-              data.streams.forEach((stream) => {
+              const streams = extractStreamsFromResponse(data);
+              streams.forEach((stream) => {
                 const option = document.createElement("option");
                 option.value = stream.id;
                 option.textContent = stream.name;
@@ -1556,6 +1625,33 @@
             })
             .catch((error) => {
               console.error("Error fetching streams:", error);
+              // Fallback: try the other endpoint if first one fails
+              const fallbackEndpoint = gradeId ?
+                (endpoint.includes('/universal/') ?
+                  `/classteacher/get_grade_streams/${gradeId}` :
+                  endpoint.includes('/admin/') ?
+                  `/classteacher/get_grade_streams/${gradeId}` :
+                  `/universal/api/streams/${gradeId}`) : null;
+
+              if (fallbackEndpoint) {
+                console.log("Advanced streams trying fallback endpoint:", fallbackEndpoint);
+                fetch(fallbackEndpoint, {
+                  credentials: 'same-origin'
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    const streams = extractStreamsFromResponse(data);
+                    streams.forEach((stream) => {
+                      const option = document.createElement("option");
+                      option.value = stream.id;
+                      option.textContent = stream.name;
+                      streamSelect.appendChild(option);
+                    });
+                  })
+                  .catch((fallbackError) => {
+                    console.error("Advanced streams fallback endpoint also failed:", fallbackError);
+                  });
+              }
             });
         }
       }
@@ -1588,10 +1684,16 @@
         const statusDiv = document.getElementById(`grade-${gradeId}-status`);
         const streamsGrid = document.querySelector(`#specific-streams-${gradeId} .streams-grid`);
 
-        fetch(`/classteacher/get_grade_streams/${gradeId}`)
+        // Use dynamic endpoint
+        const endpoint = getStreamsEndpoint(gradeId);
+        console.log("Load streams using endpoint:", endpoint);
+
+        fetch(endpoint, {
+          credentials: 'same-origin'
+        })
           .then(response => response.json())
           .then(data => {
-            const streams = data.streams || [];
+            const streams = extractStreamsFromResponse(data);
 
             if (streams.length === 0) {
               statusDiv.innerHTML = "📝 Single class (no streams)";
@@ -1638,8 +1740,75 @@
           })
           .catch(error => {
             console.error('Error loading streams:', error);
-            statusDiv.innerHTML = "❌ Error loading streams";
-            statusDiv.style.color = "#dc3545";
+            // Try fallback endpoint
+            const fallbackEndpoint = gradeId ?
+              (endpoint.includes('/universal/') ?
+                `/classteacher/get_grade_streams/${gradeId}` :
+                endpoint.includes('/admin/') ?
+                `/classteacher/get_grade_streams/${gradeId}` :
+                `/universal/api/streams/${gradeId}`) : null;
+
+            if (fallbackEndpoint) {
+              console.log("Load streams trying fallback endpoint:", fallbackEndpoint);
+              fetch(fallbackEndpoint, {
+                credentials: 'same-origin'
+              })
+                .then(response => response.json())
+                .then(data => {
+                  const streams = extractStreamsFromResponse(data);
+
+                  if (streams.length === 0) {
+                    statusDiv.innerHTML = "📝 Single class (no streams)";
+                    statusDiv.style.color = "#4a6741";
+
+                    // Hide stream selection options for grades without streams
+                    const streamOptions = document.querySelectorAll(`input[name="stream_option_${gradeId}"]`);
+                    streamOptions.forEach(option => {
+                      option.closest('label').style.display = 'none';
+                    });
+
+                    // Show a note that this grade has no streams
+                    const specificStreamsDiv = document.getElementById(`specific-streams-${gradeId}`);
+                    specificStreamsDiv.innerHTML = `
+                      <div style="padding: 10px; background: #e8f5e8; border-radius: 3px; color: #4a6741; text-align: center;">
+                        📝 Grade ${gradeLevel} is a single class without streams.<br>
+                        Assignments will apply to the entire grade.
+                      </div>
+                    `;
+                    specificStreamsDiv.style.display = "block";
+
+                  } else {
+                    statusDiv.innerHTML = `🏫 ${streams.length} stream${streams.length > 1 ? 's' : ''} available`;
+                    statusDiv.style.color = "#2196f3";
+
+                    // Show stream selection options
+                    const streamOptions = document.querySelectorAll(`input[name="stream_option_${gradeId}"]`);
+                    streamOptions.forEach(option => {
+                      option.closest('label').style.display = 'flex';
+                    });
+
+                    // Populate streams grid
+                    streamsGrid.innerHTML = '';
+                    streams.forEach(stream => {
+                      const streamLabel = document.createElement('label');
+                      streamLabel.style.cssText = "display: flex; align-items: center; padding: 8px; background: #f0f0f0; border-radius: 3px; border: 1px solid #ddd;";
+                      streamLabel.innerHTML = `
+                        <input type="checkbox" name="specific_streams_${gradeId}" value="${stream.id}" onchange="updateAssignmentSummary()">
+                        <span style="margin-left: 6px; font-size: 0.9em;">Stream ${stream.name}</span>
+                      `;
+                      streamsGrid.appendChild(streamLabel);
+                    });
+                  }
+                })
+                .catch(fallbackError => {
+                  console.error('Fallback endpoint also failed:', fallbackError);
+                  statusDiv.innerHTML = "❌ Error loading streams";
+                  statusDiv.style.color = "#dc3545";
+                });
+            } else {
+              statusDiv.innerHTML = "❌ Error loading streams";
+              statusDiv.style.color = "#dc3545";
+            }
           });
       }
 

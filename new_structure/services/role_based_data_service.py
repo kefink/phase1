@@ -141,21 +141,18 @@ class RoleBasedDataService:
     
     @staticmethod
     def _get_subject_teacher_summary(teacher_assignments):
-        """Get summary data for subject teacher (only their subjects)."""
+        """Get summary data for subject teacher (includes both subject and class teacher assignments)."""
         try:
             subject_assignments = []
+            class_assignments = []
+            unique_class_assignments = {}
             grades_involved = set()
             streams_involved = set()
             subjects_involved = set()
-            
+
             for assignment in teacher_assignments:
-                # Subject teachers should not have class teacher assignments
-                if assignment.is_class_teacher:
-                    continue
-                
                 assignment_data = RoleBasedDataService._format_assignment(assignment)
-                subject_assignments.append(assignment_data)
-                
+
                 # Track involvement
                 if assignment.grade:
                     grades_involved.add(assignment.grade.name)
@@ -163,18 +160,30 @@ class RoleBasedDataService:
                     streams_involved.add(assignment.stream.name)
                 if assignment.subject:
                     subjects_involved.add(assignment.subject.name)
-            
+
+                # Separate class teacher assignments (deduplicate by grade+stream)
+                if assignment.is_class_teacher:
+                    class_key = f"{assignment_data['grade_level']}_{assignment_data['stream_name'] or 'None'}"
+                    if class_key not in unique_class_assignments:
+                        unique_class_assignments[class_key] = assignment_data
+
+                # All assignments are subject assignments
+                subject_assignments.append(assignment_data)
+
+            # Convert unique class assignments to list
+            class_assignments = list(unique_class_assignments.values())
+
             return {
-                'class_teacher_assignments': [],  # Subject teachers don't manage classes
+                'class_teacher_assignments': class_assignments,
                 'subject_assignments': subject_assignments,
-                'total_classes_managed': 0,
+                'total_classes_managed': len(class_assignments),
                 'total_subjects_taught': len(subject_assignments),
                 'grades_involved': list(grades_involved),
                 'streams_involved': list(streams_involved),
                 'subjects_involved': list(subjects_involved),
-                'can_manage_classes': False
+                'can_manage_classes': len(class_assignments) > 0
             }
-            
+
         except Exception as e:
             return {'error': f'Error getting subject teacher summary: {str(e)}'}
     

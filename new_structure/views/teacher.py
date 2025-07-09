@@ -70,7 +70,7 @@ def get_streams(grade_id):
     """API endpoint to get streams for a specific grade."""
     try:
         streams = Stream.query.filter_by(grade_id=grade_id).all()
-        stream_data = [{'id': stream.id, 'name': f"Stream {stream.name}"} for stream in streams]
+        stream_data = [{'id': stream.id, 'name': stream.name} for stream in streams]
         return jsonify({'success': True, 'streams': stream_data})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})

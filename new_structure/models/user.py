@@ -2,6 +2,7 @@
 User-related models for the Hillview School Management System.
 """
 from ..extensions import db
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Define the many-to-many relationship table
 teacher_subjects = db.Table('teacher_subjects',
@@ -35,6 +36,24 @@ class Teacher(db.Model):
     # Relationships
     stream = db.relationship('Stream', backref=db.backref('teachers', lazy=True))
     subjects = db.relationship('Subject', secondary=teacher_subjects, back_populates='teachers')
+
+    def set_password(self, password):
+        """Set password hash."""
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        """Check password against hash."""
+        # Handle both hashed and plain text passwords for backward compatibility
+        if self.password.startswith('scrypt:') or self.password.startswith('pbkdf2:'):
+            # This is a hashed password
+            return check_password_hash(self.password, password)
+        else:
+            # This is a plain text password (legacy)
+            return self.password == password
+
+    def is_password_hashed(self):
+        """Check if password is hashed."""
+        return self.password.startswith('scrypt:') or self.password.startswith('pbkdf2:')
 
     @property
     def full_name(self):

@@ -239,8 +239,15 @@ def create_app(config_name='default'):
                 path_allowed = True
 
         if not path_allowed and not request.path.startswith('/static'):
+            print(f"=== SECURITY MIDDLEWARE DEBUG ===")
+            print(f"Request path: {request.path}")
+            print(f"User role: {user_role}")
+            print(f"Allowed paths: {allowed_paths}")
+            print(f"Path allowed: {path_allowed}")
+            print(f"Universal access: {session.get('headteacher_universal_access')}")
+            print(f"❌ BLOCKING REQUEST")
             app.logger.warning(f"Access denied: {user_role} tried to access {request.path}")
-            abort(403, f"Access denied: {user_role} not authorized for {request.path}")
+            abort(403, f"Access denied: {user_role} cannot access {request.path}")
 
     # ULTRA-SECURE SESSION CONFIGURATION AT RUNTIME
     app.config.update({
@@ -305,9 +312,9 @@ def create_app(config_name='default'):
             user_role = session.get('role', '').lower()
 
             object_permissions = {
-                'headteacher': ['student', 'teacher', 'report', 'mark', 'grade', 'stream'],
-                'classteacher': ['student', 'report', 'mark'],
-                'teacher': ['mark']
+                'headteacher': ['student', 'teacher', 'report', 'mark', 'grade', 'stream', 'streams', 'api', 'get_grade_streams', 'teacher_streams', 'get_streams'],
+                'classteacher': ['student', 'report', 'mark', 'get_grade_streams', 'teacher_streams', 'streams', 'get_streams'],
+                'teacher': ['mark', 'get_streams', 'streams']
             }
 
             allowed_objects = object_permissions.get(user_role, [])
@@ -2131,6 +2138,146 @@ def create_app(config_name='default'):
 
         except Exception as e:
             return f"❌ Error during database repair: {str(e)}"
+
+    @app.route('/debug/check_teachers')
+    def debug_check_teachers():
+        """Debug route to check all teachers in the database."""
+        try:
+            from .models.user import Teacher
+            from .services.auth_service import authenticate_teacher
+
+            result = "<h2>👥 Teachers Database Check</h2>"
+            result += "<style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }</style>"
+
+            # Get all teachers
+            teachers = Teacher.query.all()
+            result += f"<h3>📊 Total Teachers: {len(teachers)}</h3>"
+
+            if teachers:
+                result += "<table><tr><th>ID</th><th>Username</th><th>Password</th><th>Role</th><th>First Name</th><th>Last Name</th><th>Active</th></tr>"
+                for teacher in teachers:
+                    result += f"<tr><td>{teacher.id}</td><td>{teacher.username}</td><td>{teacher.password}</td><td>{teacher.role}</td><td>{teacher.first_name or 'N/A'}</td><td>{teacher.last_name or 'N/A'}</td><td>{'✅' if teacher.is_active else '❌'}</td></tr>"
+                result += "</table>"
+            else:
+                result += "<p>❌ No teachers found in database</p>"
+
+            # Test Carol's authentication
+            result += "<h3>🔐 Carol Authentication Test</h3>"
+            carol_teacher = authenticate_teacher('carol', 'carol123', 'teacher')
+            if carol_teacher:
+                result += f"<p style='color: green;'>✅ Carol authentication successful! Teacher ID: {carol_teacher.id}</p>"
+            else:
+                result += f"<p style='color: red;'>❌ Carol authentication failed</p>"
+
+                # Check if Carol exists with different role
+                carol_any_role = Teacher.query.filter_by(username='carol').first()
+                if carol_any_role:
+                    result += f"<p style='color: orange;'>⚠️ Found Carol with role: {carol_any_role.role} (expected: teacher)</p>"
+                else:
+                    result += f"<p style='color: red;'>❌ Carol not found in database at all</p>"
+
+            result += f"<p><a href='/teacher_login'>🔗 Go to Teacher Login</a></p>"
+            result += f"<p><a href='/debug/fix_carol_password'>🔧 Fix Carol's Password</a></p>"
+            return result
+
+        except Exception as e:
+            return f"❌ Error checking teachers: {str(e)}"
+
+    @app.route('/debug/fix_carol_password')
+    def debug_fix_carol_password():
+        """Debug route to fix Carol's password."""
+        try:
+            from .models.user import Teacher
+            from .extensions import db
+
+            result = "<h2>🔧 Fix Carol's Password</h2>"
+
+            # Find Carol
+            carol = Teacher.query.filter_by(username='carol').first()
+            if not carol:
+                result += "<p style='color: red;'>❌ Carol not found in database</p>"
+                return result
+
+            # Update Carol's password to plain text
+            carol.password = 'carol123'
+            db.session.commit()
+
+            result += f"<p style='color: green;'>✅ Carol's password updated to plain text 'carol123'</p>"
+            result += f"<p>Carol can now login with:</p>"
+            result += f"<ul><li><strong>Username:</strong> carol</li><li><strong>Password:</strong> carol123</li><li><strong>Role:</strong> {carol.role}</li></ul>"
+            result += f"<p><a href='/teacher_login'>🔗 Try Teacher Login Now</a></p>"
+            result += f"<p><a href='/debug/check_teachers'>🔍 Check Teachers Again</a></p>"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error fixing Carol's password: {str(e)}"
+
+    @app.route('/debug/migrate_passwords')
+    def debug_migrate_passwords():
+        """Debug route to migrate all plain text passwords to hashed passwords."""
+        try:
+            from .models.user import Teacher
+            from .extensions import db
+
+            result = "<h2>🔐 Password Migration</h2>"
+            result += "<style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }</style>"
+
+            # Get all teachers
+            teachers = Teacher.query.all()
+            result += f"<h3>📊 Total Teachers: {len(teachers)}</h3>"
+
+            if not teachers:
+                result += "<p>❌ No teachers found in database</p>"
+                return result
+
+            # Check which passwords need migration
+            plain_text_teachers = []
+            hashed_teachers = []
+
+            for teacher in teachers:
+                if teacher.is_password_hashed():
+                    hashed_teachers.append(teacher)
+                else:
+                    plain_text_teachers.append(teacher)
+
+            result += f"<h3>📈 Migration Status:</h3>"
+            result += f"<ul><li>✅ Already Hashed: {len(hashed_teachers)}</li><li>🔄 Need Migration: {len(plain_text_teachers)}</li></ul>"
+
+            if plain_text_teachers:
+                result += "<h3>🔄 Migrating Plain Text Passwords:</h3>"
+                result += "<table><tr><th>Username</th><th>Role</th><th>Old Password</th><th>Status</th></tr>"
+
+                migrated_count = 0
+                for teacher in plain_text_teachers:
+                    try:
+                        old_password = teacher.password
+                        teacher.set_password(old_password)  # This will hash the password
+                        db.session.add(teacher)
+                        migrated_count += 1
+                        result += f"<tr><td>{teacher.username}</td><td>{teacher.role}</td><td>{old_password}</td><td style='color: green;'>✅ Migrated</td></tr>"
+                    except Exception as e:
+                        result += f"<tr><td>{teacher.username}</td><td>{teacher.role}</td><td>{teacher.password}</td><td style='color: red;'>❌ Error: {str(e)}</td></tr>"
+
+                result += "</table>"
+
+                # Commit all changes
+                try:
+                    db.session.commit()
+                    result += f"<p style='color: green;'>✅ Successfully migrated {migrated_count} passwords!</p>"
+                except Exception as e:
+                    db.session.rollback()
+                    result += f"<p style='color: red;'>❌ Error committing changes: {str(e)}</p>"
+            else:
+                result += "<p style='color: green;'>✅ All passwords are already hashed!</p>"
+
+            result += f"<p><a href='/debug/check_teachers'>🔍 Check Teachers Again</a></p>"
+            result += f"<p><a href='/teacher_login'>🔗 Try Teacher Login</a></p>"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error during password migration: {str(e)}"
 
 
 

@@ -130,7 +130,11 @@ def create_default_users():
     ]
     
     for user_data in default_users:
+        # Extract password before creating teacher
+        password = user_data.pop('password')
         teacher = Teacher(**user_data)
+        # Use the new password hashing method
+        teacher.set_password(password)
         db.session.add(teacher)
     
     logger.info("Default users created")

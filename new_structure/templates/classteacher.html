@@ -4874,11 +4874,39 @@
                 const gradeLevel = grade.replace('Grade ', '');
                 console.log('Extracted grade level:', gradeLevel);
 
-                const apiUrl = `/classteacher/get_streams_by_level/${gradeLevel}`;
+                // Function to get the correct streams API endpoint based on current context
+                function getStreamsEndpoint(grade) {
+                    // Check if we're in headteacher universal context
+                    if (window.location.pathname.includes('/universal/')) {
+                        return `/universal/api/streams/${grade}`;
+                    }
+                    // Check if we're in headteacher context (admin routes)
+                    else if (window.location.pathname.includes('/headteacher/') ||
+                        window.location.pathname.includes('/admin/')) {
+                        return `/admin/api/streams_by_level/${grade}`;
+                    }
+                    // Default to classteacher endpoint
+                    return `/classteacher/get_streams_by_level/${grade}`;
+                }
+
+                // Function to extract streams from response data (handles different response formats)
+                function extractStreamsFromResponse(data) {
+                    // Handle different response formats
+                    if (data.streams) {
+                        return data.streams; // Admin blueprint format: {streams: [...]}
+                    } else if (data.success && data.streams) {
+                        return data.streams; // Universal blueprint format: {success: true, streams: [...]}
+                    }
+                    return []; // Fallback to empty array
+                }
+
+                const apiUrl = getStreamsEndpoint(gradeLevel);
                 console.log('Making API call to:', apiUrl);
 
                 // Fetch streams for this grade
-                fetch(apiUrl)
+                fetch(apiUrl, {
+                    credentials: 'same-origin'
+                })
                     .then(response => {
                         console.log('Response status:', response.status);
                         console.log('Response headers:', response.headers);
@@ -4907,7 +4935,8 @@
                         console.log('Data streams:', data.streams);
                         console.log('Number of streams:', data.streams ? data.streams.length : 0);
 
-                        if (data.success && data.streams && data.streams.length > 0) {
+                        const streams = extractStreamsFromResponse(data);
+                        if (streams && streams.length > 0) {
                             console.log('Processing streams...');
 
                             // Clear any existing options except the first one (to avoid duplicates)
@@ -4918,7 +4947,7 @@
                             // Create a Set to track unique stream names and avoid duplicates
                             const addedStreams = new Set();
 
-                            data.streams.forEach((stream, index) => {
+                            streams.forEach((stream, index) => {
                                 const streamName = stream.name;
                                 const streamValue = `Stream ${streamName}`;
 
@@ -4956,8 +4985,54 @@
                     })
                     .catch(error => {
                         console.error('Error fetching streams:', error);
-                        formGroup.classList.add('error');
-                        alert(`Network error: ${error.message}`);
+                        // Fallback: try the other endpoint if first one fails
+                        const fallbackEndpoint = gradeLevel ?
+                            (apiUrl.includes('/universal/') ?
+                                `/classteacher/get_streams_by_level/${gradeLevel}` :
+                                apiUrl.includes('/admin/') ?
+                                `/classteacher/get_streams_by_level/${gradeLevel}` :
+                                `/universal/api/streams/${gradeLevel}`) : null;
+
+                        if (fallbackEndpoint) {
+                            console.log("Classteacher.html trying fallback endpoint:", fallbackEndpoint);
+                            fetch(fallbackEndpoint, {
+                                credentials: 'same-origin'
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    const streams = extractStreamsFromResponse(data);
+                                    if (streams && streams.length > 0) {
+                                        // Clear any existing options except the first one
+                                        while (streamSelect.options.length > 1) {
+                                            streamSelect.removeChild(streamSelect.lastChild);
+                                        }
+
+                                        const addedStreams = new Set();
+                                        streams.forEach((stream, index) => {
+                                            const streamName = stream.name;
+                                            const streamValue = `Stream ${streamName}`;
+
+                                            if (!addedStreams.has(streamName)) {
+                                                const option = document.createElement('option');
+                                                option.value = streamValue;
+                                                option.textContent = streamValue;
+                                                streamSelect.appendChild(option);
+                                                addedStreams.add(streamName);
+                                            }
+                                        });
+                                        formGroup.classList.add('success');
+                                        formGroup.classList.remove('error');
+                                    }
+                                })
+                                .catch(fallbackError => {
+                                    console.error('Classteacher.html fallback endpoint also failed:', fallbackError);
+                                    formGroup.classList.add('error');
+                                    alert(`Network error: ${error.message}`);
+                                });
+                        } else {
+                            formGroup.classList.add('error');
+                            alert(`Network error: ${error.message}`);
+                        }
                     });
             } else {
                 console.log('No grade selected, clearing form group success state');
@@ -4969,7 +5044,9 @@
         function fetchSubjectsForEducationLevel(educationLevel) {
             // This function will be called when the education level changes
             // or when the grade changes (via fetchStreams)
-            fetch(`/classteacher/get_subjects_by_education_level/${educationLevel}`)
+            fetch(`/classteacher/get_subjects_by_education_level/${educationLevel}`, {
+                credentials: 'same-origin'
+            })
                 .then(response => response.json())
                 .then(data => {
                     console.log('Fetched subjects for education level:', educationLevel, data);
@@ -5028,7 +5105,9 @@
                 statusList.innerHTML = '<p>Checking stream status...</p>';
 
                 // Fetch stream status from the server
-                fetch(`/classteacher/api/check_stream_status/${grade}/${term}/${assessmentType}`)
+                fetch(`/classteacher/api/check_stream_status/${grade}/${term}/${assessmentType}`, {
+                    credentials: 'same-origin'
+                })
                     .then(response => response.json())
                     .then(data => {
                         statusList.innerHTML = '';
@@ -5134,7 +5213,38 @@
                 const gradeLevel = grade.replace('Grade ', '');
                 console.log('Extracted bulk grade level:', gradeLevel);
 
-                fetch(`/classteacher/get_streams_by_level/${gradeLevel}`)
+                // Function to get the correct streams API endpoint based on current context
+                function getBulkStreamsEndpoint(grade) {
+                    // Check if we're in headteacher universal context
+                    if (window.location.pathname.includes('/universal/')) {
+                        return `/universal/api/streams/${grade}`;
+                    }
+                    // Check if we're in headteacher context (admin routes)
+                    else if (window.location.pathname.includes('/headteacher/') ||
+                        window.location.pathname.includes('/admin/')) {
+                        return `/admin/api/streams_by_level/${grade}`;
+                    }
+                    // Default to classteacher endpoint
+                    return `/classteacher/get_streams_by_level/${grade}`;
+                }
+
+                // Function to extract streams from response data (handles different response formats)
+                function extractBulkStreamsFromResponse(data) {
+                    // Handle different response formats
+                    if (data.streams) {
+                        return data.streams; // Admin blueprint format: {streams: [...]}
+                    } else if (data.success && data.streams) {
+                        return data.streams; // Universal blueprint format: {success: true, streams: [...]}
+                    }
+                    return []; // Fallback to empty array
+                }
+
+                const bulkApiUrl = getBulkStreamsEndpoint(gradeLevel);
+                console.log('Making bulk API call to:', bulkApiUrl);
+
+                fetch(bulkApiUrl, {
+                    credentials: 'same-origin'
+                })
                     .then(response => {
                         console.log('Bulk streams response status:', response.status);
                         if (response.status === 401) {
@@ -5149,7 +5259,8 @@
                         if (!data) return; // Handle redirect case
 
                         console.log('Received bulk streams data:', data);
-                        if (data.success && data.streams) {
+                        const streams = extractBulkStreamsFromResponse(data);
+                        if (streams && streams.length > 0) {
                             // Clear any existing options except the first one (to avoid duplicates)
                             while (streamSelect.options.length > 1) {
                                 streamSelect.removeChild(streamSelect.lastChild);
@@ -5158,7 +5269,7 @@
                             // Create a Set to track unique stream names and avoid duplicates
                             const addedStreams = new Set();
 
-                            data.streams.forEach(stream => {
+                            streams.forEach(stream => {
                                 const streamName = stream.name;
                                 const streamValue = `Stream ${streamName}`;
 
@@ -5186,7 +5297,52 @@
                     })
                     .catch(error => {
                         console.error('Error fetching bulk streams:', error);
-                        formGroup.classList.add('error');
+                        // Fallback: try the other endpoint if first one fails
+                        const fallbackEndpoint = gradeLevel ?
+                            (bulkApiUrl.includes('/universal/') ?
+                                `/classteacher/get_streams_by_level/${gradeLevel}` :
+                                bulkApiUrl.includes('/admin/') ?
+                                `/classteacher/get_streams_by_level/${gradeLevel}` :
+                                `/universal/api/streams/${gradeLevel}`) : null;
+
+                        if (fallbackEndpoint) {
+                            console.log("Bulk streams trying fallback endpoint:", fallbackEndpoint);
+                            fetch(fallbackEndpoint, {
+                                credentials: 'same-origin'
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    const streams = extractBulkStreamsFromResponse(data);
+                                    if (streams && streams.length > 0) {
+                                        // Clear any existing options except the first one
+                                        while (streamSelect.options.length > 1) {
+                                            streamSelect.removeChild(streamSelect.lastChild);
+                                        }
+
+                                        const addedStreams = new Set();
+                                        streams.forEach(stream => {
+                                            const streamName = stream.name;
+                                            const streamValue = `Stream ${streamName}`;
+
+                                            if (!addedStreams.has(streamName)) {
+                                                const option = document.createElement('option');
+                                                option.value = streamValue;
+                                                option.textContent = streamValue;
+                                                streamSelect.appendChild(option);
+                                                addedStreams.add(streamName);
+                                            }
+                                        });
+                                        formGroup.classList.add('success');
+                                        formGroup.classList.remove('error');
+                                    }
+                                })
+                                .catch(fallbackError => {
+                                    console.error('Bulk streams fallback endpoint also failed:', fallbackError);
+                                    formGroup.classList.add('error');
+                                });
+                        } else {
+                            formGroup.classList.add('error');
+                        }
                     });
             } else {
                 formGroup.classList.remove('success');
@@ -5704,7 +5860,9 @@
         function loadPermissionStatus() {
             const container = document.getElementById('permission-status-content');
 
-            fetch('/permission/my_permissions_api')
+            fetch('/permission/my_permissions_api', {
+                credentials: 'same-origin'
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -5974,7 +6132,9 @@
 
         function loadGradesForRequest() {
             // Load available grades
-            fetch('/permission/class_structure')
+            fetch('/permission/class_structure', {
+                credentials: 'same-origin'
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
