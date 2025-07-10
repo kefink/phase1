@@ -245,8 +245,13 @@ def dashboard():
 
         # Handle submit marks request (save marks - adapted from classteacher)
         elif "submit_marks" in request.form:
+            print(f"DEBUG: Submit marks request received")
+            print(f"DEBUG: Form data: {dict(request.form)}")
+            print(f"DEBUG: Required fields - education_level: {education_level}, subject: {subject}, grade: {grade}, stream: {stream}, term: {term}, assessment_type: {assessment_type}, total_marks: {total_marks}")
+
             if not all([education_level, subject, grade, stream, term, assessment_type, total_marks > 0]):
                 error_message = "Missing required information"
+                print(f"DEBUG: Missing required information - stopping processing")
             else:
                 # Extract stream letter and get objects
                 stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
@@ -286,6 +291,9 @@ def dashboard():
                     else:
                         marks_added = 0
                         marks_updated = 0
+
+                        print(f"DEBUG: Starting marks processing for {len(students)} students")
+                        print(f"DEBUG: Subject object: {subject_obj.name}, is_composite: {subject_obj.is_composite}")
 
                         try:
                             # Check if this is a composite subject (using proven classteacher logic)
@@ -665,6 +673,10 @@ def check_composite_subject(subject, education_level):
     try:
         from ..services.flexible_subject_service import FlexibleSubjectService
 
+        # Get subject object to include ID
+        subject_obj = Subject.query.filter_by(name=subject).first()
+        subject_id = subject_obj.id if subject_obj else None
+
         # Check if subject is composite
         is_composite = FlexibleSubjectService.is_subject_composite(subject, education_level)
 
@@ -676,6 +688,7 @@ def check_composite_subject(subject, education_level):
             return jsonify({
                 'success': True,
                 'is_composite': True,
+                'subject': {'id': subject_id, 'name': subject},
                 'subject_type': FlexibleSubjectService.detect_subject_type(subject),
                 'components': components,
                 'config': config
@@ -684,6 +697,7 @@ def check_composite_subject(subject, education_level):
             return jsonify({
                 'success': True,
                 'is_composite': False,
+                'subject': {'id': subject_id, 'name': subject},
                 'subject_type': FlexibleSubjectService.detect_subject_type(subject),
                 'components': [],
                 'config': None

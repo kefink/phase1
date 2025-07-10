@@ -4184,11 +4184,20 @@
                 .then(data => {
                     debugLog('📊 Subject configuration: ' + JSON.stringify(data));
 
-                    if (data.success && data.is_composite) {
-                        debugLog('🎯 Setting up composite subject marks entry');
-                        setupCompositeMarksEntry(marksCells, data);
+                    if (data.success) {
+                        // Update currentSubjectInfo with API response
+                        currentSubjectInfo = data.subject;
+                        debugLog('📚 Updated currentSubjectInfo: ' + JSON.stringify(currentSubjectInfo));
+
+                        if (data.is_composite) {
+                            debugLog('🎯 Setting up composite subject marks entry');
+                            setupCompositeMarksEntry(marksCells, data);
+                        } else {
+                            debugLog('🎯 Setting up regular subject marks entry');
+                            setupRegularMarksEntry(marksCells);
+                        }
                     } else {
-                        debugLog('🎯 Setting up regular subject marks entry');
+                        debugLog('❌ API error: ' + data.message);
                         setupRegularMarksEntry(marksCells);
                     }
                 })
@@ -4241,8 +4250,12 @@
 
                 // Add hidden fields for form submission
                 const subjectId = currentSubjectInfo ? currentSubjectInfo.id : '1';
+                const hiddenFieldName = `hidden_percentage_${studentKey}_${subjectId}`;
+
+                debugLog(`🎯 Creating composite hidden field: ${hiddenFieldName} for student: ${studentKey}`);
+
                 cellHTML += `
-                    <input type="hidden" name="hidden_percentage_${studentKey}_${subjectId}" id="hidden_percentage_${studentKey}_${subjectId}" value="0">
+                    <input type="hidden" name="${hiddenFieldName}" id="${hiddenFieldName}" value="0">
                 `;
 
                 cell.innerHTML = cellHTML;
@@ -4257,22 +4270,30 @@
             // Get subject ID from currentSubjectInfo or fallback to form value
             let subjectId = currentSubjectInfo ? currentSubjectInfo.id : null;
 
+            debugLog(`🔍 Setting up regular marks entry - currentSubjectInfo: ${JSON.stringify(currentSubjectInfo)}`);
+            debugLog(`🔍 Subject ID from currentSubjectInfo: ${subjectId}`);
+
             // Fallback: try to get subject ID from the subject name
             if (!subjectId) {
                 const subjectName = document.getElementById('subject').value;
                 // For now, use a simple hash of the subject name as fallback
                 subjectId = subjectName ? subjectName.replace(/\s+/g, '').toLowerCase() : '1';
                 debugLog(`⚠️ Using fallback subject ID: ${subjectId} for subject: ${subjectName}`);
+            } else {
+                debugLog(`✅ Using subject ID from API: ${subjectId}`);
             }
 
             marksCells.forEach(cell => {
                 const studentKey = cell.getAttribute('data-student');
+                const fieldName = `mark_${studentKey}_${subjectId}`;
+
+                debugLog(`🎯 Creating input field: ${fieldName} for student: ${studentKey}`);
 
                 const cellHTML = `
                     <div class="simplified-mark-entry">
                         <div class="mark-input-container">
                             <input type="number"
-                                   name="mark_${studentKey}_${subjectId}"
+                                   name="${fieldName}"
                                    min="0"
                                    max="${totalMarks}"
                                    placeholder="0-${totalMarks}"
@@ -5048,6 +5069,34 @@
             form.submit();
         }
 
+        // Debug form submission
+        function debugFormSubmission() {
+            debugLog('🔍 DEBUG: Form submission triggered');
+            const form = document.getElementById('newMarksForm');
+            if (form) {
+                const formData = new FormData(form);
+                debugLog('📋 Form fields being submitted:');
+                for (let [key, value] of formData.entries()) {
+                    if (key.includes('mark_') || key.includes('percentage_')) {
+                        debugLog(`  ${key}: ${value}`);
+                    }
+                }
+
+                // Count mark fields
+                let markFieldCount = 0;
+                let filledMarkFields = 0;
+                for (let [key, value] of formData.entries()) {
+                    if (key.includes('mark_')) {
+                        markFieldCount++;
+                        if (value && value.trim() !== '' && parseFloat(value) > 0) {
+                            filledMarkFields++;
+                        }
+                    }
+                }
+                debugLog(`📊 Mark fields: ${markFieldCount} total, ${filledMarkFields} filled`);
+            }
+        }
+
         // Add click handlers to pagination buttons
         document.addEventListener('DOMContentLoaded', function() {
             const paginationBtns = document.querySelectorAll('.pagination-btn[data-page]');
@@ -5058,6 +5107,15 @@
                     goToPage(pageNum);
                 });
             });
+
+            // Add debug handler to submit button
+            const submitBtn = document.querySelector('button[name="submit_marks"]');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function(e) {
+                    debugLog('🚀 Submit marks button clicked');
+                    debugFormSubmission();
+                });
+            }
         });
     </script>
 </body>
