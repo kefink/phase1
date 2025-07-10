@@ -271,6 +271,26 @@
           display: none;
         }
 
+        /* Show print header */
+        .print-header {
+          display: block !important;
+        }
+
+        /* Clean print layout */
+        body {
+          background: white !important;
+          margin: 0;
+          padding: 0;
+        }
+
+        .report-container {
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          margin: 0 !important;
+          padding: 20px !important;
+          background: white !important;
+        }
+
         /* Remove all browser elements */
         @page {
           margin: 0.5in;
@@ -469,7 +489,7 @@
       🖨️ Print Report
     </button>
 
-    <!-- Print-only header with date/time -->
+    <!-- Print-only header with school logo and info -->
     <div class="print-header" style="display: none">
       <div
         style="
@@ -477,24 +497,77 @@
           margin-bottom: 20px;
           padding: 15px;
           border-bottom: 2px solid #4a90e2;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 20px;
         "
       >
-        <h2 style="margin: 0; color: #2c3e50; font-size: 20px">
-          Kirima Primary School
-        </h2>
-        <p style="margin: 5px 0; color: #6c757d; font-size: 14px">
-          Subject Performance Analysis Report
-        </p>
-        <p style="margin: 0; font-size: 11px; color: #6c757d">
-          Generated on: <span id="print-date"></span>
-        </p>
+        <!-- School Logo -->
+        {% if school_info.logo_url and school_info.logo_url !=
+        '/static/images/default_logo.png' %}
+        <img
+          src="{{ school_info.logo_url }}"
+          alt="{{ school_info.school_name|default('School') }} Logo"
+          style="height: 60px; width: auto; border-radius: 8px"
+        />
+        {% else %}
+        <img
+          src="{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}"
+          alt="{{ school_info.school_name|default('School') }} Logo"
+          style="height: 60px; width: auto; border-radius: 8px"
+          onerror="this.style.display='none'"
+        />
+        {% endif %}
+
+        <div style="text-align: center">
+          <h2 style="margin: 0; color: #2c3e50; font-size: 20px">
+            {{ school_info.school_name|default('Hillview School') }}
+          </h2>
+          <p style="margin: 5px 0; color: #6c757d; font-size: 14px">
+            Subject Performance Analysis Report
+          </p>
+          <p style="margin: 0; font-size: 11px; color: #6c757d">
+            Generated on: <span id="print-date"></span>
+          </p>
+        </div>
       </div>
     </div>
 
     <div class="report-container">
       <div class="report-header">
-        <div class="school-name">Kirima Primary School</div>
-        <div class="report-title">📈 Enhanced Subject Analysis Report</div>
+        <!-- School Logo and Name -->
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+          "
+        >
+          {% if school_info.logo_url and school_info.logo_url !=
+          '/static/images/default_logo.png' %}
+          <img
+            src="{{ school_info.logo_url }}"
+            alt="{{ school_info.school_name|default('School') }} Logo"
+            style="height: 80px; width: auto; border-radius: 8px"
+          />
+          {% else %}
+          <img
+            src="{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}"
+            alt="{{ school_info.school_name|default('School') }} Logo"
+            style="height: 80px; width: auto; border-radius: 8px"
+            onerror="this.style.display='none'"
+          />
+          {% endif %}
+          <div>
+            <div class="school-name">
+              {{ school_info.school_name|default('Hillview School') }}
+            </div>
+            <div class="report-title">📈 Enhanced Subject Analysis Report</div>
+          </div>
+        </div>
 
         <div class="report-details">
           <div class="detail-card">
@@ -652,10 +725,64 @@
         <p>No marks have been submitted for this subject assessment yet.</p>
       </div>
       {% endif %}
+
+      <!-- Teacher Signature Section -->
+      <div
+        style="margin-top: 40px; padding: 20px; border-top: 2px solid #e9ecef"
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+          "
+        >
+          <div style="flex: 1">
+            <p style="margin: 0; font-weight: bold; color: #2c3e50">
+              Subject Teacher:
+            </p>
+            <p style="margin: 5px 0; font-size: 16px; color: #495057">
+              {{ teacher_name|default('_____________________') }}
+            </p>
+            <div style="margin-top: 30px">
+              <p style="margin: 0; font-weight: bold; color: #2c3e50">
+                Signature:
+              </p>
+              <div
+                style="
+                  border-bottom: 2px solid #6c757d;
+                  width: 200px;
+                  margin-top: 20px;
+                "
+              ></div>
+            </div>
+          </div>
+          <div style="flex: 1; text-align: right">
+            <p style="margin: 0; font-weight: bold; color: #2c3e50">Date:</p>
+            <p
+              style="margin: 5px 0; font-size: 16px; color: #495057"
+              id="report-date"
+            ></p>
+            <div style="margin-top: 30px">
+              <p style="margin: 0; font-weight: bold; color: #2c3e50">
+                Headteacher's Signature:
+              </p>
+              <div
+                style="
+                  border-bottom: 2px solid #6c757d;
+                  width: 200px;
+                  margin-top: 20px;
+                  margin-left: auto;
+                "
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-      // Set current date and time for print
+      // Set current date and time for print and report
       function setPrintDate() {
         const now = new Date();
         const options = {
@@ -668,6 +795,18 @@
         };
         const dateString = now.toLocaleDateString("en-US", options);
         document.getElementById("print-date").textContent = dateString;
+
+        // Also set the report date (just date, no time)
+        const dateOptions = {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        };
+        const reportDateString = now.toLocaleDateString("en-US", dateOptions);
+        const reportDateElement = document.getElementById("report-date");
+        if (reportDateElement) {
+          reportDateElement.textContent = reportDateString;
+        }
       }
 
       // Add animation to grade bars on load

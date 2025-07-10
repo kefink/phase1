@@ -4273,12 +4273,12 @@
             debugLog(`🔍 Setting up regular marks entry - currentSubjectInfo: ${JSON.stringify(currentSubjectInfo)}`);
             debugLog(`🔍 Subject ID from currentSubjectInfo: ${subjectId}`);
 
-            // Fallback: try to get subject ID from the subject name
+            // CRITICAL FIX: If no subject ID from API, use subject name as fallback
+            // This matches what the form is actually sending
             if (!subjectId) {
                 const subjectName = document.getElementById('subject').value;
-                // For now, use a simple hash of the subject name as fallback
-                subjectId = subjectName ? subjectName.replace(/\s+/g, '').toLowerCase() : '1';
-                debugLog(`⚠️ Using fallback subject ID: ${subjectId} for subject: ${subjectName}`);
+                subjectId = subjectName; // Use subject name directly
+                debugLog(`⚠️ Using subject name as ID: ${subjectId}`);
             } else {
                 debugLog(`✅ Using subject ID from API: ${subjectId}`);
             }

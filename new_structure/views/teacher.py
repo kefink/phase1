@@ -403,6 +403,7 @@ def dashboard():
                                     # Try multiple field naming patterns
                                     possible_keys = [
                                         f"mark_{student_key}_{subject_obj.id}",
+                                        f"mark_{student_key}_{subject_obj.name}",  # Add subject name pattern
                                         f"mark_{student_key}_1",
                                         f"mark_{student_key}",
                                         f"mark_{student_key}_{subject_obj.name.replace(' ', '').lower()}"
@@ -641,6 +642,15 @@ def generate_subject_report():
             lowest_percentage = 0
             grade_distribution = {'E.E': 0, 'M.E': 0, 'A.E': 0, 'B.E': 0}
 
+        # Get teacher information
+        teacher_id = session.get('teacher_id')
+        teacher = Teacher.query.get(teacher_id) if teacher_id else None
+        teacher_name = teacher.name if teacher else "Unknown Teacher"
+
+        # Get school information
+        from ..services.school_config_service import SchoolConfigService
+        school_info = SchoolConfigService.get_school_info()
+
         # Prepare report data
         report_data = {
             'subject': subject,
@@ -657,7 +667,9 @@ def generate_subject_report():
                 'lowest_percentage': round(lowest_percentage, 2),
                 'grade_distribution': grade_distribution
             },
-            'subject_obj': subject_obj
+            'subject_obj': subject_obj,
+            'teacher_name': teacher_name,
+            'school_info': school_info
         }
 
         return render_template('subject_report.html', **report_data)
