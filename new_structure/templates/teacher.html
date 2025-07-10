@@ -2188,6 +2188,80 @@
             border: 1px solid var(--border-color);
         }
 
+        /* Pagination Styling */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: var(--spacing-xl) 0;
+            gap: var(--spacing-sm);
+        }
+
+        .pagination-info {
+            background: var(--color-glass-teal);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: var(--spacing-md);
+            text-align: center;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: var(--spacing-xs);
+            align-items: center;
+        }
+
+        .pagination-btn {
+            background: var(--color-glass-sage);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            min-width: 40px;
+            justify-content: center;
+        }
+
+        .pagination-btn:hover {
+            background: var(--color-glass-mint);
+            transform: translateY(-2px);
+            box-shadow: var(--glass-shadow);
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .pagination-btn.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .pagination-btn:disabled,
+        .pagination-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .page-numbers {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
         .table-responsive table {
             width: 100%;
             border-collapse: collapse;
@@ -3280,6 +3354,15 @@
                             </div>
                         </div>
 
+                        <!-- Pagination Info -->
+                        {% if pagination_info and pagination_info.total > pagination_info.per_page %}
+                        <div class="pagination-info">
+                            📊 Showing {{ ((pagination_info.page - 1) * pagination_info.per_page) + 1 }} -
+                            {{ pagination_info.page * pagination_info.per_page if pagination_info.page * pagination_info.per_page <= pagination_info.total else pagination_info.total }}
+                            of {{ pagination_info.total }} students
+                        </div>
+                        {% endif %}
+
                         <div class="marks-grid-body">
                             {% for student in students %}
                             <div class="student-marks-row" data-student="{{ student.id }}">
@@ -3287,7 +3370,7 @@
                                     <div class="student-avatar">{{ student.name[0] }}</div>
                                     <div class="student-details">
                                         <div class="student-name">{{ student.name }}</div>
-                                        <div class="student-meta">Student #{{ loop.index }}</div>
+                                        <div class="student-meta">Student #{{ ((pagination_info.page - 1) * pagination_info.per_page) + loop.index if pagination_info else loop.index }}</div>
                                     </div>
                                 </div>
                                 <div class="marks-input-column">
@@ -3364,6 +3447,50 @@
                             </div>
                             {% endfor %}
                         </div>
+
+                        <!-- Pagination Controls -->
+                        {% if pagination_info and pagination_info.pages > 1 %}
+                        <div class="pagination-container">
+                            <div class="pagination-controls">
+                                <!-- Previous Page -->
+                                {% if pagination_info.has_prev %}
+                                <a href="#" class="pagination-btn" data-page="{{ pagination_info.prev_num }}" onclick="goToPage({{ pagination_info.prev_num }}); return false;">
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </a>
+                                {% else %}
+                                <span class="pagination-btn disabled">
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </span>
+                                {% endif %}
+
+                                <!-- Page Numbers -->
+                                <div class="page-numbers">
+                                    {% for page_num in range(1, pagination_info.pages + 1) %}
+                                        {% if page_num == pagination_info.page %}
+                                        <span class="pagination-btn active">{{ page_num }}</span>
+                                        {% elif page_num <= 3 or page_num > pagination_info.pages - 3 or (page_num >= pagination_info.page - 1 and page_num <= pagination_info.page + 1) %}
+                                        <a href="#" class="pagination-btn" data-page="{{ page_num }}" onclick="goToPage({{ page_num }}); return false;">{{ page_num }}</a>
+                                        {% elif page_num == 4 and pagination_info.page > 5 %}
+                                        <span class="pagination-btn disabled">...</span>
+                                        {% elif page_num == pagination_info.pages - 3 and pagination_info.page < pagination_info.pages - 4 %}
+                                        <span class="pagination-btn disabled">...</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+
+                                <!-- Next Page -->
+                                {% if pagination_info.has_next %}
+                                <a href="#" class="pagination-btn" data-page="{{ pagination_info.next_num }}" onclick="goToPage({{ pagination_info.next_num }}); return false;">
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </a>
+                                {% else %}
+                                <span class="pagination-btn disabled">
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- FORM ACTIONS -->
@@ -3385,8 +3512,14 @@
                         <div class="form-summary">
                             <div class="summary-stat">
                                 <span class="stat-label">Total Students:</span>
-                                <span class="stat-value">{{ students|length }}</span>
+                                <span class="stat-value">{{ pagination_info.total if pagination_info else students|length }}</span>
                             </div>
+                            {% if pagination_info and pagination_info.total > pagination_info.per_page %}
+                            <div class="summary-stat">
+                                <span class="stat-label">Current Page:</span>
+                                <span class="stat-value">{{ students|length }} of {{ pagination_info.total }}</span>
+                            </div>
+                            {% endif %}
                             <div class="summary-stat">
                                 <span class="stat-label">Completed:</span>
                                 <span class="stat-value" id="completedCount">0</span>
@@ -4874,6 +5007,58 @@
         // Initialize mobile nav toggle visibility
         updateTeacherMobileNavToggle();
         window.addEventListener('resize', updateTeacherMobileNavToggle);
+
+        // Pagination functionality
+        function goToPage(pageNum) {
+            // Create a hidden form to preserve current form state and navigate to page
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ url_for("teacher.dashboard") }}';
+
+            // Add all current form values
+            const currentForm = document.getElementById('newMarksForm') || document.querySelector('form');
+            if (currentForm) {
+                const formData = new FormData(currentForm);
+                for (let [key, value] of formData.entries()) {
+                    if (key !== 'page') { // Don't duplicate page parameter
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        form.appendChild(input);
+                    }
+                }
+            }
+
+            // Add page parameter
+            const pageInput = document.createElement('input');
+            pageInput.type = 'hidden';
+            pageInput.name = 'page';
+            pageInput.value = pageNum;
+            form.appendChild(pageInput);
+
+            // Add upload_marks to maintain state
+            const uploadInput = document.createElement('input');
+            uploadInput.type = 'hidden';
+            uploadInput.name = 'upload_marks';
+            uploadInput.value = '1';
+            form.appendChild(uploadInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Add click handlers to pagination buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const paginationBtns = document.querySelectorAll('.pagination-btn[data-page]');
+            paginationBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const pageNum = this.getAttribute('data-page');
+                    goToPage(pageNum);
+                });
+            });
+        });
     </script>
 </body>
 </html>

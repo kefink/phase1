@@ -153,7 +153,8 @@ def dashboard():
     show_subject_report = False
 
     # Get recent reports
-    recent_reports = []  # Placeholder
+    recent_reports = []
+    pagination_info = None  # Placeholder
 
     # Handle form submission
     if request.method == "POST":
@@ -211,8 +212,28 @@ def dashboard():
                 stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
 
                 if stream_obj:
-                    # Get students for this stream
-                    students = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name).all()
+                    # Get pagination parameters
+                    page = request.form.get('page', 1, type=int)
+                    per_page = 20  # Students per page
+
+                    # Get students for this stream with pagination
+                    students_query = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name)
+                    students_pagination = students_query.paginate(
+                        page=page, per_page=per_page, error_out=False
+                    )
+                    students = students_pagination.items
+
+                    # Pagination info
+                    pagination_info = {
+                        'page': students_pagination.page,
+                        'pages': students_pagination.pages,
+                        'per_page': students_pagination.per_page,
+                        'total': students_pagination.total,
+                        'has_prev': students_pagination.has_prev,
+                        'prev_num': students_pagination.prev_num,
+                        'has_next': students_pagination.has_next,
+                        'next_num': students_pagination.next_num
+                    }
 
                     if students:
                         show_students = True
@@ -237,8 +258,28 @@ def dashboard():
                 if not (stream_obj and subject_obj and term_obj and assessment_type_obj):
                     error_message = "Invalid selection for grade, stream, subject, term, or assessment type"
                 else:
-                    # Get students for this stream
-                    students = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name).all()
+                    # Get pagination parameters for marks submission
+                    page = request.form.get('page', 1, type=int)
+                    per_page = 20  # Students per page
+
+                    # Get students for this stream with pagination
+                    students_query = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name)
+                    students_pagination = students_query.paginate(
+                        page=page, per_page=per_page, error_out=False
+                    )
+                    students = students_pagination.items
+
+                    # Pagination info
+                    pagination_info = {
+                        'page': students_pagination.page,
+                        'pages': students_pagination.pages,
+                        'per_page': students_pagination.per_page,
+                        'total': students_pagination.total,
+                        'has_prev': students_pagination.has_prev,
+                        'prev_num': students_pagination.prev_num,
+                        'has_next': students_pagination.has_next,
+                        'next_num': students_pagination.next_num
+                    }
 
                     if not students:
                         error_message = "No students found for this stream"
@@ -484,6 +525,7 @@ def dashboard():
         show_download_button=show_download_button,
         show_subject_report=show_subject_report,
         recent_reports=recent_reports,
+        pagination_info=pagination_info,
         grammar_max_marks=grammar_max_marks,
         composition_max_marks=composition_max_marks,
         lugha_max_marks=lugha_max_marks,
