@@ -252,12 +252,29 @@ def dashboard():
                                 # Handle composite subject marks (English/Kiswahili)
                                 components = subject_obj.get_components()
 
+                                print(f"DEBUG: Processing composite subject marks for {len(students)} students")
+                                print(f"DEBUG: Form data keys: {list(request.form.keys())}")
+
                                 for student in students:
                                     student_key = student.name.replace(' ', '_')
 
-                                    # Get the overall percentage (calculated by JavaScript)
-                                    percentage_key = f"hidden_percentage_{student_key}_{subject_obj.id}"
-                                    percentage_value = request.form.get(percentage_key, type=float, default=0.0)
+                                    # Try multiple field naming patterns for composite subjects
+                                    possible_percentage_keys = [
+                                        f"hidden_percentage_{student_key}_{subject_obj.id}",
+                                        f"percentage_{student_key}",
+                                        f"hidden_percentage_{student_key}"
+                                    ]
+
+                                    percentage_value = 0.0
+                                    used_key = ''
+                                    for key in possible_percentage_keys:
+                                        value = request.form.get(key, type=float, default=0.0)
+                                        if value > 0:
+                                            percentage_value = value
+                                            used_key = key
+                                            break
+
+                                    print(f"DEBUG: Student {student.name} -> used key: {used_key}, value: {percentage_value}")
 
                                     if percentage_value > 0:  # Only process if percentage was calculated
                                         # Check if mark already exists
@@ -328,13 +345,33 @@ def dashboard():
                                                     db.session.add(component_mark_obj)
                             else:
                                 # Handle regular subjects (using proven classteacher logic)
+                                print(f"DEBUG: Processing regular subject marks for {len(students)} students")
+                                print(f"DEBUG: Form data keys: {list(request.form.keys())}")
+
                                 for student in students:
                                     student_key = student.name.replace(' ', '_')
-                                    mark_key = f"mark_{student_key}_{subject_obj.id}"
-                                    mark_value = request.form.get(mark_key, '')
 
-                                    if mark_value and mark_value.isdigit():
-                                        mark = int(mark_value)
+                                    # Try multiple field naming patterns
+                                    possible_keys = [
+                                        f"mark_{student_key}_{subject_obj.id}",
+                                        f"mark_{student_key}_1",
+                                        f"mark_{student_key}",
+                                        f"mark_{student_key}_{subject_obj.name.replace(' ', '').lower()}"
+                                    ]
+
+                                    mark_value = ''
+                                    used_key = ''
+                                    for key in possible_keys:
+                                        value = request.form.get(key, '')
+                                        if value:
+                                            mark_value = value
+                                            used_key = key
+                                            break
+
+                                    print(f"DEBUG: Student {student.name} -> used key: {used_key}, value: '{mark_value}'")
+
+                                    if mark_value and mark_value.replace('.', '').replace('-', '').isdigit():
+                                        mark = float(mark_value)
                                         if 0 <= mark <= total_marks:
                                             percentage = (mark / total_marks) * 100
 
@@ -376,12 +413,17 @@ def dashboard():
                             db.session.commit()
 
                             # Show success message and enable subject report download
+                            print(f"DEBUG: Final results - marks_added: {marks_added}, marks_updated: {marks_updated}")
+
                             if marks_added > 0 or marks_updated > 0:
                                 show_download_button = True
                                 show_subject_report = True  # Enable subject-specific report
                                 flash(f"Successfully saved {marks_added} new marks and updated {marks_updated} existing marks.", "success")
                             else:
-                                error_message = "No marks were processed"
+                                print("DEBUG: No marks were processed - checking form data...")
+                                print(f"DEBUG: Total form fields: {len(request.form)}")
+                                print(f"DEBUG: Form keys containing 'mark': {[k for k in request.form.keys() if 'mark' in k.lower()]}")
+                                error_message = "No marks were processed. Please ensure you have entered marks for at least one student."
 
                         except Exception as e:
                             db.session.rollback()

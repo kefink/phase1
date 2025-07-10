@@ -4107,9 +4107,9 @@
                 cellHTML += '</div></div>';
 
                 // Add hidden fields for form submission
+                const subjectId = currentSubjectInfo ? currentSubjectInfo.id : '1';
                 cellHTML += `
-                    <input type="hidden" name="mark_${studentKey}_composite" id="mark_${studentKey}" value="0">
-                    <input type="hidden" name="percentage_${studentKey}" id="hidden_percentage_${studentKey}" value="0">
+                    <input type="hidden" name="hidden_percentage_${studentKey}_${subjectId}" id="hidden_percentage_${studentKey}_${subjectId}" value="0">
                 `;
 
                 cell.innerHTML = cellHTML;
@@ -4121,6 +4121,16 @@
         // Function to setup regular marks entry
         function setupRegularMarksEntry(marksCells) {
             const totalMarks = document.getElementById('total_marks').value || 100;
+            // Get subject ID from currentSubjectInfo or fallback to form value
+            let subjectId = currentSubjectInfo ? currentSubjectInfo.id : null;
+
+            // Fallback: try to get subject ID from the subject name
+            if (!subjectId) {
+                const subjectName = document.getElementById('subject').value;
+                // For now, use a simple hash of the subject name as fallback
+                subjectId = subjectName ? subjectName.replace(/\s+/g, '').toLowerCase() : '1';
+                debugLog(`⚠️ Using fallback subject ID: ${subjectId} for subject: ${subjectName}`);
+            }
 
             marksCells.forEach(cell => {
                 const studentKey = cell.getAttribute('data-student');
@@ -4129,10 +4139,11 @@
                     <div class="simplified-mark-entry">
                         <div class="mark-input-container">
                             <input type="number"
-                                   name="mark_${studentKey}_1"
+                                   name="mark_${studentKey}_${subjectId}"
                                    min="0"
                                    max="${totalMarks}"
                                    placeholder="0-${totalMarks}"
+                                   step="0.1"
                                    required
                                    class="student-mark"
                                    data-student="${studentKey}"
@@ -4172,12 +4183,12 @@
             // Update displays
             const totalDisplay = document.getElementById(`total_marks_${studentKey}`);
             const percentageDisplay = document.getElementById(`percentage_${studentKey}`);
-            const hiddenMark = document.getElementById(`mark_${studentKey}`);
-            const hiddenPercentage = document.getElementById(`hidden_percentage_${studentKey}`);
+            const subjectId = currentSubjectInfo ? currentSubjectInfo.id : '1';
+            const hiddenPercentage = document.getElementById(`hidden_percentage_${studentKey}_${subjectId}`);
 
             if (totalDisplay) totalDisplay.textContent = `${totalRawMarks}/${totalMaxMarks}`;
             if (percentageDisplay) percentageDisplay.textContent = `${Math.round(percentage)}%`;
-            if (hiddenMark) hiddenMark.value = totalRawMarks;
+            if (hiddenPercentage) hiddenPercentage.value = percentage;
             if (hiddenPercentage) hiddenPercentage.value = percentage.toFixed(2);
         }
 
