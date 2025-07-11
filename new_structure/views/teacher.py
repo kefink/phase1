@@ -425,6 +425,11 @@ def dashboard():
                                         if 0 <= mark <= total_marks:
                                             percentage = (mark / total_marks) * 100
 
+                                            # Additional validation: Ensure percentage doesn't exceed 100%
+                                            if percentage > 100:
+                                                print(f"DEBUG: Skipping {student.name} - percentage {percentage:.1f}% exceeds 100%")
+                                                continue
+
                                             # Check if mark already exists
                                             existing_mark = Mark.query.filter_by(
                                                 student_id=student.id,
@@ -555,103 +560,241 @@ def dashboard():
 @teacher_required
 def generate_subject_report():
     """Generate enhanced subject-specific report with grading analysis."""
+    print(f"🔍 GENERATE_SUBJECT_REPORT CALLED")
     subject = request.args.get('subject')
     grade = request.args.get('grade')
     stream = request.args.get('stream')
     term = request.args.get('term')
     assessment_type = request.args.get('assessment_type')
+    print(f"Parameters: subject={subject}, grade={grade}, stream={stream}, term={term}, assessment_type={assessment_type}")
 
     if not all([subject, grade, stream, term, assessment_type]):
         flash("Missing required parameters for report generation", "error")
         return redirect(url_for('teacher.dashboard'))
 
     try:
-        # Get database objects
-        stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
-        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
-        subject_obj = Subject.query.filter_by(name=subject).first()
-        term_obj = Term.query.filter_by(name=term).first()
-        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+        # Get database objects with comprehensive error handling
 
-        if not all([stream_obj, subject_obj, term_obj, assessment_type_obj]):
-            flash("Invalid parameters for report generation", "error")
+        # 1. Find Grade
+        print(f"🔍 Looking for grade: '{grade}'")
+        grade_obj = Grade.query.filter_by(name=grade).first()
+        print(f"Grade found: {grade_obj}")
+        if not grade_obj:
+            print(f"❌ Grade '{grade}' not found")
+            flash(f"Grade '{grade}' not found in database", "error")
             return redirect(url_for('teacher.dashboard'))
 
+        # 2. Find Stream with multiple fallback strategies
+        stream_letter = stream.replace("Stream ", "").strip() if stream.startswith("Stream ") else stream.strip()
+        print(f"🔍 Looking for stream: '{stream_letter}' in grade_id: {grade_obj.id}")
+        stream_obj = Stream.query.filter_by(grade_id=grade_obj.id, name=stream_letter).first()
+        print(f"Stream found: {stream_obj}")
+
+        # Fallback strategies for stream
+        if not stream_obj:
+            print(f"❌ Stream '{stream_letter}' not found, trying fallback")
+            # Try with just the last character
+            if len(stream) > 0:
+                alt_stream_letter = stream[-1]
+                print(f"🔍 Trying alternative stream: '{alt_stream_letter}'")
+                stream_obj = Stream.query.filter_by(grade_id=grade_obj.id, name=alt_stream_letter).first()
+                print(f"Alternative stream found: {stream_obj}")
+                if stream_obj:
+                    stream_letter = alt_stream_letter
+
+        # 3. Find Subject
+        print(f"🔍 Looking for subject: '{subject}'")
+        subject_obj = Subject.query.filter_by(name=subject).first()
+        print(f"Subject found: {subject_obj}")
+
+        # 4. Find Term
+        print(f"🔍 Looking for term: '{term}'")
+        term_obj = Term.query.filter_by(name=term).first()
+        print(f"Term found: {term_obj}")
+
+        # 5. Find Assessment Type with fallback strategies
+        print(f"🔍 Looking for assessment type: '{assessment_type}'")
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+        print(f"Assessment type found: {assessment_type_obj}")
+
+        # If not found, try case-insensitive search and common variations
+        if not assessment_type_obj:
+            print(f"❌ Assessment type '{assessment_type}' not found, trying alternatives")
+
+            # Try case-insensitive search
+            assessment_type_obj = AssessmentType.query.filter(AssessmentType.name.ilike(assessment_type)).first()
+            print(f"Case-insensitive search result: {assessment_type_obj}")
+
+            # Try common variations
+            if not assessment_type_obj:
+                variations = [
+                    assessment_type.upper(),
+                    assessment_type.lower(),
+                    assessment_type.title(),
+                    f"{assessment_type}s",  # plural
+                    assessment_type.replace(" ", "_"),  # underscore
+                    assessment_type.replace("_", " "),  # space
+                ]
+
+                for variation in variations:
+                    assessment_type_obj = AssessmentType.query.filter_by(name=variation).first()
+                    if assessment_type_obj:
+                        print(f"Found assessment type with variation '{variation}': {assessment_type_obj}")
+                        break
+
+            # If still not found, show available assessment types
+            if not assessment_type_obj:
+                all_assessments = AssessmentType.query.all()
+                available_assessments = [a.name for a in all_assessments]
+                print(f"❌ No assessment type found. Available: {available_assessments}")
+
+        # Check if all required objects were found
+        print(f"🔍 Checking if all objects found...")
+        missing_objects = []
+        if not stream_obj:
+            missing_objects.append(f"Stream '{stream}' in {grade}")
+        if not subject_obj:
+            missing_objects.append(f"Subject '{subject}'")
+        if not term_obj:
+            missing_objects.append(f"Term '{term}'")
+        if not assessment_type_obj:
+            missing_objects.append(f"Assessment '{assessment_type}'")
+
+        if missing_objects:
+            print(f"❌ Missing objects: {missing_objects}")
+            flash(f"Cannot generate report - missing: {', '.join(missing_objects)}", "error")
+            return redirect(url_for('teacher.dashboard'))
+
+        print(f"✅ All database objects found successfully!")
+        print(f"Proceeding with report generation...")
+
         # Get students and their marks for this subject
+        print(f"🔍 Looking for students in stream_id: {stream_obj.id}")
         students = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name).all()
+        print(f"Students found: {len(students)} students")
 
         if not students:
+            print(f"❌ No students found for stream_id: {stream_obj.id}")
             flash("No students found for this class", "error")
             return redirect(url_for('teacher.dashboard'))
 
+        print(f"✅ Found {len(students)} students, proceeding with marks retrieval...")
+
         # Get marks for all students in this subject
+        print(f"🔍 Processing marks for {len(students)} students...")
         marks_data = []
         total_students = len(students)
         students_with_marks = 0
 
-        for student in students:
-            mark = Mark.query.filter_by(
-                student_id=student.id,
-                subject_id=subject_obj.id,
-                term_id=term_obj.id,
-                assessment_type_id=assessment_type_obj.id
-            ).first()
+        for i, student in enumerate(students, 1):
+            print(f"🔍 Processing student {i}/{len(students)}: {student.name} (ID: {student.id})")
+            try:
+                mark = Mark.query.filter_by(
+                    student_id=student.id,
+                    subject_id=subject_obj.id,
+                    term_id=term_obj.id,
+                    assessment_type_id=assessment_type_obj.id
+                ).first()
+                print(f"Mark found for {student.name}: {mark}")
 
-            if mark:
-                students_with_marks += 1
-                # Calculate grade based on percentage
-                percentage = mark.percentage
-                if percentage >= 75:
-                    grade_letter = "E.E"
-                    grade_description = "Exceeds Expectations"
-                elif percentage >= 50:
-                    grade_letter = "M.E"
-                    grade_description = "Meets Expectations"
-                elif percentage >= 30:
-                    grade_letter = "A.E"
-                    grade_description = "Approaches Expectations"
+                if mark:
+                    print(f"✅ Mark found for {student.name}: {mark.raw_mark}/{mark.total_marks} = {mark.percentage}%")
+                    students_with_marks += 1
+                    # Calculate grade based on percentage using detailed CBC grading
+                    percentage = mark.percentage
+                    if percentage >= 90:
+                        grade_letter = "EE1"
+                        grade_description = "Exceeding Expectation 1"
+                    elif percentage >= 75:
+                        grade_letter = "EE2"
+                        grade_description = "Exceeding Expectation 2"
+                    elif percentage >= 58:
+                        grade_letter = "ME1"
+                        grade_description = "Meeting Expectation 1"
+                    elif percentage >= 41:
+                        grade_letter = "ME2"
+                        grade_description = "Meeting Expectation 2"
+                    elif percentage >= 31:
+                        grade_letter = "AE1"
+                        grade_description = "Approaching Expectation 1"
+                    elif percentage >= 21:
+                        grade_letter = "AE2"
+                        grade_description = "Approaching Expectation 2"
+                    elif percentage >= 11:
+                        grade_letter = "BE1"
+                        grade_description = "Below Expectation 1"
+                    else:
+                        grade_letter = "BE2"
+                        grade_description = "Below Expectation 2"
+
+                    marks_data.append({
+                        'student': student,
+                        'mark': mark,
+                        'percentage': percentage,
+                        'grade_letter': grade_letter,
+                        'grade_description': grade_description
+                    })
+                    print(f"✅ Added {student.name} to marks_data with grade {grade_letter}")
                 else:
-                    grade_letter = "B.E"
-                    grade_description = "Below Expectations"
+                    print(f"❌ No mark found for {student.name}")
 
-                marks_data.append({
-                    'student': student,
-                    'mark': mark,
-                    'percentage': percentage,
-                    'grade_letter': grade_letter,
-                    'grade_description': grade_description
-                })
+            except Exception as e:
+                print(f"❌ Error processing student {student.name}: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                flash(f"Error processing marks for {student.name}: {str(e)}", "error")
+                return redirect(url_for('teacher.dashboard'))
 
         # Calculate statistics
+        print(f"🔍 Marks processing completed. Found {len(marks_data)} students with marks out of {len(students)} total students")
         if marks_data:
             percentages = [data['percentage'] for data in marks_data]
             average_percentage = sum(percentages) / len(percentages)
             highest_percentage = max(percentages)
             lowest_percentage = min(percentages)
 
-            # Grade distribution
+            # Grade distribution using detailed CBC grading
             grade_distribution = {
-                'E.E': len([d for d in marks_data if d['grade_letter'] == 'E.E']),
-                'M.E': len([d for d in marks_data if d['grade_letter'] == 'M.E']),
-                'A.E': len([d for d in marks_data if d['grade_letter'] == 'A.E']),
-                'B.E': len([d for d in marks_data if d['grade_letter'] == 'B.E'])
+                'EE1': len([d for d in marks_data if d['grade_letter'] == 'EE1']),
+                'EE2': len([d for d in marks_data if d['grade_letter'] == 'EE2']),
+                'ME1': len([d for d in marks_data if d['grade_letter'] == 'ME1']),
+                'ME2': len([d for d in marks_data if d['grade_letter'] == 'ME2']),
+                'AE1': len([d for d in marks_data if d['grade_letter'] == 'AE1']),
+                'AE2': len([d for d in marks_data if d['grade_letter'] == 'AE2']),
+                'BE1': len([d for d in marks_data if d['grade_letter'] == 'BE1']),
+                'BE2': len([d for d in marks_data if d['grade_letter'] == 'BE2'])
             }
         else:
             average_percentage = 0
             highest_percentage = 0
             lowest_percentage = 0
-            grade_distribution = {'E.E': 0, 'M.E': 0, 'A.E': 0, 'B.E': 0}
+            grade_distribution = {'EE1': 0, 'EE2': 0, 'ME1': 0, 'ME2': 0, 'AE1': 0, 'AE2': 0, 'BE1': 0, 'BE2': 0}
 
         # Get teacher information
+        print(f"🔍 Getting teacher information...")
         teacher_id = session.get('teacher_id')
         teacher = Teacher.query.get(teacher_id) if teacher_id else None
-        teacher_name = teacher.name if teacher else "Unknown Teacher"
+        teacher_name = teacher.full_name if teacher else "Unknown Teacher"
+        print(f"Teacher: {teacher_name} (ID: {teacher_id})")
 
         # Get school information
-        from ..services.school_config_service import SchoolConfigService
-        school_info = SchoolConfigService.get_school_info()
+        print(f"🔍 Getting school information...")
+        try:
+            from ..services.school_config_service import SchoolConfigService
+            school_info = SchoolConfigService.get_school_info_dict()
+            # Add logo_url for template compatibility
+            if 'logo_path' in school_info:
+                school_info['logo_url'] = f"/static/{school_info['logo_path']}"
+            print(f"✅ School info retrieved successfully")
+        except Exception as e:
+            print(f"❌ Error getting school info: {e}")
+            school_info = {
+                'school_name': 'Hillview School',
+                'logo_url': '/static/uploads/logos/optimized_school_logo_1750595986_hvs.jpg'
+            }
 
         # Prepare report data
+        print(f"🔍 Preparing report data...")
         report_data = {
             'subject': subject,
             'grade': grade,
@@ -671,8 +814,17 @@ def generate_subject_report():
             'teacher_name': teacher_name,
             'school_info': school_info
         }
+        print(f"✅ Report data prepared successfully")
 
-        return render_template('subject_report.html', **report_data)
+        print(f"🔍 Attempting to render template 'subject_report.html'...")
+        try:
+            return render_template('subject_report.html', **report_data)
+        except Exception as template_error:
+            print(f"❌ Template rendering error: {template_error}")
+            import traceback
+            traceback.print_exc()
+            flash(f"Error rendering report template: {str(template_error)}", "error")
+            return redirect(url_for('teacher.dashboard'))
 
     except Exception as e:
         flash(f"Error generating report: {str(e)}", "error")
@@ -721,3 +873,211 @@ def check_composite_subject(subject, education_level):
             'success': False,
             'message': f'Error: {str(e)}'
         }), 500
+
+
+@teacher_bp.route('/edit_marks')
+@teacher_required
+def edit_marks():
+    """Edit marks for a specific subject assessment."""
+    try:
+        # Get parameters from URL
+        subject = request.args.get('subject')
+        grade = request.args.get('grade')
+        stream = request.args.get('stream')
+        term = request.args.get('term')
+        assessment_type = request.args.get('assessment_type')
+
+        if not all([subject, grade, stream, term, assessment_type]):
+            flash("Missing required parameters for editing marks.", "error")
+            return redirect(url_for('teacher.dashboard'))
+
+        # Get database objects
+        grade_obj = Grade.query.filter_by(name=grade).first()
+        if not grade_obj:
+            flash(f"Grade '{grade}' not found.", "error")
+            return redirect(url_for('teacher.dashboard'))
+
+        stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
+        stream_obj = Stream.query.filter_by(name=stream_letter, grade_id=grade_obj.id).first()
+        if not stream_obj:
+            flash(f"Stream '{stream}' not found for grade '{grade}'.", "error")
+            return redirect(url_for('teacher.dashboard'))
+
+        subject_obj = Subject.query.filter_by(name=subject).first()
+        if not subject_obj:
+            flash(f"Subject '{subject}' not found.", "error")
+            return redirect(url_for('teacher.dashboard'))
+
+        term_obj = Term.query.filter_by(name=term).first()
+        if not term_obj:
+            flash(f"Term '{term}' not found.", "error")
+            return redirect(url_for('teacher.dashboard'))
+
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+        if not assessment_type_obj:
+            flash(f"Assessment type '{assessment_type}' not found.", "error")
+            return redirect(url_for('teacher.dashboard'))
+
+        # Get students in this stream
+        students = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name).all()
+        if not students:
+            flash(f"No students found in {grade} {stream}.", "error")
+            return redirect(url_for('teacher.dashboard'))
+
+        # Get existing marks for these students
+        existing_marks = {}
+        for student in students:
+            mark = Mark.query.filter_by(
+                student_id=student.id,
+                subject_id=subject_obj.id,
+                term_id=term_obj.id,
+                assessment_type_id=assessment_type_obj.id
+            ).first()
+            if mark:
+                existing_marks[student.id] = {
+                    'raw_mark': mark.raw_mark,
+                    'max_raw_mark': mark.max_raw_mark,
+                    'percentage': round((mark.raw_mark / mark.max_raw_mark) * 100, 1) if mark.max_raw_mark > 0 else 0
+                }
+
+        # Prepare template data
+        template_data = {
+            'subject': subject,
+            'grade': grade,
+            'stream': stream,
+            'term': term,
+            'assessment_type': assessment_type,
+            'students': students,
+            'existing_marks': existing_marks,
+            'total_students': len(students),
+            'students_with_marks': len(existing_marks),
+            'is_composite': subject_obj.is_composite if subject_obj else False
+        }
+
+        return render_template('edit_marks.html', **template_data)
+
+    except Exception as e:
+        print(f"❌ Error loading edit marks page: {e}")
+        flash(f"Error loading edit marks page: {str(e)}", "error")
+        return redirect(url_for('teacher.dashboard'))
+
+
+@teacher_bp.route('/update_marks', methods=['POST'])
+@teacher_required
+def update_marks():
+    """Update marks with validation to ensure they don't exceed 100%."""
+    try:
+        # Get form data
+        subject = request.form.get('subject')
+        grade = request.form.get('grade')
+        stream = request.form.get('stream')
+        term = request.form.get('term')
+        assessment_type = request.form.get('assessment_type')
+
+        if not all([subject, grade, stream, term, assessment_type]):
+            flash("Missing required information.", "error")
+            return redirect(url_for('teacher.dashboard'))
+
+        # Get database objects
+        grade_obj = Grade.query.filter_by(name=grade).first()
+        stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
+        stream_obj = Stream.query.filter_by(name=stream_letter, grade_id=grade_obj.id).first()
+        subject_obj = Subject.query.filter_by(name=subject).first()
+        term_obj = Term.query.filter_by(name=term).first()
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+        if not all([grade_obj, stream_obj, subject_obj, term_obj, assessment_type_obj]):
+            flash("Invalid selection parameters.", "error")
+            return redirect(url_for('teacher.dashboard'))
+
+        # Get students
+        students = Student.query.filter_by(stream_id=stream_obj.id).all()
+
+        marks_updated = 0
+        validation_errors = []
+
+        for student in students:
+            mark_field = f"mark_{student.id}"
+            max_mark_field = f"max_mark_{student.id}"
+
+            if mark_field in request.form and max_mark_field in request.form:
+                try:
+                    raw_mark = float(request.form[mark_field])
+                    max_mark = float(request.form[max_mark_field])
+
+                    # Validation: Ensure marks don't exceed max marks
+                    if raw_mark > max_mark:
+                        validation_errors.append(f"{student.name}: Mark ({raw_mark}) cannot exceed maximum ({max_mark})")
+                        continue
+
+                    # Validation: Ensure percentage doesn't exceed 100%
+                    percentage = (raw_mark / max_mark) * 100 if max_mark > 0 else 0
+                    if percentage > 100:
+                        validation_errors.append(f"{student.name}: Percentage ({percentage:.1f}%) cannot exceed 100%")
+                        continue
+
+                    # Validation: Ensure marks are not negative
+                    if raw_mark < 0 or max_mark <= 0:
+                        validation_errors.append(f"{student.name}: Invalid mark values")
+                        continue
+
+                    # Find existing mark or create new one
+                    mark = Mark.query.filter_by(
+                        student_id=student.id,
+                        subject_id=subject_obj.id,
+                        term_id=term_obj.id,
+                        assessment_type_id=assessment_type_obj.id
+                    ).first()
+
+                    if mark:
+                        # Update existing mark
+                        mark.raw_mark = raw_mark
+                        mark.max_raw_mark = max_mark
+                        mark.percentage = percentage
+                    else:
+                        # Create new mark
+                        mark = Mark(
+                            student_id=student.id,
+                            subject_id=subject_obj.id,
+                            term_id=term_obj.id,
+                            assessment_type_id=assessment_type_obj.id,
+                            raw_mark=raw_mark,
+                            max_raw_mark=max_mark,
+                            percentage=percentage
+                        )
+                        db.session.add(mark)
+
+                    marks_updated += 1
+
+                except ValueError:
+                    validation_errors.append(f"{student.name}: Invalid number format")
+                    continue
+
+        # Show validation errors if any
+        if validation_errors:
+            for error in validation_errors:
+                flash(error, "error")
+
+            # If there were validation errors, redirect back to edit page
+            if marks_updated == 0:
+                return redirect(url_for('teacher.edit_marks',
+                                      subject=subject, grade=grade, stream=stream,
+                                      term=term, assessment_type=assessment_type))
+
+        # Commit changes
+        if marks_updated > 0:
+            db.session.commit()
+            flash(f"Successfully updated {marks_updated} marks.", "success")
+        else:
+            flash("No marks were updated.", "warning")
+
+        # Redirect back to the subject report
+        return redirect(url_for('teacher.generate_subject_report',
+                              subject=subject, grade=grade, stream=stream,
+                              term=term, assessment_type=assessment_type))
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Error updating marks: {e}")
+        flash(f"Error updating marks: {str(e)}", "error")
+        return redirect(url_for('teacher.dashboard'))

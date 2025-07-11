@@ -30,9 +30,22 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
     Returns:
         Dictionary containing class report data
     """
-    # Get the stream object
-    stream_letter = stream[-1] if stream.startswith("Stream ") else stream[-1]
+    # Get the stream object - handle different stream name formats
+    if stream.startswith("Stream "):
+        stream_letter = stream.replace("Stream ", "").strip()
+    else:
+        stream_letter = stream.strip()
+
     stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
+
+    if not stream_obj:
+        # Try alternative stream name formats
+        # Try with just the last character
+        alt_stream_letter = stream[-1] if len(stream) > 0 else stream
+        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == alt_stream_letter).first()
+
+        if stream_obj:
+            stream_letter = alt_stream_letter
 
     if not stream_obj:
         return {"error": f"No students found for grade {grade} stream {stream_letter}"}

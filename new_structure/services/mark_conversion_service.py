@@ -118,16 +118,24 @@ class MarkConversionService:
             percentage (float): The percentage score (0-100)
 
         Returns:
-            str: Performance category (E.E, M.E, A.E, B.E)
+            str: Performance category (EE1, EE2, ME1, ME2, AE1, AE2, BE1, BE2)
         """
-        if percentage >= 75:
-            return "E.E"  # Exceeding Expectation
-        elif percentage >= 50:
-            return "M.E"  # Meeting Expectation
-        elif percentage >= 30:
-            return "A.E"  # Approaching Expectation
+        if percentage >= 90:
+            return "EE1"  # Exceeding Expectation 1
+        elif percentage >= 75:
+            return "EE2"  # Exceeding Expectation 2
+        elif percentage >= 58:
+            return "ME1"  # Meeting Expectation 1
+        elif percentage >= 41:
+            return "ME2"  # Meeting Expectation 2
+        elif percentage >= 31:
+            return "AE1"  # Approaching Expectation 1
+        elif percentage >= 21:
+            return "AE2"  # Approaching Expectation 2
+        elif percentage >= 11:
+            return "BE1"  # Below Expectation 1
         else:
-            return "B.E"  # Below Expectation
+            return "BE2"  # Below Expectation 2
 
     @staticmethod
     def get_performance_remarks(percentage):

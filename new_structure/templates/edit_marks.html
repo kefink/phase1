@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Marks - {{ subject }} {{ grade }} {{ stream }}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <style>
+      .edit-marks-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .edit-header {
+        text-align: center;
+        padding: 20px 0;
+        background: linear-gradient(135deg, #4a90e2, #357abd);
+        color: white;
+        border-radius: 15px;
+        margin-bottom: 30px;
+      }
+
+      .edit-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .edit-details {
+        font-size: 16px;
+        opacity: 0.9;
+      }
+
+      .marks-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .marks-table th {
+        background: linear-gradient(135deg, #4a90e2, #357abd);
+        color: white;
+        padding: 15px;
+        text-align: left;
+        font-weight: bold;
+      }
+
+      .marks-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .marks-table tr:nth-child(even) {
+        background: #f8f9fa;
+      }
+
+      .marks-table tr:hover {
+        background: #e8f4fd;
+      }
+
+      .mark-input {
+        width: 80px;
+        padding: 8px;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .mark-input:focus {
+        border-color: #4a90e2;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+      }
+
+      .mark-input.invalid {
+        border-color: #dc3545;
+        background-color: #fff5f5;
+      }
+
+      .percentage-display {
+        font-weight: bold;
+        padding: 8px 12px;
+        border-radius: 6px;
+        text-align: center;
+        min-width: 60px;
+      }
+
+      .percentage-excellent {
+        background: #d4edda;
+        color: #155724;
+      }
+      .percentage-good {
+        background: #cce5ff;
+        color: #004085;
+      }
+      .percentage-average {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .percentage-poor {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+      }
+
+      .validation-message {
+        padding: 10px;
+        border-radius: 6px;
+        margin: 10px 0;
+        font-weight: bold;
+      }
+
+      .validation-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .validation-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+      }
+
+      .student-name {
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .student-number {
+        font-size: 12px;
+        color: #6c757d;
+      }
+
+      .marks-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+      }
+
+      .summary-item {
+        text-align: center;
+      }
+
+      .summary-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+      }
+
+      .summary-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="edit-marks-container">
+      <div class="edit-header">
+        <div class="edit-title">✏️ Edit Marks</div>
+        <div class="edit-details">
+          {{ subject }} - {{ grade }} {{ stream }} | {{ term }} | {{
+          assessment_type }}
+        </div>
+      </div>
+
+      <div class="marks-summary">
+        <div class="summary-item">
+          <div class="summary-label">Total Students</div>
+          <div class="summary-value">{{ total_students }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Students with Marks</div>
+          <div class="summary-value">{{ students_with_marks }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Completion Rate</div>
+          <div class="summary-value">
+            {{ ((students_with_marks / total_students) * 100) | round | int }}%
+          </div>
+        </div>
+      </div>
+
+      <form
+        method="POST"
+        action="{{ url_for('teacher.update_marks') }}"
+        id="editMarksForm"
+      >
+        <input type="hidden" name="subject" value="{{ subject }}" />
+        <input type="hidden" name="grade" value="{{ grade }}" />
+        <input type="hidden" name="stream" value="{{ stream }}" />
+        <input type="hidden" name="term" value="{{ term }}" />
+        <input
+          type="hidden"
+          name="assessment_type"
+          value="{{ assessment_type }}"
+        />
+
+        <table class="marks-table">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Raw Mark</th>
+              <th>Max Mark</th>
+              <th>Percentage</th>
+              <th>Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for student in students %}
+            <tr>
+              <td>
+                <div class="student-name">{{ student.name }}</div>
+                <div class="student-number">Student #{{ loop.index }}</div>
+              </td>
+              <td>
+                <input
+                  type="number"
+                  name="mark_{{ student.id }}"
+                  value="{{ existing_marks[student.id].raw_mark if student.id in existing_marks else '' }}"
+                  min="0"
+                  step="0.1"
+                  class="mark-input"
+                  data-student-id="{{ student.id }}"
+                  oninput="updatePercentage({{ student.id }})"
+                  placeholder="0"
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  name="max_mark_{{ student.id }}"
+                  value="{{ existing_marks[student.id].max_raw_mark if student.id in existing_marks else 100 }}"
+                  min="1"
+                  max="1000"
+                  step="0.1"
+                  class="mark-input"
+                  data-student-id="{{ student.id }}"
+                  oninput="updatePercentage({{ student.id }})"
+                  placeholder="100"
+                />
+              </td>
+              <td>
+                <div
+                  class="percentage-display"
+                  id="percentage_{{ student.id }}"
+                >
+                  {{ existing_marks[student.id].percentage if student.id in
+                  existing_marks else 0 }}%
+                </div>
+              </td>
+              <td>
+                <div id="grade_{{ student.id }}">
+                  {% if student.id in existing_marks %} {% set percentage =
+                  existing_marks[student.id].percentage %} {% if percentage >=
+                  90 %}EE1 {% elif percentage >= 75 %}EE2 {% elif percentage >=
+                  58 %}ME1 {% elif percentage >= 41 %}ME2 {% elif percentage >=
+                  31 %}AE1 {% elif percentage >= 21 %}AE2 {% elif percentage >=
+                  11 %}BE1 {% else %}BE2 {% endif %} {% else %} - {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="action-buttons">
+          <button type="submit" class="btn btn-primary">💾 Update Marks</button>
+          <a
+            href="{{ url_for('teacher.generate_subject_report', subject=subject, grade=grade, stream=stream, term=term, assessment_type=assessment_type) }}"
+            class="btn btn-secondary"
+          >
+            ↩️ Back to Report
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      function updatePercentage(studentId) {
+          const markInput = document.querySelector(`input[name="mark_${studentId}"]`);
+          const maxMarkInput = document.querySelector(`input[name="max_mark_${studentId}"]`);
+          const percentageDisplay = document.getElementById(`percentage_${studentId}`);
+          const gradeDisplay = document.getElementById(`grade_${studentId}`);
+
+          const mark = parseFloat(markInput.value) || 0;
+          const maxMark = parseFloat(maxMarkInput.value) || 100;
+
+          // Validation
+          let isValid = true;
+
+          // Check if mark exceeds max mark
+          if (mark > maxMark) {
+              markInput.classList.add('invalid');
+              isValid = false;
+          } else {
+              markInput.classList.remove('invalid');
+          }
+
+          // Calculate percentage
+          const percentage = maxMark > 0 ? (mark / maxMark) * 100 : 0;
+
+          // Check if percentage exceeds 100%
+          if (percentage > 100) {
+              markInput.classList.add('invalid');
+              maxMarkInput.classList.add('invalid');
+              isValid = false;
+          } else {
+              maxMarkInput.classList.remove('invalid');
+          }
+
+          // Update percentage display
+          percentageDisplay.textContent = `${percentage.toFixed(1)}%`;
+
+          // Update percentage display color
+          percentageDisplay.className = 'percentage-display';
+          if (percentage >= 75) {
+              percentageDisplay.classList.add('percentage-excellent');
+          } else if (percentage >= 50) {
+              percentageDisplay.classList.add('percentage-good');
+          } else if (percentage >= 30) {
+              percentageDisplay.classList.add('percentage-average');
+          } else {
+              percentageDisplay.classList.add('percentage-poor');
+          }
+
+          // Update grade
+          let grade = '-';
+          if (mark > 0) {
+              if (percentage >= 90) grade = 'EE1';
+              else if (percentage >= 75) grade = 'EE2';
+              else if (percentage >= 58) grade = 'ME1';
+              else if (percentage >= 41) grade = 'ME2';
+              else if (percentage >= 31) grade = 'AE1';
+              else if (percentage >= 21) grade = 'AE2';
+              else if (percentage >= 11) grade = 'BE1';
+              else grade = 'BE2';
+          }
+          gradeDisplay.textContent = grade;
+      }
+
+      // Initialize percentages on page load
+      document.addEventListener('DOMContentLoaded', function() {
+          {% for student in students %}
+          updatePercentage({{ student.id }});
+          {% endfor %}
+      });
+
+      // Form validation before submission
+      document.getElementById('editMarksForm').addEventListener('submit', function(e) {
+          const invalidInputs = document.querySelectorAll('.mark-input.invalid');
+          if (invalidInputs.length > 0) {
+              e.preventDefault();
+              alert('Please fix the invalid marks before submitting. Marks cannot exceed maximum marks and percentages cannot exceed 100%.');
+              return false;
+          }
+      });
+    </script>
+  </body>
+</html>

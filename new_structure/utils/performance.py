@@ -4,22 +4,30 @@ Performance calculation utilities for the Hillview School Management System.
 
 def get_performance_category(percentage):
     """
-    Convert a percentage to a performance category.
+    Convert a percentage to a performance category using detailed CBC grading.
 
     Args:
         percentage: The percentage score (0-100)
 
     Returns:
-        String representing the performance category (E.E, M.E, A.E, B.E)
+        String representing the performance category (EE1, EE2, ME1, ME2, AE1, AE2, BE1, BE2)
     """
-    if percentage >= 75:
-        return "E.E"  # Exceeding Expectation
-    elif percentage >= 50:
-        return "M.E"  # Meeting Expectation
-    elif percentage >= 30:
-        return "A.E"  # Approaching Expectation
+    if percentage >= 90:
+        return "EE1"  # Exceeding Expectation 1
+    elif percentage >= 75:
+        return "EE2"  # Exceeding Expectation 2
+    elif percentage >= 58:
+        return "ME1"  # Meeting Expectation 1
+    elif percentage >= 41:
+        return "ME2"  # Meeting Expectation 2
+    elif percentage >= 31:
+        return "AE1"  # Approaching Expectation 1
+    elif percentage >= 21:
+        return "AE2"  # Approaching Expectation 2
+    elif percentage >= 11:
+        return "BE1"  # Below Expectation 1
     else:
-        return "B.E"  # Below Expectation
+        return "BE2"  # Below Expectation 2
 
 def get_grade_and_points(average):
     """
@@ -57,22 +65,30 @@ def get_performance_remarks(mark, total_marks=100):
         total_marks: The total possible marks (default: 100)
 
     Returns:
-        String with CBC grading level (E.E, M.E, A.E, B.E)
+        String with detailed CBC grading level (EE1, EE2, ME1, ME2, AE1, AE2, BE1, BE2)
     """
     if total_marks > 0:
         percentage = (mark / total_marks) * 100
     else:
         percentage = 0
 
-    # CBC Grading System
-    if percentage >= 80:
-        return "E.E"  # Exceeds Expectations
-    elif percentage >= 60:
-        return "M.E"  # Meets Expectations
-    elif percentage >= 40:
-        return "A.E"  # Approaches Expectations
+    # Detailed CBC Grading System
+    if percentage >= 90:
+        return "EE1"  # Exceeding Expectation 1
+    elif percentage >= 75:
+        return "EE2"  # Exceeding Expectation 2
+    elif percentage >= 58:
+        return "ME1"  # Meeting Expectation 1
+    elif percentage >= 41:
+        return "ME2"  # Meeting Expectation 2
+    elif percentage >= 31:
+        return "AE1"  # Approaching Expectation 1
+    elif percentage >= 21:
+        return "AE2"  # Approaching Expectation 2
+    elif percentage >= 11:
+        return "BE1"  # Below Expectation 1
     else:
-        return "B.E"  # Below Expectations
+        return "BE2"  # Below Expectation 2
 
 def get_performance_summary(marks_data):
     """

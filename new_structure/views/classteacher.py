@@ -8089,6 +8089,7 @@ def api_get_streams(grade):
         return jsonify({"streams": [f"Stream {name}" for name in stream_names]})
     return jsonify({"streams": []})
 
+
 @classteacher_bp.route('/view_all_reports')
 @classteacher_required
 def view_all_reports():

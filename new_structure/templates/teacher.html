@@ -4346,12 +4346,35 @@
             if (hiddenPercentage) hiddenPercentage.value = percentage.toFixed(2);
         }
 
-        // Function to update regular percentage
+        // Function to update regular percentage with validation
         function updateRegularPercentage(studentKey, rawMark, maxMark) {
             const percentage = maxMark > 0 ? (rawMark / maxMark) * 100 : 0;
             const percentageDisplay = document.getElementById(`percentage_${studentKey}`);
-            if (percentageDisplay) {
-                percentageDisplay.textContent = `${Math.round(percentage)}%`;
+            const markInput = document.querySelector(`input[data-student="${studentKey}"]`);
+
+            // Validation: Check if percentage exceeds 100%
+            if (percentage > 100) {
+                if (markInput) {
+                    markInput.style.borderColor = '#dc3545';
+                    markInput.style.backgroundColor = '#fff5f5';
+                    markInput.title = 'Mark cannot exceed maximum marks (100%)';
+                }
+                if (percentageDisplay) {
+                    percentageDisplay.textContent = `${Math.round(percentage)}%`;
+                    percentageDisplay.style.color = '#dc3545';
+                    percentageDisplay.style.fontWeight = 'bold';
+                }
+            } else {
+                if (markInput) {
+                    markInput.style.borderColor = '#e9ecef';
+                    markInput.style.backgroundColor = 'white';
+                    markInput.title = '';
+                }
+                if (percentageDisplay) {
+                    percentageDisplay.textContent = `${Math.round(percentage)}%`;
+                    percentageDisplay.style.color = '#2c3e50';
+                    percentageDisplay.style.fontWeight = 'normal';
+                }
             }
         }
 
