@@ -112,6 +112,23 @@ def classteacher_required(f):
                     return jsonify({"success": False, "message": f"Permission denied for function: {function_name}"}), 403
                 return redirect(url_for('classteacher.permission_denied', function_name=function_name))
 
+        # For subject teachers (role = 'teacher'), check if they can access class teacher portal
+        if role == 'teacher':
+            teacher_id = session.get('teacher_id')
+
+            # Check if this teacher has any class assignments (can access class teacher portal)
+            can_access = FlexibleMarksService.can_teacher_access_classteacher_portal(teacher_id)
+
+            if can_access:
+                print(f"✅ Subject teacher {teacher_id} granted access to class teacher portal")
+                return f(*args, **kwargs)
+            else:
+                # Teacher has no class assignments, redirect to subject teacher portal
+                if request.is_json or request.headers.get('Content-Type') == 'application/json' or 'api' in request.endpoint or request.path.startswith('/classteacher/get_'):
+                    return jsonify({"success": False, "message": "No class assignments found. Please use the subject teacher portal.", "redirect": url_for('teacher.dashboard')}), 403
+                flash("You don't have any class assignments. Please use the subject teacher portal.", "info")
+                return redirect(url_for('teacher.dashboard'))
+
         # Final fallback for non-classteacher/non-headteacher roles
         if request.is_json or request.headers.get('Content-Type') == 'application/json' or 'api' in request.endpoint or request.path.startswith('/classteacher/get_'):
             return jsonify({"success": False, "message": "Access denied", "redirect": url_for('auth.classteacher_login')}), 403
@@ -284,18 +301,32 @@ def dashboard():
     # Clean up any invalid marks on dashboard load
     cleanup_invalid_marks()
 
-    # Get the teacher
+    # Get the teacher and their portal access summary
     teacher_id = session.get('teacher_id')
     print(f"DEBUG: Teacher ID from session: {teacher_id}")
-    teacher = Teacher.query.get(teacher_id)
-    print(f"DEBUG: Teacher object: {teacher}")
 
-    if not teacher:
-        flash("Teacher not found.", "error")
+    # Get comprehensive teacher portal summary
+    portal_summary = FlexibleMarksService.get_teacher_portal_summary(teacher_id)
+
+    if 'error' in portal_summary:
+        flash(f"Error loading teacher information: {portal_summary['error']}", "error")
         # Get school information for error case
         from ..services.school_config_service import SchoolConfigService
         school_info = SchoolConfigService.get_school_info_dict()
         return render_template("classteacher.html", school_info=school_info)
+
+    teacher = portal_summary['teacher']
+    print(f"DEBUG: Teacher object: {teacher}")
+    print(f"DEBUG: Portal access: {portal_summary['can_access_portal']}")
+    print(f"DEBUG: Teacher type: {portal_summary['portal_type']}")
+    print(f"DEBUG: Total classes: {portal_summary['total_classes']}")
+
+    if not portal_summary['can_access_portal']:
+        flash("You don't have any class or subject assignments. Please contact the headteacher.", "error")
+        # Get school information for error case
+        from ..services.school_config_service import SchoolConfigService
+        school_info = SchoolConfigService.get_school_info_dict()
+        return render_template("classteacher.html", school_info=school_info, portal_summary=portal_summary)
 
     # Get role-based assignment summary for classteacher
     teacher_id = session.get('teacher_id')
@@ -1137,7 +1168,8 @@ def dashboard():
         grades_involved=assignment_summary.get('grades_involved', []),
         streams_involved=assignment_summary.get('streams_involved', []),
         subjects_involved=assignment_summary.get('subjects_involved', []),
-        has_assignments=has_assignments  # Pass assignment status to template
+        has_assignments=has_assignments,  # Pass assignment status to template
+        portal_summary=portal_summary  # Pass portal summary for multi-class interface
     )
 
 @classteacher_bp.route('/all_reports', methods=['GET'])

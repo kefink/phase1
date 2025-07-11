@@ -14,6 +14,69 @@ class FlexibleMarksService:
     """Service for managing flexible marks upload based on teacher assignments."""
 
     @staticmethod
+    def get_teacher_all_class_assignments(teacher_id: int) -> List[Dict]:
+        """
+        Get all classes where a teacher has subject assignments.
+        This includes both their assigned class (if they're a class teacher) and other classes where they teach subjects.
+
+        Args:
+            teacher_id: ID of the teacher
+
+        Returns:
+            List of dictionaries containing class info and subjects taught
+        """
+        try:
+            # Get all assignments for this teacher
+            assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher_id).all()
+
+            if not assignments:
+                return []
+
+            # Group assignments by grade/stream
+            class_assignments = {}
+
+            for assignment in assignments:
+                grade_obj = Grade.query.get(assignment.grade_id)
+                stream_obj = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
+                subject_obj = Subject.query.get(assignment.subject_id)
+
+                if not grade_obj or not subject_obj:
+                    continue
+
+                # Create class key
+                stream_name = stream_obj.name if stream_obj else "All"
+                class_key = f"{grade_obj.name}_{stream_name}"
+
+                if class_key not in class_assignments:
+                    class_assignments[class_key] = {
+                        'grade_name': grade_obj.name,
+                        'stream_name': stream_name,
+                        'education_level': grade_obj.education_level,
+                        'is_class_teacher': assignment.is_class_teacher,
+                        'subjects': [],
+                        'grade_id': grade_obj.id,
+                        'stream_id': stream_obj.id if stream_obj else None
+                    }
+
+                # Add subject to this class
+                class_assignments[class_key]['subjects'].append({
+                    'id': subject_obj.id,
+                    'name': subject_obj.name,
+                    'is_composite': subject_obj.is_composite,
+                    'is_class_teacher_assignment': assignment.is_class_teacher
+                })
+
+                # Update class teacher status if any assignment is class teacher
+                if assignment.is_class_teacher:
+                    class_assignments[class_key]['is_class_teacher'] = True
+
+            return list(class_assignments.values())
+
+        except Exception as e:
+            print(f"Error getting teacher class assignments: {str(e)}")
+            return []
+
+    @staticmethod
     def get_teacher_assigned_subjects_for_class(teacher_id: int, grade_name: str, stream_name: str, education_level: str) -> List[Dict]:
         """
         Get subjects that a teacher is assigned to teach in a specific class.
@@ -247,3 +310,66 @@ class FlexibleMarksService:
         except Exception as e:
             print(f"Error checking teacher upload permission: {str(e)}")
             return False
+
+    @staticmethod
+    def can_teacher_access_classteacher_portal(teacher_id: int) -> bool:
+        """
+        Check if a teacher can access the class teacher portal.
+        This includes both actual class teachers and subject teachers who teach in any class.
+
+        Args:
+            teacher_id: ID of the teacher
+
+        Returns:
+            Boolean indicating if teacher can access the portal
+        """
+        try:
+            # Check if teacher has any subject assignments
+            assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher_id).first()
+            return assignments is not None
+
+        except Exception as e:
+            print(f"Error checking class teacher portal access: {str(e)}")
+            return False
+
+    @staticmethod
+    def get_teacher_portal_summary(teacher_id: int) -> Dict:
+        """
+        Get a summary of teacher's access and assignments for portal display.
+
+        Args:
+            teacher_id: ID of the teacher
+
+        Returns:
+            Dictionary with teacher's portal access summary
+        """
+        try:
+            teacher = Teacher.query.get(teacher_id)
+            if not teacher:
+                return {'error': 'Teacher not found'}
+
+            # Get all class assignments
+            class_assignments = FlexibleMarksService.get_teacher_all_class_assignments(teacher_id)
+
+            # Determine teacher type
+            is_actual_class_teacher = any(ca['is_class_teacher'] for ca in class_assignments)
+            is_subject_only_teacher = not is_actual_class_teacher and len(class_assignments) > 0
+
+            # Count totals
+            total_classes = len(class_assignments)
+            total_subjects = sum(len(ca['subjects']) for ca in class_assignments)
+
+            return {
+                'teacher': teacher,
+                'is_actual_class_teacher': is_actual_class_teacher,
+                'is_subject_only_teacher': is_subject_only_teacher,
+                'can_access_portal': len(class_assignments) > 0,
+                'class_assignments': class_assignments,
+                'total_classes': total_classes,
+                'total_subjects': total_subjects,
+                'portal_type': 'Class Teacher' if is_actual_class_teacher else 'Subject Teacher'
+            }
+
+        except Exception as e:
+            print(f"Error getting teacher portal summary: {str(e)}")
+            return {'error': str(e)}

@@ -61,11 +61,12 @@ def teacher_login():
 
 @auth_bp.route('/classteacher_login', methods=['GET', 'POST'])
 def classteacher_login():
-    """Route for class teacher login."""
+    """Route for class teacher login. Also allows subject teachers with class assignments."""
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
 
+        # First try to authenticate as classteacher
         teacher = authenticate_teacher(username, password, 'classteacher')
 
         if teacher:
@@ -73,6 +74,24 @@ def classteacher_login():
             session['role'] = 'classteacher'
             session.permanent = True
             return redirect(url_for('classteacher.dashboard'))
+
+        # If classteacher auth failed, try as subject teacher with class assignments
+        teacher = authenticate_teacher(username, password, 'teacher')
+
+        if teacher:
+            # Check if this subject teacher has class assignments
+            from ..services.flexible_marks_service import FlexibleMarksService
+            can_access = FlexibleMarksService.can_teacher_access_classteacher_portal(teacher.id)
+
+            if can_access:
+                session['teacher_id'] = teacher.id
+                session['role'] = 'teacher'  # Keep original role but allow access
+                session.permanent = True
+                return redirect(url_for('classteacher.dashboard'))
+            else:
+                return render_template('classteacher_login.html',
+                                     error='You don\'t have any class assignments. Please use the subject teacher portal.')
+
         return render_template('classteacher_login.html', error='Invalid credentials')
 
     return render_template('classteacher_login.html')
