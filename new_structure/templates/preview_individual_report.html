@@ -597,8 +597,10 @@
             {% endif %}
             <td>{{ row.remarks | replace(' (TBD)', '') }}</td>
             <td>
-              {{ subject_teachers.get(row.subject, {}).get('username', 'Not
-              Assigned') if subject_teachers else 'Not Assigned' }}
+              {% if subject_teachers and subject_teachers.get(row.subject) %} {{
+              subject_teachers.get(row.subject).full_name or
+              subject_teachers.get(row.subject).username }} {% else %} Not
+              Assigned {% endif %}
             </td>
           </tr>
 
@@ -675,8 +677,8 @@
           and practice regularly. {% endif %}
         </p>
         <p>
-          Class Teacher: {{ staff_info.class_teacher_name|default('Not
-          Assigned') }}
+          Class Teacher: {% if staff_info and staff_info.class_teacher %}{{
+          staff_info.class_teacher.name }}{% else %}Not Assigned{% endif %}
         </p>
 
         <h3>Head Teacher's Remarks:</h3>
@@ -692,8 +694,8 @@
           endif %}
         </p>
         <p>
-          Head Teacher Name: {{ staff_info.headteacher_name|default('Head
-          Teacher') }}
+          Head Teacher Name: {% if staff_info and staff_info.headteacher %}{{
+          staff_info.headteacher.name }}{% else %}Head Teacher{% endif %}
         </p>
         <p>Head Teacher Signature: ____________________</p>
         <p>

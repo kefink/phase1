@@ -2465,17 +2465,23 @@
                                                     type="number"
                                                     id="component_marks_{{ subject_index }}_{{ component.id }}"
                                                     name="component_max_marks_{{ subject_index }}_{{ component.id }}"
-                                                    value="{{ component.max_raw_mark }}"
+                                                    value="{{ component.max_raw_mark or 100 }}"
                                                     min="1"
-                                                    max="1000"
+                                                    max="100"
                                                     class="component-max-marks"
                                                     data-subject="{{ subject.id }}"
                                                     data-component="{{ component.id }}"
                                                     data-subject-index="{{ subject_index }}"
                                                     data-component-weight="{{ component.weight }}"
-                                                    onchange="updateComponentMaxMarks('{{ subject.id }}', {{ subject_index }})"
+                                                    onchange="validateMaxMarks(this); updateComponentMaxMarks('{{ subject.id }}', '{{ component.id }}', this)"
+                                                    oninput="validateMaxMarks(this)"
+                                                    title="Maximum raw marks for {{ component.name }} component (Max: 100)"
+                                                    onchange="updateComponentMaxMarks('{{ subject.id }}', '{{ component.id }}', this)"
                                                 >
                                                 <span class="component-weight">{{ component.name }}</span>
+                                                <small class="component-proportion" id="proportion_{{ subject.id }}_{{ component.id }}" style="color: #666; font-size: 11px; display: block;">
+                                                    Weight: calculating...
+                                                </small>
                                             </div>
                                         </div>
                                         {% endfor %}
@@ -2498,10 +2504,12 @@
                                         name="total_marks_{{ loop.index0 }}"
                                         value="{{ total_marks }}"
                                         min="1"
-                                        max="1000"
+                                        max="100"
                                         class="subject-total-marks"
                                         data-subject="{{ subject.id }}"
-                                        onchange="updateAllMarksForSubject('{{ subject.id }}', {{ loop.index0 }})"
+                                        onchange="updateAllMarksForSubject('{{ subject.id }}', {{ loop.index0 }}); validateMaxMarks(this)"
+                                        oninput="validateMaxMarks(this)"
+                                        title="Maximum raw marks for this subject (Max: 100)"
                                     >
                                 </div>
                                 {% endif %}
@@ -2563,10 +2571,10 @@
                                                             data-component="{{ component.id }}"
                                                             data-component-weight="{{ component.weight }}"
                                                             data-subject-index="{{ subject_index }}"
-                                                            data-max-mark="{{ component.max_raw_mark or total_marks }}"
+                                                            data-max-mark="{{ component.max_raw_mark or 100 }}"
                                                             oninput="updateComponentPercentage(this); calculateOverallSubjectMark('{{ student.name.replace(' ', '_') }}', '{{ subject.id }}')"
                                                             onchange="updateComponentPercentage(this); calculateOverallSubjectMark('{{ student.name.replace(' ', '_') }}', '{{ subject.id }}')"
-                                                            title="Enter raw mark for {{ component.name }} (Max: {{ component.max_raw_mark or total_marks }})">
+                                                            title="Enter raw mark for {{ component.name }} (Max: {{ component.max_raw_mark or 100 }})">
                                                     </div>
                                                 </div>
                                                 {% endfor %}
@@ -3754,6 +3762,123 @@
     </style>
 
     <script>
+        // Function to update component max marks and recalculate all student marks
+        function updateComponentMaxMarks(subjectId, componentId, maxMarkInput) {
+            const newMaxMark = parseInt(maxMarkInput.value) || 100;
+            console.log(`Updating component ${componentId} max marks to ${newMaxMark}`);
+
+            // Update all student input fields for this component with the new max mark
+            const componentMarkInputs = document.querySelectorAll(`input.component-mark[data-subject="${subjectId}"][data-component="${componentId}"]`);
+
+            componentMarkInputs.forEach(input => {
+                // Update the max mark data attribute
+                input.dataset.maxMark = newMaxMark;
+                input.max = newMaxMark;
+
+                // If current value exceeds new max, cap it
+                const currentValue = parseInt(input.value) || 0;
+                if (currentValue > newMaxMark) {
+                    input.value = newMaxMark;
+                }
+
+                // Recalculate the overall mark for this student
+                const student = input.dataset.student;
+                calculateOverallSubjectMark(student, subjectId);
+            });
+
+            console.log(`Updated ${componentMarkInputs.length} component mark inputs`);
+
+            // Update the proportional weight display for this subject
+            updateProportionalWeights(subjectId);
+        }
+
+        // Function to calculate and display proportional weights for a subject
+        function updateProportionalWeights(subjectId) {
+            // Find all component max mark inputs for this subject
+            const componentMaxInputs = document.querySelectorAll(`input.component-max-marks[data-subject="${subjectId}"]`);
+
+            let totalMaxMarks = 0;
+            const componentData = [];
+
+            // Calculate total max marks and collect component data
+            componentMaxInputs.forEach(input => {
+                const maxMark = parseInt(input.value) || 100;
+                const componentId = input.dataset.component;
+
+                totalMaxMarks += maxMark;
+                componentData.push({
+                    componentId: componentId,
+                    maxMark: maxMark
+                });
+            });
+
+            // Update the weight display for each component
+            componentData.forEach(data => {
+                const proportion = totalMaxMarks > 0 ? (data.maxMark / totalMaxMarks * 100).toFixed(1) : 0;
+                const proportionElement = document.getElementById(`proportion_${subjectId}_${data.componentId}`);
+
+                if (proportionElement) {
+                    proportionElement.textContent = `Weight: ${proportion}% (${data.maxMark}/${totalMaxMarks})`;
+                }
+            });
+
+            console.log(`Updated proportional weights for subject ${subjectId}: total max marks = ${totalMaxMarks}`);
+        }
+
+        // Function to validate maximum marks (should not exceed 100)
+        function validateMaxMarks(inputElement) {
+            const value = parseFloat(inputElement.value) || 0;
+            const maxAllowed = 100;
+
+            if (value > maxAllowed) {
+                // Cap the value at maximum allowed
+                inputElement.value = maxAllowed;
+
+                // Show visual feedback
+                inputElement.style.borderColor = '#dc3545';
+                inputElement.style.backgroundColor = '#fff5f5';
+
+                // Show temporary warning message
+                const warningMsg = document.createElement('div');
+                warningMsg.textContent = `Maximum raw marks cannot exceed ${maxAllowed}. Value capped at ${maxAllowed}.`;
+                warningMsg.style.cssText = `
+                    position: absolute;
+                    background: #dc3545;
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    z-index: 1000;
+                    margin-top: 5px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                `;
+
+                // Position the warning near the input
+                const rect = inputElement.getBoundingClientRect();
+                warningMsg.style.left = rect.left + 'px';
+                warningMsg.style.top = (rect.bottom + window.scrollY) + 'px';
+
+                document.body.appendChild(warningMsg);
+
+                // Remove warning after 3 seconds
+                setTimeout(() => {
+                    if (warningMsg.parentNode) {
+                        warningMsg.parentNode.removeChild(warningMsg);
+                    }
+                    // Reset input styling
+                    inputElement.style.borderColor = '';
+                    inputElement.style.backgroundColor = '';
+                }, 3000);
+
+                console.log(`Max marks validation: ${value} exceeded ${maxAllowed}, capped to ${maxAllowed}`);
+            }
+
+            // Ensure minimum value is 1
+            if (value < 1 && value !== 0) {
+                inputElement.value = 1;
+            }
+        }
+
         // Function to update percentage based on raw mark and total marks
         function updatePercentage(inputElement) {
             console.log("Updating percentage...");
@@ -3899,31 +4024,24 @@
 
             if (componentInputs.length === 0) return;
 
-            let totalWeightedPercentage = 0;
-            let totalWeight = 0;
+            // First, calculate the total possible marks across all components
+            let totalMaxMarks = 0;
+            let totalRawMarks = 0;
 
-            // Calculate weighted percentage for each component
+            // Calculate total raw marks and total max marks
             componentInputs.forEach(input => {
                 const rawMark = parseInt(input.value) || 0;
                 const maxMark = parseInt(input.dataset.maxMark) || 100;
-                const weight = parseFloat(input.dataset.componentWeight) || 1.0;
 
-                // Calculate percentage for this component (out of 100%)
-                const percentage = maxMark > 0 ? (rawMark / maxMark) * 100 : 0;
+                totalRawMarks += rawMark;
+                totalMaxMarks += maxMark;
 
-                // Apply the weight to get the weighted contribution to the final mark
-                const weightedContribution = percentage * weight;
-
-                // Add to the total
-                totalWeightedPercentage += weightedContribution;
-                totalWeight += weight;
-
-                console.log(`Component: ${input.dataset.component}, Raw: ${rawMark}, Max: ${maxMark}, Weight: ${weight}, Percentage: ${percentage.toFixed(1)}%, Weighted: ${weightedContribution.toFixed(1)}`);
+                console.log(`Component: ${input.dataset.component}, Raw: ${rawMark}, Max: ${maxMark}`);
             });
 
-            // Calculate overall percentage using weighted average
-            const overallPercentage = totalWeight > 0 ? totalWeightedPercentage / totalWeight : 0;
-            console.log(`Total weighted percentage: ${totalWeightedPercentage.toFixed(1)}, Total weight: ${totalWeight}, Overall: ${overallPercentage.toFixed(1)}%`);
+            // Calculate overall percentage as: (total raw marks / total max marks) * 100
+            const overallPercentage = totalMaxMarks > 0 ? (totalRawMarks / totalMaxMarks) * 100 : 0;
+            console.log(`Total Raw: ${totalRawMarks}, Total Max: ${totalMaxMarks}, Overall: ${overallPercentage.toFixed(1)}%`);
 
             // Round the overall percentage to a whole number
             const roundedOverallPercentage = Math.round(overallPercentage);
@@ -4139,6 +4257,18 @@
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             initializeSelectedSubjects();
+
+            // Initialize proportional weights for all composite subjects
+            const allSubjects = document.querySelectorAll('input.component-max-marks');
+            const processedSubjects = new Set();
+
+            allSubjects.forEach(input => {
+                const subjectId = input.dataset.subject;
+                if (!processedSubjects.has(subjectId)) {
+                    updateProportionalWeights(subjectId);
+                    processedSubjects.add(subjectId);
+                }
+            });
         });
 
         // Function to validate form before submission
@@ -4490,15 +4620,15 @@
             const totalMarksInput = document.getElementById(`total_marks_${subjectIndex}`);
             let totalMarks = parseFloat(totalMarksInput.value) || 100;
 
-            // Enforce reasonable limits on total marks
+            // Enforce reasonable limits on total marks (maximum 100)
             if (totalMarks < 1) {
                 console.log(`Total marks too low (${totalMarks}), setting to 1`);
                 totalMarksInput.value = 1;
                 totalMarks = 1;
-            } else if (totalMarks > 1000) {
-                console.log(`Total marks too high (${totalMarks}), capping at 1000`);
-                totalMarksInput.value = 1000;
-                totalMarks = 1000;
+            } else if (totalMarks > 100) {
+                console.log(`Total marks too high (${totalMarks}), capping at 100`);
+                totalMarksInput.value = 100;
+                totalMarks = 100;
             }
 
             console.log(`Using total marks: ${totalMarks}`);

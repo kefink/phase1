@@ -26,6 +26,7 @@ class StaffAssignmentService:
             stream_obj = Stream.query.filter_by(name=stream).first()
 
             if not grade_obj or not stream_obj:
+                print(f"Grade or stream not found: {grade}, {stream}")
                 return None
 
             # Find class teacher assignment
@@ -37,7 +38,22 @@ class StaffAssignmentService:
                 )
             ).first()
 
-            return assignment.teacher if assignment else None
+            if assignment:
+                print(f"Found class teacher assignment: {assignment.teacher.username} for {grade} {stream}")
+                return assignment.teacher
+            else:
+                print(f"No class teacher assignment found for {grade} {stream}")
+                # Try to find any teacher assigned to this grade/stream and check if they should be class teacher
+                all_assignments = TeacherSubjectAssignment.query.filter(
+                    and_(
+                        TeacherSubjectAssignment.grade_id == grade_obj.id,
+                        TeacherSubjectAssignment.stream_id == stream_obj.id
+                    )
+                ).all()
+                print(f"Found {len(all_assignments)} total assignments for {grade} {stream}")
+                for assign in all_assignments:
+                    print(f"  - {assign.teacher.username} teaches {assign.subject.name}, is_class_teacher: {assign.is_class_teacher}")
+                return None
 
         except Exception as e:
             print(f"Error getting class teacher: {str(e)}")
@@ -303,3 +319,87 @@ class StaffAssignmentService:
                 for subject, teacher in subject_teachers.items()
             }
         }
+
+    @staticmethod
+    def fix_kevin_class_teacher_assignment():
+        """
+        Debug function to ensure Kevin is properly assigned as class teacher for Grade 9B.
+        This should be called once to fix the assignment.
+        """
+        try:
+            # Find Kevin
+            kevin = Teacher.query.filter_by(username='kevin').first()
+            if not kevin:
+                print("Kevin not found in teachers table")
+                return False
+
+            # Find Grade 9
+            grade_9 = Grade.query.filter_by(name='Grade 9').first()
+            if not grade_9:
+                print("Grade 9 not found")
+                return False
+
+            # Find Stream B
+            stream_b = Stream.query.filter_by(name='B').first()
+            if not stream_b:
+                print("Stream B not found")
+                return False
+
+            print(f"Found Kevin (ID: {kevin.id}), Grade 9 (ID: {grade_9.id}), Stream B (ID: {stream_b.id})")
+
+            # Check if Kevin has any assignments for Grade 9 Stream B
+            existing_assignments = TeacherSubjectAssignment.query.filter(
+                and_(
+                    TeacherSubjectAssignment.teacher_id == kevin.id,
+                    TeacherSubjectAssignment.grade_id == grade_9.id,
+                    TeacherSubjectAssignment.stream_id == stream_b.id
+                )
+            ).all()
+
+            print(f"Kevin has {len(existing_assignments)} existing assignments for Grade 9 Stream B")
+
+            if existing_assignments:
+                # Mark one of his assignments as class teacher
+                assignment = existing_assignments[0]
+                assignment.is_class_teacher = True
+                print(f"Marked Kevin's {assignment.subject.name} assignment as class teacher")
+            else:
+                # Create a new assignment for Kevin as class teacher
+                # Get a default subject (Mathematics)
+                math_subject = Subject.query.filter_by(name='MATHEMATICS').first()
+                if not math_subject:
+                    math_subject = Subject.query.first()  # Get any subject
+
+                if math_subject:
+                    new_assignment = TeacherSubjectAssignment(
+                        teacher_id=kevin.id,
+                        subject_id=math_subject.id,
+                        grade_id=grade_9.id,
+                        stream_id=stream_b.id,
+                        is_class_teacher=True
+                    )
+                    db.session.add(new_assignment)
+                    print(f"Created new class teacher assignment for Kevin: {math_subject.name}")
+
+            # Remove class teacher flag from any other teachers for Grade 9 Stream B
+            other_class_teachers = TeacherSubjectAssignment.query.filter(
+                and_(
+                    TeacherSubjectAssignment.teacher_id != kevin.id,
+                    TeacherSubjectAssignment.grade_id == grade_9.id,
+                    TeacherSubjectAssignment.stream_id == stream_b.id,
+                    TeacherSubjectAssignment.is_class_teacher == True
+                )
+            ).all()
+
+            for assignment in other_class_teachers:
+                assignment.is_class_teacher = False
+                print(f"Removed class teacher flag from {assignment.teacher.username}")
+
+            db.session.commit()
+            print("✅ Kevin's class teacher assignment fixed successfully")
+            return True
+
+        except Exception as e:
+            print(f"Error fixing Kevin's assignment: {str(e)}")
+            db.session.rollback()
+            return False

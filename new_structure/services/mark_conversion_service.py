@@ -44,8 +44,8 @@ class MarkConversionService:
             max_raw_mark = float(max_raw_mark)
 
             # Enforce reasonable limits on raw marks and max_raw_mark
-            # No subject should have more than 1000 marks as a maximum
-            if max_raw_mark > 1000:
+            # No subject should have more than 100 marks as a maximum
+            if max_raw_mark > 100:
                 return False
 
             # Check if raw mark is within range (0 to max_raw_mark)
@@ -81,10 +81,10 @@ class MarkConversionService:
             raw_mark = float(raw_mark)
             max_raw_mark = float(max_raw_mark)
 
-            # Enforce reasonable limits on max_raw_mark (cap at 1000)
-            if max_raw_mark > 1000:
-                logger.warning(f"Max raw mark {max_raw_mark} exceeds limit of 1000. Capping to 1000.")
-                max_raw_mark = 1000
+            # Enforce reasonable limits on max_raw_mark (cap at 100)
+            if max_raw_mark > 100:
+                logger.warning(f"Max raw mark {max_raw_mark} exceeds limit of 100. Capping to 100.")
+                max_raw_mark = 100
 
             # Enforce minimum value for max_raw_mark
             if max_raw_mark < 1:

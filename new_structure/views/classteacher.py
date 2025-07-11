@@ -280,6 +280,9 @@ def dashboard():
     print(f"DEBUG: Classteacher dashboard accessed")
     print(f"DEBUG: Session contents: {dict(session)}")
 
+    # Clean up any invalid marks on dashboard load
+    cleanup_invalid_marks()
+
     # Get the teacher
     teacher_id = session.get('teacher_id')
     print(f"DEBUG: Teacher ID from session: {teacher_id}")
@@ -2191,7 +2194,13 @@ def preview_class_report(grade, stream, term, assessment_type):
 
     # Get staff information for the report
     from ..services.staff_assignment_service import StaffAssignmentService
-    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream)
+    # Extract stream letter (e.g., "Stream B" -> "B", "B" -> "B")
+    if stream.startswith("Stream "):
+        stream_letter = stream.replace("Stream ", "")
+    else:
+        # Handle cases like "B" or extract last character for other formats
+        stream_letter = stream[-1] if len(stream) > 1 else stream
+    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream_letter)
 
     # Get school information for dynamic display
     from ..services.school_config_service import SchoolConfigService
@@ -2200,6 +2209,25 @@ def preview_class_report(grade, stream, term, assessment_type):
     # Get dynamic logo URL from school setup
     logo_path = SchoolConfigService.get_school_logo_path()
     logo_url = url_for('static', filename=logo_path)
+
+    # Get report configuration and visibility settings
+    from ..services.report_config_service import ReportConfigService
+    report_config_data = ReportConfigService.get_comprehensive_report_data(grade, stream_letter, term)
+    if report_config_data:
+        visibility = report_config_data.get('visibility', {
+            'show_class_teacher': True,
+            'show_headteacher': True,
+            'show_deputy_headteacher': False,  # Default to False if not configured
+            'show_principal': False
+        })
+    else:
+        # Default visibility settings
+        visibility = {
+            'show_class_teacher': True,
+            'show_headteacher': True,
+            'show_deputy_headteacher': False,
+            'show_principal': False
+        }
 
     return render_template(
         'preview_class_report.html',
@@ -2223,7 +2251,8 @@ def preview_class_report(grade, stream, term, assessment_type):
         filtered_subjects=filtered_subjects,  # Pass filtered subject objects
         staff_info=staff_info,  # Pass staff information
         school_info=school_info,  # Pass school information
-        logo_url=logo_url  # Pass dynamic logo URL
+        logo_url=logo_url,  # Pass dynamic logo URL
+        visibility=visibility  # Pass visibility settings
     )
 
 @classteacher_bp.route('/edit_class_marks/<grade>/<stream>/<term>/<assessment_type>')
@@ -2946,17 +2975,31 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
 
     # Get staff information for dynamic teacher names
     from ..services.staff_assignment_service import StaffAssignmentService
-    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream)
+    # Extract stream letter (e.g., "Stream B" -> "B")
+    stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else (stream[-1] if len(stream) > 1 else stream)
+    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream_letter)
 
     # Get subject teachers mapping for the teacher column
-    subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream)
+    subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream_letter)
 
     # Initialize composite_data as empty dict (will be populated if needed)
     composite_data = {}
 
-    # Get term information (placeholder for future implementation)
+    # Get term information from report configuration
+    from ..services.report_config_service import ReportConfigService
+    report_config_data = ReportConfigService.get_comprehensive_report_data(grade, stream_letter, term)
+    if report_config_data and report_config_data.get('term_info'):
+        term_config = report_config_data['term_info']
+        next_term_opening = term_config.get('opening_date')
+        if next_term_opening:
+            next_term_opening_str = next_term_opening.strftime('%B %d, %Y') if hasattr(next_term_opening, 'strftime') else str(next_term_opening)
+        else:
+            next_term_opening_str = 'TBD'
+    else:
+        next_term_opening_str = 'TBD'
+
     term_info = {
-        'next_term_opening_date': 'TBD',  # This can be configured later
+        'next_term_opening_date': next_term_opening_str,
         'current_term': term,
         'academic_year': academic_year
     }
@@ -3247,14 +3290,28 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
 
     # Get staff information for dynamic teacher names
     from ..services.staff_assignment_service import StaffAssignmentService
-    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream)
+    # Extract stream letter (e.g., "Stream B" -> "B")
+    stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else (stream[-1] if len(stream) > 1 else stream)
+    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream_letter)
 
     # Get subject teachers mapping for the teacher column
-    subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream)
+    subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream_letter)
 
-    # Get term information (placeholder for future implementation)
+    # Get term information from report configuration
+    from ..services.report_config_service import ReportConfigService
+    report_config_data = ReportConfigService.get_comprehensive_report_data(grade, stream_letter, term)
+    if report_config_data and report_config_data.get('term_info'):
+        term_config = report_config_data['term_info']
+        next_term_opening = term_config.get('opening_date')
+        if next_term_opening:
+            next_term_opening_str = next_term_opening.strftime('%B %d, %Y') if hasattr(next_term_opening, 'strftime') else str(next_term_opening)
+        else:
+            next_term_opening_str = 'TBD'
+    else:
+        next_term_opening_str = 'TBD'
+
     term_info = {
-        'next_term_opening_date': 'TBD',  # This can be configured later
+        'next_term_opening_date': next_term_opening_str,
         'current_term': term,
         'academic_year': academic_year
     }
@@ -8822,3 +8879,63 @@ def report_configuration():
         print(f"Error in report configuration: {e}")
         flash(f'Error loading report configuration: {str(e)}', 'error')
         return redirect(url_for('classteacher.dashboard'))
+
+def cleanup_invalid_marks():
+    """Clean up marks that exceed 100% or have invalid values."""
+    try:
+        from ..services.mark_conversion_service import MarkConversionService
+
+        # First, fix component max marks that are set to 50 (should be 100)
+        from ..models.academic import SubjectComponent
+        components_to_fix = SubjectComponent.query.filter(SubjectComponent.max_raw_mark == 50).all()
+
+        for component in components_to_fix:
+            component.max_raw_mark = 100
+            print(f"Updated component {component.name} max_raw_mark from 50 to 100")
+
+        # Find marks with percentages > 100%
+        invalid_marks = Mark.query.filter(Mark.percentage > 100).all()
+
+        for mark in invalid_marks:
+            # Recalculate percentage using the service
+            if mark.raw_total_marks and mark.raw_total_marks > 0:
+                # Sanitize the raw mark and max mark
+                sanitized_raw_mark, sanitized_max_mark = MarkConversionService.sanitize_raw_mark(
+                    mark.raw_mark or mark.mark,
+                    mark.raw_total_marks
+                )
+
+                # Update the mark with sanitized values
+                mark.raw_mark = sanitized_raw_mark
+                mark.mark = sanitized_raw_mark  # Update old field name too
+                mark.raw_total_marks = sanitized_max_mark
+                mark.total_marks = sanitized_max_mark  # Update old field name too
+                mark.percentage = MarkConversionService.calculate_percentage(sanitized_raw_mark, sanitized_max_mark)
+
+                print(f"Fixed invalid mark: {mark.id} - {sanitized_raw_mark}/{sanitized_max_mark} = {mark.percentage}%")
+
+        # Find component marks with percentages > 100%
+        from ..models.academic import ComponentMark
+        invalid_component_marks = ComponentMark.query.filter(ComponentMark.percentage > 100).all()
+
+        for comp_mark in invalid_component_marks:
+            if comp_mark.max_raw_mark and comp_mark.max_raw_mark > 0:
+                # Sanitize the component mark
+                sanitized_raw_mark, sanitized_max_mark = MarkConversionService.sanitize_raw_mark(
+                    comp_mark.raw_mark,
+                    comp_mark.max_raw_mark
+                )
+
+                # Update the component mark with sanitized values
+                comp_mark.raw_mark = sanitized_raw_mark
+                comp_mark.max_raw_mark = sanitized_max_mark
+                comp_mark.percentage = MarkConversionService.calculate_percentage(sanitized_raw_mark, sanitized_max_mark)
+
+                print(f"Fixed invalid component mark: {comp_mark.id} - {sanitized_raw_mark}/{sanitized_max_mark} = {comp_mark.percentage}%")
+
+        db.session.commit()
+        print("Database cleanup completed successfully")
+
+    except Exception as e:
+        print(f"Error during database cleanup: {str(e)}")
+        db.session.rollback()
