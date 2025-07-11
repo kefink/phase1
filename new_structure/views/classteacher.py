@@ -29,6 +29,7 @@ from ..services.report_config_service import ReportConfigService
 from ..utils.database_health import check_database_health, create_missing_tables, safe_table_operation
 from ..services.permission_service import PermissionService
 from ..models.function_permission import DefaultFunctionPermissions
+from ..services.flexible_marks_service import FlexibleMarksService
 from functools import wraps
 
 # Create a blueprint for class teacher routes
@@ -482,29 +483,55 @@ def dashboard():
                     # Get students for this stream
                     students = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name).all()
 
-                    # Get subjects for this education level
-                    all_subjects = Subject.query.filter_by(education_level=education_level).all()
+                    # Get subjects with upload status using flexible service
+                    teacher_id = session.get('teacher_id')
+                    subjects_with_status = FlexibleMarksService.get_all_subjects_with_upload_status(
+                        teacher_id, grade_level, stream_letter, education_level, term, assessment_type
+                    )
+
+                    # Convert to Subject objects for backward compatibility
+                    all_subjects = []
+                    uploadable_subjects = []
+
+                    for subject_info in subjects_with_status:
+                        subject_obj = Subject.query.get(subject_info['id'])
+                        if subject_obj:
+                            # Add upload status information to the subject object
+                            subject_obj.upload_status = subject_info['upload_status']
+                            subject_obj.assigned_to_me = subject_info['assigned_to_me']
+                            subject_obj.can_upload = subject_info['can_upload']
+                            subject_obj.uploaded_by = subject_info.get('uploaded_by')
+                            subject_obj.marks_count = subject_info.get('marks_count', 0)
+
+                            all_subjects.append(subject_obj)
+
+                            # Only include subjects the teacher can upload
+                            if subject_info['can_upload']:
+                                uploadable_subjects.append(subject_obj)
 
                     # Define core subjects that should appear first
                     core_subjects = ["Mathematics", "English", "Kiswahili", "Science", "Integrated Science",
                                     "Science and Technology", "Integrated Science and Health Education"]
 
-                    # Sort subjects with core subjects first
+                    # Sort uploadable subjects with core subjects first
                     sorted_subjects = []
 
                     # First add core subjects in the specified order
                     for core_subject in core_subjects:
-                        for subject in all_subjects:
+                        for subject in uploadable_subjects:
                             if subject.name == core_subject or subject.name.upper() == core_subject.upper():
                                 sorted_subjects.append(subject)
 
                     # Then add remaining subjects alphabetically
-                    remaining_subjects = [s for s in all_subjects if s not in sorted_subjects]
+                    remaining_subjects = [s for s in uploadable_subjects if s not in sorted_subjects]
                     remaining_subjects.sort(key=lambda x: x.name)
                     sorted_subjects.extend(remaining_subjects)
 
-                    # Use the full Subject objects instead of just names
+                    # Use the filtered and sorted subjects
                     subjects = sorted_subjects
+
+                    # Store all subjects info for display in template
+                    session['all_subjects_status'] = subjects_with_status
 
                     if students and subjects:
                         show_students = True
@@ -572,10 +599,26 @@ def dashboard():
                     else:
                         # Filter subjects to only include selected ones
                         selected_subject_ids = [int(subject_id) for subject_id in selected_subjects]
-                        subjects = [subject for subject in sorted_subjects if subject.id in selected_subject_ids]
 
-                        # Store selected subjects in session for report generation
-                        session['selected_subjects'] = selected_subject_ids
+                        # Validate that teacher can upload all selected subjects
+                        teacher_id = session.get('teacher_id')
+                        invalid_subjects = []
+
+                        for subject_id in selected_subject_ids:
+                            can_upload = FlexibleMarksService.check_teacher_can_upload_subject(
+                                teacher_id, subject_id, grade_level, stream_letter
+                            )
+                            if not can_upload:
+                                subject_obj = Subject.query.get(subject_id)
+                                invalid_subjects.append(subject_obj.name if subject_obj else f"Subject ID {subject_id}")
+
+                        if invalid_subjects:
+                            error_message = f"You are not assigned to upload marks for: {', '.join(invalid_subjects)}. Please contact the headteacher for subject assignments."
+                        else:
+                            subjects = [subject for subject in sorted_subjects if subject.id in selected_subject_ids]
+
+                            # Store selected subjects in session for report generation
+                            session['selected_subjects'] = selected_subject_ids
 
                         if not (students and subjects):
                             error_message = "No students or subjects found"

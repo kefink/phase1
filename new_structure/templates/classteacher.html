@@ -2415,10 +2415,76 @@
                     <input type="hidden" name="assessment_type" value="{{ assessment_type }}">
                     <input type="hidden" name="total_marks" value="{{ total_marks }}">
 
+                    <!-- Subject Upload Status Dashboard -->
+                    {% if session.all_subjects_status %}
+                    <div class="subject-status-dashboard" style="margin-bottom: 20px;">
+                        <h4>📊 Subject Upload Status Overview</h4>
+                        <p class="help-text">View which subjects have been uploaded and by whom. You can only upload subjects assigned to you.</p>
+
+                        <div class="status-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            {% for subject_info in session.all_subjects_status %}
+                            <div class="status-card {% if subject_info.assigned_to_me %}assigned-to-me{% endif %}"
+                                 style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: {% if subject_info.assigned_to_me %}#f8f9ff{% else %}#f8f8f8{% endif %};">
+
+                                <div class="status-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <h5 style="margin: 0; color: #333;">{{ subject_info.name }}</h5>
+                                    {% if subject_info.assigned_to_me %}
+                                        <span class="assignment-badge" style="background: #007bff; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px;">
+                                            ASSIGNED TO YOU
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="status-info">
+                                    {% if subject_info.upload_status == 'uploaded_by_me' %}
+                                        <div class="status-item" style="color: #155724; font-weight: 500;">
+                                            ✅ Uploaded by you
+                                        </div>
+                                        <div class="marks-count" style="font-size: 12px; color: #666;">
+                                            {{ subject_info.marks_count }} student marks
+                                        </div>
+                                    {% elif subject_info.upload_status == 'uploaded_by_subject_teacher' %}
+                                        <div class="status-item" style="color: #0c5460; font-weight: 500;">
+                                            ✅ Uploaded by {{ subject_info.uploaded_by.username if subject_info.uploaded_by else 'Subject Teacher' }}
+                                        </div>
+                                        <div class="marks-count" style="font-size: 12px; color: #666;">
+                                            {{ subject_info.marks_count }} student marks
+                                        </div>
+                                    {% elif subject_info.upload_status == 'not_uploaded' %}
+                                        <div class="status-item" style="color: #856404; font-weight: 500;">
+                                            ⚠️ Not uploaded yet
+                                        </div>
+                                        {% if subject_info.assigned_to_me %}
+                                            <div class="action-hint" style="font-size: 12px; color: #007bff;">
+                                                You can upload this subject below
+                                            </div>
+                                        {% else %}
+                                            <div class="action-hint" style="font-size: 12px; color: #666;">
+                                                Waiting for subject teacher
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="status-legend" style="display: flex; gap: 20px; font-size: 12px; color: #666; border-top: 1px solid #e0e0e0; padding-top: 15px;">
+                            <div><span style="color: #155724;">✅</span> Marks uploaded</div>
+                            <div><span style="color: #856404;">⚠️</span> Pending upload</div>
+                            <div><span style="background: #007bff; color: white; padding: 1px 4px; border-radius: 3px;">ASSIGNED</span> You can upload</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <!-- Subject Selection and Total Marks Configuration Section -->
                     <div class="subject-marks-config">
-                        <h4>Select Subjects and Set Maximum Raw Marks</h4>
-                        <p class="help-text">Select which subjects to include in the report and enter the maximum possible raw marks for each subject.</p>
+                        <h4>Select Your Assigned Subjects and Set Maximum Raw Marks</h4>
+                        <p class="help-text">
+                            <strong>📚 Flexible Subject Upload:</strong> Only subjects assigned to you are shown below.
+                            This reduces your workload by allowing you to upload only the subjects you teach.
+                            Subject teachers will upload their own subjects separately.
+                        </p>
 
                         <div class="subject-selection-header">
                             <h5>Subject Selection</h5>
@@ -2427,7 +2493,10 @@
                                 <button type="button" class="btn-sm" onclick="deselectAllSubjects()">Deselect All</button>
                             </div>
                         </div>
-                        <p class="help-text">Check the subjects you want to include in the report. Unchecked subjects will not appear in the final report.</p>
+                        <p class="help-text">
+                            Check the subjects you want to upload marks for. Only your assigned subjects are shown.
+                            Upload status indicators show which subjects have already been uploaded.
+                        </p>
 
                         <div class="subject-marks-grid">
                             {% for subject in subjects %}
@@ -2444,7 +2513,24 @@
                                         data-is-composite="{{ 'true' if subject.is_composite else 'false' }}"
                                         onchange="toggleSubjectVisibility(this, '{{ subject.id }}')"
                                     >
-                                    <label for="include_subject_{{ loop.index0 }}" class="checkbox-label">{{ subject.name }}</label>
+                                    <label for="include_subject_{{ loop.index0 }}" class="checkbox-label">
+                                        {{ subject.name }}
+                                        {% if subject.upload_status %}
+                                            {% if subject.upload_status == 'uploaded_by_me' %}
+                                                <span class="upload-status uploaded-by-me" title="You have uploaded marks for this subject">
+                                                    ✓ Uploaded by you
+                                                </span>
+                                            {% elif subject.upload_status == 'uploaded_by_subject_teacher' %}
+                                                <span class="upload-status uploaded-by-other" title="Subject teacher has uploaded marks">
+                                                    ✓ Uploaded by {{ subject.uploaded_by.username if subject.uploaded_by else 'Subject Teacher' }}
+                                                </span>
+                                            {% elif subject.upload_status == 'not_uploaded' %}
+                                                <span class="upload-status not-uploaded" title="No marks uploaded yet">
+                                                    ⚠ Not uploaded
+                                                </span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </label>
                                 </div>
 
                                 {% if subject.is_composite %}
@@ -3758,6 +3844,63 @@
             opacity: 0.6;
             background-color: #f8f9fa !important;
             border: 1px dashed #dee2e6 !important;
+        }
+
+        /* Upload Status Styling */
+        .upload-status {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 12px;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .upload-status.uploaded-by-me {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .upload-status.uploaded-by-other {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .upload-status.not-uploaded {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        /* Subject selection enhancements */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            font-weight: 500;
+        }
+
+        .subject-mark-item {
+            position: relative;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #fafafa;
+            transition: all 0.2s ease;
+        }
+
+        .subject-mark-item:hover {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+
+        .subject-mark-item.composite-subject-item {
+            border-left: 4px solid #17a2b8;
         }
     </style>
 
