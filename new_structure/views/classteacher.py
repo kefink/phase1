@@ -321,12 +321,14 @@ def dashboard():
     print(f"DEBUG: Teacher type: {portal_summary['portal_type']}")
     print(f"DEBUG: Total classes: {portal_summary['total_classes']}")
 
-    if not portal_summary['can_access_portal']:
+    if not portal_summary.get('can_access_portal', False):
         flash("You don't have any class or subject assignments. Please contact the headteacher.", "error")
         # Get school information for error case
         from ..services.school_config_service import SchoolConfigService
         school_info = SchoolConfigService.get_school_info_dict()
-        return render_template("classteacher.html", school_info=school_info, portal_summary=portal_summary)
+        # Ensure portal_summary is safe for template rendering
+        safe_portal_summary = portal_summary if portal_summary and isinstance(portal_summary, dict) else {}
+        return render_template("classteacher.html", school_info=school_info, portal_summary=safe_portal_summary)
 
     # Get role-based assignment summary for classteacher
     teacher_id = session.get('teacher_id')
@@ -345,9 +347,15 @@ def dashboard():
             'can_manage_classes': False
         }
 
-    # Extract assignments for backward compatibility
-    class_teacher_assignments = assignment_summary.get('class_teacher_assignments', [])
-    subject_assignments = assignment_summary.get('subject_assignments', [])
+    # Extract assignments for backward compatibility with additional safety checks
+    class_teacher_assignments = assignment_summary.get('class_teacher_assignments', []) if assignment_summary else []
+    subject_assignments = assignment_summary.get('subject_assignments', []) if assignment_summary else []
+
+    # Ensure subject_assignments is always a list (never None or undefined)
+    if subject_assignments is None:
+        subject_assignments = []
+    if not isinstance(subject_assignments, list):
+        subject_assignments = []
 
     # Initialize variables for teacher's assigned stream/grade (if any)
     stream = None
@@ -1161,15 +1169,15 @@ def dashboard():
         total_subjects=total_subjects,
         total_grades=total_grades,
         active_tab=active_tab,  # Pass the active tab to the template
-        # Role-based assignment data
-        assignment_summary=assignment_summary,
-        total_subjects_taught=assignment_summary.get('total_subjects_taught', 0),
-        can_manage_classes=assignment_summary.get('can_manage_classes', False),
-        grades_involved=assignment_summary.get('grades_involved', []),
-        streams_involved=assignment_summary.get('streams_involved', []),
-        subjects_involved=assignment_summary.get('subjects_involved', []),
+        # Role-based assignment data with safety checks
+        assignment_summary=assignment_summary if assignment_summary else {},
+        total_subjects_taught=assignment_summary.get('total_subjects_taught', 0) if assignment_summary else 0,
+        can_manage_classes=assignment_summary.get('can_manage_classes', False) if assignment_summary else False,
+        grades_involved=assignment_summary.get('grades_involved', []) if assignment_summary else [],
+        streams_involved=assignment_summary.get('streams_involved', []) if assignment_summary else [],
+        subjects_involved=assignment_summary.get('subjects_involved', []) if assignment_summary else [],
         has_assignments=has_assignments,  # Pass assignment status to template
-        portal_summary=portal_summary  # Pass portal summary for multi-class interface
+        portal_summary=portal_summary if portal_summary and isinstance(portal_summary, dict) else {}  # Pass portal summary for multi-class interface
     )
 
 @classteacher_bp.route('/all_reports', methods=['GET'])

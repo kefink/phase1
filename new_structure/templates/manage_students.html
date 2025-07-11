@@ -871,8 +871,8 @@
     </div>
 
     <script>
-        const allGrades = {{ grades | tojson }};
-        const educationalLevelMapping = {{ educational_level_mapping | tojson }};
+        const allGrades = {{ (grades or []) | tojson }};
+        const educationalLevelMapping = {{ (educational_level_mapping or {}) | tojson }};
 
         document.addEventListener('DOMContentLoaded', function() {
             const successMessage = "{{ success_message|safe if success_message else '' }}";

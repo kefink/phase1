@@ -3633,7 +3633,7 @@
         // Enhanced JavaScript with education level filtering and composite subject support
         let gradeMapping = {};
         let currentSubjectInfo = null;
-        const subjectsByEducationLevel = {{ subjects_by_education_level | tojson }};
+        const subjectsByEducationLevel = {{ (subjects_by_education_level or {}) | tojson }};
 
         // Debug functions
         function debugLog(message) {

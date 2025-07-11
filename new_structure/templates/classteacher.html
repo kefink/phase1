@@ -1697,10 +1697,10 @@
                         Class Teacher Dashboard
                     </h1>
                     <p class="header-subtitle">
-                        Welcome back, <strong>{{ session.username }}</strong>!
+                        Welcome back, <strong>{{ session.get('username', 'Teacher') }}</strong>!
                         <span class="modern-badge badge-info">
                             <i class="fas fa-user-tie"></i>
-                            {{ session.role.replace('_', ' ').title() }}
+                            {{ session.get('role', 'teacher').replace('_', ' ').title() }}
                         </span>
                     </p>
                 </div>
@@ -2478,13 +2478,13 @@
                     <input type="hidden" name="total_marks" value="{{ total_marks }}">
 
                     <!-- Subject Upload Status Dashboard -->
-                    {% if session.all_subjects_status %}
+                    {% if session.get('all_subjects_status') %}
                     <div class="subject-status-dashboard" style="margin-bottom: 20px;">
                         <h4>📊 Subject Upload Status Overview</h4>
                         <p class="help-text">View which subjects have been uploaded and by whom. You can only upload subjects assigned to you.</p>
 
                         <div class="status-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                            {% for subject_info in session.all_subjects_status %}
+                            {% for subject_info in session.get('all_subjects_status', []) %}
                             <div class="status-card {% if subject_info.assigned_to_me %}assigned-to-me{% endif %}"
                                  style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: {% if subject_info.assigned_to_me %}#f8f9ff{% else %}#f8f8f8{% endif %};">
 
@@ -6621,7 +6621,7 @@
         // ASSIGNMENT MANAGEMENT SYSTEM
         // ============================================================================
 
-        let assignmentData = {{ subject_assignments | tojson }};
+        let assignmentData = {{ (subject_assignments or []) | tojson }};
         let filteredAssignments = [...assignmentData];
         let currentAssignmentPage = 1;
         let assignmentsPerPage = 20;
