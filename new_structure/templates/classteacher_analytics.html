@@ -1,5 +1,15 @@
-{% extends "modern_base.html" %} {% block title %}Academic Performance Analytics
-- Class Teacher{% endblock %} {% block extra_css %}
+{% extends "responsive_base.html" %} {% block title %}Academic Performance
+Analytics - Class Teacher{% endblock %} {% block meta_description %}Class
+Teacher Academic Analytics - Performance insights for your assigned classes at
+{{ school_info.school_name or 'Hillview School' }}{% endblock %} {% block
+page_title %}Class Academic Analytics{% endblock %} {% block page_subtitle %}
+<p class="text-lg">Performance insights for your assigned classes</p>
+{% endblock %} {% block extra_css %}
+<!-- Responsive Framework is already included in base template -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
+/>
 <style>
   /* New Color Palette Background */
   body {
@@ -717,5 +727,4 @@
     opacity: 0.5;
   }
 </style>
-{% endblock %}
-when i o
+{% endblock %} when i o

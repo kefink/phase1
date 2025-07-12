@@ -1,11 +1,18 @@
-{% extends "modern_base.html" %} {% block title %}Academic Performance Analytics
-- Head Teacher{% endblock %} {% block header_icon %}<i
-  class="fas fa-chart-line"
-></i
->{% endblock %} {% block header_title %}School-Wide Academic Analytics{%
-endblock %} {% block header_subtitle %}Comprehensive performance insights and
-data-driven decision making for Hillview School{% endblock %} {% block extra_css
-%}
+{% extends "responsive_base.html" %} {% block title %}Academic Performance
+Analytics - Head Teacher{% endblock %} {% block meta_description %}School-Wide
+Academic Analytics - Comprehensive performance insights and data-driven decision
+making for {{ school_info.school_name or 'Hillview School' }}{% endblock %} {%
+block page_title %}School-Wide Academic Analytics{% endblock %} {% block
+page_subtitle %}
+<p class="text-lg">
+  Comprehensive performance insights and data-driven decision making
+</p>
+{% endblock %} {% block extra_css %}
+<!-- Responsive Framework is already included in base template -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
+/>
 <style>
   /* Premium Analytics Styling */
   body {

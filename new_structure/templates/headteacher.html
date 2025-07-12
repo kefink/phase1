@@ -2,26 +2,54 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0"
+    />
+    <meta
+      name="description"
+      content="Headteacher Dashboard - {{ school_info.school_name or 'Hillview School' }} Management System"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#667eea" />
+
     <title>
-      Headteacher Dashboard - {{ school_name or 'School Management System' }}
+      Headteacher Dashboard - {{ school_info.school_name or 'Hillview School
+      Management System' }}
     </title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+    <!-- Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Icons -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     />
-    <link
+
+    <!-- Legacy CSS (TEMPORARILY DISABLED for navbar debugging) -->
+    <!-- <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/headteacher.css') }}"
-    />
+    /> -->
+
     <style>
       /* Enhanced Modern Headteacher Dashboard Styles */
       :root {
@@ -98,40 +126,36 @@
         border-radius: var(--radius-sm);
       }
 
-      /* Enhanced Navigation */
+      /* Navigation */
       .navbar {
         background: linear-gradient(
           135deg,
           var(--primary-color) 0%,
           var(--secondary-color) 100%
         );
-        padding: 1rem 2rem;
-        box-shadow: var(--shadow-xl);
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1rem 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .navbar .container {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        flex-wrap: wrap;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        width: 100%;
+        box-sizing: border-box;
       }
 
       .navbar-brand {
-        color: var(--white);
+        color: white;
         font-size: 1.5rem;
         font-weight: 700;
         text-decoration: none;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        transition: all 0.3s ease;
-      }
-
-      .navbar-brand:hover {
-        transform: scale(1.05);
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       }
 
       .navbar-nav {
@@ -139,44 +163,55 @@
         list-style: none;
         margin: 0;
         padding: 0;
-        gap: 1rem;
+        gap: 0.5rem;
         align-items: center;
+        flex-wrap: nowrap;
+        overflow: visible;
       }
 
       .nav-link {
         color: rgba(255, 255, 255, 0.9);
         text-decoration: none;
         font-weight: 500;
-        padding: 0.75rem 1.25rem;
-        border-radius: var(--radius-lg);
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
         transition: all 0.3s ease;
-        position: relative;
-        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        white-space: nowrap;
+        font-size: 0.9rem;
       }
 
       .nav-link:hover {
-        color: var(--white);
+        color: white;
         background: rgba(255, 255, 255, 0.15);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transform: translateY(-1px);
       }
 
       .logout-btn {
-        background: rgba(255, 255, 255, 0.1);
-        color: var(--white);
-        padding: 0.75rem 1.5rem;
-        border-radius: var(--radius-lg);
+        color: white;
         text-decoration: none;
         font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
         transition: all 0.3s ease;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(220, 53, 69, 0.8);
+        border: 1px solid rgba(220, 53, 69, 1);
+        white-space: nowrap;
+        min-width: 80px;
+        justify-content: center;
       }
 
       .logout-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        color: white;
+        background: rgba(220, 53, 69, 1);
+        border-color: rgba(220, 53, 69, 1);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
       }
 
       /* Enhanced Dashboard Container */
@@ -1240,223 +1275,12 @@
         gap: 1rem;
         justify-content: flex-end;
       }
-
-      /* Mobile-First Responsive Enhancements for Headteacher Dashboard */
-      @media (max-width: 480px) {
-        .navbar {
-          padding: 0.75rem;
-          flex-direction: column;
-          gap: 0.75rem;
-        }
-
-        .navbar-brand {
-          font-size: 1.125rem;
-          margin-bottom: 0.5rem;
-        }
-
-        .navbar-nav {
-          flex-direction: column;
-          width: 100%;
-          gap: 0.5rem;
-        }
-
-        .nav-link {
-          padding: 0.75rem;
-          text-align: center;
-          width: 100%;
-          border-radius: 0.5rem;
-        }
-
-        .logout-btn {
-          width: 100%;
-          text-align: center;
-          margin-top: 0.5rem;
-        }
-
-        .dashboard-container {
-          padding: 0.75rem;
-        }
-
-        .section-header {
-          flex-direction: column;
-          text-align: center;
-          gap: 0.75rem;
-        }
-
-        .section-header h2 {
-          font-size: 1.25rem;
-        }
-
-        .dashboard-actions {
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        .action-btn {
-          width: 100%;
-          justify-content: center;
-          padding: 0.75rem;
-        }
-
-        /* Mobile Stats Grid */
-        .stats-grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0.75rem;
-        }
-
-        .stat-card {
-          padding: 0.75rem;
-          text-align: center;
-        }
-
-        /* Mobile Filter Panel */
-        .filter-panel {
-          margin: 0.75rem 0;
-        }
-
-        .filter-content {
-          padding: 0.75rem;
-        }
-
-        .filter-grid {
-          grid-template-columns: 1fr;
-          gap: 0.75rem;
-        }
-
-        .filter-actions {
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        .filter-actions .action-btn {
-          width: 100%;
-        }
-
-        /* Mobile Dashboard Header */
-        .dashboard-header .header-content {
-          flex-direction: column;
-          text-align: center;
-          gap: 0.75rem;
-        }
-
-        .dashboard-title {
-          font-size: 1.25rem;
-        }
-
-        .dashboard-subtitle {
-          font-size: 0.875rem;
-        }
-
-        .quick-stats {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 0.5rem;
-          width: 100%;
-        }
-
-        .quick-stat {
-          text-align: center;
-        }
-
-        .quick-stat-value {
-          font-size: 1rem;
-        }
-
-        .quick-stat-label {
-          font-size: 0.7rem;
-        }
-
-        /* Mobile Highlights */
-        .highlights-grid {
-          grid-template-columns: 1fr;
-          gap: 0.75rem;
-        }
-
-        .highlight-card {
-          padding: 0.75rem;
-          text-align: center;
-        }
-
-        .highlight-value {
-          font-size: 1.25rem;
-        }
-
-        /* Mobile Calendar Overview */
-        .calendar-overview {
-          padding: 0.75rem;
-        }
-
-        .term-header {
-          flex-direction: column;
-          text-align: center;
-          gap: 0.5rem;
-        }
-
-        .term-name {
-          font-size: 1.125rem;
-        }
-
-        .assessments-grid {
-          grid-template-columns: 1fr;
-          gap: 0.75rem;
-        }
-
-        .assessment-card {
-          padding: 0.75rem;
-          flex-direction: column;
-          text-align: center;
-          gap: 0.5rem;
-        }
-
-        .assessment-icon {
-          width: 40px;
-          height: 40px;
-          font-size: 1rem;
-        }
-
-        /* Mobile System Alerts */
-        .system-alert {
-          padding: 0.75rem;
-          flex-direction: column;
-          text-align: center;
-          gap: 0.5rem;
-        }
-
-        .alert-indicator {
-          min-width: auto;
-        }
-
-        .alert-indicator .alert-icon {
-          width: 40px;
-          height: 40px;
-          font-size: 1rem;
-        }
-
-        .alert-actions {
-          flex-direction: row;
-          gap: 0.5rem;
-          width: 100%;
-        }
-
-        .alert-btn {
-          flex: 1;
-          padding: 0.5rem;
-          font-size: 0.75rem;
-        }
-      }
     </style>
   </head>
   <body>
-    <!-- Enhanced Modern Navbar -->
+    <!-- Navigation -->
     <nav class="navbar">
-      <div
-        style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          width: 100%;
-        "
-      >
+      <div class="container">
         <a href="#" class="navbar-brand">
           {% if school_info.logo_url and school_info.logo_url !=
           '/static/images/default_logo.png' %}
@@ -1470,95 +1294,72 @@
               border-radius: 8px;
             "
           />
-          {% endif %} {{ school_info.school_name or 'Hillview School Management
-          System' }}
+          {% endif %}
+          <span
+            >{{ school_info.school_name or 'Hillview School Management System'
+            }}</span
+          >
         </a>
-
-        <!-- Mobile Navigation Toggle -->
-        <button class="mobile-nav-toggle" onclick="toggleMobileNav()">
-          <i class="fas fa-bars"></i>
-        </button>
-
-        <ul class="navbar-nav" id="navbarNav">
-          <li class="nav-item">
+        <ul class="navbar-nav">
+          <li>
             <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
-              <i class="fas fa-chart-line"></i>
-              Dashboard
+              <i class="fas fa-chart-line"></i> Dashboard
             </a>
           </li>
-          <li class="nav-item">
+          <li>
             <a href="{{ url_for('universal.dashboard') }}" class="nav-link">
-              <i class="fas fa-users-cog"></i>
-              Universal Access
+              <i class="fas fa-users-cog"></i> Universal Access
             </a>
           </li>
-          <li class="nav-item">
+          <li>
             <a
               href="{{ url_for('subject_config_api.subject_configuration_page') }}"
               class="nav-link"
             >
-              <i class="fas fa-cogs"></i>
-              Subject Configuration
+              <i class="fas fa-cogs"></i> Subject Configuration
             </a>
           </li>
-          <li class="nav-item">
+          <li>
             <a
               href="{{ url_for('admin.analytics_dashboard') }}"
               class="nav-link"
             >
-              <i class="fas fa-chart-bar"></i>
-              Analytics
+              <i class="fas fa-chart-bar"></i> Analytics
             </a>
           </li>
-          <li class="nav-item">
+          <li>
             <a href="{{ url_for('admin.reports') }}" class="nav-link">
-              <i class="fas fa-file-alt"></i>
-              Reports
+              <i class="fas fa-file-alt"></i> Reports
             </a>
           </li>
-          <li class="nav-item">
+          <li>
             <a href="{{ url_for('admin.manage_teachers') }}" class="nav-link">
-              <i class="fas fa-users"></i>
-              Staff
+              <i class="fas fa-users"></i> Staff
             </a>
           </li>
-          <li class="nav-item">
+          <li>
             <a href="{{ url_for('admin.student_promotion') }}" class="nav-link">
-              <i class="fas fa-graduation-cap"></i>
-              Student Promotion
+              <i class="fas fa-graduation-cap"></i> Student Promotion
             </a>
           </li>
-          <!-- TEMPORARILY DISABLED - Parent portal under development
-          <li class="nav-item">
-            <a
-              href="#"
-              class="nav-link"
-            >
-              <i class="fas fa-user-friends"></i>
-              Parent Management
-            </a>
-          </li>
-          -->
-          <li class="nav-item">
+          <li>
             <a
               href="{{ url_for('permission.manage_permissions') }}"
               class="nav-link"
             >
-              <i class="fas fa-key"></i>
-              Permissions
+              <i class="fas fa-key"></i> Permissions
             </a>
           </li>
-          <li class="nav-item">
+          <li>
             <a href="{{ url_for('auth.logout_route') }}" class="logout-btn">
-              <i class="fas fa-sign-out-alt"></i>
-              Logout
+              <i class="fas fa-sign-out-alt"></i> Logout
             </a>
           </li>
         </ul>
       </div>
     </nav>
 
-    <div class="dashboard-container">
+    <div class="dashboard-container container">
       <!-- Enhanced Dashboard Header with Quick Actions -->
       <div class="dashboard-header">
         <div class="header-content">
@@ -3473,42 +3274,7 @@
         });
       });
 
-      // Mobile Navigation Toggle
-      function toggleMobileNav() {
-        const navbarNav = document.getElementById('navbarNav');
-        const toggleBtn = document.querySelector('.mobile-nav-toggle i');
 
-        if (navbarNav.classList.contains('show')) {
-          navbarNav.classList.remove('show');
-          toggleBtn.className = 'fas fa-bars';
-        } else {
-          navbarNav.classList.add('show');
-          toggleBtn.className = 'fas fa-times';
-        }
-      }
-
-      // Close mobile nav when clicking outside
-      document.addEventListener('click', function(event) {
-        const navbar = document.querySelector('.navbar');
-        const navbarNav = document.getElementById('navbarNav');
-        const toggleBtn = document.querySelector('.mobile-nav-toggle');
-
-        if (!navbar.contains(event.target) && navbarNav.classList.contains('show')) {
-          navbarNav.classList.remove('show');
-          toggleBtn.querySelector('i').className = 'fas fa-bars';
-        }
-      });
-
-      // Handle window resize
-      window.addEventListener('resize', function() {
-        const navbarNav = document.getElementById('navbarNav');
-        const toggleBtn = document.querySelector('.mobile-nav-toggle i');
-
-        if (window.innerWidth > 768 && navbarNav.classList.contains('show')) {
-          navbarNav.classList.remove('show');
-          toggleBtn.className = 'fas fa-bars';
-        }
-      });
 
       // Initialize dashboard on load
       document.addEventListener('DOMContentLoaded', function() {

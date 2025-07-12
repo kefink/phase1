@@ -2,27 +2,108 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Class Teacher Dashboard - {{ school_info.school_name|default('School Management System') }}</title>
+    <meta name="description" content="Class Teacher Dashboard - {{ school_info.school_name|default('Hillview School') }} Management System">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#667eea">
 
-    <!-- Modern Fonts -->
+    <title>Class Teacher Dashboard - {{ school_info.school_name|default('Hillview School Management System') }}</title>
+
+    <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- Modern Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
-    <!-- Modern CSS Framework -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern_classteacher.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          rel="stylesheet"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
 
     <!-- Legacy CSS for compatibility -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_pages_enhanced.css') }}">
 
+    <!-- Modern CSS Framework -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern_classteacher.css') }}">
+
+
+
     <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
     <style>
+        /* Simple Navbar Styles */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-nav {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .logout-btn {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .logout-btn:hover {
+            color: white;
+            background: rgba(220, 53, 69, 0.3);
+            border-color: rgba(220, 53, 69, 0.5);
+        }
+
         .stream-status-indicator {
             display: inline-block;
             width: 12px;
@@ -1599,81 +1680,57 @@
     </div>
     {% endif %}
 
-    <!-- Enhanced Navigation System -->
-    <div class="enhanced-nav-system">
-        <!-- Primary Navigation -->
-        <div class="nav-primary">
-            <div class="nav-container">
-                <a href="#" class="nav-brand">
-                    {% if school_info.logo_url and school_info.logo_url != '/static/images/default_logo.png' %}
-                    <img
-                        src="{{ school_info.logo_url }}"
-                        alt="School Logo"
-                        style="
-                            width: 32px;
-                            height: 32px;
-                            border-radius: 50%;
-                            object-fit: cover;
-                            margin-right: 8px;
-                        "
-                    />
-                    {% else %}
-                    <i class="fas fa-chalkboard-teacher"></i>
-                    {% endif %}
-                    <span>{{ school_info.school_name or 'Hillview School' }} - Class Teacher</span>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">
+            {% if school_info.logo_url and school_info.logo_url != '/static/images/default_logo.png' %}
+            <img
+                src="{{ school_info.logo_url }}"
+                alt="School Logo"
+                style="
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 4px;
+                    object-fit: cover;
+                    margin-right: 8px;
+                "
+            />
+            {% endif %}
+            {{ school_info.school_name or 'Hillview School' }} - Class Teacher
+        </a>
+        <ul class="navbar-nav">
+            <li>
+                <a href="#" onclick="navigateToFeature('upload-marks'); return false;" class="nav-link">
+                    <i class="fas fa-upload"></i> Upload Marks
                 </a>
-
-                <!-- Mobile Navigation Toggle -->
-                <button class="mobile-nav-toggle" onclick="toggleClassteacherNav()" style="display: none;">
-                    <i class="fas fa-bars"></i>
-                </button>
-
-                <nav class="nav-main" id="classteacherNav">
-                    <button type="button" onclick="navigateToFeature('upload-marks')" class="nav-item" data-feature="upload-marks">
-                        <i class="fas fa-upload"></i>
-                        <span>Upload Marks</span>
-                    </button>
-                    <button type="button" onclick="navigateToFeature('recent-reports')" class="nav-item" data-feature="recent-reports">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Recent Reports</span>
-                    </button>
-                    <button type="button" onclick="navigateToFeature('generate-reports')" class="nav-item" data-feature="generate-reports">
-                        <i class="fas fa-file-pdf"></i>
-                        <span>Generate Reports</span>
-                    </button>
-                    <a href="{{ url_for('classteacher.analytics_dashboard') }}" class="nav-item">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Analytics</span>
-                    </a>
-                    <button type="button" onclick="navigateToFeature('management')" class="nav-item" data-feature="management">
-                        <i class="fas fa-cogs"></i>
-                        <span>Management</span>
-                    </button>
-                </nav>
-
-                <a href="{{ url_for('auth.logout_route') }}" class="nav-item" style="background: rgba(220, 53, 69, 0.2); border-color: rgba(220, 53, 69, 0.3);">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
+            </li>
+            <li>
+                <a href="#" onclick="navigateToFeature('recent-reports'); return false;" class="nav-link">
+                    <i class="fas fa-chart-line"></i> Recent Reports
                 </a>
-            </div>
-        </div>
-
-        <!-- Secondary Quick Actions -->
-        <div class="nav-secondary">
-            <div class="nav-container">
-                <div class="nav-quick-actions">
-                    <a href="{{ url_for('classteacher.collaborative_marks_dashboard') }}" class="quick-action">
-                        <i class="fas fa-users"></i>
-                        <span>Collaborative</span>
-                    </a>
-                    <a href="{{ url_for('classteacher.view_all_reports') }}" class="quick-action">
-                        <i class="fas fa-list"></i>
-                        <span>All Reports</span>
-                    </a>
-                    <a href="{{ url_for('classteacher.grade_reports_dashboard') }}" class="quick-action">
-                        <i class="fas fa-layer-group"></i>
-                        <span>Grade Reports</span>
-                    </a>
+            </li>
+            <li>
+                <a href="#" onclick="navigateToFeature('generate-reports'); return false;" class="nav-link">
+                    <i class="fas fa-file-pdf"></i> Generate Reports
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('classteacher.analytics_dashboard') }}" class="nav-link">
+                    <i class="fas fa-chart-bar"></i> Analytics
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="navigateToFeature('management'); return false;" class="nav-link">
+                    <i class="fas fa-cogs"></i> Management
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('auth.logout_route') }}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </nav>
                     <a href="#" onclick="downloadTemplate()" class="quick-action">
                         <i class="fas fa-download"></i>
                         <span>Template</span>
@@ -7663,63 +7720,7 @@
             console.log('✅ RIGHTMOST COLUMN FIXES APPLIED SUCCESSFULLY');
         });
 
-        // Mobile Navigation Toggle for Classteacher
-        function toggleClassteacherNav() {
-            const classteacherNav = document.getElementById('classteacherNav');
-            const toggleBtn = document.querySelector('.mobile-nav-toggle i');
 
-            if (classteacherNav.classList.contains('show')) {
-                classteacherNav.classList.remove('show');
-                toggleBtn.className = 'fas fa-bars';
-            } else {
-                classteacherNav.classList.add('show');
-                toggleBtn.className = 'fas fa-times';
-            }
-        }
-
-        // Close mobile nav when clicking outside
-        document.addEventListener('click', function(event) {
-            const navSystem = document.querySelector('.enhanced-nav-system');
-            const classteacherNav = document.getElementById('classteacherNav');
-            const toggleBtn = document.querySelector('.mobile-nav-toggle');
-
-            if (!navSystem.contains(event.target) && classteacherNav.classList.contains('show')) {
-                classteacherNav.classList.remove('show');
-                toggleBtn.querySelector('i').className = 'fas fa-bars';
-            }
-        });
-
-        // Handle window resize for classteacher nav
-        window.addEventListener('resize', function() {
-            const classteacherNav = document.getElementById('classteacherNav');
-            const toggleBtn = document.querySelector('.mobile-nav-toggle i');
-
-            if (window.innerWidth > 768 && classteacherNav.classList.contains('show')) {
-                classteacherNav.classList.remove('show');
-                toggleBtn.className = 'fas fa-bars';
-            }
-        });
-
-        // Show/hide mobile nav toggle based on screen size
-        function updateMobileNavToggle() {
-            const toggleBtn = document.querySelector('.mobile-nav-toggle');
-            if (toggleBtn) {
-                if (window.innerWidth <= 768) {
-                    toggleBtn.style.display = 'block';
-                } else {
-                    toggleBtn.style.display = 'none';
-                    // Ensure nav is visible on larger screens
-                    const classteacherNav = document.getElementById('classteacherNav');
-                    if (classteacherNav) {
-                        classteacherNav.classList.remove('show');
-                    }
-                }
-            }
-        }
-
-        // Initialize mobile nav toggle visibility
-        updateMobileNavToggle();
-        window.addEventListener('resize', updateMobileNavToggle);
 
         // Function to download all individual reports as ZIP
         async function downloadAllIndividualReports(grade, stream, term, assessmentType) {
@@ -7833,6 +7834,8 @@
             }, 5000);
         }
     </script>
+
+
 
 </body>
 </html>

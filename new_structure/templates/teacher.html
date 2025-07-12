@@ -2,11 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard - {{ school_info.school_name|default('School Management System') }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
+    <meta name="description" content="Subject Teacher Dashboard - {{ school_info.school_name|default('Hillview School') }} Management System">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#667eea">
+
+    <title>Subject Teacher Dashboard - {{ school_info.school_name|default('Hillview School Management System') }}</title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+
+    <!-- Legacy CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+
     <style>
         /* Premium Glassmorphism Theme for Subject Teacher */
         :root {
@@ -193,6 +215,26 @@
             box-shadow: var(--shadow-md);
             border-color: rgba(255, 255, 255, 0.4);
             text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .logout-btn {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .logout-btn:hover {
+            color: white;
+            background: rgba(220, 53, 69, 0.3);
+            border-color: rgba(220, 53, 69, 0.5);
         }
 
         .logout-btn {
@@ -2982,7 +3024,7 @@
                 style="
                     width: 32px;
                     height: 32px;
-                    border-radius: 50%;
+                    border-radius: 4px;
                     object-fit: cover;
                     margin-right: 8px;
                 "
@@ -2999,23 +3041,20 @@
                 Teacher
             {% endif %}
         </a>
-
-        <!-- Mobile Navigation Toggle -->
-        <button class="mobile-nav-toggle" onclick="toggleTeacherNav()" style="display: none;">
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <ul class="navbar-nav" id="teacherNav">
-            <li class="nav-item">
+        <ul class="navbar-nav">
+            <li>
                 <a href="{{ url_for('teacher.dashboard') }}" class="nav-link">
-                    <i class="fas fa-tachometer-alt"></i>
-                    Dashboard
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
             </li>
-            <li class="nav-item">
+            <li>
+                <a href="{{ url_for('classteacher.teacher_management_hub') }}" class="nav-link">
+                    <i class="fas fa-cogs"></i> Teacher Hub
+                </a>
+            </li>
+            <li>
                 <a href="{{ url_for('auth.logout_route') }}" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
             </li>
         </ul>
@@ -4994,63 +5033,7 @@
             debugLog('📚 Showing non-composite subject configuration');
         }
 
-        // Mobile Navigation Toggle for Teacher
-        function toggleTeacherNav() {
-            const teacherNav = document.getElementById('teacherNav');
-            const toggleBtn = document.querySelector('.mobile-nav-toggle i');
 
-            if (teacherNav.classList.contains('show')) {
-                teacherNav.classList.remove('show');
-                toggleBtn.className = 'fas fa-bars';
-            } else {
-                teacherNav.classList.add('show');
-                toggleBtn.className = 'fas fa-times';
-            }
-        }
-
-        // Close mobile nav when clicking outside
-        document.addEventListener('click', function(event) {
-            const navbar = document.querySelector('.navbar');
-            const teacherNav = document.getElementById('teacherNav');
-            const toggleBtn = document.querySelector('.mobile-nav-toggle');
-
-            if (!navbar.contains(event.target) && teacherNav.classList.contains('show')) {
-                teacherNav.classList.remove('show');
-                toggleBtn.querySelector('i').className = 'fas fa-bars';
-            }
-        });
-
-        // Handle window resize for teacher nav
-        window.addEventListener('resize', function() {
-            const teacherNav = document.getElementById('teacherNav');
-            const toggleBtn = document.querySelector('.mobile-nav-toggle i');
-
-            if (window.innerWidth > 768 && teacherNav.classList.contains('show')) {
-                teacherNav.classList.remove('show');
-                toggleBtn.className = 'fas fa-bars';
-            }
-        });
-
-        // Show/hide mobile nav toggle based on screen size
-        function updateTeacherMobileNavToggle() {
-            const toggleBtn = document.querySelector('.mobile-nav-toggle');
-            if (toggleBtn) {
-                if (window.innerWidth <= 768) {
-                    toggleBtn.style.display = 'block';
-                } else {
-                    toggleBtn.style.display = 'none';
-                    // Ensure nav is visible on larger screens
-                    const teacherNav = document.getElementById('teacherNav');
-                    if (teacherNav) {
-                        teacherNav.classList.remove('show');
-                    }
-                }
-            }
-        }
-
-        // Initialize mobile nav toggle visibility
-        updateTeacherMobileNavToggle();
-        window.addEventListener('resize', updateTeacherMobileNavToggle);
 
         // Pagination functionality
         function goToPage(pageNum) {
@@ -5141,5 +5124,7 @@
             }
         });
     </script>
+
+
 </body>
 </html>

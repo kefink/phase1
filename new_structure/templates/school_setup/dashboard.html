@@ -1,560 +1,600 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Setup - {{ setup.school_name }}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0"
+    />
+    <meta
+      name="description"
+      content="School Setup Dashboard - {{ setup.school_name or 'Hillview School' }}"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="{{ setup.primary_color or '#667eea' }}" />
+
+    <title>School Setup - {{ setup.school_name or 'Hillview School' }}</title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <style>
-        :root {
-            --primary-color: {{ setup.primary_color or '#1f7d53' }};
-            --secondary-color: {{ setup.secondary_color or '#18230f' }};
-            --accent-color: {{ setup.accent_color or '#4ade80' }};
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --error-color: #ef4444;
-            --info-color: #3b82f6;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-        }
+      :root {
+          --primary-color: {{ setup.primary_color or '#1f7d53' }};
+          --secondary-color: {{ setup.secondary_color or '#18230f' }};
+          --accent-color: {{ setup.accent_color or '#4ade80' }};
+          --success-color: #10b981;
+          --warning-color: #f59e0b;
+          --error-color: #ef4444;
+          --info-color: #3b82f6;
+          --gray-50: #f9fafb;
+          --gray-100: #f3f4f6;
+          --gray-200: #e5e7eb;
+          --gray-300: #d1d5db;
+          --gray-400: #9ca3af;
+          --gray-500: #6b7280;
+          --gray-600: #4b5563;
+          --gray-700: #374151;
+          --gray-800: #1f2937;
+          --gray-900: #111827;
+      }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            min-height: 100vh;
-            color: var(--gray-800);
-        }
+      body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+          min-height: 100vh;
+          color: var(--gray-800);
+      }
 
-        .setup-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+      .setup-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 2rem;
+      }
 
-        .setup-header {
-            text-align: center;
-            margin-bottom: 3rem;
-            color: white;
-        }
+      .setup-header {
+          text-align: center;
+          margin-bottom: 3rem;
+          color: white;
+      }
 
-        .setup-header h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
-        }
+      .setup-header h1 {
+          font-size: 3rem;
+          margin-bottom: 1rem;
+          font-weight: 700;
+      }
 
-        .setup-header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
+      .setup-header p {
+          font-size: 1.2rem;
+          opacity: 0.9;
+      }
 
-        .setup-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-            margin-bottom: 2rem;
-        }
+      .setup-card {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          border-radius: 20px;
+          padding: 3rem;
+          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+          margin-bottom: 2rem;
+      }
 
-        .progress-section {
-            margin-bottom: 3rem;
-        }
+      .progress-section {
+          margin-bottom: 3rem;
+      }
 
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
+      .progress-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1.5rem;
+      }
 
-        .progress-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--gray-800);
-        }
+      .progress-title {
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: var(--gray-800);
+      }
 
-        .progress-percentage {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
+      .progress-percentage {
+          font-size: 2rem;
+          font-weight: 700;
+          color: var(--primary-color);
+      }
 
-        .progress-bar-container {
-            background: var(--gray-200);
-            border-radius: 10px;
-            height: 20px;
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
+      .progress-bar-container {
+          background: var(--gray-200);
+          border-radius: 10px;
+          height: 20px;
+          overflow: hidden;
+          margin-bottom: 1rem;
+      }
 
-        .progress-bar {
-            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.5s ease;
-            position: relative;
-        }
+      .progress-bar {
+          background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+          height: 100%;
+          border-radius: 10px;
+          transition: width 0.5s ease;
+          position: relative;
+      }
 
-        .progress-bar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: shimmer 2s infinite;
-        }
+      .progress-bar::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+          animation: shimmer 2s infinite;
+      }
 
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
+      @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+      }
 
-        .setup-steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
+      .setup-steps {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 2rem;
+          margin-bottom: 3rem;
+      }
 
-        .step-card {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            border: 2px solid var(--gray-200);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
+      .step-card {
+          background: white;
+          border-radius: 15px;
+          padding: 2rem;
+          border: 2px solid var(--gray-200);
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+      }
 
-        .step-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-            border-color: var(--primary-color);
-        }
+      .step-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+          border-color: var(--primary-color);
+      }
 
-        .step-card.completed {
-            border-color: var(--success-color);
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-        }
+      .step-card.completed {
+          border-color: var(--success-color);
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      }
 
-        .step-card.current {
-            border-color: var(--primary-color);
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        }
+      .step-card.current {
+          border-color: var(--primary-color);
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      }
 
-        .step-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
+      .step-header {
+          display: flex;
+          align-items: center;
+          margin-bottom: 1rem;
+      }
 
-        .step-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--gray-300);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            margin-right: 1rem;
-            color: white;
-        }
+      .step-number {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: var(--gray-300);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          margin-right: 1rem;
+          color: white;
+      }
 
-        .step-card.completed .step-number {
-            background: var(--success-color);
-        }
+      .step-card.completed .step-number {
+          background: var(--success-color);
+      }
 
-        .step-card.current .step-number {
-            background: var(--primary-color);
-        }
+      .step-card.current .step-number {
+          background: var(--primary-color);
+      }
 
-        .step-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--gray-800);
-        }
+      .step-title {
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: var(--gray-800);
+      }
 
-        .step-description {
-            color: var(--gray-600);
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-        }
+      .step-description {
+          color: var(--gray-600);
+          margin-bottom: 1.5rem;
+          line-height: 1.6;
+      }
 
-        .step-action {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
+      .step-action {
+          display: inline-block;
+          padding: 0.75rem 1.5rem;
+          background: var(--primary-color);
+          color: white;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          transition: all 0.3s ease;
+      }
 
-        .step-action:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
+      .step-action:hover {
+          background: var(--secondary-color);
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
 
-        .step-action.completed {
-            background: var(--success-color);
-        }
+      .step-action.completed {
+          background: var(--success-color);
+      }
 
-        .step-action.disabled {
-            background: var(--gray-400);
-            cursor: not-allowed;
-            pointer-events: none;
-        }
+      .step-action.disabled {
+          background: var(--gray-400);
+          cursor: not-allowed;
+          pointer-events: none;
+      }
 
-        .completion-section {
-            text-align: center;
-            padding: 2rem;
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border-radius: 15px;
-            border: 2px solid var(--success-color);
-        }
+      .completion-section {
+          text-align: center;
+          padding: 2rem;
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+          border-radius: 15px;
+          border: 2px solid var(--success-color);
+      }
 
-        .completion-icon {
-            font-size: 4rem;
-            color: var(--success-color);
-            margin-bottom: 1rem;
-        }
+      .completion-icon {
+          font-size: 4rem;
+          color: var(--success-color);
+          margin-bottom: 1rem;
+      }
 
-        .completion-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--success-color);
-            margin-bottom: 1rem;
-        }
+      .completion-title {
+          font-size: 2rem;
+          font-weight: 700;
+          color: var(--success-color);
+          margin-bottom: 1rem;
+      }
 
-        .completion-description {
-            font-size: 1.1rem;
-            color: var(--gray-600);
-            margin-bottom: 2rem;
-        }
+      .completion-description {
+          font-size: 1.1rem;
+          color: var(--gray-600);
+          margin-bottom: 2rem;
+      }
 
-        .dashboard-btn {
-            display: inline-block;
-            padding: 1rem 2rem;
-            background: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-        }
+      .dashboard-btn {
+          display: inline-block;
+          padding: 1rem 2rem;
+          background: var(--primary-color);
+          color: white;
+          text-decoration: none;
+          border-radius: 10px;
+          font-weight: 600;
+          font-size: 1.1rem;
+          transition: all 0.3s ease;
+      }
 
-        .dashboard-btn:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
+      .dashboard-btn:hover {
+          background: var(--secondary-color);
+          transform: translateY(-2px);
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
 
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
+      .quick-actions {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 1.5rem;
+          margin-top: 2rem;
+      }
 
-        .quick-action {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            text-align: center;
-            text-decoration: none;
-            color: var(--gray-800);
-            border: 2px solid var(--gray-200);
-            transition: all 0.3s ease;
-        }
+      .quick-action {
+          background: white;
+          padding: 1.5rem;
+          border-radius: 10px;
+          text-align: center;
+          text-decoration: none;
+          color: var(--gray-800);
+          border: 2px solid var(--gray-200);
+          transition: all 0.3s ease;
+      }
 
-        .quick-action:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
+      .quick-action:hover {
+          border-color: var(--primary-color);
+          transform: translateY(-3px);
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
 
-        .quick-action i {
-            font-size: 2rem;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
+      .quick-action i {
+          font-size: 2rem;
+          color: var(--primary-color);
+          margin-bottom: 0.5rem;
+      }
 
-        .quick-action h4 {
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
+      .quick-action h4 {
+          margin-bottom: 0.5rem;
+          font-weight: 600;
+      }
 
-        .quick-action p {
-            font-size: 0.9rem;
-            color: var(--gray-600);
-        }
+      .quick-action p {
+          font-size: 0.9rem;
+          color: var(--gray-600);
+      }
 
-        .back-link {
-            display: inline-block;
-            margin-bottom: 2rem;
-            color: white;
-            text-decoration: none;
-            padding: 0.75rem 1.5rem;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 25px;
-            transition: all 0.3s ease;
-        }
+      .back-link {
+          display: inline-block;
+          margin-bottom: 2rem;
+          color: white;
+          text-decoration: none;
+          padding: 0.75rem 1.5rem;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 25px;
+          transition: all 0.3s ease;
+      }
 
-        .back-link:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateX(-5px);
-        }
+      .back-link:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: translateX(-5px);
+      }
 
-        @media (max-width: 768px) {
-            .setup-container {
-                padding: 1rem;
-            }
+      @media (max-width: 768px) {
+          .setup-container {
+              padding: 1rem;
+          }
 
-            .setup-header h1 {
-                font-size: 2rem;
-            }
+          .setup-header h1 {
+              font-size: 2rem;
+          }
 
-            .setup-card {
-                padding: 2rem;
-            }
+          .setup-card {
+              padding: 2rem;
+          }
 
-            .setup-steps {
-                grid-template-columns: 1fr;
-            }
-        }
+          .setup-steps {
+              grid-template-columns: 1fr;
+          }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="setup-container">
-        <a href="{{ url_for('admin.dashboard') }}" class="back-link">
-            <i class="fas fa-arrow-left"></i> Back to Dashboard
-        </a>
+      <a href="{{ url_for('admin.dashboard') }}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </a>
 
-        <div class="setup-header">
-            <h1><i class="fas fa-school"></i> School Setup</h1>
-            <p>Configure your school for plug-and-play deployment</p>
+      <div class="setup-header">
+        <h1><i class="fas fa-school"></i> School Setup</h1>
+        <p>Configure your school for plug-and-play deployment</p>
+      </div>
+
+      {% if is_completed %}
+      <!-- Setup Completed Section -->
+      <div class="setup-card">
+        <div class="completion-section">
+          <div class="completion-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h2 class="completion-title">Setup Completed!</h2>
+          <p class="completion-description">
+            Your school system is fully configured and ready to use. You can now
+            start managing students, teachers, and generating reports.
+          </p>
+          <a href="{{ url_for('admin.dashboard') }}" class="dashboard-btn">
+            <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+          </a>
+
+          <div class="quick-actions">
+            <a
+              href="{{ url_for('school_setup.basic_info') }}"
+              class="quick-action"
+            >
+              <i class="fas fa-edit"></i>
+              <h4>Edit School Info</h4>
+              <p>Update school details</p>
+            </a>
+            <a
+              href="{{ url_for('school_setup.branding') }}"
+              class="quick-action"
+            >
+              <i class="fas fa-palette"></i>
+              <h4>Update Branding</h4>
+              <p>Change logo and colors</p>
+            </a>
+            <a
+              href="{{ url_for('school_setup.features') }}"
+              class="quick-action"
+            >
+              <i class="fas fa-cogs"></i>
+              <h4>Configure Features</h4>
+              <p>Enable/disable features</p>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <!-- Setup Progress Section -->
+      <div class="setup-card">
+        <div class="progress-section">
+          <div class="progress-header">
+            <h2 class="progress-title">Setup Progress</h2>
+            <div class="progress-percentage">{{ progress }}%</div>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" style="width: {{ progress }}%"></div>
+          </div>
+          <p style="color: var(--gray-600)">
+            Complete all steps to activate your school system
+          </p>
         </div>
 
-        {% if is_completed %}
-        <!-- Setup Completed Section -->
-        <div class="setup-card">
-            <div class="completion-section">
-                <div class="completion-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h2 class="completion-title">Setup Completed!</h2>
-                <p class="completion-description">
-                    Your school system is fully configured and ready to use. 
-                    You can now start managing students, teachers, and generating reports.
-                </p>
-                <a href="{{ url_for('admin.dashboard') }}" class="dashboard-btn">
-                    <i class="fas fa-tachometer-alt"></i> Go to Dashboard
-                </a>
-                
-                <div class="quick-actions">
-                    <a href="{{ url_for('school_setup.basic_info') }}" class="quick-action">
-                        <i class="fas fa-edit"></i>
-                        <h4>Edit School Info</h4>
-                        <p>Update school details</p>
-                    </a>
-                    <a href="{{ url_for('school_setup.branding') }}" class="quick-action">
-                        <i class="fas fa-palette"></i>
-                        <h4>Update Branding</h4>
-                        <p>Change logo and colors</p>
-                    </a>
-                    <a href="{{ url_for('school_setup.features') }}" class="quick-action">
-                        <i class="fas fa-cogs"></i>
-                        <h4>Configure Features</h4>
-                        <p>Enable/disable features</p>
-                    </a>
-                </div>
+        <!-- Setup Steps -->
+        <div class="setup-steps">
+          <div
+            class="step-card {% if setup.setup_step > 1 %}completed{% elif setup.setup_step == 1 %}current{% endif %}"
+          >
+            <div class="step-header">
+              <div class="step-number">
+                {% if setup.setup_step > 1 %}
+                <i class="fas fa-check"></i>
+                {% else %} 1 {% endif %}
+              </div>
+              <h3 class="step-title">Basic Information</h3>
             </div>
+            <p class="step-description">
+              Set up your school's basic information including name, motto,
+              contact details, and address.
+            </p>
+            <a
+              href="{{ url_for('school_setup.basic_info') }}"
+              class="step-action {% if setup.setup_step > 1 %}completed{% endif %}"
+            >
+              {% if setup.setup_step > 1 %}
+              <i class="fas fa-check"></i> Completed {% else %}
+              <i class="fas fa-play"></i> Start Setup {% endif %}
+            </a>
+          </div>
+
+          <div
+            class="step-card {% if setup.setup_step > 2 %}completed{% elif setup.setup_step == 2 %}current{% endif %}"
+          >
+            <div class="step-header">
+              <div class="step-number">
+                {% if setup.setup_step > 2 %}
+                <i class="fas fa-check"></i>
+                {% else %} 2 {% endif %}
+              </div>
+              <h3 class="step-title">Registration Info</h3>
+            </div>
+            <p class="step-description">
+              Enter registration details, ministry codes, and location
+              information for official records.
+            </p>
+            <a
+              href="{{ url_for('school_setup.registration_info') }}"
+              class="step-action {% if setup.setup_step > 2 %}completed{% elif setup.setup_step < 2 %}disabled{% endif %}"
+            >
+              {% if setup.setup_step > 2 %}
+              <i class="fas fa-check"></i> Completed {% elif setup.setup_step ==
+              2 %} <i class="fas fa-play"></i> Continue {% else %}
+              <i class="fas fa-lock"></i> Locked {% endif %}
+            </a>
+          </div>
+
+          <div
+            class="step-card {% if setup.setup_step > 3 %}completed{% elif setup.setup_step == 3 %}current{% endif %}"
+          >
+            <div class="step-header">
+              <div class="step-number">
+                {% if setup.setup_step > 3 %}
+                <i class="fas fa-check"></i>
+                {% else %} 3 {% endif %}
+              </div>
+              <h3 class="step-title">Academic Config</h3>
+            </div>
+            <p class="step-description">
+              Configure academic settings including terms, grading system, and
+              assessment parameters.
+            </p>
+            <a
+              href="{{ url_for('school_setup.academic_config') }}"
+              class="step-action {% if setup.setup_step > 3 %}completed{% elif setup.setup_step < 3 %}disabled{% endif %}"
+            >
+              {% if setup.setup_step > 3 %}
+              <i class="fas fa-check"></i> Completed {% elif setup.setup_step ==
+              3 %} <i class="fas fa-play"></i> Continue {% else %}
+              <i class="fas fa-lock"></i> Locked {% endif %}
+            </a>
+          </div>
+
+          <div
+            class="step-card {% if setup.setup_step > 4 %}completed{% elif setup.setup_step == 4 %}current{% endif %}"
+          >
+            <div class="step-header">
+              <div class="step-number">
+                {% if setup.setup_step > 4 %}
+                <i class="fas fa-check"></i>
+                {% else %} 4 {% endif %}
+              </div>
+              <h3 class="step-title">Branding</h3>
+            </div>
+            <p class="step-description">
+              Upload your school logo and customize colors to match your
+              school's visual identity.
+            </p>
+            <a
+              href="{{ url_for('school_setup.branding') }}"
+              class="step-action {% if setup.setup_step > 4 %}completed{% elif setup.setup_step < 4 %}disabled{% endif %}"
+            >
+              {% if setup.setup_step > 4 %}
+              <i class="fas fa-check"></i> Completed {% elif setup.setup_step ==
+              4 %} <i class="fas fa-play"></i> Continue {% else %}
+              <i class="fas fa-lock"></i> Locked {% endif %}
+            </a>
+          </div>
+
+          <div
+            class="step-card {% if setup.setup_step > 5 %}completed{% elif setup.setup_step == 5 %}current{% endif %}"
+          >
+            <div class="step-header">
+              <div class="step-number">
+                {% if setup.setup_step > 5 %}
+                <i class="fas fa-check"></i>
+                {% else %} 5 {% endif %}
+              </div>
+              <h3 class="step-title">Features</h3>
+            </div>
+            <p class="step-description">
+              Enable or disable system features and configure advanced settings
+              for your school.
+            </p>
+            <a
+              href="{{ url_for('school_setup.features') }}"
+              class="step-action {% if setup.setup_step > 5 %}completed{% elif setup.setup_step < 5 %}disabled{% endif %}"
+            >
+              {% if setup.setup_step > 5 %}
+              <i class="fas fa-check"></i> Completed {% elif setup.setup_step ==
+              5 %} <i class="fas fa-play"></i> Continue {% else %}
+              <i class="fas fa-lock"></i> Locked {% endif %}
+            </a>
+          </div>
+
+          <div
+            class="step-card {% if setup.setup_step >= 6 %}current{% endif %}"
+          >
+            <div class="step-header">
+              <div class="step-number">6</div>
+              <h3 class="step-title">Review & Complete</h3>
+            </div>
+            <p class="step-description">
+              Review all your settings and complete the setup to activate your
+              school system.
+            </p>
+            <a
+              href="{{ url_for('school_setup.review') }}"
+              class="step-action {% if setup.setup_step < 6 %}disabled{% endif %}"
+            >
+              {% if setup.setup_step >= 6 %}
+              <i class="fas fa-flag-checkered"></i> Complete Setup {% else %}
+              <i class="fas fa-lock"></i> Locked {% endif %}
+            </a>
+          </div>
         </div>
-        {% else %}
-        <!-- Setup Progress Section -->
-        <div class="setup-card">
-            <div class="progress-section">
-                <div class="progress-header">
-                    <h2 class="progress-title">Setup Progress</h2>
-                    <div class="progress-percentage">{{ progress }}%</div>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: {{ progress }}%"></div>
-                </div>
-                <p style="color: var(--gray-600);">Complete all steps to activate your school system</p>
-            </div>
-
-            <!-- Setup Steps -->
-            <div class="setup-steps">
-                <div class="step-card {% if setup.setup_step > 1 %}completed{% elif setup.setup_step == 1 %}current{% endif %}">
-                    <div class="step-header">
-                        <div class="step-number">
-                            {% if setup.setup_step > 1 %}
-                                <i class="fas fa-check"></i>
-                            {% else %}
-                                1
-                            {% endif %}
-                        </div>
-                        <h3 class="step-title">Basic Information</h3>
-                    </div>
-                    <p class="step-description">
-                        Set up your school's basic information including name, motto, contact details, and address.
-                    </p>
-                    <a href="{{ url_for('school_setup.basic_info') }}" 
-                       class="step-action {% if setup.setup_step > 1 %}completed{% endif %}">
-                        {% if setup.setup_step > 1 %}
-                            <i class="fas fa-check"></i> Completed
-                        {% else %}
-                            <i class="fas fa-play"></i> Start Setup
-                        {% endif %}
-                    </a>
-                </div>
-
-                <div class="step-card {% if setup.setup_step > 2 %}completed{% elif setup.setup_step == 2 %}current{% endif %}">
-                    <div class="step-header">
-                        <div class="step-number">
-                            {% if setup.setup_step > 2 %}
-                                <i class="fas fa-check"></i>
-                            {% else %}
-                                2
-                            {% endif %}
-                        </div>
-                        <h3 class="step-title">Registration Info</h3>
-                    </div>
-                    <p class="step-description">
-                        Enter registration details, ministry codes, and location information for official records.
-                    </p>
-                    <a href="{{ url_for('school_setup.registration_info') }}" 
-                       class="step-action {% if setup.setup_step > 2 %}completed{% elif setup.setup_step < 2 %}disabled{% endif %}">
-                        {% if setup.setup_step > 2 %}
-                            <i class="fas fa-check"></i> Completed
-                        {% elif setup.setup_step == 2 %}
-                            <i class="fas fa-play"></i> Continue
-                        {% else %}
-                            <i class="fas fa-lock"></i> Locked
-                        {% endif %}
-                    </a>
-                </div>
-
-                <div class="step-card {% if setup.setup_step > 3 %}completed{% elif setup.setup_step == 3 %}current{% endif %}">
-                    <div class="step-header">
-                        <div class="step-number">
-                            {% if setup.setup_step > 3 %}
-                                <i class="fas fa-check"></i>
-                            {% else %}
-                                3
-                            {% endif %}
-                        </div>
-                        <h3 class="step-title">Academic Config</h3>
-                    </div>
-                    <p class="step-description">
-                        Configure academic settings including terms, grading system, and assessment parameters.
-                    </p>
-                    <a href="{{ url_for('school_setup.academic_config') }}" 
-                       class="step-action {% if setup.setup_step > 3 %}completed{% elif setup.setup_step < 3 %}disabled{% endif %}">
-                        {% if setup.setup_step > 3 %}
-                            <i class="fas fa-check"></i> Completed
-                        {% elif setup.setup_step == 3 %}
-                            <i class="fas fa-play"></i> Continue
-                        {% else %}
-                            <i class="fas fa-lock"></i> Locked
-                        {% endif %}
-                    </a>
-                </div>
-
-                <div class="step-card {% if setup.setup_step > 4 %}completed{% elif setup.setup_step == 4 %}current{% endif %}">
-                    <div class="step-header">
-                        <div class="step-number">
-                            {% if setup.setup_step > 4 %}
-                                <i class="fas fa-check"></i>
-                            {% else %}
-                                4
-                            {% endif %}
-                        </div>
-                        <h3 class="step-title">Branding</h3>
-                    </div>
-                    <p class="step-description">
-                        Upload your school logo and customize colors to match your school's visual identity.
-                    </p>
-                    <a href="{{ url_for('school_setup.branding') }}" 
-                       class="step-action {% if setup.setup_step > 4 %}completed{% elif setup.setup_step < 4 %}disabled{% endif %}">
-                        {% if setup.setup_step > 4 %}
-                            <i class="fas fa-check"></i> Completed
-                        {% elif setup.setup_step == 4 %}
-                            <i class="fas fa-play"></i> Continue
-                        {% else %}
-                            <i class="fas fa-lock"></i> Locked
-                        {% endif %}
-                    </a>
-                </div>
-
-                <div class="step-card {% if setup.setup_step > 5 %}completed{% elif setup.setup_step == 5 %}current{% endif %}">
-                    <div class="step-header">
-                        <div class="step-number">
-                            {% if setup.setup_step > 5 %}
-                                <i class="fas fa-check"></i>
-                            {% else %}
-                                5
-                            {% endif %}
-                        </div>
-                        <h3 class="step-title">Features</h3>
-                    </div>
-                    <p class="step-description">
-                        Enable or disable system features and configure advanced settings for your school.
-                    </p>
-                    <a href="{{ url_for('school_setup.features') }}" 
-                       class="step-action {% if setup.setup_step > 5 %}completed{% elif setup.setup_step < 5 %}disabled{% endif %}">
-                        {% if setup.setup_step > 5 %}
-                            <i class="fas fa-check"></i> Completed
-                        {% elif setup.setup_step == 5 %}
-                            <i class="fas fa-play"></i> Continue
-                        {% else %}
-                            <i class="fas fa-lock"></i> Locked
-                        {% endif %}
-                    </a>
-                </div>
-
-                <div class="step-card {% if setup.setup_step >= 6 %}current{% endif %}">
-                    <div class="step-header">
-                        <div class="step-number">6</div>
-                        <h3 class="step-title">Review & Complete</h3>
-                    </div>
-                    <p class="step-description">
-                        Review all your settings and complete the setup to activate your school system.
-                    </p>
-                    <a href="{{ url_for('school_setup.review') }}" 
-                       class="step-action {% if setup.setup_step < 6 %}disabled{% endif %}">
-                        {% if setup.setup_step >= 6 %}
-                            <i class="fas fa-flag-checkered"></i> Complete Setup
-                        {% else %}
-                            <i class="fas fa-lock"></i> Locked
-                        {% endif %}
-                    </a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
+      </div>
+      {% endif %}
     </div>
-</body>
+  </body>
 </html>

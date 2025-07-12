@@ -1,457 +1,544 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload {{ subject.name }} Marks - {{ grade.name }} Stream {{ stream.name }} - Hillview School</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0"
+    />
+    <meta
+      name="description"
+      content="Upload {{ subject.name }} Marks - {{ grade.name }} Stream {{ stream.name }} - {{ school_info.school_name or 'Hillview School' }}"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#667eea" />
+
+    <title>
+      Upload {{ subject.name }} Marks - {{ grade.name }} Stream {{ stream.name
+      }} - {{ school_info.school_name or 'Hillview School' }}
+    </title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
 
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background: white;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+      }
+
+      /* Responsive container adjustments */
+      @media (max-width: 767px) {
         .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+          margin: var(--space-sm);
+          border-radius: var(--radius-lg);
         }
+      }
 
-        .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
+      .header {
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
 
+      .header h1 {
+        font-size: 2rem;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #3498db;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .back-link:hover {
+        text-decoration: underline;
+      }
+
+      .subject-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        border-left: 5px solid #3498db;
+      }
+
+      .form-section {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 20px;
+      }
+
+      .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e9ecef;
+      }
+
+      .form-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .total-marks-input {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .total-marks-input label {
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .total-marks-input input {
+        width: 80px;
+        padding: 8px;
+        border: 2px solid #e9ecef;
+        border-radius: 5px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .students-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      .students-table th,
+      .students-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .students-table th {
+        background: #f8f9fa;
+        font-weight: bold;
+        color: #2c3e50;
+        position: sticky;
+        top: 0;
+      }
+
+      .students-table tr:hover {
+        background: #f8f9fa;
+      }
+
+      .mark-input {
+        width: 80px;
+        padding: 8px;
+        border: 2px solid #e9ecef;
+        border-radius: 5px;
+        text-align: center;
+        transition: border-color 0.3s ease;
+      }
+
+      .mark-input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+      }
+
+      .mark-input.has-value {
+        background: #e8f5e8;
+        border-color: #28a745;
+      }
+
+      .existing-mark {
+        background: #fff3cd;
+        border-color: #ffc107;
+      }
+
+      .student-name {
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .student-number {
+        color: #6c757d;
+        font-size: 0.9rem;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #e9ecef;
+      }
+
+      .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-block;
+        font-size: 1rem;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+      }
+
+      .btn-success {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        color: white;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .progress-indicator {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #e8f4fd;
+        border-radius: 8px;
+        border-left: 4px solid #3498db;
+      }
+
+      .progress-text {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 5px;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+        transition: width 0.3s ease;
+        width: 0%;
+      }
+
+      .help-text {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #17a2b8;
+      }
+
+      .help-text h4 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+
+      .help-text ul {
+        margin-left: 20px;
+        color: #6c757d;
+      }
+
+      @media (max-width: 768px) {
         .header h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #3498db;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        .subject-info {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border-left: 5px solid #3498db;
-        }
-
-        .form-section {
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 20px;
+          font-size: 1.5rem;
         }
 
         .form-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .form-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .total-marks-input {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .total-marks-input label {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .total-marks-input input {
-            width: 80px;
-            padding: 8px;
-            border: 2px solid #e9ecef;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: bold;
+          flex-direction: column;
+          gap: 15px;
+          align-items: flex-start;
         }
 
         .students-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .students-table th,
-        .students-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .students-table th {
-            background: #f8f9fa;
-            font-weight: bold;
-            color: #2c3e50;
-            position: sticky;
-            top: 0;
-        }
-
-        .students-table tr:hover {
-            background: #f8f9fa;
-        }
-
-        .mark-input {
-            width: 80px;
-            padding: 8px;
-            border: 2px solid #e9ecef;
-            border-radius: 5px;
-            text-align: center;
-            transition: border-color 0.3s ease;
-        }
-
-        .mark-input:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-
-        .mark-input.has-value {
-            background: #e8f5e8;
-            border-color: #28a745;
-        }
-
-        .existing-mark {
-            background: #fff3cd;
-            border-color: #ffc107;
-        }
-
-        .student-name {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .student-number {
-            color: #6c757d;
-            font-size: 0.9rem;
+          font-size: 0.9rem;
         }
 
         .action-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid #e9ecef;
+          flex-direction: column;
+          align-items: center;
         }
-
-        .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-block;
-            font-size: 1rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-            color: white;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .progress-indicator {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #e8f4fd;
-            border-radius: 8px;
-            border-left: 4px solid #3498db;
-        }
-
-        .progress-text {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e9ecef;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        .help-text {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #17a2b8;
-        }
-
-        .help-text h4 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .help-text ul {
-            margin-left: 20px;
-            color: #6c757d;
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .form-header {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-            
-            .students-table {
-                font-size: 0.9rem;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>📝 Upload {{ subject.name }} Marks</h1>
-            <p>{{ grade.name }} - Stream {{ stream.name }} • {{ term.name }} • {{ assessment_type.name }}</p>
-        </div>
+      <div class="header">
+        <h1>📝 Upload {{ subject.name }} Marks</h1>
+        <p>
+          {{ grade.name }} - Stream {{ stream.name }} • {{ term.name }} • {{
+          assessment_type.name }}
+        </p>
+      </div>
 
-        <div class="content">
-            <a href="{{ url_for('classteacher.class_marks_status', 
+      <div class="content">
+        <a
+          href="{{ url_for('classteacher.class_marks_status', 
                               grade_id=grade_id, 
                               stream_id=stream_id,
                               term_id=term_id,
-                              assessment_type_id=assessment_type_id) }}" class="back-link">← Back to Class Status</a>
+                              assessment_type_id=assessment_type_id) }}"
+          class="back-link"
+          >← Back to Class Status</a
+        >
 
-            <div class="subject-info">
-                <h3>{{ subject.name }}</h3>
-                <p><strong>Class:</strong> {{ grade.name }} - Stream {{ stream.name }}</p>
-                <p><strong>Assessment:</strong> {{ term.name }} {{ assessment_type.name }}</p>
-                <p><strong>Total Students:</strong> {{ students|length }}</p>
-            </div>
+        <div class="subject-info">
+          <h3>{{ subject.name }}</h3>
+          <p>
+            <strong>Class:</strong> {{ grade.name }} - Stream {{ stream.name }}
+          </p>
+          <p>
+            <strong>Assessment:</strong> {{ term.name }} {{ assessment_type.name
+            }}
+          </p>
+          <p><strong>Total Students:</strong> {{ students|length }}</p>
+        </div>
 
-            <div class="help-text">
-                <h4>📋 Instructions:</h4>
-                <ul>
-                    <li>Enter marks for each student in the table below</li>
-                    <li>Marks should be numeric values (decimals allowed)</li>
-                    <li>Students with existing marks will show in yellow background</li>
-                    <li>Progress will be tracked automatically as you enter marks</li>
-                    <li>Click "Save Marks" when you're done to submit all marks</li>
-                </ul>
-            </div>
+        <div class="help-text">
+          <h4>📋 Instructions:</h4>
+          <ul>
+            <li>Enter marks for each student in the table below</li>
+            <li>Marks should be numeric values (decimals allowed)</li>
+            <li>Students with existing marks will show in yellow background</li>
+            <li>Progress will be tracked automatically as you enter marks</li>
+            <li>Click "Save Marks" when you're done to submit all marks</li>
+          </ul>
+        </div>
 
-            <div class="progress-indicator">
-                <div class="progress-text">Upload Progress: <span id="progress-text">0 of {{ students|length }} students</span></div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill"></div>
-                </div>
-            </div>
+        <div class="progress-indicator">
+          <div class="progress-text">
+            Upload Progress:
+            <span id="progress-text">0 of {{ students|length }} students</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
 
-            <form method="POST" action="{{ url_for('classteacher.submit_subject_marks', 
+        <form
+          method="POST"
+          action="{{ url_for('classteacher.submit_subject_marks', 
                                                   grade_id=grade_id, 
                                                   stream_id=stream_id,
                                                   subject_id=subject_id,
                                                   term_id=term_id,
-                                                  assessment_type_id=assessment_type_id) }}">
-                <div class="form-section">
-                    <div class="form-header">
-                        <div class="form-title">Student Marks Entry</div>
-                        <div class="total-marks-input">
-                            <label for="total_marks">Total Marks:</label>
-                            <input type="number" id="total_marks" name="total_marks" value="100" min="1" max="1000" required>
-                        </div>
+                                                  assessment_type_id=assessment_type_id) }}"
+        >
+          <div class="form-section">
+            <div class="form-header">
+              <div class="form-title">Student Marks Entry</div>
+              <div class="total-marks-input">
+                <label for="total_marks">Total Marks:</label>
+                <input
+                  type="number"
+                  id="total_marks"
+                  name="total_marks"
+                  value="100"
+                  min="1"
+                  max="1000"
+                  required
+                />
+              </div>
+            </div>
+
+            <table class="students-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Student Name</th>
+                  <th>Admission Number</th>
+                  <th>Mark</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for student in students %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>
+                    <div class="student-name">{{ student.name }}</div>
+                  </td>
+                  <td>
+                    <div class="student-number">
+                      {{ student.admission_number or 'N/A' }}
                     </div>
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      name="mark_{{ student.name.replace(' ', '_') }}_{{ subject.id }}"
+                      class="mark-input {% if student.id in existing_marks %}existing-mark{% endif %}"
+                      value="{% if student.id in existing_marks %}{{ existing_marks[student.id].raw_mark }}{% endif %}"
+                      step="0.1"
+                      min="0"
+                      max="1000"
+                      data-student-id="{{ student.id }}"
+                      placeholder="0"
+                    />
+                  </td>
+                  <td>
+                    <span
+                      class="status-indicator"
+                      data-student-id="{{ student.id }}"
+                    >
+                      {% if student.id in existing_marks %}
+                      <span style="color: #856404; font-weight: bold"
+                        >Has Mark</span
+                      >
+                      {% else %}
+                      <span style="color: #6c757d">No Mark</span>
+                      {% endif %}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
 
-                    <table class="students-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Student Name</th>
-                                <th>Admission Number</th>
-                                <th>Mark</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student in students %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>
-                                    <div class="student-name">{{ student.name }}</div>
-                                </td>
-                                <td>
-                                    <div class="student-number">{{ student.admission_number or 'N/A' }}</div>
-                                </td>
-                                <td>
-                                    <input type="number" 
-                                           name="mark_{{ student.name.replace(' ', '_') }}_{{ subject.id }}" 
-                                           class="mark-input {% if student.id in existing_marks %}existing-mark{% endif %}"
-                                           value="{% if student.id in existing_marks %}{{ existing_marks[student.id].raw_mark }}{% endif %}"
-                                           step="0.1" 
-                                           min="0" 
-                                           max="1000"
-                                           data-student-id="{{ student.id }}"
-                                           placeholder="0">
-                                </td>
-                                <td>
-                                    <span class="status-indicator" data-student-id="{{ student.id }}">
-                                        {% if student.id in existing_marks %}
-                                            <span style="color: #856404; font-weight: bold;">Has Mark</span>
-                                        {% else %}
-                                            <span style="color: #6c757d;">No Mark</span>
-                                        {% endif %}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-
-                    <div class="action-buttons">
-                        <button type="submit" class="btn btn-success">💾 Save Marks</button>
-                        <a href="{{ url_for('classteacher.class_marks_status', 
+            <div class="action-buttons">
+              <button type="submit" class="btn btn-success">
+                💾 Save Marks
+              </button>
+              <a
+                href="{{ url_for('classteacher.class_marks_status', 
                                           grade_id=grade_id, 
                                           stream_id=stream_id,
                                           term_id=term_id,
-                                          assessment_type_id=assessment_type_id) }}" class="btn btn-secondary">Cancel</a>
-                    </div>
-                </div>
-            </form>
-        </div>
+                                          assessment_type_id=assessment_type_id) }}"
+                class="btn btn-secondary"
+                >Cancel</a
+              >
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
 
     <script>
-        // Track progress as marks are entered
-        function updateProgress() {
-            const markInputs = document.querySelectorAll('.mark-input');
-            const totalStudents = markInputs.length;
-            let studentsWithMarks = 0;
+      // Track progress as marks are entered
+      function updateProgress() {
+        const markInputs = document.querySelectorAll(".mark-input");
+        const totalStudents = markInputs.length;
+        let studentsWithMarks = 0;
 
-            markInputs.forEach(input => {
-                if (input.value && input.value.trim() !== '') {
-                    studentsWithMarks++;
-                    input.classList.add('has-value');
-                    
-                    // Update status indicator
-                    const studentId = input.getAttribute('data-student-id');
-                    const statusIndicator = document.querySelector(`[data-student-id="${studentId}"].status-indicator`);
-                    if (statusIndicator) {
-                        statusIndicator.innerHTML = '<span style="color: #27ae60; font-weight: bold;">Has Mark</span>';
-                    }
-                } else {
-                    input.classList.remove('has-value');
-                    
-                    // Update status indicator only if it's not an existing mark
-                    if (!input.classList.contains('existing-mark')) {
-                        const studentId = input.getAttribute('data-student-id');
-                        const statusIndicator = document.querySelector(`[data-student-id="${studentId}"].status-indicator`);
-                        if (statusIndicator) {
-                            statusIndicator.innerHTML = '<span style="color: #6c757d;">No Mark</span>';
-                        }
-                    }
-                }
-            });
+        markInputs.forEach((input) => {
+          if (input.value && input.value.trim() !== "") {
+            studentsWithMarks++;
+            input.classList.add("has-value");
 
-            // Update progress bar
-            const progressPercentage = (studentsWithMarks / totalStudents) * 100;
-            document.getElementById('progress-fill').style.width = progressPercentage + '%';
-            document.getElementById('progress-text').textContent = `${studentsWithMarks} of ${totalStudents} students`;
-        }
+            // Update status indicator
+            const studentId = input.getAttribute("data-student-id");
+            const statusIndicator = document.querySelector(
+              `[data-student-id="${studentId}"].status-indicator`
+            );
+            if (statusIndicator) {
+              statusIndicator.innerHTML =
+                '<span style="color: #27ae60; font-weight: bold;">Has Mark</span>';
+            }
+          } else {
+            input.classList.remove("has-value");
 
-        // Add event listeners to all mark inputs
-        document.querySelectorAll('.mark-input').forEach(input => {
-            input.addEventListener('input', updateProgress);
-            input.addEventListener('change', updateProgress);
+            // Update status indicator only if it's not an existing mark
+            if (!input.classList.contains("existing-mark")) {
+              const studentId = input.getAttribute("data-student-id");
+              const statusIndicator = document.querySelector(
+                `[data-student-id="${studentId}"].status-indicator`
+              );
+              if (statusIndicator) {
+                statusIndicator.innerHTML =
+                  '<span style="color: #6c757d;">No Mark</span>';
+              }
+            }
+          }
         });
 
-        // Initial progress calculation
-        updateProgress();
+        // Update progress bar
+        const progressPercentage = (studentsWithMarks / totalStudents) * 100;
+        document.getElementById("progress-fill").style.width =
+          progressPercentage + "%";
+        document.getElementById(
+          "progress-text"
+        ).textContent = `${studentsWithMarks} of ${totalStudents} students`;
+      }
 
-        // Auto-save functionality (optional)
-        let autoSaveTimeout;
-        document.querySelectorAll('.mark-input').forEach(input => {
-            input.addEventListener('input', () => {
-                clearTimeout(autoSaveTimeout);
-                autoSaveTimeout = setTimeout(() => {
-                    // Could implement auto-save here
-                    console.log('Auto-save triggered');
-                }, 2000);
-            });
+      // Add event listeners to all mark inputs
+      document.querySelectorAll(".mark-input").forEach((input) => {
+        input.addEventListener("input", updateProgress);
+        input.addEventListener("change", updateProgress);
+      });
+
+      // Initial progress calculation
+      updateProgress();
+
+      // Auto-save functionality (optional)
+      let autoSaveTimeout;
+      document.querySelectorAll(".mark-input").forEach((input) => {
+        input.addEventListener("input", () => {
+          clearTimeout(autoSaveTimeout);
+          autoSaveTimeout = setTimeout(() => {
+            // Could implement auto-save here
+            console.log("Auto-save triggered");
+          }, 2000);
         });
+      });
     </script>
-</body>
+  </body>
 </html>
