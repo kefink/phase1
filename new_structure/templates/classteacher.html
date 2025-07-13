@@ -34,7 +34,8 @@
     <!-- Modern CSS Framework -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/modern_classteacher.css') }}">
 
-
+    <!-- Mobile Responsive Dashboard Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile_responsive_dashboard.css') }}">
 
     <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
     <style>
@@ -1701,32 +1702,32 @@
         <ul class="navbar-nav">
             <li>
                 <a href="#" onclick="navigateToFeature('upload-marks'); return false;" class="nav-link">
-                    <i class="fas fa-upload"></i> Upload Marks
+                    <i class="fas fa-upload"></i> <span>Upload Marks</span>
                 </a>
             </li>
             <li>
                 <a href="#" onclick="navigateToFeature('recent-reports'); return false;" class="nav-link">
-                    <i class="fas fa-chart-line"></i> Recent Reports
+                    <i class="fas fa-chart-line"></i> <span>Recent Reports</span>
                 </a>
             </li>
             <li>
                 <a href="#" onclick="navigateToFeature('generate-reports'); return false;" class="nav-link">
-                    <i class="fas fa-file-pdf"></i> Generate Reports
+                    <i class="fas fa-file-pdf"></i> <span>Generate Reports</span>
                 </a>
             </li>
             <li>
                 <a href="{{ url_for('classteacher.analytics_dashboard') }}" class="nav-link">
-                    <i class="fas fa-chart-bar"></i> Analytics
+                    <i class="fas fa-chart-bar"></i> <span>Analytics</span>
                 </a>
             </li>
             <li>
                 <a href="#" onclick="navigateToFeature('management'); return false;" class="nav-link">
-                    <i class="fas fa-cogs"></i> Management
+                    <i class="fas fa-cogs"></i> <span>Management</span>
                 </a>
             </li>
             <li>
                 <a href="{{ url_for('auth.logout_route') }}" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
                 </a>
             </li>
         </ul>

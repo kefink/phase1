@@ -28,6 +28,8 @@
     <!-- Legacy CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
+    <!-- Mobile Responsive Dashboard Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile_responsive_dashboard.css') }}">
 
     <style>
         /* Premium Glassmorphism Theme for Subject Teacher */
@@ -3044,17 +3046,17 @@
         <ul class="navbar-nav">
             <li>
                 <a href="{{ url_for('teacher.dashboard') }}" class="nav-link">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
                 </a>
             </li>
             <li>
                 <a href="{{ url_for('classteacher.teacher_management_hub') }}" class="nav-link">
-                    <i class="fas fa-cogs"></i> Teacher Hub
+                    <i class="fas fa-cogs"></i> <span>Teacher Hub</span>
                 </a>
             </li>
             <li>
                 <a href="{{ url_for('auth.logout_route') }}" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
                 </a>
             </li>
         </ul>

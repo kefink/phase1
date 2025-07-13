@@ -201,3 +201,34 @@ def dashboard_mobile_test():
 def dashboard_mobile_demo():
     """Comprehensive dashboard mobile responsive demo page."""
     return render_template('dashboard_mobile_test.html')
+
+@auth_bp.route('/classteacher-mobile-test')
+def classteacher_mobile_test():
+    """Class teacher mobile responsive test page."""
+    # Mock data for testing
+    mock_data = {
+        'school_info': {
+            'school_name': 'Hillview School',
+            'logo_url': '/static/images/default_logo.png'
+        },
+        'grade': '8',
+        'stream': 'A',
+        'subjects': ['Mathematics', 'English', 'Science'],
+        'students': []
+    }
+    return render_template('classteacher.html', **mock_data)
+
+@auth_bp.route('/teacher-mobile-test')
+def teacher_mobile_test():
+    """Teacher mobile responsive test page."""
+    # Mock data for testing
+    mock_data = {
+        'school_info': {
+            'school_name': 'Hillview School',
+            'logo_url': '/static/images/default_logo.png'
+        },
+        'teacher_name': 'John Doe',
+        'subjects': ['Mathematics', 'Physics'],
+        'classes': []
+    }
+    return render_template('teacher.html', **mock_data)
