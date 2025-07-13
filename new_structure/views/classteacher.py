@@ -1345,6 +1345,13 @@ def manage_students():
         flash("Teacher not found.", "error")
         return redirect(url_for('classteacher.dashboard'))
 
+    # Define educational level mapping (moved to top to avoid UnboundLocalError)
+    educational_level_mapping = {
+        "lower_primary": ["Grade 1", "Grade 2", "Grade 3"],
+        "upper_primary": ["Grade 4", "Grade 5", "Grade 6"],
+        "junior_secondary": ["Grade 7", "Grade 8", "Grade 9"]
+    }
+
     # Initialize variables
     stream = None
     grade = None
@@ -1427,13 +1434,6 @@ def manage_students():
 
     # Get all grades for the template
     grades = [{"id": grade.id, "name": grade.name} for grade in Grade.query.all()]
-
-    # Define educational level mapping
-    educational_level_mapping = {
-        "lower_primary": ["Grade 1", "Grade 2", "Grade 3"],
-        "upper_primary": ["Grade 4", "Grade 5", "Grade 6"],
-        "junior_secondary": ["Grade 7", "Grade 8", "Grade 9"]
-    }
 
     # Handle form submissions
     if request.method == 'POST':
@@ -5094,6 +5094,14 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
 @classteacher_required
 def download_class_list():
     """Route to download class lists as CSV files."""
+
+    # Define educational level mapping
+    educational_level_mapping = {
+        "lower_primary": ["Grade 1", "Grade 2", "Grade 3"],
+        "upper_primary": ["Grade 4", "Grade 5", "Grade 6"],
+        "junior_secondary": ["Grade 7", "Grade 8", "Grade 9"]
+    }
+
     # Get filter parameters
     educational_level = request.args.get('educational_level', '')
     grade_id = request.args.get('grade_id', '')

@@ -47,59 +47,426 @@
           var(--promotion-secondary) 100%
         );
         min-height: 100vh;
-        padding: var(--space-6);
+        padding: var(--space-2);
+      }
+
+      .content-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: var(--radius-xl);
+        padding: var(--space-3);
+        box-shadow: var(--shadow-xl);
+        backdrop-filter: blur(10px);
       }
 
       .promotion-header {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: var(--radius-2xl);
-        padding: var(--space-8);
-        margin-bottom: var(--space-6);
+        padding: var(--space-3);
+        margin-bottom: var(--space-2);
         box-shadow: var(--shadow-xl);
       }
 
       .promotion-stats {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--space-4);
-        margin-bottom: var(--space-6);
-      }
-
-      .stat-card {
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-        border-radius: var(--radius-xl);
-        padding: var(--space-6);
-        text-align: center;
-        box-shadow: var(--shadow-lg);
-        transition: all 0.3s ease;
-      }
-
-      .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-xl);
-      }
-
-      .stat-number {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: var(--promotion-primary);
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--space-2);
         margin-bottom: var(--space-2);
       }
 
+      .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: var(--radius-xl);
+        padding: var(--space-2);
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--promotion-primary), var(--promotion-secondary));
+      }
+
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+        background: rgba(255, 255, 255, 1);
+      }
+
+      .stat-number {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: var(--promotion-primary);
+        margin-bottom: var(--space-2);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
       .stat-label {
-        font-size: 0.875rem;
+        font-size: 0.9rem;
         color: var(--text-secondary);
-        font-weight: 500;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-icon {
+        font-size: 2rem;
+        color: var(--promotion-secondary);
+        margin-bottom: var(--space-3);
+        opacity: 0.8;
+      }
+
+      /* Advanced Analytics Section */
+      .analytics-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: var(--radius-2xl);
+        padding: var(--space-6);
+        margin-bottom: var(--space-6);
+        box-shadow: var(--shadow-xl);
+      }
+
+      .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-2);
+        margin-top: var(--space-1);
+      }
+
+      .chart-container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: var(--space-2);
+        text-align: center;
+        min-height: 200px;
+        transition: all 0.3s ease;
+      }
+
+      .chart-container:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .chart-header {
+        margin-bottom: var(--space-2);
+      }
+
+      .chart-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--space-1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+      }
+
+      .chart-subtitle {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        opacity: 0.8;
+      }
+
+      .chart-content {
+        position: relative;
+      }
+
+      .chart-stats {
+        margin-top: var(--space-2);
+        display: flex;
+        justify-content: space-around;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+      }
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-1);
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        opacity: 0.8;
+      }
+
+      .stat-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .promote-count {
+        color: #10b981;
+      }
+
+      .graduate-count {
+        color: #667eea;
+      }
+
+      /* Performance Trends Placeholder Styles */
+      .chart-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 140px;
+        padding: var(--space-2);
+        text-align: center;
+      }
+
+      .placeholder-icon {
+        font-size: 2rem;
+        color: var(--text-secondary);
+        opacity: 0.3;
+        margin-bottom: var(--space-2);
+      }
+
+      .placeholder-text h4 {
+        color: var(--text-primary);
+        margin-bottom: var(--space-1);
+        font-size: 1rem;
+      }
+
+      .placeholder-text p {
+        color: var(--text-secondary);
+        opacity: 0.8;
+        margin-bottom: var(--space-2);
+        line-height: 1.4;
+        font-size: 0.9rem;
+      }
+
+      .placeholder-features {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        align-items: flex-start;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-1);
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+      }
+
+      .feature-item i {
+        color: #10b981;
+        font-size: 0.7rem;
+      }
+
+      /* Compact Analytics Section - New Styling */
+      .analytics-section-compact {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .analytics-header-compact {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+      }
+
+      .analytics-cards-compact {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 12px;
+      }
+
+      .analytics-card-compact {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        transition: all 0.3s ease;
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .analytics-card-compact:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.15);
+        border-color: rgba(102, 126, 234, 0.4);
+      }
+
+      .card-title-compact {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+      }
+
+      .chart-area-compact {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 120px;
+      }
+
+      .card-stats-compact {
+        display: flex;
+        justify-content: space-around;
+        gap: 8px;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(102, 126, 234, 0.1);
+      }
+
+      .stat-compact {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+
+      .stat-compact strong {
+        color: var(--text-primary);
+        font-size: 0.9rem;
+      }
+
+      .promote-stat strong {
+        color: #10b981;
+      }
+
+      .graduate-stat strong {
+        color: #667eea;
+      }
+
+      /* Placeholder Card Specific Styles */
+      .placeholder-card {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border: 1px dashed rgba(102, 126, 234, 0.3);
+      }
+
+      .placeholder-compact {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 12px;
+      }
+
+      .placeholder-icon-compact {
+        font-size: 2rem;
+        color: rgba(102, 126, 234, 0.4);
+        margin-bottom: 8px;
+      }
+
+      .placeholder-text-compact {
+        color: var(--text-secondary);
+      }
+
+      .placeholder-text-compact strong {
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .placeholder-text-compact p {
+        font-size: 0.8rem;
+        margin: 0;
+        opacity: 0.8;
+      }
+
+      /* Batch Processing Controls */
+      .batch-controls {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: var(--radius-2xl);
+        padding: var(--space-2);
+        margin-bottom: var(--space-2);
+        box-shadow: var(--shadow-xl);
+      }
+
+      .batch-actions {
+        display: flex;
+        gap: var(--space-3);
+        flex-wrap: wrap;
+        margin-top: var(--space-4);
+      }
+
+      .batch-btn {
+        padding: var(--space-3) var(--space-5);
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: 0.9rem;
+      }
+
+      .batch-btn-primary {
+        background: linear-gradient(135deg, var(--promotion-primary), var(--promotion-secondary));
+        color: white;
+      }
+
+      .batch-btn-success {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        color: white;
+      }
+
+      .batch-btn-warning {
+        background: linear-gradient(135deg, var(--warning-color), #d97706);
+        color: white;
+      }
+
+      .batch-btn-danger {
+        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        color: white;
+      }
+
+      .batch-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
       }
 
       .promotion-controls {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: var(--radius-2xl);
-        padding: var(--space-6);
-        margin-bottom: var(--space-6);
+        padding: var(--space-2);
+        margin-bottom: var(--space-2);
         box-shadow: var(--shadow-xl);
       }
 
@@ -516,7 +883,7 @@
                 promotion_data.academic_year or '2024' }}
               </p>
             </div>
-            <div>
+            <div style="display: flex; gap: var(--space-3);">
               <a
                 href="{{ url_for('admin.dashboard') }}"
                 class="btn-promotion btn-primary"
@@ -524,36 +891,180 @@
                 <i class="fas fa-arrow-left"></i>
                 Back to Dashboard
               </a>
+              <a
+                href="{{ url_for('admin.create_sample_promotion_data') }}"
+                class="btn-promotion"
+                style="background: linear-gradient(135deg, var(--success-color), #059669); color: white;"
+                onclick="return confirm('This will create sample students for testing. Continue?')"
+              >
+                <i class="fas fa-database"></i>
+                Create Sample Data
+              </a>
             </div>
           </div>
 
-          <!-- Promotion Statistics -->
+          <!-- Enhanced Promotion Statistics -->
           <div class="promotion-stats">
             <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-users"></i>
+              </div>
               <div class="stat-number">
                 {{ promotion_data.promotion_summary.total_students or 0 }}
               </div>
               <div class="stat-label">Total Students</div>
             </div>
             <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-arrow-up"></i>
+              </div>
               <div class="stat-number">
-                {{ promotion_data.promotion_summary.eligible_for_promotion or 0
-                }}
+                {{ promotion_data.promotion_summary.eligible_for_promotion or 0 }}
               </div>
               <div class="stat-label">Eligible for Promotion</div>
             </div>
             <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-graduation-cap"></i>
+              </div>
               <div class="stat-number">
                 {{ promotion_data.promotion_summary.final_grade_students or 0 }}
               </div>
               <div class="stat-label">Final Grade (Grade 9)</div>
             </div>
             <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-layer-group"></i>
+              </div>
               <div class="stat-number">
-                {{ promotion_data.students_by_grade|length or 0 }}
+                {% if promotion_data.students_by_grade %}
+                  {{ promotion_data.students_by_grade|list|length }}
+                {% else %}
+                  0
+                {% endif %}
               </div>
               <div class="stat-label">Grade Levels</div>
             </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-redo"></i>
+              </div>
+              <div class="stat-number" id="repeat-count">0</div>
+              <div class="stat-label">To Repeat</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-exchange-alt"></i>
+              </div>
+              <div class="stat-number" id="transfer-count">0</div>
+              <div class="stat-label">To Transfer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advanced Analytics Section -->
+        <div class="analytics-section-compact">
+          <div class="analytics-header-compact">
+            <i class="fas fa-chart-bar"></i>
+            <span>Promotion Analytics</span>
+          </div>
+
+          <div class="analytics-cards-compact">
+            <!-- Grade Distribution Chart -->
+            <div class="analytics-card-compact">
+              <div class="card-title-compact">
+                <i class="fas fa-graduation-cap"></i>
+                Grade Distribution
+              </div>
+              <div class="chart-area-compact">
+                <canvas id="gradeChart" width="250" height="150"></canvas>
+              </div>
+              <div class="card-stats-compact">
+                <span class="stat-compact">
+                  <strong id="totalGrades">-</strong> Grades
+                </span>
+                <span class="stat-compact">
+                  Largest: <strong id="largestGrade">-</strong>
+                </span>
+              </div>
+            </div>
+
+            <!-- Promotion Actions Chart -->
+            <div class="analytics-card-compact">
+              <div class="card-title-compact">
+                <i class="fas fa-arrow-up"></i>
+                Promotion Actions
+              </div>
+              <div class="chart-area-compact">
+                <canvas id="actionChart" width="250" height="150"></canvas>
+              </div>
+              <div class="card-stats-compact">
+                <span class="stat-compact promote-stat">
+                  <strong id="promoteCount">-</strong> Promote
+                </span>
+                <span class="stat-compact graduate-stat">
+                  <strong id="graduateCount">-</strong> Graduate
+                </span>
+              </div>
+            </div>
+
+            <!-- Performance Trends Placeholder -->
+            <div class="analytics-card-compact placeholder-card">
+              <div class="card-title-compact">
+                <i class="fas fa-chart-line"></i>
+                Performance Trends
+              </div>
+              <div class="placeholder-compact">
+                <div class="placeholder-icon-compact">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="placeholder-text-compact">
+                  <strong>Coming Soon</strong>
+                  <p>Historical performance analysis</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Batch Processing Controls -->
+        <div class="batch-controls">
+          <h3 style="color: var(--text-primary); margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2);">
+            <i class="fas fa-tasks"></i> Batch Processing
+          </h3>
+          <div class="batch-actions">
+            <button class="batch-btn batch-btn-primary" onclick="selectAllEligible()">
+              <i class="fas fa-check-double"></i>
+              Select All Eligible
+            </button>
+            <button class="batch-btn batch-btn-success" onclick="promoteSelected()">
+              <i class="fas fa-arrow-up"></i>
+              Promote Selected
+            </button>
+            <button class="batch-btn batch-btn-warning" onclick="repeatSelected()">
+              <i class="fas fa-redo"></i>
+              Repeat Selected
+            </button>
+            <button class="batch-btn batch-btn-danger" onclick="clearSelection()">
+              <i class="fas fa-times"></i>
+              Clear Selection
+            </button>
+            <button class="batch-btn batch-btn-primary" onclick="exportPromotionReport()">
+              <i class="fas fa-download"></i>
+              Export Report
+            </button>
+            <button class="batch-btn batch-btn-primary" onclick="previewPromotions()">
+              <i class="fas fa-eye"></i>
+              Preview Changes
+            </button>
+          </div>
+          <div style="margin-top: var(--space-4); padding: var(--space-3); background: rgba(59, 130, 246, 0.1); border-radius: var(--radius-lg); border-left: 4px solid var(--info-color);">
+            <p style="margin: 0; color: var(--info-color); font-weight: 500;">
+              <i class="fas fa-info-circle"></i>
+              Selected: <span id="selected-count">0</span> students |
+              Ready for promotion: <span id="promotion-ready">0</span> |
+              Requires review: <span id="review-required">0</span>
+            </p>
           </div>
         </div>
 
@@ -567,7 +1078,7 @@
               <div class="filter-row">
                 <div class="filter-item">
                   <label for="education_level">Education Level:</label>
-                  <select id="education_level" name="education_level" onchange="this.form.submit()">
+                  <select id="education_level" name="education_level">
                     <option value="">All Levels</option>
                     {% for level in filter_options.education_levels %}
                     <option value="{{ level }}" {% if promotion_data.filters.education_level == level %}selected{% endif %}>
@@ -579,10 +1090,12 @@
 
                 <div class="filter-item">
                   <label for="grade_id">Grade:</label>
-                  <select id="grade_id" name="grade_id" onchange="this.form.submit()">
+                  <select id="grade_id" name="grade_id">
                     <option value="">All Grades</option>
                     {% for grade in filter_options.grades %}
-                    <option value="{{ grade.id }}" {% if promotion_data.filters.grade_id == grade.id %}selected{% endif %}>
+                    <option value="{{ grade.id }}"
+                            data-education-level="{{ grade.education_level }}"
+                            {% if promotion_data.filters.grade_id == grade.id %}selected{% endif %}>
                       {{ grade.name }}
                     </option>
                     {% endfor %}
@@ -591,10 +1104,12 @@
 
                 <div class="filter-item">
                   <label for="stream_id">Stream:</label>
-                  <select id="stream_id" name="stream_id" onchange="this.form.submit()">
+                  <select id="stream_id" name="stream_id">
                     <option value="">All Streams</option>
                     {% for stream in filter_options.streams %}
-                    <option value="{{ stream.id }}" {% if promotion_data.filters.stream_id == stream.id %}selected{% endif %}>
+                    <option value="{{ stream.id }}"
+                            data-grade-name="{{ stream.grade_name }}"
+                            {% if promotion_data.filters.stream_id == stream.id %}selected{% endif %}>
                       {{ stream.name }} ({{ stream.grade_name }})
                     </option>
                     {% endfor %}
@@ -611,7 +1126,7 @@
                 </div>
 
                 <div class="filter-item">
-                  <button type="submit" class="btn-filter">
+                  <button type="button" onclick="applyFilters()" class="btn-filter">
                     <i class="fas fa-search"></i> Apply Filters
                   </button>
                   <a href="{{ url_for('admin.student_promotion') }}" class="btn-filter btn-clear">
@@ -901,7 +1416,7 @@
                 <a href="{{ url_for('admin.student_promotion') }}" class="btn-clear" style="text-decoration: none; display: inline-block; margin-right: var(--space-2);">
                   <i class="fas fa-refresh"></i> Clear All Filters
                 </a>
-                <a href="{{ url_for('admin.students') }}" class="btn-filter" style="text-decoration: none; display: inline-block;">
+                <a href="{{ url_for('classteacher.manage_students') }}" class="btn-filter" style="text-decoration: none; display: inline-block;">
                   <i class="fas fa-users"></i> Manage Students
                 </a>
               </div>
@@ -926,17 +1441,681 @@
       </div>
     </div>
 
+    <!-- Chart.js for Analytics - Local file -->
+    <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+
     <script>
-      // Global variables
-      let promotionData = {{ promotion_data | tojson }};
+      console.log('🚀 Script tag is executing...');
+
+      // Only execute if we're on the student promotion page
+      console.log('🔍 Checking page condition...');
+      console.log('🔍 Page container found:', !!document.querySelector('.page-container'));
+      console.log('🔍 Title includes Student Promotion:', document.title.includes('Student Promotion'));
+
+      if (document.querySelector('.page-container') || document.title.includes('Student Promotion')) {
+        console.log('✅ Page condition met - executing JavaScript');
+        // Global variables with error handling
+        let promotionData;
+        try {
+          {% if promotion_data_json %}
+          promotionData = {{ promotion_data_json | tojson }};
+          {% else %}
+          promotionData = { students_by_grade: {}, available_streams: {}, pagination: { page: 1, total_pages: 1 } };
+          {% endif %}
+
+          if (!promotionData || typeof promotionData !== 'object') {
+            console.warn('Invalid promotion data structure, using defaults');
+            promotionData = { students_by_grade: {}, available_streams: {}, pagination: { page: 1, total_pages: 1 } };
+          }
+        } catch (error) {
+          console.warn('Error loading student promotion data, using defaults:', error.message);
+          promotionData = { students_by_grade: {}, available_streams: {}, pagination: { page: 1, total_pages: 1 } };
+        }
+
       let selectedStudents = new Map();
       let availableStreams = promotionData.available_streams || {};
+      let charts = {};
+
+      // Dynamic filtering functions
+      function updateGradeOptions() {
+        console.log('🔍 updateGradeOptions called');
+        const educationLevelSelect = document.getElementById('education_level');
+        const gradeSelect = document.getElementById('grade_id');
+
+        if (!educationLevelSelect || !gradeSelect) {
+          console.error('❌ Filter elements not found');
+          return;
+        }
+
+        const selectedEducationLevel = educationLevelSelect.value;
+        console.log('🔍 Selected education level:', selectedEducationLevel);
+
+        // Store current grade selection to preserve it if it's still valid
+        const currentGradeSelection = gradeSelect.value;
+        let isCurrentGradeStillValid = false;
+
+        // Show/hide grade options based on education level
+        let visibleGrades = 0;
+        Array.from(gradeSelect.options).forEach(option => {
+          if (option.value === '') {
+            option.style.display = 'block'; // Always show "All Grades"
+            return;
+          }
+
+          const gradeEducationLevel = option.getAttribute('data-education-level');
+          if (!selectedEducationLevel || gradeEducationLevel === selectedEducationLevel) {
+            option.style.display = 'block';
+            option.disabled = false;
+            visibleGrades++;
+
+            // Check if current selection is still valid
+            if (option.value === currentGradeSelection) {
+              isCurrentGradeStillValid = true;
+            }
+          } else {
+            option.style.display = 'none';
+            option.disabled = true;
+          }
+        });
+
+        // Reset grade selection only if current selection is no longer valid
+        if (!isCurrentGradeStillValid && currentGradeSelection !== '') {
+          gradeSelect.value = '';
+          console.log('🔍 Reset grade selection (no longer valid for selected education level)');
+        }
+
+        console.log(`🔍 Showing ${visibleGrades} grades for education level: ${selectedEducationLevel || 'All'}`);
+
+        // Update streams when grade options change
+        updateStreamOptions();
+      }
+
+      function updateStreamOptions() {
+        console.log('🔍 updateStreamOptions called');
+        const gradeSelect = document.getElementById('grade_id');
+        const streamSelect = document.getElementById('stream_id');
+        const educationLevelSelect = document.getElementById('education_level');
+
+        if (!gradeSelect || !streamSelect) {
+          console.error('❌ Grade or stream select elements not found');
+          return;
+        }
+
+        const selectedGradeId = gradeSelect.value;
+        const selectedEducationLevel = educationLevelSelect ? educationLevelSelect.value : '';
+        console.log('🔍 Selected grade ID:', selectedGradeId);
+
+        // Store current stream selection to preserve it if it's still valid
+        const currentStreamSelection = streamSelect.value;
+        let isCurrentStreamStillValid = false;
+
+        if (!selectedGradeId) {
+          // Show streams based on education level if no specific grade is selected
+          let visibleStreams = 0;
+          Array.from(streamSelect.options).forEach(option => {
+            if (option.value === '') {
+              option.style.display = 'block'; // Always show "All Streams"
+              option.disabled = false;
+              return;
+            }
+
+            const streamGradeName = option.getAttribute('data-grade-name');
+
+            // If education level is selected, only show streams from grades in that level
+            if (selectedEducationLevel) {
+              const gradeOption = Array.from(gradeSelect.options).find(opt =>
+                opt.textContent.trim() === streamGradeName &&
+                opt.getAttribute('data-education-level') === selectedEducationLevel &&
+                opt.style.display !== 'none'
+              );
+              if (gradeOption) {
+                option.style.display = 'block';
+                option.disabled = false;
+                visibleStreams++;
+                if (option.value === currentStreamSelection) {
+                  isCurrentStreamStillValid = true;
+                }
+              } else {
+                option.style.display = 'none';
+                option.disabled = true;
+              }
+            } else {
+              option.style.display = 'block';
+              option.disabled = false;
+              visibleStreams++;
+              if (option.value === currentStreamSelection) {
+                isCurrentStreamStillValid = true;
+              }
+            }
+          });
+          console.log(`🔍 Showing ${visibleStreams} streams (no specific grade selected)`);
+        } else {
+          // Get the selected grade name
+          const selectedGradeOption = gradeSelect.options[gradeSelect.selectedIndex];
+          const selectedGradeName = selectedGradeOption.textContent.trim();
+          console.log('🔍 Selected grade name:', selectedGradeName);
+
+          // Show/hide stream options based on selected grade
+          let visibleStreams = 0;
+          Array.from(streamSelect.options).forEach(option => {
+            if (option.value === '') {
+              option.style.display = 'block'; // Always show "All Streams"
+              option.disabled = false;
+              return;
+            }
+
+            const streamGradeName = option.getAttribute('data-grade-name');
+            if (streamGradeName === selectedGradeName) {
+              option.style.display = 'block';
+              option.disabled = false;
+              visibleStreams++;
+              if (option.value === currentStreamSelection) {
+                isCurrentStreamStillValid = true;
+              }
+            } else {
+              option.style.display = 'none';
+              option.disabled = true;
+            }
+          });
+          console.log(`🔍 Showing ${visibleStreams} streams for grade: ${selectedGradeName}`);
+        }
+
+        // Reset stream selection only if current selection is no longer valid
+        if (!isCurrentStreamStillValid && currentStreamSelection !== '') {
+          streamSelect.value = '';
+          console.log('🔍 Reset stream selection (no longer valid for selected grade)');
+        }
+      }
+
+      // Apply filters function
+      function applyFilters() {
+        console.log('🔍 applyFilters called');
+        const form = document.querySelector('.filter-form');
+        if (form) {
+          console.log('🔍 Submitting filter form');
+          form.submit();
+        } else {
+          console.error('❌ Filter form not found');
+        }
+      }
+
+      // Helper function to update grade statistics
+      function updateGradeStats(gradeData) {
+        try {
+          const totalGrades = gradeData.length;
+          const largestGrade = gradeData.reduce((max, current) =>
+            current.count > max.count ? current : max,
+            { grade: '-', count: 0 }
+          );
+
+          const totalGradesEl = document.getElementById('totalGrades');
+          const largestGradeEl = document.getElementById('largestGrade');
+
+          if (totalGradesEl) totalGradesEl.textContent = totalGrades;
+          if (largestGradeEl) {
+            largestGradeEl.textContent =
+              totalGrades > 0 ? `Grade ${largestGrade.grade} (${largestGrade.count})` : '-';
+          }
+        } catch (error) {
+          console.error('❌ Error updating grade stats:', error);
+        }
+      }
+
+      // Helper function to calculate promotion actions
+      function calculatePromotionActions() {
+        let promote = 0;
+        let repeat = 0;
+        let transfer = 0;
+        let graduate = 0;
+
+        // Count students by their promotion actions
+        Object.keys(promotionData.students_by_grade || {}).forEach(grade => {
+          const students = promotionData.students_by_grade[grade].students || [];
+
+          students.forEach(student => {
+            // Grade 9 students graduate, others get promoted
+            if (grade === '9') {
+              graduate++;
+            } else {
+              promote++;
+            }
+            // Note: repeat and transfer would be based on actual student data/marks
+            // For now, we'll show the basic promote/graduate split
+          });
+        });
+
+        return { promote, repeat, transfer, graduate };
+      }
+
+      // Helper function to update action statistics
+      function updateActionStats(actionData) {
+        try {
+          const promoteCountEl = document.getElementById('promoteCount');
+          const graduateCountEl = document.getElementById('graduateCount');
+
+          if (promoteCountEl) promoteCountEl.textContent = actionData.promote;
+          if (graduateCountEl) graduateCountEl.textContent = actionData.graduate;
+        } catch (error) {
+          console.error('❌ Error updating action stats:', error);
+        }
+      }
 
       // Initialize page
       document.addEventListener('DOMContentLoaded', function() {
+          // Simple test to see if JavaScript is running
+          console.log('🚀 JavaScript is running - DOMContentLoaded fired');
+
           initializeStreamSelectors();
           initializeSelectedStudents();
+
+          // Wait for Chart.js to load before initializing charts
+          function waitForChartJs() {
+            if (typeof Chart !== 'undefined') {
+              initializeCharts();
+            } else {
+              console.log('⏳ Waiting for Chart.js to load...');
+              setTimeout(waitForChartJs, 100);
+            }
+          }
+
+          waitForChartJs();
+          updateStatistics();
+
+          // Initialize filtering
+          updateGradeOptions();
+          updateStreamOptions();
+
+          // Add event listeners for real-time cascading
+          const educationLevelSelect = document.getElementById('education_level');
+          const gradeSelect = document.getElementById('grade_id');
+
+          if (educationLevelSelect) {
+            educationLevelSelect.addEventListener('change', function() {
+              console.log('🔍 Education level changed to:', this.value);
+              updateGradeOptions();
+            });
+          }
+
+          if (gradeSelect) {
+            gradeSelect.addEventListener('change', function() {
+              console.log('🔍 Grade changed to:', this.value);
+              updateStreamOptions();
+            });
+          }
       });
+
+      // Enhanced Analytics Functions
+      function initializeCharts() {
+          console.log('🎯 Initializing charts...');
+          console.log('🎯 Chart.js available:', typeof Chart !== 'undefined');
+          console.log('🎯 Promotion data:', promotionData);
+
+          // Also send to server if possible
+          fetch('/headteacher/debug-log', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                  message: '🎯 Initializing charts...',
+                  data: {
+                      hasPromotionData: !!promotionData,
+                      studentsCount: Object.keys(promotionData.students_by_grade || {}).length,
+                      chartJsAvailable: typeof Chart !== 'undefined'
+                  }
+              })
+          }).catch(() => {}); // Silent fail
+
+          // Check if Chart.js is loaded
+          if (typeof Chart === 'undefined') {
+              console.error('❌ Chart.js is not loaded!');
+              return;
+          }
+
+          // Grade Distribution Chart
+          const gradeCtx = document.getElementById('gradeChart');
+          if (gradeCtx) {
+              fetch('/headteacher/debug-log', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({message: '🎯 Found grade chart canvas'})
+              }).catch(() => {});
+
+              try {
+                  const gradeData = Object.keys(promotionData.students_by_grade || {}).map(grade => ({
+                      grade: grade,
+                      count: promotionData.students_by_grade[grade].students.length
+                  }));
+
+                  fetch('/headteacher/debug-log', {
+                      method: 'POST',
+                      headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify({
+                          message: '🎯 Grade data prepared',
+                          data: gradeData
+                      })
+                  }).catch(() => {});
+
+                  // Update grade statistics
+                  updateGradeStats(gradeData);
+
+                  if (gradeData.length === 0) {
+                      fetch('/headteacher/debug-log', {
+                          method: 'POST',
+                          headers: {'Content-Type': 'application/json'},
+                          body: JSON.stringify({message: '🎯 No grade data available, showing placeholder'})
+                      }).catch(() => {});
+                      gradeCtx.getContext('2d').fillText('No data available', 150, 100);
+                      return;
+                  }
+
+                  charts.gradeChart = new Chart(gradeCtx, {
+                      type: 'doughnut',
+                      data: {
+                          labels: gradeData.map(d => `Grade ${d.grade}`),
+                          datasets: [{
+                              data: gradeData.map(d => d.count),
+                              backgroundColor: [
+                                  '#667eea', '#764ba2', '#10b981', '#f59e0b',
+                                  '#ef4444', '#3b82f6', '#8b5cf6', '#06b6d4'
+                              ],
+                              borderWidth: 3,
+                              borderColor: '#ffffff',
+                              hoverBorderWidth: 4,
+                              hoverOffset: 8
+                          }]
+                      },
+                      options: {
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                              legend: {
+                                  position: 'bottom',
+                                  labels: {
+                                      padding: 15,
+                                      usePointStyle: true,
+                                      font: { size: 12 },
+                                      color: '#374151'
+                                  }
+                              },
+                              tooltip: {
+                                  callbacks: {
+                                      label: function(context) {
+                                          const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                          const percentage = ((context.parsed * 100) / total).toFixed(1);
+                                          return `${context.label}: ${context.parsed} students (${percentage}%)`;
+                                      }
+                                  }
+                              }
+                          },
+                          animation: {
+                              animateRotate: true,
+                              duration: 1000
+                          }
+                      }
+                  });
+                  fetch('/headteacher/debug-log', {
+                      method: 'POST',
+                      headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify({message: '🎯 Grade chart created successfully'})
+                  }).catch(() => {});
+              } catch (error) {
+                  fetch('/headteacher/debug-log', {
+                      method: 'POST',
+                      headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify({
+                          message: '❌ Error creating grade chart',
+                          error: error.message
+                      })
+                  }).catch(() => {});
+              }
+          } else {
+              fetch('/headteacher/debug-log', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({message: '❌ Grade chart canvas not found'})
+              }).catch(() => {});
+          }
+
+          // Promotion Actions Chart
+          const actionCtx = document.getElementById('actionChart');
+          if (actionCtx) {
+              fetch('/headteacher/debug-log', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({message: '🎯 Found action chart canvas'})
+              }).catch(() => {});
+
+              try {
+                  const actionData = calculatePromotionActions();
+                  fetch('/headteacher/debug-log', {
+                      method: 'POST',
+                      headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify({
+                          message: '🎯 Action data calculated',
+                          data: actionData
+                      })
+                  }).catch(() => {});
+
+                  // Update action statistics
+                  updateActionStats(actionData);
+
+              charts.actionChart = new Chart(actionCtx, {
+                  type: 'doughnut',
+                  data: {
+                      labels: ['Promote', 'Repeat', 'Transfer', 'Graduate'],
+                      datasets: [{
+                          data: [
+                              actionData.promote,
+                              actionData.repeat,
+                              actionData.transfer,
+                              actionData.graduate
+                          ],
+                          backgroundColor: [
+                              '#10b981', // Green for promote
+                              '#f59e0b', // Yellow for repeat
+                              '#3b82f6', // Blue for transfer
+                              '#667eea'  // Purple for graduate
+                          ],
+                          borderWidth: 3,
+                          borderColor: '#ffffff',
+                          hoverBorderWidth: 4,
+                          hoverOffset: 8,
+                          hoverBackgroundColor: [
+                              '#059669',
+                              '#d97706',
+                              '#2563eb',
+                              '#5b21b6'
+                          ]
+                      }]
+                  },
+                  options: {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                          legend: {
+                              position: 'bottom',
+                              labels: {
+                                  padding: 15,
+                                  usePointStyle: true,
+                                  font: { size: 12 },
+                                  color: '#374151'
+                              }
+                          },
+                          tooltip: {
+                              callbacks: {
+                                  label: function(context) {
+                                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                      const percentage = total > 0 ? ((context.parsed * 100) / total).toFixed(1) : '0.0';
+                                      return `${context.label}: ${context.parsed} students (${percentage}%)`;
+                                  }
+                              }
+                          }
+                      },
+                      animation: {
+                          animateRotate: true,
+                          duration: 1000
+                      }
+                  }
+              });
+              fetch('/headteacher/debug-log', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({message: '🎯 Action chart created successfully'})
+              }).catch(() => {});
+              } catch (error) {
+                  fetch('/headteacher/debug-log', {
+                      method: 'POST',
+                      headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify({
+                          message: '❌ Error creating action chart',
+                          error: error.message
+                      })
+                  }).catch(() => {});
+              }
+          } else {
+              fetch('/headteacher/debug-log', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({message: '❌ Action chart canvas not found'})
+              }).catch(() => {});
+          }
+
+          // Performance Trends Chart - Placeholder (implemented later)
+          // This will be implemented in a future update with historical data analysis
+      }
+
+      // Batch Processing Functions
+      function selectAllEligible() {
+          document.querySelectorAll('.student-select').forEach(checkbox => {
+              const studentRow = checkbox.closest('tr');
+              const statusBadge = studentRow.querySelector('.status-badge');
+              if (statusBadge && (statusBadge.classList.contains('status-eligible') || statusBadge.classList.contains('status-final'))) {
+                  checkbox.checked = true;
+                  updateStudentSelection(parseInt(checkbox.dataset.studentId));
+              }
+          });
+          updateStatistics();
+      }
+
+      function promoteSelected() {
+          selectedStudents.forEach((studentData, studentId) => {
+              const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+              if (actionSelect && !studentData.is_final_grade) {
+                  actionSelect.value = 'promote';
+                  updatePromotionAction(studentId);
+              }
+          });
+          updateStatistics();
+      }
+
+      function repeatSelected() {
+          selectedStudents.forEach((studentData, studentId) => {
+              const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+              if (actionSelect) {
+                  actionSelect.value = 'repeat';
+                  updatePromotionAction(studentId);
+              }
+          });
+          updateStatistics();
+      }
+
+      function clearSelection() {
+          document.querySelectorAll('.student-select').forEach(checkbox => {
+              checkbox.checked = false;
+          });
+          document.querySelectorAll('.grade-select-all').forEach(checkbox => {
+              checkbox.checked = false;
+          });
+          selectedStudents.clear();
+          updateStatistics();
+      }
+
+      function previewPromotions() {
+          if (selectedStudents.size === 0) {
+              alert('Please select at least one student to preview promotions.');
+              return;
+          }
+
+          let previewText = 'PROMOTION PREVIEW\\n\\n';
+          let promoteCount = 0, repeatCount = 0, transferCount = 0, graduateCount = 0;
+
+          selectedStudents.forEach((studentData, studentId) => {
+              const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+              const action = actionSelect ? actionSelect.value : 'promote';
+
+              previewText += `${studentData.name} (${studentData.admission_number}) - ${action.toUpperCase()}\\n`;
+
+              switch(action) {
+                  case 'promote': promoteCount++; break;
+                  case 'repeat': repeatCount++; break;
+                  case 'transfer': transferCount++; break;
+                  case 'graduate': graduateCount++; break;
+              }
+          });
+
+          previewText += `\\nSUMMARY:\\nPromote: ${promoteCount}\\nRepeat: ${repeatCount}\\nTransfer: ${transferCount}\\nGraduate: ${graduateCount}`;
+
+          alert(previewText);
+      }
+
+      function exportPromotionReport() {
+          const reportData = {
+              timestamp: new Date().toISOString(),
+              academic_year: promotionData.academic_year,
+              total_students: promotionData.promotion_summary.total_students,
+              selected_students: Array.from(selectedStudents.entries()).map(([id, data]) => ({
+                  id: id,
+                  name: data.name,
+                  admission_number: data.admission_number,
+                  current_grade: data.grade_name,
+                  action: document.querySelector(`.promotion-select[data-student-id="${id}"]`)?.value || 'promote'
+              }))
+          };
+
+          const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `promotion_report_${new Date().toISOString().split('T')[0]}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+      }
+
+      function updateStatistics() {
+          const selectedCount = selectedStudents.size;
+          let promoteCount = 0, repeatCount = 0, transferCount = 0, graduateCount = 0;
+          let promotionReady = 0, reviewRequired = 0;
+
+          selectedStudents.forEach((studentData, studentId) => {
+              const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+              const action = actionSelect ? actionSelect.value : 'promote';
+
+              switch(action) {
+                  case 'promote':
+                      promoteCount++;
+                      if (studentData.can_be_promoted) promotionReady++;
+                      else reviewRequired++;
+                      break;
+                  case 'repeat': repeatCount++; reviewRequired++; break;
+                  case 'transfer': transferCount++; reviewRequired++; break;
+                  case 'graduate': graduateCount++; promotionReady++; break;
+              }
+          });
+
+          // Update UI counters
+          document.getElementById('selected-count').textContent = selectedCount;
+          document.getElementById('promotion-ready').textContent = promotionReady;
+          document.getElementById('review-required').textContent = reviewRequired;
+          document.getElementById('repeat-count').textContent = repeatCount;
+          document.getElementById('transfer-count').textContent = transferCount;
+
+          // Update charts
+          if (charts.actionChart) {
+              charts.actionChart.data.datasets[0].data = [promoteCount, repeatCount, transferCount, graduateCount];
+              charts.actionChart.update();
+          }
+      }
 
       function initializeStreamSelectors() {
           // Populate stream selectors based on target grades
@@ -1008,6 +2187,7 @@
           } else {
               selectedStudents.delete(studentId);
           }
+          updateStatistics();
       }
 
       function updatePromotionAction(studentId) {
@@ -1034,30 +2214,10 @@
                   targetGradeSpan.textContent = 'N/A';
               }
           }
+          updateStatistics();
       }
 
-      function selectAllEligible() {
-          document.querySelectorAll('.student-select').forEach(checkbox => {
-              const studentId = parseInt(checkbox.dataset.studentId);
-              const grade = checkbox.dataset.grade;
-              const studentData = findStudentData(studentId, grade);
 
-              if (studentData && (studentData.can_be_promoted || studentData.is_final_grade)) {
-                  checkbox.checked = true;
-                  updateStudentSelection(studentId);
-              }
-          });
-      }
-
-      function clearAllSelections() {
-          document.querySelectorAll('.student-select').forEach(checkbox => {
-              checkbox.checked = false;
-          });
-          document.querySelectorAll('.grade-select-all').forEach(checkbox => {
-              checkbox.checked = false;
-          });
-          selectedStudents.clear();
-      }
 
       function processPromotions() {
           if (selectedStudents.size === 0) {
@@ -1166,6 +2326,8 @@
               }
           }
       });
+
+      } // End of student promotion page check
     </script>
   </body>
 </html>

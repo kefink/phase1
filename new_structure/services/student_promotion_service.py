@@ -13,6 +13,48 @@ from ..models.school_setup import SchoolSetup
 import uuid
 
 
+class DictToObject:
+    """Convert dictionary to object with attribute access."""
+    def __init__(self, dictionary):
+        self._dict = dictionary  # Store original dict for len() support
+        for key, value in dictionary.items():
+            if isinstance(value, dict):
+                setattr(self, key, DictToObject(value))
+            elif isinstance(value, list):
+                setattr(self, key, [DictToObject(item) if isinstance(item, dict) else item for item in value])
+            else:
+                setattr(self, key, value)
+
+    def __len__(self):
+        """Support len() function for template compatibility."""
+        return len(self._dict)
+
+    def __iter__(self):
+        """Support iteration for template compatibility."""
+        return iter(self._dict)
+
+    def __contains__(self, key):
+        """Support 'in' operator for template compatibility."""
+        return key in self._dict
+
+    def items(self):
+        """Support .items() method for template compatibility."""
+        for key, value in self._dict.items():
+            if isinstance(value, dict):
+                yield key, DictToObject(value)
+            else:
+                yield key, getattr(self, key, value)
+
+    def keys(self):
+        """Support .keys() method for template compatibility."""
+        return self._dict.keys()
+
+    def values(self):
+        """Support .values() method for template compatibility."""
+        for key in self._dict.keys():
+            yield getattr(self, key)
+
+
 class StudentPromotionService:
     """Service class for handling student promotions."""
     
@@ -50,13 +92,12 @@ class StudentPromotionService:
                 'grades_summary': []
             }
             
-            # Build query with filters - exclude Grade 9 students from promotion
+            # Build query with filters - include all students (Grade 9 students will be handled for graduation)
+            # Remove restrictive promotion_status filtering to show all students
             students_query = db.session.query(Student, Grade, Stream).join(
                 Grade, Student.grade_id == Grade.id
             ).outerjoin(
                 Stream, Student.stream_id == Stream.id
-            ).filter(
-                Grade.name != 'Grade 9'  # Exclude final grade students from promotion
             )
 
             # Apply filters
@@ -72,44 +113,12 @@ class StudentPromotionService:
             # Get total count for pagination
             total_students = students_query.count()
 
-            # Check if all students are in Grade 9 (final grade)
-            all_students_count = db.session.query(Student).join(Grade).count()
-            grade_9_students_count = db.session.query(Student).join(Grade).filter(Grade.name == 'Grade 9').count()
-
-            # If all students are in Grade 9, provide specific message
-            if all_students_count > 0 and grade_9_students_count == all_students_count:
-                return {
-                    'students_by_grade': {},
-                    'promotion_summary': {
-                        'total_students': 0,
-                        'eligible_students': 0,
-                        'ineligible_students': 0,
-                        'inactive_students': 0,
-                        'grades_summary': []
-                    },
-                    'pagination': {
-                        'page': page,
-                        'per_page': per_page,
-                        'total': 0,
-                        'total_pages': 0,
-                        'has_prev': False,
-                        'has_next': False,
-                        'prev_num': None,
-                        'next_num': None
-                    },
-                    'filters': {
-                        'education_level': education_level,
-                        'grade_id': grade_id,
-                        'stream_id': stream_id
-                    },
-                    'error': f'All {grade_9_students_count} students are in Grade 9 (final grade). Grade 9 students cannot be promoted as they have completed their education. They should be marked for graduation instead.'
-                }
-
             # Apply pagination
             offset = (page - 1) * per_page
             students_query = students_query.order_by(
                 Grade.name, Stream.name, Student.name
             ).offset(offset).limit(per_page)
+
             for student, grade, stream in students_query:
                 grade_name = grade.name
                 
@@ -129,17 +138,26 @@ class StudentPromotionService:
                 # Enhance student with promotion info
                 student_data = student.to_dict()
                 student_data['stream_name'] = stream.name if stream else 'No Stream'
+                student_data['grade_name'] = grade.name
                 student_data['next_grade'] = None
-                student_data['promotion_action'] = 'promote'  # Default action
-                
-                # Determine next grade and promotion eligibility
-                next_grade_name = student.get_next_grade()
-                if next_grade_name:
-                    student_data['next_grade'] = next_grade_name
-                    student_data['can_promote'] = student.can_be_promoted()
+
+                # Check if this is Grade 9 (final grade)
+                is_final_grade = (grade.name == '9' or grade.name == 'Grade 9' or 'grade 9' in grade.name.lower())
+                student_data['is_final_grade'] = is_final_grade
+
+                if is_final_grade:
+                    student_data['promotion_action'] = 'graduate'  # Grade 9 students graduate
+                    student_data['can_be_promoted'] = False
+                    student_data['next_grade'] = 'Graduate'
                 else:
-                    student_data['can_promote'] = False
-                    student_data['promotion_action'] = 'graduate'
+                    student_data['promotion_action'] = 'promote'  # Default action for other grades
+                    # Determine next grade and promotion eligibility
+                    next_grade_name = student.get_next_grade()
+                    if next_grade_name:
+                        student_data['next_grade'] = next_grade_name
+                        student_data['can_be_promoted'] = student.can_be_promoted()
+                    else:
+                        student_data['can_be_promoted'] = False
                 
                 students_by_grade[grade_name]['students'].append(student_data)
                 students_by_grade[grade_name]['total_count'] += 1
@@ -168,7 +186,7 @@ class StudentPromotionService:
             has_prev = page > 1
             has_next = page < total_pages
 
-            return {
+            result_dict = {
                 'success': True,
                 'academic_year': academic_year,
                 'students_by_grade': students_by_grade,
@@ -190,14 +208,43 @@ class StudentPromotionService:
                     'stream_id': stream_id
                 }
             }
-            
+
+            # Convert to object for template dot notation access
+            # Convert to object for template dot notation access
+            return DictToObject(result_dict)
+
         except Exception as e:
-            return {
+            error_dict = {
                 'success': False,
                 'error': str(e),
                 'students_by_grade': {},
-                'promotion_summary': {}
+                'promotion_summary': {
+                    'total_students': 0,
+                    'eligible_for_promotion': 0,
+                    'final_grade_students': 0,
+                    'to_repeat': 0,
+                    'to_transfer': 0
+                },
+                'available_streams': {},
+                'pagination': {
+                    'page': 1,
+                    'per_page': per_page,
+                    'total': 0,
+                    'total_pages': 1,
+                    'has_prev': False,
+                    'has_next': False,
+                    'prev_num': None,
+                    'next_num': None
+                },
+                'filters': {
+                    'education_level': education_level,
+                    'grade_id': grade_id,
+                    'stream_id': stream_id
+                }
             }
+
+            # Convert error dict to object as well
+            return DictToObject(error_dict)
     
     @staticmethod
     def _get_available_streams() -> Dict[str, List[Dict]]:
@@ -223,25 +270,24 @@ class StudentPromotionService:
     def get_filter_options() -> Dict:
         """Get available filter options for the promotion interface."""
         try:
-            # Get education levels (excluding Grade 9 from promotion)
-            education_levels = db.session.query(Grade.education_level).filter(
-                Grade.name != 'Grade 9'
-            ).distinct().all()
-            education_levels = [level[0] for level in education_levels if level[0]]
+            # Get education levels (include all levels including Grade 9 for graduation)
+            education_levels_raw = db.session.query(Grade.education_level).distinct().all()
+            education_levels = [level[0] for level in education_levels_raw if level[0]]
 
-            # Get grades (excluding Grade 9 from promotion)
-            grades = Grade.query.filter(Grade.name != 'Grade 9').order_by(Grade.name).all()
-            grades_list = [{'id': grade.id, 'name': grade.name, 'education_level': grade.education_level} for grade in grades]
+            # Get grades (include all grades including Grade 9) - order by name since there's no level field
+            grades_raw = Grade.query.order_by(Grade.name).all()
+            grades_list = [{'id': grade.id, 'name': grade.name, 'education_level': grade.education_level} for grade in grades_raw]
 
-            # Get streams
-            streams = Stream.query.join(Grade).filter(Grade.name != 'Grade 9').order_by(Grade.name, Stream.name).all()
-            streams_list = [{'id': stream.id, 'name': stream.name, 'grade_name': stream.grade.name} for stream in streams]
+            # Get streams (include all streams including Grade 9) - order by grade name and stream name
+            streams_raw = Stream.query.join(Grade).order_by(Grade.name, Stream.name).all()
+            streams_list = [{'id': stream.id, 'name': stream.name, 'grade_name': stream.grade.name} for stream in streams_raw]
 
             return {
                 'education_levels': education_levels,
                 'grades': grades_list,
                 'streams': streams_list
             }
+
         except Exception as e:
             return {
                 'education_levels': [],

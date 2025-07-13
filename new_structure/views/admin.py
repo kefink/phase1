@@ -1,7 +1,7 @@
 """
 Admin/Headteacher views for the Hillview School Management System.
 """
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from ..models import Teacher, Student, Grade, Stream, Subject, Term, AssessmentType, Mark, TeacherSubjectAssignment, SchoolConfiguration
 from ..services import is_authenticated, get_role
 from ..services.school_config_service import SchoolConfigService
@@ -1709,10 +1709,32 @@ def create_test_students():
     except Exception as e:
         return f"Error creating test students: {str(e)}"
 
+@admin_bp.route('/debug-log', methods=['POST'])
+@admin_required
+def debug_log():
+    """Handle debug messages from frontend"""
+    try:
+        data = request.get_json()
+        message = data.get('message', 'Debug message')
+        extra_data = data.get('data', {})
+        error = data.get('error', '')
+
+        if error:
+            print(f"{message}: {error}")
+        elif extra_data:
+            print(f"{message}: {extra_data}")
+        else:
+            print(message)
+
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        print(f"❌ Debug log error: {str(e)}")
+        return jsonify({'status': 'error'})
+
 @admin_bp.route('/student-promotion')
 @admin_required
 def student_promotion():
-    """Display student promotion management interface with filtering and pagination."""
+    """Display enhanced student promotion management interface with analytics and batch processing."""
     try:
         from ..services.student_promotion_service import StudentPromotionService
         from ..services.school_config_service import SchoolConfigService
@@ -1728,7 +1750,7 @@ def student_promotion():
         per_page = request.args.get('per_page', 50, type=int)
 
         # Get promotion preview data with filters and pagination
-        promotion_data = StudentPromotionService.get_promotion_preview_data(
+        promotion_data_raw = StudentPromotionService.get_promotion_preview_data(
             academic_year=current_academic_year,
             education_level=education_level,
             grade_id=grade_id,
@@ -1736,6 +1758,15 @@ def student_promotion():
             page=page,
             per_page=per_page
         )
+
+        # Keep the raw dictionary for JSON serialization and create DictToObject for template access
+        if isinstance(promotion_data_raw, dict):
+            from ..services.student_promotion_service import DictToObject
+            promotion_data = DictToObject(promotion_data_raw)
+            promotion_data_json = promotion_data_raw  # Keep original dict for JSON
+        else:
+            promotion_data = promotion_data_raw
+            promotion_data_json = promotion_data_raw._dict if hasattr(promotion_data_raw, '_dict') else {}
 
         # Get filter options
         filter_options = StudentPromotionService.get_filter_options()
@@ -1745,6 +1776,7 @@ def student_promotion():
 
         return render_template('student_promotion.html',
                              promotion_data=promotion_data,
+                             promotion_data_json=promotion_data_json,
                              filter_options=filter_options,
                              school_info=school_info,
                              academic_year=current_academic_year)
@@ -1752,6 +1784,177 @@ def student_promotion():
     except Exception as e:
         flash(f'Error loading student promotion data: {str(e)}', 'error')
         return redirect(url_for('admin.dashboard'))
+
+
+@admin_bp.route('/student-promotion/create-sample-data')
+@admin_required
+def create_sample_promotion_data():
+    """Create sample data for testing the enhanced promotion system."""
+    try:
+        from ..models.academic import Student, Grade, Stream
+        from datetime import date
+        import random
+
+        # Create sample students for testing
+        first_names = ['John', 'Mary', 'Peter', 'Grace', 'David', 'Sarah', 'Michael', 'Faith']
+        last_names = ['Kiprotich', 'Wanjiku', 'Mwangi', 'Achieng', 'Kiplagat', 'Njeri']
+
+        admission_counter = 3000
+        students_created = 0
+
+        # Get existing grades and streams
+        grades = Grade.query.order_by(Grade.level).all()
+
+        if not grades:
+            flash('❌ No grades found. Please set up grades first.', 'error')
+            return redirect(url_for('admin.student_promotion'))
+
+        for grade in grades:
+            streams = Stream.query.filter_by(grade_id=grade.id).all()
+
+            if not streams:
+                # Create default streams if none exist
+                for stream_name in ['A', 'B']:
+                    stream = Stream(
+                        name=stream_name,
+                        grade_id=grade.id,
+                        capacity=40
+                    )
+                    db.session.add(stream)
+                db.session.commit()
+                streams = Stream.query.filter_by(grade_id=grade.id).all()
+
+            for stream in streams:
+                # Create 5-8 students per stream for testing
+                num_students = random.randint(5, 8)
+
+                for i in range(num_students):
+                    first_name = random.choice(first_names)
+                    last_name = random.choice(last_names)
+                    full_name = f"{first_name} {last_name} Test{i+1}"
+
+                    # Check if student already exists
+                    existing_student = Student.query.filter_by(
+                        name=full_name,
+                        grade_id=grade.id,
+                        stream_id=stream.id
+                    ).first()
+
+                    if existing_student:
+                        continue
+
+                    admission_counter += 1
+
+                    # Most students are eligible for promotion
+                    can_be_promoted = random.choice([True, True, True, False])  # 75% eligible
+
+                    student = Student(
+                        name=full_name,
+                        admission_number=f"TEST{admission_counter:04d}",
+                        grade_id=grade.id,
+                        stream_id=stream.id,
+                        gender=random.choice(['Male', 'Female']),
+                        date_of_birth=date(2010 + grade.level, random.randint(1, 12), random.randint(1, 28)),
+                        academic_year="2024-2025",
+                        promotion_status='active',
+                        is_eligible_for_promotion=can_be_promoted,
+                        date_enrolled=date(2024 - grade.level + 1, 1, 15)
+                    )
+
+                    db.session.add(student)
+                    students_created += 1
+
+        db.session.commit()
+
+        flash(f'✅ Successfully created {students_created} sample students for promotion testing!', 'success')
+        return redirect(url_for('admin.student_promotion'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'❌ Error creating sample data: {str(e)}', 'error')
+        return redirect(url_for('admin.student_promotion'))
+
+
+@admin_bp.route('/debug-students')
+@admin_required
+def debug_students_simple():
+    """Simple debug route to check students."""
+    try:
+        from ..models.academic import Student, Grade, Stream
+
+        # Get all students
+        all_students = Student.query.all()
+        students_with_grades = db.session.query(Student, Grade).join(Grade, Student.grade_id == Grade.id).all()
+
+        result = {
+            'total_students': len(all_students),
+            'students_with_grades': len(students_with_grades),
+            'students_list': []
+        }
+
+        for student, grade in students_with_grades[:10]:  # Show first 10
+            result['students_list'].append({
+                'name': student.name,
+                'grade': grade.name,
+                'promotion_status': getattr(student, 'promotion_status', 'NOT_SET')
+            })
+
+        return f"<pre>{result}</pre>"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+@admin_bp.route('/student-promotion/debug')
+@admin_required
+def debug_promotion_data():
+    """Debug route to check student data in database."""
+    try:
+        from ..models.academic import Student, Grade, Stream
+
+        # Get all students with their grades
+        students = db.session.query(Student, Grade, Stream).join(
+            Grade, Student.grade_id == Grade.id
+        ).outerjoin(
+            Stream, Student.stream_id == Stream.id
+        ).all()
+
+        debug_info = {
+            'total_students': len(students),
+            'students_by_grade': {},
+            'all_grades': [g.name for g in Grade.query.all()],
+            'students_list': [],
+            'promotion_status_analysis': {}
+        }
+
+        # Analyze promotion status
+        all_students = Student.query.all()
+        promotion_statuses = {}
+        for student in all_students:
+            status = getattr(student, 'promotion_status', 'NOT_SET')
+            if status not in promotion_statuses:
+                promotion_statuses[status] = 0
+            promotion_statuses[status] += 1
+
+        debug_info['promotion_status_analysis'] = promotion_statuses
+
+        for student, grade, stream in students:
+            grade_name = grade.name
+            if grade_name not in debug_info['students_by_grade']:
+                debug_info['students_by_grade'][grade_name] = 0
+            debug_info['students_by_grade'][grade_name] += 1
+
+            debug_info['students_list'].append({
+                'name': student.name,
+                'admission_number': student.admission_number,
+                'grade': grade.name,
+                'stream': stream.name if stream else 'No Stream',
+                'promotion_status': student.promotion_status,
+                'is_eligible': student.is_eligible_for_promotion
+            })
+
+        return f"<h1>Debug Info</h1><pre>{debug_info}</pre>"
+
+    except Exception as e:
+        return f"<h1>Error</h1><p>{str(e)}</p>"
 
 
 @admin_bp.route('/student-promotion/process', methods=['POST'])

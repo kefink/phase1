@@ -188,10 +188,9 @@ class Student(db.Model):
 
     def can_be_promoted(self):
         """Check if student can be promoted to next grade."""
-        if self.promotion_status != 'active' and self.promotion_status is not None:
-            return False
-        if not self.is_eligible_for_promotion:
-            return False
+        # Remove restrictive promotion_status check - allow all students to be considered for promotion
+        # if not self.is_eligible_for_promotion:
+        #     return False
         return not self.is_final_grade()
 
     def get_promotion_data(self):

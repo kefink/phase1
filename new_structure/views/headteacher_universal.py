@@ -431,6 +431,15 @@ def proxy_grade_reports_dashboard():
     session['headteacher_universal_access'] = True
     return redirect(url_for('classteacher.grade_reports_dashboard'))
 
+# STUDENT PROMOTION PROXY
+@universal_bp.route('/proxy/student_promotion')
+@headteacher_required
+def proxy_student_promotion():
+    """Proxy to student promotion management."""
+    session['headteacher_universal_access'] = True
+    session.permanent = True  # Ensure session persists across redirects
+    return redirect(url_for('admin.student_promotion'))
+
 # ASSIGNMENT MANAGEMENT PROXIES
 @universal_bp.route('/proxy/manage_teacher_assignments')
 @headteacher_required
