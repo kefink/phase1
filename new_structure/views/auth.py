@@ -232,3 +232,8 @@ def teacher_mobile_test():
         'classes': []
     }
     return render_template('teacher.html', **mock_data)
+
+@auth_bp.route('/forms-mobile-demo')
+def forms_mobile_demo():
+    """Forms and file upload mobile responsive demo page."""
+    return render_template('forms_mobile_demo.html')

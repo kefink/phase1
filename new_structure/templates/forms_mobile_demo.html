@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forms & File Upload Mobile Demo - Hillview School</title>
+    
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Mobile Responsive Dashboard Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile_responsive_dashboard.css') }}">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --light-bg: #f9fafb;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .demo-section {
+            background: white;
+            margin: 1rem 0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .demo-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .demo-navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-complete {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .demo-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .demo-table th,
+        .demo-table td {
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+        
+        .demo-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .demo-table input {
+            width: 60px;
+            padding: 0.25rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .feature-card {
+            padding: 1rem;
+            background: var(--light-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .feature-card h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+        
+        .feature-card p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Navigation Bar -->
+    <nav class="demo-navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Hillview School - Forms & File Upload Mobile Demo</span>
+            </div>
+            <ul class="navbar-nav">
+                <li><a href="#" class="nav-link"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                <li><a href="#" class="nav-link"><i class="fas fa-upload"></i> <span>Upload</span></a></li>
+                <li><a href="#" class="nav-link"><i class="fas fa-edit"></i> <span>Forms</span></a></li>
+                <li><a href="#" class="nav-link"><i class="fas fa-table"></i> <span>Tables</span></a></li>
+                <li><a href="#" class="nav-link logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container dashboard-container">
+        <!-- Implementation Status -->
+        <div class="demo-section">
+            <h2 class="demo-title">
+                <i class="fas fa-check-circle"></i>
+                Forms & File Upload Mobile Implementation Status
+            </h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4><span class="status-badge status-complete"><i class="fas fa-check"></i> Complete</span></h4>
+                    <h4>Advanced Forms Mobile Optimization</h4>
+                    <p>Touch-friendly form inputs with proper sizing, focus states, and mobile-first design</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="status-badge status-complete"><i class="fas fa-check"></i> Complete</span></h4>
+                    <h4>File Upload Mobile Interface</h4>
+                    <p>Drag-and-drop file uploads with mobile-optimized progress indicators and file management</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="status-badge status-complete"><i class="fas fa-check"></i> Complete</span></h4>
+                    <h4>Marks Upload Table Mobile</h4>
+                    <p>Horizontal scrolling tables with sticky columns and touch-friendly input fields</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="status-badge status-complete"><i class="fas fa-check"></i> Complete</span></h4>
+                    <h4>Form Grid System</h4>
+                    <p>Responsive form layouts that adapt from multi-column to single-column on mobile</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Form -->
+        <div class="demo-section">
+            <h2 class="demo-title">
+                <i class="fas fa-edit"></i>
+                Mobile-Optimized Form Demo
+            </h2>
+            
+            <div class="modern-form">
+                <form>
+                    <div class="modern-grid grid-cols-2">
+                        <div class="form-group">
+                            <label class="form-label">Student Name</label>
+                            <input type="text" class="form-input" placeholder="Enter student name" value="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Student ID</label>
+                            <input type="text" class="form-input" placeholder="Enter student ID" value="STU001">
+                        </div>
+                    </div>
+                    
+                    <div class="modern-grid grid-cols-3">
+                        <div class="form-group">
+                            <label class="form-label">Grade</label>
+                            <select class="form-select">
+                                <option>Select Grade</option>
+                                <option selected>Grade 8</option>
+                                <option>Grade 9</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Stream</label>
+                            <select class="form-select">
+                                <option>Select Stream</option>
+                                <option selected>Stream A</option>
+                                <option>Stream B</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Term</label>
+                            <select class="form-select">
+                                <option>Select Term</option>
+                                <option selected>Term 1</option>
+                                <option>Term 2</option>
+                                <option>Term 3</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Comments</label>
+                        <textarea class="form-textarea" placeholder="Enter additional comments...">Student shows excellent progress in mathematics and science subjects.</textarea>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="active" checked>
+                        <label class="form-check-label" for="active">Active Student</label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="notify">
+                        <label class="form-check-label" for="notify">Send notification to parents</label>
+                    </div>
+                    
+                    <button type="submit" class="modern-btn btn-primary">
+                        <i class="fas fa-save"></i> Save Student Information
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- File Upload Demo -->
+        <div class="demo-section">
+            <h2 class="demo-title">
+                <i class="fas fa-cloud-upload-alt"></i>
+                Mobile File Upload Demo
+            </h2>
+            
+            <div class="file-upload-container">
+                <div class="drag-drop-area" onclick="document.getElementById('file-input').click()">
+                    <div class="file-upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>Drop files here or click to upload</h3>
+                    <p class="file-upload-text">Supports: PDF, DOC, DOCX, XLS, XLSX (Max: 10MB)</p>
+                    <input type="file" id="file-input" style="display: none;" multiple accept=".pdf,.doc,.docx,.xls,.xlsx">
+                </div>
+                
+                <div class="file-restrictions">
+                    <strong>File Requirements:</strong> Maximum file size: 10MB | Supported formats: PDF, Word, Excel
+                </div>
+                
+                <ul class="file-list">
+                    <li class="file-item">
+                        <div class="file-item-info">
+                            <i class="fas fa-file-pdf file-item-icon"></i>
+                            <div>
+                                <div class="file-item-name">Grade_8_Mathematics_Marks.pdf</div>
+                                <div class="file-item-size">2.3 MB</div>
+                            </div>
+                        </div>
+                        <button class="file-item-remove" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </li>
+                    <li class="file-item">
+                        <div class="file-item-info">
+                            <i class="fas fa-file-excel file-item-icon"></i>
+                            <div>
+                                <div class="file-item-name">Student_Data_Template.xlsx</div>
+                                <div class="file-item-size">1.8 MB</div>
+                            </div>
+                        </div>
+                        <button class="file-item-remove" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="upload-progress">
+                    <div class="upload-progress-bar" style="width: 75%"></div>
+                </div>
+                
+                <div class="upload-status success">
+                    <i class="fas fa-check-circle"></i> 2 files uploaded successfully
+                </div>
+                
+                <button class="file-upload-btn">
+                    <i class="fas fa-upload"></i> Upload Selected Files
+                </button>
+            </div>
+        </div>
+
+        <!-- Marks Upload Table Demo -->
+        <div class="demo-section">
+            <h2 class="demo-title">
+                <i class="fas fa-table"></i>
+                Mobile Marks Upload Table Demo
+            </h2>
+            
+            <div class="table-wrapper">
+                <table class="demo-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th data-subject-id="1">Mathematics</th>
+                            <th data-subject-id="2">English</th>
+                            <th data-subject-id="3">Science</th>
+                            <th data-subject-id="4">Kiswahili</th>
+                            <th data-subject-id="19">Creative Arts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td><input type="number" value="85" min="0" max="100"></td>
+                            <td><input type="number" value="78" min="0" max="100"></td>
+                            <td><input type="number" value="92" min="0" max="100"></td>
+                            <td><input type="number" value="76" min="0" max="100"></td>
+                            <td><input type="number" value="88" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td><input type="number" value="91" min="0" max="100"></td>
+                            <td><input type="number" value="87" min="0" max="100"></td>
+                            <td><input type="number" value="89" min="0" max="100"></td>
+                            <td><input type="number" value="82" min="0" max="100"></td>
+                            <td><input type="number" value="95" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td>Mike Johnson</td>
+                            <td><input type="number" value="73" min="0" max="100"></td>
+                            <td><input type="number" value="81" min="0" max="100"></td>
+                            <td><input type="number" value="77" min="0" max="100"></td>
+                            <td><input type="number" value="79" min="0" max="100"></td>
+                            <td><input type="number" value="84" min="0" max="100"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="table-actions">
+                <button class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save All Marks
+                </button>
+                <button class="btn btn-secondary">
+                    <i class="fas fa-download"></i> Export to Excel
+                </button>
+                <button class="btn btn-outline">
+                    <i class="fas fa-eye"></i> Preview Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Testing Instructions -->
+        <div class="demo-section">
+            <h2 class="demo-title">
+                <i class="fas fa-mobile-alt"></i>
+                Mobile Testing Instructions
+            </h2>
+            
+            <div style="background: #f0f9ff; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                <h4 style="margin-top: 0; color: #1e40af;">How to Test Forms & File Upload Mobile Features:</h4>
+                <ol style="color: #475569; line-height: 1.6;">
+                    <li><strong>Form Inputs:</strong> Test touch interactions, focus states, and keyboard behavior</li>
+                    <li><strong>File Upload:</strong> Try drag-and-drop on desktop, tap to upload on mobile</li>
+                    <li><strong>Table Scrolling:</strong> Horizontal scroll to see all columns, test input fields</li>
+                    <li><strong>Responsive Layout:</strong> Watch forms adapt from multi-column to single-column</li>
+                    <li><strong>Touch Targets:</strong> Verify all buttons and inputs are easily tappable (44px+)</li>
+                    <li><strong>Keyboard Navigation:</strong> Test tab navigation and form submission</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // File upload demo functionality
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            const fileList = document.querySelector('.file-list');
+            
+            files.forEach(file => {
+                const fileItem = document.createElement('li');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-item-info">
+                        <i class="fas fa-file file-item-icon"></i>
+                        <div>
+                            <div class="file-item-name">${file.name}</div>
+                            <div class="file-item-size">${(file.size / 1024 / 1024).toFixed(1)} MB</div>
+                        </div>
+                    </div>
+                    <button class="file-item-remove" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        });
+        
+        // Drag and drop functionality
+        const dragDropArea = document.querySelector('.drag-drop-area');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight(e) {
+            dragDropArea.classList.add('drag-over');
+        }
+        
+        function unhighlight(e) {
+            dragDropArea.classList.remove('drag-over');
+        }
+        
+        dragDropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            document.getElementById('file-input').files = files;
+            document.getElementById('file-input').dispatchEvent(new Event('change'));
+        }
+        
+        // Viewport size logging
+        function logViewport() {
+            const size = window.innerWidth <= 480 ? 'Small Mobile' : 
+                       window.innerWidth <= 768 ? 'Mobile/Tablet' : 'Desktop';
+            document.title = `Forms & File Upload Demo - ${size} (${window.innerWidth}px)`;
+        }
+        
+        window.addEventListener('resize', logViewport);
+        logViewport();
+        
+        // Button click handlers
+        document.querySelectorAll('.btn, .modern-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Button clicked:', this.textContent.trim());
+                
+                // Visual feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>
