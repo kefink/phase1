@@ -180,3 +180,24 @@ def logout_route():
 def mobile_test():
     """Mobile responsive test page."""
     return render_template('mobile_test.html')
+
+@auth_bp.route('/dashboard-mobile-test')
+def dashboard_mobile_test():
+    """Dashboard mobile responsive test page."""
+    # Mock data for testing
+    mock_data = {
+        'school_info': {
+            'school_name': 'Hillview School',
+            'logo_url': '/static/images/default_logo.png'
+        },
+        'current_academic_year': '2025/2026',
+        'current_term': 'Term 1',
+        'performance_alerts': [],
+        'system_alerts': []
+    }
+    return render_template('headteacher.html', **mock_data)
+
+@auth_bp.route('/dashboard-mobile-demo')
+def dashboard_mobile_demo():
+    """Comprehensive dashboard mobile responsive demo page."""
+    return render_template('dashboard_mobile_test.html')

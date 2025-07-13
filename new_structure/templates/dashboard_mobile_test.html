@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Mobile Test - Hillview School</title>
+    
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Mobile Responsive Dashboard Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile_responsive_dashboard.css') }}">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --light-bg: #f9fafb;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .test-section {
+            background: white;
+            margin: 1rem 0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .demo-navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-chart {
+            height: 200px;
+            background: linear-gradient(45deg, #f0f9ff, #e0f2fe);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin: 1rem 0;
+        }
+        
+        .demo-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .demo-table th,
+        .demo-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .demo-table th {
+            background: var(--light-bg);
+            font-weight: 600;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .feature-card {
+            padding: 1rem;
+            background: var(--light-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .feature-card h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+        
+        .feature-card p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-complete {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-testing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Navigation Bar -->
+    <nav class="demo-navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Hillview School - Mobile Dashboard Test</span>
+            </div>
+            <ul class="navbar-nav">
+                <li><a href="#" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#" class="nav-link"><i class="fas fa-users"></i> Students</a></li>
+                <li><a href="#" class="nav-link"><i class="fas fa-chalkboard-teacher"></i> Teachers</a></li>
+                <li><a href="#" class="nav-link"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="#" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container dashboard-container">
+        <!-- Dashboard Header -->
+        <div class="test-section dashboard-header">
+            <div class="header-content">
+                <div class="header-info">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Mobile Dashboard Test
+                    </h1>
+                    <p class="dashboard-subtitle">
+                        <i class="fas fa-calendar"></i>
+                        Testing mobile responsiveness step by step
+                    </p>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New
+                    </button>
+                    <button class="action-btn btn-secondary">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Implementation Status -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <i class="fas fa-check-circle"></i>
+                Mobile Responsive Implementation Status
+            </h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4><span class="status-badge status-complete"><i class="fas fa-check"></i> Complete</span></h4>
+                    <h4>Navigation Bar</h4>
+                    <p>Mobile-first responsive navigation with touch-friendly buttons and flexible layout</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="status-badge status-complete"><i class="fas fa-check"></i> Complete</span></h4>
+                    <h4>Dashboard Container</h4>
+                    <p>Responsive container with optimized padding and margins for all screen sizes</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="status-badge status-complete"><i class="fas fa-check"></i> Complete</span></h4>
+                    <h4>Dashboard Header</h4>
+                    <p>Flexible header with responsive title, subtitle, and action buttons</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="status-badge status-complete"><i class="fas fa-check"></i> Complete</span></h4>
+                    <h4>Charts Container</h4>
+                    <p>Mobile-optimized charts with responsive sizing and touch interactions</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="status-badge status-complete"><i class="fas fa-check"></i> Complete</span></h4>
+                    <h4>Data Tables</h4>
+                    <p>Responsive tables with horizontal scroll and card layout for small screens</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="status-badge status-complete"><i class="fas fa-check"></i> Complete</span></h4>
+                    <h4>Forms & Modals</h4>
+                    <p>Touch-friendly forms with proper input sizing and modal optimization</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Charts -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <i class="fas fa-chart-pie"></i>
+                Charts Mobile Responsiveness
+            </h2>
+            
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3>Student Performance</h3>
+                    <div class="chart-wrapper">
+                        <div class="demo-chart">
+                            <i class="fas fa-chart-line" style="font-size: 3rem; opacity: 0.5;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Grade Distribution</h3>
+                    <div class="chart-wrapper">
+                        <div class="demo-chart">
+                            <i class="fas fa-chart-pie" style="font-size: 3rem; opacity: 0.5;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Table -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <i class="fas fa-table"></i>
+                Tables Mobile Responsiveness
+            </h2>
+            
+            <div class="table-container">
+                <table class="demo-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Grade</th>
+                            <th>Subject</th>
+                            <th>Score</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>Grade 8</td>
+                            <td>Mathematics</td>
+                            <td>85%</td>
+                            <td><span class="status-badge status-complete">Pass</span></td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td>Grade 7</td>
+                            <td>English</td>
+                            <td>92%</td>
+                            <td><span class="status-badge status-complete">Pass</span></td>
+                        </tr>
+                        <tr>
+                            <td>Mike Johnson</td>
+                            <td>Grade 9</td>
+                            <td>Science</td>
+                            <td>78%</td>
+                            <td><span class="status-badge status-testing">Review</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Card layout for small screens (hidden by default, shown on mobile) -->
+            <div class="table-responsive-cards">
+                <div class="table-card">
+                    <div class="table-card-header">John Doe</div>
+                    <div class="table-card-content">
+                        <div class="table-card-item">
+                            <div class="table-card-label">Grade</div>
+                            <div class="table-card-value">Grade 8</div>
+                        </div>
+                        <div class="table-card-item">
+                            <div class="table-card-label">Subject</div>
+                            <div class="table-card-value">Mathematics</div>
+                        </div>
+                        <div class="table-card-item">
+                            <div class="table-card-label">Score</div>
+                            <div class="table-card-value">85%</div>
+                        </div>
+                        <div class="table-card-item">
+                            <div class="table-card-label">Status</div>
+                            <div class="table-card-value"><span class="status-badge status-complete">Pass</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Form -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <i class="fas fa-edit"></i>
+                Forms Mobile Responsiveness
+            </h2>
+            
+            <div class="form-container">
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">Student Name</label>
+                        <input type="text" class="form-control" placeholder="Enter student name">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Grade</label>
+                            <select class="form-control">
+                                <option>Select Grade</option>
+                                <option>Grade 7</option>
+                                <option>Grade 8</option>
+                                <option>Grade 9</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Subject</label>
+                            <select class="form-control">
+                                <option>Select Subject</option>
+                                <option>Mathematics</option>
+                                <option>English</option>
+                                <option>Science</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="active">
+                            <label class="form-check-label" for="active">Active Student</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Student
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Testing Instructions -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <i class="fas fa-mobile-alt"></i>
+                Mobile Testing Instructions
+            </h2>
+            
+            <div style="background: #f0f9ff; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                <h4 style="margin-top: 0; color: #1e40af;">How to Test Mobile Responsiveness:</h4>
+                <ol style="color: #475569; line-height: 1.6;">
+                    <li><strong>Browser Developer Tools:</strong> Press F12, click device toolbar, select different devices</li>
+                    <li><strong>Resize Browser:</strong> Manually resize browser window to test breakpoints</li>
+                    <li><strong>Real Devices:</strong> Test on actual mobile phones and tablets</li>
+                    <li><strong>Touch Interactions:</strong> Verify all buttons are easily tappable (44px+ targets)</li>
+                    <li><strong>Orientation:</strong> Test both portrait and landscape modes</li>
+                    <li><strong>Scroll Behavior:</strong> Check horizontal scroll on tables and charts</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Add some interactive testing functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log viewport dimensions
+            function logViewport() {
+                console.log('Viewport:', window.innerWidth + 'x' + window.innerHeight);
+                
+                // Update page title with viewport size
+                const size = window.innerWidth <= 480 ? 'Small Mobile' : 
+                           window.innerWidth <= 768 ? 'Mobile/Tablet' : 'Desktop';
+                document.title = `Dashboard Mobile Test - ${size} (${window.innerWidth}px)`;
+            }
+            
+            // Log on resize
+            window.addEventListener('resize', logViewport);
+            logViewport();
+            
+            // Add click handlers for demo buttons
+            document.querySelectorAll('.action-btn, .btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Button clicked:', this.textContent.trim());
+                    
+                    // Visual feedback
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
