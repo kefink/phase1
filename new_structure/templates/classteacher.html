@@ -2502,19 +2502,41 @@
                                 </select>
                             </div>
 
+                            <!-- Mobile-Optimized File Upload Section -->
                             <div class="form-group" style="grid-column: span 2;">
-                                <label for="marks_file">Upload Marks File (Excel or CSV)</label>
-                                <input type="file" id="marks_file" name="marks_file" accept=".xlsx,.xls,.csv" required>
-                                <p class="help-text">Upload an Excel or CSV file with student marks. The file should have student names or admission numbers as rows and subjects as columns.</p>
+                                <label for="marks_file" class="form-label">Upload Marks File</label>
+
+                                <div class="file-upload-container">
+                                    <div class="drag-drop-area" onclick="document.getElementById('marks_file').click()">
+                                        <div class="file-upload-icon">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                        </div>
+                                        <h3>Drop marks file here or tap to upload</h3>
+                                        <p class="file-upload-text">Supports: Excel (.xlsx, .xls), CSV</p>
+                                        <input type="file" id="marks_file" name="marks_file" accept=".xlsx,.xls,.csv" required style="display: none;">
+                                    </div>
+
+                                    <div class="file-restrictions">
+                                        <strong>File Requirements:</strong> Excel or CSV format with student names/admission numbers as rows and subjects as columns
+                                    </div>
+
+                                    <div id="bulk-file-list" class="file-list" style="display: none;">
+                                        <!-- Selected files will appear here -->
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="form-group" style="grid-column: span 2; text-align: center;">
-                                <a href="#" class="btn-outline" onclick="downloadTemplate()" style="margin-right: 10px;">
-                                    Download Template
-                                </a>
-                                <button type="submit" name="bulk_upload_marks" value="1" class="btn" id="bulk-upload-btn">
-                                    Upload Marks
-                                </button>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <div class="modern-grid grid-cols-2">
+                                    <button type="button" class="modern-btn btn-outline" onclick="downloadTemplate()">
+                                        <i class="fas fa-download"></i>
+                                        Download Template
+                                    </button>
+                                    <button type="submit" name="bulk_upload_marks" value="1" class="modern-btn btn-primary" id="bulk-upload-btn">
+                                        <i class="fas fa-upload"></i>
+                                        Upload Marks
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -6066,6 +6088,9 @@
                 fetchStreams();
             }
 
+            // Enhanced Mobile File Upload Functionality
+            initializeMobileFileUpload();
+
             // Restore active tab from session storage if needed
             restoreActiveTab();
 
@@ -7434,6 +7459,120 @@
 
                     console.log(`  - After simulated typing: ${input.value}`);
                 });
+            }
+
+            // Mobile File Upload Enhancement Function
+            function initializeMobileFileUpload() {
+                console.log('🔧 Initializing mobile file upload enhancements...');
+
+                // Enhanced file input for marks upload
+                const marksFileInput = document.getElementById('marks_file');
+                const dragDropArea = document.querySelector('.drag-drop-area');
+                const fileList = document.getElementById('bulk-file-list');
+
+                if (marksFileInput && dragDropArea) {
+                    // File input change handler
+                    marksFileInput.addEventListener('change', function(e) {
+                        const files = Array.from(e.target.files);
+                        displaySelectedFiles(files, fileList);
+                    });
+
+                    // Drag and drop functionality
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        dragDropArea.addEventListener(eventName, preventDefaults, false);
+                    });
+
+                    function preventDefaults(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+
+                    ['dragenter', 'dragover'].forEach(eventName => {
+                        dragDropArea.addEventListener(eventName, highlight, false);
+                    });
+
+                    ['dragleave', 'drop'].forEach(eventName => {
+                        dragDropArea.addEventListener(eventName, unhighlight, false);
+                    });
+
+                    function highlight(e) {
+                        dragDropArea.classList.add('drag-over');
+                    }
+
+                    function unhighlight(e) {
+                        dragDropArea.classList.remove('drag-over');
+                    }
+
+                    dragDropArea.addEventListener('drop', handleDrop, false);
+
+                    function handleDrop(e) {
+                        const dt = e.dataTransfer;
+                        const files = dt.files;
+                        marksFileInput.files = files;
+                        marksFileInput.dispatchEvent(new Event('change'));
+                    }
+
+                    console.log('✅ Mobile file upload initialized successfully');
+                }
+            }
+
+            // Function to display selected files
+            function displaySelectedFiles(files, container) {
+                if (!container) return;
+
+                container.innerHTML = '';
+                container.style.display = files.length > 0 ? 'block' : 'none';
+
+                files.forEach((file, index) => {
+                    const fileItem = document.createElement('li');
+                    fileItem.className = 'file-item';
+
+                    const fileIcon = getFileIcon(file.name);
+                    const fileSize = (file.size / 1024 / 1024).toFixed(1);
+
+                    fileItem.innerHTML = `
+                        <div class="file-item-info">
+                            <i class="${fileIcon} file-item-icon"></i>
+                            <div>
+                                <div class="file-item-name">${file.name}</div>
+                                <div class="file-item-size">${fileSize} MB</div>
+                            </div>
+                        </div>
+                        <button type="button" class="file-item-remove" onclick="removeFile(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+
+                    container.appendChild(fileItem);
+                });
+            }
+
+            // Function to get appropriate file icon
+            function getFileIcon(filename) {
+                const extension = filename.split('.').pop().toLowerCase();
+                switch (extension) {
+                    case 'xlsx':
+                    case 'xls':
+                        return 'fas fa-file-excel';
+                    case 'csv':
+                        return 'fas fa-file-csv';
+                    default:
+                        return 'fas fa-file';
+                }
+            }
+
+            // Function to remove selected file
+            function removeFile(index) {
+                const marksFileInput = document.getElementById('marks_file');
+                const fileList = document.getElementById('bulk-file-list');
+
+                if (marksFileInput && fileList) {
+                    // Clear the file input
+                    marksFileInput.value = '';
+                    // Hide the file list
+                    fileList.style.display = 'none';
+                    fileList.innerHTML = '';
+                }
             }
 
             // SIMPLE RIGHTMOST COLUMN FIX FUNCTION
