@@ -1,58 +1,59 @@
-# Hill View School Application
+# Hillview School Management System
 
-A Flask-based web application for managing student records, grades, and reports for Hill View School.
+🏫 **Enterprise-Grade School Management Platform**
 
-## Setup Instructions
+## 🚀 Quick Start
 
-1. Clone the repository
-2. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Initialize the database:
-   ```
-   python seed.py
-   ```
-4. Run the application:
-   ```
-   python run.py
-   ```
-5. Access the application at http://127.0.0.1:5000
+The application runs from the `new_structure` directory:
 
-## Login Credentials
+```bash
+cd new_structure
+python run.py
+```
 
-**Database has been cleaned of all test data!**
+Access the application at: **http://localhost:5000**
 
-**Current Admin Account:**
+## 🔐 Default Login Credentials
 
-- Username: `headteacher`
-- Password: `admin123`
+- **Username**: `headteacher`
+- **Password**: `admin123`
 
-**To add your own data:**
+## 📁 Project Structure
 
-1. Login as headteacher
-2. Use the admin interface to create your own:
-   - Grades and streams
-   - Subjects
-   - Terms and assessments
-   - Teachers
-   - Students
-3. Login as classteacher to upload marks
-4. View analytics with your real data
+```
+hillview_mvp/
+├── new_structure/          # Main application (run from here)
+│   ├── run.py             # Application entry point
+│   ├── models/            # Database models
+│   ├── views/             # Application routes
+│   ├── services/          # Business logic
+│   ├── templates/         # HTML templates
+│   ├── static/            # CSS, JS, images
+│   └── requirements.txt   # Dependencies
+└── venv/                  # Python virtual environment
+```
 
-See `FRESH_DATA_SETUP_GUIDE.md` for detailed instructions.
+## 🎯 Key Features
 
-## Features
+- **Multi-role Access**: Headteacher, Class Teacher, Subject Teacher
+- **Student Management**: Comprehensive student records
+- **Grade Management**: Flexible grading system (CBC compliant)
+- **Report Generation**: Automated PDF reports
+- **Analytics Dashboard**: Performance insights
+- **Security**: Enterprise-grade security features
+- **Scalability**: Built for large-scale deployments
 
-- User authentication for different roles (Admin, Teacher, Class Teacher)
-- Student management
-- Grade and assessment tracking
-- Report generation
-- Performance analysis
+## 📖 Documentation
 
-## Technologies Used
+For detailed documentation, see:
 
-- Flask
-- SQLAlchemy
-- ReportLab (for PDF generation)
-- HTML/CSS/JavaScript
+- `new_structure/README.md` - Complete system documentation
+- `new_structure/FINAL_VERIFICATION.md` - System verification guide
+
+## 🛠️ Technologies
+
+- **Backend**: Flask (Python)
+- **Database**: MySQL/SQLite with SQLAlchemy ORM
+- **Frontend**: HTML5, CSS3, JavaScript
+- **Security**: Custom security modules
+- **Architecture**: MVC pattern with service layer
