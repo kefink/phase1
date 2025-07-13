@@ -27,20 +27,41 @@
       href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
     />
 
+    <!-- Mobile Responsive Login Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/mobile_responsive_login.css') }}"
+    />
+
     <style>
-      /* Modern Admin Login Styles */
+      /* Modern Admin Login Styles - Mobile Responsive */
       body {
         font-family: "Inter", system-ui, -apple-system, sans-serif;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         display: flex;
         justify-content: center;
-        align-items: flex-start; /* Changed from center to flex-start */
+        align-items: flex-start;
         margin: 0;
-        padding: 2rem 1.5rem; /* Use fixed padding */
+        padding: 2rem 1.5rem;
         position: relative;
-        overflow-x: hidden; /* Only hide horizontal overflow */
-        overflow-y: auto; /* Allow vertical scrolling */
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+
+      /* Mobile-first responsive adjustments */
+      @media (max-width: 768px) {
+        body {
+          padding: 1rem 0.75rem;
+          align-items: flex-start;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 0.5rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
       }
 
       /* Animated Background Pattern */
@@ -83,20 +104,47 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: var(--radius-2xl);
-        padding: 2rem; /* Reduced padding */
+        padding: 2rem;
         box-shadow: var(--shadow-2xl);
         border: 1px solid rgba(255, 255, 255, 0.2);
         animation: slideUp 0.8s ease-out;
-        /* Let container expand naturally */
         margin: 2rem auto;
         min-height: auto;
         height: auto;
         max-height: none;
       }
 
+      /* Mobile responsive login container */
+      @media (max-width: 768px) {
+        .login-container {
+          max-width: 90%;
+          padding: 1.5rem;
+          margin: 1rem auto;
+          border-radius: var(--radius-xl);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .login-container {
+          max-width: 95%;
+          padding: 1.25rem;
+          margin: 0.5rem auto;
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-xl);
+        }
+      }
+
+      @media (max-width: 360px) {
+        .login-container {
+          max-width: 98%;
+          padding: 1rem;
+          margin: 0.25rem auto;
+        }
+      }
+
       .login-header {
         text-align: center;
-        margin-bottom: 1.5rem; /* Reduced spacing */
+        margin-bottom: 1.5rem;
       }
 
       .login-icon {
@@ -110,6 +158,39 @@
         margin: 0 auto var(--space-6);
         box-shadow: var(--shadow-lg);
         animation: pulse 2s ease-in-out infinite;
+      }
+
+      /* Mobile responsive header and icon */
+      @media (max-width: 768px) {
+        .login-header {
+          margin-bottom: 1.25rem;
+        }
+
+        .login-icon {
+          width: 70px;
+          height: 70px;
+          margin: 0 auto var(--space-5);
+        }
+
+        .login-icon i {
+          font-size: 2.2rem !important;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .login-header {
+          margin-bottom: 1rem;
+        }
+
+        .login-icon {
+          width: 60px;
+          height: 60px;
+          margin: 0 auto var(--space-4);
+        }
+
+        .login-icon i {
+          font-size: 2rem !important;
+        }
       }
 
       @keyframes pulse {
@@ -145,6 +226,44 @@
         margin-bottom: var(--space-8);
       }
 
+      /* Mobile responsive title and subtitle */
+      @media (max-width: 768px) {
+        .login-title {
+          font-size: 1.75rem;
+          margin-bottom: var(--space-1);
+        }
+
+        .login-subtitle {
+          font-size: 0.9rem;
+          margin-bottom: var(--space-6);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .login-title {
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin-bottom: var(--space-1);
+        }
+
+        .login-subtitle {
+          font-size: 0.85rem;
+          margin-bottom: var(--space-5);
+          line-height: 1.4;
+        }
+      }
+
+      @media (max-width: 360px) {
+        .login-title {
+          font-size: 1.375rem;
+        }
+
+        .login-subtitle {
+          font-size: 0.8rem;
+          margin-bottom: var(--space-4);
+        }
+      }
+
       .modern-form {
         display: grid;
         gap: var(--space-6);
@@ -174,6 +293,60 @@
         transition: all 0.2s ease;
         background: var(--white);
         position: relative;
+      }
+
+      /* Mobile responsive form elements */
+      @media (max-width: 768px) {
+        .modern-form {
+          gap: var(--space-5);
+        }
+
+        .form-label {
+          font-size: 0.8rem;
+          margin-bottom: var(--space-1);
+        }
+
+        .form-input {
+          padding: var(--space-3) var(--space-4);
+          font-size: 0.95rem;
+          border-radius: var(--radius-md);
+        }
+
+        .form-input.with-icon {
+          padding-left: var(--space-10);
+        }
+
+        .input-icon {
+          left: var(--space-3);
+          font-size: 1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .modern-form {
+          gap: var(--space-4);
+        }
+
+        .form-label {
+          font-size: 0.75rem;
+          font-weight: 500;
+          letter-spacing: 0.03em;
+        }
+
+        .form-input {
+          padding: var(--space-3) var(--space-3);
+          font-size: 0.9rem;
+          border-width: 1.5px;
+        }
+
+        .form-input.with-icon {
+          padding-left: var(--space-9);
+        }
+
+        .input-icon {
+          left: var(--space-2);
+          font-size: 0.95rem;
+        }
       }
 
       .form-input:focus {
@@ -222,6 +395,37 @@
         margin-top: var(--space-4);
       }
 
+      /* Mobile responsive login button */
+      @media (max-width: 768px) {
+        .login-button {
+          padding: var(--space-3) var(--space-5);
+          font-size: 0.95rem;
+          margin-top: var(--space-3);
+          border-radius: var(--radius-md);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .login-button {
+          padding: var(--space-3) var(--space-4);
+          font-size: 0.9rem;
+          font-weight: 500;
+          margin-top: var(--space-3);
+        }
+
+        .login-button i {
+          margin-right: 0.5rem;
+          font-size: 0.85rem;
+        }
+      }
+
+      @media (max-width: 360px) {
+        .login-button {
+          padding: var(--space-2) var(--space-3);
+          font-size: 0.85rem;
+        }
+      }
+
       .login-button::before {
         content: "";
         position: absolute;
@@ -267,6 +471,108 @@
       .back-link a:hover {
         color: var(--gray-800);
         text-decoration: none;
+      }
+
+      /* Mobile responsive back link */
+      @media (max-width: 768px) {
+        .back-link {
+          margin-top: var(--space-6);
+          padding-top: var(--space-4);
+        }
+
+        .back-link a {
+          font-size: 0.9rem;
+          gap: var(--space-1);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .back-link {
+          margin-top: var(--space-5);
+          padding-top: var(--space-3);
+        }
+
+        .back-link a {
+          font-size: 0.85rem;
+          font-weight: 400;
+        }
+
+        .back-link a i {
+          font-size: 0.8rem;
+        }
+      }
+
+      /* Touch-friendly interactions for mobile */
+      @media (max-width: 768px) {
+        .login-button:hover {
+          transform: none; /* Disable hover transform on mobile */
+        }
+
+        .login-button:active {
+          transform: scale(0.98);
+        }
+
+        .form-input:focus {
+          transform: none; /* Disable focus transform on mobile */
+        }
+
+        /* Improve touch targets */
+        .form-input,
+        .login-button {
+          min-height: 44px; /* iOS recommended touch target size */
+        }
+
+        .back-link a {
+          min-height: 44px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: var(--space-2) var(--space-3);
+        }
+      }
+
+      /* Landscape orientation adjustments */
+      @media (max-width: 768px) and (orientation: landscape) {
+        body {
+          padding: 0.5rem;
+        }
+
+        .login-container {
+          margin: 0.5rem auto;
+          padding: 1rem;
+        }
+
+        .login-header {
+          margin-bottom: 0.75rem;
+        }
+
+        .login-icon {
+          width: 50px;
+          height: 50px;
+          margin: 0 auto var(--space-3);
+        }
+
+        .login-icon i {
+          font-size: 1.5rem !important;
+        }
+
+        .login-title {
+          font-size: 1.25rem !important;
+        }
+
+        .login-subtitle {
+          font-size: 0.75rem !important;
+          margin-bottom: var(--space-3) !important;
+        }
+
+        .modern-form {
+          gap: var(--space-3);
+        }
+
+        .back-link {
+          margin-top: var(--space-3);
+          padding-top: var(--space-2);
+        }
       }
 
       .security-notice {

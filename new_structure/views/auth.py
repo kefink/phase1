@@ -176,3 +176,8 @@ def logout_route():
     """Route for logging out."""
     logout(session)
     return redirect(url_for('auth.index'))
+
+@auth_bp.route('/mobile-test')
+def mobile_test():
+    """Mobile responsive test page."""
+    return render_template('mobile_test.html')

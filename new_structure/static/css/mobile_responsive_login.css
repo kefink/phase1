@@ -1,0 +1,326 @@
+/* 
+ * Mobile Responsive Login Styles for Hillview School Management System
+ * Comprehensive mobile-first responsive design for all login pages
+ */
+
+/* Base Mobile Responsive Styles */
+@media (max-width: 768px) {
+  body {
+    padding: 1rem 0.75rem !important;
+    align-items: flex-start !important;
+  }
+  
+  .login-container {
+    max-width: 90% !important;
+    padding: 1.5rem !important;
+    margin: 1rem auto !important;
+    border-radius: var(--radius-xl) !important;
+  }
+  
+  .login-header {
+    margin-bottom: 1.25rem !important;
+  }
+  
+  .login-icon {
+    width: 70px !important;
+    height: 70px !important;
+    margin: 0 auto var(--space-5) !important;
+  }
+  
+  .login-icon i {
+    font-size: 2.2rem !important;
+  }
+  
+  .login-title {
+    font-size: 1.75rem !important;
+    margin-bottom: var(--space-1) !important;
+  }
+  
+  .login-subtitle {
+    font-size: 0.9rem !important;
+    margin-bottom: var(--space-6) !important;
+  }
+  
+  .modern-form {
+    gap: var(--space-5) !important;
+  }
+  
+  .form-label {
+    font-size: 0.8rem !important;
+    margin-bottom: var(--space-1) !important;
+  }
+  
+  .form-input {
+    padding: var(--space-3) var(--space-4) !important;
+    font-size: 0.95rem !important;
+    border-radius: var(--radius-md) !important;
+    min-height: 44px !important; /* iOS recommended touch target size */
+  }
+  
+  .form-input.with-icon {
+    padding-left: var(--space-10) !important;
+  }
+  
+  .input-icon {
+    left: var(--space-3) !important;
+    font-size: 1rem !important;
+  }
+  
+  .login-button {
+    padding: var(--space-3) var(--space-5) !important;
+    font-size: 0.95rem !important;
+    margin-top: var(--space-3) !important;
+    border-radius: var(--radius-md) !important;
+    min-height: 44px !important;
+  }
+  
+  .back-link {
+    margin-top: var(--space-6) !important;
+    padding-top: var(--space-4) !important;
+  }
+  
+  .back-link a {
+    font-size: 0.9rem !important;
+    gap: var(--space-1) !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: var(--space-2) var(--space-3) !important;
+  }
+  
+  /* Disable hover transforms on mobile */
+  .login-button:hover {
+    transform: none !important;
+  }
+  
+  .login-button:active {
+    transform: scale(0.98) !important;
+  }
+  
+  .form-input:focus {
+    transform: none !important;
+  }
+}
+
+/* Small Mobile Devices (480px and below) */
+@media (max-width: 480px) {
+  body {
+    padding: 0.5rem !important;
+  }
+  
+  .login-container {
+    max-width: 95% !important;
+    padding: 1.25rem !important;
+    margin: 0.5rem auto !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-xl) !important;
+  }
+  
+  .login-header {
+    margin-bottom: 1rem !important;
+  }
+  
+  .login-icon {
+    width: 60px !important;
+    height: 60px !important;
+    margin: 0 auto var(--space-4) !important;
+  }
+  
+  .login-icon i {
+    font-size: 2rem !important;
+  }
+  
+  .login-title {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: var(--space-1) !important;
+  }
+  
+  .login-subtitle {
+    font-size: 0.85rem !important;
+    margin-bottom: var(--space-5) !important;
+    line-height: 1.4 !important;
+  }
+  
+  .modern-form {
+    gap: var(--space-4) !important;
+  }
+  
+  .form-label {
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.03em !important;
+  }
+  
+  .form-input {
+    padding: var(--space-3) var(--space-3) !important;
+    font-size: 0.9rem !important;
+    border-width: 1.5px !important;
+  }
+  
+  .form-input.with-icon {
+    padding-left: var(--space-9) !important;
+  }
+  
+  .input-icon {
+    left: var(--space-2) !important;
+    font-size: 0.95rem !important;
+  }
+  
+  .login-button {
+    padding: var(--space-3) var(--space-4) !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    margin-top: var(--space-3) !important;
+  }
+  
+  .login-button i {
+    margin-right: 0.5rem !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .back-link {
+    margin-top: var(--space-5) !important;
+    padding-top: var(--space-3) !important;
+  }
+  
+  .back-link a {
+    font-size: 0.85rem !important;
+    font-weight: 400 !important;
+  }
+  
+  .back-link a i {
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Extra Small Mobile Devices (360px and below) */
+@media (max-width: 360px) {
+  .login-container {
+    max-width: 98% !important;
+    padding: 1rem !important;
+    margin: 0.25rem auto !important;
+  }
+  
+  .login-title {
+    font-size: 1.375rem !important;
+  }
+  
+  .login-subtitle {
+    font-size: 0.8rem !important;
+    margin-bottom: var(--space-4) !important;
+  }
+  
+  .login-button {
+    padding: var(--space-2) var(--space-3) !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+/* Landscape Orientation Adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  body {
+    padding: 0.5rem !important;
+  }
+  
+  .login-container {
+    margin: 0.5rem auto !important;
+    padding: 1rem !important;
+  }
+  
+  .login-header {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  .login-icon {
+    width: 50px !important;
+    height: 50px !important;
+    margin: 0 auto var(--space-3) !important;
+  }
+  
+  .login-icon i {
+    font-size: 1.5rem !important;
+  }
+  
+  .login-title {
+    font-size: 1.25rem !important;
+  }
+  
+  .login-subtitle {
+    font-size: 0.75rem !important;
+    margin-bottom: var(--space-3) !important;
+  }
+  
+  .modern-form {
+    gap: var(--space-3) !important;
+  }
+  
+  .back-link {
+    margin-top: var(--space-3) !important;
+    padding-top: var(--space-2) !important;
+  }
+}
+
+/* High DPI / Retina Display Adjustments */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .login-icon {
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .login-container {
+    backdrop-filter: blur(25px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  }
+}
+
+/* Dark Mode Support for Mobile */
+@media (prefers-color-scheme: dark) and (max-width: 768px) {
+  .login-container {
+    background: rgba(30, 30, 30, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .form-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+  }
+  
+  .form-label {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+  
+  .login-subtitle {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+}
+
+/* Accessibility Improvements for Mobile */
+@media (max-width: 768px) {
+  /* Ensure sufficient color contrast */
+  .form-input:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3) !important;
+  }
+  
+  /* Improve focus visibility */
+  .login-button:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8) !important;
+    outline-offset: 2px !important;
+  }
+  
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    .login-icon {
+      animation: none !important;
+    }
+    
+    .login-container {
+      animation: none !important;
+    }
+    
+    body::before {
+      animation: none !important;
+    }
+  }
+}

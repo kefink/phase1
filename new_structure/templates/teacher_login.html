@@ -45,20 +45,41 @@
       href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
     />
 
+    <!-- Mobile Responsive Login Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/mobile_responsive_login.css') }}"
+    />
+
     <style>
-      /* Modern Subject Teacher Login Styles */
+      /* Modern Subject Teacher Login Styles - Mobile Responsive */
       body {
         font-family: "Inter", system-ui, -apple-system, sans-serif;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         display: flex;
         justify-content: center;
-        align-items: flex-start; /* Changed from center to flex-start */
+        align-items: flex-start;
         margin: 0;
-        padding: 2rem 1.5rem; /* Use fixed padding */
+        padding: 2rem 1.5rem;
         position: relative;
-        overflow-x: hidden; /* Only hide horizontal overflow */
-        overflow-y: auto; /* Allow vertical scrolling */
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+
+      /* Mobile-first responsive adjustments */
+      @media (max-width: 768px) {
+        body {
+          padding: 1rem 0.75rem;
+          align-items: flex-start;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 0.5rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
       }
 
       /* Animated Background Pattern */
