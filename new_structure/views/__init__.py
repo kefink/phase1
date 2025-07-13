@@ -15,6 +15,7 @@ from .analytics_api import analytics_api_bp
 from .school_setup import school_setup_bp
 from .subject_config_api import subject_config_api
 from .missing_routes import missing_routes_bp
+from .mobile_performance_api import mobile_performance_api
 
 # Import parent portal blueprints with error handling - TEMPORARILY DISABLED
 # try:
@@ -49,7 +50,8 @@ blueprints = [
     auth_bp, teacher_bp, classteacher_bp, admin_bp,
     bulk_assignments_bp, setup_bp, staff_bp,
     permission_bp, universal_bp, analytics_api_bp,
-    school_setup_bp, subject_config_api, missing_routes_bp
+    school_setup_bp, subject_config_api, missing_routes_bp,
+    mobile_performance_api
 ]
 
 # Add parent blueprint if available

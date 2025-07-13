@@ -1,7 +1,77 @@
 /*
  * Mobile Responsive Dashboard Styles for Hillview School Management System
  * Comprehensive mobile-first responsive design for dashboard pages
+ * Performance optimized for mobile devices
  */
+
+/* ===== MOBILE PERFORMANCE OPTIMIZATIONS ===== */
+
+/* Hardware acceleration for smooth animations */
+@media (max-width: 768px) {
+  * {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-perspective: 1000;
+    perspective: 1000;
+  }
+
+  /* Optimize touch interactions */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Enable smooth scrolling */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Optimize font rendering */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Reduce repaints and reflows */
+  .navbar,
+  .dashboard-container,
+  .modern-card,
+  .metric-card,
+  .child-card {
+    will-change: transform;
+    contain: layout style paint;
+  }
+
+  /* Optimize animations for 60fps */
+  .modern-card:hover,
+  .metric-card:hover,
+  .child-card:hover {
+    transform: translateY(-2px) translateZ(0);
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Reduce animation complexity on mobile */
+  .analytics-tab,
+  .modern-btn,
+  .child-action-btn {
+    transition: background-color 0.15s ease, transform 0.1s ease;
+  }
+
+  /* Optimize image rendering */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+    -ms-interpolation-mode: nearest-neighbor;
+  }
+}
 
 /* ===== DESKTOP NAVIGATION BAR FIX ===== */
 
