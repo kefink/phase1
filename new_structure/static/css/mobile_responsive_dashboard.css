@@ -1,7 +1,141 @@
-/* 
+/*
  * Mobile Responsive Dashboard Styles for Hillview School Management System
  * Comprehensive mobile-first responsive design for dashboard pages
  */
+
+/* ===== DESKTOP NAVIGATION BAR FIX ===== */
+
+/* Fix horizontal scrolling issue on desktop */
+@media (min-width: 769px) {
+  .navbar {
+    padding: 0.5rem 0 !important;
+  }
+
+  .navbar .container {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    max-width: 100% !important;
+    padding: 0 1rem !important;
+  }
+
+  .navbar-brand {
+    flex-shrink: 0 !important;
+    max-width: 250px !important;
+    margin-right: 1rem !important;
+  }
+
+  .navbar-brand span {
+    font-size: 1rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .navbar-nav {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    flex: 1 !important;
+    justify-content: flex-end !important;
+    gap: 0.25rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE/Edge */
+  }
+
+  .navbar-nav::-webkit-scrollbar {
+    display: none !important; /* Chrome/Safari */
+  }
+
+  .navbar-nav li {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .navbar-nav .nav-link {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.85rem !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+  }
+
+  .navbar-nav .nav-link i {
+    font-size: 0.8rem !important;
+    margin-right: 0.4rem !important;
+  }
+
+  .navbar-nav .logout-btn {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    margin-left: 0.5rem !important;
+    font-weight: 600 !important;
+  }
+
+  .navbar-nav .logout-btn:hover {
+    background: #ef4444 !important;
+    color: white !important;
+  }
+}
+
+/* Medium desktop - more compact navigation */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .navbar-brand {
+    max-width: 200px !important;
+  }
+
+  .navbar-brand span {
+    font-size: 0.9rem !important;
+  }
+
+  .navbar-nav .nav-link {
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .navbar-nav .nav-link i {
+    font-size: 0.75rem !important;
+    margin-right: 0.3rem !important;
+  }
+
+  /* Hide text on very compact screens, show only icons */
+  @media (max-width: 1024px) {
+    .navbar-nav .nav-link span {
+      display: none !important;
+    }
+
+    .navbar-nav .nav-link {
+      padding: 0.5rem !important;
+      min-width: 40px !important;
+      text-align: center !important;
+    }
+
+    .navbar-nav .nav-link i {
+      margin-right: 0 !important;
+      font-size: 0.9rem !important;
+    }
+  }
+}
+
+/* Large desktop optimization */
+@media (min-width: 1200px) {
+  .navbar-nav {
+    gap: 0.5rem !important;
+  }
+
+  .navbar-nav .nav-link {
+    padding: 0.6rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  .navbar-nav .nav-link i {
+    font-size: 0.85rem !important;
+    margin-right: 0.5rem !important;
+  }
+}
 
 /* ===== STEP 1: NAVIGATION BAR MOBILE RESPONSIVENESS ===== */
 
