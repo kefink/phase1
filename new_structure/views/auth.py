@@ -242,3 +242,8 @@ def forms_mobile_demo():
 def charts_analytics_mobile_demo():
     """Charts and analytics mobile responsive demo page."""
     return render_template('charts_analytics_mobile_demo.html')
+
+@auth_bp.route('/student-portal-mobile-demo')
+def student_portal_mobile_demo():
+    """Student portal mobile responsive demo page."""
+    return render_template('student_portal_mobile_demo.html')

@@ -2318,3 +2318,395 @@
     margin-right: 0.5rem !important;
   }
 }
+
+/* ===== STEP 18: STUDENT PORTAL MOBILE OPTIMIZATION ===== */
+
+@media (max-width: 768px) {
+  /* Parent/Student Portal Navigation */
+  .parent-navbar,
+  .student-navbar {
+    padding: 0.75rem 0 !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  }
+
+  .parent-navbar .container,
+  .student-navbar .container {
+    padding: 0 1rem !important;
+  }
+
+  .parent-brand,
+  .student-brand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: white !important;
+  }
+
+  .parent-brand i,
+  .student-brand i {
+    font-size: 1.2rem !important;
+  }
+
+  .parent-nav-links,
+  .student-nav-links {
+    display: flex !important;
+    gap: 0.5rem !important;
+    margin-left: auto !important;
+  }
+
+  .parent-nav-link,
+  .student-nav-link {
+    color: white !important;
+    text-decoration: none !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+  }
+
+  .parent-nav-link:hover,
+  .student-nav-link:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+  }
+
+  .parent-nav-link.logout,
+  .student-nav-link.logout {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  }
+
+  .parent-nav-link.logout:hover,
+  .student-nav-link.logout:hover {
+    background: rgba(239, 68, 68, 0.3) !important;
+  }
+
+  /* Student Portal Dashboard */
+  .student-dashboard-container {
+    padding: 1rem !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .student-welcome-section {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    text-align: center !important;
+  }
+
+  .student-welcome-title {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .student-welcome-subtitle {
+    font-size: 0.9rem !important;
+    color: var(--text-secondary) !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .student-info-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+    margin-top: 1rem !important;
+  }
+
+  .student-info-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.75rem !important;
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  .student-info-label {
+    font-weight: 500 !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.85rem !important;
+  }
+
+  .student-info-value {
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Parent Portal Dashboard */
+  .parent-dashboard-container {
+    padding: 1rem !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .parent-welcome-section {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    text-align: center !important;
+  }
+
+  .parent-welcome-title {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .parent-welcome-subtitle {
+    font-size: 0.9rem !important;
+    color: var(--text-secondary) !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Children Cards */
+  .children-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    margin: 1.5rem 0 !important;
+  }
+
+  .child-card {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e5e7eb !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .child-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .child-card-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.75rem !important;
+    border-bottom: 2px solid #f3f4f6 !important;
+  }
+
+  .child-name {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    margin: 0 !important;
+  }
+
+  .child-class {
+    font-size: 0.8rem !important;
+    color: var(--text-secondary) !important;
+    background: #f0f9ff !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 4px !important;
+    border: 1px solid #bfdbfe !important;
+  }
+
+  .child-details-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .child-detail-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.5rem !important;
+    background: #f8fafc !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .child-detail-label {
+    color: var(--text-secondary) !important;
+    font-weight: 500 !important;
+  }
+
+  .child-detail-value {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+  }
+
+  .child-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    margin-top: 1rem !important;
+  }
+
+  .child-action-btn {
+    width: 100% !important;
+    padding: 0.75rem !important;
+    background: var(--primary-color) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    text-decoration: none !important;
+  }
+
+  .child-action-btn:hover {
+    background: #5a67d8 !important;
+    transform: translateY(-1px) !important;
+    color: white !important;
+  }
+
+  .child-action-btn.secondary {
+    background: #6b7280 !important;
+  }
+
+  .child-action-btn.secondary:hover {
+    background: #4b5563 !important;
+  }
+
+  /* Recent Activity Section */
+  .recent-activity-section {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    margin-top: 1.5rem !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .recent-activity-title {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    margin-bottom: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+  }
+
+  .activity-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .activity-item {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  .activity-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: var(--primary-color) !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.8rem !important;
+    margin-right: 0.75rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .activity-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .activity-title {
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .activity-details {
+    font-size: 0.8rem !important;
+    color: var(--text-secondary) !important;
+  }
+
+  .activity-time {
+    font-size: 0.75rem !important;
+    color: var(--text-secondary) !important;
+    margin-left: 0.5rem !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-dashboard-container,
+  .parent-dashboard-container {
+    padding: 0.75rem !important;
+  }
+
+  .student-welcome-section,
+  .parent-welcome-section {
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .student-welcome-title,
+  .parent-welcome-title {
+    font-size: 1.1rem !important;
+  }
+
+  .child-card {
+    padding: 1rem !important;
+  }
+
+  .child-name {
+    font-size: 1rem !important;
+  }
+
+  .child-actions {
+    gap: 0.25rem !important;
+  }
+
+  .child-action-btn {
+    padding: 0.6rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  .recent-activity-section {
+    padding: 1rem !important;
+    margin-top: 1rem !important;
+  }
+
+  .activity-item {
+    padding: 0.5rem !important;
+  }
+
+  .activity-icon {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.75rem !important;
+    margin-right: 0.5rem !important;
+  }
+}
