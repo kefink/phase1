@@ -237,3 +237,8 @@ def teacher_mobile_test():
 def forms_mobile_demo():
     """Forms and file upload mobile responsive demo page."""
     return render_template('forms_mobile_demo.html')
+
+@auth_bp.route('/charts-analytics-mobile-demo')
+def charts_analytics_mobile_demo():
+    """Charts and analytics mobile responsive demo page."""
+    return render_template('charts_analytics_mobile_demo.html')

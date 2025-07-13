@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Charts & Analytics Mobile Demo - Hillview School</title>
+
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Mobile Responsive Dashboard Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/mobile_responsive_dashboard.css') }}"
+    />
+
+    <style>
+      :root {
+        --primary-color: #667eea;
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --border-color: #e5e7eb;
+        --light-bg: #f9fafb;
+        --success-color: #10b981;
+        --danger-color: #ef4444;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(
+          135deg,
+          #f5f1e8 0%,
+          #7dd3c0 50%,
+          #4a9b8e 100%
+        );
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+
+      .demo-navbar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .status-complete {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+
+      .feature-card {
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 8px;
+        border-left: 4px solid var(--primary-color);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .feature-card h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--primary-color);
+        font-size: 0.9rem;
+      }
+
+      .feature-card p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+
+      .demo-section {
+        background: rgba(255, 255, 255, 0.95);
+        margin: 1rem 0;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .demo-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Custom chart container for demo */
+      .demo-chart-container {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        margin: 1rem 0;
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .chart-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .metrics-demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+
+      @media (max-width: 768px) {
+        .metrics-demo-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .demo-chart-container {
+          height: 250px;
+          padding: 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Demo Navigation Bar -->
+    <nav class="demo-navbar">
+      <div class="container">
+        <div class="navbar-brand">
+          <i class="fas fa-chart-line"></i>
+          <span>Hillview School - Charts & Analytics Mobile Demo</span>
+        </div>
+        <ul class="navbar-nav">
+          <li>
+            <a href="#" class="nav-link"
+              ><i class="fas fa-home"></i> <span>Dashboard</span></a
+            >
+          </li>
+          <li>
+            <a href="#" class="nav-link"
+              ><i class="fas fa-chart-bar"></i> <span>Analytics</span></a
+            >
+          </li>
+          <li>
+            <a href="#" class="nav-link"
+              ><i class="fas fa-chart-pie"></i> <span>Reports</span></a
+            >
+          </li>
+          <li>
+            <a href="#" class="nav-link"
+              ><i class="fas fa-table"></i> <span>Data</span></a
+            >
+          </li>
+          <li>
+            <a href="#" class="nav-link logout-btn"
+              ><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a
+            >
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container dashboard-container">
+      <!-- Implementation Status -->
+      <div class="demo-section">
+        <h2 class="demo-title">
+          <i class="fas fa-check-circle"></i>
+          Charts & Analytics Mobile Implementation Status
+        </h2>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h4>
+              <span class="status-badge status-complete"
+                ><i class="fas fa-check"></i> Complete</span
+              >
+            </h4>
+            <h4>Mobile-Responsive Charts</h4>
+            <p>
+              Interactive charts that adapt perfectly to mobile screens with
+              touch-friendly controls
+            </p>
+          </div>
+          <div class="feature-card">
+            <h4>
+              <span class="status-badge status-complete"
+                ><i class="fas fa-check"></i> Complete</span
+              >
+            </h4>
+            <h4>Performance Metrics Cards</h4>
+            <p>
+              Touch-optimized metric cards with hover effects and
+              mobile-friendly layouts
+            </p>
+          </div>
+          <div class="feature-card">
+            <h4>
+              <span class="status-badge status-complete"
+                ><i class="fas fa-check"></i> Complete</span
+              >
+            </h4>
+            <h4>Analytics Tabs System</h4>
+            <p>
+              Horizontal scrolling tabs with touch-friendly navigation for
+              mobile devices
+            </p>
+          </div>
+          <div class="feature-card">
+            <h4>
+              <span class="status-badge status-complete"
+                ><i class="fas fa-check"></i> Complete</span
+              >
+            </h4>
+            <h4>Data Visualization</h4>
+            <p>
+              Mobile-optimized progress bars, performance lists, and trend
+              indicators
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Tabs Demo -->
+      <div class="demo-section">
+        <h2 class="demo-title">
+          <i class="fas fa-tabs"></i>
+          Mobile Analytics Tabs Demo
+        </h2>
+
+        <div class="analytics-tabs">
+          <button
+            class="analytics-tab active"
+            onclick="switchTab('overview')"
+            data-tab="overview"
+          >
+            <i class="fas fa-chart-pie"></i> Overview
+          </button>
+          <button
+            class="analytics-tab"
+            onclick="switchTab('students')"
+            data-tab="students"
+          >
+            <i class="fas fa-users"></i> Students
+          </button>
+          <button
+            class="analytics-tab"
+            onclick="switchTab('subjects')"
+            data-tab="subjects"
+          >
+            <i class="fas fa-book"></i> Subjects
+          </button>
+          <button
+            class="analytics-tab"
+            onclick="switchTab('performance')"
+            data-tab="performance"
+          >
+            <i class="fas fa-chart-bar"></i> Performance
+          </button>
+          <button
+            class="analytics-tab"
+            onclick="switchTab('trends')"
+            data-tab="trends"
+          >
+            <i class="fas fa-chart-line"></i> Trends
+          </button>
+        </div>
+
+        <div id="overview-tab" class="tab-content active">
+          <div class="analytics-component">
+            <div class="component-header">
+              <h3><i class="fas fa-chart-pie"></i> Overview Analytics</h3>
+              <div class="component-actions">
+                <button class="modern-btn btn-sm btn-outline">
+                  <i class="fas fa-refresh"></i> Refresh
+                </button>
+                <button class="modern-btn btn-sm btn-primary">
+                  <i class="fas fa-download"></i> Export
+                </button>
+              </div>
+            </div>
+            <p>
+              Overview analytics content with mobile-optimized layout and
+              touch-friendly controls.
+            </p>
+          </div>
+        </div>
+
+        <div id="students-tab" class="tab-content">
+          <div class="analytics-component">
+            <div class="component-header">
+              <h3><i class="fas fa-users"></i> Student Analytics</h3>
+            </div>
+            <p>
+              Student performance analytics with mobile-responsive charts and
+              data visualization.
+            </p>
+          </div>
+        </div>
+
+        <div id="subjects-tab" class="tab-content">
+          <div class="analytics-component">
+            <div class="component-header">
+              <h3><i class="fas fa-book"></i> Subject Analytics</h3>
+            </div>
+            <p>
+              Subject performance analysis with mobile-optimized charts and
+              progress indicators.
+            </p>
+          </div>
+        </div>
+
+        <div id="performance-tab" class="tab-content">
+          <div class="analytics-component">
+            <div class="component-header">
+              <h3><i class="fas fa-chart-bar"></i> Performance Analytics</h3>
+            </div>
+            <p>
+              Comprehensive performance analytics with mobile-friendly data
+              visualization.
+            </p>
+          </div>
+        </div>
+
+        <div id="trends-tab" class="tab-content">
+          <div class="analytics-component">
+            <div class="component-header">
+              <h3><i class="fas fa-chart-line"></i> Trend Analytics</h3>
+            </div>
+            <p>
+              Performance trends analysis with mobile-responsive charts and
+              interactive elements.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Metrics Demo -->
+      <div class="demo-section">
+        <h2 class="demo-title">
+          <i class="fas fa-tachometer-alt"></i>
+          Mobile Performance Metrics Demo
+        </h2>
+
+        <div class="metrics-demo-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-icon primary">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+            <div class="metric-label">Total Students</div>
+            <div class="metric-value">1,247</div>
+            <div class="metric-change change-positive">
+              <i class="fas fa-arrow-up"></i> +5.2% from last term
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-icon success">
+                <i class="fas fa-chart-line"></i>
+              </div>
+            </div>
+            <div class="metric-label">Average Performance</div>
+            <div class="metric-value">78.5%</div>
+            <div class="metric-change change-positive">
+              <i class="fas fa-arrow-up"></i> +2.1% improvement
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-icon warning">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+            </div>
+            <div class="metric-label">Students at Risk</div>
+            <div class="metric-value">23</div>
+            <div class="metric-change change-negative">
+              <i class="fas fa-arrow-down"></i> -3 from last week
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-icon danger">
+                <i class="fas fa-clock"></i>
+              </div>
+            </div>
+            <div class="metric-label">Pending Reports</div>
+            <div class="metric-value">7</div>
+            <div class="metric-change change-neutral">
+              <i class="fas fa-minus"></i> No change
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Charts Demo -->
+      <div class="demo-section">
+        <h2 class="demo-title">
+          <i class="fas fa-chart-bar"></i>
+          Mobile-Responsive Charts Demo
+        </h2>
+
+        <div class="demo-chart-container">
+          <div class="chart-title">Student Performance Distribution</div>
+          <canvas id="performanceChart"></canvas>
+        </div>
+
+        <div class="demo-chart-container">
+          <div class="chart-title">Subject Performance Comparison</div>
+          <canvas id="subjectChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Student Performance List Demo -->
+      <div class="demo-section">
+        <h2 class="demo-title">
+          <i class="fas fa-list"></i>
+          Mobile Performance Lists Demo
+        </h2>
+
+        <div class="analytics-component">
+          <div class="component-header">
+            <h3><i class="fas fa-trophy"></i> Top Performing Students</h3>
+            <div class="component-actions">
+              <button class="modern-btn btn-sm btn-outline">
+                <i class="fas fa-filter"></i> Filter
+              </button>
+            </div>
+          </div>
+
+          <ul class="performance-list">
+            <li class="performance-item">
+              <div class="performer-rank">1</div>
+              <div class="performer-info">
+                <div class="performer-name">Sarah Johnson</div>
+                <div class="performer-details">
+                  Grade 8A • Mathematics, Science
+                </div>
+              </div>
+              <div class="performer-score">94.5%</div>
+            </li>
+            <li class="performance-item">
+              <div class="performer-rank">2</div>
+              <div class="performer-info">
+                <div class="performer-name">Michael Chen</div>
+                <div class="performer-details">Grade 8B • English, History</div>
+              </div>
+              <div class="performer-score">92.8%</div>
+            </li>
+            <li class="performance-item">
+              <div class="performer-rank">3</div>
+              <div class="performer-info">
+                <div class="performer-name">Emma Williams</div>
+                <div class="performer-details">Grade 8A • Science, Art</div>
+              </div>
+              <div class="performer-score">91.2%</div>
+            </li>
+            <li class="performance-item">
+              <div class="performer-rank">4</div>
+              <div class="performer-info">
+                <div class="performer-name">David Rodriguez</div>
+                <div class="performer-details">
+                  Grade 8C • Mathematics, Physics
+                </div>
+              </div>
+              <div class="performer-score">89.7%</div>
+            </li>
+            <li class="performance-item">
+              <div class="performer-rank">5</div>
+              <div class="performer-info">
+                <div class="performer-name">Lisa Thompson</div>
+                <div class="performer-details">
+                  Grade 8B • English, Literature
+                </div>
+              </div>
+              <div class="performer-score">88.9%</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Subject Performance Analysis Demo -->
+      <div class="demo-section">
+        <h2 class="demo-title">
+          <i class="fas fa-book"></i>
+          Mobile Subject Analysis Demo
+        </h2>
+
+        <div class="analytics-component">
+          <div class="component-header">
+            <h3>
+              <i class="fas fa-chart-bar"></i> Subject Performance Analysis
+            </h3>
+            <div class="component-actions">
+              <button class="modern-btn btn-sm btn-primary">
+                <i class="fas fa-download"></i> Export
+              </button>
+            </div>
+          </div>
+
+          <div class="subject-performance-grid">
+            <div class="subject-item">
+              <div class="subject-icon">
+                <i class="fas fa-calculator"></i>
+              </div>
+              <div class="subject-info">
+                <div class="subject-name">Mathematics</div>
+                <div class="subject-details">Grade 8A • 32 students</div>
+                <div class="progress-container">
+                  <div class="progress-bar" style="width: 85%"></div>
+                </div>
+                <div class="progress-label">
+                  <span>Class Average</span>
+                  <span>85%</span>
+                </div>
+              </div>
+              <div class="subject-score">85%</div>
+              <div class="subject-trend trend-excellent">
+                <i class="fas fa-arrow-up"></i> Excellent
+              </div>
+            </div>
+
+            <div class="subject-item">
+              <div class="subject-icon">
+                <i class="fas fa-book-open"></i>
+              </div>
+              <div class="subject-info">
+                <div class="subject-name">English</div>
+                <div class="subject-details">Grade 8A • 32 students</div>
+                <div class="progress-container">
+                  <div class="progress-bar" style="width: 78%"></div>
+                </div>
+                <div class="progress-label">
+                  <span>Class Average</span>
+                  <span>78%</span>
+                </div>
+              </div>
+              <div class="subject-score">78%</div>
+              <div class="subject-trend trend-good">
+                <i class="fas fa-arrow-up"></i> Good
+              </div>
+            </div>
+
+            <div class="subject-item">
+              <div class="subject-icon">
+                <i class="fas fa-flask"></i>
+              </div>
+              <div class="subject-info">
+                <div class="subject-name">Science</div>
+                <div class="subject-details">Grade 8A • 32 students</div>
+                <div class="progress-container">
+                  <div class="progress-bar" style="width: 82%"></div>
+                </div>
+                <div class="progress-label">
+                  <span>Class Average</span>
+                  <span>82%</span>
+                </div>
+              </div>
+              <div class="subject-score">82%</div>
+              <div class="subject-trend trend-excellent">
+                <i class="fas fa-arrow-up"></i> Excellent
+              </div>
+            </div>
+
+            <div class="subject-item">
+              <div class="subject-icon">
+                <i class="fas fa-globe"></i>
+              </div>
+              <div class="subject-info">
+                <div class="subject-name">Kiswahili</div>
+                <div class="subject-details">Grade 8A • 32 students</div>
+                <div class="progress-container">
+                  <div class="progress-bar" style="width: 65%"></div>
+                </div>
+                <div class="progress-label">
+                  <span>Class Average</span>
+                  <span>65%</span>
+                </div>
+              </div>
+              <div class="subject-score">65%</div>
+              <div class="subject-trend trend-needs-improvement">
+                <i class="fas fa-arrow-down"></i> Needs Improvement
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testing Instructions -->
+      <div class="demo-section">
+        <h2 class="demo-title">
+          <i class="fas fa-mobile-alt"></i>
+          Mobile Testing Instructions
+        </h2>
+
+        <div
+          style="
+            background: #f0f9ff;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+          "
+        >
+          <h4 style="margin-top: 0; color: #1e40af">
+            How to Test Charts & Analytics Mobile Features:
+          </h4>
+          <ol style="color: #475569; line-height: 1.6">
+            <li>
+              <strong>Chart Interactions:</strong> Test touch interactions with
+              charts, pinch-to-zoom, and pan gestures
+            </li>
+            <li>
+              <strong>Tab Navigation:</strong> Swipe through analytics tabs and
+              test touch-friendly navigation
+            </li>
+            <li>
+              <strong>Metric Cards:</strong> Tap metric cards and verify hover
+              effects work on mobile
+            </li>
+            <li>
+              <strong>Performance Lists:</strong> Scroll through performance
+              lists and test touch interactions
+            </li>
+            <li>
+              <strong>Responsive Layout:</strong> Watch charts and analytics
+              adapt to different screen sizes
+            </li>
+            <li>
+              <strong>Data Visualization:</strong> Test progress bars, trend
+              indicators, and visual elements
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // Tab switching functionality
+      function switchTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll(".tab-content").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Remove active class from all tabs
+        document.querySelectorAll(".analytics-tab").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Show selected tab content
+        document.getElementById(tabName + "-tab").classList.add("active");
+
+        // Add active class to clicked tab
+        document
+          .querySelector(`[data-tab="${tabName}"]`)
+          .classList.add("active");
+      }
+
+      // Initialize charts when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeCharts();
+        setupMobileInteractions();
+      });
+
+      // Initialize Chart.js charts
+      function initializeCharts() {
+        // Performance Distribution Chart
+        const performanceCtx = document
+          .getElementById("performanceChart")
+          .getContext("2d");
+        new Chart(performanceCtx, {
+          type: "doughnut",
+          data: {
+            labels: [
+              "Excellent (90-100%)",
+              "Good (75-89%)",
+              "Average (60-74%)",
+              "Below Average (<60%)",
+            ],
+            datasets: [
+              {
+                data: [25, 45, 20, 10],
+                backgroundColor: ["#10b981", "#3b82f6", "#f59e0b", "#ef4444"],
+                borderWidth: 2,
+                borderColor: "#ffffff",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  padding: 20,
+                  usePointStyle: true,
+                  font: {
+                    size: 12,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        // Subject Performance Chart
+        const subjectCtx = document
+          .getElementById("subjectChart")
+          .getContext("2d");
+        new Chart(subjectCtx, {
+          type: "bar",
+          data: {
+            labels: [
+              "Mathematics",
+              "English",
+              "Science",
+              "Kiswahili",
+              "History",
+              "Art",
+            ],
+            datasets: [
+              {
+                label: "Class Average (%)",
+                data: [85, 78, 82, 65, 72, 88],
+                backgroundColor: [
+                  "#667eea",
+                  "#764ba2",
+                  "#f093fb",
+                  "#f5576c",
+                  "#4facfe",
+                  "#43e97b",
+                ],
+                borderRadius: 4,
+                borderSkipped: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                  callback: function (value) {
+                    return value + "%";
+                  },
+                },
+              },
+              x: {
+                ticks: {
+                  maxRotation: 45,
+                  minRotation: 0,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // Setup mobile-specific interactions
+      function setupMobileInteractions() {
+        // Add touch feedback to metric cards
+        document.querySelectorAll(".metric-card").forEach((card) => {
+          card.addEventListener("touchstart", function () {
+            this.style.transform = "scale(0.98)";
+          });
+
+          card.addEventListener("touchend", function () {
+            this.style.transform = "";
+          });
+        });
+
+        // Add touch feedback to performance items
+        document.querySelectorAll(".performance-item").forEach((item) => {
+          item.addEventListener("touchstart", function () {
+            this.style.backgroundColor = "#f0f9ff";
+          });
+
+          item.addEventListener("touchend", function () {
+            setTimeout(() => {
+              this.style.backgroundColor = "";
+            }, 150);
+          });
+        });
+
+        // Add touch feedback to subject items
+        document.querySelectorAll(".subject-item").forEach((item) => {
+          item.addEventListener("touchstart", function () {
+            this.style.backgroundColor = "#f8fafc";
+          });
+
+          item.addEventListener("touchend", function () {
+            setTimeout(() => {
+              this.style.backgroundColor = "";
+            }, 150);
+          });
+        });
+      }
+
+      // Viewport size logging
+      function logViewport() {
+        const size =
+          window.innerWidth <= 480
+            ? "Small Mobile"
+            : window.innerWidth <= 768
+            ? "Mobile/Tablet"
+            : "Desktop";
+        document.title = `Charts & Analytics Demo - ${size} (${window.innerWidth}px)`;
+      }
+
+      window.addEventListener("resize", logViewport);
+      logViewport();
+
+      // Button click handlers
+      document.querySelectorAll(".btn, .modern-btn").forEach((btn) => {
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          console.log("Button clicked:", this.textContent.trim());
+
+          // Visual feedback
+          this.style.transform = "scale(0.95)";
+          setTimeout(() => {
+            this.style.transform = "";
+          }, 150);
+        });
+      });
+
+      console.log(
+        "📊 Charts & Analytics Mobile Demo initialized successfully!"
+      );
+      console.log(
+        "🎯 Features: Mobile-responsive charts, touch interactions, analytics tabs"
+      );
+      console.log(
+        "📱 Test on different screen sizes to see responsive behavior"
+      );
+    </script>
+  </body>
+</html>

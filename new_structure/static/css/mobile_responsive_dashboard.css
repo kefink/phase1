@@ -1721,3 +1721,600 @@
     font-size: 0.85rem !important;
   }
 }
+
+/* ===== STEP 16: ADVANCED CHARTS & ANALYTICS MOBILE OPTIMIZATION ===== */
+
+@media (max-width: 768px) {
+  /* Analytics Page Layout */
+  .analytics-page-header {
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    text-align: center !important;
+  }
+
+  .analytics-page-header h1 {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .analytics-page-header p {
+    font-size: 0.9rem !important;
+    margin: 0 !important;
+  }
+
+  /* Analytics Grid System */
+  .analytics-main-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    padding: 0 !important;
+  }
+
+  .analytics-component {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  .analytics-full-width {
+    width: 100% !important;
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Component Headers */
+  .component-header {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.75rem !important;
+    border-bottom: 2px solid #f3f4f6 !important;
+  }
+
+  .component-header h3 {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: var(--primary-color) !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+  }
+
+  .component-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: flex-start !important;
+  }
+
+  .component-actions .modern-btn {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+    border-radius: 6px !important;
+    flex: none !important;
+  }
+
+  /* Chart Containers */
+  .chart-container {
+    position: relative !important;
+    width: 100% !important;
+    height: 300px !important;
+    margin: 1rem 0 !important;
+    background: #fafbfc !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    box-sizing: border-box !important;
+  }
+
+  .chart-wrapper {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Chart Canvas Mobile Optimization */
+  .chart-canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  /* Chart Legend Mobile */
+  .chart-legend {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: center !important;
+    margin-top: 1rem !important;
+    padding: 0.75rem !important;
+    background: #f8fafc !important;
+    border-radius: 6px !important;
+  }
+
+  .legend-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    font-size: 0.8rem !important;
+    padding: 0.25rem 0.5rem !important;
+    background: white !important;
+    border-radius: 4px !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  .legend-color {
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 2px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Analytics Tabs Mobile */
+  .analytics-tabs {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem !important;
+    margin-bottom: 1rem !important;
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .analytics-tab {
+    flex: none !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    background: white !important;
+    color: #6b7280 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    min-width: 100px !important;
+    text-align: center !important;
+  }
+
+  .analytics-tab.active {
+    background: var(--primary-color) !important;
+    color: white !important;
+    border-color: var(--primary-color) !important;
+  }
+
+  .analytics-tab:hover:not(.active) {
+    background: #f3f4f6 !important;
+    border-color: #d1d5db !important;
+  }
+
+  /* Tab Content */
+  .tab-content {
+    display: none !important;
+  }
+
+  .tab-content.active {
+    display: block !important;
+  }
+
+  /* Analytics Cards */
+  .analytics-card {
+    background: white !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .analytics-card-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 0.75rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+  }
+
+  .analytics-card-title {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    margin: 0 !important;
+  }
+
+  .analytics-card-value {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    margin: 0.5rem 0 !important;
+  }
+
+  .analytics-card-change {
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+  }
+
+  .change-positive {
+    color: var(--success-color) !important;
+  }
+
+  .change-negative {
+    color: var(--danger-color) !important;
+  }
+
+  .change-neutral {
+    color: #6b7280 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-component {
+    padding: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .component-header {
+    gap: 0.5rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .component-header h3 {
+    font-size: 1rem !important;
+  }
+
+  .chart-container {
+    height: 250px !important;
+    padding: 0.75rem !important;
+  }
+
+  .analytics-tabs {
+    padding: 0.25rem !important;
+    gap: 0.25rem !important;
+  }
+
+  .analytics-tab {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+    min-width: 80px !important;
+  }
+
+  .analytics-card {
+    padding: 0.75rem !important;
+  }
+
+  .analytics-card-value {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* ===== STEP 17: PERFORMANCE METRICS & DATA VISUALIZATION MOBILE ===== */
+
+@media (max-width: 768px) {
+  /* Performance Metrics Grid */
+  .metrics-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    margin: 1rem 0 !important;
+  }
+
+  .metric-card {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .metric-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .metric-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .metric-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.2rem !important;
+    color: white !important;
+  }
+
+  .metric-icon.primary {
+    background: var(--primary-color) !important;
+  }
+
+  .metric-icon.success {
+    background: var(--success-color) !important;
+  }
+
+  .metric-icon.warning {
+    background: #f59e0b !important;
+  }
+
+  .metric-icon.danger {
+    background: var(--danger-color) !important;
+  }
+
+  .metric-value {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+    margin: 0.5rem 0 !important;
+    line-height: 1 !important;
+  }
+
+  .metric-label {
+    font-size: 0.9rem !important;
+    color: var(--text-secondary) !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .metric-change {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+  }
+
+  /* Student Performance Lists */
+  .performance-list {
+    max-height: 300px !important;
+    overflow-y: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    list-style: none !important;
+    border-radius: 8px !important;
+    background: #f8fafc !important;
+  }
+
+  .performance-item {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+    background: white !important;
+    border-radius: 6px !important;
+    border: 1px solid #e5e7eb !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .performance-item:hover {
+    background: #f0f9ff !important;
+    border-color: var(--primary-color) !important;
+  }
+
+  .performer-rank {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: var(--primary-color) !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    margin-right: 0.75rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .performer-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .performer-name {
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 0.25rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .performer-details {
+    font-size: 0.8rem !important;
+    color: var(--text-secondary) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .performer-score {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    margin-left: 0.5rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Subject Performance Analysis */
+  .subject-performance-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+    margin: 1rem 0 !important;
+  }
+
+  .subject-item {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.75rem !important;
+    background: white !important;
+    border-radius: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .subject-item:hover {
+    background: #f8fafc !important;
+    border-color: var(--primary-color) !important;
+  }
+
+  .subject-icon {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 6px !important;
+    background: var(--primary-color) !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1rem !important;
+    margin-right: 0.75rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .subject-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .subject-name {
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .subject-details {
+    font-size: 0.8rem !important;
+    color: var(--text-secondary) !important;
+  }
+
+  .subject-score {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    margin-left: 0.5rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .subject-trend {
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    margin-left: 0.5rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .trend-excellent {
+    color: var(--success-color) !important;
+  }
+
+  .trend-good {
+    color: #3b82f6 !important;
+  }
+
+  .trend-needs-improvement {
+    color: #f59e0b !important;
+  }
+
+  .trend-poor {
+    color: var(--danger-color) !important;
+  }
+
+  /* Progress Bars */
+  .progress-container {
+    width: 100% !important;
+    height: 8px !important;
+    background: #e5e7eb !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+    margin: 0.5rem 0 !important;
+  }
+
+  .progress-bar {
+    height: 100% !important;
+    background: linear-gradient(
+      90deg,
+      var(--primary-color),
+      var(--success-color)
+    ) !important;
+    border-radius: 4px !important;
+    transition: width 0.3s ease !important;
+  }
+
+  .progress-label {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 0.8rem !important;
+    color: var(--text-secondary) !important;
+    margin-top: 0.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .metric-card {
+    padding: 0.75rem !important;
+  }
+
+  .metric-value {
+    font-size: 1.5rem !important;
+  }
+
+  .metric-icon {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 1rem !important;
+  }
+
+  .performance-item {
+    padding: 0.5rem !important;
+  }
+
+  .performer-rank {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.75rem !important;
+    margin-right: 0.5rem !important;
+  }
+
+  .performer-name {
+    font-size: 0.85rem !important;
+  }
+
+  .performer-details {
+    font-size: 0.75rem !important;
+  }
+
+  .performer-score {
+    font-size: 1rem !important;
+  }
+
+  .subject-item {
+    padding: 0.5rem !important;
+  }
+
+  .subject-icon {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0.9rem !important;
+    margin-right: 0.5rem !important;
+  }
+}
