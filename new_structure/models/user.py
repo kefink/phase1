@@ -1,6 +1,7 @@
 """
 User-related models for the Hillview School Management System.
 """
+import hmac
 from ..extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -43,13 +44,33 @@ class Teacher(db.Model):
 
     def check_password(self, password):
         """Check password against hash."""
+        # Input validation to prevent SQL injection
+        if not password or not isinstance(password, str):
+            return False
+
+        # Sanitize password input to prevent injection attacks
+        if len(password) > 128:  # Reasonable password length limit
+            return False
+
+        # Check for SQL injection patterns in password
+        try:
+            from ..security.sql_injection_protection import SQLInjectionProtection
+            if not SQLInjectionProtection.validate_input(password, "password"):
+                return False
+        except ImportError:
+            # Fallback validation if security module not available
+            dangerous_chars = ["'", '"', ';', '--', '/*', '*/', 'DROP', 'SELECT', 'INSERT', 'UPDATE', 'DELETE']
+            if any(char.upper() in password.upper() for char in dangerous_chars):
+                return False
+
         # Handle both hashed and plain text passwords for backward compatibility
         if self.password.startswith('scrypt:') or self.password.startswith('pbkdf2:'):
             # This is a hashed password
             return check_password_hash(self.password, password)
-        else:
-            # This is a plain text password (legacy)
-            return self.password == password
+
+        # This is a plain text password (legacy) - secure comparison
+        # Use constant-time comparison to prevent timing attacks
+        return hmac.compare_digest(self.password, password)
 
     def is_password_hashed(self):
         """Check if password is hashed."""
@@ -60,9 +81,8 @@ class Teacher(db.Model):
         """Get the full name of the teacher."""
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
-        elif self.first_name:
+        if self.first_name:
             return self.first_name
-        elif self.last_name:
+        if self.last_name:
             return self.last_name
-        else:
-            return self.username
+        return self.username

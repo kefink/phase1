@@ -1,18 +1,36 @@
 """
 Authentication views for the Hillview School Management System.
 """
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort
 try:
     from ..services import authenticate_teacher, logout
+    from ..security.sql_injection_protection import sql_injection_protection, SQLInjectionProtection
+    from ..security.rce_protection import RCEProtection
+    from ..utils.rate_limiter import auth_rate_limit
 except ImportError:
     try:
         from services import authenticate_teacher, logout
+        from security.sql_injection_protection import sql_injection_protection, SQLInjectionProtection
+        from security.rce_protection import RCEProtection
+        from utils.rate_limiter import auth_rate_limit
     except ImportError:
         # Mock functions for testing
         def authenticate_teacher(username, password, role):
             return None
         def logout(session):
             session.clear()
+        def sql_injection_protection(f):
+            return f
+        def auth_rate_limit(f):
+            return f
+        class SQLInjectionProtection:
+            @staticmethod
+            def validate_input(value, field):
+                return True
+        class RCEProtection:
+            @staticmethod
+            def detect_code_injection(value):
+                return False
 
 # Create a blueprint for authentication routes
 auth_bp = Blueprint('auth', __name__)
@@ -23,11 +41,30 @@ def index():
     return render_template('login.html')
 
 @auth_bp.route('/admin_login', methods=['GET', 'POST'])
+@auth_rate_limit
+@sql_injection_protection
 def admin_login():
     """Route for headteacher login."""
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
+
+        # Input validation
+        if not username or not password:
+            return render_template('admin_login.html', error='Username and password required')
+
+        # Length validation
+        if len(username) > 100 or len(password) > 128:
+            return render_template('admin_login.html', error='Invalid credentials')
+
+        # SQL injection protection
+        if not SQLInjectionProtection.validate_input(username, "username"):
+            return render_template('admin_login.html', error='Invalid credentials')
+
+        # Command injection protection
+        if (RCEProtection.detect_code_injection(username) or
+            RCEProtection.detect_code_injection(password)):
+            return render_template('admin_login.html', error='Invalid credentials')
 
         teacher = authenticate_teacher(username, password, 'headteacher')
 
@@ -41,30 +78,68 @@ def admin_login():
     return render_template('admin_login.html')
 
 @auth_bp.route('/teacher_login', methods=['GET', 'POST'])
+@auth_rate_limit
+@sql_injection_protection
 def teacher_login():
     """Route for teacher login."""
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        # Input validation
+        if not username or not password:
+            return render_template('teacher_login.html', error='Username and password required')
+
+        # Length validation
+        if len(username) > 100 or len(password) > 128:
+            return render_template('teacher_login.html', error='Invalid credentials')
+
+        # SQL injection protection
+        if not SQLInjectionProtection.validate_input(username, "username"):
+            return render_template('teacher_login.html', error='Invalid credentials')
+
+        # Command injection protection
+        if (RCEProtection.detect_code_injection(username) or
+            RCEProtection.detect_code_injection(password)):
+            return render_template('teacher_login.html', error='Invalid credentials')
+
         teacher = authenticate_teacher(username, password, 'teacher')
-        
+
         if teacher:
             session['teacher_id'] = teacher.id
             session['role'] = 'teacher'
             session.permanent = True
             return redirect(url_for('teacher.dashboard'))
-        
+
         return render_template('teacher_login.html', error='Invalid credentials')
-    
+
     return render_template('teacher_login.html')
 
 @auth_bp.route('/classteacher_login', methods=['GET', 'POST'])
+@auth_rate_limit
+@sql_injection_protection
 def classteacher_login():
     """Route for class teacher login. Also allows subject teachers with class assignments."""
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
+
+        # Input validation
+        if not username or not password:
+            return render_template('classteacher_login.html', error='Username and password required')
+
+        # Length validation
+        if len(username) > 100 or len(password) > 128:
+            return render_template('classteacher_login.html', error='Invalid credentials')
+
+        # SQL injection protection
+        if not SQLInjectionProtection.validate_input(username, "username"):
+            return render_template('classteacher_login.html', error='Invalid credentials')
+
+        # Command injection protection
+        if (RCEProtection.detect_code_injection(username) or
+            RCEProtection.detect_code_injection(password)):
+            return render_template('classteacher_login.html', error='Invalid credentials')
 
         # First try to authenticate as classteacher
         teacher = authenticate_teacher(username, password, 'classteacher')

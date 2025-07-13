@@ -77,15 +77,20 @@ def create_app(config_name='default'):
         # Enforce HTTPS (HSTS)
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
 
-        # Content Security Policy
+        # Enhanced Content Security Policy
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-            "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data:; "
-            "font-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: https:; "
             "connect-src 'self'; "
-            "frame-ancestors 'none'"
+            "frame-src 'none'; "
+            "object-src 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self'; "
+            "frame-ancestors 'none'; "
+            "upgrade-insecure-requests"
         )
         response.headers['Content-Security-Policy'] = csp
 
@@ -93,10 +98,24 @@ def create_app(config_name='default'):
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
 
         # Control browser features
-        response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+        response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=(), payment=(), usb=()'
 
-        # Remove server information
+        # Additional security headers
+        response.headers['X-Permitted-Cross-Domain-Policies'] = 'none'
+        response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+        response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+        response.headers['Cross-Origin-Resource-Policy'] = 'same-origin'
+
+        # Cache control for sensitive pages
+        if request.endpoint and any(sensitive in request.endpoint for sensitive in
+                                  ['admin', 'teacher', 'classteacher', 'headteacher']):
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+
+        # Remove server information and version disclosure
         response.headers.pop('Server', None)
+        response.headers.pop('X-Powered-By', None)
 
         return response
 

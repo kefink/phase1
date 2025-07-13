@@ -125,9 +125,10 @@ class DevelopmentConfig(Config):
 
     # Development-specific overrides
     CACHE_TYPE = 'simple'  # Use simple cache for development
-    RATELIMIT_ENABLED = False  # Disable rate limiting in development
+    RATELIMIT_ENABLED = True  # Enable rate limiting for security testing
+    RATELIMIT_STORAGE_URL = 'memory://'  # Use memory storage for development
     LOG_LEVEL = 'DEBUG'
-    WTF_CSRF_ENABLED = False  # Disable CSRF for easier development
+    WTF_CSRF_ENABLED = True  # Enable CSRF protection for security testing
 
     # Use MySQL for development (inherits from base Config class)
     # SQLALCHEMY_DATABASE_URI is inherited from Config class - MySQL configuration
