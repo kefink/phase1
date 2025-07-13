@@ -3,10 +3,83 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#667eea" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Hillview SMS" />
+    <meta name="msapplication-TileColor" content="#667eea" />
+    <meta
+      name="description"
+      content="Hillview School Management System - Complete solution for students, teachers, and parents"
+    />
+
     <title>
       {% block title %}{{ school_info.school_name or 'Hillview School' }}
       Management{% endblock %}
     </title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json" />
+
+    <!-- PWA Icons -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/static/images/icons/icon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/static/images/icons/icon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/static/images/icons/icon-180x180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/static/images/icons/icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="/static/images/icons/icon-144x144.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/static/images/icons/icon-120x120.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="114x114"
+      href="/static/images/icons/icon-114x114.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="76x76"
+      href="/static/images/icons/icon-76x76.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="72x72"
+      href="/static/images/icons/icon-72x72.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="60x60"
+      href="/static/images/icons/icon-60x60.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="57x57"
+      href="/static/images/icons/icon-57x57.png"
+    />
 
     <!-- Modern Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -360,6 +433,9 @@
         `;
       document.head.appendChild(style);
     </script>
+
+    <!-- PWA Manager -->
+    <script src="/static/js/pwa-manager.js"></script>
 
     {% block extra_js %}{% endblock %}
   </body>

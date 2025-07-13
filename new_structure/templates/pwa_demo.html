@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#667eea" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Hillview SMS" />
+    <meta
+      name="description"
+      content="Progressive Web App Demo - Hillview School Management System"
+    />
+
+    <title>PWA Demo - Hillview School Management System</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json" />
+
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Mobile Responsive Dashboard Styles -->
+    <link rel="stylesheet" href="/static/css/mobile_responsive_dashboard.css" />
+
+    <style>
+      :root {
+        --primary-color: #667eea;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --border-color: #e5e7eb;
+        --light-bg: #f9fafb;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(
+          135deg,
+          #f5f1e8 0%,
+          #7dd3c0 50%,
+          #4a9b8e 100%
+        );
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+
+      .pwa-navbar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .pwa-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+      }
+
+      .pwa-section {
+        background: rgba(255, 255, 255, 0.95);
+        margin: 1rem 0;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+      }
+
+      .section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+
+      .feature-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      }
+
+      .feature-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 1rem;
+      }
+
+      .feature-icon.primary {
+        background: var(--primary-color);
+      }
+      .feature-icon.success {
+        background: var(--success-color);
+      }
+      .feature-icon.warning {
+        background: var(--warning-color);
+      }
+      .feature-icon.danger {
+        background: var(--danger-color);
+      }
+
+      .feature-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .feature-description {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin-bottom: 1rem;
+      }
+
+      .feature-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .status-active {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .status-demo {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+
+      .demo-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .demo-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .demo-btn.primary {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .demo-btn.primary:hover {
+        background: #5a67d8;
+        transform: translateY(-1px);
+      }
+
+      .demo-btn.secondary {
+        background: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+      }
+
+      .demo-btn.secondary:hover {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .pwa-status {
+        background: var(--light-bg);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+
+      .status-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .status-item:last-child {
+        border-bottom: none;
+      }
+
+      .status-label {
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .status-value {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .indicator-success {
+        background: var(--success-color);
+      }
+      .indicator-warning {
+        background: var(--warning-color);
+      }
+      .indicator-danger {
+        background: var(--danger-color);
+      }
+
+      @media (max-width: 768px) {
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .pwa-container {
+          padding: 0 0.75rem;
+        }
+
+        .demo-actions {
+          flex-direction: column;
+        }
+
+        .demo-btn {
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- PWA Demo Navigation -->
+    <nav class="pwa-navbar">
+      <div class="pwa-container">
+        <div class="navbar-brand">
+          <i class="fas fa-mobile-alt"></i>
+          <span>Hillview School - Progressive Web App Demo</span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="pwa-container">
+      <!-- PWA Status -->
+      <div class="pwa-section">
+        <h2 class="section-title">
+          <i class="fas fa-info-circle"></i>
+          PWA Status & Features
+        </h2>
+
+        <div class="pwa-status">
+          <div class="status-item">
+            <span class="status-label">Service Worker</span>
+            <div class="status-value">
+              <div
+                class="status-indicator indicator-success"
+                id="sw-indicator"
+              ></div>
+              <span id="sw-status">Checking...</span>
+            </div>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Install Prompt</span>
+            <div class="status-value">
+              <div
+                class="status-indicator indicator-warning"
+                id="install-indicator"
+              ></div>
+              <span id="install-status">Checking...</span>
+            </div>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Push Notifications</span>
+            <div class="status-value">
+              <div
+                class="status-indicator indicator-warning"
+                id="push-indicator"
+              ></div>
+              <span id="push-status">Checking...</span>
+            </div>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Offline Support</span>
+            <div class="status-value">
+              <div
+                class="status-indicator indicator-success"
+                id="offline-indicator"
+              ></div>
+              <span id="offline-status">Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Implementation Guide -->
+      <div class="pwa-section">
+        <h2 class="section-title">
+          <i class="fas fa-code"></i>
+          PWA Implementation Guide
+        </h2>
+
+        <div
+          style="
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+          "
+        >
+          <h4 style="margin-top: 0; color: #1e40af">How PWA Features Work:</h4>
+          <ul style="color: #475569; line-height: 1.6">
+            <li>
+              <strong>Service Worker:</strong> Handles caching, offline
+              functionality, and background sync
+            </li>
+            <li>
+              <strong>Web App Manifest:</strong> Defines app metadata, icons,
+              and installation behavior
+            </li>
+            <li>
+              <strong>Cache API:</strong> Stores resources for offline access
+              and faster loading
+            </li>
+            <li>
+              <strong>Push API:</strong> Enables real-time notifications from
+              the server
+            </li>
+            <li>
+              <strong>Background Sync:</strong> Queues actions to execute when
+              connection is restored
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Testing Instructions -->
+      <div class="pwa-section">
+        <h2 class="section-title">
+          <i class="fas fa-clipboard-check"></i>
+          PWA Testing Instructions
+        </h2>
+
+        <div
+          style="
+            background: #f0f9ff;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+          "
+        >
+          <h4 style="margin-top: 0; color: #1e40af">
+            How to Test PWA Features:
+          </h4>
+          <ol style="color: #475569; line-height: 1.6">
+            <li>
+              <strong>Install Prompt:</strong> Click "Install App" button or use
+              browser's install option
+            </li>
+            <li>
+              <strong>Offline Mode:</strong> Disconnect internet and navigate to
+              cached pages
+            </li>
+            <li>
+              <strong>Push Notifications:</strong> Enable notifications and test
+              with demo button
+            </li>
+            <li>
+              <strong>Background Sync:</strong> Go offline, perform actions,
+              then reconnect
+            </li>
+            <li>
+              <strong>App-like Experience:</strong> Install and launch from home
+              screen
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- PWA Manager -->
+    <script src="/static/js/pwa-manager.js"></script>
+
+    <script>
+      // PWA Demo functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        updatePWAStatus();
+        setupDemoFunctions();
+      });
+
+      // Update PWA status indicators
+      function updatePWAStatus() {
+        // Service Worker status
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.getRegistration().then((registration) => {
+            const swIndicator = document.getElementById("sw-indicator");
+            const swStatus = document.getElementById("sw-status");
+
+            if (registration) {
+              swIndicator.className = "status-indicator indicator-success";
+              swStatus.textContent = "Active";
+            } else {
+              swIndicator.className = "status-indicator indicator-warning";
+              swStatus.textContent = "Not Registered";
+            }
+          });
+        } else {
+          document.getElementById("sw-indicator").className =
+            "status-indicator indicator-danger";
+          document.getElementById("sw-status").textContent = "Not Supported";
+        }
+
+        // Install prompt status
+        const installIndicator = document.getElementById("install-indicator");
+        const installStatus = document.getElementById("install-status");
+
+        if (window.matchMedia("(display-mode: standalone)").matches) {
+          installIndicator.className = "status-indicator indicator-success";
+          installStatus.textContent = "Installed";
+        } else {
+          installIndicator.className = "status-indicator indicator-warning";
+          installStatus.textContent = "Available";
+        }
+
+        // Push notifications status
+        const pushIndicator = document.getElementById("push-indicator");
+        const pushStatus = document.getElementById("push-status");
+
+        if ("Notification" in window) {
+          if (Notification.permission === "granted") {
+            pushIndicator.className = "status-indicator indicator-success";
+            pushStatus.textContent = "Enabled";
+          } else if (Notification.permission === "denied") {
+            pushIndicator.className = "status-indicator indicator-danger";
+            pushStatus.textContent = "Denied";
+          } else {
+            pushIndicator.className = "status-indicator indicator-warning";
+            pushStatus.textContent = "Available";
+          }
+        } else {
+          pushIndicator.className = "status-indicator indicator-danger";
+          pushStatus.textContent = "Not Supported";
+        }
+      }
+
+      // Setup demo functions
+      function setupDemoFunctions() {
+        console.log("📱 PWA Demo: Setting up demo functions");
+      }
+
+      // Trigger install prompt
+      function triggerInstallPrompt() {
+        if (window.pwaManager && window.pwaManager.deferredPrompt) {
+          window.pwaManager.installApp();
+        } else if (window.matchMedia("(display-mode: standalone)").matches) {
+          alert("App is already installed!");
+        } else {
+          alert(
+            "Install prompt not available. Try using your browser's install option."
+          );
+        }
+      }
+
+      // Test offline mode
+      function testOfflineMode() {
+        if (navigator.onLine) {
+          alert(
+            'To test offline mode:\n1. Open browser DevTools\n2. Go to Network tab\n3. Check "Offline"\n4. Navigate to cached pages'
+          );
+        } else {
+          alert(
+            "You are currently offline! Try navigating to different pages to see cached content."
+          );
+        }
+      }
+
+      // View cached data
+      function viewCachedData() {
+        if ("caches" in window) {
+          caches.keys().then((cacheNames) => {
+            const cacheInfo = cacheNames.map((name) => `• ${name}`).join("\n");
+            alert(`Available caches:\n${cacheInfo || "No caches found"}`);
+          });
+        } else {
+          alert("Cache API not supported in this browser");
+        }
+      }
+
+      // Request notification permission
+      async function requestNotificationPermission() {
+        if (!("Notification" in window)) {
+          alert("Notifications not supported in this browser");
+          return;
+        }
+
+        const permission = await Notification.requestPermission();
+
+        if (permission === "granted") {
+          alert(
+            "Notifications enabled! You can now receive push notifications."
+          );
+          updatePWAStatus();
+        } else if (permission === "denied") {
+          alert(
+            "Notifications denied. You can enable them in browser settings."
+          );
+        } else {
+          alert("Notification permission request dismissed.");
+        }
+      }
+
+      // Send test notification
+      function sendTestNotification() {
+        if (!("Notification" in window)) {
+          alert("Notifications not supported");
+          return;
+        }
+
+        if (Notification.permission === "granted") {
+          new Notification("Hillview SMS Demo", {
+            body: "This is a test notification from the PWA demo!",
+            icon: "/static/images/icons/icon-192x192.png",
+            badge: "/static/images/icons/icon-72x72.png",
+            tag: "demo-notification",
+            requireInteraction: false,
+          });
+        } else {
+          alert("Please enable notifications first");
+        }
+      }
+
+      // Test background sync
+      function testBackgroundSync() {
+        if (
+          "serviceWorker" in navigator &&
+          "sync" in window.ServiceWorkerRegistration.prototype
+        ) {
+          navigator.serviceWorker.ready
+            .then((registration) => {
+              return registration.sync.register("demo-sync");
+            })
+            .then(() => {
+              alert(
+                "Background sync registered! This would normally sync data when connection is restored."
+              );
+            })
+            .catch((err) => {
+              console.error("Background sync failed:", err);
+              alert("Background sync failed. Check console for details.");
+            });
+        } else {
+          alert("Background sync not supported in this browser");
+        }
+      }
+
+      // Log PWA demo information
+      console.log("📱 PWA Demo loaded successfully");
+      console.log(
+        "🎯 Features: Install prompt, offline support, push notifications, background sync"
+      );
+      console.log("🧪 Test all features using the demo buttons");
+
+      // Monitor PWA events
+      window.addEventListener("beforeinstallprompt", () => {
+        console.log("📱 Install prompt available");
+        updatePWAStatus();
+      });
+
+      window.addEventListener("appinstalled", () => {
+        console.log("✅ App installed successfully");
+        updatePWAStatus();
+      });
+
+      window.addEventListener("online", () => {
+        console.log("🌐 Back online");
+        updatePWAStatus();
+      });
+
+      window.addEventListener("offline", () => {
+        console.log("📴 Gone offline");
+        updatePWAStatus();
+      });
+    </script>
+  </body>
+</html>

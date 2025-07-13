@@ -1,7 +1,7 @@
 """
 Authentication views for the Hillview School Management System.
 """
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, send_from_directory
 try:
     from ..services import authenticate_teacher, logout
 except ImportError:
@@ -252,3 +252,18 @@ def student_portal_mobile_demo():
 def mobile_performance_demo():
     """Mobile performance optimization demo page."""
     return render_template('mobile_performance_dashboard.html')
+
+@auth_bp.route('/offline')
+def offline():
+    """Offline page for PWA."""
+    return render_template('offline.html')
+
+@auth_bp.route('/manifest.json')
+def manifest():
+    """Web App Manifest for PWA."""
+    return send_from_directory('static', 'manifest.json', mimetype='application/manifest+json')
+
+@auth_bp.route('/pwa-demo')
+def pwa_demo():
+    """Progressive Web App demo page."""
+    return render_template('pwa_demo.html')

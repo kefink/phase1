@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <title>Offline - Hillview School Management System</title>
+    
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Mobile Responsive Dashboard Styles -->
+    <link rel="stylesheet" href="/static/css/mobile_responsive_dashboard.css">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --light-bg: #f9fafb;
+            --warning-color: #f59e0b;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f1e8 0%, #7dd3c0 50%, #4a9b8e 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .offline-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .offline-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .offline-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--warning-color), #f97316);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 2rem;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        .offline-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .offline-message {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        
+        .offline-features {
+            background: var(--light-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        
+        .offline-features h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .offline-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .retry-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .retry-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+        
+        .cached-data-btn {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .cached-data-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            padding: 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #dc2626;
+        }
+        
+        .connection-status.online {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: #059669;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        @media (max-width: 768px) {
+            .offline-container {
+                padding: 1rem;
+            }
+            
+            .offline-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .offline-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .offline-title {
+                font-size: 1.25rem;
+            }
+            
+            .offline-message {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-card">
+            <div class="offline-icon">
+                <i class="fas fa-wifi-slash"></i>
+            </div>
+            
+            <h1 class="offline-title">You're Offline</h1>
+            
+            <p class="offline-message">
+                It looks like you've lost your internet connection. Don't worry - you can still access some features of Hillview School Management System.
+            </p>
+            
+            <div class="offline-features">
+                <h3>
+                    <i class="fas fa-check-circle" style="color: var(--primary-color);"></i>
+                    Available Offline
+                </h3>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <span>View cached student reports and analytics</span>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <span>Access previously downloaded documents</span>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>Browse student and class information</span>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <span>Prepare marks for upload when online</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="offline-actions">
+                <button class="retry-btn" onclick="retryConnection()">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Try Again</span>
+                </button>
+                
+                <button class="cached-data-btn" onclick="viewCachedData()">
+                    <i class="fas fa-database"></i>
+                    <span>View Cached Data</span>
+                </button>
+            </div>
+            
+            <div class="connection-status" id="connectionStatus">
+                <div class="status-indicator"></div>
+                <span>Checking connection...</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check connection status
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            const isOnline = navigator.onLine;
+            
+            if (isOnline) {
+                statusElement.className = 'connection-status online';
+                statusElement.innerHTML = `
+                    <div class="status-indicator"></div>
+                    <span>Connection restored!</span>
+                `;
+                
+                // Auto-redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                statusElement.className = 'connection-status';
+                statusElement.innerHTML = `
+                    <div class="status-indicator"></div>
+                    <span>No internet connection</span>
+                `;
+            }
+        }
+        
+        // Retry connection
+        function retryConnection() {
+            const retryBtn = document.querySelector('.retry-btn');
+            const icon = retryBtn.querySelector('i');
+            
+            // Add spinning animation
+            icon.classList.add('fa-spin');
+            retryBtn.disabled = true;
+            
+            // Check connection after 1 second
+            setTimeout(() => {
+                updateConnectionStatus();
+                icon.classList.remove('fa-spin');
+                retryBtn.disabled = false;
+                
+                if (navigator.onLine) {
+                    window.location.href = '/';
+                }
+            }, 1000);
+        }
+        
+        // View cached data
+        function viewCachedData() {
+            // Try to navigate to dashboard which should load from cache
+            window.location.href = '/classteacher/dashboard';
+        }
+        
+        // Listen for online/offline events
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        
+        // Initial status check
+        updateConnectionStatus();
+        
+        // Periodic connection check
+        setInterval(updateConnectionStatus, 5000);
+        
+        console.log('📴 Offline page loaded');
+        console.log('🔄 Checking connection status every 5 seconds');
+    </script>
+</body>
+</html>
