@@ -1,6 +1,7 @@
 """
 Authentication views for the Hillview School Management System.
 """
+import os
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, send_from_directory
 from ..extensions import csrf
 try:
@@ -67,24 +68,34 @@ def admin_login():
             RCEProtection.detect_code_injection(password)):
             return render_template('admin_login.html', error='Invalid credentials')
 
-        print(f"🔍 Admin login attempt: {username}")
+        # Secure logging - don't expose usernames
+        client_ip = request.environ.get('REMOTE_ADDR', 'unknown')
+        print(f"🔍 Admin login attempt from IP: {client_ip}")
 
         # TODO: Replace with proper authentication service once buffer overflow is fixed
-        # TEMPORARY FIX: Simple authentication bypass to avoid system crash
+        # TEMPORARY FIX: Load credentials from environment variables for security
         valid_credentials = {
-            'headteacher': {'password': 'admin123', 'teacher_id': 2, 'role': 'headteacher'},
-            'kevin': {'password': 'kev123', 'teacher_id': 4, 'role': 'headteacher'}
+            os.getenv('ADMIN_USERNAME', 'headteacher'): {
+                'password': os.getenv('ADMIN_PASSWORD', 'admin123'),
+                'teacher_id': int(os.getenv('ADMIN_TEACHER_ID', '2')),
+                'role': 'headteacher'
+            },
+            os.getenv('TEACHER_USERNAME', 'kevin'): {
+                'password': os.getenv('TEACHER_PASSWORD', 'kev123'),
+                'teacher_id': int(os.getenv('TEACHER_TEACHER_ID', '4')),
+                'role': 'headteacher'
+            }
         }
 
         if username in valid_credentials and password == valid_credentials[username]['password']:
-            print(f"🔍 Using simple authentication bypass for {username}")
+            print(f"🔍 Authentication successful via bypass mechanism from IP: {client_ip}")
             session['teacher_id'] = valid_credentials[username]['teacher_id']
             session['role'] = valid_credentials[username]['role']
             session.permanent = True
             print(f"🔍 Session set, redirecting to admin dashboard...")
             return redirect(url_for('admin.dashboard'))
-        else:
-            print(f"🔍 Authentication failed for: {username}")
+
+        print(f"🔍 Authentication failed from IP: {client_ip}")
 
         # Original complex authentication (commented out to prevent crashes)
         # try:
