@@ -209,13 +209,14 @@ class XSSProtection:
         return sanitized
     
     @classmethod
-    def get_csp_header(cls, strict=True):
+    def get_csp_header(cls, strict=True, development=False):
         """
         Generate Content Security Policy header.
-        
+
         Args:
             strict: Whether to use strict CSP
-            
+            development: Whether this is for development environment
+
         Returns:
             str: CSP header value
         """
@@ -233,6 +234,9 @@ class XSSProtection:
                 "form-action 'self'; "
                 "frame-ancestors 'none';"
             )
+            # Only add upgrade-insecure-requests in production
+            if not development:
+                csp += " upgrade-insecure-requests;"
         else:
             csp = (
                 "default-src 'self' 'unsafe-inline' 'unsafe-eval'; "

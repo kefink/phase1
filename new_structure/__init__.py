@@ -3,6 +3,7 @@ Application factory for the Hillview School Management System.
 This file initializes the Flask application and registers extensions and blueprints.
 """
 from flask import Flask, request, abort, session, redirect, url_for, jsonify
+from datetime import datetime
 from .extensions import db, csrf
 from .config import config
 from .logging_config import setup_logging
@@ -61,9 +62,37 @@ def create_app(config_name='default'):
     # Register middleware
     MarkSanitizerMiddleware(app)
 
-    # Suppress SSL/TLS noise in logs
+    # Minimize logging output
     import logging
-    logging.getLogger('werkzeug').setLevel(logging.ERROR)
+
+    # Set up clean logging
+    werkzeug_logger = logging.getLogger('werkzeug')
+    werkzeug_logger.setLevel(logging.WARNING)  # Only show warnings and errors
+
+    # Filter out SSL/TLS noise and other verbose logs
+    class CleanLogFilter(logging.Filter):
+        def filter(self, record):
+            message = record.getMessage()
+            # Filter out these types of messages
+            noise_patterns = [
+                'Bad request version',
+                'code 400, message Bad request version',
+                'Bad HTTP/0.9 request type',
+                'code 400, message Bad request syntax',
+                '\x16\x03\x01',  # SSL handshake attempts
+                'DEBUG in __init__',
+                'Context processor success',
+                'Response headers before cleanup',
+                'Response headers after cleanup'
+            ]
+            return not any(pattern in message for pattern in noise_patterns)
+
+    # Apply filter to werkzeug logger
+    werkzeug_logger.addFilter(CleanLogFilter())
+
+    # Also apply to app logger
+    app.logger.addFilter(CleanLogFilter())
+    app.logger.setLevel(logging.INFO)  # Only show INFO and above
 
     # Security Headers Configuration
     @app.after_request
@@ -292,6 +321,17 @@ def create_app(config_name='default'):
         'FORCE_HTTPS': False,                    # Disable for testing
         'STRICT_ROLE_ENFORCEMENT': True         # Strict access control
     })
+
+    # Remove problematic headers for development
+    @app.after_request
+    def clean_headers(response):
+        """Remove headers that might cause HTTPS upgrade issues in development."""
+        # Remove any CSP headers that might force HTTPS
+        response.headers.pop('Content-Security-Policy', None)
+        response.headers.pop('Content-Security-Policy-Report-Only', None)
+        # Also remove HSTS header in development
+        response.headers.pop('Strict-Transport-Security', None)
+        return response
 
     # HTTPS ENFORCEMENT
     @app.before_request
@@ -712,6 +752,147 @@ def create_app(config_name='default'):
             </ul>
             <p><small>Debug: {str(e)}</small></p>
             """
+
+    # Add a simple test route
+    @app.route('/test')
+    def simple_test():
+        """Simple test route to verify server is working"""
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Server Test</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 40px; }}
+                .info {{ background: #f0f8ff; padding: 20px; border-radius: 8px; }}
+                .success {{ color: #28a745; }}
+                ul {{ background: #f8f9fa; padding: 20px; border-radius: 8px; }}
+            </style>
+        </head>
+        <body>
+            <h1 class="success">✅ Server is Working!</h1>
+            <div class="info">
+                <p><strong>Time:</strong> {datetime.now()}</p>
+                <p><strong>Request URL:</strong> {request.url}</p>
+                <p><strong>Remote Address:</strong> {request.remote_addr}</p>
+                <p><strong>Is Secure:</strong> {request.is_secure}</p>
+                <p><strong>Force HTTPS:</strong> {app.config.get('FORCE_HTTPS', 'Not Set')}</p>
+            </div>
+            <h3>Request Headers:</h3>
+            <ul>
+            {''.join(f'<li><strong>{k}:</strong> {v}</li>' for k, v in request.headers.items())}
+            </ul>
+            <p><a href="/" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Home Page</a></p>
+            <p><a href="/simple-login" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Simple Login Test</a></p>
+        </body>
+        </html>
+        """
+
+    # Add a simple login test without external resources
+    @app.route('/simple-login')
+    def simple_login_test():
+        """Simple login page without external CDN resources"""
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Simple Login Test</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 40px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                }
+                .login-container {
+                    max-width: 400px;
+                    margin: 0 auto;
+                    background: white;
+                    padding: 40px;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                }
+                .form-group { margin-bottom: 20px; }
+                label { display: block; margin-bottom: 5px; font-weight: bold; }
+                input[type="text"], input[type="password"] {
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    box-sizing: border-box;
+                }
+                .btn {
+                    background: #667eea;
+                    color: white;
+                    padding: 12px 30px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    width: 100%;
+                }
+                .btn:hover { background: #5a6fd8; }
+                h2 { text-align: center; color: #333; margin-bottom: 30px; }
+                .back-link { text-align: center; margin-top: 20px; }
+                .back-link a { color: #667eea; text-decoration: none; }
+            </style>
+        </head>
+        <body>
+            <div class="login-container">
+                <h2>🏫 Simple Login Test</h2>
+                <form method="post" action="/debug/simple_login">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <div class="back-link">
+                    <a href="/test">← Back to Test Page</a> |
+                    <a href="/">Home Page</a>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+    # Add URL debugging route
+    @app.route('/debug-urls')
+    def debug_urls():
+        """Debug route to check what URLs Flask is generating"""
+        from flask import url_for
+        urls = {
+            'admin.dashboard': url_for('admin.dashboard', _external=True),
+            'classteacher.dashboard': url_for('classteacher.dashboard', _external=True),
+            'teacher.dashboard': url_for('teacher.dashboard', _external=True),
+            'auth.index': url_for('auth.index', _external=True),
+            'auth.admin_login': url_for('auth.admin_login', _external=True),
+        }
+
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head><title>URL Debug</title></head>
+        <body>
+            <h1>Flask URL Generation Debug</h1>
+            <p><strong>Request URL:</strong> {request.url}</p>
+            <p><strong>Request is secure:</strong> {request.is_secure}</p>
+            <p><strong>PREFERRED_URL_SCHEME:</strong> {app.config.get('PREFERRED_URL_SCHEME', 'Not Set')}</p>
+            <p><strong>FORCE_HTTPS:</strong> {app.config.get('FORCE_HTTPS', 'Not Set')}</p>
+            <h2>Generated URLs:</h2>
+            <ul>
+            {''.join(f'<li><strong>{name}:</strong> {url}</li>' for name, url in urls.items())}
+            </ul>
+            <p><a href="/test">Back to Test</a></p>
+        </body>
+        </html>
+        """
 
     # Add a simple health check route
     @app.route('/health')

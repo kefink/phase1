@@ -17,16 +17,16 @@ def setup_logging(app):
     if not os.path.exists(logs_dir):
         os.makedirs(logs_dir)
     
-    # Configure root logger
+    # Configure root logger - minimal console output
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
-    
+    root_logger.setLevel(logging.WARNING)  # Only show warnings and errors in console
+
     # Create formatter
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    
-    # Create console handler
+
+    # Create console handler with minimal output
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(logging.WARNING)  # Only warnings and errors to console
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
     

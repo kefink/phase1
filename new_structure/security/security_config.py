@@ -27,6 +27,7 @@ class SecurityConfiguration:
         app.config['SESSION_TIMEOUT'] = 7200  # 2 hours in seconds
         
         # Security Headers
+        is_development = os.environ.get('FLASK_ENV', 'development') == 'development'
         app.config['SECURITY_HEADERS'] = {
             'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
             'X-Content-Type-Options': 'nosniff',
@@ -34,7 +35,7 @@ class SecurityConfiguration:
             'X-XSS-Protection': '1; mode=block',
             'Referrer-Policy': 'strict-origin-when-cross-origin',
             'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
-            'Content-Security-Policy': SecurityConfiguration.get_csp_policy()
+            'Content-Security-Policy': SecurityConfiguration.get_csp_policy(development=is_development)
         }
         
         # Disable debug mode in production
@@ -62,14 +63,17 @@ class SecurityConfiguration:
         SecurityConfiguration.configure_security_logging(app)
     
     @staticmethod
-    def get_csp_policy():
+    def get_csp_policy(development=False):
         """
         Get Content Security Policy.
-        
+
+        Args:
+            development: Whether this is for development environment
+
         Returns:
             str: CSP policy string
         """
-        return (
+        csp = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
@@ -80,9 +84,14 @@ class SecurityConfiguration:
             "object-src 'none'; "
             "base-uri 'self'; "
             "form-action 'self'; "
-            "frame-ancestors 'none'; "
-            "upgrade-insecure-requests;"
+            "frame-ancestors 'none';"
         )
+
+        # Only add upgrade-insecure-requests in production
+        if not development:
+            csp += " upgrade-insecure-requests;"
+
+        return csp
     
     @staticmethod
     def configure_security_logging(app: Flask):
