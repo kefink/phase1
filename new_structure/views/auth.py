@@ -69,19 +69,19 @@ def admin_login():
 
         print(f"🔍 Admin login attempt: {username}")
 
+        # TODO: Replace with proper authentication service once buffer overflow is fixed
         # TEMPORARY FIX: Simple authentication bypass to avoid system crash
-        if username == 'headteacher' and password == 'admin123':
-            print(f"🔍 Using simple authentication bypass")
-            session['teacher_id'] = 2  # Known headteacher ID from debug
-            session['role'] = 'headteacher'
+        valid_credentials = {
+            'headteacher': {'password': 'admin123', 'teacher_id': 2, 'role': 'headteacher'},
+            'kevin': {'password': 'kev123', 'teacher_id': 4, 'role': 'headteacher'}
+        }
+
+        if username in valid_credentials and password == valid_credentials[username]['password']:
+            print(f"🔍 Using simple authentication bypass for {username}")
+            session['teacher_id'] = valid_credentials[username]['teacher_id']
+            session['role'] = valid_credentials[username]['role']
             session.permanent = True
             print(f"🔍 Session set, redirecting to admin dashboard...")
-            return redirect(url_for('admin.dashboard'))
-        elif username == 'kevin' and password == 'kev123':
-            print(f"🔍 Using simple authentication bypass for kevin")
-            session['teacher_id'] = 4  # Known kevin ID from debug
-            session['role'] = 'headteacher'  # Allow admin access
-            session.permanent = True
             return redirect(url_for('admin.dashboard'))
         else:
             print(f"🔍 Authentication failed for: {username}")

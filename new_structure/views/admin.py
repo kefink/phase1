@@ -145,7 +145,20 @@ def analytics_dashboard():
 @admin_required
 @sql_injection_protection
 def dashboard():
-    """Route for the admin/headteacher dashboard - SIMPLIFIED VERSION."""
+    """
+    Admin/Headteacher Dashboard Route - SIMPLIFIED VERSION
+
+    This route provides a simplified dashboard to avoid system crashes
+    that were occurring with complex database queries and template rendering.
+
+    Returns:
+        str: HTML response with dashboard statistics and navigation
+
+    Security:
+        - Requires admin authentication
+        - Protected against SQL injection
+        - Session-based access control
+    """
     try:
         # Simple stats only to avoid crashes
         total_students = Student.query.count()
