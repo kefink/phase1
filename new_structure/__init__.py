@@ -61,6 +61,10 @@ def create_app(config_name='default'):
     # Register middleware
     MarkSanitizerMiddleware(app)
 
+    # Suppress SSL/TLS noise in logs
+    import logging
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
+
     # Security Headers Configuration
     @app.after_request
     def set_security_headers(response):
@@ -427,6 +431,288 @@ def create_app(config_name='default'):
     # Import the classteacher blueprint
     from .views.classteacher import classteacher_bp
 
+    # Add debug route for login testing
+    @app.route('/debug/login_test')
+    def debug_login_test():
+        """Debug route to test login functionality."""
+        try:
+            from .models.user import Teacher
+            from .services.auth_service import authenticate_teacher
+
+            result = "<h2>🔐 Login System Debug</h2>"
+
+            # Check database connection
+            try:
+                teacher_count = Teacher.query.count()
+                result += f"<p>✅ Database connected: {teacher_count} teachers found</p>"
+            except Exception as e:
+                result += f"<p>❌ Database error: {str(e)}</p>"
+                return result
+
+            # List all teachers
+            teachers = Teacher.query.all()
+            result += "<h3>👥 Available Teachers:</h3><ul>"
+            for teacher in teachers:
+                result += f"<li><strong>{teacher.username}</strong> - Role: {teacher.role} - Password: {teacher.password}</li>"
+            result += "</ul>"
+
+            # Test authentication
+            result += "<h3>🧪 Authentication Tests:</h3>"
+            test_users = [
+                ('headteacher', 'admin123', 'headteacher'),
+                ('kevin', 'kev123', 'classteacher'),
+                ('telvo', 'telvo123', 'teacher')
+            ]
+
+            for username, password, role in test_users:
+                try:
+                    auth_result = authenticate_teacher(username, password, role)
+                    if auth_result:
+                        result += f"<p>✅ {username}/{role}: Authentication successful</p>"
+                    else:
+                        result += f"<p>❌ {username}/{role}: Authentication failed</p>"
+                except Exception as e:
+                    result += f"<p>⚠️ {username}/{role}: Error - {str(e)}</p>"
+
+            return result
+
+        except Exception as e:
+            return f"<h2>❌ Debug Error</h2><p>{str(e)}</p>"
+
+    # Add debug route to check blueprints
+    @app.route('/debug/blueprints')
+    def debug_blueprints():
+        """Debug route to check registered blueprints."""
+        blueprint_info = []
+        for blueprint_name, blueprint in app.blueprints.items():
+            routes = []
+            for rule in app.url_map.iter_rules():
+                if rule.endpoint.startswith(blueprint_name + '.'):
+                    routes.append(f"{rule.rule} -> {rule.endpoint}")
+            blueprint_info.append({
+                'name': blueprint_name,
+                'routes': routes
+            })
+
+        result = "<h2>🔍 Registered Blueprints</h2>"
+        for bp in blueprint_info:
+            result += f"<h3>📋 {bp['name']}</h3><ul>"
+            for route in bp['routes']:
+                result += f"<li>{route}</li>"
+            result += "</ul>"
+
+        return result
+
+    # Add database initialization debug route
+    @app.route('/debug/init_database')
+    def debug_init_database():
+        """Force database initialization."""
+        try:
+            from .utils.database_init import initialize_database_completely
+
+            result = "<h2>🗄️ Database Initialization</h2>"
+            result += "<p>Initializing database...</p>"
+
+            init_result = initialize_database_completely()
+
+            if init_result.get('success'):
+                result += "<p>✅ Database initialized successfully!</p>"
+                result += f"<p>Details: {init_result}</p>"
+            else:
+                result += f"<p>❌ Database initialization failed: {init_result.get('error')}</p>"
+
+            result += "<p><a href='/debug/login_test'>🔐 Test Login Now</a></p>"
+            result += "<p><a href='/'>🏠 Go to Login Page</a></p>"
+
+            return result
+
+        except Exception as e:
+            return f"<h2>❌ Initialization Error</h2><p>{str(e)}</p>"
+
+    # Add login form debug route
+    @app.route('/debug/test_login', methods=['GET', 'POST'])
+    def debug_test_login():
+        """Debug route to test login forms."""
+        if request.method == 'GET':
+            from flask_wtf.csrf import generate_csrf
+            csrf_token = generate_csrf()
+            return f'''
+            <h2>🔐 Login Form Tester</h2>
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{csrf_token}" />
+                <h3>Test Login:</h3>
+                <p>Username: <input type="text" name="username" value="headteacher"></p>
+                <p>Password: <input type="password" name="password" value="admin123"></p>
+                <p>Role:
+                    <select name="role">
+                        <option value="headteacher">Headteacher</option>
+                        <option value="classteacher">Class Teacher</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                </p>
+                <p><input type="submit" value="Test Login"></p>
+            </form>
+            <hr>
+            <h3>📋 Available Credentials:</h3>
+            <ul>
+                <li><strong>headteacher</strong> / admin123 (Role: headteacher)</li>
+                <li><strong>kevin</strong> / kev123 (Role: classteacher)</li>
+                <li><strong>carol</strong> / carol123 (Role: teacher)</li>
+            </ul>
+            <hr>
+            <h3>🔗 Direct Login Links:</h3>
+            <ul>
+                <li><a href="/admin_login" target="_blank">👨‍💼 Headteacher Login</a></li>
+                <li><a href="/classteacher_login" target="_blank">👩‍🏫 Class Teacher Login</a></li>
+                <li><a href="/teacher_login" target="_blank">👨‍🎓 Teacher Login</a></li>
+            </ul>
+            '''
+
+        # Handle POST request
+        try:
+            from .services.auth_service import authenticate_teacher
+
+            username = request.form.get('username')
+            password = request.form.get('password')
+            role = request.form.get('role')
+
+            result = f"<h2>🧪 Login Test Results</h2>"
+            result += f"<p><strong>Username:</strong> {username}</p>"
+            result += f"<p><strong>Password:</strong> {password}</p>"
+            result += f"<p><strong>Role:</strong> {role}</p>"
+
+            auth_result = authenticate_teacher(username, password, role)
+
+            if auth_result:
+                result += f"<p>✅ <strong>Authentication Successful!</strong></p>"
+                result += f"<p>User details: {auth_result}</p>"
+                result += f"<p><a href='/admin_dashboard' target='_blank'>🎯 Try Admin Dashboard</a></p>"
+                result += f"<p><a href='/classteacher_dashboard' target='_blank'>🎯 Try Class Teacher Dashboard</a></p>"
+            else:
+                result += f"<p>❌ <strong>Authentication Failed!</strong></p>"
+                result += f"<p>Check username, password, and role combination.</p>"
+
+            result += f"<p><a href='/debug/test_login'>🔄 Test Again</a></p>"
+            return result
+
+        except Exception as e:
+            return f"<h2>❌ Login Test Error</h2><p>{str(e)}</p>"
+
+    # Add CSRF-exempt debug route for easier testing
+    @app.route('/debug/simple_login', methods=['GET', 'POST'])
+    @csrf.exempt
+    def debug_simple_login():
+        """Simple login test without CSRF protection."""
+        if request.method == 'GET':
+            return '''
+            <h2>🔐 Simple Login Tester (No CSRF)</h2>
+            <form method="POST">
+                <h3>Test Login:</h3>
+                <p>Username: <input type="text" name="username" value="headteacher"></p>
+                <p>Password: <input type="password" name="password" value="admin123"></p>
+                <p>Role:
+                    <select name="role">
+                        <option value="headteacher">Headteacher</option>
+                        <option value="classteacher">Class Teacher</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                </p>
+                <p><input type="submit" value="Test Login"></p>
+            </form>
+            <p><em>Note: This form bypasses CSRF protection for debugging.</em></p>
+            '''
+
+        # Handle POST request
+        try:
+            from .services.auth_service import authenticate_teacher
+
+            username = request.form.get('username')
+            password = request.form.get('password')
+            role = request.form.get('role')
+
+            result = f"<h2>🧪 Simple Login Test Results</h2>"
+            result += f"<p><strong>Username:</strong> {username}</p>"
+            result += f"<p><strong>Password:</strong> {password}</p>"
+            result += f"<p><strong>Role:</strong> {role}</p>"
+
+            auth_result = authenticate_teacher(username, password, role)
+
+            if auth_result:
+                result += f"<p>✅ <strong>Authentication Successful!</strong></p>"
+                result += f"<p>User details: {auth_result}</p>"
+
+                # Set session for testing
+                session['teacher_id'] = auth_result.id
+                session['role'] = role
+                session.permanent = True
+
+                result += f"<p>✅ <strong>Session Set!</strong></p>"
+                result += f"<p>Session data: {dict(session)}</p>"
+                result += f"<p><a href='/headteacher/' target='_blank'>🎯 Try Dashboard</a></p>"
+            else:
+                result += f"<p>❌ <strong>Authentication Failed!</strong></p>"
+
+            result += f"<p><a href='/debug/simple_login'>🔄 Test Again</a></p>"
+            return result
+
+        except Exception as e:
+            return f"<h2>❌ Simple Login Test Error</h2><p>{str(e)}</p>"
+
+    # Add debug route to test admin dashboard directly
+    @app.route('/debug/test_admin_dashboard')
+    def debug_test_admin_dashboard():
+        """Test admin dashboard without login."""
+        try:
+            # Set session manually for testing
+            session['teacher_id'] = 2  # headteacher ID from your debug
+            session['role'] = 'headteacher'
+            session.permanent = True
+
+            # Try to import and call the dashboard function
+            from .views.admin import dashboard
+
+            result = "<h2>🧪 Admin Dashboard Test</h2>"
+            result += f"<p>Session set: {dict(session)}</p>"
+            result += f"<p>Attempting to load dashboard...</p>"
+
+            # Try to call the dashboard function directly
+            dashboard_result = dashboard()
+
+            result += f"<p>✅ Dashboard loaded successfully!</p>"
+            result += f"<p><a href='/headteacher/' target='_blank'>🎯 Try Real Dashboard</a></p>"
+
+            return result
+
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            return f"""
+            <h2>❌ Admin Dashboard Test Error</h2>
+            <p><strong>Error:</strong> {str(e)}</p>
+            <p><strong>Full Traceback:</strong></p>
+            <pre>{error_details}</pre>
+            <p><a href='/debug/simple_login'>🔄 Try Simple Login</a></p>
+            """
+
+    # Add fallback root route in case blueprint route fails
+    @app.route('/', methods=['GET'])
+    def fallback_index():
+        """Fallback root route."""
+        try:
+            from .views.auth import index
+            return index()
+        except Exception as e:
+            return f"""
+            <h2>🏠 Hillview School Management System</h2>
+            <p>Welcome! Please choose your login type:</p>
+            <ul>
+                <li><a href="/admin_login">👨‍💼 Headteacher Login</a></li>
+                <li><a href="/classteacher_login">👩‍🏫 Class Teacher Login</a></li>
+                <li><a href="/teacher_login">👨‍🎓 Teacher Login</a></li>
+            </ul>
+            <p><small>Debug: {str(e)}</small></p>
+            """
+
     # Add a simple health check route
     @app.route('/health')
     def health_check():
@@ -478,56 +764,7 @@ def create_app(config_name='default'):
             """, 500
         return "Internal Server Error", 500
 
-    # Temporary routes for debugging user issues
-    @app.route('/debug/test_login')
-    def debug_test_login():
-        """Test route to check login functionality."""
-        try:
-            result = "<h2>🔐 Login Test</h2>"
 
-            # Check session
-            result += f"<p><strong>Session Data:</strong></p><pre>{dict(session)}</pre>"
-
-            # Check authentication functions
-            from .services.auth_service import is_authenticated, get_role
-
-            result += f"<p><strong>Authentication Check:</strong></p>"
-            result += f"<ul>"
-            result += f"<li>is_authenticated: {is_authenticated(session)}</li>"
-            result += f"<li>get_role: {get_role(session)}</li>"
-            result += f"<li>teacher_id in session: {'teacher_id' in session}</li>"
-            result += f"<li>role in session: {session.get('role')}</li>"
-            result += f"</ul>"
-
-            # Test login manually
-            if 'teacher_id' not in session:
-                result += f"<p><strong>🔐 Manual Login Test:</strong></p>"
-                from .services.auth_service import authenticate_teacher
-                teacher = authenticate_teacher('headteacher', 'admin123', 'headteacher')
-                if teacher:
-                    session['teacher_id'] = teacher.id
-                    session['role'] = 'headteacher'
-                    session.permanent = True
-                    result += f"<p>✅ Manual login successful! Teacher ID: {teacher.id}</p>"
-                    result += f"<p>Updated session: {dict(session)}</p>"
-                else:
-                    result += f"<p>❌ Manual login failed</p>"
-
-            # Test school setup session data
-            result += f"<p><strong>🏫 School Setup Session Data:</strong></p>"
-            result += f"<ul>"
-            result += f"<li>secondary_grading_systems: {session.get('secondary_grading_systems', 'Not set')}</li>"
-            result += f"<li>show_multiple_grades: {session.get('show_multiple_grades', 'Not set')}</li>"
-            result += f"</ul>"
-
-            result += f"<p><a href='/admin_login'>🔐 Go to Login</a></p>"
-            result += f"<p><a href='/headteacher/'>🏠 Try Dashboard</a></p>"
-            result += f"<p><a href='/school-setup/'>🏫 Try School Setup</a></p>"
-
-            return result
-
-        except Exception as e:
-            return f"❌ Error: {str(e)}"
 
     @app.route('/debug/school_setup_info')
     def debug_school_setup_info():

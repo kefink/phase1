@@ -22,7 +22,28 @@ try:
     app = create_app('development')
 
     # Run the application
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print("🌐 Access URLs:")
+    print("   Local:      http://localhost:5000")
+    print("   Network:    http://192.168.1.124:5000")
+    print("   Health:     http://localhost:5000/health")
+    print("")
+    print("🔧 Debug URLs:")
+    print("   Blueprints:     http://localhost:5000/debug/blueprints")
+    print("   Login Test:     http://localhost:5000/debug/login_test")
+    print("   Form Test:      http://localhost:5000/debug/test_login")
+    print("   Simple Login:   http://localhost:5000/debug/simple_login")
+    print("   Admin Dashboard:http://localhost:5000/debug/test_admin_dashboard")
+    print("   Init DB:        http://localhost:5000/debug/init_database")
+
+    # Get the actual IP address
+    import socket
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
+
+    print(f"🌐 Detected IP Address: {local_ip}")
+    print(f"🌐 Network Access: http://{local_ip}:8080")
+
+    app.run(debug=True, host='0.0.0.0', port=8080, threaded=True, use_reloader=False)
 
 except Exception as e:
     print(f"❌ Error starting application: {e}")

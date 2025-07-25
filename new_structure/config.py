@@ -119,7 +119,7 @@ class Config:
 class DevelopmentConfig(Config):
     """Configuration for development environment."""
     DEBUG = True
-    SERVER_NAME = 'localhost:5000'
+    # SERVER_NAME = 'localhost:5000'  # Commented out to allow access from any IP
     APPLICATION_ROOT = '/'
     PREFERRED_URL_SCHEME = 'http'
 
