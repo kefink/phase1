@@ -195,78 +195,28 @@ def dashboard():
         # Merge school info with dashboard stats
         dashboard_stats.update(school_info)
 
-        # Render a simple admin dashboard to avoid template issues
-        return f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Admin Dashboard - {dashboard_stats.get('school_name', 'Hillview School')}</title>
-            <style>
-                body {{ font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }}
-                .dashboard {{ background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
-                .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }}
-                .stat-card {{ background: #667eea; color: white; padding: 20px; border-radius: 8px; text-align: center; }}
-                .stat-number {{ font-size: 2em; font-weight: bold; }}
-                .stat-label {{ font-size: 0.9em; opacity: 0.9; }}
-                .nav {{ margin: 20px 0; }}
-                .nav a {{ display: inline-block; margin: 5px 10px 5px 0; padding: 10px 15px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; }}
-                .nav a:hover {{ background: #5a67d8; }}
-                h1 {{ color: #333; margin-bottom: 10px; }}
-                .success {{ color: #28a745; font-weight: bold; }}
-            </style>
-        </head>
-        <body>
-            <div class="dashboard">
-                <h1>🎯 Admin Dashboard</h1>
-                <p class="success">✅ Login Successful! Welcome, Headteacher!</p>
+        # Add server-side debugging
+        print("🔍 DASHBOARD DEBUG: Rendering headteacher.html template")
+        print(f"🔍 DASHBOARD DEBUG: School info: {school_info}")
+        print(f"🔍 DASHBOARD DEBUG: Dashboard stats: {dashboard_stats}")
 
-                <div class="stats">
-                    <div class="stat-card">
-                        <div class="stat-number">{dashboard_stats.get('total_students', 0)}</div>
-                        <div class="stat-label">Total Students</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">{dashboard_stats.get('total_teachers', 0)}</div>
-                        <div class="stat-label">Total Teachers</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">{dashboard_stats.get('total_classes', 0)}</div>
-                        <div class="stat-label">Total Classes</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">{dashboard_stats.get('total_subjects', 0)}</div>
-                        <div class="stat-label">Total Subjects</div>
-                    </div>
-                </div>
-
-                <div class="nav">
-                    <h3>🚀 Quick Actions:</h3>
-                    <a href="/headteacher/manage_teachers">👥 Manage Teachers</a>
-                    <a href="/headteacher/manage_subjects">📚 Manage Subjects</a>
-                    <a href="/headteacher/manage_grades_streams">🎓 Manage Grades</a>
-                    <a href="/headteacher/reports">📊 Reports</a>
-                    <a href="/headteacher/analytics">📈 Analytics</a>
-                </div>
-
-                <div style="margin-top: 30px; padding: 15px; background: #e8f5e8; border-radius: 5px;">
-                    <h4>🎉 System Status: Operational</h4>
-                    <p><strong>School:</strong> {dashboard_stats.get('school_name', 'Hillview School')}</p>
-                    <p><strong>Session:</strong> Active (Teacher ID: {session.get('teacher_id', 'N/A')})</p>
-                    <p><strong>Role:</strong> {session.get('role', 'N/A').title()}</p>
-                </div>
-
-                <div style="margin-top: 20px; text-align: center;">
-                    <a href="/debug/simple_login" style="color: #666; text-decoration: none;">🔄 Debug Login</a> |
-                    <a href="/" style="color: #666; text-decoration: none;">🏠 Home</a> |
-                    <a href="/health" style="color: #666; text-decoration: none;">💚 Health Check</a>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
+        # Render the proper headteacher.html template
+        return render_template(
+            'headteacher.html',
+            school_info=school_info,
+            dashboard_stats=dashboard_stats,
+            performance_data=dashboard_stats.get('performance_data', {}),
+            page_title="Headteacher Dashboard"
+        )
 
     except Exception as e:
-        # If even this fails, show a basic error page
+        # Add server-side error debugging
+        print(f"🚨 DASHBOARD ERROR: {str(e)}")
+        print(f"🚨 DASHBOARD ERROR: Session: {dict(session)}")
+        import traceback
+        print(f"🚨 DASHBOARD ERROR: Traceback: {traceback.format_exc()}")
+
+        # If template rendering fails, show a basic error page
         return f"""
         <h2>🚨 Admin Dashboard Error</h2>
         <p><strong>Error:</strong> {str(e)}</p>

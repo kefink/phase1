@@ -126,15 +126,35 @@
         border-radius: var(--radius-sm);
       }
 
-      /* Navigation */
+      /* Premium Navigation Styling */
       .navbar {
         background: linear-gradient(
           135deg,
-          var(--primary-color) 0%,
-          var(--secondary-color) 100%
+          #1e40af 0%,
+          #3b82f6 50%,
+          #1e40af 100%
         );
-        padding: 1rem 0;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 0.75rem 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        backdrop-filter: blur(10px);
+      }
+
+      .navbar::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(59, 130, 246, 0.1) 0%,
+          rgba(30, 64, 175, 0.1) 100%
+        );
+        pointer-events: none;
       }
 
       .navbar .container {
@@ -143,19 +163,43 @@
         align-items: center;
         max-width: 1400px;
         margin: 0 auto;
-        padding: 0 1rem;
+        padding: 0 1.5rem;
         width: 100%;
         box-sizing: border-box;
+        position: relative;
+        z-index: 1;
       }
 
       .navbar-brand {
         color: white;
-        font-size: 1.5rem;
-        font-weight: 700;
+        font-size: 1.4rem;
+        font-weight: 800;
         text-decoration: none;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .navbar-brand:hover {
+        transform: translateY(-1px);
+        text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+      }
+
+      .navbar-brand img {
+        height: 48px;
+        width: 48px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        object-fit: cover;
+        transition: all 0.3s ease;
+      }
+
+      .navbar-brand img:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 3px 6px rgba(0, 0, 0, 0.3);
       }
 
       .navbar-nav {
@@ -163,55 +207,329 @@
         list-style: none;
         margin: 0;
         padding: 0;
-        gap: 0.5rem;
+        gap: 0.25rem;
         align-items: center;
         flex-wrap: nowrap;
         overflow: visible;
       }
 
+      .navbar-nav li {
+        position: relative;
+      }
+
       .nav-link {
-        color: rgba(255, 255, 255, 0.9);
-        text-decoration: none;
-        font-weight: 500;
-        padding: 0.5rem 0.75rem;
-        border-radius: 0.5rem;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-        white-space: nowrap;
-        font-size: 0.9rem;
-      }
-
-      .nav-link:hover {
-        color: white;
-        background: rgba(255, 255, 255, 0.15);
-        transform: translateY(-1px);
-      }
-
-      .logout-btn {
-        color: white;
+        color: rgba(255, 255, 255, 0.95) !important;
         text-decoration: none;
         font-weight: 600;
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        transition: all 0.3s ease;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        background: rgba(220, 53, 69, 0.8);
-        border: 1px solid rgba(220, 53, 69, 1);
         white-space: nowrap;
-        min-width: 80px;
+        font-size: 0.9rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .nav-link::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .nav-link:hover::before {
+        left: 100%;
+      }
+
+      .nav-link:hover {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .nav-link i {
+        font-size: 1rem;
+        opacity: 0.9;
+        transition: all 0.3s ease;
+      }
+
+      .nav-link:hover i {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      /* Special styling for Universal Access link - Always Visible */
+      .nav-link[href*="universal"] {
+        background: linear-gradient(
+          135deg,
+          rgba(34, 197, 94, 0.3) 0%,
+          rgba(16, 185, 129, 0.3) 100%
+        ) !important;
+        border: 2px solid rgba(34, 197, 94, 0.5) !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        box-shadow: 0 2px 12px rgba(34, 197, 94, 0.4) !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+        position: relative;
+        z-index: 10;
+      }
+
+      .nav-link[href*="universal"]::after {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(
+          135deg,
+          rgba(34, 197, 94, 0.2),
+          rgba(16, 185, 129, 0.2)
+        );
+        border-radius: 10px;
+        z-index: -1;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.5;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.8;
+          transform: scale(1.02);
+        }
+      }
+
+      .nav-link[href*="universal"]:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(34, 197, 94, 0.5) 0%,
+          rgba(16, 185, 129, 0.5) 100%
+        ) !important;
+        border-color: rgba(34, 197, 94, 0.7) !important;
+        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5),
+          0 3px 10px rgba(0, 0, 0, 0.3) !important;
+        transform: translateY(-2px) !important;
+      }
+
+      /* Ensure Universal Access text is always visible */
+      .nav-link[href*="universal"] span {
+        display: inline !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+      }
+
+      /* Debug: Force Universal Access to be visible with bright background */
+      .nav-link[href*="universal"] {
+        min-width: 150px !important;
+        background: linear-gradient(
+          135deg,
+          rgba(34, 197, 94, 0.8) 0%,
+          rgba(16, 185, 129, 0.8) 100%
+        ) !important;
+        border: 3px solid rgba(34, 197, 94, 0.9) !important;
+        margin: 0 5px !important;
+        z-index: 999 !important;
+        position: relative !important;
+      }
+
+      /* Ensure navbar doesn't hide content */
+      .navbar-nav {
+        overflow: visible !important;
+        flex-wrap: wrap !important;
+      }
+
+      .navbar .container {
+        overflow: visible !important;
+      }
+
+      /* EMERGENCY DEBUG: Force Universal Access to be visible */
+      #universal-access-link {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 9999 !important;
+        background: #ff0000 !important; /* Red background for debugging */
+        color: white !important;
+        border: 3px solid #ffffff !important;
+        min-width: 200px !important;
+        height: auto !important;
+        padding: 10px 15px !important;
+        margin: 0 10px !important;
+        font-size: 16px !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.8) !important;
+      }
+
+      #universal-access-link span {
+        display: inline !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: white !important;
+        font-weight: 900 !important;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+      }
+
+      /* Force the parent li to be visible */
+      #universal-access-link:parent,
+      li:has(#universal-access-link) {
+        display: list-item !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      .logout-btn {
+        color: white !important;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(
+          135deg,
+          rgba(239, 68, 68, 0.9) 0%,
+          rgba(220, 38, 38, 0.9) 100%
+        );
+        border: 1px solid rgba(239, 68, 68, 0.6);
+        white-space: nowrap;
         justify-content: center;
+        position: relative;
+        overflow: hidden;
+        margin-left: 0.5rem;
+      }
+
+      .logout-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .logout-btn:hover::before {
+        left: 100%;
       }
 
       .logout-btn:hover {
-        color: white;
-        background: rgba(220, 53, 69, 1);
-        border-color: rgba(220, 53, 69, 1);
+        color: white !important;
+        background: linear-gradient(
+          135deg,
+          rgba(239, 68, 68, 1) 0%,
+          rgba(220, 38, 38, 1) 100%
+        );
+        border-color: rgba(239, 68, 68, 0.8);
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4),
+          0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .logout-btn i {
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+      }
+
+      .logout-btn:hover i {
+        transform: scale(1.1);
+      }
+
+      /* Responsive Design for Mobile */
+      @media (max-width: 1000px) {
+        .navbar .container {
+          padding: 0 1rem;
+        }
+
+        /* Hide text for most links but keep Universal Access visible */
+        .nav-link span {
+          display: none;
+        }
+
+        /* Keep Universal Access text visible */
+        .nav-link[href*="universal"] span {
+          display: inline !important;
+          font-size: 0.8rem;
+        }
+
+        .nav-link {
+          padding: 0.6rem 0.8rem;
+          min-width: 40px;
+          justify-content: center;
+        }
+
+        .logout-btn span {
+          display: none;
+        }
+
+        .logout-btn {
+          padding: 0.6rem 0.8rem;
+          min-width: 40px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .navbar {
+          padding: 0.5rem 0;
+        }
+
+        .navbar .container {
+          padding: 0 0.5rem;
+        }
+
+        .navbar-brand {
+          font-size: 1.1rem;
+        }
+
+        .navbar-brand img {
+          height: 36px;
+          width: 36px;
+        }
+
+        .navbar-nav {
+          gap: 0.1rem;
+        }
+
+        .nav-link {
+          padding: 0.5rem 0.6rem;
+          font-size: 0.8rem;
+        }
+
+        .logout-btn {
+          padding: 0.5rem 0.6rem;
+        }
       }
 
       /* Enhanced Dashboard Container */
@@ -1288,33 +1606,83 @@
     <nav class="navbar">
       <div class="container">
         <a href="#" class="navbar-brand">
-          {% if school_info.logo_url and school_info.logo_url !=
+          <!-- Always show Hillview School logo -->
+          {% if school_info and school_info.logo_url and school_info.logo_url !=
           '/static/images/default_logo.png' %}
+          <img src="{{ school_info.logo_url }}" alt="Hillview School Logo" />
+          {% else %}
           <img
-            src="{{ school_info.logo_url }}"
-            alt="School Logo"
-            style="
-              height: 40px;
-              width: auto;
-              margin-right: 10px;
-              border-radius: 8px;
-            "
+            src="{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}"
+            alt="Hillview School Logo"
           />
           {% endif %}
-          <span
-            >{{ school_info.school_name or 'Hillview School Management System'
-            }}</span
-          >
+          <span>{{ school_info.school_name or 'Hillview School' }}</span>
         </a>
         <ul class="navbar-nav">
+          <!-- DEBUG: Template rendering check -->
+          <li style="background: yellow; color: black; padding: 5px">
+            TEMPLATE DEBUG: Navbar rendering OK
+          </li>
           <li>
             <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
               <i class="fas fa-chart-line"></i> <span>Dashboard</span>
             </a>
           </li>
-          <li>
-            <a href="{{ url_for('universal.dashboard') }}" class="nav-link">
-              <i class="fas fa-users-cog"></i> <span>Universal Access</span>
+          <!-- EMERGENCY UNIVERSAL ACCESS LINK - MULTIPLE ATTEMPTS -->
+          <li
+            style="
+              display: block !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+            "
+          >
+            <a
+              href="{{ url_for('universal.dashboard') }}"
+              class="nav-link"
+              id="universal-access-link"
+              style="
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                background: #ff0000 !important;
+                color: white !important;
+                border: 3px solid white !important;
+                font-weight: 900 !important;
+                padding: 10px 15px !important;
+                margin: 0 10px !important;
+                z-index: 9999 !important;
+                position: relative !important;
+                min-width: 200px !important;
+                text-transform: uppercase !important;
+                box-shadow: 0 0 20px rgba(255, 0, 0, 0.8) !important;
+              "
+            >
+              <i class="fas fa-users-cog" style="color: white !important"></i>
+              <span
+                style="
+                  display: inline !important;
+                  color: white !important;
+                  font-weight: 900 !important;
+                  margin-left: 5px !important;
+                "
+                >UNIVERSAL ACCESS</span
+              >
+            </a>
+          </li>
+          <!-- BACKUP UNIVERSAL ACCESS LINK -->
+          <li style="display: block !important">
+            <a
+              href="/universal/dashboard"
+              style="
+                background: #00ff00 !important;
+                color: black !important;
+                padding: 10px !important;
+                border: 2px solid black !important;
+                display: flex !important;
+                font-weight: bold !important;
+              "
+            >
+              🔧 UNIVERSAL ACCESS BACKUP
             </a>
           </li>
           <li>
@@ -1393,7 +1761,8 @@
               </div>
               <div class="quick-stat">
                 <span class="quick-stat-value"
-                  >{{ "%.1f"|format(avg_performance) }}%</span
+                  >{{ "%.1f"|format((dashboard_stats.avg_performance if
+                  dashboard_stats else 0) or 0) }}%</span
                 >
                 <span class="quick-stat-label">Avg Performance</span>
               </div>
@@ -1511,7 +1880,10 @@
         </div>
         <div class="stat-card">
           <div class="stat-label">Average Performance</div>
-          <div class="stat-value">{{ avg_performance }}%</div>
+          <div class="stat-value">
+            {{ (dashboard_stats.avg_performance if dashboard_stats else 0) or 0
+            }}%
+          </div>
           <div class="stat-trend">📊 School average</div>
         </div>
         <div class="stat-card">
@@ -1842,7 +2214,8 @@
           <div class="stat-icon">📊</div>
           <div class="stat-content">
             <div class="stat-number" id="school-average">
-              {{ "%.1f"|format(avg_performance) }}%
+              {{ "%.1f"|format((dashboard_stats.avg_performance if
+              dashboard_stats else 0) or 0) }}%
             </div>
             <div class="stat-label">School Average</div>
           </div>
@@ -1949,26 +2322,42 @@
               </tr>
             </thead>
             <tbody>
-              {% for grade, count in learners_per_grade.items() %}
+              {% for grade, count in (dashboard_stats.learners_per_grade if
+              dashboard_stats and dashboard_stats.learners_per_grade else
+              {}).items() %}
               <!-- Main row for the grade -->
               <tr class="grade-row">
                 <td><strong>{{ grade }}</strong></td>
                 <td>{{ count }}</td>
                 <td class="gender-male">
-                  {{ gender_per_grade[grade]['Male'] }}
+                  {{ (dashboard_stats.gender_per_grade[grade]['Male'] if
+                  dashboard_stats and dashboard_stats.gender_per_grade and grade
+                  in dashboard_stats.gender_per_grade else 0) }}
                 </td>
                 <td class="gender-female">
-                  {{ gender_per_grade[grade]['Female'] }}
+                  {{ (dashboard_stats.gender_per_grade[grade]['Female'] if
+                  dashboard_stats and dashboard_stats.gender_per_grade and grade
+                  in dashboard_stats.gender_per_grade else 0) }}
                 </td>
                 <td>
-                  {{ ((gender_per_grade[grade]['Male'] / count) * 100) | round
-                  }}% : {{ ((gender_per_grade[grade]['Female'] / count) * 100) |
-                  round }}%
+                  {% set male_count =
+                  (dashboard_stats.gender_per_grade[grade]['Male'] if
+                  dashboard_stats and dashboard_stats.gender_per_grade and grade
+                  in dashboard_stats.gender_per_grade else 0) %} {% set
+                  female_count =
+                  (dashboard_stats.gender_per_grade[grade]['Female'] if
+                  dashboard_stats and dashboard_stats.gender_per_grade and grade
+                  in dashboard_stats.gender_per_grade else 0) %} {% if count > 0
+                  %} {{ ((male_count / count) * 100) | round }}% : {{
+                  ((female_count / count) * 100) | round }}% {% else %} 0% : 0%
+                  {% endif %}
                 </td>
               </tr>
               <!-- Sub-rows for each stream in this grade -->
               {% for stream_name, stream_data in
-              streams_per_grade[grade].items() %}
+              (dashboard_stats.streams_per_grade[grade] if dashboard_stats and
+              dashboard_stats.streams_per_grade and grade in
+              dashboard_stats.streams_per_grade else {}).items() %}
               <tr class="stream-row">
                 <td style="padding-left: 30px">{{ stream_name }}</td>
                 <td>{{ stream_data['total'] }}</td>
@@ -2013,7 +2402,9 @@
           <div class="filter-grid">
             <select id="grade-filter" onchange="filterPerformanceData()">
               <option value="">All Grades</option>
-              {% for grade in learners_per_grade.keys() %}
+              {% for grade in (dashboard_stats.learners_per_grade if
+              dashboard_stats and dashboard_stats.learners_per_grade else
+              {}).keys() %}
               <option value="{{ grade }}">{{ grade }}</option>
               {% endfor %}
             </select>
@@ -3287,6 +3678,60 @@
       document.addEventListener('DOMContentLoaded', function() {
         // Dashboard initialization complete
         console.log('Headteacher dashboard loaded successfully');
+
+        // DEBUG: Force Universal Access link to be visible
+        setTimeout(function() {
+          const universalLink = document.getElementById('universal-access-link');
+          if (universalLink) {
+            console.log('Universal Access link found:', universalLink);
+            universalLink.style.display = 'flex';
+            universalLink.style.visibility = 'visible';
+            universalLink.style.opacity = '1';
+            universalLink.style.background = '#ff0000';
+            universalLink.style.color = 'white';
+            universalLink.style.border = '3px solid white';
+            universalLink.style.padding = '10px 15px';
+            universalLink.style.margin = '0 10px';
+            universalLink.style.zIndex = '9999';
+            universalLink.style.position = 'relative';
+            universalLink.style.minWidth = '200px';
+            universalLink.style.fontWeight = '900';
+            universalLink.style.textTransform = 'uppercase';
+
+            const span = universalLink.querySelector('span');
+            if (span) {
+              span.style.display = 'inline';
+              span.style.color = 'white';
+              span.style.fontWeight = '900';
+            }
+
+            console.log('Universal Access link styled:', universalLink.style.cssText);
+          } else {
+            console.error('Universal Access link NOT found!');
+
+            // Check if navbar exists
+            const navbar = document.querySelector('.navbar-nav');
+            if (navbar) {
+              console.log('Navbar found, links:', navbar.querySelectorAll('.nav-link').length);
+
+              // Create the link if it doesn't exist
+              const li = document.createElement('li');
+              const link = document.createElement('a');
+              link.href = '/universal/dashboard';
+              link.className = 'nav-link';
+              link.id = 'universal-access-link';
+              link.style.cssText = 'background: #ff0000 !important; color: white !important; border: 3px solid white !important; padding: 10px 15px !important; margin: 0 10px !important; z-index: 9999 !important; position: relative !important; min-width: 200px !important; font-weight: 900 !important; text-transform: uppercase !important;';
+              link.innerHTML = '<i class="fas fa-users-cog"></i> <span style="display: inline !important; color: white !important; font-weight: 900 !important;">UNIVERSAL ACCESS</span>';
+
+              li.appendChild(link);
+              navbar.insertBefore(li, navbar.children[1]); // Insert after Dashboard
+
+              console.log('Universal Access link created and inserted');
+            } else {
+              console.error('Navbar not found!');
+            }
+          }
+        }, 100);
       });
     </script>
   </body>

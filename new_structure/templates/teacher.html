@@ -151,32 +151,61 @@
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.3) 100%);
             backdrop-filter: var(--glass-backdrop);
             -webkit-backdrop-filter: var(--glass-backdrop);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: var(--shadow-glass);
-            position: fixed;
+            position: sticky;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: var(--spacing-md) var(--spacing-xl);
+            padding: var(--spacing-sm) var(--spacing-lg);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 0 var(--spacing-md);
-            margin-top: var(--spacing-md);
+            margin: 0;
+            min-height: 60px;
         }
 
         .navbar-brand {
             color: #1a202c;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: var(--spacing-sm);
+            gap: 0.75rem;
             transition: var(--transition-fast);
             text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            min-width: 0; /* Allow text to shrink */
+            max-width: 65%; /* Prevent taking too much space */
+        }
+
+        .navbar-brand-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0; /* Allow text to shrink */
+        }
+
+        .navbar-brand-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .navbar-brand-subtitle {
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0.8;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .navbar-brand:hover {
@@ -185,25 +214,50 @@
             text-shadow: 0 2px 4px rgba(255, 255, 255, 0.9);
         }
 
+        /* Premium Logo Styling for Subject Teacher */
+        .navbar-brand img {
+            width: 48px !important;
+            height: 48px !important;
+            border-radius: 12px !important;
+            object-fit: cover !important;
+            border: 2px solid rgba(255, 255, 255, 0.6) !important;
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.1),
+                0 2px 6px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            backdrop-filter: blur(4px);
+        }
+
+        .navbar-brand img:hover {
+            transform: scale(1.05) translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow:
+                0 6px 16px rgba(0, 0, 0, 0.15),
+                0 3px 8px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
 
 
         .navbar-nav {
             display: flex;
             list-style: none;
-            gap: var(--spacing-lg);
+            gap: var(--spacing-md);
             align-items: center;
         }
 
         .nav-link {
             color: #2d3748;
             text-decoration: none;
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--radius-md);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
             transition: var(--transition-fast);
             display: flex;
             align-items: center;
             gap: var(--spacing-xs);
-            font-weight: 600;
+            font-weight: 500;
+            font-size: 0.9rem;
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.1);
@@ -267,7 +321,8 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: calc(100px + var(--spacing-lg)) var(--spacing-lg) var(--spacing-lg);
+            padding: var(--spacing-lg);
+            padding-top: calc(60px + var(--spacing-md)); /* Account for navbar height */
         }
 
         /* Premium Glassmorphism Page Header */
@@ -817,6 +872,20 @@
             .navbar-brand {
                 font-size: 1.125rem;
                 margin-bottom: var(--spacing-xs);
+                max-width: 70%;
+            }
+
+            .navbar-brand img {
+                width: 36px !important;
+                height: 36px !important;
+            }
+
+            .navbar-brand-title {
+                font-size: 1rem;
+            }
+
+            .navbar-brand-subtitle {
+                font-size: 0.8rem;
             }
 
             .navbar-nav {
@@ -841,6 +910,7 @@
             /* Mobile Container */
             .container {
                 padding: var(--spacing-sm);
+                padding-top: calc(60px + var(--spacing-sm));
                 max-width: 100%;
             }
 
@@ -978,6 +1048,20 @@
 
             .navbar-brand {
                 font-size: 1rem;
+                max-width: 75%;
+            }
+
+            .navbar-brand img {
+                width: 32px !important;
+                height: 32px !important;
+            }
+
+            .navbar-brand-title {
+                font-size: 0.9rem;
+            }
+
+            .navbar-brand-subtitle {
+                font-size: 0.75rem;
             }
 
             .page-title {
@@ -3019,29 +3103,37 @@
 
     <nav class="navbar">
         <a href="#" class="navbar-brand">
-            {% if school_info.logo_url and school_info.logo_url != '/static/images/default_logo.png' %}
+            <!-- Hillview School Logo with Premium Styling -->
+            {% if school_info.logo_path %}
             <img
-                src="{{ school_info.logo_url }}"
-                alt="School Logo"
-                style="
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 4px;
-                    object-fit: cover;
-                    margin-right: 8px;
-                "
+                src="{{ url_for('static', filename=school_info.logo_path) }}"
+                alt="{{ school_info.school_name or 'Hillview School' }} Logo"
+                onerror="this.src='{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}'"
+            />
+            {% else %}
+            <img
+                src="{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}"
+                alt="Hillview School Logo"
             />
             {% endif %}
-            {{ school_info.school_name|default('Hillview School') }} -
-            {% if assignment_summary.teacher %}
-                {% if assignment_summary.teacher.first_name and assignment_summary.teacher.last_name %}
-                    {{ assignment_summary.teacher.first_name }} {{ assignment_summary.teacher.last_name }}
-                {% else %}
-                    {{ assignment_summary.teacher.username }}
-                {% endif %}
-            {% else %}
-                Teacher
-            {% endif %}
+            <div class="navbar-brand-text">
+                <div class="navbar-brand-title">
+                    {{ school_info.school_name|default('Hillview School') }}
+                </div>
+                <div class="navbar-brand-subtitle">
+                    {% if assignment_summary.teacher %}
+                        {% if assignment_summary.teacher.first_name and assignment_summary.teacher.last_name %}
+                            {{ assignment_summary.teacher.first_name }} {{ assignment_summary.teacher.last_name }}
+                        {% else %}
+                            {{ assignment_summary.teacher.username }}
+                        {% endif %}
+                    {% elif session.get('username') %}
+                        {{ session.get('username') }}
+                    {% else %}
+                        Subject Teacher
+                    {% endif %}
+                </div>
+            </div>
         </a>
         <ul class="navbar-nav">
             <li>
