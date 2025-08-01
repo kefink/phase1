@@ -879,22 +879,7 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
             </div>
         </div>
 
-        <div class="mobile-form-group">
-            <label for="subject" class="mobile-form-label">
-                <i class="fas fa-book"></i>
-                Subject
-            </label>
-            <select name="subject" id="subject" class="mobile-form-control mobile-form-select" required>
-                <option value="">Select Subject</option>
-                {% if education_level and subjects_by_education_level.get(education_level) %}
-                    {% for subject in subjects_by_education_level[education_level] %}
-                    <option value="{{ subject }}" {% if subject == subject %}selected{% endif %}>
-                        {{ subject }}
-                    </option>
-                    {% endfor %}
-                {% endif %}
-            </select>
-        </div>
+
 
         <div class="mobile-form-group">
             <label for="grade" class="mobile-form-label">
@@ -1414,19 +1399,26 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         // Clear current options
         gradeSelect.innerHTML = '<option value="">🎓 Select Grade</option>';
 
-        // Define grade mappings for each education level
-        const gradesByEducationLevel = {
+        // Use the grades data passed from Flask to get proper grade IDs
+        const allGrades = {{ grades|tojson }};
+
+        // Define grade name mappings for each education level
+        const gradeNamesByEducationLevel = {
             'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
             'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
             'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
         };
 
-        if (educationLevel && gradesByEducationLevel[educationLevel]) {
-            gradesByEducationLevel[educationLevel].forEach(grade => {
-                const option = document.createElement('option');
-                option.value = grade;
-                option.textContent = grade;
-                gradeSelect.appendChild(option);
+        if (educationLevel && gradeNamesByEducationLevel[educationLevel]) {
+            gradeNamesByEducationLevel[educationLevel].forEach(gradeName => {
+                // Find the grade object with matching name
+                const gradeObj = allGrades.find(g => g.name === gradeName);
+                if (gradeObj) {
+                    const option = document.createElement('option');
+                    option.value = gradeObj.id;
+                    option.textContent = gradeObj.name;
+                    gradeSelect.appendChild(option);
+                }
             });
         }
 
@@ -1477,18 +1469,36 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
     function updateStreams() {
         const gradeSelect = document.getElementById('grade');
         const streamSelect = document.getElementById('stream');
-        const selectedGrade = gradeSelect.value;
+        const selectedGradeId = gradeSelect.value;
 
         // Clear current streams
         streamSelect.innerHTML = '<option value="">🏛️ Select Stream</option>';
 
-        if (selectedGrade && window.gradeStreams && window.gradeStreams[selectedGrade]) {
-            window.gradeStreams[selectedGrade].forEach(stream => {
-                const option = document.createElement('option');
-                option.value = stream;
-                option.textContent = stream;
-                streamSelect.appendChild(option);
-            });
+        if (selectedGradeId) {
+            // Show loading state
+            streamSelect.innerHTML = '<option value="">Loading streams...</option>';
+
+            // Fetch streams from API
+            fetch(`/teacher/get_streams/${selectedGradeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    streamSelect.innerHTML = '<option value="">🏛️ Select Stream</option>';
+
+                    if (data.success && data.streams && data.streams.length > 0) {
+                        data.streams.forEach(stream => {
+                            const option = document.createElement('option');
+                            option.value = stream.id;
+                            option.textContent = stream.name;
+                            streamSelect.appendChild(option);
+                        });
+                    } else {
+                        streamSelect.innerHTML = '<option value="">No streams available</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching streams:', error);
+                    streamSelect.innerHTML = '<option value="">Error loading streams</option>';
+                });
         }
     }
 
