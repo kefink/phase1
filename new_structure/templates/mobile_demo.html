@@ -1,0 +1,358 @@
+{% extends "base_mobile.html" %}
+
+{% block title %}Mobile Demo - {{ school_info.school_name|default('Hillview School') }}{% endblock %}
+
+{% block description %}Mobile responsive design demo for {{ school_info.school_name|default('Hillview School') }} management system{% endblock %}
+
+{% block navigation_items %}
+<li class="mobile-nav-item">
+    <a href="#overview" class="mobile-nav-link active" onclick="showSection('overview')">
+        <i class="fas fa-home"></i>
+        Overview
+    </a>
+</li>
+<li class="mobile-nav-item">
+    <a href="#components" class="mobile-nav-link" onclick="showSection('components')">
+        <i class="fas fa-puzzle-piece"></i>
+        Components
+    </a>
+</li>
+<li class="mobile-nav-item">
+    <a href="#forms" class="mobile-nav-link" onclick="showSection('forms')">
+        <i class="fas fa-edit"></i>
+        Forms
+    </a>
+</li>
+<li class="mobile-nav-item">
+    <a href="#tables" class="mobile-nav-link" onclick="showSection('tables')">
+        <i class="fas fa-table"></i>
+        Tables
+    </a>
+</li>
+<li class="mobile-nav-item">
+    <a href="#responsive" class="mobile-nav-link" onclick="showSection('responsive')">
+        <i class="fas fa-mobile-alt"></i>
+        Responsive
+    </a>
+</li>
+{% endblock %}
+
+{% block header_title %}
+<i class="fas fa-mobile-alt"></i>
+Mobile Responsive Demo
+{% endblock %}
+
+{% block header_subtitle %}
+Showcasing mobile-first design with Bootswatch Solar theme
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile_solar_theme.css') }}">
+<style>
+    .demo-section {
+        background: var(--solar-light);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: 1px solid rgba(181, 137, 0, 0.2);
+        display: none;
+    }
+    
+    .demo-section.active {
+        display: block;
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    .demo-section h2 {
+        color: var(--solar-dark);
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--solar-primary);
+    }
+    
+    .demo-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    @media (min-width: 480px) {
+        .demo-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .demo-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .demo-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+    
+    .demo-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(131, 148, 150, 0.2);
+        text-align: center;
+    }
+    
+    .demo-card h3 {
+        color: var(--solar-primary);
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .screen-size-indicator {
+        position: fixed;
+        top: 4.5rem;
+        right: 1rem;
+        background: var(--solar-primary);
+        color: var(--solar-light);
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: bold;
+        z-index: 1000;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Screen Size Indicator -->
+<div class="screen-size-indicator" id="screenSize">
+    <span id="screenWidth"></span> x <span id="screenHeight"></span>
+</div>
+
+<!-- Overview Section -->
+<div id="overview" class="demo-section active">
+    <h2><i class="fas fa-info-circle"></i> Mobile-First Overview</h2>
+    <p>This demo showcases the mobile-first responsive design implementation using:</p>
+    <ul>
+        <li><strong>Bootswatch Solar Theme</strong> - Dark theme optimized for mobile</li>
+        <li><strong>Mobile-First CSS</strong> - Responsive breakpoints starting from 320px</li>
+        <li><strong>Touch-Friendly Interface</strong> - 44px minimum touch targets</li>
+        <li><strong>Progressive Enhancement</strong> - Works on all devices</li>
+    </ul>
+    
+    <div class="demo-grid">
+        <div class="demo-card">
+            <i class="fas fa-mobile-alt fa-2x" style="color: var(--solar-primary); margin-bottom: 0.5rem;"></i>
+            <h3>Mobile First</h3>
+            <p>Designed for smartphones</p>
+        </div>
+        <div class="demo-card">
+            <i class="fas fa-tablet-alt fa-2x" style="color: var(--solar-info); margin-bottom: 0.5rem;"></i>
+            <h3>Tablet Ready</h3>
+            <p>Optimized for tablets</p>
+        </div>
+        <div class="demo-card">
+            <i class="fas fa-desktop fa-2x" style="color: var(--solar-success); margin-bottom: 0.5rem;"></i>
+            <h3>Desktop Enhanced</h3>
+            <p>Enhanced for desktop</p>
+        </div>
+        <div class="demo-card">
+            <i class="fas fa-universal-access fa-2x" style="color: var(--solar-warning); margin-bottom: 0.5rem;"></i>
+            <h3>Accessible</h3>
+            <p>WCAG compliant</p>
+        </div>
+    </div>
+</div>
+
+<!-- Components Section -->
+<div id="components" class="demo-section">
+    <h2><i class="fas fa-puzzle-piece"></i> Mobile Components</h2>
+    
+    <h3>Buttons</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem;">
+        <button class="mobile-btn mobile-btn-primary">Primary</button>
+        <button class="mobile-btn mobile-btn-secondary">Secondary</button>
+        <button class="mobile-btn mobile-btn-success">Success</button>
+        <button class="mobile-btn mobile-btn-danger">Danger</button>
+        <button class="mobile-btn mobile-btn-warning">Warning</button>
+        <button class="mobile-btn mobile-btn-info">Info</button>
+    </div>
+    
+    <h3>Badges</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem;">
+        <span class="mobile-badge mobile-badge-primary">Primary</span>
+        <span class="mobile-badge mobile-badge-secondary">Secondary</span>
+        <span class="mobile-badge mobile-badge-success">Success</span>
+        <span class="mobile-badge mobile-badge-danger">Danger</span>
+        <span class="mobile-badge mobile-badge-warning">Warning</span>
+        <span class="mobile-badge mobile-badge-info">Info</span>
+    </div>
+    
+    <h3>Alerts</h3>
+    <div class="mobile-alert mobile-alert-primary">
+        <i class="fas fa-info-circle"></i>
+        This is a primary alert with an icon.
+    </div>
+    <div class="mobile-alert mobile-alert-success">
+        <i class="fas fa-check-circle"></i>
+        This is a success alert with an icon.
+    </div>
+</div>
+
+<!-- Forms Section -->
+<div id="forms" class="demo-section">
+    <h2><i class="fas fa-edit"></i> Mobile Forms</h2>
+    
+    <form>
+        <div class="mobile-form-group">
+            <label class="mobile-form-label">Text Input</label>
+            <input type="text" class="mobile-form-control" placeholder="Enter text">
+        </div>
+        
+        <div class="mobile-form-group">
+            <label class="mobile-form-label">Select Dropdown</label>
+            <select class="mobile-form-control mobile-form-select">
+                <option>Option 1</option>
+                <option>Option 2</option>
+                <option>Option 3</option>
+            </select>
+        </div>
+        
+        <div class="mobile-form-group">
+            <label class="mobile-form-label">Textarea</label>
+            <textarea class="mobile-form-control" rows="3" placeholder="Enter message"></textarea>
+        </div>
+        
+        <div class="mobile-form-check">
+            <input type="checkbox" class="mobile-form-check-input" id="check1">
+            <label class="mobile-form-check-label" for="check1">Check me out</label>
+        </div>
+        
+        <button type="submit" class="mobile-btn mobile-btn-primary mobile-btn-block">Submit Form</button>
+    </form>
+</div>
+
+<!-- Tables Section -->
+<div id="tables" class="demo-section">
+    <h2><i class="fas fa-table"></i> Mobile Tables</h2>
+    
+    <div class="mobile-table-responsive mobile-table-swipe">
+        <table class="mobile-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John Doe</td>
+                    <td>john@example.com</td>
+                    <td>Teacher</td>
+                    <td><span class="mobile-badge mobile-badge-success">Active</span></td>
+                    <td>
+                        <button class="mobile-btn mobile-btn-sm mobile-btn-info">Edit</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Jane Smith</td>
+                    <td>jane@example.com</td>
+                    <td>Student</td>
+                    <td><span class="mobile-badge mobile-badge-warning">Pending</span></td>
+                    <td>
+                        <button class="mobile-btn mobile-btn-sm mobile-btn-info">Edit</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Responsive Section -->
+<div id="responsive" class="demo-section">
+    <h2><i class="fas fa-mobile-alt"></i> Responsive Breakpoints</h2>
+    
+    <div class="mobile-card">
+        <h3>Current Screen Size</h3>
+        <p>Width: <span id="currentWidth"></span>px</p>
+        <p>Height: <span id="currentHeight"></span>px</p>
+        <p>Device Type: <span id="deviceType"></span></p>
+    </div>
+    
+    <h3>Breakpoint Information</h3>
+    <ul>
+        <li><strong>Mobile Portrait:</strong> 320px - 479px</li>
+        <li><strong>Mobile Landscape:</strong> 480px - 767px</li>
+        <li><strong>Tablet Portrait:</strong> 768px - 991px</li>
+        <li><strong>Tablet Landscape:</strong> 992px - 1199px</li>
+        <li><strong>Desktop:</strong> 1200px+</li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Section navigation
+    function showSection(sectionId) {
+        document.querySelectorAll('.demo-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        document.getElementById(sectionId).classList.add('active');
+        
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        event.target.classList.add('active');
+        
+        // Close mobile menu
+        if (window.innerWidth <= 768) {
+            document.getElementById('mobileNav').classList.remove('active');
+            document.getElementById('mobileNavOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Update screen size indicators
+    function updateScreenSize() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        document.getElementById('screenWidth').textContent = width;
+        document.getElementById('screenHeight').textContent = height;
+        document.getElementById('currentWidth').textContent = width;
+        document.getElementById('currentHeight').textContent = height;
+        
+        let deviceType = 'Desktop';
+        if (width < 480) deviceType = 'Mobile Portrait';
+        else if (width < 768) deviceType = 'Mobile Landscape';
+        else if (width < 992) deviceType = 'Tablet Portrait';
+        else if (width < 1200) deviceType = 'Tablet Landscape';
+        
+        document.getElementById('deviceType').textContent = deviceType;
+    }
+    
+    // Initialize and update on resize
+    updateScreenSize();
+    window.addEventListener('resize', updateScreenSize);
+</script>
+{% endblock %}

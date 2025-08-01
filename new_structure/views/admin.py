@@ -28,6 +28,7 @@ from functools import wraps
 import os
 import pandas as pd
 import re
+from datetime import datetime
 
 # Create a blueprint for admin routes
 admin_bp = Blueprint('admin', __name__, url_prefix='/headteacher')
@@ -141,6 +142,47 @@ def analytics_dashboard():
         return redirect(url_for('admin.dashboard'))
 
 
+@admin_bp.route('/test_simple')
+@admin_required
+def test_simple():
+    """Simple test route."""
+    total_students = Student.query.count()
+    total_teachers = Teacher.query.count()
+    return f"""
+    <html>
+    <head><title>Simple Test</title></head>
+    <body>
+        <h1>Simple Test Results</h1>
+        <p>Students: {total_students}</p>
+        <p>Teachers: {total_teachers}</p>
+        <p>Time: {datetime.now()}</p>
+    </body>
+    </html>
+    """
+
+@admin_bp.route('/test_counts')
+@admin_required
+def test_counts():
+    """Test route to verify counts are calculated correctly."""
+    total_students = Student.query.count()
+    total_teachers = Teacher.query.count()
+    total_classes = Stream.query.count()
+    total_subjects = Subject.query.count()
+
+    dashboard_stats = {
+        'total_students': total_students,
+        'total_teachers': total_teachers,
+        'total_classes': total_classes,
+        'total_subjects': total_subjects
+    }
+
+    return render_template('test_counts.html',
+                         total_students=total_students,
+                         total_teachers=total_teachers,
+                         total_classes=total_classes,
+                         total_subjects=total_subjects,
+                         dashboard_stats=dashboard_stats)
+
 @admin_bp.route('/')
 @admin_required
 @sql_injection_protection
@@ -159,35 +201,118 @@ def dashboard():
         - Protected against SQL injection
         - Session-based access control
     """
+    # TEMPORARY TEST: Return simple message to verify code is being executed
+    if request.args.get('test') == '1':
+        return "<h1>🧪 ADMIN DASHBOARD CODE IS WORKING!</h1><p>This confirms the admin.py file is being executed correctly.</p>"
+
     try:
-        # Simple stats only to avoid crashes
+        # Basic counts
         total_students = Student.query.count()
         total_teachers = Teacher.query.count()
         total_classes = Stream.query.count()
         total_subjects = Subject.query.count()
 
+        print(f"🔍 BASIC COUNTS: Students={total_students}, Teachers={total_teachers}, Classes={total_classes}, Subjects={total_subjects}")
+
+        # Calculate additional missing statistics with error handling
+        print("🔍 Starting enhanced calculations...")
+        try:
+            from models import Assessment, Mark, Grade
+            total_assessments = Assessment.query.count()
+            print(f"🔍 ASSESSMENTS: Found {total_assessments} assessments")
+        except Exception as e:
+            print(f"❌ Error calculating assessments: {e}")
+            total_assessments = 0
+
+        # Calculate learners per grade with error handling
+        learners_per_grade = {}
+        gender_per_grade = {}
+        streams_per_grade = {}
+
+        try:
+            # Get all grades and their students
+            grades = Grade.query.all()
+            for grade in grades:
+                grade_name = grade.name
+                students_in_grade = Student.query.filter_by(grade_id=grade.id).all()
+                learners_per_grade[grade_name] = len(students_in_grade)
+
+                # Gender breakdown
+                male_count = len([s for s in students_in_grade if s.gender == 'Male'])
+                female_count = len([s for s in students_in_grade if s.gender == 'Female'])
+                gender_per_grade[grade_name] = {'Male': male_count, 'Female': female_count}
+
+                # Streams in this grade
+                streams_in_grade = Stream.query.filter_by(grade_id=grade.id).all()
+                streams_per_grade[grade_name] = {}
+                for stream in streams_in_grade:
+                    stream_students = Student.query.filter_by(stream_id=stream.id).all()
+                    stream_male = len([s for s in stream_students if s.gender == 'Male'])
+                    stream_female = len([s for s in stream_students if s.gender == 'Female'])
+                    streams_per_grade[grade_name][stream.name] = {
+                        'total': len(stream_students),
+                        'Male': stream_male,
+                        'Female': stream_female
+                    }
+        except Exception as e:
+            print(f"Error calculating grade/stream data: {e}")
+
+        # Calculate performance data (simplified) with error handling
+        performance_data = []
+        avg_performance = 0
+        top_class = 'N/A'
+        top_class_score = 0
+
+        try:
+            # Get recent marks to calculate performance
+            recent_marks = Mark.query.limit(100).all()  # Sample recent marks
+            if recent_marks:
+                valid_marks = [mark.marks for mark in recent_marks if mark.marks is not None]
+                if valid_marks:
+                    avg_performance = sum(valid_marks) / len(valid_marks)
+
+                # Find top performing class (simplified)
+                class_averages = {}
+                for mark in recent_marks:
+                    if mark.student and mark.student.stream and mark.marks is not None:
+                        class_key = f"{mark.student.stream.grade.name} {mark.student.stream.name}"
+                        if class_key not in class_averages:
+                            class_averages[class_key] = []
+                        class_averages[class_key].append(mark.marks)
+
+                # Calculate class averages
+                for class_name, marks in class_averages.items():
+                    if marks:
+                        class_avg = sum(marks) / len(marks)
+                        if class_avg > top_class_score:
+                            top_class_score = class_avg
+                            top_class = class_name
+        except Exception as e:
+            print(f"Error calculating performance data: {e}")
+
         # Get school configuration for dynamic display
         school_info = SchoolConfigService.get_school_info_dict()
 
-        # Minimal dashboard stats
+        # Enhanced dashboard stats with calculated data
         dashboard_stats = {
             'total_students': total_students,
             'total_teachers': total_teachers,
             'total_classes': total_classes,
             'total_subjects': total_subjects,
-            'avg_performance': 0,  # Placeholder
-            'top_class': 'N/A',
-            'top_class_score': 0,
-            'least_performing_grade': 'N/A',
+            'total_assessments': total_assessments,
+            'avg_performance': round(avg_performance, 1),
+            'top_class': top_class,
+            'top_class_score': round(top_class_score, 1),
+            'least_performing_grade': 'N/A',  # TODO: Calculate
             'least_grade_score': 0,
-            'learners_per_grade': {},
-            'gender_per_grade': {},
-            'streams_per_grade': {},
-            'subject_performance': {},
-            'performance_alerts': [],
+            'learners_per_grade': learners_per_grade,
+            'gender_per_grade': gender_per_grade,
+            'streams_per_grade': streams_per_grade,
+            'subject_performance': {},  # TODO: Calculate
+            'performance_alerts': [],  # TODO: Generate alerts
             'performance_distribution': {'E.E': 0, 'M.E': 0, 'A.E': 0, 'B.E': 0},
-            'performance_data': {},
-            'current_term': None,
+            'performance_data': performance_data,
+            'current_term': 'Term 1',
             'upcoming_assessments': [],
             'system_alerts': []
         }
@@ -199,6 +324,33 @@ def dashboard():
         print("🔍 DASHBOARD DEBUG: Rendering headteacher.html template")
         print(f"🔍 DASHBOARD DEBUG: School info: {school_info}")
         print(f"🔍 DASHBOARD DEBUG: Dashboard stats: {dashboard_stats}")
+        print(f"🔍 DASHBOARD DEBUG: total_students = {total_students}")
+        print(f"🔍 DASHBOARD DEBUG: total_teachers = {total_teachers}")
+        print(f"🔍 DASHBOARD DEBUG: total_classes = {total_classes}")
+        print(f"🔍 DASHBOARD DEBUG: total_subjects = {total_subjects}")
+
+        # TEMPORARY DEBUG: Return simple HTML to test values
+        if request.args.get('debug') == '1':
+            return f"""
+            <html><body>
+            <h1>Debug Dashboard Values - ENHANCED VERSION</h1>
+            <p>total_students: {total_students} (type: {type(total_students)})</p>
+            <p>total_teachers: {total_teachers} (type: {type(total_teachers)})</p>
+            <p>total_classes: {total_classes} (type: {type(total_classes)})</p>
+            <p>total_subjects: {total_subjects} (type: {type(total_subjects)})</p>
+            <p>total_assessments: {total_assessments} (type: {type(total_assessments)})</p>
+            <p>avg_performance: {avg_performance}</p>
+            <p>top_class: {top_class}</p>
+            <p>learners_per_grade: {learners_per_grade}</p>
+            <p>dashboard_stats: {dashboard_stats}</p>
+            <hr>
+            <h2>Database Query Results</h2>
+            <p>Student.query.count(): {Student.query.count()}</p>
+            <p>Teacher.query.count(): {Teacher.query.count()}</p>
+            <p>Stream.query.count(): {Stream.query.count()}</p>
+            <p>Subject.query.count(): {Subject.query.count()}</p>
+            </body></html>
+            """
 
         # Render the proper headteacher.html template
         return render_template(
@@ -206,7 +358,18 @@ def dashboard():
             school_info=school_info,
             dashboard_stats=dashboard_stats,
             performance_data=dashboard_stats.get('performance_data', {}),
-            page_title="Headteacher Dashboard"
+            page_title="Headteacher Dashboard",
+            # Pass counts as direct template variables
+            total_students=total_students,
+            total_teachers=total_teachers,
+            total_classes=total_classes,
+            total_subjects=total_subjects,
+            total_assessments=total_assessments,
+            top_class=top_class,
+            top_class_score=top_class_score,
+            # Pass academic year and term info
+            current_academic_year='2025/2026',
+            current_term='Term 1'
         )
 
     except Exception as e:

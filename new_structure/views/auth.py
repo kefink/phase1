@@ -2,7 +2,7 @@
 Authentication views for the Hillview School Management System.
 """
 import os
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, send_from_directory
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, send_from_directory, get_flashed_messages
 from ..extensions import csrf
 try:
     from ..services import authenticate_teacher, logout
@@ -145,6 +145,15 @@ def admin_login():
 @sql_injection_protection
 def teacher_login():
     """Route for teacher login."""
+    # Clear any existing flash messages when accessing login page
+    if request.method == 'GET':
+        # Clear any stale session data that might cause errors
+        session.pop('teacher_id', None)
+        session.pop('username', None)
+        session.pop('role', None)
+        # Clear any flash messages
+        get_flashed_messages()
+
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
@@ -172,15 +181,16 @@ def teacher_login():
 
         # TODO: Replace with proper authentication service once buffer overflow is fixed
         # TEMPORARY FIX: Load credentials from environment variables for security
+        # FIXED: Use correct teacher IDs from database
         valid_teacher_credentials = {
             os.getenv('SUBJECT_TEACHER_USERNAME', 'carol'): {
                 'password': os.getenv('SUBJECT_TEACHER_PASSWORD', 'carol123'),
-                'teacher_id': int(os.getenv('SUBJECT_TEACHER_ID', '3')),
+                'teacher_id': int(os.getenv('SUBJECT_TEACHER_ID', '6')),  # Carol's actual ID is 6
                 'role': 'teacher'
             },
             os.getenv('SUBJECT_TEACHER2_USERNAME', 'telvo'): {
                 'password': os.getenv('SUBJECT_TEACHER2_PASSWORD', 'telvo123'),
-                'teacher_id': int(os.getenv('SUBJECT_TEACHER2_ID', '5')),
+                'teacher_id': int(os.getenv('SUBJECT_TEACHER2_ID', '7')),  # Use ID 7 for telvo (will create if needed)
                 'role': 'teacher'
             }
         }

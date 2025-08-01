@@ -28,7 +28,7 @@ try:
     print("🌐 Ready to accept connections...")
     print("")
 
-    app.run(debug=False, host='127.0.0.1', port=PORT, threaded=True, use_reloader=False)
+    app.run(debug=True, host='127.0.0.1', port=PORT, threaded=True, use_reloader=True)
 
 except Exception as e:
     print(f"❌ Error starting application: {e}")

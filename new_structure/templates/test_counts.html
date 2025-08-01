@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Counts</title>
+</head>
+<body>
+    <h1>Test Counts</h1>
+    <p>Total Students: {{ total_students }}</p>
+    <p>Total Teachers: {{ total_teachers }}</p>
+    <p>Total Classes: {{ total_classes }}</p>
+    <p>Total Subjects: {{ total_subjects }}</p>
+    
+    <h2>Debug Info</h2>
+    <p>total_students type: {{ total_students.__class__.__name__ }}</p>
+    <p>total_teachers type: {{ total_teachers.__class__.__name__ }}</p>
+    <p>total_students value: "{{ total_students }}"</p>
+    <p>total_teachers value: "{{ total_teachers }}"</p>
+    
+    <h2>Dashboard Stats</h2>
+    <p>dashboard_stats.total_students: {{ dashboard_stats.total_students }}</p>
+    <p>dashboard_stats.total_teachers: {{ dashboard_stats.total_teachers }}</p>
+</body>
+</html>

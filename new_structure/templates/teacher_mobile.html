@@ -1,0 +1,1619 @@
+{% extends "base_mobile.html" %}
+
+{% block title %}Subject Teacher Dashboard - {{ school_info.school_name|default('Hillview School') }}{% endblock %}
+
+{% block description %}Mobile-responsive subject teacher dashboard for {{ school_info.school_name|default('Hillview School') }} management system{% endblock %}
+
+{% block home_url %}{{ url_for('teacher.dashboard') }}{% endblock %}
+
+{% block navigation_items %}
+<li class="mobile-nav-item">
+    <a href="{{ url_for('teacher.dashboard') }}" class="mobile-nav-link active">
+        <i class="fas fa-tachometer-alt"></i>
+        Dashboard
+    </a>
+</li>
+<li class="mobile-nav-item">
+    <a href="#assignments-section" class="mobile-nav-link" onclick="showSection('assignments-section')">
+        <i class="fas fa-chalkboard-teacher"></i>
+        My Subjects
+    </a>
+</li>
+<li class="mobile-nav-item">
+    <a href="#marks-section" class="mobile-nav-link" onclick="showSection('marks-section')">
+        <i class="fas fa-edit"></i>
+        Enter Marks
+    </a>
+</li>
+<li class="mobile-nav-item">
+    <a href="#reports-section" class="mobile-nav-link" onclick="showSection('reports-section')">
+        <i class="fas fa-chart-bar"></i>
+        Reports
+    </a>
+</li>
+<li class="mobile-nav-item">
+    <a href="#analytics-section" class="mobile-nav-link" onclick="showSection('analytics-section')">
+        <i class="fas fa-analytics"></i>
+        Analytics
+    </a>
+</li>
+<li class="mobile-nav-item">
+    <a href="{{ url_for('auth.logout_route') }}" class="mobile-nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        Logout
+    </a>
+</li>
+{% endblock %}
+
+{% block header_title %}
+<i class="fas fa-chalkboard-teacher"></i>
+Subject Teacher Dashboard
+{% endblock %}
+
+{% block header_subtitle %}
+Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with ease.
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Mobile-first teacher dashboard styles */
+    .dashboard-section {
+        background: var(--bs-light);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: 1px solid rgba(181, 137, 0, 0.2);
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--bs-primary);
+    }
+    
+    .section-header h2 {
+        color: var(--bs-dark);
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 0 0.75rem;
+    }
+    
+    .section-header i {
+        color: var(--bs-primary);
+        font-size: 1.5rem;
+    }
+    
+    /* Mobile-optimized form styles */
+    .mobile-form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .mobile-form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--bs-dark);
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+    
+    .mobile-form-control {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+        border: 2px solid var(--bs-secondary);
+        border-radius: 0.5rem;
+        background-color: var(--bs-light);
+        color: var(--bs-dark);
+        transition: all 0.2s ease;
+        min-height: var(--touch-target);
+    }
+    
+    .mobile-form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(181, 137, 0, 0.25);
+        outline: none;
+    }
+    
+    /* Mobile-optimized buttons */
+    .mobile-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-height: var(--touch-target);
+        text-decoration: none;
+        gap: 0.5rem;
+    }
+    
+    .mobile-btn-primary {
+        background-color: var(--bs-primary);
+        color: var(--bs-light);
+    }
+    
+    .mobile-btn-primary:hover {
+        background-color: #9a7500;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .mobile-btn-secondary {
+        background-color: var(--bs-secondary);
+        color: var(--bs-light);
+    }
+    
+    .mobile-btn-success {
+        background-color: var(--bs-success);
+        color: var(--bs-light);
+    }
+    
+    .mobile-btn-block {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    /* Quick stats cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+        color: var(--bs-light);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    /* Mobile table styles */
+    .mobile-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 0.5rem;
+        border: 1px solid var(--bs-secondary);
+    }
+    
+    .mobile-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--bs-light);
+    }
+    
+    .mobile-table th,
+    .mobile-table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(131, 148, 150, 0.2);
+    }
+    
+    .mobile-table th {
+        background-color: var(--bs-dark);
+        color: var(--bs-light);
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .mobile-table tbody tr:hover {
+        background-color: rgba(181, 137, 0, 0.1);
+    }
+    
+    /* Section visibility */
+    .dashboard-section {
+        display: none;
+    }
+    
+    .dashboard-section.active {
+        display: block;
+    }
+    
+    /* Responsive adjustments */
+    @media (min-width: 480px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .mobile-btn {
+            display: inline-flex;
+            width: auto;
+        }
+        
+        .mobile-btn-block {
+            width: auto;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .dashboard-section {
+            padding: 2rem;
+        }
+        
+        .section-header h2 {
+            font-size: 1.75rem;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .stats-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+    
+    /* Loading states */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid var(--bs-primary);
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Mobile-optimized input groups */
+    .mobile-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .mobile-input-group-horizontal {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .mobile-input-group-horizontal .mobile-form-control {
+        flex: 1;
+        margin-right: 0.5rem;
+    }
+
+    .mobile-input-group-horizontal .mobile-btn {
+        flex-shrink: 0;
+    }
+
+    /* Mobile-friendly select dropdowns */
+    .mobile-form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23073642' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        padding-right: 2.5rem;
+    }
+
+    /* Mobile-optimized checkboxes and radios */
+    .mobile-form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: var(--mobile-border-radius);
+        transition: background-color 0.2s ease;
+    }
+
+    .mobile-form-check:hover {
+        background-color: rgba(181, 137, 0, 0.1);
+    }
+
+    .mobile-form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .mobile-form-check-label {
+        margin: 0;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    /* Mobile-optimized progress bars */
+    .mobile-progress {
+        height: 0.75rem;
+        background-color: rgba(131, 148, 150, 0.2);
+        border-radius: 0.375rem;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .mobile-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+        transition: width 0.3s ease;
+        border-radius: 0.375rem;
+    }
+
+    /* Mobile-optimized badges */
+    .mobile-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        line-height: 1;
+        color: var(--bs-light);
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.375rem;
+        gap: 0.25rem;
+    }
+
+    .mobile-badge-primary { background-color: var(--bs-primary); }
+    .mobile-badge-secondary { background-color: var(--bs-secondary); }
+    .mobile-badge-success { background-color: var(--bs-success); }
+    .mobile-badge-danger { background-color: var(--bs-danger); }
+    .mobile-badge-warning { background-color: var(--bs-warning); }
+    .mobile-badge-info { background-color: var(--bs-info); }
+
+    /* Mobile-optimized tooltips */
+    .mobile-tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: help;
+    }
+
+    .mobile-tooltip::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--bs-dark);
+        color: var(--bs-light);
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease;
+        z-index: 1000;
+    }
+
+    .mobile-tooltip:hover::after,
+    .mobile-tooltip:focus::after {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Swipe gestures for mobile tables */
+    .mobile-table-swipe {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mobile-table-swipe::before {
+        content: '← Swipe to see more →';
+        position: absolute;
+        top: 50%;
+        right: 1rem;
+        transform: translateY(-50%);
+        background: var(--bs-primary);
+        color: var(--bs-light);
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        opacity: 0.8;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    @media (min-width: 768px) {
+        .mobile-table-swipe::before {
+            display: none;
+        }
+    }
+
+    /* Subject assignments specific styles */
+    .subject-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .subject-icon {
+        flex-shrink: 0;
+        font-size: 0.875rem;
+    }
+
+    .mobile-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .mobile-badge-primary {
+        background-color: var(--bs-primary);
+        color: white;
+    }
+
+    .mobile-badge-info {
+        background-color: var(--bs-info);
+        color: white;
+    }
+
+    .mobile-badge-warning {
+        background-color: var(--bs-warning);
+        color: var(--bs-dark);
+    }
+
+    .mobile-badge-success {
+        background-color: var(--bs-success);
+        color: white;
+    }
+
+    /* Mobile Analytics Styles */
+    .mobile-analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .mobile-analytics-card {
+        background: linear-gradient(135deg, var(--bs-light), var(--bs-white));
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: center;
+        border: 1px solid var(--bs-border-color);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .mobile-analytics-icon {
+        font-size: 2rem;
+        color: var(--bs-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .mobile-analytics-content h4 {
+        font-size: 0.875rem;
+        color: var(--bs-secondary);
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+
+    .mobile-analytics-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--bs-dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .mobile-analytics-change {
+        font-size: 0.75rem;
+        color: var(--bs-muted);
+    }
+
+    /* Mobile Quick Actions */
+    .mobile-quick-actions h3 {
+        color: var(--bs-dark);
+        margin-bottom: 1rem;
+        font-size: 1.125rem;
+    }
+
+    .mobile-action-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .mobile-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        background: var(--bs-white);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.75rem;
+        text-decoration: none;
+        color: var(--bs-dark);
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .mobile-action-btn:hover {
+        background: var(--bs-primary);
+        color: var(--bs-white);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .mobile-action-btn i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .mobile-action-btn span {
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    /* Mobile Enhanced Report Styles */
+    .mobile-enhanced-report {
+        background: var(--bs-white);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border: 1px solid var(--bs-border-color);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .mobile-report-header h3 {
+        color: var(--bs-primary);
+        margin-bottom: 1rem;
+        font-size: 1.125rem;
+    }
+
+    .mobile-report-details {
+        margin-bottom: 1.5rem;
+    }
+
+    .mobile-report-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .mobile-detail-label {
+        font-weight: 600;
+        color: var(--bs-secondary);
+    }
+
+    .mobile-detail-value {
+        color: var(--bs-dark);
+        font-weight: 500;
+    }
+
+    .mobile-report-description {
+        font-size: 0.875rem;
+        color: var(--bs-muted);
+        margin-top: 1rem;
+        line-height: 1.4;
+    }
+
+    /* Mobile Empty State */
+    .mobile-empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--bs-muted);
+    }
+
+    .mobile-empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .mobile-empty-state h3 {
+        color: var(--bs-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .mobile-empty-state p {
+        font-size: 0.875rem;
+    }
+
+    /* Mobile Composite Subject Styles */
+    .mobile-composite-config {
+        background: var(--bs-light);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+
+    .mobile-composite-header h4 {
+        color: var(--bs-primary);
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .mobile-composite-header p {
+        color: var(--bs-secondary);
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    .mobile-component-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .mobile-total-display {
+        grid-column: span 2;
+        text-align: center;
+        padding: 0.75rem;
+        background: var(--bs-white);
+        border-radius: 0.5rem;
+        border: 1px solid var(--bs-border-color);
+    }
+
+    .mobile-total-marks {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: var(--bs-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Quick Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ assignment_summary.total_classes_managed if assignment_summary else 0 }}</div>
+        <div class="stat-label">Classes Assigned</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ students|length if students else 0 }}</div>
+        <div class="stat-label">Total Students</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ terms|length if terms else 0 }}</div>
+        <div class="stat-label">Active Terms</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ assignment_summary.total_subjects_taught if assignment_summary else 0 }}</div>
+        <div class="stat-label">Subjects Taught</div>
+    </div>
+</div>
+
+<!-- Subject Teaching Assignments Section -->
+{% if assignment_summary and assignment_summary.subject_assignments %}
+<div class="dashboard-section active" id="assignments-section">
+    <div class="section-header">
+        <i class="fas fa-chalkboard-teacher"></i>
+        <h2>My Subject Assignments</h2>
+    </div>
+
+    <div class="mobile-table-container mobile-table-swipe">
+        <table class="mobile-table">
+            <thead>
+                <tr>
+                    <th>
+                        <i class="fas fa-book"></i>
+                        Subject
+                    </th>
+                    <th>
+                        <i class="fas fa-layer-group"></i>
+                        Grade
+                    </th>
+                    <th>
+                        <i class="fas fa-users"></i>
+                        Stream
+                    </th>
+                    <th>
+                        <i class="fas fa-user-tag"></i>
+                        Role
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in assignment_summary.subject_assignments %}
+                <tr>
+                    <td>
+                        <div class="subject-info">
+                            <div class="subject-icon" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--bs-success), var(--bs-info)); display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 0.5rem;">
+                                {{ assignment.subject.name[0] if assignment.subject and assignment.subject.name else 'S' }}
+                            </div>
+                            <div style="display: inline-block;">
+                                <strong>{{ assignment.subject.name if assignment.subject else 'Unknown Subject' }}</strong>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="mobile-badge mobile-badge-primary">
+                            {{ assignment.grade.name if assignment.grade else 'N/A' }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mobile-badge mobile-badge-info">
+                            {{ assignment.stream.name if assignment.stream else 'All' }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mobile-badge mobile-badge-warning">
+                            {% if assignment.is_class_teacher %}Class Teacher{% else %}Subject Teacher{% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Marks Entry Section -->
+<div id="marks-section" class="dashboard-section">
+    <div class="section-header">
+        <i class="fas fa-edit"></i>
+        <h2>Enter Student Marks</h2>
+    </div>
+
+    {% if error_message %}
+    <div class="mobile-alert mobile-alert-error" style="margin-bottom: 1rem;">
+        <strong>Error:</strong> {{ error_message }}
+        <br><br>
+        <a href="{{ url_for('teacher.reset_form') }}" class="mobile-btn mobile-btn-error" style="margin-top: 0.5rem;">
+            🔄 Reset Form
+        </a>
+    </div>
+    {% endif %}
+
+    {% if not show_students %}
+    <!-- Enhanced form with education level filtering -->
+    <form id="mobile-upload-form" method="POST" action="{{ url_for('teacher.dashboard') }}" class="mobile-marks-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+        <!-- Enhanced Education Level Selection -->
+        <div class="mobile-form-group">
+            <label for="education_level" class="mobile-form-label">
+                <i class="fas fa-graduation-cap"></i>
+                Education Level
+            </label>
+            <select id="education_level" name="education_level" class="mobile-form-control mobile-form-select" required onchange="updateSubjectsByEducationLevel()">
+                <option value="">🎯 Select Education Level</option>
+                <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>🎓 Lower Primary (Grades 1-3)</option>
+                <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>📚 Upper Primary (Grades 4-6)</option>
+                <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>🏫 Junior Secondary (Grades 7-9)</option>
+            </select>
+        </div>
+
+        <!-- Enhanced Subject Selection (filtered by education level) -->
+        <div class="mobile-form-group">
+            <label for="subject" class="mobile-form-label">
+                <i class="fas fa-book"></i>
+                Subject
+            </label>
+            <select id="subject" name="subject" class="mobile-form-control mobile-form-select" required onchange="handleSubjectSelection()">
+                <option value="">📖 Select Subject</option>
+                <!-- Subjects will be populated based on education level -->
+            </select>
+            <div id="subject-info" class="mobile-subject-info" style="display: none;">
+                <small id="subject-details"></small>
+            </div>
+        </div>
+
+        <div class="mobile-form-group">
+            <label for="subject" class="mobile-form-label">
+                <i class="fas fa-book"></i>
+                Subject
+            </label>
+            <select name="subject" id="subject" class="mobile-form-control mobile-form-select" required>
+                <option value="">Select Subject</option>
+                {% if education_level and subjects_by_education_level.get(education_level) %}
+                    {% for subject in subjects_by_education_level[education_level] %}
+                    <option value="{{ subject }}" {% if subject == subject %}selected{% endif %}>
+                        {{ subject }}
+                    </option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+
+        <div class="mobile-form-group">
+            <label for="grade" class="mobile-form-label">
+                <i class="fas fa-layer-group"></i>
+                Grade
+            </label>
+            <select name="grade" id="grade" class="mobile-form-control mobile-form-select" required>
+                <option value="">Select Grade</option>
+                {% for grade_obj in grades %}
+                <option value="{{ grade_obj.id }}" {% if grade == grade_obj.id|string %}selected{% endif %}>
+                    {{ grade_obj.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mobile-form-group">
+            <label for="term" class="mobile-form-label">
+                <i class="fas fa-calendar-alt"></i>
+                Term
+            </label>
+            <select name="term" id="term" class="mobile-form-control mobile-form-select" required>
+                <option value="">📅 Select Term</option>
+                {% for term_option in terms %}
+                <option value="{{ term_option }}" {% if term == term_option %}selected{% endif %}>📆 {{ term_option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mobile-form-group">
+            <label for="assessment_type" class="mobile-form-label">
+                <i class="fas fa-clipboard-check"></i>
+                Assessment Type
+            </label>
+            <select name="assessment_type" id="assessment_type" class="mobile-form-control mobile-form-select" required>
+                <option value="">📝 Select Assessment Type</option>
+                {% for assessment_option in assessment_types %}
+                <option value="{{ assessment_option }}" {% if assessment_type == assessment_option %}selected{% endif %}>📊 {{ assessment_option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mobile-form-group">
+            <label for="stream" class="mobile-form-label">
+                <i class="fas fa-users"></i>
+                Stream
+            </label>
+            <select name="stream" id="stream" class="mobile-form-control mobile-form-select" required>
+                <option value="">🏛️ Select Stream</option>
+                <!-- Streams will be populated dynamically via JavaScript -->
+            </select>
+        </div>
+
+        <div class="mobile-form-group" id="total-marks-group">
+            <label for="total_marks" class="mobile-form-label">
+                <i class="fas fa-calculator"></i>
+                Total Marks (Out Of)
+            </label>
+            <input type="number" id="total_marks" name="total_marks" class="mobile-form-control" min="1" value="{{ total_marks if total_marks else '' }}" required>
+        </div>
+
+        <!-- Composite Subject Configuration (shown only for English/Kiswahili) -->
+        <div id="composite-config" class="mobile-composite-config" style="display: none;">
+            <div class="mobile-composite-header">
+                <h4>📚 Composite Subject Configuration</h4>
+                <p>Set maximum marks for each component:</p>
+            </div>
+
+            <div id="english-config" class="mobile-component-config" style="display: none;">
+                <div class="mobile-component-grid">
+                    <div class="mobile-form-group">
+                        <label for="grammar_max">Grammar (Max Marks)</label>
+                        <input type="number" id="grammar_max" name="grammar_max" class="mobile-form-control" value="{{ grammar_max_marks }}" min="1" max="1000" oninput="updateComponentMaxMarks()">
+                    </div>
+                    <div class="mobile-form-group">
+                        <label for="composition_max">Composition (Max Marks)</label>
+                        <input type="number" id="composition_max" name="composition_max" class="mobile-form-control" value="{{ composition_max_marks }}" min="1" max="1000" oninput="updateComponentMaxMarks()">
+                    </div>
+                    <div class="mobile-total-display">
+                        <label>Total Max Marks</label>
+                        <div id="english_total_display" class="mobile-total-marks">{{ grammar_max_marks|int + composition_max_marks|int }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="kiswahili-config" class="mobile-component-config" style="display: none;">
+                <div class="mobile-component-grid">
+                    <div class="mobile-form-group">
+                        <label for="lugha_max">Lugha (Max Marks)</label>
+                        <input type="number" id="lugha_max" name="lugha_max" class="mobile-form-control" value="{{ lugha_max_marks }}" min="1" max="1000" oninput="updateComponentMaxMarks()">
+                    </div>
+                    <div class="mobile-form-group">
+                        <label for="insha_max">Insha (Max Marks)</label>
+                        <input type="number" id="insha_max" name="insha_max" class="mobile-form-control" value="{{ insha_max_marks }}" min="1" max="1000" oninput="updateComponentMaxMarks()">
+                    </div>
+                    <div class="mobile-total-display">
+                        <label>Total Max Marks</label>
+                        <div id="kiswahili_total_display" class="mobile-total-marks">{{ lugha_max_marks|int + insha_max_marks|int }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" name="upload_marks" value="1" class="mobile-btn mobile-btn-primary mobile-btn-block" id="mobile-upload-btn" onclick="debugFormSubmission()">
+            <i class="fas fa-upload"></i>
+            Upload Marks
+        </button>
+    </form>
+    {% endif %}
+
+    {% if students %}
+    <div class="mobile-table-container mobile-table-swipe" style="margin-top: 2rem;">
+        <table class="mobile-table">
+            <thead>
+                <tr>
+                    <th>
+                        <i class="fas fa-user"></i>
+                        Student Name
+                    </th>
+                    <th>
+                        <i class="fas fa-edit"></i>
+                        Marks
+                    </th>
+                    <th>
+                        <i class="fas fa-cog"></i>
+                        Action
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr data-student-id="{{ student.id }}">
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--bs-primary), var(--bs-info)); display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 0.5rem;">
+                                {{ student.name[0] }}
+                            </div>
+                            <div style="display: inline-block;">
+                                <strong>{{ student.name }}</strong><br>
+                                <small class="text-muted">ID: {{ student.id }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="mobile-input-group-horizontal">
+                            <input type="number"
+                                   class="mobile-form-control"
+                                   placeholder="0-{{ total_marks or 100 }}"
+                                   min="0"
+                                   max="{{ total_marks or 100 }}"
+                                   data-student="{{ student.id }}"
+                                   style="width: 80px; font-size: 1rem;">
+                            <span class="mobile-badge mobile-badge-secondary">
+                                /{{ total_marks or 100 }}
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons" style="display: flex; gap: 0.5rem;">
+                            <button class="mobile-btn mobile-btn-success"
+                                    style="padding: 0.5rem; min-width: auto;"
+                                    onclick="saveStudentMark({{ student.id }})"
+                                    data-tooltip="Save marks">
+                                <i class="fas fa-save"></i>
+                            </button>
+                            <button class="mobile-btn mobile-btn-info"
+                                    style="padding: 0.5rem; min-width: auto;"
+                                    onclick="viewStudentHistory({{ student.id }})"
+                                    data-tooltip="View history">
+                                <i class="fas fa-history"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Mobile-friendly pagination -->
+        {% if pagination_info and pagination_info.pages > 1 %}
+        <div class="mobile-pagination" style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1rem; padding: 1rem;">
+            {% if pagination_info.has_prev %}
+            <a href="?page={{ pagination_info.prev_num }}" class="mobile-btn mobile-btn-outline-primary mobile-btn-sm">
+                <i class="fas fa-chevron-left"></i>
+                Previous
+            </a>
+            {% endif %}
+
+            <span class="mobile-badge mobile-badge-primary">
+                Page {{ pagination_info.page }} of {{ pagination_info.pages }}
+            </span>
+
+            {% if pagination_info.has_next %}
+            <a href="?page={{ pagination_info.next_num }}" class="mobile-btn mobile-btn-outline-primary mobile-btn-sm">
+                Next
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Reports Section -->
+<div id="reports-section" class="dashboard-section">
+    <div class="section-header">
+        <i class="fas fa-chart-bar"></i>
+        <h2>Recent Reports</h2>
+    </div>
+
+    {% if recent_reports %}
+    <div class="mobile-table-container mobile-table-swipe">
+        <table class="mobile-table">
+            <thead>
+                <tr>
+                    <th>
+                        <i class="fas fa-layer-group"></i>
+                        Grade
+                    </th>
+                    <th>
+                        <i class="fas fa-users"></i>
+                        Stream
+                    </th>
+                    <th>
+                        <i class="fas fa-calendar"></i>
+                        Term
+                    </th>
+                    <th>
+                        <i class="fas fa-clipboard-check"></i>
+                        Assessment
+                    </th>
+                    <th>
+                        <i class="fas fa-chart-line"></i>
+                        Average
+                    </th>
+                    <th>
+                        <i class="fas fa-cog"></i>
+                        Action
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in recent_reports %}
+                <tr>
+                    <td>
+                        <span class="mobile-badge mobile-badge-primary">
+                            {{ report.grade }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mobile-badge mobile-badge-info">
+                            {{ report.stream }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mobile-badge mobile-badge-secondary">
+                            {{ report.term }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mobile-badge mobile-badge-warning">
+                            {{ report.assessment_type }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mobile-badge mobile-badge-success">
+                            {{ report.class_average }}%
+                        </span>
+                    </td>
+                    <td>
+                        <button class="mobile-btn mobile-btn-sm mobile-btn-outline-primary" onclick="viewReport('{{ report.id }}')">
+                            <i class="fas fa-eye"></i>
+                            View
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="mobile-empty-state">
+        <div class="mobile-empty-icon">
+            <i class="fas fa-chart-bar"></i>
+        </div>
+        <h3>No Recent Reports</h3>
+        <p>Upload some marks to generate reports</p>
+    </div>
+    {% endif %}
+
+    <!-- Enhanced Subject Report Section -->
+    {% if show_subject_report %}
+    <div class="mobile-enhanced-report">
+        <div class="mobile-report-header">
+            <h3>📈 Enhanced Subject Report</h3>
+            <div class="mobile-report-details">
+                <div class="mobile-report-item">
+                    <span class="mobile-detail-label">Subject:</span>
+                    <span class="mobile-detail-value">{{ subject }}</span>
+                </div>
+                <div class="mobile-report-item">
+                    <span class="mobile-detail-label">Grade & Stream:</span>
+                    <span class="mobile-detail-value">{{ grade }} - {{ stream }}</span>
+                </div>
+                <div class="mobile-report-item">
+                    <span class="mobile-detail-label">Assessment:</span>
+                    <span class="mobile-detail-value">{{ term }} | {{ assessment_type }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="mobile-report-actions">
+            <a href="{{ url_for('teacher.generate_subject_report',
+                     subject=subject,
+                     grade=grade,
+                     stream=stream,
+                     term=term,
+                     assessment_type=assessment_type) }}"
+               class="mobile-btn mobile-btn-primary mobile-btn-block" target="_blank">
+                📊 Generate Subject Analysis Report
+            </a>
+            <p class="mobile-report-description">
+                Generate a comprehensive subject-specific report with grading analysis,
+                performance statistics, and detailed insights for {{ subject }}.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Reports Section -->
+<div id="reports-section" class="dashboard-section">
+    <div class="section-header">
+        <i class="fas fa-chart-bar"></i>
+        <h2>Class Reports</h2>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <p>Generate and view class performance reports.</p>
+            <button class="mobile-btn mobile-btn-primary mobile-btn-block">
+                <i class="fas fa-file-pdf"></i>
+                Generate Class Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Section -->
+<div id="analytics-section" class="dashboard-section">
+    <div class="section-header">
+        <i class="fas fa-analytics"></i>
+        <h2>Performance Analytics</h2>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <p>View detailed analytics and insights about student performance.</p>
+            <button class="mobile-btn mobile-btn-primary mobile-btn-block">
+                <i class="fas fa-chart-line"></i>
+                View Analytics
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Section -->
+<div id="analytics-section" class="dashboard-section">
+    <div class="section-header">
+        <i class="fas fa-analytics"></i>
+        <h2>Analytics & Insights</h2>
+    </div>
+
+    <div class="mobile-analytics-grid">
+        <div class="mobile-analytics-card">
+            <div class="mobile-analytics-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="mobile-analytics-content">
+                <h4>Total Students</h4>
+                <div class="mobile-analytics-value">{{ students|length if students else 0 }}</div>
+                <div class="mobile-analytics-change">Across all classes</div>
+            </div>
+        </div>
+
+        <div class="mobile-analytics-card">
+            <div class="mobile-analytics-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="mobile-analytics-content">
+                <h4>Subjects Taught</h4>
+                <div class="mobile-analytics-value">{{ assignment_summary.total_subjects_taught if assignment_summary else 0 }}</div>
+                <div class="mobile-analytics-change">Active assignments</div>
+            </div>
+        </div>
+
+        <div class="mobile-analytics-card">
+            <div class="mobile-analytics-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="mobile-analytics-content">
+                <h4>Recent Reports</h4>
+                <div class="mobile-analytics-value">{{ recent_reports|length if recent_reports else 0 }}</div>
+                <div class="mobile-analytics-change">This term</div>
+            </div>
+        </div>
+
+        <div class="mobile-analytics-card">
+            <div class="mobile-analytics-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="mobile-analytics-content">
+                <h4>Classes Managed</h4>
+                <div class="mobile-analytics-value">{{ assignment_summary.total_classes_managed if assignment_summary else 0 }}</div>
+                <div class="mobile-analytics-change">As class teacher</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mobile-quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="mobile-action-grid">
+            <button class="mobile-action-btn" onclick="showSection('marks-section')">
+                <i class="fas fa-edit"></i>
+                <span>Enter Marks</span>
+            </button>
+            <button class="mobile-action-btn" onclick="showSection('reports-section')">
+                <i class="fas fa-chart-bar"></i>
+                <span>View Reports</span>
+            </button>
+            <button class="mobile-action-btn" onclick="showSection('assignments-section')">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>My Subjects</span>
+            </button>
+            <a href="{{ url_for('classteacher.teacher_management_hub') }}" class="mobile-action-btn">
+                <i class="fas fa-cogs"></i>
+                <span>Teacher Hub</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Section navigation
+    function showSection(sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.dashboard-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Show selected section
+        document.getElementById(sectionId).classList.add('active');
+        
+        // Update navigation active state
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // Close mobile menu
+        if (window.innerWidth <= 768) {
+            document.getElementById('mobileNav').classList.remove('active');
+            document.getElementById('mobileNavOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Dynamic subject loading
+    document.getElementById('education_level').addEventListener('change', function() {
+        const level = this.value;
+        const subjectSelect = document.getElementById('subject');
+        
+        // Clear current options
+        subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+        
+        if (level && window.subjectsByEducationLevel && window.subjectsByEducationLevel[level]) {
+            window.subjectsByEducationLevel[level].forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject;
+                subjectSelect.appendChild(option);
+            });
+        }
+    });
+    
+    // Initialize subjects data
+    window.subjectsByEducationLevel = {{ subjects_by_education_level|tojson }};
+
+    // Desktop functionality ported to mobile
+    function updateSubjectsByEducationLevel() {
+        const educationLevel = document.getElementById('education_level').value;
+        const subjectSelect = document.getElementById('subject');
+
+        // Clear current options
+        subjectSelect.innerHTML = '<option value="">📖 Select Subject</option>';
+
+        if (educationLevel && window.subjectsByEducationLevel && window.subjectsByEducationLevel[educationLevel]) {
+            window.subjectsByEducationLevel[educationLevel].forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject;
+                subjectSelect.appendChild(option);
+            });
+        }
+    }
+
+    function handleSubjectSelection() {
+        const subject = document.getElementById('subject').value;
+        const compositeConfig = document.getElementById('composite-config');
+        const englishConfig = document.getElementById('english-config');
+        const kiswahiliConfig = document.getElementById('kiswahili-config');
+
+        // Hide all composite configs first
+        compositeConfig.style.display = 'none';
+        englishConfig.style.display = 'none';
+        kiswahiliConfig.style.display = 'none';
+
+        // Show appropriate config for composite subjects
+        if (subject === 'ENGLISH') {
+            compositeConfig.style.display = 'block';
+            englishConfig.style.display = 'block';
+        } else if (subject === 'KISWAHILI') {
+            compositeConfig.style.display = 'block';
+            kiswahiliConfig.style.display = 'block';
+        }
+    }
+
+    function updateComponentMaxMarks() {
+        const subject = document.getElementById('subject').value;
+
+        if (subject === 'ENGLISH') {
+            const grammarMax = parseInt(document.getElementById('grammar_max').value) || 0;
+            const compositionMax = parseInt(document.getElementById('composition_max').value) || 0;
+            const total = grammarMax + compositionMax;
+            document.getElementById('english_total_display').textContent = total;
+            document.getElementById('total_marks').value = total;
+        } else if (subject === 'KISWAHILI') {
+            const lughaMax = parseInt(document.getElementById('lugha_max').value) || 0;
+            const inshaMax = parseInt(document.getElementById('insha_max').value) || 0;
+            const total = lughaMax + inshaMax;
+            document.getElementById('kiswahili_total_display').textContent = total;
+            document.getElementById('total_marks').value = total;
+        }
+    }
+
+    function updateStreams() {
+        const gradeSelect = document.getElementById('grade');
+        const streamSelect = document.getElementById('stream');
+        const selectedGrade = gradeSelect.value;
+
+        // Clear current streams
+        streamSelect.innerHTML = '<option value="">🏛️ Select Stream</option>';
+
+        if (selectedGrade && window.gradeStreams && window.gradeStreams[selectedGrade]) {
+            window.gradeStreams[selectedGrade].forEach(stream => {
+                const option = document.createElement('option');
+                option.value = stream;
+                option.textContent = stream;
+                streamSelect.appendChild(option);
+            });
+        }
+    }
+
+    function debugFormSubmission() {
+        console.log('Mobile form submission debug');
+        const form = document.getElementById('mobile-upload-form');
+        if (form) {
+            const formData = new FormData(form);
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+        }
+    }
+
+    function updateRegularPercentage(studentKey, mark, totalMarks) {
+        const percentage = totalMarks > 0 ? Math.round((mark / totalMarks) * 100) : 0;
+        const percentageElement = document.getElementById(`percentage_${studentKey}`);
+        if (percentageElement) {
+            percentageElement.textContent = `${percentage}%`;
+
+            // Color coding based on percentage
+            if (percentage >= 80) {
+                percentageElement.style.color = 'var(--bs-success)';
+            } else if (percentage >= 60) {
+                percentageElement.style.color = 'var(--bs-warning)';
+            } else {
+                percentageElement.style.color = 'var(--bs-danger)';
+            }
+        }
+    }
+
+    function updateCompositePercentage(studentKey) {
+        const inputs = document.querySelectorAll(`input[data-student="${studentKey}"]`);
+        let total = 0;
+        let maxTotal = 0;
+
+        inputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            const max = parseFloat(input.getAttribute('max')) || 0;
+            total += value;
+            maxTotal += max;
+        });
+
+        const percentage = maxTotal > 0 ? Math.round((total / maxTotal) * 100) : 0;
+
+        // Update total and percentage displays
+        const totalElement = document.getElementById(`total_${studentKey}`);
+        const percentageElement = document.getElementById(`percentage_${studentKey}`);
+
+        if (totalElement) totalElement.textContent = total;
+        if (percentageElement) {
+            percentageElement.textContent = `${percentage}%`;
+
+            // Color coding
+            if (percentage >= 80) {
+                percentageElement.style.color = 'var(--bs-success)';
+            } else if (percentage >= 60) {
+                percentageElement.style.color = 'var(--bs-warning)';
+            } else {
+                percentageElement.style.color = 'var(--bs-danger)';
+            }
+        }
+    }
+
+    function clearAllMarks() {
+        if (confirm('Are you sure you want to clear all marks? This action cannot be undone.')) {
+            document.querySelectorAll('.mobile-mark-input').forEach(input => {
+                input.value = '';
+            });
+
+            // Clear all percentage displays
+            document.querySelectorAll('[id^="percentage_"]').forEach(element => {
+                element.textContent = '0%';
+                element.style.color = '';
+            });
+
+            // Clear all total displays for composite subjects
+            document.querySelectorAll('[id^="total_"]').forEach(element => {
+                element.textContent = '0';
+            });
+
+            showMobileAlert('All marks cleared successfully!', 'info');
+        }
+    }
+
+    function viewReport(reportId) {
+        showMobileAlert(`Opening report ${reportId}...`, 'info');
+        // Implement report viewing functionality
+    }
+
+    // Initialize grade streams data (if available)
+    window.gradeStreams = {{ grades_dict|tojson if grades_dict else '{}' }};
+
+    // Mobile-specific functions
+    function saveStudentMark(studentId) {
+        const input = document.querySelector(`input[data-student="${studentId}"]`);
+        const mark = input.value;
+
+        if (!mark || mark === '') {
+            showMobileAlert('Please enter a mark before saving.', 'warning');
+            return;
+        }
+
+        const maxMark = parseInt(input.getAttribute('max'));
+        if (parseInt(mark) > maxMark) {
+            showMobileAlert(`Mark cannot exceed ${maxMark}.`, 'danger');
+            return;
+        }
+
+        // Show loading state
+        const button = event.target.closest('button');
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        button.disabled = true;
+
+        // Simulate API call (replace with actual implementation)
+        setTimeout(() => {
+            button.innerHTML = '<i class="fas fa-check"></i>';
+            button.classList.remove('mobile-btn-success');
+            button.classList.add('mobile-btn-success');
+
+            showMobileAlert(`Mark ${mark} saved for student ${studentId}!`, 'success');
+
+            // Reset button after 2 seconds
+            setTimeout(() => {
+                button.innerHTML = originalContent;
+                button.disabled = false;
+            }, 2000);
+        }, 1000);
+    }
+
+    function viewStudentHistory(studentId) {
+        showMobileAlert(`Viewing history for student ${studentId}`, 'info');
+        // Implement student history view
+    }
+
+    function showMobileAlert(message, type = 'info') {
+        // Create mobile-friendly alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `mobile-alert mobile-alert-${type}`;
+        alertDiv.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'times-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+            ${message}
+        `;
+
+        // Insert at top of content
+        const container = document.querySelector('.mobile-container');
+        container.insertBefore(alertDiv, container.firstChild);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            alertDiv.style.opacity = '0';
+            alertDiv.style.transform = 'translateY(-20px)';
+            setTimeout(() => alertDiv.remove(), 300);
+        }, 5000);
+    }
+
+    // Touch-friendly interactions
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add touch feedback to buttons
+        document.querySelectorAll('.mobile-btn').forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.95)';
+            });
+
+            button.addEventListener('touchend', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+
+        // Add swipe indicator for tables on mobile
+        if (window.innerWidth <= 768) {
+            const tables = document.querySelectorAll('.mobile-table-container');
+            tables.forEach(table => {
+                let isScrolling = false;
+
+                table.addEventListener('scroll', function() {
+                    if (!isScrolling) {
+                        isScrolling = true;
+                        this.classList.add('scrolling');
+
+                        setTimeout(() => {
+                            isScrolling = false;
+                            this.classList.remove('scrolling');
+                        }, 1000);
+                    }
+                });
+            });
+        }
+
+        // Auto-focus on form inputs when section becomes active
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const target = mutation.target;
+                    if (target.classList.contains('active') && target.classList.contains('dashboard-section')) {
+                        const firstInput = target.querySelector('input, select');
+                        if (firstInput && window.innerWidth > 768) {
+                            setTimeout(() => firstInput.focus(), 300);
+                        }
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('.dashboard-section').forEach(section => {
+            observer.observe(section, { attributes: true });
+        });
+    });
+</script>
+{% endblock %}

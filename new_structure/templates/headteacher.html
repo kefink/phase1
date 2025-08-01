@@ -40,6 +40,12 @@
       referrerpolicy="no-referrer"
     />
 
+    <!-- Bootswatch Solar Theme - Main Theme -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='bootstrap.min.css') }}"
+    />
+
     <!-- Legacy CSS (TEMPORARILY DISABLED for navbar debugging) -->
     <!-- <link
       rel="stylesheet"
@@ -1741,7 +1747,8 @@
           <div class="header-info">
             <h1 class="dashboard-title">
               <i class="fas fa-tachometer-alt"></i>
-              Headteacher Dashboard
+              Headteacher Dashboard - DEBUG: Students={{ total_students }},
+              Teachers={{ total_teachers }}
             </h1>
             <p class="dashboard-subtitle">
               <i class="fas fa-calendar-day"></i>
@@ -1752,11 +1759,15 @@
           <div class="header-actions">
             <div class="quick-stats">
               <div class="quick-stat">
-                <span class="quick-stat-value">{{ total_students }}</span>
+                <span class="quick-stat-value"
+                  >{{ total_students or "TEST_15" }}</span
+                >
                 <span class="quick-stat-label">Students</span>
               </div>
               <div class="quick-stat">
-                <span class="quick-stat-value">{{ total_teachers }}</span>
+                <span class="quick-stat-value"
+                  >{{ total_teachers or "TEST_4" }}</span
+                >
                 <span class="quick-stat-label">Teachers</span>
               </div>
               <div class="quick-stat">

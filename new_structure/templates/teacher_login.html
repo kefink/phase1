@@ -13,7 +13,7 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#b58900" />
 
     <title>
       Subject Teacher Login - {{ school_info.school_name or 'Hillview School' }}
@@ -39,32 +39,101 @@
       referrerpolicy="no-referrer"
     />
 
-    <!-- Modern CSS Framework -->
+    <!-- Bootswatch Solar Theme - Main Theme -->
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
-    />
-
-    <!-- Mobile Responsive Login Styles -->
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/mobile_responsive_login.css') }}"
+      href="{{ url_for('static', filename='bootstrap.min.css') }}"
     />
 
     <style>
-      /* Modern Subject Teacher Login Styles - Mobile Responsive */
+      /* Premium Solar Theme Subject Teacher Login */
+      :root {
+        --solar-primary: #b58900;
+        --solar-secondary: #839496;
+        --solar-success: #2aa198;
+        --solar-info: #268bd2;
+        --solar-warning: #cb4b16;
+        --solar-danger: #d33682;
+        --solar-light: #fdf6e3;
+        --solar-dark: #073642;
+        --solar-body-bg: #002b36;
+        --solar-body-color: #839496;
+        --solar-glass: rgba(7, 54, 66, 0.95);
+        --solar-glass-border: rgba(131, 148, 150, 0.3);
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --space-10: 2.5rem;
+        --space-12: 3rem;
+        --space-16: 4rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 1rem;
+        --radius-2xl: 1.5rem;
+        --radius-full: 9999px;
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+          0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+      }
+
       body {
         font-family: "Inter", system-ui, -apple-system, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--solar-body-bg);
         min-height: 100vh;
         display: flex;
         justify-content: center;
-        align-items: flex-start;
+        align-items: center;
         margin: 0;
-        padding: 2rem 1.5rem;
+        padding: 1rem;
         position: relative;
         overflow-x: hidden;
-        overflow-y: auto;
+        color: var(--solar-body-color);
+      }
+
+      /* Premium animated background */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            circle at 20% 80%,
+            rgba(181, 137, 0, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(38, 139, 210, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 40% 40%,
+            rgba(42, 161, 152, 0.1) 0%,
+            transparent 50%
+          );
+        z-index: -1;
+        animation: float 20s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) rotate(0deg);
+        }
+        33% {
+          transform: translateY(-20px) rotate(1deg);
+        }
+        66% {
+          transform: translateY(10px) rotate(-1deg);
+        }
       }
 
       /* Mobile-first responsive adjustments */
@@ -77,60 +146,49 @@
 
       @media (max-width: 480px) {
         body {
-          padding: 0.5rem;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          padding: var(--space-4);
+          align-items: flex-start;
+          padding-top: var(--space-8);
         }
       }
 
-      /* Animated Background Pattern */
-      body::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: radial-gradient(
-            circle at 20% 80%,
-            rgba(255, 255, 255, 0.1) 2px,
-            transparent 2px
-          ),
-          radial-gradient(
-            circle at 80% 20%,
-            rgba(255, 255, 255, 0.1) 2px,
-            transparent 2px
-          );
-        background-size: 80px 80px;
-        animation: backgroundMove 25s linear infinite;
-        z-index: 1;
-      }
 
-      @keyframes backgroundMove {
-        0% {
-          transform: translate(0, 0);
-        }
-        100% {
-          transform: translate(80px, 80px);
-        }
-      }
 
       .login-container {
         position: relative;
         z-index: 2;
         width: 100%;
-        max-width: 450px;
-        background: rgba(255, 255, 255, 0.95);
+        max-width: 480px;
+        background: var(--solar-glass);
         backdrop-filter: blur(20px);
-        border-radius: var(--radius-2xl);
-        padding: 2rem; /* Reduced padding */
-        box-shadow: var(--shadow-2xl);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 3rem 2.5rem;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
+          0 0 0 1px var(--solar-glass-border),
+          inset 0 1px 0 rgba(131, 148, 150, 0.1);
+        border: 1px solid var(--solar-glass-border);
         animation: slideUp 0.8s ease-out;
-        /* Let container expand naturally */
         margin: 2rem auto;
         min-height: auto;
         height: auto;
         max-height: none;
+        overflow: hidden;
+      }
+
+      .login-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--solar-primary),
+          transparent
+        );
+        opacity: 0.6;
       }
 
       .login-header {
@@ -139,48 +197,89 @@
       }
 
       .login-icon {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #10b981, #059669);
-        border-radius: var(--radius-full);
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(
+          135deg,
+          var(--solar-primary) 0%,
+          var(--solar-warning) 100%
+        );
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto var(--space-6);
-        box-shadow: var(--shadow-lg);
-        animation: pulse 2s ease-in-out infinite;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 15px 35px rgba(181, 137, 0, 0.3),
+          0 5px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(253, 246, 227, 0.2);
+        border: 2px solid rgba(253, 246, 227, 0.1);
+        position: relative;
+        overflow: hidden;
+        animation: pulse 3s ease-in-out infinite;
       }
 
       @keyframes pulse {
         0%,
         100% {
           transform: scale(1);
+          box-shadow: 0 15px 35px rgba(181, 137, 0, 0.3),
+            0 5px 15px rgba(0, 0, 0, 0.3);
         }
         50% {
           transform: scale(1.05);
+          box-shadow: 0 20px 40px rgba(181, 137, 0, 0.4),
+            0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+      }
+
+      .login-icon::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          45deg,
+          transparent,
+          rgba(253, 246, 227, 0.1),
+          transparent
+        );
+        animation: shimmer 3s ease-in-out infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%) translateY(-100%) rotate(45deg);
+        }
+        50% {
+          transform: translateX(100%) translateY(100%) rotate(45deg);
+        }
+        100% {
+          transform: translateX(-100%) translateY(-100%) rotate(45deg);
         }
       }
 
       .login-icon i {
         font-size: 2.5rem;
-        color: white;
+        color: var(--solar-light);
+        z-index: 1;
+        position: relative;
       }
 
       .login-title {
         font-size: 2rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #10b981, #059669);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: var(--space-2);
-        line-height: 1.2;
+        color: var(--solar-light);
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        letter-spacing: -0.025em;
       }
 
       .login-subtitle {
         font-size: 1rem;
-        color: var(--gray-600);
-        font-weight: 500;
+        color: var(--solar-secondary);
+        font-weight: 400;
+        opacity: 0.9;
         margin-bottom: var(--space-8);
       }
 
@@ -196,48 +295,61 @@
       .form-label {
         display: block;
         font-weight: 600;
-        color: var(--gray-700);
+        color: var(--solar-light);
         font-size: 0.875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        margin-bottom: var(--space-2);
+        margin-bottom: 0.5rem;
+        opacity: 0.9;
       }
 
       .form-input {
         width: 100%;
-        padding: var(--space-4) var(--space-5);
-        border: 2px solid var(--gray-200);
-        border-radius: var(--radius-lg);
+        padding: 1rem 1.25rem;
+        padding-left: 3rem;
+        border: 2px solid var(--solar-glass-border);
+        border-radius: 12px;
         font-size: 1rem;
         font-family: inherit;
-        transition: all 0.2s ease;
-        background: var(--white);
+        transition: all 0.3s ease;
+        background: rgba(7, 54, 66, 0.6);
+        backdrop-filter: blur(10px);
+        color: var(--solar-light);
         position: relative;
+      }
+
+      .form-input::placeholder {
+        color: var(--solar-secondary);
+        opacity: 0.7;
       }
 
       .form-input:focus {
         outline: none;
-        border-color: #10b981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-        transform: translateY(-1px);
+        border-color: var(--solar-primary);
+        box-shadow: 0 0 0 3px rgba(181, 137, 0, 0.2),
+          0 8px 25px rgba(181, 137, 0, 0.15);
+        transform: translateY(-2px);
+        background: rgba(7, 54, 66, 0.8);
       }
 
       .form-input:not(:placeholder-shown) {
-        border-color: var(--gray-300);
+        border-color: var(--solar-info);
       }
 
       .input-icon {
         position: absolute;
-        left: var(--space-4);
+        left: 1rem;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--gray-400);
+        color: var(--solar-secondary);
         font-size: 1.1rem;
-        transition: color 0.2s ease;
+        transition: all 0.3s ease;
+        z-index: 1;
       }
 
       .form-input:focus + .input-icon {
-        color: #10b981;
+        color: var(--solar-primary);
+        transform: translateY(-50%) scale(1.1);
       }
 
       .form-input.with-icon {
@@ -245,20 +357,28 @@
       }
 
       .login-button {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
+        background: linear-gradient(
+          135deg,
+          var(--solar-primary) 0%,
+          var(--solar-warning) 100%
+        );
+        color: var(--solar-light);
         border: none;
-        border-radius: var(--radius-lg);
-        padding: var(--space-4) var(--space-6);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
         font-family: inherit;
         font-size: 1rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
         width: 100%;
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
-        margin-top: var(--space-4);
+        margin-top: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 8px 25px rgba(181, 137, 0, 0.3),
+          0 3px 10px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(253, 246, 227, 0.2);
       }
 
       .login-button::before {
@@ -271,7 +391,7 @@
         background: linear-gradient(
           90deg,
           transparent,
-          rgba(255, 255, 255, 0.2),
+          rgba(253, 246, 227, 0.3),
           transparent
         );
         transition: left 0.5s ease;
@@ -282,21 +402,76 @@
       }
 
       .login-button:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(181, 137, 0, 0.4),
+          0 5px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(253, 246, 227, 0.3);
+      }
+
+      .login-button:active {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(181, 137, 0, 0.3),
+          0 2px 8px rgba(0, 0, 0, 0.2);
       }
 
       .back-link {
         text-align: center;
-        margin-top: var(--space-8);
-        padding-top: var(--space-6);
-        border-top: 1px solid var(--gray-200);
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--solar-glass-border);
       }
 
       .back-link a {
-        color: var(--gray-600);
+        color: var(--solar-secondary);
         text-decoration: none;
         font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .back-link a:hover {
+        color: var(--solar-primary);
+        transform: translateX(-3px);
+      }
+
+      /* Mobile Responsive Enhancements */
+      @media (max-width: 480px) {
+        .login-container {
+          padding: 2rem 1.5rem;
+          margin: 1rem auto;
+          max-width: 95%;
+        }
+
+        .login-icon {
+          width: 80px;
+          height: 80px;
+        }
+
+        .login-title {
+          font-size: 1.75rem;
+        }
+
+        .form-input {
+          padding: 0.875rem 1rem;
+          padding-left: 2.75rem;
+        }
+
+        .input-icon {
+          left: 0.875rem;
+        }
+      }
+
+      @media (max-width: 360px) {
+        .login-container {
+          padding: 1.5rem 1rem;
+          border-radius: 16px;
+        }
+
+        .login-title {
+          font-size: 1.5rem;
+        }
+      }
         transition: color 0.2s ease;
         display: inline-flex;
         align-items: center;

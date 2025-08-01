@@ -1,0 +1,4817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
+    <meta name="description" content="Subject Teacher Dashboard - Hillview School Management System">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#667eea">
+
+    <title>Subject Teacher Dashboard - Hillview School</title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+
+    <!-- Legacy CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <!-- Mobile Responsive Dashboard Styles -->
+    <link rel="stylesheet" href="/static/css/mobile_responsive_dashboard.css">
+
+    <style>
+        /* Premium Glassmorphism Theme for Subject Teacher */
+        :root {
+            /* Primary Colors - Ocean Blue Theme */
+            --primary-color: #0f172a;
+            --secondary-color: #1e293b;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+
+            /* Text Colors */
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+
+            /* Glass Colors */
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --glass-backdrop: blur(8px);
+
+            /* Background */
+            --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --bg-card: rgba(255, 255, 255, 0.1);
+            --bg-card-hover: rgba(255, 255, 255, 0.15);
+
+            /* Shadows */
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+
+            /* Border Radius */
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-2xl: 32px;
+
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+
+            /* Transitions */
+            --transition-fast: all 0.15s ease-out;
+            --transition-normal: all 0.3s ease-out;
+            --transition-slow: all 0.5s ease-out;
+
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            --gradient-info: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        }
+
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            z-index: -1;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(10px) rotate(-1deg); }
+        }
+
+        /* Premium Glassmorphism Navbar */
+        .navbar {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.3) 100%);
+            backdrop-filter: var(--glass-backdrop);
+            -webkit-backdrop-filter: var(--glass-backdrop);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: var(--shadow-glass);
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0;
+            min-height: 60px;
+        }
+
+        .navbar-brand {
+            color: #1a202c;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition-fast);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            min-width: 0; /* Allow text to shrink */
+            max-width: 65%; /* Prevent taking too much space */
+        }
+
+        .navbar-brand-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0; /* Allow text to shrink */
+        }
+
+        .navbar-brand-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .navbar-brand-subtitle {
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0.8;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .navbar-brand:hover {
+            color: #2d3748;
+            transform: translateY(-2px);
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.9);
+        }
+
+        /* Premium Logo Styling for Subject Teacher */
+        .navbar-brand img {
+            width: 48px !important;
+            height: 48px !important;
+            border-radius: 12px !important;
+            object-fit: cover !important;
+            border: 2px solid rgba(255, 255, 255, 0.6) !important;
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.1),
+                0 2px 6px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            backdrop-filter: blur(4px);
+        }
+
+        .navbar-brand img:hover {
+            transform: scale(1.05) translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow:
+                0 6px 16px rgba(0, 0, 0, 0.15),
+                0 3px 8px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+
+
+        .navbar-nav {
+            display: flex;
+            list-style: none;
+            gap: var(--spacing-md);
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #2d3748;
+            text-decoration: none;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-weight: 500;
+            font-size: 0.9rem;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: #1a202c;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: rgba(255, 255, 255, 0.4);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .logout-btn {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .logout-btn:hover {
+            color: white;
+            background: rgba(220, 53, 69, 0.3);
+            border-color: rgba(220, 53, 69, 0.5);
+        }
+
+        .logout-btn {
+            background: var(--gradient-danger);
+            color: var(--text-white);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+        }
+
+        .logout-btn:hover {
+            background: var(--gradient-danger);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            color: var(--text-white);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Premium Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+            padding-top: calc(60px + var(--spacing-md)); /* Account for navbar height */
+        }
+
+        /* Premium Glassmorphism Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-xl);
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-backdrop);
+            -webkit-backdrop-filter: var(--glass-backdrop);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-glass);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            z-index: -1;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1a202c;
+            margin-bottom: var(--spacing-sm);
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+            letter-spacing: -0.02em;
+        }
+
+        .page-subtitle {
+            color: #2d3748;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+        }
+
+        /* Premium Glassmorphism Dashboard Cards */
+        .dashboard-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-backdrop);
+            -webkit-backdrop-filter: var(--glass-backdrop);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-glass);
+            border: 1px solid var(--glass-border);
+            margin-bottom: var(--spacing-xl);
+            overflow: hidden;
+            transition: var(--transition-normal);
+            position: relative;
+            padding: var(--spacing-xl);
+            min-height: 200px;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            z-index: -1;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+            background: var(--bg-card-hover);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%);
+            color: #1a202c;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(4px);
+            margin: calc(-1 * var(--spacing-xl)) calc(-1 * var(--spacing-xl)) var(--spacing-lg) calc(-1 * var(--spacing-xl));
+        }
+
+        .card-header span {
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+            color: #2d3748;
+        }
+
+        .card-header span::before {
+            content: "✨";
+            font-size: 1.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .card-header small {
+            opacity: 0.8;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4a5568;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .card-header button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: var(--spacing-xs);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .card-header button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Card Content Styling */
+        .card-content {
+            color: #2d3748;
+            font-size: 1rem;
+            line-height: 1.6;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+        }
+
+        .card-content h3 {
+            color: #1a202c;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .card-content p {
+            color: #4a5568;
+            margin-bottom: var(--spacing-md);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+        }
+
+        .card-content .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            border: none;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: var(--transition-normal);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-content .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        /* Table Styling */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .table-responsive table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #ffffff;
+        }
+
+        .table-responsive th {
+            background: rgba(255, 255, 255, 0.3);
+            color: #1a202c;
+            padding: var(--spacing-md);
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+        }
+
+        .table-responsive td {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: #2d3748;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+        }
+
+        .table-responsive tr:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Form Input Styling */
+        .form-group select,
+        .form-group input {
+            background: rgba(255, 255, 255, 0.9);
+            color: #2d3748;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a202c;
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group option {
+            background: #ffffff;
+            color: #2d3748;
+        }
+
+        /* Premium Glassmorphism Form Styling */
+        .login-form {
+            padding: var(--spacing-xl);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            align-items: end;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group label::before {
+            content: "💎";
+            font-size: 1rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-white);
+            transition: var(--transition-normal);
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(4px);
+        }
+
+        .form-group select::placeholder,
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-group select:hover,
+        .form-group input:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: var(--shadow-lg);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Premium Glassmorphism Button Styling */
+        .btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+            color: var(--text-white);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            transition: var(--transition-normal);
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            box-shadow: var(--shadow-md);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: var(--text-white);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+            padding: var(--spacing-xs) var(--spacing-md);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            text-decoration: none;
+            box-shadow: var(--shadow-sm);
+            min-height: 32px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #0d5d56 100%);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+            color: white;
+        }
+
+        .btn i {
+            font-size: 0.85rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Enhanced Alert Styling */
+        .alert {
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin: var(--spacing-lg) 0;
+            border-left: 4px solid;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-md);
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+            border-left-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .alert-danger::before {
+            content: "⚠️";
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .alert strong {
+            font-weight: 700;
+        }
+        /* Ocean Marble Performance indicator styles */
+        .percentage-cell {
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            text-align: center;
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid rgba(238, 232, 178, 0.2);
+            transition: all var(--transition-fast);
+        }
+
+        .percentage-cell.excellent {
+            background: var(--color-glass-sage);
+            color: var(--color-cream);
+            border-color: var(--color-sage-green);
+        }
+
+        .percentage-cell.good {
+            background: var(--color-glass-mint);
+            color: var(--color-deep-teal);
+            border-color: var(--color-mint);
+        }
+
+        .percentage-cell.average {
+            background: var(--color-glass-gold);
+            color: var(--color-dark-teal);
+            border-color: var(--color-gold);
+        }
+
+        .percentage-cell.below-average {
+            background: var(--color-glass-teal);
+            color: var(--color-cream);
+            border-color: var(--color-deep-teal);
+        }
+
+        /* Ocean Marble Composite subject styles */
+        .composite-subject-entry-improved {
+            width: 100%;
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            background: var(--color-glass-teal);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+        }
+
+        .composite-components-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+            width: 100%;
+        }
+
+        .component-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--color-glass-sage);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            border: var(--glass-border-gold);
+            margin: 2px;
+            min-height: 80px;
+            justify-content: space-between;
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            transition: all var(--transition-fast);
+        }
+
+        .component-column.overall-column {
+            background: var(--color-glass-mint);
+            border-color: var(--color-sage-green);
+            font-weight: bold;
+        }
+
+        .mark-input-container {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .component-mark {
+            width: 100%;
+            padding: var(--space-sm) var(--space-md);
+            border: var(--glass-border-gold);
+            border-radius: var(--radius-sm);
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            background: var(--color-glass-teal);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            color: var(--color-text-primary);
+            transition: all var(--transition-fast);
+        }
+
+        .component-mark:focus {
+            border-color: var(--color-gold);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(193, 141, 82, 0.3);
+            background: var(--color-glass-sage);
+            transform: translateY(-2px);
+        }
+
+        .component-percentage {
+            font-size: 13px;
+            color: var(--color-gold);
+            font-weight: bold;
+            background: var(--color-glass-cream);
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(193, 141, 82, 0.3);
+        }
+
+        .overall-percentage {
+            font-size: 16px;
+            color: var(--color-sage-green);
+            font-weight: bold;
+        }
+
+        /* Mobile-First Responsive Enhancements for Subject Teacher Dashboard */
+        @media (max-width: 480px) {
+            /* Mobile Navigation */
+            .navbar {
+                position: relative;
+                padding: var(--spacing-sm);
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+
+            .navbar-brand {
+                font-size: 1.125rem;
+                margin-bottom: var(--spacing-xs);
+                max-width: 70%;
+            }
+
+            .navbar-brand img {
+                width: 36px !important;
+                height: 36px !important;
+            }
+
+            .navbar-brand-title {
+                font-size: 1rem;
+            }
+
+            .navbar-brand-subtitle {
+                font-size: 0.8rem;
+            }
+
+            .navbar-nav {
+                flex-direction: column;
+                width: 100%;
+                gap: var(--spacing-xs);
+            }
+
+            .nav-link {
+                padding: var(--spacing-sm);
+                text-align: center;
+                width: 100%;
+                border-radius: var(--radius-sm);
+            }
+
+            .logout-btn {
+                width: 100%;
+                justify-content: center;
+                margin-top: var(--spacing-xs);
+            }
+
+            /* Mobile Container */
+            .container {
+                padding: var(--spacing-sm);
+                padding-top: calc(60px + var(--spacing-sm));
+                max-width: 100%;
+            }
+
+            /* Mobile Page Header */
+            .page-header {
+                padding: var(--spacing-sm);
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .page-title {
+                font-size: 1.125rem;
+            }
+
+            .page-subtitle {
+                font-size: 0.75rem;
+            }
+
+            /* Mobile Dashboard Cards */
+            .dashboard-card {
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .card-header {
+                padding: var(--spacing-sm);
+                flex-direction: column;
+                text-align: center;
+                gap: var(--spacing-xs);
+            }
+
+            .card-header span {
+                font-size: 0.875rem;
+            }
+
+            .card-header small {
+                font-size: 0.7rem;
+            }
+
+            /* Mobile Forms */
+            .login-form {
+                padding: var(--spacing-sm);
+                grid-template-columns: 1fr;
+                gap: var(--spacing-sm);
+            }
+
+            .form-group label {
+                font-size: 0.7rem;
+            }
+
+            .form-group select,
+            .form-group input {
+                padding: var(--spacing-sm);
+                font-size: 1rem; /* Prevent zoom on iOS */
+            }
+
+            /* Mobile Buttons */
+            .btn {
+                padding: var(--spacing-sm) var(--spacing-md);
+                font-size: 0.875rem;
+                width: 100%;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            .btn-outline {
+                padding: var(--spacing-sm) var(--spacing-md);
+                width: 100%;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            /* Mobile Alerts */
+            .alert {
+                padding: var(--spacing-sm);
+                margin: var(--spacing-sm) 0;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            /* Mobile Composite Components */
+            .composite-components-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-sm);
+            }
+
+            .component-column {
+                padding: var(--spacing-sm);
+                min-height: 60px;
+            }
+
+            .component-mark {
+                padding: var(--spacing-sm);
+                font-size: 14px;
+            }
+
+            .component-percentage {
+                font-size: 11px;
+                padding: 2px 4px;
+            }
+
+            .overall-percentage {
+                font-size: 14px;
+            }
+
+            /* Mobile Performance Indicators */
+            .percentage-cell {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                font-size: 0.75rem;
+            }
+
+            /* Mobile Tables */
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .table {
+                min-width: 600px;
+                font-size: 0.75rem;
+            }
+
+            .table th,
+            .table td {
+                padding: var(--spacing-xs);
+                white-space: nowrap;
+            }
+        }
+
+        /* Small Mobile Devices */
+        @media (max-width: 360px) {
+            .container {
+                padding: var(--spacing-xs);
+            }
+
+            .navbar {
+                padding: var(--spacing-xs);
+            }
+
+            .navbar-brand {
+                font-size: 1rem;
+                max-width: 75%;
+            }
+
+            .navbar-brand img {
+                width: 32px !important;
+                height: 32px !important;
+            }
+
+            .navbar-brand-title {
+                font-size: 0.9rem;
+            }
+
+            .navbar-brand-subtitle {
+                font-size: 0.75rem;
+            }
+
+            .page-title {
+                font-size: 1rem;
+            }
+
+            .card-header span {
+                font-size: 0.8rem;
+            }
+
+            .btn {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                font-size: 0.8rem;
+            }
+
+            .component-mark {
+                font-size: 12px;
+            }
+
+            .percentage-cell {
+                font-size: 0.7rem;
+                padding: 2px 4px;
+            }
+        }
+
+        /* Tablet Portrait */
+        @media (max-width: 768px) and (min-width: 481px) {
+            .navbar {
+                flex-direction: row;
+                padding: var(--spacing-md);
+            }
+
+            .navbar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: var(--spacing-sm);
+            }
+
+            .nav-link {
+                width: auto;
+                min-width: 100px;
+            }
+
+            .logout-btn {
+                width: auto;
+            }
+
+            .container {
+                padding: var(--spacing-md);
+            }
+
+            .login-form {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .composite-components-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .btn {
+                width: auto;
+                display: inline-flex;
+            }
+        }
+
+        /* Tablet Landscape */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .container {
+                padding: var(--spacing-lg);
+            }
+
+            .login-form {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .composite-components-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        }
+
+        /* Mobile-First Responsive Enhancements for Subject Teacher Dashboard */
+        @media (max-width: 480px) {
+            /* Mobile Navigation */
+            .navbar {
+                position: relative;
+                padding: var(--spacing-sm);
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+
+            .navbar-brand {
+                font-size: 1.125rem;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            .navbar-nav {
+                flex-direction: column;
+                width: 100%;
+                gap: var(--spacing-xs);
+            }
+
+            .nav-link {
+                padding: var(--spacing-sm);
+                text-align: center;
+                width: 100%;
+                border-radius: var(--radius-sm);
+            }
+
+            .logout-btn {
+                width: 100%;
+                justify-content: center;
+                margin-top: var(--spacing-xs);
+            }
+
+            /* Mobile Container */
+            .container {
+                padding: var(--spacing-sm);
+                max-width: 100%;
+            }
+
+            /* Mobile Page Header */
+            .page-header {
+                padding: var(--spacing-sm);
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .page-title {
+                font-size: 1.125rem;
+            }
+
+            .page-subtitle {
+                font-size: 0.75rem;
+            }
+
+            /* Mobile Dashboard Cards */
+            .dashboard-card {
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .card-header {
+                padding: var(--spacing-sm);
+                flex-direction: column;
+                text-align: center;
+                gap: var(--spacing-xs);
+            }
+
+            .card-header span {
+                font-size: 0.875rem;
+            }
+
+            .card-header small {
+                font-size: 0.7rem;
+            }
+
+            /* Mobile Forms */
+            .login-form {
+                padding: var(--spacing-sm);
+                grid-template-columns: 1fr;
+                gap: var(--spacing-sm);
+            }
+
+            .form-group label {
+                font-size: 0.7rem;
+            }
+
+            .form-group select,
+            .form-group input {
+                padding: var(--spacing-sm);
+                font-size: 1rem; /* Prevent zoom on iOS */
+            }
+
+            /* Mobile Buttons */
+            .btn {
+                padding: var(--spacing-sm) var(--spacing-md);
+                font-size: 0.875rem;
+                width: 100%;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            .btn-outline {
+                padding: var(--spacing-sm) var(--spacing-md);
+                width: 100%;
+                justify-content: center;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            /* Mobile Composite Components */
+            .composite-components-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-sm);
+            }
+
+            .component-column {
+                padding: var(--spacing-sm);
+                min-height: 60px;
+            }
+
+            .component-mark {
+                padding: var(--spacing-sm);
+                font-size: 14px;
+            }
+
+            .component-percentage {
+                font-size: 11px;
+                padding: 2px 4px;
+            }
+
+            .overall-percentage {
+                font-size: 14px;
+            }
+
+            /* Mobile Performance Indicators */
+            .percentage-cell {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                font-size: 0.75rem;
+            }
+
+            /* Mobile Alerts */
+            .alert {
+                padding: var(--spacing-sm);
+                margin: var(--spacing-sm) 0;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .alert::before {
+                margin-bottom: var(--spacing-xs);
+            }
+        }
+
+        /* Small Mobile Devices */
+        @media (max-width: 360px) {
+            .container {
+                padding: var(--spacing-xs);
+            }
+
+            .navbar {
+                padding: var(--spacing-xs);
+            }
+
+            .navbar-brand {
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 1rem;
+            }
+
+            .card-header {
+                padding: var(--spacing-xs);
+            }
+
+            .login-form {
+                padding: var(--spacing-xs);
+            }
+
+            .btn {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                font-size: 0.8rem;
+            }
+
+            .component-column {
+                padding: var(--spacing-xs);
+                min-height: 50px;
+            }
+
+            .component-mark {
+                font-size: 12px;
+            }
+        }
+
+        /* Tablet Portrait */
+        @media (max-width: 768px) and (min-width: 481px) {
+            .navbar {
+                flex-direction: row;
+                padding: var(--spacing-md);
+            }
+
+            .navbar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: var(--spacing-sm);
+            }
+
+            .nav-link {
+                width: auto;
+                min-width: 100px;
+            }
+
+            .logout-btn {
+                width: auto;
+                margin-top: 0;
+            }
+
+            .container {
+                padding: var(--spacing-md);
+            }
+
+            .login-form {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--spacing-md);
+            }
+
+            .composite-components-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--spacing-md);
+            }
+
+            .btn {
+                width: auto;
+                margin-bottom: 0;
+            }
+
+            .btn-outline {
+                width: auto;
+                margin-bottom: 0;
+            }
+        }
+
+        /* Tablet Landscape */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .container {
+                padding: var(--spacing-lg);
+                max-width: 900px;
+            }
+
+            .login-form {
+                grid-template-columns: repeat(3, 1fr);
+                gap: var(--spacing-lg);
+            }
+
+            .composite-components-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: var(--spacing-lg);
+            }
+        }
+            background: var(--color-glass-mint);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            border: var(--glass-border-gold);
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .component-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--color-gold);
+            text-align: center;
+            margin-bottom: 5px;
+            padding: 4px 8px;
+            background: var(--color-glass-cream);
+            border-radius: var(--radius-sm);
+            border: var(--glass-border-gold);
+        }
+
+        /* Ocean Marble Composite Configuration Section Styles */
+        .composite-config-section {
+            background: var(--color-glass-teal);
+            backdrop-filter: var(--glass-blur-strong);
+            -webkit-backdrop-filter: var(--glass-blur-strong);
+            border: var(--glass-border-gold);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            margin: var(--space-xl) 0;
+            box-shadow: var(--glass-shadow-strong);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .composite-config-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--color-glass-cream) 0%, var(--color-glass-sage) 100%);
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .composite-config-header {
+            text-align: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .composite-config-header h4 {
+            color: var(--color-text-accent);
+            margin: 0 0 var(--space-sm) 0;
+            font-size: 18px;
+            text-shadow: 0 2px 4px rgba(8, 27, 27, 0.5);
+        }
+
+        .composite-config-header p {
+            color: var(--color-text-secondary);
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .component-config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .component-config-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .component-config-item label {
+            font-weight: bold;
+            color: var(--color-text-accent);
+            margin-bottom: var(--space-sm);
+            font-size: 14px;
+            text-shadow: 0 1px 2px rgba(8, 27, 27, 0.3);
+        }
+
+        .component-config-item input {
+            padding: var(--space-sm) var(--space-md);
+            border: var(--glass-border-gold);
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            text-align: center;
+            background: var(--color-glass-sage);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            color: var(--color-text-primary);
+            transition: all var(--transition-fast);
+        }
+
+        .component-config-item input:focus {
+            border-color: var(--color-gold);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(193, 141, 82, 0.3);
+            background: var(--color-glass-mint);
+            transform: translateY(-2px);
+        }
+
+        .component-config-item.total-display {
+            text-align: center;
+        }
+
+        .total-marks-display {
+            background: linear-gradient(135deg, var(--color-gold), var(--color-sage-green));
+            color: var(--color-cream);
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: var(--glass-border-gold);
+            box-shadow: var(--glass-shadow);
+        }
+
+        .simplified-mark-entry {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .mark-percentage {
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .component-headers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-top: 5px;
+            font-size: 11px;
+            font-weight: normal;
+        }
+
+        .component-header-item {
+            text-align: center;
+            padding: 2px;
+            background-color: #e9ecef;
+            border-radius: 3px;
+        }
+
+        .component-header-item.overall-header {
+            background-color: #dee2e6;
+            font-weight: bold;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .table-wrapper table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .table-wrapper th,
+        .table-wrapper td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .table-wrapper th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .composite-subject-header {
+            background-color: #2196f3 !important;
+            color: white !important;
+            font-weight: bold;
+        }
+
+        .component-headers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .component-header-item {
+            text-align: center;
+            padding: 4px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .component-header-item.overall-header {
+            background-color: rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+        }
+
+        .class-average {
+            font-size: 1.1em;
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            text-align: center;
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            font-weight: 600;
+            transition: all var(--transition-fast);
+        }
+
+        .class-average.excellent {
+            background: var(--color-glass-sage);
+            color: var(--color-cream);
+            border-color: var(--color-sage-green);
+        }
+
+        .class-average.good {
+            background: var(--color-glass-mint);
+            color: var(--color-deep-teal);
+            border-color: var(--color-mint);
+        }
+
+        .class-average.average {
+            background: var(--color-glass-gold);
+            color: var(--color-dark-teal);
+            border-color: var(--color-gold);
+        }
+
+        .class-average.below-average {
+            background: var(--color-glass-teal);
+            color: var(--color-cream);
+            border-color: var(--color-deep-teal);
+        }
+
+        /* Clean input validation styles - no red borders */
+        input[type="number"]:invalid {
+            border-color: #e9ecef !important;
+            box-shadow: none !important;
+        }
+
+        /* Override any browser default validation styling */
+        input[type="number"] {
+            border: 2px solid #e9ecef !important;
+        }
+
+        input[type="number"]:focus {
+            border-color: #3498db !important;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1) !important;
+        }
+
+        input[type="number"]:valid {
+            border-color: var(--color-sage-green);
+            box-shadow: 0 0 0 3px rgba(90, 143, 118, 0.25);
+        }
+
+        /* Ocean Marble Table styling improvements */
+        table {
+            margin-top: var(--space-lg);
+        }
+
+        table th, table td {
+            padding: var(--space-md);
+            text-align: center;
+        }
+
+        table tfoot td {
+            background: var(--color-glass-sage);
+            font-weight: bold;
+            color: var(--color-text-primary);
+        }
+
+        /* Ocean Marble Subject information styling */
+        .subject-info {
+            margin-top: var(--space-sm);
+            padding: var(--space-md);
+            background: var(--color-glass-cream);
+            border: var(--glass-border-gold);
+            border-radius: var(--radius-sm);
+            font-size: 0.9em;
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+        }
+
+        .subject-info strong {
+            color: var(--color-gold);
+        }
+
+        .subject-info br {
+            margin-bottom: 4px;
+        }
+
+        /* Ocean Marble Composite subject styling */
+        .composite-info {
+            background: linear-gradient(135deg, var(--color-sage-green) 0%, var(--color-deep-teal) 100%);
+            color: var(--color-cream);
+            padding: var(--space-xl);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-xl);
+            text-align: center;
+            border: var(--glass-border-gold);
+            box-shadow: var(--glass-shadow);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+        }
+
+        .composite-info h4 {
+            margin: 0 0 var(--space-md) 0;
+            font-size: 1.2em;
+            text-shadow: 0 2px 4px rgba(8, 27, 27, 0.5);
+        }
+
+        .composite-info p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .subject-type-info {
+            margin-bottom: 15px;
+        }
+
+        /* Component input styling */
+        .component-input-cell {
+            text-align: center;
+            padding: 8px;
+        }
+
+        .component-input-cell input {
+            width: 80px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        .component-input-cell input:focus {
+            border-color: #2196f3;
+            outline: none;
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+        }
+
+        /* Clean composite subject entry styling */
+        .composite-subject-entry-clean {
+            width: 100%;
+            padding: 10px;
+        }
+
+        .composite-components-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            align-items: center;
+            justify-items: center;
+        }
+
+        .composite-components-row .component-input-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            min-width: 100px;
+        }
+
+        .composite-components-row .component-input-cell input {
+            width: 70px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            background: white;
+        }
+
+        .composite-components-row .component-input-cell input:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+        }
+
+        .composite-components-row .component-percentage {
+            font-size: 12px;
+            font-weight: bold;
+            color: #4a90e2;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .composite-components-row .overall-cell {
+            background: linear-gradient(135deg, #e8f4fd, #d1ecf1);
+            border: 2px solid #4a90e2;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .composite-components-row .overall-percentage {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 2px solid #4a90e2;
+            min-width: 60px;
+        }
+
+        /* Ocean Marble Enhanced Subject Report Styling */
+        .enhanced-subject-report-section {
+            background: var(--color-glass-teal);
+            backdrop-filter: var(--glass-blur-strong);
+            -webkit-backdrop-filter: var(--glass-blur-strong);
+            border: var(--glass-border-gold);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xxl);
+            margin: var(--space-xxl) 0;
+            box-shadow: var(--glass-shadow-strong);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .enhanced-subject-report-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--color-glass-cream) 0%, var(--color-glass-sage) 100%);
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .subject-report-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+        }
+
+        .subject-report-header h3 {
+            color: var(--color-text-accent);
+            font-size: 24px;
+            margin-bottom: var(--space-lg);
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(8, 27, 27, 0.5);
+        }
+
+        .report-details-card {
+            background: var(--color-glass-sage);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            box-shadow: var(--glass-shadow);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+            border: var(--glass-border);
+        }
+
+        .report-detail-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: var(--color-text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--space-sm);
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: var(--color-text-primary);
+            font-weight: bold;
+            background: var(--color-glass-cream);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-sm);
+            border: var(--glass-border-gold);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+        }
+
+        .subject-report-actions {
+            text-align: center;
+        }
+
+        .enhanced-report-btn {
+            background: linear-gradient(135deg, var(--color-gold), var(--color-sage-green));
+            color: var(--color-cream);
+            padding: var(--space-lg) var(--space-xxl);
+            font-size: 16px;
+            font-weight: bold;
+            border: var(--glass-border-gold);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            display: inline-block;
+            transition: all var(--transition-fast);
+            box-shadow: var(--glass-shadow);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+        }
+
+        .enhanced-report-btn:hover {
+            background: linear-gradient(135deg, var(--color-sage-green), var(--color-mint));
+            transform: translateY(-4px);
+            box-shadow: var(--glass-shadow-hover);
+            color: var(--color-cream);
+            text-decoration: none;
+            border-color: var(--color-gold);
+        }
+
+        .report-description {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            margin-top: var(--space-lg);
+            line-height: 1.5;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Ultra Compact Table Styling */
+        .table-wrapper {
+            background: var(--background-white);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            margin: var(--spacing-md) 0;
+        }
+
+        .table-wrapper table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .table-wrapper th {
+            background: var(--gradient-primary);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .table-wrapper th::before {
+            content: "📊";
+            margin-right: var(--spacing-xs);
+            font-size: 0.8rem;
+        }
+
+        .table-wrapper td {
+            padding: var(--spacing-xs);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: var(--transition-fast);
+            font-size: 0.8rem;
+        }
+
+        .table-wrapper tr:nth-child(even) {
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        }
+
+        .table-wrapper tr:nth-child(odd) {
+            background: var(--background-white);
+        }
+
+        .table-wrapper tr:hover {
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+            transform: scale(1.002);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .table-wrapper tr:hover td {
+            color: var(--primary-color);
+        }
+
+        /* Ultra Compact Marks Entry Styling */
+        .pupils-list {
+            padding: var(--spacing-md);
+        }
+
+        .pupils-list h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+            text-align: center;
+            padding: var(--spacing-sm);
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .pupils-list h3::before {
+            content: "📝";
+            margin-right: var(--spacing-xs);
+            font-size: 1.2rem;
+        }
+
+        /* Enhanced Student Mark Input */
+        .student-mark {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            background: var(--background-white);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .student-mark:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+        }
+
+        .student-mark:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Enhanced Composite Subject Styling */
+        .composite-subject-entry-clean {
+            width: 100%;
+            padding: var(--spacing-lg);
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .composite-components-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--spacing-lg);
+            align-items: center;
+            justify-items: center;
+        }
+
+        .component-input-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-lg);
+            background: var(--background-white);
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--border-color);
+            min-width: 120px;
+            transition: var(--transition-fast);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .component-input-cell:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .component-input-cell input {
+            width: 80px;
+            padding: var(--spacing-sm);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            background: var(--background-white);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
+        }
+
+        .component-input-cell input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+        }
+
+        /* CRITICAL FIX: Override any red borders on last column inputs */
+        td:last-child input[type="number"],
+        td:nth-last-child(1) input[type="number"],
+        .table-wrapper td:last-child input,
+        .table-wrapper td:nth-last-child(1) input {
+            border: 2px solid #e9ecef !important;
+            background-color: #ffffff !important;
+        }
+
+        td:last-child input[type="number"]:focus,
+        td:nth-last-child(1) input[type="number"]:focus,
+        .table-wrapper td:last-child input:focus,
+        .table-wrapper td:nth-last-child(1) input:focus {
+            border-color: #3498db !important;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1) !important;
+        }
+
+        .component-percentage {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            min-width: 50px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .overall-cell {
+            background: var(--gradient-primary) !important;
+            border: 2px solid var(--primary-color) !important;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .overall-percentage {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 70px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Enhanced Subject Info */
+        .subject-info {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-lg);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid var(--info-color);
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .subject-info::before {
+            content: "ℹ️";
+            margin-right: var(--spacing-sm);
+            font-size: 1.25rem;
+        }
+
+        .subject-info strong {
+            color: var(--info-color);
+            font-weight: 700;
+        }
+
+        /* Enhanced Composite Configuration */
+        .composite-config-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid var(--primary-color);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            margin: var(--spacing-xl) 0;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .composite-config-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-primary);
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .composite-config-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            position: relative;
+            z-index: 1;
+        }
+
+        .composite-config-header h4 {
+            color: var(--primary-color);
+            margin: 0 0 var(--spacing-sm) 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .composite-config-header p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .component-config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--spacing-lg);
+            align-items: end;
+            position: relative;
+            z-index: 1;
+        }
+
+        .component-config-item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .component-config-item label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .component-config-item input {
+            padding: var(--spacing-md);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            text-align: center;
+            background: var(--background-white);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .component-config-item input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .total-marks-display {
+            background: var(--gradient-primary);
+            color: white;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-lg);
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-align: center;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Enhanced Recent Reports */
+        .table-responsive {
+            background: var(--background-white);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Pagination Styling */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: var(--spacing-xl) 0;
+            gap: var(--spacing-sm);
+        }
+
+        .pagination-info {
+            background: var(--color-glass-teal);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: var(--spacing-md);
+            text-align: center;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: var(--spacing-xs);
+            align-items: center;
+        }
+
+        .pagination-btn {
+            background: var(--color-glass-sage);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            min-width: 40px;
+            justify-content: center;
+        }
+
+        .pagination-btn:hover {
+            background: var(--color-glass-mint);
+            transform: translateY(-2px);
+            box-shadow: var(--glass-shadow);
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .pagination-btn.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .pagination-btn:disabled,
+        .pagination-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .page-numbers {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        .table-responsive table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-responsive th {
+            background: var(--gradient-primary);
+            color: white;
+            padding: var(--spacing-lg);
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-responsive td {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .table-responsive tr:hover {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+
+        .badge {
+            background: var(--gradient-success);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Enhanced Footer */
+        footer {
+            background: var(--gradient-primary);
+            color: white;
+            text-align: center;
+            padding: var(--spacing-sm);
+            margin-top: var(--spacing-lg);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        footer::before {
+            content: "🏫";
+            margin-right: var(--spacing-sm);
+            font-size: 1.25rem;
+        }
+
+        /* CLEAN MARKS UPLOAD FORM STYLING */
+        .marks-upload-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+
+        .marks-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .marks-header h3 {
+            color: #2c3e50;
+            margin: 0 0 12px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .marks-info {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .info-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .students-marks-table {
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .header-cell {
+            padding: 16px;
+            text-align: center;
+        }
+
+        .header-cell small {
+            display: block;
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .table-body {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .student-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s ease;
+        }
+
+        .student-row:hover {
+            background-color: #f1f3f4;
+        }
+
+        .student-cell {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+
+        .student-number {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .marks-cell {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* COMPOSITE SUBJECT STYLING */
+        .composite-marks-entry {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .component-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .component-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #495057;
+            margin: 0;
+        }
+
+        .total-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            background: #e3f2fd;
+            border-radius: 6px;
+            min-width: 80px;
+        }
+
+        .total-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1976d2;
+        }
+
+        .total-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1976d2;
+        }
+
+        .percentage {
+            font-size: 0.8rem;
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        /* REGULAR SUBJECT STYLING */
+        .regular-marks-entry {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .percentage-display {
+            background: #e8f5e8;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        /* CLEAN INPUT STYLING */
+        .clean-mark-input {
+            width: 80px;
+            height: 40px;
+            padding: 8px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            background: white;
+            color: #495057;
+            transition: all 0.2s ease;
+        }
+
+        .clean-mark-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            background: #f8f9ff;
+        }
+
+        .clean-mark-input:valid {
+            border-color: #28a745;
+            background: #f8fff8;
+        }
+
+        .clean-mark-input::placeholder {
+            color: #adb5bd;
+            font-weight: normal;
+        }
+
+        /* FORM ACTIONS */
+        .form-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            padding-top: 24px;
+            border-top: 2px solid #f1f3f4;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .marks-upload-container {
+                padding: 16px;
+                margin: 10px;
+            }
+
+            .table-header,
+            .student-row {
+                grid-template-columns: 1fr;
+            }
+
+            .composite-marks-entry {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .marks-info {
+                justify-content: center;
+            }
+        }
+
+        /* BRAND NEW MARKS FORM STYLING - COMPLETELY REBUILT */
+        .new-marks-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 24px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .form-header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .subject-title h2 {
+            color: #2d3748;
+            margin: 0 0 8px 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .subject-details {
+            color: #718096;
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .marks-summary {
+            display: flex;
+            gap: 16px;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+            min-width: 80px;
+        }
+
+        .summary-item .label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .summary-item .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .new-marks-form {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .marks-grid-container {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .grid-header {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+        }
+
+        .student-column-header,
+        .marks-column-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .marks-column-header {
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .marks-grid-body {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .student-marks-row {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .student-marks-row:hover {
+            background: #f7fafc;
+        }
+
+        .student-info-column {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #fafafa;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .student-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .student-details {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .student-meta {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .marks-input-column {
+            padding: 20px;
+            background: white;
+        }
+
+        .composite-inputs-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .component-input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .component-label {
+            min-width: 100px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
+        .new-mark-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .new-mark-input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            background: #f7fafc;
+        }
+
+        .new-mark-input:valid {
+            border-color: #48bb78;
+        }
+
+        .new-mark-input.component-input {
+            max-width: 120px;
+        }
+
+        .total-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .total-text {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .total-number {
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .total-percent {
+            background: #4299e1;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .regular-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .regular-input {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .percentage-indicator span {
+            background: #48bb78;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .new-form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 32px;
+            padding: 24px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-top: 3px solid #4299e1;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .reset-btn,
+        .validate-btn,
+        .submit-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .reset-btn {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #c53030;
+            transform: translateY(-2px);
+        }
+
+        .validate-btn {
+            background: #ed8936;
+            color: white;
+        }
+
+        .validate-btn:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+        }
+
+        .form-summary {
+            display: flex;
+            gap: 24px;
+        }
+
+        .summary-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        /* NEW FORM RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .new-marks-container {
+                padding: 16px;
+                margin: 10px 0;
+            }
+
+            .form-header-section {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .grid-header,
+            .student-marks-row {
+                grid-template-columns: 1fr;
+            }
+
+            .student-info-column {
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .new-form-actions {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Error Message Section -->
+    
+
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">
+            <!-- Hillview School Logo with Premium Styling -->
+            
+            <img
+                src="/static/uploads/logos/optimized_school_logo_1750595986_hvs.jpg"
+                alt="Hillview School Logo"
+                onerror="this.src='/static/uploads/logos/optimized_school_logo_1750595986_hvs.jpg'"
+            />
+            
+            <div class="navbar-brand-text">
+                <div class="navbar-brand-title">
+                    Hillview School
+                </div>
+                <div class="navbar-brand-subtitle">
+                    
+                        carol
+                    
+                </div>
+            </div>
+        </a>
+        <ul class="navbar-nav">
+            <li>
+                <a href="/teacher/" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/classteacher/teacher_management_hub" class="nav-link">
+                    <i class="fas fa-cogs"></i> <span>Teacher Hub</span>
+                </a>
+            </li>
+            <li>
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Modern Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Teacher Dashboard</h1>
+            <p class="page-subtitle">Manage student marks and generate comprehensive reports</p>
+        </div>
+
+        <!-- Role-Based Assignments Section -->
+        
+
+        <!-- Debug Panel -->
+        <div id="debug-panel" class="dashboard-card" style="background: var(--white); border: 1px solid var(--border-color); margin-bottom: var(--spacing-xl); display: none;">
+            <div class="card-header" style="background: var(--primary-color); color: var(--white);">
+                <span>🔧 Debug Information</span>
+                <button onclick="toggleDebug()" style="float: right; background: none; border: none; color: var(--white);">Hide</button>
+            </div>
+            <div id="debug-content" style="padding: var(--spacing-lg); font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; color: var(--text-dark);">
+                <div id="debug-messages"></div>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-header">
+                <span>Upload Class Marks</span>
+                <small>Complete all fields to process marks</small>
+                <button onclick="toggleDebug()" style="float: right; background: none; border: none; color: var(--primary-color); text-decoration: underline;">Show Debug</button>
+            </div>
+
+            
+
+            
+            <div class="card-content">
+            <!-- Enhanced form with education level filtering -->
+            <form id="upload-form" method="POST" action="/teacher/" class="login-form">
+          <input type="hidden" name="csrf_token" value="IjYwNTMyNDRlZTBlMzM5NTQ4MDViYWVjMzFhMWRhZDkwNTVhYjc4NDYi.aIscFw.uTVx4Ol8w3ICmNPVO6PKOV-EIK8"/>
+
+                <!-- Enhanced Education Level Selection -->
+                <div class="form-group">
+                    <label for="education_level">
+                        <i class="fas fa-graduation-cap"></i>
+                        Education Level
+                    </label>
+                    <select id="education_level" name="education_level" required onchange="updateSubjectsByEducationLevel()">
+                        <option value="">🎯 Select Education Level</option>
+                        <option value="lower_primary" >🎓 Lower Primary (Grades 1-3)</option>
+                        <option value="upper_primary" >📚 Upper Primary (Grades 4-6)</option>
+                        <option value="junior_secondary" >🏫 Junior Secondary (Grades 7-9)</option>
+                    </select>
+                </div>
+
+                <!-- Enhanced Subject Selection (filtered by education level) -->
+                <div class="form-group">
+                    <label for="subject">
+                        <i class="fas fa-book"></i>
+                        Subject
+                    </label>
+                    <select id="subject" name="subject" required onchange="handleSubjectSelection()">
+                        <option value="">📖 Select Subject</option>
+                        <!-- Subjects will be populated based on education level -->
+                    </select>
+                    <div id="subject-info" class="subject-info" style="display: none;">
+                        <small id="subject-details"></small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="term">
+                        <i class="fas fa-calendar-alt"></i>
+                        Term
+                    </label>
+                    <select id="term" name="term" required>
+                        <option value="">📅 Select Term</option>
+                        
+                        <option value="TERM 2" >📆 TERM 2</option>
+                        
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="assessment_type">
+                        <i class="fas fa-clipboard-check"></i>
+                        Assessment Type
+                    </label>
+                    <select id="assessment_type" name="assessment_type" required>
+                        <option value="">📝 Select Assessment Type</option>
+                        
+                        <option value="Assignment" >📊 Assignment</option>
+                        
+                        <option value="KJSEA" >📊 KJSEA</option>
+                        
+                    </select>
+                </div>
+
+                <div class="form-group" id="total-marks-group">
+                    <label for="total_marks">
+                        <i class="fas fa-calculator"></i>
+                        Total Marks (Out Of)
+                    </label>
+                    <input type="number" id="total_marks" name="total_marks" min="1" value="" required>
+                </div>
+
+                <!-- Composite Subject Configuration (shown only for English/Kiswahili) -->
+                <div id="composite-config" class="composite-config-section" style="display: none;">
+                    <div class="composite-config-header">
+                        <h4>📚 Composite Subject Configuration</h4>
+                        <p>Set maximum marks for each component:</p>
+                    </div>
+
+                    <div id="english-config" class="component-config" style="display: none;">
+                        <div class="component-config-grid">
+                            <div class="component-config-item">
+                                <label for="grammar_max">Grammar (Max Marks)</label>
+                                <input type="number" id="grammar_max" name="grammar_max" value="60" min="1" max="1000"
+                                       oninput="updateComponentMaxMarks()">
+                            </div>
+                            <div class="component-config-item">
+                                <label for="composition_max">Composition (Max Marks)</label>
+                                <input type="number" id="composition_max" name="composition_max" value="40" min="1" max="1000"
+                                       oninput="updateComponentMaxMarks()">
+                            </div>
+                            <div class="component-config-item total-display">
+                                <label>Total Max Marks</label>
+                                <div id="english_total_display" class="total-marks-display">100</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="kiswahili-config" class="component-config" style="display: none;">
+                        <div class="component-config-grid">
+                            <div class="component-config-item">
+                                <label for="lugha_max">Lugha (Max Marks)</label>
+                                <input type="number" id="lugha_max" name="lugha_max" value="60" min="1" max="1000"
+                                       oninput="updateComponentMaxMarks()">
+                            </div>
+                            <div class="component-config-item">
+                                <label for="insha_max">Insha (Max Marks)</label>
+                                <input type="number" id="insha_max" name="insha_max" value="40" min="1" max="1000"
+                                       oninput="updateComponentMaxMarks()">
+                            </div>
+                            <div class="component-config-item total-display">
+                                <label>Total Max Marks</label>
+                                <div id="kiswahili_total_display" class="total-marks-display">100</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="form-group">
+                    <label for="grade">
+                        <i class="fas fa-layer-group"></i>
+                        Grade
+                    </label>
+                    <select id="grade" name="grade" required onchange="updateStreams()">
+                        <option value="">📚 Select Grade</option>
+                        
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="stream">
+                        <i class="fas fa-users"></i>
+                        Stream
+                    </label>
+                    <select id="stream" name="stream" required>
+                        <option value="">🏛️ Select Stream</option>
+                        <!-- Streams will be populated dynamically via JavaScript -->
+                    </select>
+                </div>
+
+                <div class="form-group" style="grid-column: span 2; text-align: center;">
+                    <button type="submit" name="upload_marks" value="1" class="btn" id="upload-btn" onclick="debugFormSubmission()">
+                        <i class="fas fa-upload"></i>
+                        Upload Marks
+                    </button>
+                </div>
+            </form>
+            
+        </div>
+
+        <div class="dashboard-card mt-4">
+            <div class="card-header">
+                <span>Recent Reports</span>
+                <a href="#" class="btn-outline">View All</a>
+            </div>
+            <div class="card-content">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Grade</th>
+                            <th>Stream</th>
+                            <th>Term</th>
+                            <th>Assessment</th>
+                            <th>Class Average</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td colspan="7" style="text-align: center;">No recent reports available.</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Subject Report Section -->
+        
+    </div>
+
+    <footer>
+        <p>© 2025 Hillview School - All Rights Reserved</p>
+    </footer>
+
+    <script>
+        // Enhanced JavaScript with education level filtering and composite subject support
+        let gradeMapping = {};
+        let currentSubjectInfo = null;
+        const subjectsByEducationLevel = {"junior_secondary": [], "lower_primary": [], "upper_primary": []};
+
+        // Debug functions
+        function debugLog(message) {
+            console.log(message);
+            const debugMessages = document.getElementById('debug-messages');
+            if (debugMessages) {
+                const timestamp = new Date().toLocaleTimeString();
+                debugMessages.innerHTML += `<div style="margin-bottom: 5px;"><span style="color: #666;">[${timestamp}]</span> ${message}</div>`;
+                debugMessages.scrollTop = debugMessages.scrollHeight;
+            }
+        }
+
+        function toggleDebug() {
+            const debugPanel = document.getElementById('debug-panel');
+            if (debugPanel.style.display === 'none') {
+                debugPanel.style.display = 'block';
+                debugLog('🔧 Debug panel opened');
+            } else {
+                debugPanel.style.display = 'none';
+            }
+        }
+
+        function debugFormSubmission() {
+            debugLog('🚀 Upload Marks button clicked');
+
+            // Ensure configuration values are updated before submission
+            if (document.getElementById('subject').value === 'ENGLISH') {
+                const grammarMax = document.getElementById('grammar_max').value;
+                const compositionMax = document.getElementById('composition_max').value;
+                document.getElementById('hidden_grammar_max').value = grammarMax;
+                document.getElementById('hidden_composition_max').value = compositionMax;
+                debugLog(`📝 Synced English config: Grammar=${grammarMax}, Composition=${compositionMax}`);
+            } else if (document.getElementById('subject').value === 'KISWAHILI') {
+                const lughaMax = document.getElementById('lugha_max').value;
+                const inshaMax = document.getElementById('insha_max').value;
+                document.getElementById('hidden_lugha_max').value = lughaMax;
+                document.getElementById('hidden_insha_max').value = inshaMax;
+                debugLog(`📝 Synced Kiswahili config: Lugha=${lughaMax}, Insha=${inshaMax}`);
+            }
+
+            // Get all form values
+            const educationLevel = document.getElementById('education_level').value;
+            const subject = document.getElementById('subject').value;
+            const grade = document.getElementById('grade').value;
+            const stream = document.getElementById('stream').value;
+            const term = document.getElementById('term').value;
+            const assessmentType = document.getElementById('assessment_type').value;
+            const totalMarks = document.getElementById('total_marks').value;
+
+            debugLog('📋 Form values:');
+            debugLog('  Education Level: ' + educationLevel);
+            debugLog('  Subject: ' + subject);
+            debugLog('  Grade: ' + grade);
+            debugLog('  Stream: ' + stream);
+            debugLog('  Term: ' + term);
+            debugLog('  Assessment Type: ' + assessmentType);
+            debugLog('  Total Marks: ' + totalMarks);
+
+            // Debug hidden configuration values
+            debugLog('🔧 Hidden configuration values:');
+            debugLog('  Grammar Max: ' + document.getElementById('hidden_grammar_max').value);
+            debugLog('  Composition Max: ' + document.getElementById('hidden_composition_max').value);
+            debugLog('  Lugha Max: ' + document.getElementById('hidden_lugha_max').value);
+            debugLog('  Insha Max: ' + document.getElementById('hidden_insha_max').value);
+
+            // Check for missing values
+            const missingFields = [];
+            if (!educationLevel) missingFields.push('Education Level');
+            if (!subject) missingFields.push('Subject');
+            if (!grade) missingFields.push('Grade');
+            if (!stream) missingFields.push('Stream');
+            if (!term) missingFields.push('Term');
+            if (!assessmentType) missingFields.push('Assessment Type');
+            if (!totalMarks) missingFields.push('Total Marks');
+
+            if (missingFields.length > 0) {
+                debugLog('❌ Missing fields: ' + missingFields.join(', '));
+            } else {
+                debugLog('✅ All fields filled - form should submit');
+            }
+        }
+
+        // Education level to grades mapping
+        const educationLevelGrades = {
+            'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
+            'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
+            'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
+        };
+
+        // Function to load grade mapping from server
+        function loadGradeMapping() {
+            fetch('/teacher/get_grade_mapping')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        gradeMapping = data.mapping;
+                        debugLog('✅ Grade mapping loaded: ' + JSON.stringify(gradeMapping));
+                    } else {
+                        debugLog('❌ Failed to load grade mapping: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    debugLog('❌ Error loading grade mapping: ' + error);
+                });
+        }
+
+        // Function to update subjects and grades based on education level
+        function updateSubjectsByEducationLevel() {
+            debugLog('🔄 updateSubjectsByEducationLevel called');
+            const educationLevelSelect = document.getElementById('education_level');
+            const subjectSelect = document.getElementById('subject');
+            const gradeSelect = document.getElementById('grade');
+            const streamSelect = document.getElementById('stream');
+            const educationLevel = educationLevelSelect.value;
+
+            debugLog('🎓 Selected education level: ' + educationLevel);
+
+            // Clear existing options
+            subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+            gradeSelect.innerHTML = '<option value="">Select Grade</option>';
+            streamSelect.innerHTML = '<option value="">Select Stream</option>';
+
+            if (educationLevel) {
+                // Update grades based on education level
+                if (educationLevelGrades[educationLevel]) {
+                    educationLevelGrades[educationLevel].forEach(grade => {
+                        const option = document.createElement('option');
+                        option.value = grade;
+                        option.textContent = grade;
+                        gradeSelect.appendChild(option);
+                    });
+                }
+
+                // Update subjects based on education level
+                if (subjectsByEducationLevel[educationLevel]) {
+                    // Sort subjects with core subjects first
+                    const coreSubjects = ['MATHEMATICS', 'ENGLISH', 'KISWAHILI', 'SCIENCE', 'INTEGRATED SCIENCE'];
+                    const subjects = subjectsByEducationLevel[educationLevel];
+
+                    subjects.sort((a, b) => {
+                        const aIsCore = coreSubjects.some(core => a.toUpperCase().includes(core));
+                        const bIsCore = coreSubjects.some(core => b.toUpperCase().includes(core));
+
+                        if (aIsCore && !bIsCore) return -1;
+                        if (!aIsCore && bIsCore) return 1;
+                        return a.localeCompare(b);
+                    });
+
+                    subjects.forEach(subject => {
+                        const option = document.createElement('option');
+                        option.value = subject;
+                        option.textContent = subject;
+                        subjectSelect.appendChild(option);
+                    });
+                }
+            }
+
+            // Clear subject info
+            hideSubjectInfo();
+        }
+
+        // Function to handle subject selection and show composite config
+        function handleSubjectSelection() {
+            const subjectSelect = document.getElementById('subject');
+            const selectedSubject = subjectSelect.value;
+
+            debugLog('📚 Subject selected: ' + selectedSubject);
+
+            // Show/hide composite configuration based on subject
+            showCompositeConfig(selectedSubject);
+
+            if (selectedSubject) {
+                // Fetch subject information
+                fetch(`/teacher/get_subject_info/${encodeURIComponent(selectedSubject)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            currentSubjectInfo = data.subject;
+                            debugLog('📚 Subject info loaded: ' + JSON.stringify(data.subject));
+                            debugLog('🔍 Is composite: ' + data.subject.is_composite);
+                            if (data.subject.components) {
+                                debugLog('🔍 Components: ' + data.subject.components.length);
+                            }
+                            showSubjectInfo(data.subject);
+
+                            // Setup marks table if we're in marks entry mode
+                            const pupilsList = document.getElementById('pupils-list');
+                            if (pupilsList) {
+                                debugLog('📝 Setting up marks table for subject: ' + selectedSubject);
+                                setTimeout(() => {
+                                    setupMarksTable();
+                                }, 200);
+                            }
+                        } else {
+                            debugLog('❌ Error fetching subject info: ' + data.message);
+                            currentSubjectInfo = null;
+                            hideSubjectInfo();
+                        }
+                    })
+                    .catch(error => {
+                        debugLog('❌ Error fetching subject info: ' + error);
+                        currentSubjectInfo = null;
+                        hideSubjectInfo();
+                    });
+            } else {
+                currentSubjectInfo = null;
+                hideSubjectInfo();
+            }
+        }
+
+        // Function to show/hide composite configuration and total marks field
+        async function showCompositeConfig(subject) {
+            const compositeConfig = document.getElementById('composite-config');
+            const englishConfig = document.getElementById('english-config');
+            const kiswahiliConfig = document.getElementById('kiswahili-config');
+            const totalMarksGroup = document.getElementById('total-marks-group');
+            const totalMarksInput = document.getElementById('total_marks');
+            const educationLevel = document.getElementById('education_level').value;
+
+            console.log(`🎯 showCompositeConfig called for subject: ${subject}, education level: ${educationLevel}`);
+
+            if (!educationLevel) {
+                console.log('⚠️ No education level selected, hiding composite config');
+                compositeConfig.style.display = 'none';
+                englishConfig.style.display = 'none';
+                kiswahiliConfig.style.display = 'none';
+                totalMarksGroup.style.display = 'block';
+                totalMarksInput.setAttribute('required', 'required');
+                return;
+            }
+
+            try {
+                // Check if subject is composite using the API
+                const apiEndpoint = 'teacher' === 'headteacher' ?
+                    `/universal/api/check-composite/${encodeURIComponent(subject)}/${encodeURIComponent(educationLevel)}` :
+                    `/teacher/api/check-composite/${encodeURIComponent(subject)}/${encodeURIComponent(educationLevel)}`;
+
+                const response = await fetch(apiEndpoint);
+                const data = await response.json();
+
+                if (data.success && data.is_composite) {
+                    console.log('🎯 Subject is composite - showing composite interface');
+
+                    // Show composite config
+                    compositeConfig.style.display = 'block';
+                    totalMarksGroup.style.display = 'none';
+                    totalMarksInput.removeAttribute('required');
+
+                    if (data.subject_type === 'english') {
+                        englishConfig.style.display = 'block';
+                        kiswahiliConfig.style.display = 'none';
+
+                        // Set values from configuration
+                        const grammarComponent = data.components.find(c => c.name === 'Grammar');
+                        const compositionComponent = data.components.find(c => c.name === 'Composition');
+
+                        const grammarMax = grammarComponent ? (grammarComponent.weight * 100) : 60;
+                        const compositionMax = compositionComponent ? (compositionComponent.weight * 100) : 40;
+
+                        document.getElementById('grammar_max').value = grammarMax;
+                        document.getElementById('composition_max').value = compositionMax;
+                        document.getElementById('hidden_grammar_max').value = grammarMax;
+                        document.getElementById('hidden_composition_max').value = compositionMax;
+
+                        debugLog('📚 Showing English composite configuration from database');
+
+                    } else if (data.subject_type === 'kiswahili') {
+                        englishConfig.style.display = 'none';
+                        kiswahiliConfig.style.display = 'block';
+
+                        // Set values from configuration
+                        const lughaComponent = data.components.find(c => c.name === 'Lugha');
+                        const inshaComponent = data.components.find(c => c.name === 'Insha');
+
+                        const lughaMax = lughaComponent ? (lughaComponent.weight * 100) : 50;
+                        const inshaMax = inshaComponent ? (inshaComponent.weight * 100) : 50;
+
+                        document.getElementById('lugha_max').value = lughaMax;
+                        document.getElementById('insha_max').value = inshaMax;
+                        document.getElementById('hidden_lugha_max').value = lughaMax;
+                        document.getElementById('hidden_insha_max').value = inshaMax;
+
+                        debugLog('📚 Showing Kiswahili composite configuration from database');
+                    }
+
+                    // Update component max marks
+                    updateComponentMaxMarks();
+
+                } else {
+                    console.log('🎯 Subject is not composite - showing regular interface');
+
+                    // Hide composite config for regular subjects
+                    compositeConfig.style.display = 'none';
+                    englishConfig.style.display = 'none';
+                    kiswahiliConfig.style.display = 'none';
+
+                    // Show total marks field and add required attribute
+                    totalMarksGroup.style.display = 'block';
+                    totalMarksInput.setAttribute('required', 'required');
+                    totalMarksInput.value = '';
+
+                    debugLog('📚 Hiding composite configuration for regular subject');
+                }
+
+            } catch (error) {
+                console.error('❌ Error checking if subject is composite:', error);
+
+                // Fallback to regular subject interface
+                compositeConfig.style.display = 'none';
+                englishConfig.style.display = 'none';
+                kiswahiliConfig.style.display = 'none';
+                totalMarksGroup.style.display = 'block';
+                totalMarksInput.setAttribute('required', 'required');
+                totalMarksInput.value = '';
+            }
+        }
+
+        // Function to update component max marks and total
+        function updateComponentMaxMarks() {
+            const subject = document.getElementById('subject').value;
+            const subjectUpper = subject.toUpperCase();
+
+            if (subjectUpper.includes('ENGLISH')) {
+                const grammarMax = parseInt(document.getElementById('grammar_max').value) || 0;
+                const compositionMax = parseInt(document.getElementById('composition_max').value) || 0;
+                const total = grammarMax + compositionMax;
+
+                document.getElementById('english_total_display').textContent = total;
+                document.getElementById('total_marks').value = total;
+
+                // Update hidden fields for server submission
+                document.getElementById('hidden_grammar_max').value = grammarMax;
+                document.getElementById('hidden_composition_max').value = compositionMax;
+
+                // Update all grammar input fields
+                document.querySelectorAll('.grammar-input').forEach(input => {
+                    input.max = grammarMax;
+                    input.placeholder = `0-${grammarMax}`;
+                    input.setAttribute('data-max-mark', grammarMax);
+                });
+
+                // Update all composition input fields
+                document.querySelectorAll('.composition-input').forEach(input => {
+                    input.max = compositionMax;
+                    input.placeholder = `0-${compositionMax}`;
+                    input.setAttribute('data-max-mark', compositionMax);
+                });
+
+                // Update max mark displays in labels
+                document.querySelectorAll('.grammar-max-display').forEach(span => {
+                    span.textContent = grammarMax;
+                });
+                document.querySelectorAll('.composition-max-display').forEach(span => {
+                    span.textContent = compositionMax;
+                });
+
+                debugLog(`📊 English totals: Grammar ${grammarMax} + Composition ${compositionMax} = ${total}`);
+            } else if (subjectUpper.includes('KISWAHILI')) {
+                const lughaMax = parseInt(document.getElementById('lugha_max').value) || 0;
+                const inshaMax = parseInt(document.getElementById('insha_max').value) || 0;
+                const total = lughaMax + inshaMax;
+
+                document.getElementById('kiswahili_total_display').textContent = total;
+                document.getElementById('total_marks').value = total;
+
+                // Update hidden fields for server submission
+                document.getElementById('hidden_lugha_max').value = lughaMax;
+                document.getElementById('hidden_insha_max').value = inshaMax;
+
+                // Update all lugha input fields
+                document.querySelectorAll('.lugha-input').forEach(input => {
+                    input.max = lughaMax;
+                    input.placeholder = `0-${lughaMax}`;
+                    input.setAttribute('data-max-mark', lughaMax);
+                });
+
+                // Update all insha input fields
+                document.querySelectorAll('.insha-input').forEach(input => {
+                    input.max = inshaMax;
+                    input.placeholder = `0-${inshaMax}`;
+                    input.setAttribute('data-max-mark', inshaMax);
+                });
+
+                // Update max mark displays in labels
+                document.querySelectorAll('.lugha-max-display').forEach(span => {
+                    span.textContent = lughaMax;
+                });
+                document.querySelectorAll('.insha-max-display').forEach(span => {
+                    span.textContent = inshaMax;
+                });
+
+                debugLog(`📊 Kiswahili totals: Lugha ${lughaMax} + Insha ${inshaMax} = ${total}`);
+            }
+        }
+
+        // Function to show subject information
+        function showSubjectInfo(subjectInfo) {
+            const subjectInfoDiv = document.getElementById('subject-info');
+            const subjectDetails = document.getElementById('subject-details');
+
+            if (subjectInfo.is_composite && subjectInfo.components.length > 0) {
+                let detailsText = `<strong>📚 Composite Subject Components:</strong><br>`;
+                subjectInfo.components.forEach(comp => {
+                    detailsText += `• <strong>${comp.name}</strong>: Max ${comp.max_raw_mark} marks<br>`;
+                });
+                detailsText += `<em>Final percentage will be calculated from total raw marks</em>`;
+
+                subjectDetails.innerHTML = detailsText;
+                subjectInfoDiv.style.display = 'block';
+            } else {
+                subjectDetails.innerHTML = `<strong>📖 Regular Subject</strong><br>Single assessment entry`;
+                subjectInfoDiv.style.display = 'block';
+            }
+        }
+
+        // Function to hide subject information
+        function hideSubjectInfo() {
+            const subjectInfoDiv = document.getElementById('subject-info');
+            subjectInfoDiv.style.display = 'none';
+            currentSubjectInfo = null;
+        }
+
+        // Function to update stream options based on selected grade using AJAX
+        function updateStreams() {
+            const gradeSelect = document.getElementById('grade');
+            const streamSelect = document.getElementById('stream');
+            const grade = gradeSelect.value;
+
+            // Clear existing options
+            streamSelect.innerHTML = '<option value="">Select Stream</option>';
+
+            if (grade) {
+                console.log(`🔄 Fetching streams for ${grade}`);
+
+                // First try to get grade ID from mapping, if available
+                if (gradeMapping[grade]) {
+                    const gradeId = gradeMapping[grade];
+                    console.log(`📋 Using grade ID from mapping: ${gradeId}`);
+
+                    // Fetch streams via AJAX using grade ID
+                    fetch(`/teacher/get_streams/${gradeId}`)
+                        .then(response => {
+                            console.log(`📡 Response status: ${response.status}`);
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('📡 Streams response:', data);
+                            if (data.streams && data.streams.length > 0) {
+                                data.streams.forEach(stream => {
+                                    const option = document.createElement('option');
+                                    option.value = stream.name;
+                                    option.textContent = `Stream ${stream.name}`;
+                                    streamSelect.appendChild(option);
+                                });
+                                console.log(`✅ Loaded ${data.streams.length} streams`);
+                            } else if (data.error) {
+                                console.error('❌ Server error:', data.error);
+                                streamSelect.innerHTML = '<option value="">Error: ' + data.error + '</option>';
+                            } else {
+                                streamSelect.innerHTML = '<option value="">No streams available</option>';
+                                console.log('⚠️ No streams found');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('❌ Error fetching streams:', error);
+                            streamSelect.innerHTML = '<option value="">Error loading streams</option>';
+                        });
+                } else {
+                    // Fallback: Use a hardcoded mapping if grade mapping isn't loaded yet
+                    console.log('⚠️ Grade mapping not loaded, using fallback');
+                    const fallbackMapping = {
+                        'Grade 1': 3, 'Grade 2': 4, 'Grade 3': 5,
+                        'Grade 4': 6, 'Grade 5': 7, 'Grade 6': 8,
+                        'Grade 7': 9, 'Grade 8': 1, 'Grade 9': 2
+                    };
+
+                    const gradeId = fallbackMapping[grade];
+                    if (gradeId) {
+                        console.log(`📋 Using fallback grade ID: ${gradeId}`);
+
+                        // Use appropriate API endpoint based on user role
+                        const apiEndpoint = 'teacher' === 'headteacher' ?
+                            `/universal/api/streams/${gradeId}` :
+                            `/teacher/get_streams/${gradeId}`;
+
+                        fetch(apiEndpoint)
+                            .then(response => {
+                                console.log(`📡 Response status: ${response.status}`);
+                                if (response.status === 403) {
+                                    console.error('❌ 403 Forbidden - trying alternative endpoint');
+                                    return fetch(`/universal/api/streams/${gradeId}`).then(r => r.json());
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log('📡 Streams response:', data);
+                                if (data.streams && data.streams.length > 0) {
+                                    data.streams.forEach(stream => {
+                                        const option = document.createElement('option');
+                                        option.value = stream.name;
+                                        option.textContent = `Stream ${stream.name}`;
+                                        streamSelect.appendChild(option);
+                                    });
+                                    console.log(`✅ Loaded ${data.streams.length} streams`);
+                                } else if (data.error) {
+                                    console.error('❌ Server error:', data.error);
+                                    streamSelect.innerHTML = '<option value="">Error: ' + data.error + '</option>';
+                                } else {
+                                    streamSelect.innerHTML = '<option value="">No streams available</option>';
+                                    console.log('⚠️ No streams found');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('❌ Error fetching streams:', error);
+                                streamSelect.innerHTML = '<option value="">Error loading streams</option>';
+                            });
+                    } else {
+                        console.error('❌ Grade ID not found for:', grade);
+                        streamSelect.innerHTML = '<option value="">Invalid grade</option>';
+                    }
+                }
+            }
+        }
+
+        // Function to setup marks table based on subject configuration
+        function setupMarksTable() {
+            debugLog('🔧 setupMarksTable called');
+
+            const educationLevel = document.getElementById('education_level').value;
+            const subject = document.getElementById('subject').value;
+
+            if (!educationLevel || !subject) {
+                debugLog('❌ Missing education level or subject');
+                return;
+            }
+
+            // Get all marks entry cells
+            const marksCells = document.querySelectorAll('.marks-entry-cell');
+            debugLog(`🎯 Found ${marksCells.length} marks entry cells`);
+
+            // Check if subject is composite using the API
+            const apiEndpoint = 'teacher' === 'headteacher' ?
+                `/universal/api/check-composite/${encodeURIComponent(subject)}/${encodeURIComponent(educationLevel)}` :
+                `/teacher/api/check-composite/${encodeURIComponent(subject)}/${encodeURIComponent(educationLevel)}`;
+
+            fetch(apiEndpoint)
+                .then(response => response.json())
+                .then(data => {
+                    debugLog('📊 Subject configuration: ' + JSON.stringify(data));
+
+                    if (data.success) {
+                        // Update currentSubjectInfo with API response
+                        currentSubjectInfo = data.subject;
+                        debugLog('📚 Updated currentSubjectInfo: ' + JSON.stringify(currentSubjectInfo));
+
+                        if (data.is_composite) {
+                            debugLog('🎯 Setting up composite subject marks entry');
+                            setupCompositeMarksEntry(marksCells, data);
+                        } else {
+                            debugLog('🎯 Setting up regular subject marks entry');
+                            setupRegularMarksEntry(marksCells);
+                        }
+                    } else {
+                        debugLog('❌ API error: ' + data.message);
+                        setupRegularMarksEntry(marksCells);
+                    }
+                })
+                .catch(error => {
+                    debugLog('❌ Error checking subject configuration: ' + error);
+                    // Fallback to regular marks entry
+                    setupRegularMarksEntry(marksCells);
+                });
+        }
+
+        // Function to setup composite marks entry
+        function setupCompositeMarksEntry(marksCells, subjectConfig) {
+            const totalMarks = document.getElementById('total_marks').value || 100;
+
+            marksCells.forEach(cell => {
+                const studentKey = cell.getAttribute('data-student');
+
+                let cellHTML = '<div class="composite-subject-entry-clean">';
+                cellHTML += '<div class="composite-components-row">';
+
+                // Add component inputs
+                subjectConfig.components.forEach((component, index) => {
+                    cellHTML += `
+                        <div class="component-input-cell">
+                            <input type="number"
+                                   name="component_${studentKey}_${index + 1}"
+                                   min="0"
+                                   max="${component.weight}"
+                                   placeholder="0-${component.weight}"
+                                   required
+                                   class="student-mark component-mark"
+                                   data-student="${studentKey}"
+                                   data-component="${component.name}"
+                                   data-max-mark="${component.weight}"
+                                   oninput="updateCompositePercentage('${studentKey}')">
+                            <small>${component.name}</small>
+                        </div>
+                    `;
+                });
+
+                // Add total and percentage display
+                cellHTML += `
+                    <div class="component-input-cell overall-cell">
+                        <div class="total-marks" id="total_marks_${studentKey}">0/${getTotalComponentMarks(subjectConfig)}</div>
+                        <div class="percentage" id="percentage_${studentKey}">0%</div>
+                    </div>
+                `;
+
+                cellHTML += '</div></div>';
+
+                // Add hidden fields for form submission
+                const subjectId = currentSubjectInfo ? currentSubjectInfo.id : '1';
+                const hiddenFieldName = `hidden_percentage_${studentKey}_${subjectId}`;
+
+                debugLog(`🎯 Creating composite hidden field: ${hiddenFieldName} for student: ${studentKey}`);
+
+                cellHTML += `
+                    <input type="hidden" name="${hiddenFieldName}" id="${hiddenFieldName}" value="0">
+                `;
+
+                cell.innerHTML = cellHTML;
+            });
+
+            debugLog('✅ Composite marks entry setup complete');
+        }
+
+        // Function to setup regular marks entry
+        function setupRegularMarksEntry(marksCells) {
+            const totalMarks = document.getElementById('total_marks').value || 100;
+            // Get subject ID from currentSubjectInfo or fallback to form value
+            let subjectId = currentSubjectInfo ? currentSubjectInfo.id : null;
+
+            debugLog(`🔍 Setting up regular marks entry - currentSubjectInfo: ${JSON.stringify(currentSubjectInfo)}`);
+            debugLog(`🔍 Subject ID from currentSubjectInfo: ${subjectId}`);
+
+            // CRITICAL FIX: If no subject ID from API, use subject name as fallback
+            // This matches what the form is actually sending
+            if (!subjectId) {
+                const subjectName = document.getElementById('subject').value;
+                subjectId = subjectName; // Use subject name directly
+                debugLog(`⚠️ Using subject name as ID: ${subjectId}`);
+            } else {
+                debugLog(`✅ Using subject ID from API: ${subjectId}`);
+            }
+
+            marksCells.forEach(cell => {
+                const studentKey = cell.getAttribute('data-student');
+                const fieldName = `mark_${studentKey}_${subjectId}`;
+
+                debugLog(`🎯 Creating input field: ${fieldName} for student: ${studentKey}`);
+
+                const cellHTML = `
+                    <div class="simplified-mark-entry">
+                        <div class="mark-input-container">
+                            <input type="number"
+                                   name="${fieldName}"
+                                   min="0"
+                                   max="${totalMarks}"
+                                   placeholder="0-${totalMarks}"
+                                   step="0.1"
+                                   required
+                                   class="student-mark"
+                                   data-student="${studentKey}"
+                                   data-max-mark="${totalMarks}"
+                                   oninput="updateRegularPercentage('${studentKey}', this.value, ${totalMarks})">
+                        </div>
+                        <div class="mark-percentage" id="percentage_${studentKey}">0%</div>
+                    </div>
+                `;
+
+                cell.innerHTML = cellHTML;
+            });
+
+            debugLog('✅ Regular marks entry setup complete');
+        }
+
+        // Helper function to get total component marks
+        function getTotalComponentMarks(subjectConfig) {
+            return subjectConfig.components.reduce((total, comp) => total + comp.weight, 0);
+        }
+
+        // Function to update composite percentage
+        function updateCompositePercentage(studentKey) {
+            const componentInputs = document.querySelectorAll(`input[data-student="${studentKey}"].component-mark`);
+            let totalRawMarks = 0;
+            let totalMaxMarks = 0;
+
+            componentInputs.forEach(input => {
+                const rawMark = parseInt(input.value) || 0;
+                const maxMark = parseInt(input.getAttribute('data-max-mark')) || 0;
+                totalRawMarks += rawMark;
+                totalMaxMarks += maxMark;
+            });
+
+            const percentage = totalMaxMarks > 0 ? (totalRawMarks / totalMaxMarks) * 100 : 0;
+
+            // Update displays
+            const totalDisplay = document.getElementById(`total_marks_${studentKey}`);
+            const percentageDisplay = document.getElementById(`percentage_${studentKey}`);
+            const subjectId = currentSubjectInfo ? currentSubjectInfo.id : '1';
+            const hiddenPercentage = document.getElementById(`hidden_percentage_${studentKey}_${subjectId}`);
+
+            if (totalDisplay) totalDisplay.textContent = `${totalRawMarks}/${totalMaxMarks}`;
+            if (percentageDisplay) percentageDisplay.textContent = `${Math.round(percentage)}%`;
+            if (hiddenPercentage) hiddenPercentage.value = percentage;
+            if (hiddenPercentage) hiddenPercentage.value = percentage.toFixed(2);
+        }
+
+        // Function to update regular percentage with validation
+        function updateRegularPercentage(studentKey, rawMark, maxMark) {
+            const percentage = maxMark > 0 ? (rawMark / maxMark) * 100 : 0;
+            const percentageDisplay = document.getElementById(`percentage_${studentKey}`);
+            const markInput = document.querySelector(`input[data-student="${studentKey}"]`);
+
+            // Validation: Check if percentage exceeds 100%
+            if (percentage > 100) {
+                if (markInput) {
+                    markInput.style.borderColor = '#dc3545';
+                    markInput.style.backgroundColor = '#fff5f5';
+                    markInput.title = 'Mark cannot exceed maximum marks (100%)';
+                }
+                if (percentageDisplay) {
+                    percentageDisplay.textContent = `${Math.round(percentage)}%`;
+                    percentageDisplay.style.color = '#dc3545';
+                    percentageDisplay.style.fontWeight = 'bold';
+                }
+            } else {
+                if (markInput) {
+                    markInput.style.borderColor = '#e9ecef';
+                    markInput.style.backgroundColor = 'white';
+                    markInput.title = '';
+                }
+                if (percentageDisplay) {
+                    percentageDisplay.textContent = `${Math.round(percentage)}%`;
+                    percentageDisplay.style.color = '#2c3e50';
+                    percentageDisplay.style.fontWeight = 'normal';
+                }
+            }
+        }
+
+        // Helper function to get total max marks for composite subjects
+        function getTotalMaxMarks() {
+            if (!currentSubjectInfo || !currentSubjectInfo.is_composite) return 0;
+            return currentSubjectInfo.components.reduce((total, comp) => total + comp.max_raw_mark, 0);
+        }
+
+        // Proven JavaScript functions from classteacher
+        function updateComponentPercentage(inputElement) {
+            debugLog("Updating component percentage...");
+
+            // Get the student, subject, and component information from data attributes
+            const student = inputElement.dataset.student;
+            const subject = inputElement.dataset.subject;
+            const component = inputElement.dataset.component;
+            const componentWeight = parseFloat(inputElement.dataset.componentWeight) || 1.0;
+
+            // Get the raw mark and max mark
+            let rawMark = parseInt(inputElement.value) || 0;
+            const maxMark = parseInt(inputElement.dataset.maxMark) || 100;
+
+            // Validate the mark doesn't exceed the maximum
+            if (rawMark > maxMark) {
+                rawMark = maxMark;
+                inputElement.value = maxMark;
+            }
+
+            // Calculate the percentage for this component
+            const componentPercentage = (rawMark / maxMark) * 100;
+
+            // Update the component percentage display
+            const componentPercentageElement = document.getElementById(`component_percentage_${student}_${subject}_${component}`);
+            if (componentPercentageElement) {
+                componentPercentageElement.textContent = `${componentPercentage.toFixed(1)}%`;
+            }
+
+            debugLog(`Component ${component}: ${rawMark}/${maxMark} = ${componentPercentage.toFixed(1)}%`);
+        }
+
+        function calculateOverallSubjectMark(student, subject) {
+            debugLog(`Calculating overall mark for student: ${student}, subject: ${subject}`);
+
+            // Find all component inputs for this student and subject
+            const componentInputs = document.querySelectorAll(`input.component-mark[data-student="${student}"][data-subject="${subject}"]`);
+            debugLog(`Found ${componentInputs.length} component inputs`);
+
+            if (componentInputs.length === 0) return;
+
+            let totalWeightedPercentage = 0;
+            let totalWeight = 0;
+            let debugInfo = [];
+
+            componentInputs.forEach(input => {
+                const rawMark = parseInt(input.value) || 0;
+                const maxMark = parseInt(input.dataset.maxMark) || 100;
+                const weight = parseFloat(input.dataset.componentWeight) || 1.0;
+                const component = input.dataset.component;
+
+                // Calculate component percentage
+                const componentPercentage = (rawMark / maxMark) * 100;
+
+                // Calculate weighted contribution
+                const weightedContribution = componentPercentage * weight;
+
+                totalWeightedPercentage += weightedContribution;
+                totalWeight += weight;
+
+                debugInfo.push(`Component ${component}: ${rawMark}/${maxMark} (${componentPercentage.toFixed(1)}%) × ${weight} = ${weightedContribution.toFixed(1)}`);
+            });
+
+            // Calculate final percentage
+            const finalPercentage = totalWeight > 0 ? totalWeightedPercentage / totalWeight : 0;
+
+            debugLog(`Overall calculation: ${debugInfo.join(', ')} = ${finalPercentage.toFixed(1)}%`);
+
+            // Update the overall percentage display
+            const overallPercentageElement = document.getElementById(`overall_percentage_${student}_${subject}`);
+            if (overallPercentageElement) {
+                overallPercentageElement.textContent = `${finalPercentage.toFixed(1)}%`;
+            }
+
+            // Update hidden fields for form submission
+            const hiddenPercentageField = document.getElementById(`hidden_percentage_${student}_${subject}`);
+            if (hiddenPercentageField) {
+                hiddenPercentageField.value = finalPercentage.toFixed(2);
+            }
+
+            const overallMarkField = document.getElementById(`overall_mark_${student}_${subject}`);
+            if (overallMarkField) {
+                // Calculate the overall raw mark based on percentage
+                const totalMarks = 100; // Default total marks
+                const overallRawMark = (finalPercentage / 100) * totalMarks;
+                overallMarkField.value = overallRawMark.toFixed(2);
+            }
+        }
+
+        function updateRegularSubjectPercentage(inputElement) {
+            const student = inputElement.dataset.student;
+            const subject = inputElement.dataset.subject;
+            const rawMark = parseInt(inputElement.value) || 0;
+            const maxMark = parseInt(inputElement.dataset.maxMark) || 100;
+
+            // Validate the mark doesn't exceed the maximum
+            if (rawMark > maxMark) {
+                inputElement.value = maxMark;
+                rawMark = maxMark;
+            }
+
+            // Calculate percentage
+            const percentage = (rawMark / maxMark) * 100;
+
+            // Update percentage display
+            const percentageElement = document.getElementById(`percentage_${student}_${subject}`);
+            if (percentageElement) {
+                percentageElement.textContent = `${percentage.toFixed(1)}%`;
+            }
+
+            debugLog(`Regular subject: ${rawMark}/${maxMark} = ${percentage.toFixed(1)}%`);
+        }
+
+        // Simple function to update percentage in real-time (like classteacher)
+        function updatePercentage(inputElement, studentId) {
+            const totalMarks = parseInt(document.getElementsByName('total_marks')[0].value);
+            const mark = parseInt(inputElement.value) || 0;
+
+            // Validate mark doesn't exceed total
+            if (mark > totalMarks) {
+                inputElement.value = totalMarks;
+                mark = totalMarks;
+            }
+
+            const percentage = (mark / totalMarks) * 100;
+
+            // Update percentage displays
+            const percentageCell = document.getElementById(`percentage_${studentId}`);
+            const percentageDisplayCell = document.getElementById(`percentage_display_${studentId}`);
+
+            if (percentageCell) {
+                percentageCell.textContent = Math.round(percentage) + '%';
+            }
+
+            if (percentageDisplayCell) {
+                percentageDisplayCell.textContent = Math.round(percentage) + '%';
+            }
+        }
+
+        // CLEAN MARKS FORM FUNCTIONALITY
+        function initializeCleanMarksForm() {
+            console.log('🎯 Initializing clean marks form...');
+
+            // Add event listeners to all mark inputs
+            const markInputs = document.querySelectorAll('.clean-mark-input');
+            console.log(`Found ${markInputs.length} mark input fields`);
+
+            markInputs.forEach(input => {
+                // Add input event listener for real-time updates
+                input.addEventListener('input', function() {
+                    updateStudentTotals(this);
+                });
+
+                // Add focus event for better UX
+                input.addEventListener('focus', function() {
+                    this.select();
+                });
+
+                // Add validation
+                input.addEventListener('blur', function() {
+                    validateInput(this);
+                });
+            });
+        }
+
+        function updateStudentTotals(input) {
+            const studentId = input.getAttribute('data-student');
+            if (!studentId) return;
+
+            // Check if this is a composite subject
+            const isComposite = input.closest('.composite-marks-entry') !== null;
+
+            if (isComposite) {
+                updateCompositeTotal(studentId);
+            } else {
+                updateRegularPercentage(studentId, input);
+            }
+        }
+
+        function updateCompositeTotal(studentId) {
+            const compositeContainer = document.querySelector(`[data-student="${studentId}"] .composite-marks-entry`);
+            if (!compositeContainer) return;
+
+            const inputs = compositeContainer.querySelectorAll('.clean-mark-input');
+            let total = 0;
+            let maxTotal = 0;
+
+            inputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                const max = parseFloat(input.getAttribute('max')) || 0;
+                total += value;
+                maxTotal += max;
+            });
+
+            // Update total display
+            const totalElement = document.getElementById(`total_${studentId}`);
+            const percentageElement = document.getElementById(`percentage_${studentId}`);
+
+            if (totalElement) {
+                totalElement.textContent = total.toFixed(1);
+            }
+
+            if (percentageElement) {
+                const percentage = maxTotal > 0 ? (total / maxTotal * 100) : 0;
+                percentageElement.textContent = percentage.toFixed(1) + '%';
+
+                // Update color based on performance
+                updatePerformanceColor(percentageElement, percentage);
+            }
+        }
+
+        function updateRegularPercentage(studentId, input) {
+            const value = parseFloat(input.value) || 0;
+            const max = parseFloat(input.getAttribute('data-max')) || 100;
+            const percentage = max > 0 ? (value / max * 100) : 0;
+
+            const percentageElement = document.getElementById(`percentage_${studentId}`);
+            if (percentageElement) {
+                percentageElement.textContent = percentage.toFixed(1) + '%';
+                updatePerformanceColor(percentageElement, percentage);
+            }
+        }
+
+        function updatePerformanceColor(element, percentage) {
+            // Remove existing classes
+            element.classList.remove('excellent', 'good', 'average', 'below-average');
+
+            // Add appropriate class based on percentage
+            if (percentage >= 80) {
+                element.classList.add('excellent');
+                element.style.color = '#28a745';
+            } else if (percentage >= 60) {
+                element.classList.add('good');
+                element.style.color = '#17a2b8';
+            } else if (percentage >= 40) {
+                element.classList.add('average');
+                element.style.color = '#ffc107';
+            } else {
+                element.classList.add('below-average');
+                element.style.color = '#dc3545';
+            }
+        }
+
+        function validateInput(input) {
+            const value = parseFloat(input.value);
+            const max = parseFloat(input.getAttribute('max'));
+            const min = parseFloat(input.getAttribute('min')) || 0;
+
+            if (isNaN(value)) {
+                input.style.borderColor = '#6c757d';
+                return;
+            }
+
+            if (value < min || value > max) {
+                input.style.borderColor = '#dc3545';
+                input.style.backgroundColor = '#fff5f5';
+
+                // Show validation message
+                showValidationMessage(input, `Value must be between ${min} and ${max}`);
+            } else {
+                input.style.borderColor = '#28a745';
+                input.style.backgroundColor = '#f8fff8';
+                hideValidationMessage(input);
+            }
+        }
+
+        function showValidationMessage(input, message) {
+            // Remove existing message
+            hideValidationMessage(input);
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'validation-message';
+            messageDiv.textContent = message;
+            messageDiv.style.cssText = `
+                position: absolute;
+                background: #dc3545;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                z-index: 1000;
+                margin-top: 2px;
+                white-space: nowrap;
+            `;
+
+            input.parentNode.style.position = 'relative';
+            input.parentNode.appendChild(messageDiv);
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => hideValidationMessage(input), 3000);
+        }
+
+        function hideValidationMessage(input) {
+            const existingMessage = input.parentNode.querySelector('.validation-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+        }
+
+        // NEW FORM FUNCTIONS FOR COMPLETELY REBUILT MARKS FORM
+        function resetNewForm() {
+            const form = document.getElementById('newMarksForm');
+            if (form) {
+                // Reset all input fields
+                const inputs = form.querySelectorAll('.new-mark-input');
+                inputs.forEach(input => {
+                    input.value = '';
+                    input.style.borderColor = '#e2e8f0';
+                });
+
+                // Reset all totals and percentages
+                const totals = form.querySelectorAll('[id^="total_"]');
+                const percentages = form.querySelectorAll('[id^="percentage_"]');
+
+                totals.forEach(total => total.textContent = '0');
+                percentages.forEach(percentage => percentage.textContent = '0%');
+
+                // Update completed count
+                updateCompletedCount();
+
+                console.log('✅ New form reset successfully');
+            }
+        }
+
+        function validateNewForm() {
+            const form = document.getElementById('newMarksForm');
+            if (!form) return false;
+
+            let isValid = true;
+            let errorCount = 0;
+            const inputs = form.querySelectorAll('.new-mark-input');
+
+            inputs.forEach(input => {
+                const value = parseFloat(input.value);
+                const max = parseFloat(input.getAttribute('max'));
+
+                if (input.value && (isNaN(value) || value < 0 || value > max)) {
+                    input.style.borderColor = '#e53e3e';
+                    isValid = false;
+                    errorCount++;
+                } else {
+                    input.style.borderColor = input.value ? '#48bb78' : '#e2e8f0';
+                }
+            });
+
+            if (isValid) {
+                showMessage('✅ All marks are valid!', 'success');
+            } else {
+                showMessage(`❌ Found ${errorCount} invalid marks. Please check highlighted fields.`, 'error');
+            }
+
+            return isValid;
+        }
+
+        function updateCompletedCount() {
+            const form = document.getElementById('newMarksForm');
+            if (!form) return;
+
+            const rows = form.querySelectorAll('.student-marks-row');
+            let completed = 0;
+
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('.new-mark-input');
+                let hasValue = false;
+
+                inputs.forEach(input => {
+                    if (input.value && input.value.trim() !== '') {
+                        hasValue = true;
+                    }
+                });
+
+                if (hasValue) completed++;
+            });
+
+            const completedElement = document.getElementById('completedCount');
+            if (completedElement) {
+                completedElement.textContent = completed;
+            }
+        }
+
+        function initializeNewMarksForm() {
+            const form = document.getElementById('newMarksForm');
+            if (!form) return;
+
+            console.log('🎯 Initializing new marks form...');
+
+            // Add event listeners to all input fields
+            const inputs = form.querySelectorAll('.new-mark-input');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const studentKey = this.getAttribute('data-student');
+
+                    if (this.classList.contains('component-input')) {
+                        // Handle composite subject calculations
+                        calculateCompositeTotal(studentKey);
+                    } else {
+                        // Handle regular subject percentage
+                        calculateRegularPercentage(studentKey, this);
+                    }
+
+                    updateCompletedCount();
+                });
+
+                input.addEventListener('blur', function() {
+                    validateInput(this);
+                });
+            });
+
+            console.log('✅ New marks form initialized successfully');
+        }
+
+        function calculateCompositeTotal(studentKey) {
+            const componentInputs = document.querySelectorAll(`[data-student="${studentKey}"].component-input`);
+            let total = 0;
+
+            componentInputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+
+            const totalElement = document.getElementById(`total_${studentKey}`);
+            const percentageElement = document.getElementById(`percentage_${studentKey}`);
+
+            if (totalElement) totalElement.textContent = total;
+            if (percentageElement) {
+                const percentage = total; // Assuming total marks = 100
+                percentageElement.textContent = `${percentage}%`;
+            }
+        }
+
+        function calculateRegularPercentage(studentKey, input) {
+            const value = parseFloat(input.value) || 0;
+            const max = parseFloat(input.getAttribute('data-max')) || 100;
+            const percentage = Math.round((value / max) * 100);
+
+            const percentageElement = document.getElementById(`percentage_${studentKey}`);
+            if (percentageElement) {
+                percentageElement.textContent = `${percentage}%`;
+            }
+        }
+
+        function validateInput(input) {
+            const value = parseFloat(input.value);
+            const max = parseFloat(input.getAttribute('max'));
+
+            if (input.value && (isNaN(value) || value < 0 || value > max)) {
+                input.style.borderColor = '#e53e3e';
+                return false;
+            } else {
+                input.style.borderColor = input.value ? '#48bb78' : '#e2e8f0';
+                return true;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            debugLog('🚀 Teacher dashboard loaded!');
+            debugLog('📊 Subjects by education level: ' + JSON.stringify(subjectsByEducationLevel));
+
+            // Initialize clean marks form if present (old form)
+            const marksContainer = document.querySelector('.marks-upload-container');
+            if (marksContainer) {
+                console.log('🎯 Clean marks form detected - initializing...');
+                initializeCleanMarksForm();
+            }
+
+            // Initialize new marks form if present (new form)
+            const newMarksContainer = document.querySelector('.new-marks-container');
+            if (newMarksContainer) {
+                console.log('🎯 New marks form detected - initializing...');
+                initializeNewMarksForm();
+            }
+
+            // Check for error messages
+            
+
+            // Load grade mapping
+            loadGradeMapping();
+
+            // Add event listeners for composite configuration inputs
+            const grammarMaxInput = document.getElementById('grammar_max');
+            const compositionMaxInput = document.getElementById('composition_max');
+            const lughaMaxInput = document.getElementById('lugha_max');
+            const inshaMaxInput = document.getElementById('insha_max');
+
+            if (grammarMaxInput) {
+                grammarMaxInput.addEventListener('input', function() {
+                    updateComponentMaxMarks();
+                    document.getElementById('hidden_grammar_max').value = this.value;
+                    debugLog(`📝 Updated hidden grammar max to: ${this.value}`);
+                });
+            }
+            if (compositionMaxInput) {
+                compositionMaxInput.addEventListener('input', function() {
+                    updateComponentMaxMarks();
+                    document.getElementById('hidden_composition_max').value = this.value;
+                    debugLog(`📝 Updated hidden composition max to: ${this.value}`);
+                });
+            }
+            if (lughaMaxInput) {
+                lughaMaxInput.addEventListener('input', function() {
+                    updateComponentMaxMarks();
+                    document.getElementById('hidden_lugha_max').value = this.value;
+                    debugLog(`📝 Updated hidden lugha max to: ${this.value}`);
+                });
+            }
+            if (inshaMaxInput) {
+                inshaMaxInput.addEventListener('input', function() {
+                    updateComponentMaxMarks();
+                    document.getElementById('hidden_insha_max').value = this.value;
+                    debugLog(`📝 Updated hidden insha max to: ${this.value}`);
+                });
+            }
+
+            // Initialize education level if set
+            const educationLevel = document.getElementById('education_level').value;
+            debugLog('🎓 Current education level: ' + educationLevel);
+            if (educationLevel) {
+                debugLog('🔄 Updating subjects for education level: ' + educationLevel);
+                updateSubjectsByEducationLevel();
+            }
+
+            // Initialize subject if set and fetch its info
+            const subjectSelect = document.getElementById('subject');
+            if (subjectSelect && subjectSelect.value) {
+                debugLog('📚 Current subject: ' + subjectSelect.value);
+                handleSubjectSelection();
+            }
+
+            // Check if we're in marks entry mode and setup marks table
+            const pupilsList = document.getElementById('pupils-list');
+            if (pupilsList) {
+                debugLog('📝 In marks entry mode - setting up marks table');
+                // Add a small delay to ensure DOM is ready
+                setTimeout(() => {
+                    setupMarksTable();
+                }, 100);
+            } else {
+                debugLog('📋 Not in marks entry mode');
+            }
+        });
+
+        // Helper functions for flexible subject system
+        function handleCompositeSubject(subjectType, subjectConfig) {
+            const compositeConfig = document.getElementById('composite-config');
+            const englishConfig = document.getElementById('english-config');
+            const kiswahiliConfig = document.getElementById('kiswahili-config');
+            const totalMarksGroup = document.getElementById('total-marks-group');
+            const totalMarksInput = document.getElementById('total_marks');
+
+            // Show composite config
+            compositeConfig.style.display = 'block';
+            totalMarksGroup.style.display = 'none';
+            totalMarksInput.removeAttribute('required');
+
+            if (subjectType === 'english') {
+                englishConfig.style.display = 'block';
+                kiswahiliConfig.style.display = 'none';
+
+                // Set component values from configuration
+                const grammarWeight = subjectConfig.components.find(c => c.name === 'Grammar')?.weight || 60;
+                const compositionWeight = subjectConfig.components.find(c => c.name === 'Composition')?.weight || 40;
+
+                document.getElementById('grammar_max').value = grammarWeight;
+                document.getElementById('composition_max').value = compositionWeight;
+                document.getElementById('hidden_grammar_max').value = grammarWeight;
+                document.getElementById('hidden_composition_max').value = compositionWeight;
+
+                updateComponentMaxMarks();
+                debugLog('📚 Showing English composite configuration');
+            } else if (subjectType === 'kiswahili') {
+                englishConfig.style.display = 'none';
+                kiswahiliConfig.style.display = 'block';
+
+                // Set component values from configuration
+                const lughaWeight = subjectConfig.components.find(c => c.name === 'Lugha')?.weight || 50;
+                const inshaWeight = subjectConfig.components.find(c => c.name === 'Insha')?.weight || 50;
+
+                document.getElementById('lugha_max').value = lughaWeight;
+                document.getElementById('insha_max').value = inshaWeight;
+                document.getElementById('hidden_lugha_max').value = lughaWeight;
+                document.getElementById('hidden_insha_max').value = inshaWeight;
+
+                updateComponentMaxMarks();
+                debugLog('📚 Showing Kiswahili composite configuration');
+            }
+        }
+
+        function handleNonCompositeSubject() {
+            const compositeConfig = document.getElementById('composite-config');
+            const englishConfig = document.getElementById('english-config');
+            const kiswahiliConfig = document.getElementById('kiswahili-config');
+            const totalMarksGroup = document.getElementById('total-marks-group');
+            const totalMarksInput = document.getElementById('total_marks');
+
+            // Hide composite config
+            compositeConfig.style.display = 'none';
+            englishConfig.style.display = 'none';
+            kiswahiliConfig.style.display = 'none';
+
+            // Show total marks field
+            totalMarksGroup.style.display = 'block';
+            totalMarksInput.setAttribute('required', 'required');
+            totalMarksInput.value = '';
+
+            debugLog('📚 Showing non-composite subject configuration');
+        }
+
+
+
+        // Pagination functionality
+        function goToPage(pageNum) {
+            // Create a hidden form to preserve current form state and navigate to page
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/teacher/';
+
+            // Add all current form values
+            const currentForm = document.getElementById('newMarksForm') || document.querySelector('form');
+            if (currentForm) {
+                const formData = new FormData(currentForm);
+                for (let [key, value] of formData.entries()) {
+                    if (key !== 'page') { // Don't duplicate page parameter
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        form.appendChild(input);
+                    }
+                }
+            }
+
+            // Add page parameter
+            const pageInput = document.createElement('input');
+            pageInput.type = 'hidden';
+            pageInput.name = 'page';
+            pageInput.value = pageNum;
+            form.appendChild(pageInput);
+
+            // Add upload_marks to maintain state
+            const uploadInput = document.createElement('input');
+            uploadInput.type = 'hidden';
+            uploadInput.name = 'upload_marks';
+            uploadInput.value = '1';
+            form.appendChild(uploadInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Debug form submission
+        function debugFormSubmission() {
+            debugLog('🔍 DEBUG: Form submission triggered');
+            const form = document.getElementById('newMarksForm');
+            if (form) {
+                const formData = new FormData(form);
+                debugLog('📋 Form fields being submitted:');
+                for (let [key, value] of formData.entries()) {
+                    if (key.includes('mark_') || key.includes('percentage_')) {
+                        debugLog(`  ${key}: ${value}`);
+                    }
+                }
+
+                // Count mark fields
+                let markFieldCount = 0;
+                let filledMarkFields = 0;
+                for (let [key, value] of formData.entries()) {
+                    if (key.includes('mark_')) {
+                        markFieldCount++;
+                        if (value && value.trim() !== '' && parseFloat(value) > 0) {
+                            filledMarkFields++;
+                        }
+                    }
+                }
+                debugLog(`📊 Mark fields: ${markFieldCount} total, ${filledMarkFields} filled`);
+            }
+        }
+
+        // Add click handlers to pagination buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const paginationBtns = document.querySelectorAll('.pagination-btn[data-page]');
+            paginationBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const pageNum = this.getAttribute('data-page');
+                    goToPage(pageNum);
+                });
+            });
+
+            // Add debug handler to submit button
+            const submitBtn = document.querySelector('button[name="submit_marks"]');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function(e) {
+                    debugLog('🚀 Submit marks button clicked');
+                    debugFormSubmission();
+                });
+            }
+        });
+    </script>
+
+
+</body>
+</html>

@@ -17,58 +17,11 @@
 
     <title>Login - {{ school_info.school_name or 'Hillview School' }}</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              inter: ["Inter", "sans-serif"],
-            },
-            colors: {
-              primary: {
-                50: "#f0f4ff",
-                100: "#e0e9ff",
-                500: "#667eea",
-                600: "#5a6fd8",
-                700: "#4f5bc5",
-                800: "#4347b2",
-                900: "#3a3d9e",
-              },
-              secondary: {
-                500: "#764ba2",
-                600: "#6a4190",
-                700: "#5e377e",
-              },
-            },
-            backdropBlur: {
-              xs: "2px",
-            },
-            animation: {
-              float: "float 6s ease-in-out infinite",
-              "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-              "fade-in": "fadeIn 0.8s ease-out",
-              "slide-up": "slideUp 0.6s ease-out",
-            },
-            keyframes: {
-              float: {
-                "0%, 100%": { transform: "translateY(0px)" },
-                "50%": { transform: "translateY(-20px)" },
-              },
-              fadeIn: {
-                "0%": { opacity: "0" },
-                "100%": { opacity: "1" },
-              },
-              slideUp: {
-                "0%": { opacity: "0", transform: "translateY(30px)" },
-                "100%": { opacity: "1", transform: "translateY(0)" },
-              },
-            },
-          },
-        },
-      };
-    </script>
+    <!-- Bootswatch Solar Theme - Main Theme -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='bootstrap.min.css') }}"
+    />
 
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -90,17 +43,20 @@
     />
 
     <style>
-      /* CSS Variables - Define them here to ensure they're available */
+      /* Solar Theme CSS Variables */
       :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --white: #ffffff;
-        --gray-50: #f8fafc;
-        --gray-200: #e5e7eb;
-        --gray-400: #9ca3af;
-        --gray-500: #6b7280;
-        --gray-600: #4b5563;
-        --gray-700: #374151;
-        --gray-800: #1f2937;
+        --primary-gradient: linear-gradient(135deg, #b58900 0%, #cb4b16 100%);
+        --solar-primary: #b58900;
+        --solar-secondary: #839496;
+        --solar-success: #2aa198;
+        --solar-info: #268bd2;
+        --solar-warning: #cb4b16;
+        --solar-danger: #d33682;
+        --solar-light: #fdf6e3;
+        --solar-dark: #073642;
+        --solar-body-bg: #002b36;
+        --solar-body-color: #839496;
+        --white: #fdf6e3;
         --space-2: 0.5rem;
         --space-3: 0.75rem;
         --space-4: 1rem;
@@ -123,37 +79,46 @@
         --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
       }
 
-      /* Modern Login Page Styles */
+      /* Premium Solar Theme Login */
       body {
         font-family: "Inter", system-ui, -apple-system, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--solar-body-bg);
         min-height: 100vh;
         display: flex;
         justify-content: center;
-        align-items: flex-start; /* Changed from center to flex-start */
+        align-items: center;
         margin: 0;
-        padding: 2rem 1.5rem; /* Use fixed padding */
+        padding: 1rem;
         position: relative;
-        overflow-x: hidden; /* Only hide horizontal overflow */
-        overflow-y: auto; /* Allow vertical scrolling */
+        overflow-x: hidden;
+        color: var(--solar-body-color);
       }
 
-      /* Animated Background Elements */
+      /* Premium animated background */
       body::before {
         content: "";
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         background: radial-gradient(
-          circle,
-          rgba(255, 255, 255, 0.1) 1px,
-          transparent 1px
-        );
-        background-size: 50px 50px;
+            circle at 20% 80%,
+            rgba(181, 137, 0, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(38, 139, 210, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 40% 40%,
+            rgba(42, 161, 152, 0.1) 0%,
+            transparent 50%
+          );
+        z-index: -1;
         animation: float 20s ease-in-out infinite;
-        z-index: 1;
       }
 
       @keyframes float {
@@ -161,8 +126,11 @@
         100% {
           transform: translateY(0px) rotate(0deg);
         }
-        50% {
-          transform: translateY(-20px) rotate(180deg);
+        33% {
+          transform: translateY(-20px) rotate(1deg);
+        }
+        66% {
+          transform: translateY(10px) rotate(-1deg);
         }
       }
 
@@ -171,36 +139,62 @@
         z-index: 2;
         width: 100%;
         max-width: 480px;
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(7, 54, 66, 0.95);
         backdrop-filter: blur(20px);
-        border-radius: 1.5rem;
-        padding: 2rem; /* Reduced padding */
-        box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 3rem 2.5rem;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
+          0 0 0 1px rgba(131, 148, 150, 0.3),
+          inset 0 1px 0 rgba(131, 148, 150, 0.1);
+        border: 1px solid rgba(131, 148, 150, 0.3);
         animation: slideUp 0.8s ease-out;
-        /* Let container expand naturally */
         margin: 2rem auto;
         min-height: auto;
         height: auto;
         max-height: none;
+        overflow: hidden;
+      }
+
+      .login-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--solar-primary),
+          transparent
+        );
+        opacity: 0.6;
       }
 
       .school-header {
         text-align: center;
-        margin-bottom: 1.5rem; /* Reduced spacing */
+        margin-bottom: 2.5rem;
       }
 
       .school-logo {
-        width: 60px; /* Smaller logo */
-        height: 60px;
-        background: var(--primary-gradient);
-        border-radius: var(--radius-full);
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(
+          135deg,
+          var(--solar-primary) 0%,
+          var(--solar-warning) 100%
+        );
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 1rem; /* Reduced margin */
-        box-shadow: var(--shadow-lg);
-        animation: pulse 2s ease-in-out infinite;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 15px 35px rgba(181, 137, 0, 0.3),
+          0 5px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(253, 246, 227, 0.2);
+        border: 2px solid rgba(253, 246, 227, 0.1);
+        position: relative;
+        overflow: hidden;
+        animation: pulse 3s ease-in-out infinite;
       }
 
       @keyframes pulse {
@@ -331,7 +325,11 @@
       }
 
       .admin-card {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(
+          135deg,
+          var(--solar-danger),
+          var(--solar-warning)
+        );
         color: white;
       }
 

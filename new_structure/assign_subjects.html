@@ -1,0 +1,3457 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Subject Assignments - Hillview School</title>
+    <link
+      rel="stylesheet"
+      href="/static/css/style.css"
+    />
+    <style>
+      /* Enhanced Professional Styling for Teacher Subject Assignments */
+
+      /* Override container styles for manage pages */
+      .manage-container {
+        max-width: 95% !important;
+        width: 95% !important;
+        margin: 80px auto 60px !important;
+        padding: var(--spacing-xl) !important;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+      }
+
+      /* Enhanced Page header styling */
+      .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2c5530 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(31, 125, 83, 0.3);
+        border: 1px solid rgba(255,255,255,0.1);
+        margin-bottom: var(--spacing-xl);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+      }
+
+      .page-header h1 {
+        color: white;
+        margin-bottom: var(--spacing-sm);
+        font-size: 2.8rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .page-header h1::before {
+        content: '📚';
+        font-size: 2.5rem;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      }
+
+      .nav-links {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 1.5rem;
+      }
+
+      .nav-links a {
+        color: rgba(255,255,255,0.9);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 10px 20px;
+        border-radius: 25px;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.95rem;
+      }
+
+      .nav-links a:hover {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        text-decoration: none;
+      }
+
+      /* Enhanced Forms Grid */
+      .forms-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 0.7fr;
+        gap: 2.5rem;
+        margin-bottom: 3rem;
+      }
+
+      /* Enhanced Form Card styling */
+      .form-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: 1px solid rgba(31, 125, 83, 0.1);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .form-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), #28a745);
+      }
+
+      .form-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      }
+
+      .form-card h2 {
+        color: var(--primary-color);
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .form-card h2::before {
+        content: '🎯';
+        font-size: 1.5rem;
+      }
+
+      /* Enhanced Form styling */
+      .form-group {
+        margin-bottom: 1.8rem;
+        position: relative;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.8rem;
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 1.2rem 1.5rem;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 1rem;
+        color: var(--text-dark);
+        background: white;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(31, 125, 83, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .form-control:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+
+      /* Enhanced Button styling */
+      .btn,
+      .manage-btn {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2c5530 100%);
+        color: white;
+        border: none;
+        padding: 1.2rem 2.5rem;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 1.05rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(31, 125, 83, 0.3);
+      }
+
+      .btn::before,
+      .manage-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+      }
+
+      .btn:hover,
+      .manage-btn:hover {
+        background: linear-gradient(135deg, #2c5530 0%, var(--primary-color) 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(31, 125, 83, 0.4);
+        text-decoration: none;
+      }
+
+      .btn:hover::before,
+      .manage-btn:hover::before {
+        left: 100%;
+      }
+
+      /* Enhanced Students Section */
+      .students-section {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: 1px solid rgba(31, 125, 83, 0.1);
+        margin-top: 3rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .students-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #17a2b8, var(--primary-color));
+      }
+
+      .students-section h2 {
+        color: var(--primary-color);
+        margin-bottom: 2rem;
+        font-size: 2rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .students-section h2::before {
+        content: '📊';
+        font-size: 1.8rem;
+      }
+
+      /* Enhanced Filter Section */
+      #student-filter {
+        margin-bottom: 2rem;
+        padding: 1.8rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      }
+
+      #student-filter label {
+        font-weight: 600;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.05rem;
+      }
+
+      #student-filter label::before {
+        content: '🔍';
+        font-size: 1.2rem;
+      }
+
+      #student-filter input {
+        padding: 1rem 1.5rem;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        width: 350px;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+
+      #student-filter input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(31, 125, 83, 0.1);
+        transform: translateY(-2px);
+      }
+
+      /* Enhanced Filter Buttons */
+      .filter-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .filter-btn {
+        padding: 0.8rem 1.5rem;
+        background: white;
+        border: 2px solid #dee2e6;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--text-dark);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+
+      .filter-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(31, 125, 83, 0.3);
+      }
+
+      .filter-btn.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(31, 125, 83, 0.3);
+      }
+
+      /* Enhanced Table improvements */
+      .table-responsive {
+        overflow-x: auto;
+        margin: var(--spacing-lg) 0;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        background: white;
+        border: 1px solid #dee2e6;
+      }
+
+      table {
+        width: 100%;
+        min-width: 800px;
+        border-collapse: collapse;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        padding: 1.5rem 1.2rem;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+      }
+
+      th {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2c5530 100%);
+        color: white;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      th::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #28a745;
+      }
+
+      tr:nth-child(even) {
+        background: rgba(31, 125, 83, 0.03);
+      }
+
+      tr:hover {
+        background: rgba(31, 125, 83, 0.08);
+        transform: scale(1.01);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      td {
+        font-size: 1rem;
+        color: var(--text-dark);
+      }
+
+      /* Enhanced Action buttons */
+      .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .edit-btn,
+      .delete-btn {
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+
+      .edit-btn {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+        color: var(--text-dark);
+      }
+
+      .edit-btn:hover {
+        background: linear-gradient(135deg, #e0a800 0%, #ffc107 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+        text-decoration: none;
+      }
+
+      .delete-btn {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+      }
+
+      .delete-btn:hover {
+        background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+      }
+
+      /* Enhanced Messages */
+      .message {
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        font-weight: 500;
+        border-left: 4px solid;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 1.05rem;
+      }
+
+      .message-success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        border-left-color: #28a745;
+      }
+
+      .message-success::before {
+        content: '✅';
+        font-size: 1.5rem;
+      }
+
+      .message-error {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        border-left-color: #dc3545;
+      }
+
+      .message-error::before {
+        content: '❌';
+        font-size: 1.5rem;
+      }
+
+      /* Enhanced Tips Content */
+      .tips-content {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        border-left: 4px solid var(--primary-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      }
+
+      .tips-content h2::before {
+        content: '💡';
+      }
+
+      .tips-content ul {
+        margin: 0;
+        padding-left: 1.5rem;
+      }
+
+      .tips-content li {
+        margin-bottom: 1rem;
+        line-height: 1.6;
+        position: relative;
+        padding-left: 1.5rem;
+        font-size: 1rem;
+      }
+
+      .tips-content li::before {
+        content: '▶';
+        position: absolute;
+        left: 0;
+        color: var(--primary-color);
+        font-size: 0.9rem;
+        top: 2px;
+      }
+
+      /* Enhanced Bulk Assignment */
+      .bulk-assignment {
+        background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        border-left: 4px solid #28a745;
+        margin-top: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      }
+
+      .bulk-assignment h3 {
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        font-size: 1.4rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .bulk-assignment h3::before {
+        content: '⚡';
+        font-size: 1.3rem;
+      }
+
+      /* Enhanced Responsive design */
+      @media (max-width: 1024px) {
+        .forms-grid {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+
+        .manage-container {
+          max-width: 98% !important;
+          width: 98% !important;
+          padding: var(--spacing-lg) !important;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .manage-container {
+          max-width: 98% !important;
+          width: 98% !important;
+          padding: var(--spacing-md) !important;
+        }
+
+        .page-header {
+          padding: 2rem;
+        }
+
+        .page-header h1 {
+          font-size: 2.2rem;
+        }
+
+        .nav-links {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .form-card, .students-section {
+          padding: 1.5rem;
+        }
+
+        #student-filter {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        #student-filter input {
+          width: 100%;
+        }
+
+        .filter-buttons {
+          justify-content: center;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+        }
+
+        th, td {
+          padding: 1rem 0.8rem;
+          font-size: 0.9rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .manage-container {
+          padding: 1rem !important;
+        }
+
+        .page-header {
+          padding: 1.5rem;
+        }
+
+        .page-header h1 {
+          font-size: 1.8rem;
+        }
+
+        .form-card, .students-section {
+          padding: 1rem;
+        }
+
+        .manage-btn {
+          width: 100%;
+          padding: 1rem;
+        }
+      }
+
+      /* Loading States */
+      .loading {
+        opacity: 0.6;
+        pointer-events: none;
+        position: relative;
+      }
+
+      .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid var(--primary-color);
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .form-card, .students-section {
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #2c5530;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="manage-container">
+        <header class="page-header">
+          <h1>Teacher Subject Assignments</h1>
+          <div class="nav-links">
+            <a href="/classteacher/manage_teachers"
+              >Back to Manage Teachers</a
+            >
+            |
+            <a href="/classteacher/"
+              >Back to Dashboard</a
+            >
+            |
+            <a
+              href="/classteacher/advanced_assignments"
+              >Advanced Assignments</a
+            >
+            |
+            <a href="/logout">Logout</a>
+          </div>
+        </header>
+
+        <!-- Message container for notifications -->
+        <div id="message-container">
+           
+        </div>
+
+        <div class="forms-grid">
+          <!-- Assignment Form -->
+          <div class="form-card">
+            <h2>Assign Subject to Teacher</h2>
+            <form
+              method="POST"
+              action="/classteacher/assign_subjects"
+              id="assignment-form"
+            >
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+              />
+
+              <div class="form-group">
+                <label for="teacher_id">Select Teacher:</label>
+                <select
+                  name="teacher_id"
+                  id="teacher_id"
+                  class="form-control"
+                  required
+                  onchange="loadTeacherAssignments()"
+                >
+                  <option value="">-- Select Teacher --</option>
+                  
+                  <option value="2">
+                    headteacher
+                  </option>
+                  
+                  <option value="4">
+                    kevin
+                  </option>
+                  
+                  <option value="6">
+                    carol
+                  </option>
+                  
+                  <option value="7">
+                    DAVIE@254
+                  </option>
+                  
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="subject_id">Select Subject:</label>
+                <select
+                  name="subject_id"
+                  id="subject_id"
+                  class="form-control"
+                  required
+                >
+                  <option value="">-- Select Subject --</option>
+                  
+                  <option value="5">
+                    MATHEMATICS (Junior Secondary)
+                  </option>
+                  
+                  <option value="7">
+                    KISWAHILI (Junior Secondary)
+                  </option>
+                  
+                  <option value="8">
+                    ENGLISH (Junior Secondary)
+                  </option>
+                  
+                  <option value="9">
+                    RELIGIOUS EDUCATION (Junior Secondary)
+                  </option>
+                  
+                  <option value="10">
+                    SOCIAL STUDIES (Junior Secondary)
+                  </option>
+                  
+                  <option value="11">
+                    INTEGRATED SCIENCE (Junior Secondary)
+                  </option>
+                  
+                  <option value="12">
+                    AGRICULTURE (Junior Secondary)
+                  </option>
+                  
+                  <option value="13">
+                    PRE-TECHNICAL STUDIES (Junior Secondary)
+                  </option>
+                  
+                  <option value="14">
+                    CREATIVE ARTS  AND SPORTS (Junior Secondary)
+                  </option>
+                  
+                  <option value="15">
+                    COMPUTER (Junior Secondary)
+                  </option>
+                  
+                  <option value="16">
+                    FRENCH (Junior Secondary)
+                  </option>
+                  
+                  <option value="17">
+                    MANDARIN (Junior Secondary)
+                  </option>
+                  
+                  <option value="18">
+                    GERMAN (Junior Secondary)
+                  </option>
+                  
+                  <option value="22">
+                    Language Activities (Pre Primary)
+                  </option>
+                  
+                  <option value="23">
+                    Mathematical Activities (Pre Primary)
+                  </option>
+                  
+                  <option value="24">
+                    Environmental Activities (Pre Primary)
+                  </option>
+                  
+                  <option value="25">
+                    Psychomotor and Creative Activities (Pre Primary)
+                  </option>
+                  
+                  <option value="26">
+                    Religious Education Activities (Pre Primary)
+                  </option>
+                  
+                  <option value="27">
+                    English (Pre Primary)
+                  </option>
+                  
+                  <option value="28">
+                    Kiswahili (Pre Primary)
+                  </option>
+                  
+                  <option value="29">
+                    Mathematics (Pre Primary)
+                  </option>
+                  
+                  <option value="30">
+                    Science Activities (Pre Primary)
+                  </option>
+                  
+                  <option value="31">
+                    Creative Arts (Pre Primary)
+                  </option>
+                  
+                  <option value="33">
+                    Music and Movement (Pre Primary)
+                  </option>
+                  
+                  <option value="34">
+                    Drawing and Coloring (Pre Primary)
+                  </option>
+                  
+                  <option value="35">
+                    Indigenous Language (Lower Primary)
+                  </option>
+                  
+                  <option value="36">
+                    Kiswahili (Lower Primary)
+                  </option>
+                  
+                  <option value="37">
+                    English (Lower Primary)
+                  </option>
+                  
+                  <option value="38">
+                    Mathematics (Lower Primary)
+                  </option>
+                  
+                  <option value="39">
+                    Religious Education (Lower Primary)
+                  </option>
+                  
+                  <option value="40">
+                    Environmental Activities (Lower Primary)
+                  </option>
+                  
+                  <option value="41">
+                    Creative Activities (Lower Primary)
+                  </option>
+                  
+                  <option value="42">
+                    English (Upper Primary)
+                  </option>
+                  
+                  <option value="43">
+                    Mathematics (Upper Primary)
+                  </option>
+                  
+                  <option value="44">
+                    Kiswahili (Upper Primary)
+                  </option>
+                  
+                  <option value="45">
+                    Religious Education (Upper Primary)
+                  </option>
+                  
+                  <option value="46">
+                    Agriculture and Nutrition (Upper Primary)
+                  </option>
+                  
+                  <option value="47">
+                    Social Studies (Upper Primary)
+                  </option>
+                  
+                  <option value="48">
+                    Creative Arts (Upper Primary)
+                  </option>
+                  
+                  <option value="49">
+                    Science and Technology (Upper Primary)
+                  </option>
+                  
+                  <option value="57">
+                    Agriculture and Nutrition (Junior Secondary)
+                  </option>
+                  
+                  <option value="58">
+                    Creative Arts and Sports (Junior Secondary)
+                  </option>
+                  
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="grade_id">Select Grade:</label>
+                <select
+                  name="grade_id"
+                  id="grade_id"
+                  class="form-control"
+                  required
+                  onchange="updateStreams()"
+                >
+                  <option value="">-- Select Grade --</option>
+                  
+                  <option value="21">Grade 9</option>
+                  
+                  <option value="22">Grade 8</option>
+                  
+                  <option value="23">Grade 7</option>
+                  
+                  <option value="24">Grade 1</option>
+                  
+                  <option value="25">Grade 4</option>
+                  
+                  <option value="26">PP1</option>
+                  
+                  <option value="27">PP2</option>
+                  
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="stream_id">Select Stream (Optional):</label>
+                <select name="stream_id" id="stream_id" class="form-control">
+                  <option value="">-- All Streams --</option>
+                  <!-- Populated via JavaScript -->
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="is_class_teacher"
+                    id="is_class_teacher"
+                    value="1"
+                  />
+                  Designate as Class Teacher
+                </label>
+              </div>
+
+              <button type="submit" class="manage-btn">Assign Subject</button>
+            </form>
+
+            <!-- Bulk Assignment Section -->
+            <div
+              class="bulk-assignment"
+              style="
+                margin-top: 20px;
+                border-top: 1px solid #ddd;
+                padding-top: 15px;
+              "
+            >
+              <h3>Bulk Assignment</h3>
+              <p>Assign a teacher to multiple subjects or grades at once:</p>
+
+              <button
+                type="button"
+                class="manage-btn"
+                onclick="showBulkAssignmentModal()"
+                style="background-color: #4a6741"
+              >
+                Open Bulk Assignment
+              </button>
+            </div>
+
+            <!-- Teacher's Current Assignments Summary -->
+            <div
+              id="teacher-assignments-summary"
+              style="
+                margin-top: 20px;
+                display: none;
+                border-top: 1px solid #ddd;
+                padding-top: 15px;
+              "
+            >
+              <h3>Selected Teacher's Assignments</h3>
+              <div id="teacher-assignments-content">
+                <!-- Populated via JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Bulk Assignment Modal -->
+          <div
+            id="bulk-assignment-modal"
+            class="modal"
+            style="
+              display: none;
+              position: fixed;
+              z-index: 1000;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+              background-color: rgba(0, 0, 0, 0.4);
+            "
+          >
+            <div
+              class="modal-content"
+              style="
+                background-color: #fefefe;
+                margin: 10% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+                max-width: 700px;
+                border-radius: 5px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+              "
+            >
+              <span
+                class="close"
+                onclick="closeBulkAssignmentModal()"
+                style="
+                  color: #aaa;
+                  float: right;
+                  font-size: 28px;
+                  font-weight: bold;
+                  cursor: pointer;
+                "
+                >&times;</span
+              >
+              <h2>🚀 Advanced Bulk Assignment</h2>
+              <p style="color: #666; margin-bottom: 20px;">Assign multiple subjects across different education levels and specific streams</p>
+
+              <form
+                id="bulk-assignment-form"
+                method="POST"
+                action="/classteacher/enhanced_bulk_assign_subjects"
+              >
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+                />
+
+                <!-- Teacher Selection -->
+                <div class="form-group">
+                  <label for="bulk_teacher_id">👨‍🏫 Select Teacher:</label>
+                  <select
+                    name="bulk_teacher_id"
+                    id="bulk_teacher_id"
+                    class="form-control"
+                    required
+                    onchange="loadTeacherCurrentAssignments()"
+                  >
+                    <option value="">-- Select Teacher --</option>
+                    
+                    <option value="2">
+                      headteacher (Headteacher)
+                    </option>
+                    
+                    <option value="4">
+                      kevin (Classteacher)
+                    </option>
+                    
+                    <option value="6">
+                      carol (Teacher)
+                    </option>
+                    
+                    <option value="7">
+                      DAVIE@254 (Teacher)
+                    </option>
+                    
+                  </select>
+                </div>
+
+                <!-- Assignment Mode Selection -->
+                <div class="form-group">
+                  <label>📋 Assignment Mode:</label>
+                  <div style="margin-top: 10px;">
+                    <label style="display: block; margin-bottom: 10px;">
+                      <input
+                        type="radio"
+                        name="assignment_mode"
+                        value="simple"
+                        checked
+                        onchange="toggleAssignmentMode()"
+                      />
+                      <strong>Simple Mode:</strong> Assign selected subjects to selected grades (all streams)
+                    </label>
+                    <label style="display: block;">
+                      <input
+                        type="radio"
+                        name="assignment_mode"
+                        value="advanced"
+                        onchange="toggleAssignmentMode()"
+                      />
+                      <strong>Advanced Mode:</strong> Precise control over subject-grade-stream combinations
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Simple Mode Section -->
+                <div id="simple-mode-section">
+                  <div class="form-group">
+                    <label>📚 Select Subjects by Education Level:</label>
+
+                    <!-- Lower Primary Subjects -->
+                    <div class="education-level-section" style="margin-bottom: 15px; border: 1px solid #e0e0e0; padding: 15px; border-radius: 5px;">
+                      <h4 style="color: #4a6741; margin-bottom: 10px;">🟢 Lower Primary (Grades 1-3)</h4>
+                      <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="35" />
+                          <span style="margin-left: 5px;">Indigenous Language</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="36" />
+                          <span style="margin-left: 5px;">Kiswahili</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="37" />
+                          <span style="margin-left: 5px;">English</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="38" />
+                          <span style="margin-left: 5px;">Mathematics</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="39" />
+                          <span style="margin-left: 5px;">Religious Education</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="40" />
+                          <span style="margin-left: 5px;">Environmental Activities</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="41" />
+                          <span style="margin-left: 5px;">Creative Activities</span>
+                        </label>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                      </div>
+                    </div>
+
+                    <!-- Upper Primary Subjects -->
+                    <div class="education-level-section" style="margin-bottom: 15px; border: 1px solid #e0e0e0; padding: 15px; border-radius: 5px;">
+                      <h4 style="color: #2196f3; margin-bottom: 10px;">🔵 Upper Primary (Grades 4-6)</h4>
+                      <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="42" />
+                          <span style="margin-left: 5px;">English</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="43" />
+                          <span style="margin-left: 5px;">Mathematics</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="44" />
+                          <span style="margin-left: 5px;">Kiswahili</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="45" />
+                          <span style="margin-left: 5px;">Religious Education</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="46" />
+                          <span style="margin-left: 5px;">Agriculture and Nutrition</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="47" />
+                          <span style="margin-left: 5px;">Social Studies</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="48" />
+                          <span style="margin-left: 5px;">Creative Arts</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="49" />
+                          <span style="margin-left: 5px;">Science and Technology</span>
+                        </label>
+                        
+                        
+                        
+                        
+                        
+                        
+                      </div>
+                    </div>
+
+                    <!-- Junior Secondary Subjects -->
+                    <div class="education-level-section" style="margin-bottom: 15px; border: 1px solid #e0e0e0; padding: 15px; border-radius: 5px;">
+                      <h4 style="color: #ff9800; margin-bottom: 10px;">🟠 Junior Secondary (Grades 7-9)</h4>
+                      <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="5" />
+                          <span style="margin-left: 5px;">MATHEMATICS</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="7" />
+                          <span style="margin-left: 5px;">KISWAHILI</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="8" />
+                          <span style="margin-left: 5px;">ENGLISH</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="9" />
+                          <span style="margin-left: 5px;">RELIGIOUS EDUCATION</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="10" />
+                          <span style="margin-left: 5px;">SOCIAL STUDIES</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="11" />
+                          <span style="margin-left: 5px;">INTEGRATED SCIENCE</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="12" />
+                          <span style="margin-left: 5px;">AGRICULTURE</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="13" />
+                          <span style="margin-left: 5px;">PRE-TECHNICAL STUDIES</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="14" />
+                          <span style="margin-left: 5px;">CREATIVE ARTS  AND SPORTS</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="15" />
+                          <span style="margin-left: 5px;">COMPUTER</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="16" />
+                          <span style="margin-left: 5px;">FRENCH</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="17" />
+                          <span style="margin-left: 5px;">MANDARIN</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="18" />
+                          <span style="margin-left: 5px;">GERMAN</span>
+                        </label>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="57" />
+                          <span style="margin-left: 5px;">Agriculture and Nutrition</span>
+                        </label>
+                        
+                        
+                        
+                        <label style="display: flex; align-items: center;">
+                          <input type="checkbox" name="bulk_subjects" value="58" />
+                          <span style="margin-left: 5px;">Creative Arts and Sports</span>
+                        </label>
+                        
+                        
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Enhanced Grade and Stream Selection -->
+                  <div class="form-group">
+                    <label>🎓 Select Grades and Streams:</label>
+                    <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">
+                      Select grades and their specific streams. For grades without streams, the assignment will apply to the entire grade.
+                    </p>
+
+                    <div id="grade-stream-selector" style="border: 1px solid #e0e0e0; padding: 15px; border-radius: 5px; background: #fafafa;">
+                      
+                      <div class="grade-section" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: white;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                          <label style="display: flex; align-items: center; font-weight: bold; margin-right: 20px;">
+                            <input
+                              type="checkbox"
+                              name="bulk_grades"
+                              value="21"
+                              onchange="toggleGradeSelection('21', 'Grade 9')"
+                              id="grade-21"
+                            />
+                            <span style="margin-left: 8px; color: #333;">📚 Grade 9</span>
+                          </label>
+
+                          <div id="grade-21-status" style="color: #666; font-size: 0.9em;">
+                            <!-- Status will be updated by JavaScript -->
+                          </div>
+                        </div>
+
+                        <div id="streams-for-grade-21" style="display: none; margin-left: 25px; padding: 10px; background: #f8f9fa; border-radius: 3px;">
+                          <div style="margin-bottom: 10px;">
+                            <label style="font-weight: 600; color: #555;">🏫 Stream Selection for Grade 9:</label>
+                          </div>
+
+                          <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                              <input
+                                type="radio"
+                                name="stream_option_21"
+                                value="all"
+                                checked
+                                onchange="updateStreamSelection('21')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🌟 All Streams (Default)</span>
+                            </label>
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="radio"
+                                name="stream_option_21"
+                                value="specific"
+                                onchange="updateStreamSelection('21')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🎯 Specific Streams Only</span>
+                            </label>
+                          </div>
+
+                          <div id="specific-streams-21" style="display: none;">
+                            <div class="streams-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                              <!-- Streams will be populated by JavaScript -->
+                            </div>
+                          </div>
+
+                          <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="checkbox"
+                                name="class_teacher_grades"
+                                value="21"
+                                id="class-teacher-21"
+                              />
+                              <span style="margin-left: 8px; color: #4a6741; font-weight: 500;">🏆 Make Class Teacher for this Grade</span>
+                            </label>
+                            <div id="class-teacher-note-21" style="margin-top: 5px; font-size: 0.8em; color: #666; display: none;">
+                              Note: Class teacher assignment will apply to selected streams or all streams if none specified.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="grade-section" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: white;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                          <label style="display: flex; align-items: center; font-weight: bold; margin-right: 20px;">
+                            <input
+                              type="checkbox"
+                              name="bulk_grades"
+                              value="22"
+                              onchange="toggleGradeSelection('22', 'Grade 8')"
+                              id="grade-22"
+                            />
+                            <span style="margin-left: 8px; color: #333;">📚 Grade 8</span>
+                          </label>
+
+                          <div id="grade-22-status" style="color: #666; font-size: 0.9em;">
+                            <!-- Status will be updated by JavaScript -->
+                          </div>
+                        </div>
+
+                        <div id="streams-for-grade-22" style="display: none; margin-left: 25px; padding: 10px; background: #f8f9fa; border-radius: 3px;">
+                          <div style="margin-bottom: 10px;">
+                            <label style="font-weight: 600; color: #555;">🏫 Stream Selection for Grade 8:</label>
+                          </div>
+
+                          <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                              <input
+                                type="radio"
+                                name="stream_option_22"
+                                value="all"
+                                checked
+                                onchange="updateStreamSelection('22')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🌟 All Streams (Default)</span>
+                            </label>
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="radio"
+                                name="stream_option_22"
+                                value="specific"
+                                onchange="updateStreamSelection('22')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🎯 Specific Streams Only</span>
+                            </label>
+                          </div>
+
+                          <div id="specific-streams-22" style="display: none;">
+                            <div class="streams-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                              <!-- Streams will be populated by JavaScript -->
+                            </div>
+                          </div>
+
+                          <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="checkbox"
+                                name="class_teacher_grades"
+                                value="22"
+                                id="class-teacher-22"
+                              />
+                              <span style="margin-left: 8px; color: #4a6741; font-weight: 500;">🏆 Make Class Teacher for this Grade</span>
+                            </label>
+                            <div id="class-teacher-note-22" style="margin-top: 5px; font-size: 0.8em; color: #666; display: none;">
+                              Note: Class teacher assignment will apply to selected streams or all streams if none specified.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="grade-section" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: white;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                          <label style="display: flex; align-items: center; font-weight: bold; margin-right: 20px;">
+                            <input
+                              type="checkbox"
+                              name="bulk_grades"
+                              value="23"
+                              onchange="toggleGradeSelection('23', 'Grade 7')"
+                              id="grade-23"
+                            />
+                            <span style="margin-left: 8px; color: #333;">📚 Grade 7</span>
+                          </label>
+
+                          <div id="grade-23-status" style="color: #666; font-size: 0.9em;">
+                            <!-- Status will be updated by JavaScript -->
+                          </div>
+                        </div>
+
+                        <div id="streams-for-grade-23" style="display: none; margin-left: 25px; padding: 10px; background: #f8f9fa; border-radius: 3px;">
+                          <div style="margin-bottom: 10px;">
+                            <label style="font-weight: 600; color: #555;">🏫 Stream Selection for Grade 7:</label>
+                          </div>
+
+                          <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                              <input
+                                type="radio"
+                                name="stream_option_23"
+                                value="all"
+                                checked
+                                onchange="updateStreamSelection('23')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🌟 All Streams (Default)</span>
+                            </label>
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="radio"
+                                name="stream_option_23"
+                                value="specific"
+                                onchange="updateStreamSelection('23')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🎯 Specific Streams Only</span>
+                            </label>
+                          </div>
+
+                          <div id="specific-streams-23" style="display: none;">
+                            <div class="streams-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                              <!-- Streams will be populated by JavaScript -->
+                            </div>
+                          </div>
+
+                          <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="checkbox"
+                                name="class_teacher_grades"
+                                value="23"
+                                id="class-teacher-23"
+                              />
+                              <span style="margin-left: 8px; color: #4a6741; font-weight: 500;">🏆 Make Class Teacher for this Grade</span>
+                            </label>
+                            <div id="class-teacher-note-23" style="margin-top: 5px; font-size: 0.8em; color: #666; display: none;">
+                              Note: Class teacher assignment will apply to selected streams or all streams if none specified.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="grade-section" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: white;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                          <label style="display: flex; align-items: center; font-weight: bold; margin-right: 20px;">
+                            <input
+                              type="checkbox"
+                              name="bulk_grades"
+                              value="24"
+                              onchange="toggleGradeSelection('24', 'Grade 1')"
+                              id="grade-24"
+                            />
+                            <span style="margin-left: 8px; color: #333;">📚 Grade 1</span>
+                          </label>
+
+                          <div id="grade-24-status" style="color: #666; font-size: 0.9em;">
+                            <!-- Status will be updated by JavaScript -->
+                          </div>
+                        </div>
+
+                        <div id="streams-for-grade-24" style="display: none; margin-left: 25px; padding: 10px; background: #f8f9fa; border-radius: 3px;">
+                          <div style="margin-bottom: 10px;">
+                            <label style="font-weight: 600; color: #555;">🏫 Stream Selection for Grade 1:</label>
+                          </div>
+
+                          <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                              <input
+                                type="radio"
+                                name="stream_option_24"
+                                value="all"
+                                checked
+                                onchange="updateStreamSelection('24')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🌟 All Streams (Default)</span>
+                            </label>
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="radio"
+                                name="stream_option_24"
+                                value="specific"
+                                onchange="updateStreamSelection('24')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🎯 Specific Streams Only</span>
+                            </label>
+                          </div>
+
+                          <div id="specific-streams-24" style="display: none;">
+                            <div class="streams-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                              <!-- Streams will be populated by JavaScript -->
+                            </div>
+                          </div>
+
+                          <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="checkbox"
+                                name="class_teacher_grades"
+                                value="24"
+                                id="class-teacher-24"
+                              />
+                              <span style="margin-left: 8px; color: #4a6741; font-weight: 500;">🏆 Make Class Teacher for this Grade</span>
+                            </label>
+                            <div id="class-teacher-note-24" style="margin-top: 5px; font-size: 0.8em; color: #666; display: none;">
+                              Note: Class teacher assignment will apply to selected streams or all streams if none specified.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="grade-section" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: white;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                          <label style="display: flex; align-items: center; font-weight: bold; margin-right: 20px;">
+                            <input
+                              type="checkbox"
+                              name="bulk_grades"
+                              value="25"
+                              onchange="toggleGradeSelection('25', 'Grade 4')"
+                              id="grade-25"
+                            />
+                            <span style="margin-left: 8px; color: #333;">📚 Grade 4</span>
+                          </label>
+
+                          <div id="grade-25-status" style="color: #666; font-size: 0.9em;">
+                            <!-- Status will be updated by JavaScript -->
+                          </div>
+                        </div>
+
+                        <div id="streams-for-grade-25" style="display: none; margin-left: 25px; padding: 10px; background: #f8f9fa; border-radius: 3px;">
+                          <div style="margin-bottom: 10px;">
+                            <label style="font-weight: 600; color: #555;">🏫 Stream Selection for Grade 4:</label>
+                          </div>
+
+                          <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                              <input
+                                type="radio"
+                                name="stream_option_25"
+                                value="all"
+                                checked
+                                onchange="updateStreamSelection('25')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🌟 All Streams (Default)</span>
+                            </label>
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="radio"
+                                name="stream_option_25"
+                                value="specific"
+                                onchange="updateStreamSelection('25')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🎯 Specific Streams Only</span>
+                            </label>
+                          </div>
+
+                          <div id="specific-streams-25" style="display: none;">
+                            <div class="streams-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                              <!-- Streams will be populated by JavaScript -->
+                            </div>
+                          </div>
+
+                          <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="checkbox"
+                                name="class_teacher_grades"
+                                value="25"
+                                id="class-teacher-25"
+                              />
+                              <span style="margin-left: 8px; color: #4a6741; font-weight: 500;">🏆 Make Class Teacher for this Grade</span>
+                            </label>
+                            <div id="class-teacher-note-25" style="margin-top: 5px; font-size: 0.8em; color: #666; display: none;">
+                              Note: Class teacher assignment will apply to selected streams or all streams if none specified.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="grade-section" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: white;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                          <label style="display: flex; align-items: center; font-weight: bold; margin-right: 20px;">
+                            <input
+                              type="checkbox"
+                              name="bulk_grades"
+                              value="26"
+                              onchange="toggleGradeSelection('26', 'PP1')"
+                              id="grade-26"
+                            />
+                            <span style="margin-left: 8px; color: #333;">📚 PP1</span>
+                          </label>
+
+                          <div id="grade-26-status" style="color: #666; font-size: 0.9em;">
+                            <!-- Status will be updated by JavaScript -->
+                          </div>
+                        </div>
+
+                        <div id="streams-for-grade-26" style="display: none; margin-left: 25px; padding: 10px; background: #f8f9fa; border-radius: 3px;">
+                          <div style="margin-bottom: 10px;">
+                            <label style="font-weight: 600; color: #555;">🏫 Stream Selection for PP1:</label>
+                          </div>
+
+                          <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                              <input
+                                type="radio"
+                                name="stream_option_26"
+                                value="all"
+                                checked
+                                onchange="updateStreamSelection('26')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🌟 All Streams (Default)</span>
+                            </label>
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="radio"
+                                name="stream_option_26"
+                                value="specific"
+                                onchange="updateStreamSelection('26')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🎯 Specific Streams Only</span>
+                            </label>
+                          </div>
+
+                          <div id="specific-streams-26" style="display: none;">
+                            <div class="streams-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                              <!-- Streams will be populated by JavaScript -->
+                            </div>
+                          </div>
+
+                          <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="checkbox"
+                                name="class_teacher_grades"
+                                value="26"
+                                id="class-teacher-26"
+                              />
+                              <span style="margin-left: 8px; color: #4a6741; font-weight: 500;">🏆 Make Class Teacher for this Grade</span>
+                            </label>
+                            <div id="class-teacher-note-26" style="margin-top: 5px; font-size: 0.8em; color: #666; display: none;">
+                              Note: Class teacher assignment will apply to selected streams or all streams if none specified.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="grade-section" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: white;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                          <label style="display: flex; align-items: center; font-weight: bold; margin-right: 20px;">
+                            <input
+                              type="checkbox"
+                              name="bulk_grades"
+                              value="27"
+                              onchange="toggleGradeSelection('27', 'PP2')"
+                              id="grade-27"
+                            />
+                            <span style="margin-left: 8px; color: #333;">📚 PP2</span>
+                          </label>
+
+                          <div id="grade-27-status" style="color: #666; font-size: 0.9em;">
+                            <!-- Status will be updated by JavaScript -->
+                          </div>
+                        </div>
+
+                        <div id="streams-for-grade-27" style="display: none; margin-left: 25px; padding: 10px; background: #f8f9fa; border-radius: 3px;">
+                          <div style="margin-bottom: 10px;">
+                            <label style="font-weight: 600; color: #555;">🏫 Stream Selection for PP2:</label>
+                          </div>
+
+                          <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                              <input
+                                type="radio"
+                                name="stream_option_27"
+                                value="all"
+                                checked
+                                onchange="updateStreamSelection('27')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🌟 All Streams (Default)</span>
+                            </label>
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="radio"
+                                name="stream_option_27"
+                                value="specific"
+                                onchange="updateStreamSelection('27')"
+                              />
+                              <span style="margin-left: 8px; font-weight: 500;">🎯 Specific Streams Only</span>
+                            </label>
+                          </div>
+
+                          <div id="specific-streams-27" style="display: none;">
+                            <div class="streams-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                              <!-- Streams will be populated by JavaScript -->
+                            </div>
+                          </div>
+
+                          <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <label style="display: flex; align-items: center;">
+                              <input
+                                type="checkbox"
+                                name="class_teacher_grades"
+                                value="27"
+                                id="class-teacher-27"
+                              />
+                              <span style="margin-left: 8px; color: #4a6741; font-weight: 500;">🏆 Make Class Teacher for this Grade</span>
+                            </label>
+                            <div id="class-teacher-note-27" style="margin-top: 5px; font-size: 0.8em; color: #666; display: none;">
+                              Note: Class teacher assignment will apply to selected streams or all streams if none specified.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                    </div>
+                  </div>
+
+                  <!-- Assignment Summary -->
+                  <div id="assignment-summary" style="display: none; margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 5px; border-left: 4px solid #4a6741;">
+                    <h4 style="color: #4a6741; margin-bottom: 10px;">📊 Assignment Summary</h4>
+                    <div id="summary-content">
+                      <!-- Will be populated by JavaScript -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Advanced Mode Section -->
+                <div id="advanced-mode-section" style="display: none;">
+                  <div class="form-group">
+                    <label>🎯 Precise Assignment Builder:</label>
+                    <div id="assignment-builder" style="border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #f9f9f9;">
+                      <p style="color: #666; margin-bottom: 15px;">Build custom assignments by selecting specific subject-grade-stream combinations:</p>
+
+                      <div id="assignment-combinations">
+                        <!-- Dynamic content will be added here -->
+                      </div>
+
+                      <button type="button" onclick="addAssignmentCombination()" class="manage-btn" style="background: #2196f3; margin-top: 10px;">
+                        ➕ Add Assignment Combination
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Current Teacher Assignments Preview -->
+                <div id="bulk-teacher-preview" style="display: none; margin-top: 20px; padding: 15px; background: #f0f8f0; border-radius: 5px; border-left: 4px solid #4a6741;">
+                  <h4>📊 Current Assignments for Selected Teacher:</h4>
+                  <div id="bulk-teacher-assignments-content">
+                    <!-- Will be populated by JavaScript -->
+                  </div>
+                </div>
+
+                <div style="margin-top: 20px; text-align: center;">
+                  <button type="submit" class="manage-btn" style="background-color: #4a6741; padding: 12px 30px; font-size: 16px;">
+                    🚀 Create Assignments
+                  </button>
+                  <button type="button" onclick="previewAssignments()" class="manage-btn" style="background-color: #2196f3; margin-left: 10px; padding: 12px 30px;">
+                    👁️ Preview Assignments
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- This is the second column for tips -->
+          <div class="form-card">
+            <h2>Assignment Tips</h2>
+            <div class="tips-content">
+              <p>Here are some tips for assigning subjects to teachers:</p>
+              <ul>
+                <li>Each teacher can teach multiple subjects</li>
+                <li>
+                  A subject can be taught by different teachers in different
+                  grades/streams
+                </li>
+                <li>
+                  Only one teacher can be designated as the class teacher for a
+                  specific stream
+                </li>
+                <li>
+                  If no stream is selected, the assignment applies to all
+                  streams in the grade
+                </li>
+                <li>
+                  Class teachers are responsible for overall class management
+                  and reporting
+                </li>
+                <li>Consider teacher workload when making assignments</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Assignments Table -->
+        <div class="students-section">
+          <h2>Current Teacher Assignments</h2>
+          <div id="student-filter">
+            <label for="assignment-search">Search assignments:</label>
+            <input
+              type="text"
+              id="assignment-search"
+              onkeyup="searchAssignments()"
+              placeholder="Type to search..."
+            />
+          </div>
+
+          <div class="table-responsive">
+            <table id="assignments-table">
+              <thead>
+                <tr>
+                  <th>Teacher</th>
+                  <th>Subject</th>
+                  <th>Grade</th>
+                  <th>Stream</th>
+                  <th>Class Teacher</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                <tr>
+                  <td>kevin</td>
+                  <td>ENGLISH</td>
+                  <td>Grade 9</td>
+                  <td>
+                    B
+                  </td>
+                  <td>Yes</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/classteacher/remove_assignment"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="6"
+                      />
+                      <button
+                        type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to remove this assignment?');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td>kevin</td>
+                  <td>KISWAHILI</td>
+                  <td>Grade 9</td>
+                  <td>
+                    B
+                  </td>
+                  <td>No</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/classteacher/remove_assignment"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="7"
+                      />
+                      <button
+                        type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to remove this assignment?');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td>kevin</td>
+                  <td>SOCIAL STUDIES</td>
+                  <td>Grade 9</td>
+                  <td>
+                    B
+                  </td>
+                  <td>No</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/classteacher/remove_assignment"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="8"
+                      />
+                      <button
+                        type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to remove this assignment?');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td>kevin</td>
+                  <td>INTEGRATED SCIENCE</td>
+                  <td>Grade 9</td>
+                  <td>
+                    B
+                  </td>
+                  <td>No</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/classteacher/remove_assignment"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="9"
+                      />
+                      <button
+                        type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to remove this assignment?');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td>carol</td>
+                  <td>MATHEMATICS</td>
+                  <td>Grade 9</td>
+                  <td>
+                    B
+                  </td>
+                  <td>No</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/classteacher/remove_assignment"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="10"
+                      />
+                      <button
+                        type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to remove this assignment?');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td>carol</td>
+                  <td>RELIGIOUS EDUCATION</td>
+                  <td>Grade 9</td>
+                  <td>
+                    B
+                  </td>
+                  <td>No</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/classteacher/remove_assignment"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="11"
+                      />
+                      <button
+                        type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to remove this assignment?');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td>carol</td>
+                  <td>AGRICULTURE</td>
+                  <td>Grade 9</td>
+                  <td>
+                    B
+                  </td>
+                  <td>No</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/classteacher/remove_assignment"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="12"
+                      />
+                      <button
+                        type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to remove this assignment?');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td>carol</td>
+                  <td>PRE-TECHNICAL STUDIES</td>
+                  <td>Grade 9</td>
+                  <td>
+                    B
+                  </td>
+                  <td>No</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/classteacher/remove_assignment"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="13"
+                      />
+                      <button
+                        type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to remove this assignment?');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td>carol</td>
+                  <td>CREATIVE ARTS  AND SPORTS</td>
+                  <td>Grade 9</td>
+                  <td>
+                    B
+                  </td>
+                  <td>No</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/classteacher/remove_assignment"
+                      style="display: inline"
+                    >
+                      <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="ImYwYTI1OGM4NzFlMWQ1ZGQyMzcwZTg1MjMwMjI4NTA0MzliNzc0MTMi.aIsbMg.sY3Aei4GLPcSL9ys7G2vN5vf6p8"
+                      />
+                      <input
+                        type="hidden"
+                        name="assignment_id"
+                        value="14"
+                      />
+                      <button
+                        type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to remove this assignment?');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Function to get the correct streams API endpoint based on current context
+      function getStreamsEndpoint(gradeId) {
+        // Check if we're in headteacher universal context
+        if (window.location.pathname.includes('/universal/')) {
+          return `/universal/api/streams/${gradeId}`;
+        }
+        // Check if we're in headteacher context (admin routes)
+        else if (window.location.pathname.includes('/headteacher/') ||
+            window.location.pathname.includes('/admin/')) {
+          return `/admin/api/streams/${gradeId}`;
+        }
+        // Default to classteacher endpoint
+        return `/classteacher/get_grade_streams/${gradeId}`;
+      }
+
+      // Function to extract streams from response data (handles different response formats)
+      function extractStreamsFromResponse(data) {
+        // Handle different response formats
+        if (data.streams) {
+          return data.streams; // Admin blueprint format: {streams: [...]}
+        } else if (data.success && data.streams) {
+          return data.streams; // Universal blueprint format: {success: true, streams: [...]}
+        }
+        return []; // Fallback to empty array
+      }
+
+      // Function to update streams based on selected grade
+      function updateStreams() {
+        console.log("updateStreams called");
+        const gradeId = document.getElementById("grade_id").value;
+        console.log("Grade ID:", gradeId);
+        const streamSelect = document.getElementById("stream_id");
+
+        // Clear existing options
+        streamSelect.innerHTML = '<option value="">-- All Streams --</option>';
+
+        if (gradeId) {
+          // Fetch streams for the selected grade using dynamic endpoint
+          const endpoint = getStreamsEndpoint(gradeId);
+          console.log("Using endpoint:", endpoint);
+
+          fetch(endpoint, {
+            credentials: 'same-origin'
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              const streams = extractStreamsFromResponse(data);
+              streams.forEach((stream) => {
+                const option = document.createElement("option");
+                option.value = stream.id;
+                option.textContent = stream.name;
+                streamSelect.appendChild(option);
+              });
+            })
+            .catch((error) => {
+              console.error("Error fetching streams:", error);
+              // Fallback: try the other endpoint if first one fails
+              const fallbackEndpoint = gradeId ?
+                (endpoint.includes('/universal/') ?
+                  `/classteacher/get_grade_streams/${gradeId}` :
+                  endpoint.includes('/admin/') ?
+                  `/classteacher/get_grade_streams/${gradeId}` :
+                  `/universal/api/streams/${gradeId}`) : null;
+
+              if (fallbackEndpoint) {
+                console.log("Trying fallback endpoint:", fallbackEndpoint);
+                fetch(fallbackEndpoint, {
+                  credentials: 'same-origin'
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    const streams = extractStreamsFromResponse(data);
+                    streams.forEach((stream) => {
+                      const option = document.createElement("option");
+                      option.value = stream.id;
+                      option.textContent = stream.name;
+                      streamSelect.appendChild(option);
+                    });
+                  })
+                  .catch((fallbackError) => {
+                    console.error("Fallback endpoint also failed:", fallbackError);
+                  });
+              }
+            });
+        }
+      }
+
+      // Function to load and display a teacher's current assignments
+      function loadTeacherAssignments() {
+        const teacherId = document.getElementById("teacher_id").value;
+        const summaryDiv = document.getElementById(
+          "teacher-assignments-summary"
+        );
+        const contentDiv = document.getElementById(
+          "teacher-assignments-content"
+        );
+
+        if (!teacherId) {
+          summaryDiv.style.display = "none";
+          return;
+        }
+
+        // Show loading message
+        contentDiv.innerHTML = "<p>Loading assignments...</p>";
+        summaryDiv.style.display = "block";
+
+        // Fetch the teacher's assignments
+        fetch(`/classteacher/get_teacher_assignments/${teacherId}`, {
+          credentials: 'same-origin'
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.assignments && data.assignments.length > 0) {
+              // Group assignments by grade
+              const assignmentsByGrade = {};
+
+              data.assignments.forEach((assignment) => {
+                const gradeKey = `Grade ${assignment.grade}`;
+                if (!assignmentsByGrade[gradeKey]) {
+                  assignmentsByGrade[gradeKey] = [];
+                }
+                assignmentsByGrade[gradeKey].push(assignment);
+              });
+
+              // Build HTML for assignments
+              let html = '<div class="teacher-assignments-grid">';
+
+              for (const grade in assignmentsByGrade) {
+                html += `<div class="grade-assignments">
+                          <h4>${grade}</h4>
+                          <ul>`;
+
+                assignmentsByGrade[grade].forEach((assignment) => {
+                  const streamInfo = assignment.stream
+                    ? ` (Stream ${assignment.stream})`
+                    : " (All Streams)";
+                  const classTeacherBadge = assignment.is_class_teacher
+                    ? ' <span class="class-teacher-badge" style="background-color: #4a6741; color: white; padding: 2px 5px; border-radius: 3px; font-size: 0.8em;">Class Teacher</span>'
+                    : "";
+
+                  html += `<li>${assignment.subject}${streamInfo}${classTeacherBadge}</li>`;
+                });
+
+                html += `</ul></div>`;
+              }
+
+              html += "</div>";
+              contentDiv.innerHTML = html;
+            } else {
+              contentDiv.innerHTML =
+                "<p>This teacher has no subject assignments yet.</p>";
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching teacher assignments:", error);
+            contentDiv.innerHTML =
+              "<p>Error loading assignments. Please try again.</p>";
+          });
+      }
+
+      // Function to show the bulk assignment modal
+      function showBulkAssignmentModal() {
+        document.getElementById("bulk-assignment-modal").style.display =
+          "block";
+
+        // Pre-fill the teacher if one is already selected in the main form
+        const selectedTeacherId = document.getElementById("teacher_id").value;
+        if (selectedTeacherId) {
+          document.getElementById("bulk_teacher_id").value = selectedTeacherId;
+          loadTeacherCurrentAssignments();
+        }
+      }
+
+      // Function to close the bulk assignment modal
+      function closeBulkAssignmentModal() {
+        document.getElementById("bulk-assignment-modal").style.display = "none";
+      }
+
+      // Enhanced function to load teacher's current assignments in bulk modal
+      function loadTeacherCurrentAssignments() {
+        const teacherId = document.getElementById("bulk_teacher_id").value;
+        const previewDiv = document.getElementById("bulk-teacher-preview");
+        const contentDiv = document.getElementById("bulk-teacher-assignments-content");
+
+        if (!teacherId) {
+          previewDiv.style.display = "none";
+          return;
+        }
+
+        // Show loading message
+        contentDiv.innerHTML = "<p>📊 Loading current assignments...</p>";
+        previewDiv.style.display = "block";
+
+        // Fetch the teacher's assignments
+        fetch(`/classteacher/get_teacher_assignments/${teacherId}`, {
+          credentials: 'same-origin'
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.assignments && data.assignments.length > 0) {
+              // Group assignments by education level
+              const assignmentsByLevel = {
+                'Lower Primary': [],
+                'Upper Primary': [],
+                'Junior Secondary': []
+              };
+
+              data.assignments.forEach((assignment) => {
+                const gradeNum = parseInt(assignment.grade.replace('Grade ', ''));
+                let level = 'Other';
+
+                if (gradeNum >= 1 && gradeNum <= 3) level = 'Lower Primary';
+                else if (gradeNum >= 4 && gradeNum <= 6) level = 'Upper Primary';
+                else if (gradeNum >= 7 && gradeNum <= 9) level = 'Junior Secondary';
+
+                assignmentsByLevel[level].push(assignment);
+              });
+
+              // Build HTML for assignments
+              let html = '<div class="teacher-assignments-by-level">';
+
+              for (const level in assignmentsByLevel) {
+                if (assignmentsByLevel[level].length > 0) {
+                  const levelColor = level === 'Lower Primary' ? '#4a6741' :
+                                   level === 'Upper Primary' ? '#2196f3' : '#ff9800';
+
+                  html += `<div class="level-assignments" style="margin-bottom: 15px; border-left: 4px solid ${levelColor}; padding-left: 15px;">
+                            <h5 style="color: ${levelColor}; margin-bottom: 8px;">${level}</h5>
+                            <div class="assignments-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">`;
+
+                  assignmentsByLevel[level].forEach((assignment) => {
+                    const streamInfo = assignment.stream ? ` (${assignment.stream})` : " (All Streams)";
+                    const classTeacherBadge = assignment.is_class_teacher
+                      ? ' <span style="background: #4a6741; color: white; padding: 1px 4px; border-radius: 2px; font-size: 0.7em;">CT</span>'
+                      : "";
+
+                    html += `<div style="background: #f5f5f5; padding: 6px; border-radius: 3px; font-size: 0.9em;">
+                              <strong>${assignment.subject}</strong><br>
+                              ${assignment.grade}${streamInfo}${classTeacherBadge}
+                            </div>`;
+                  });
+
+                  html += `</div></div>`;
+                }
+              }
+
+              html += "</div>";
+
+              if (data.assignments.length === 0) {
+                html = "<p>✨ This teacher has no assignments yet - perfect for bulk assignment!</p>";
+              } else {
+                html = `<p style="margin-bottom: 15px;"><strong>Total Assignments:</strong> ${data.assignments.length}</p>` + html;
+              }
+
+              contentDiv.innerHTML = html;
+            } else {
+              contentDiv.innerHTML = "<p>✨ This teacher has no assignments yet - perfect for bulk assignment!</p>";
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching teacher assignments:", error);
+            contentDiv.innerHTML = "<p>❌ Error loading assignments. Please try again.</p>";
+          });
+      }
+
+      // Function to toggle between simple and advanced assignment modes
+      function toggleAssignmentMode() {
+        const mode = document.querySelector('input[name="assignment_mode"]:checked').value;
+        const simpleSection = document.getElementById("simple-mode-section");
+        const advancedSection = document.getElementById("advanced-mode-section");
+
+        if (mode === "simple") {
+          simpleSection.style.display = "block";
+          advancedSection.style.display = "none";
+        } else {
+          simpleSection.style.display = "none";
+          advancedSection.style.display = "block";
+          initializeAdvancedMode();
+        }
+      }
+
+      // Initialize advanced mode with one assignment combination
+      function initializeAdvancedMode() {
+        const container = document.getElementById("assignment-combinations");
+        if (container.children.length === 0) {
+          addAssignmentCombination();
+        }
+      }
+
+      // Add a new assignment combination in advanced mode
+      let combinationCounter = 0;
+      function addAssignmentCombination() {
+        combinationCounter++;
+        const container = document.getElementById("assignment-combinations");
+
+        const combinationDiv = document.createElement("div");
+        combinationDiv.className = "assignment-combination";
+        combinationDiv.id = `combination-${combinationCounter}`;
+        combinationDiv.style.cssText = "border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; background: white;";
+
+        combinationDiv.innerHTML = `
+          <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 15px;">
+            <h5 style="margin: 0; color: #333;">🎯 Assignment Combination #${combinationCounter}</h5>
+            <button type="button" onclick="removeCombination(${combinationCounter})" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer;">✕</button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+            <div>
+              <label><strong>📚 Subject:</strong></label>
+              <select name="advanced_subjects[]" class="form-control" required>
+                <option value="">-- Select Subject --</option>
+                
+                <option value="5">MATHEMATICS (Junior Secondary)</option>
+                
+                <option value="7">KISWAHILI (Junior Secondary)</option>
+                
+                <option value="8">ENGLISH (Junior Secondary)</option>
+                
+                <option value="9">RELIGIOUS EDUCATION (Junior Secondary)</option>
+                
+                <option value="10">SOCIAL STUDIES (Junior Secondary)</option>
+                
+                <option value="11">INTEGRATED SCIENCE (Junior Secondary)</option>
+                
+                <option value="12">AGRICULTURE (Junior Secondary)</option>
+                
+                <option value="13">PRE-TECHNICAL STUDIES (Junior Secondary)</option>
+                
+                <option value="14">CREATIVE ARTS  AND SPORTS (Junior Secondary)</option>
+                
+                <option value="15">COMPUTER (Junior Secondary)</option>
+                
+                <option value="16">FRENCH (Junior Secondary)</option>
+                
+                <option value="17">MANDARIN (Junior Secondary)</option>
+                
+                <option value="18">GERMAN (Junior Secondary)</option>
+                
+                <option value="22">Language Activities (Pre Primary)</option>
+                
+                <option value="23">Mathematical Activities (Pre Primary)</option>
+                
+                <option value="24">Environmental Activities (Pre Primary)</option>
+                
+                <option value="25">Psychomotor and Creative Activities (Pre Primary)</option>
+                
+                <option value="26">Religious Education Activities (Pre Primary)</option>
+                
+                <option value="27">English (Pre Primary)</option>
+                
+                <option value="28">Kiswahili (Pre Primary)</option>
+                
+                <option value="29">Mathematics (Pre Primary)</option>
+                
+                <option value="30">Science Activities (Pre Primary)</option>
+                
+                <option value="31">Creative Arts (Pre Primary)</option>
+                
+                <option value="33">Music and Movement (Pre Primary)</option>
+                
+                <option value="34">Drawing and Coloring (Pre Primary)</option>
+                
+                <option value="35">Indigenous Language (Lower Primary)</option>
+                
+                <option value="36">Kiswahili (Lower Primary)</option>
+                
+                <option value="37">English (Lower Primary)</option>
+                
+                <option value="38">Mathematics (Lower Primary)</option>
+                
+                <option value="39">Religious Education (Lower Primary)</option>
+                
+                <option value="40">Environmental Activities (Lower Primary)</option>
+                
+                <option value="41">Creative Activities (Lower Primary)</option>
+                
+                <option value="42">English (Upper Primary)</option>
+                
+                <option value="43">Mathematics (Upper Primary)</option>
+                
+                <option value="44">Kiswahili (Upper Primary)</option>
+                
+                <option value="45">Religious Education (Upper Primary)</option>
+                
+                <option value="46">Agriculture and Nutrition (Upper Primary)</option>
+                
+                <option value="47">Social Studies (Upper Primary)</option>
+                
+                <option value="48">Creative Arts (Upper Primary)</option>
+                
+                <option value="49">Science and Technology (Upper Primary)</option>
+                
+                <option value="57">Agriculture and Nutrition (Junior Secondary)</option>
+                
+                <option value="58">Creative Arts and Sports (Junior Secondary)</option>
+                
+              </select>
+            </div>
+
+            <div>
+              <label><strong>🎓 Grade:</strong></label>
+              <select name="advanced_grades[]" class="form-control" required onchange="updateAdvancedStreams(${combinationCounter})">
+                <option value="">-- Select Grade --</option>
+                
+                <option value="21">Grade 9</option>
+                
+                <option value="22">Grade 8</option>
+                
+                <option value="23">Grade 7</option>
+                
+                <option value="24">Grade 1</option>
+                
+                <option value="25">Grade 4</option>
+                
+                <option value="26">PP1</option>
+                
+                <option value="27">PP2</option>
+                
+              </select>
+            </div>
+
+            <div>
+              <label><strong>🏫 Stream:</strong></label>
+              <select name="advanced_streams[]" class="form-control" id="streams-${combinationCounter}">
+                <option value="">-- All Streams --</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top: 15px;">
+            <label>
+              <input type="checkbox" name="advanced_class_teacher[]" value="${combinationCounter}">
+              🏆 Make Class Teacher for this Grade/Stream
+            </label>
+          </div>
+        `;
+
+        container.appendChild(combinationDiv);
+      }
+
+      // Remove an assignment combination
+      function removeCombination(id) {
+        const element = document.getElementById(`combination-${id}`);
+        if (element) {
+          element.remove();
+        }
+      }
+
+      // Update streams for advanced mode combinations
+      function updateAdvancedStreams(combinationId) {
+        const gradeSelect = document.querySelector(`#combination-${combinationId} select[name="advanced_grades[]"]`);
+        const streamSelect = document.getElementById(`streams-${combinationId}`);
+
+        if (!gradeSelect || !streamSelect) return;
+
+        const gradeId = gradeSelect.value;
+
+        // Clear existing options
+        streamSelect.innerHTML = '<option value="">-- All Streams --</option>';
+
+        if (gradeId) {
+          // Fetch streams for the selected grade using dynamic endpoint
+          const endpoint = getStreamsEndpoint(gradeId);
+          console.log("Advanced streams using endpoint:", endpoint);
+
+          fetch(endpoint, {
+            credentials: 'same-origin'
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              const streams = extractStreamsFromResponse(data);
+              streams.forEach((stream) => {
+                const option = document.createElement("option");
+                option.value = stream.id;
+                option.textContent = stream.name;
+                streamSelect.appendChild(option);
+              });
+            })
+            .catch((error) => {
+              console.error("Error fetching streams:", error);
+              // Fallback: try the other endpoint if first one fails
+              const fallbackEndpoint = gradeId ?
+                (endpoint.includes('/universal/') ?
+                  `/classteacher/get_grade_streams/${gradeId}` :
+                  endpoint.includes('/admin/') ?
+                  `/classteacher/get_grade_streams/${gradeId}` :
+                  `/universal/api/streams/${gradeId}`) : null;
+
+              if (fallbackEndpoint) {
+                console.log("Advanced streams trying fallback endpoint:", fallbackEndpoint);
+                fetch(fallbackEndpoint, {
+                  credentials: 'same-origin'
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    const streams = extractStreamsFromResponse(data);
+                    streams.forEach((stream) => {
+                      const option = document.createElement("option");
+                      option.value = stream.id;
+                      option.textContent = stream.name;
+                      streamSelect.appendChild(option);
+                    });
+                  })
+                  .catch((fallbackError) => {
+                    console.error("Advanced streams fallback endpoint also failed:", fallbackError);
+                  });
+              }
+            });
+        }
+      }
+
+      // Enhanced grade selection toggle with dynamic stream loading
+      function toggleGradeSelection(gradeId, gradeLevel) {
+        const checkbox = document.getElementById(`grade-${gradeId}`);
+        const streamsSection = document.getElementById(`streams-for-grade-${gradeId}`);
+        const statusDiv = document.getElementById(`grade-${gradeId}-status`);
+
+        if (checkbox.checked) {
+          streamsSection.style.display = "block";
+          statusDiv.innerHTML = "🔄 Loading streams...";
+
+          // Load streams for this grade
+          loadStreamsForGrade(gradeId, gradeLevel);
+        } else {
+          streamsSection.style.display = "none";
+          statusDiv.innerHTML = "";
+
+          // Clear any selected streams for this grade
+          clearGradeStreams(gradeId);
+        }
+
+        updateAssignmentSummary();
+      }
+
+      // Load streams for a specific grade
+      function loadStreamsForGrade(gradeId, gradeLevel) {
+        const statusDiv = document.getElementById(`grade-${gradeId}-status`);
+        const streamsGrid = document.querySelector(`#specific-streams-${gradeId} .streams-grid`);
+
+        // Use dynamic endpoint
+        const endpoint = getStreamsEndpoint(gradeId);
+        console.log("Load streams using endpoint:", endpoint);
+
+        fetch(endpoint, {
+          credentials: 'same-origin'
+        })
+          .then(response => response.json())
+          .then(data => {
+            const streams = extractStreamsFromResponse(data);
+
+            if (streams.length === 0) {
+              statusDiv.innerHTML = "📝 Single class (no streams)";
+              statusDiv.style.color = "#4a6741";
+
+              // Hide stream selection options for grades without streams
+              const streamOptions = document.querySelectorAll(`input[name="stream_option_${gradeId}"]`);
+              streamOptions.forEach(option => {
+                option.closest('label').style.display = 'none';
+              });
+
+              // Show a note that this grade has no streams
+              const specificStreamsDiv = document.getElementById(`specific-streams-${gradeId}`);
+              specificStreamsDiv.innerHTML = `
+                <div style="padding: 10px; background: #e8f5e8; border-radius: 3px; color: #4a6741; text-align: center;">
+                  📝 Grade ${gradeLevel} is a single class without streams.<br>
+                  Assignments will apply to the entire grade.
+                </div>
+              `;
+              specificStreamsDiv.style.display = "block";
+
+            } else {
+              statusDiv.innerHTML = `🏫 ${streams.length} stream${streams.length > 1 ? 's' : ''} available`;
+              statusDiv.style.color = "#2196f3";
+
+              // Show stream selection options
+              const streamOptions = document.querySelectorAll(`input[name="stream_option_${gradeId}"]`);
+              streamOptions.forEach(option => {
+                option.closest('label').style.display = 'flex';
+              });
+
+              // Populate streams grid
+              streamsGrid.innerHTML = '';
+              streams.forEach(stream => {
+                const streamLabel = document.createElement('label');
+                streamLabel.style.cssText = "display: flex; align-items: center; padding: 8px; background: #f0f0f0; border-radius: 3px; border: 1px solid #ddd;";
+                streamLabel.innerHTML = `
+                  <input type="checkbox" name="specific_streams_${gradeId}" value="${stream.id}" onchange="updateAssignmentSummary()">
+                  <span style="margin-left: 6px; font-size: 0.9em;">Stream ${stream.name}</span>
+                `;
+                streamsGrid.appendChild(streamLabel);
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error loading streams:', error);
+            // Try fallback endpoint
+            const fallbackEndpoint = gradeId ?
+              (endpoint.includes('/universal/') ?
+                `/classteacher/get_grade_streams/${gradeId}` :
+                endpoint.includes('/admin/') ?
+                `/classteacher/get_grade_streams/${gradeId}` :
+                `/universal/api/streams/${gradeId}`) : null;
+
+            if (fallbackEndpoint) {
+              console.log("Load streams trying fallback endpoint:", fallbackEndpoint);
+              fetch(fallbackEndpoint, {
+                credentials: 'same-origin'
+              })
+                .then(response => response.json())
+                .then(data => {
+                  const streams = extractStreamsFromResponse(data);
+
+                  if (streams.length === 0) {
+                    statusDiv.innerHTML = "📝 Single class (no streams)";
+                    statusDiv.style.color = "#4a6741";
+
+                    // Hide stream selection options for grades without streams
+                    const streamOptions = document.querySelectorAll(`input[name="stream_option_${gradeId}"]`);
+                    streamOptions.forEach(option => {
+                      option.closest('label').style.display = 'none';
+                    });
+
+                    // Show a note that this grade has no streams
+                    const specificStreamsDiv = document.getElementById(`specific-streams-${gradeId}`);
+                    specificStreamsDiv.innerHTML = `
+                      <div style="padding: 10px; background: #e8f5e8; border-radius: 3px; color: #4a6741; text-align: center;">
+                        📝 Grade ${gradeLevel} is a single class without streams.<br>
+                        Assignments will apply to the entire grade.
+                      </div>
+                    `;
+                    specificStreamsDiv.style.display = "block";
+
+                  } else {
+                    statusDiv.innerHTML = `🏫 ${streams.length} stream${streams.length > 1 ? 's' : ''} available`;
+                    statusDiv.style.color = "#2196f3";
+
+                    // Show stream selection options
+                    const streamOptions = document.querySelectorAll(`input[name="stream_option_${gradeId}"]`);
+                    streamOptions.forEach(option => {
+                      option.closest('label').style.display = 'flex';
+                    });
+
+                    // Populate streams grid
+                    streamsGrid.innerHTML = '';
+                    streams.forEach(stream => {
+                      const streamLabel = document.createElement('label');
+                      streamLabel.style.cssText = "display: flex; align-items: center; padding: 8px; background: #f0f0f0; border-radius: 3px; border: 1px solid #ddd;";
+                      streamLabel.innerHTML = `
+                        <input type="checkbox" name="specific_streams_${gradeId}" value="${stream.id}" onchange="updateAssignmentSummary()">
+                        <span style="margin-left: 6px; font-size: 0.9em;">Stream ${stream.name}</span>
+                      `;
+                      streamsGrid.appendChild(streamLabel);
+                    });
+                  }
+                })
+                .catch(fallbackError => {
+                  console.error('Fallback endpoint also failed:', fallbackError);
+                  statusDiv.innerHTML = "❌ Error loading streams";
+                  statusDiv.style.color = "#dc3545";
+                });
+            } else {
+              statusDiv.innerHTML = "❌ Error loading streams";
+              statusDiv.style.color = "#dc3545";
+            }
+          });
+      }
+
+      // Update stream selection mode
+      function updateStreamSelection(gradeId) {
+        const allStreamsRadio = document.querySelector(`input[name="stream_option_${gradeId}"][value="all"]`);
+        const specificStreamsDiv = document.getElementById(`specific-streams-${gradeId}`);
+
+        if (allStreamsRadio.checked) {
+          specificStreamsDiv.style.display = "none";
+          // Uncheck all specific streams
+          const specificStreams = document.querySelectorAll(`input[name="specific_streams_${gradeId}"]`);
+          specificStreams.forEach(stream => stream.checked = false);
+        } else {
+          specificStreamsDiv.style.display = "block";
+        }
+
+        updateAssignmentSummary();
+      }
+
+      // Clear streams for a grade when unchecked
+      function clearGradeStreams(gradeId) {
+        const specificStreams = document.querySelectorAll(`input[name="specific_streams_${gradeId}"]`);
+        specificStreams.forEach(stream => stream.checked = false);
+
+        const classTeacherCheckbox = document.getElementById(`class-teacher-${gradeId}`);
+        if (classTeacherCheckbox) {
+          classTeacherCheckbox.checked = false;
+        }
+      }
+
+      // Update assignment summary in real-time
+      function updateAssignmentSummary() {
+        const subjects = Array.from(document.querySelectorAll('input[name="bulk_subjects"]:checked'));
+        const grades = Array.from(document.querySelectorAll('input[name="bulk_grades"]:checked'));
+        const summaryDiv = document.getElementById("assignment-summary");
+        const summaryContent = document.getElementById("summary-content");
+
+        if (subjects.length === 0 || grades.length === 0) {
+          summaryDiv.style.display = "none";
+          return;
+        }
+
+        let totalAssignments = 0;
+        let summaryHtml = "<div style='display: grid; grid-template-columns: 1fr 1fr; gap: 20px;'>";
+
+        // Left column - Subjects
+        summaryHtml += "<div><h5 style='color: #4a6741; margin-bottom: 8px;'>📚 Selected Subjects (" + subjects.length + "):</h5><ul style='margin: 0; padding-left: 20px;'>";
+        subjects.forEach(subject => {
+          summaryHtml += `<li style='margin-bottom: 4px;'>${subject.nextElementSibling.textContent}</li>`;
+        });
+        summaryHtml += "</ul></div>";
+
+        // Right column - Grades and Streams
+        summaryHtml += "<div><h5 style='color: #4a6741; margin-bottom: 8px;'>🎓 Selected Grades and Streams:</h5><ul style='margin: 0; padding-left: 20px;'>";
+
+        grades.forEach(gradeCheckbox => {
+          const gradeId = gradeCheckbox.value;
+          const gradeText = gradeCheckbox.nextElementSibling.textContent;
+          const allStreamsRadio = document.querySelector(`input[name="stream_option_${gradeId}"][value="all"]`);
+          const specificStreams = Array.from(document.querySelectorAll(`input[name="specific_streams_${gradeId}"]:checked`));
+          const isClassTeacher = document.getElementById(`class-teacher-${gradeId}`)?.checked;
+
+          let gradeInfo = gradeText;
+          let streamCount = 1; // Default for single class or all streams
+
+          if (allStreamsRadio && allStreamsRadio.checked) {
+            const statusDiv = document.getElementById(`grade-${gradeId}-status`);
+            if (statusDiv.textContent.includes("Single class")) {
+              gradeInfo += " (Single class)";
+              streamCount = 1;
+            } else {
+              gradeInfo += " (All streams)";
+              // Estimate stream count from status
+              const match = statusDiv.textContent.match(/(\d+) stream/);
+              streamCount = match ? parseInt(match[1]) : 1;
+            }
+          } else if (specificStreams.length > 0) {
+            gradeInfo += ` (${specificStreams.length} specific stream${specificStreams.length > 1 ? 's' : ''})`;
+            streamCount = specificStreams.length;
+          }
+
+          if (isClassTeacher) {
+            gradeInfo += " 🏆";
+          }
+
+          summaryHtml += `<li style='margin-bottom: 4px;'>${gradeInfo}</li>`;
+          totalAssignments += streamCount;
+        });
+
+        summaryHtml += "</ul></div></div>";
+
+        // Total assignments calculation
+        const totalCombinations = subjects.length * totalAssignments;
+        summaryHtml += `<div style='margin-top: 15px; padding-top: 15px; border-top: 1px solid #4a6741; text-align: center;'>
+          <strong style='color: #4a6741; font-size: 1.1em;'>
+            📊 Total Assignments to Create: ${totalCombinations}
+          </strong>
+          <div style='font-size: 0.9em; color: #666; margin-top: 5px;'>
+            ${subjects.length} subjects × ${totalAssignments} grade-stream combinations
+          </div>
+        </div>`;
+
+        summaryContent.innerHTML = summaryHtml;
+        summaryDiv.style.display = "block";
+      }
+
+      // Enhanced preview function for the new simple mode
+      function previewAssignments() {
+        const mode = document.querySelector('input[name="assignment_mode"]:checked').value;
+        const teacherId = document.getElementById("bulk_teacher_id").value;
+
+        if (!teacherId) {
+          alert("Please select a teacher first!");
+          return;
+        }
+
+        let previewText = "📋 Assignment Preview:\n\n";
+
+        if (mode === "simple") {
+          const subjects = Array.from(document.querySelectorAll('input[name="bulk_subjects"]:checked'))
+            .map(cb => cb.nextElementSibling.textContent);
+          const grades = Array.from(document.querySelectorAll('input[name="bulk_grades"]:checked'));
+
+          previewText += `Teacher: ${document.getElementById("bulk_teacher_id").selectedOptions[0].text}\n`;
+          previewText += `Mode: Enhanced Simple Assignment\n\n`;
+          previewText += `Subjects (${subjects.length}): ${subjects.join(", ")}\n\n`;
+
+          previewText += "Grade and Stream Details:\n";
+          let totalAssignments = 0;
+
+          grades.forEach((gradeCheckbox, index) => {
+            const gradeId = gradeCheckbox.value;
+            const gradeText = gradeCheckbox.nextElementSibling.textContent;
+            const allStreamsRadio = document.querySelector(`input[name="stream_option_${gradeId}"][value="all"]`);
+            const specificStreams = Array.from(document.querySelectorAll(`input[name="specific_streams_${gradeId}"]:checked`));
+            const isClassTeacher = document.getElementById(`class-teacher-${gradeId}`)?.checked;
+
+            previewText += `${index + 1}. ${gradeText}`;
+
+            if (allStreamsRadio && allStreamsRadio.checked) {
+              const statusDiv = document.getElementById(`grade-${gradeId}-status`);
+              if (statusDiv.textContent.includes("Single class")) {
+                previewText += " (Single class - no streams)";
+                totalAssignments += 1;
+              } else {
+                previewText += " (All streams)";
+                const match = statusDiv.textContent.match(/(\d+) stream/);
+                const streamCount = match ? parseInt(match[1]) : 1;
+                totalAssignments += streamCount;
+              }
+            } else if (specificStreams.length > 0) {
+              previewText += ` (Streams: ${specificStreams.map(s => s.nextElementSibling.textContent.replace('Stream ', '')).join(', ')})`;
+              totalAssignments += specificStreams.length;
+            }
+
+            if (isClassTeacher) {
+              previewText += " [Class Teacher]";
+            }
+
+            previewText += "\n";
+          });
+
+          previewText += `\nTotal Assignments: ${subjects.length * totalAssignments} (${subjects.length} subjects × ${totalAssignments} grade-stream combinations)`;
+
+        } else {
+          const combinations = document.querySelectorAll(".assignment-combination");
+          previewText += `Teacher: ${document.getElementById("bulk_teacher_id").selectedOptions[0].text}\n`;
+          previewText += `Mode: Advanced Precise Assignment\n\n`;
+          previewText += `Assignment Combinations (${combinations.length}):\n`;
+
+          combinations.forEach((combo, index) => {
+            const subject = combo.querySelector('select[name="advanced_subjects[]"]').selectedOptions[0]?.text || "Not selected";
+            const grade = combo.querySelector('select[name="advanced_grades[]"]').selectedOptions[0]?.text || "Not selected";
+            const stream = combo.querySelector('select[name="advanced_streams[]"]').selectedOptions[0]?.text || "All Streams";
+            const isClassTeacher = combo.querySelector('input[name="advanced_class_teacher[]"]').checked;
+
+            previewText += `${index + 1}. ${subject} → ${grade} → ${stream}${isClassTeacher ? " (Class Teacher)" : ""}\n`;
+          });
+        }
+
+        alert(previewText);
+      }
+
+      // Add event listeners for real-time summary updates
+      document.addEventListener('DOMContentLoaded', function() {
+        // Add change listeners to subject checkboxes
+        document.querySelectorAll('input[name="bulk_subjects"]').forEach(checkbox => {
+          checkbox.addEventListener('change', updateAssignmentSummary);
+        });
+
+        // Add change listeners to class teacher checkboxes
+        document.querySelectorAll('input[name="class_teacher_grades"]').forEach(checkbox => {
+          checkbox.addEventListener('change', function() {
+            const gradeId = this.value;
+            const noteDiv = document.getElementById(`class-teacher-note-${gradeId}`);
+            if (noteDiv) {
+              noteDiv.style.display = this.checked ? 'block' : 'none';
+            }
+            updateAssignmentSummary();
+          });
+        });
+      });
+
+      // Function to search assignments
+      function searchAssignments() {
+        const searchValue = document
+          .getElementById("assignment-search")
+          .value.toLowerCase();
+        const rows = document.querySelectorAll("#assignments-table tbody tr");
+
+        rows.forEach((row) => {
+          const teacherName = row.cells[0].textContent.toLowerCase();
+          const subjectName = row.cells[1].textContent.toLowerCase();
+          const gradeName = row.cells[2].textContent.toLowerCase();
+          const streamName = row.cells[3].textContent.toLowerCase();
+
+          if (
+            teacherName.includes(searchValue) ||
+            subjectName.includes(searchValue) ||
+            gradeName.includes(searchValue) ||
+            streamName.includes(searchValue)
+          ) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+      }
+
+      // Function to filter assignments by education level
+      function filterAssignmentsByLevel(level) {
+        const rows = document.querySelectorAll("#assignments-table tbody tr");
+
+        if (level === "all") {
+          rows.forEach((row) => {
+            row.style.display = "";
+          });
+          return;
+        }
+
+        rows.forEach((row) => {
+          const subjectCell = row.cells[1].textContent;
+          if (subjectCell.toLowerCase().includes(level.toLowerCase())) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+      }
+
+      // Close modal when clicking outside of it
+      window.onclick = function (event) {
+        const modal = document.getElementById("bulk-assignment-modal");
+        if (event.target === modal) {
+          modal.style.display = "none";
+        }
+      };
+
+      // Function to auto-hide messages after 5 seconds
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+          const messages = document.querySelectorAll(".message");
+          messages.forEach((message) => {
+            message.style.display = "none";
+          });
+        }, 5000);
+
+        // Add filter buttons for education levels
+        const filterContainer = document.getElementById("student-filter");
+        if (filterContainer) {
+          const filterButtons = document.createElement("div");
+          filterButtons.className = "filter-buttons";
+          filterButtons.style.marginTop = "10px";
+
+          filterButtons.innerHTML = `
+            <span style="margin-right: 10px;">Filter by level: </span>
+            <button type="button" onclick="filterAssignmentsByLevel('all')" class="filter-btn" style="margin-right: 5px; padding: 5px 10px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 3px; cursor: pointer;">All</button>
+            <button type="button" onclick="filterAssignmentsByLevel('lower primary')" class="filter-btn" style="margin-right: 5px; padding: 5px 10px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 3px; cursor: pointer;">Lower Primary</button>
+            <button type="button" onclick="filterAssignmentsByLevel('upper primary')" class="filter-btn" style="margin-right: 5px; padding: 5px 10px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 3px; cursor: pointer;">Upper Primary</button>
+            <button type="button" onclick="filterAssignmentsByLevel('junior secondary')" class="filter-btn" style="padding: 5px 10px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 3px; cursor: pointer;">Junior Secondary</button>
+          `;
+
+          filterContainer.appendChild(filterButtons);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -12,6 +12,15 @@ from functools import wraps
 # Create a blueprint for teacher routes
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/teacher')
 
+def is_mobile_request(request):
+    """Detect if the request is from a mobile device."""
+    user_agent = request.headers.get('User-Agent', '').lower()
+    mobile_keywords = [
+        'mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry',
+        'windows phone', 'opera mini', 'iemobile', 'wpdesktop'
+    ]
+    return any(keyword in user_agent for keyword in mobile_keywords)
+
 # Decorator for requiring teacher authentication
 def teacher_required(f):
     """Decorator to require teacher authentication for a route."""
@@ -75,6 +84,23 @@ def get_streams(grade_id):
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
+@teacher_bp.route('/mobile', methods=['GET', 'POST'])
+@teacher_required
+def mobile_dashboard():
+    """Mobile-optimized teacher dashboard."""
+    # Force mobile template usage
+    request.mobile_override = True
+    return dashboard()
+
+@teacher_bp.route('/demo')
+def mobile_demo():
+    """Mobile responsive design demo page."""
+    from ..services.school_config_service import SchoolConfigService
+    school_config_service = SchoolConfigService()
+    school_info = school_config_service.get_school_info()
+
+    return render_template('mobile_demo.html', school_info=school_info)
+
 @teacher_bp.route('/reset', methods=['GET'])
 @teacher_required
 def reset_form():
@@ -109,7 +135,14 @@ def dashboard():
     # Get role-based assignment summary
     assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, role)
 
+    # DEBUG: Print assignment summary details
+    print(f"🔍 DEBUG - Teacher ID: {teacher_id}, Role: {role}")
+    print(f"🔍 DEBUG - Assignment summary keys: {list(assignment_summary.keys())}")
+    print(f"🔍 DEBUG - Assignment summary teacher: {assignment_summary.get('teacher')}")
+    print(f"🔍 DEBUG - Subject assignments count: {len(assignment_summary.get('subject_assignments', []))}")
+
     if 'error' in assignment_summary:
+        print(f"❌ DEBUG - Error in assignment summary: {assignment_summary['error']}")
         flash(f"Error loading assignments: {assignment_summary['error']}", "error")
         assignment_summary = {
             'teacher': None,
@@ -119,6 +152,8 @@ def dashboard():
             'total_subjects_taught': 0,
             'subjects_involved': []
         }
+    else:
+        print(f"✅ DEBUG - Assignment summary successful")
 
     # Get accessible data based on role
     accessible_subjects = RoleBasedDataService.get_accessible_subjects(teacher_id, role)
@@ -517,9 +552,18 @@ def dashboard():
     from ..services.school_config_service import SchoolConfigService
     school_info = SchoolConfigService.get_school_info_dict()
 
+    # Check if mobile template should be used (based on user agent, query parameter, or route override)
+    use_mobile = (
+        request.args.get('mobile', '').lower() == 'true' or
+        is_mobile_request(request) or
+        hasattr(request, 'mobile_override')
+    )
+
+    template_name = "teacher_mobile.html" if use_mobile else "teacher.html"
+
     # Render the teacher dashboard
     return render_template(
-        "teacher.html",
+        template_name,
         grades=grades,
         grades_dict=grades_dict,
         subjects_by_education_level=subjects_by_education_level,

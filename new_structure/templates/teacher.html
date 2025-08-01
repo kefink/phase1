@@ -25,48 +25,45 @@
           crossorigin="anonymous"
           referrerpolicy="no-referrer">
 
-    <!-- Legacy CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
-    <!-- Mobile Responsive Dashboard Styles -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile_responsive_dashboard.css') }}">
+    <!-- Bootswatch Solar Theme - Main Theme (ONLY THEME) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
 
     <style>
-        /* Premium Glassmorphism Theme for Subject Teacher */
+        /* Solar Theme Integration for Subject Teacher */
         :root {
-            /* Primary Colors - Ocean Blue Theme */
-            --primary-color: #0f172a;
-            --secondary-color: #1e293b;
-            --accent-color: #3b82f6;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --info-color: #06b6d4;
+            /* Use Solar theme colors from bootstrap.min.css */
+            --primary-color: #b58900;
+            --secondary-color: #839496;
+            --accent-color: #268bd2;
+            --success-color: #2aa198;
+            --warning-color: #cb4b16;
+            --danger-color: #d33682;
+            --info-color: #268bd2;
 
-            /* Text Colors */
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --text-white: #ffffff;
+            /* Text Colors - Solar theme */
+            --text-primary: #839496;
+            --text-secondary: #657b83;
+            --text-muted: #586e75;
+            --text-white: #fdf6e3;
 
-            /* Glass Colors */
-            --glass-bg: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.18);
-            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            /* Solar Dark Background */
+            --glass-bg: rgba(7, 54, 66, 0.8);
+            --glass-border: rgba(131, 148, 150, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 43, 54, 0.5);
             --glass-backdrop: blur(8px);
 
-            /* Background */
-            --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --bg-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --bg-card: rgba(255, 255, 255, 0.1);
-            --bg-card-hover: rgba(255, 255, 255, 0.15);
+            /* Background - Solar theme */
+            --bg-primary: #002b36;
+            --bg-secondary: #073642;
+            --bg-card: rgba(7, 54, 66, 0.8);
+            --bg-card-hover: rgba(7, 54, 66, 0.9);
 
             /* Shadows */
-            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            --shadow-glass: 0 8px 32px 0 rgba(0, 43, 54, 0.5);
 
             /* Border Radius */
             --radius-sm: 6px;
@@ -88,13 +85,13 @@
             --transition-normal: all 0.3s ease-out;
             --transition-slow: all 0.5s ease-out;
 
-            /* Gradients */
-            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            --gradient-info: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            /* Gradients - Solar theme */
+            --gradient-primary: linear-gradient(135deg, #b58900 0%, #cb4b16 100%);
+            --gradient-secondary: linear-gradient(135deg, #839496 0%, #657b83 100%);
+            --gradient-success: linear-gradient(135deg, #2aa198 0%, #268bd2 100%);
+            --gradient-warning: linear-gradient(135deg, #cb4b16 0%, #b58900 100%);
+            --gradient-danger: linear-gradient(135deg, #d33682 0%, #cb4b16 100%);
+            --gradient-info: linear-gradient(135deg, #268bd2 0%, #2aa198 100%);
         }
 
         /* Global Styles */
@@ -133,9 +130,9 @@
             width: 100%;
             height: 100%;
             background:
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+                radial-gradient(circle at 20% 80%, rgba(181, 137, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(38, 139, 210, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(42, 161, 152, 0.1) 0%, transparent 50%);
             z-index: -1;
             animation: float 20s ease-in-out infinite;
         }
@@ -146,12 +143,12 @@
             66% { transform: translateY(10px) rotate(-1deg); }
         }
 
-        /* Premium Glassmorphism Navbar */
+        /* Solar Theme Navbar */
         .navbar {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.3) 100%);
+            background: linear-gradient(135deg, rgba(7, 54, 66, 0.9) 0%, rgba(0, 43, 54, 0.95) 100%);
             backdrop-filter: var(--glass-backdrop);
             -webkit-backdrop-filter: var(--glass-backdrop);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            border-bottom: 1px solid rgba(131, 148, 150, 0.3);
             box-shadow: var(--shadow-glass);
             position: sticky;
             top: 0;
@@ -167,7 +164,7 @@
         }
 
         .navbar-brand {
-            color: #1a202c;
+            color: #fdf6e3;
             font-size: 1.3rem;
             font-weight: 700;
             text-decoration: none;
@@ -175,7 +172,7 @@
             align-items: center;
             gap: 0.75rem;
             transition: var(--transition-fast);
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
             position: relative;
             z-index: 2;
             flex: 1;
@@ -248,7 +245,7 @@
         }
 
         .nav-link {
-            color: #2d3748;
+            color: #fdf6e3;
             text-decoration: none;
             padding: var(--spacing-xs) var(--spacing-sm);
             border-radius: var(--radius-sm);
@@ -259,18 +256,18 @@
             font-weight: 500;
             font-size: 0.9rem;
             backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(131, 148, 150, 0.3);
+            background: rgba(7, 54, 66, 0.6);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .nav-link:hover {
-            background: rgba(255, 255, 255, 0.3);
-            color: #1a202c;
+            background: rgba(181, 137, 0, 0.8);
+            color: #fdf6e3;
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
-            border-color: rgba(255, 255, 255, 0.4);
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+            border-color: rgba(181, 137, 0, 0.6);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
         }
 
         .logout-btn {
@@ -493,40 +490,40 @@
             background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
 
-        /* Table Styling */
+        /* Table Styling - Solar Theme */
         .table-responsive {
             overflow-x: auto;
             border-radius: var(--radius-md);
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(7, 54, 66, 0.8);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(131, 148, 150, 0.3);
         }
 
         .table-responsive table {
             width: 100%;
             border-collapse: collapse;
-            color: #ffffff;
+            color: #fdf6e3;
         }
 
         .table-responsive th {
-            background: rgba(255, 255, 255, 0.3);
-            color: #1a202c;
+            background: linear-gradient(135deg, #b58900 0%, #cb4b16 100%);
+            color: #fdf6e3;
             padding: var(--spacing-md);
             text-align: left;
             font-weight: 600;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+            border-bottom: 1px solid rgba(131, 148, 150, 0.3);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .table-responsive td {
             padding: var(--spacing-md);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            color: #2d3748;
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+            border-bottom: 1px solid rgba(131, 148, 150, 0.2);
+            color: #fdf6e3;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .table-responsive tr:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(181, 137, 0, 0.2);
         }
 
         /* Form Input Styling */
@@ -1032,6 +1029,37 @@
             .table th,
             .table td {
                 padding: var(--spacing-xs);
+            }
+
+            /* Mobile Assignment Table Styling */
+            .mobile-table-wrapper {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(181, 137, 0, 0.5) rgba(7, 54, 66, 0.3);
+            }
+
+            .mobile-table-wrapper::-webkit-scrollbar {
+                height: 8px;
+            }
+
+            .mobile-table-wrapper::-webkit-scrollbar-track {
+                background: rgba(7, 54, 66, 0.3);
+                border-radius: 4px;
+            }
+
+            .mobile-table-wrapper::-webkit-scrollbar-thumb {
+                background: rgba(181, 137, 0, 0.5);
+                border-radius: 4px;
+            }
+
+            .mobile-table-wrapper::-webkit-scrollbar-thumb:hover {
+                background: rgba(181, 137, 0, 0.7);
+            }
+
+            .assignments-table {
+                min-width: 500px !important;
+            }
                 white-space: nowrap;
             }
         }
@@ -3162,7 +3190,8 @@
         </div>
 
         <!-- Role-Based Assignments Section -->
-        {% if assignment_summary and assignment_summary.teacher %}
+        <!-- DEBUG: assignment_summary={{ assignment_summary }}, subject_assignments={{ subject_assignments|length if subject_assignments else 'None' }} -->
+        {% if assignment_summary %}
         <div class="dashboard-card" style="margin-bottom: var(--spacing-xl);">
             <div class="card-header">
                 <span>📚 My Assignments</span>
@@ -3208,34 +3237,35 @@
                 {% if subject_assignments %}
                 <div>
                     <h4 style="color: var(--primary-color); margin-bottom: var(--spacing-md); font-size: 1rem; font-weight: 600;">📖 Subject Teaching Assignments</h4>
-                    <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                        <table style="width: 100%; border-collapse: collapse;">
+                    <!-- Mobile-responsive table wrapper -->
+                    <div class="mobile-table-wrapper" style="max-height: 200px; overflow-y: auto; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid rgba(131, 148, 150, 0.3); border-radius: var(--radius-md); background: rgba(7, 54, 66, 0.8);">
+                        <table class="assignments-table" style="width: 100%; min-width: 500px; border-collapse: collapse;">
                             <thead>
-                                <tr style="background: var(--gradient-primary); color: white;">
-                                    <th style="padding: var(--spacing-sm); text-align: left; font-size: 0.8rem;">Subject</th>
-                                    <th style="padding: var(--spacing-sm); text-align: center; font-size: 0.8rem;">Grade</th>
-                                    <th style="padding: var(--spacing-sm); text-align: center; font-size: 0.8rem;">Stream</th>
-                                    <th style="padding: var(--spacing-sm); text-align: center; font-size: 0.8rem;">Role</th>
+                                <tr style="background: linear-gradient(135deg, #b58900 0%, #cb4b16 100%); color: #fdf6e3;">
+                                    <th style="padding: var(--spacing-sm); text-align: left; font-size: 0.8rem; white-space: nowrap;">Subject</th>
+                                    <th style="padding: var(--spacing-sm); text-align: center; font-size: 0.8rem; white-space: nowrap;">Grade</th>
+                                    <th style="padding: var(--spacing-sm); text-align: center; font-size: 0.8rem; white-space: nowrap;">Stream</th>
+                                    <th style="padding: var(--spacing-sm); text-align: center; font-size: 0.8rem; white-space: nowrap;">Role</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for assignment in subject_assignments[:10] %}
-                                <tr style="border-bottom: 1px solid var(--border-color); {% if loop.index % 2 == 0 %}background: var(--background-light);{% endif %}">
-                                    <td style="padding: var(--spacing-sm); font-weight: 500;">{{ assignment.subject_name }}</td>
-                                    <td style="padding: var(--spacing-sm); text-align: center;">{{ assignment.grade_level }}</td>
-                                    <td style="padding: var(--spacing-sm); text-align: center;">{{ assignment.stream_name or 'All' }}</td>
-                                    <td style="padding: var(--spacing-sm); text-align: center;">
+                                <tr style="border-bottom: 1px solid rgba(131, 148, 150, 0.2); {% if loop.index % 2 == 0 %}background: rgba(7, 54, 66, 0.4);{% endif %}">
+                                    <td style="padding: var(--spacing-sm); font-weight: 500; color: #fdf6e3; white-space: nowrap;">{{ assignment.subject_name }}</td>
+                                    <td style="padding: var(--spacing-sm); text-align: center; color: #fdf6e3; white-space: nowrap;">{{ assignment.grade_level }}</td>
+                                    <td style="padding: var(--spacing-sm); text-align: center; color: #fdf6e3; white-space: nowrap;">{{ assignment.stream_name or 'All' }}</td>
+                                    <td style="padding: var(--spacing-sm); text-align: center; white-space: nowrap;">
                                         {% if assignment.is_class_teacher %}
-                                        <span style="background: var(--gradient-success); color: white; padding: 2px 6px; border-radius: var(--radius-sm); font-size: 0.7rem;">Class Teacher</span>
+                                        <span style="background: linear-gradient(135deg, #2aa198 0%, #268bd2 100%); color: #fdf6e3; padding: 2px 6px; border-radius: var(--radius-sm); font-size: 0.7rem;">Class Teacher</span>
                                         {% else %}
-                                        <span style="background: var(--gradient-warning); color: white; padding: 2px 6px; border-radius: var(--radius-sm); font-size: 0.7rem;">Subject Teacher</span>
+                                        <span style="background: linear-gradient(135deg, #cb4b16 0%, #b58900 100%); color: #fdf6e3; padding: 2px 6px; border-radius: var(--radius-sm); font-size: 0.7rem;">Subject Teacher</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
                                 {% if subject_assignments|length > 10 %}
                                 <tr>
-                                    <td colspan="4" style="padding: var(--spacing-sm); text-align: center; color: var(--text-secondary); font-style: italic;">
+                                    <td colspan="4" style="padding: var(--spacing-sm); text-align: center; color: #839496; font-style: italic;">
                                         ... and {{ subject_assignments|length - 10 }} more assignments
                                     </td>
                                 </tr>
@@ -3461,7 +3491,7 @@
                 </div>
 
                 <form method="POST" action="{{ url_for('teacher.dashboard') }}" class="new-marks-form" id="newMarksForm">
-                    {{ csrf_token() }}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="education_level" value="{{ education_level }}">
                     <input type="hidden" name="subject" value="{{ subject }}">
                     <input type="hidden" name="grade" value="{{ grade }}">
@@ -5164,6 +5194,16 @@
             uploadInput.name = 'upload_marks';
             uploadInput.value = '1';
             form.appendChild(uploadInput);
+
+            // Ensure CSRF token is included
+            const csrfToken = document.querySelector('input[name="csrf_token"]');
+            if (csrfToken && !form.querySelector('input[name="csrf_token"]')) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = csrfToken.value;
+                form.appendChild(csrfInput);
+            }
 
             document.body.appendChild(form);
             form.submit();

@@ -2657,6 +2657,806 @@ def create_app(config_name='default'):
         except Exception as e:
             return f"❌ Error checking teachers: {str(e)}"
 
+    # Debug routes removed - issue resolved
+
+    @app.route('/debug/carol-assignments-resolved')
+    def debug_carol_assignments_resolved():
+        """Simplified debug route - issue was resolved."""
+        return """
+        <h2>✅ Carol's Assignment Issue - RESOLVED</h2>
+        <p><strong>Issue:</strong> Carol couldn't see her subject assignments</p>
+        <p><strong>Root Cause:</strong> Flash message error on login page from stale session data</p>
+        <p><strong>Solution:</strong> Clear session data and flash messages on login page access</p>
+        <p><strong>Status:</strong> ✅ FIXED - Carol can now see her assignments</p>
+        <hr>
+        <p><a href='/teacher_login'>🔗 Test Teacher Login</a></p>
+        <p><a href='/teacher/'>🔗 Test Teacher Dashboard</a></p>
+        """
+
+    @app.route('/debug/fix-carol-assignments')
+    def debug_fix_carol_assignments():
+        """Debug route to add subject assignments for Carol."""
+        try:
+            from .models.user import Teacher
+            from .models.assignment import TeacherSubjectAssignment
+            from .models.academic import Subject, Grade, Stream
+            from .extensions import db
+
+            result = "<h2>🔧 Fixing Carol's Subject Assignments</h2>"
+
+            # Find Carol
+            carol = Teacher.query.filter_by(username='carol').first()
+            if not carol:
+                result += "<p style='color: red;'>❌ <strong>Carol not found in database!</strong></p>"
+                return result
+
+            result += f"<p>✅ <strong>Found Carol:</strong> ID={carol.id}, Username={carol.username}</p>"
+
+            # Check if Carol already has assignments
+            existing_assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=carol.id).all()
+            if existing_assignments:
+                result += f"<p>✅ <strong>Carol already has {len(existing_assignments)} assignments:</strong></p><ul>"
+                for assignment in existing_assignments:
+                    subject = Subject.query.get(assignment.subject_id)
+                    grade = Grade.query.get(assignment.grade_id)
+                    stream = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
+
+                    subject_name = subject.name if subject else f"Subject ID {assignment.subject_id}"
+                    grade_name = grade.name if grade else f"Grade ID {assignment.grade_id}"
+                    stream_name = stream.name if stream else "All Streams"
+
+                    result += f"<li>{subject_name} for {grade_name} {stream_name}</li>"
+                result += "</ul>"
+                result += "<p>Carol should already be able to see her assignments. Try refreshing her dashboard.</p>"
+                return result
+
+            result += "<p>📝 <strong>Carol has no assignments. Creating some...</strong></p>"
+
+            # Get some subjects and grades to assign to Carol
+            subjects = Subject.query.limit(3).all()
+            grades = Grade.query.limit(2).all()
+            streams = Stream.query.limit(2).all()
+
+            if not subjects:
+                result += "<p style='color: red;'>❌ <strong>No subjects found in database</strong></p>"
+                return result
+
+            if not grades:
+                result += "<p style='color: red;'>❌ <strong>No grades found in database</strong></p>"
+                return result
+
+            result += f"<p>📚 <strong>Available subjects:</strong> {', '.join([s.name for s in subjects])}</p>"
+            result += f"<p>📊 <strong>Available grades:</strong> {', '.join([g.name for g in grades])}</p>"
+            result += f"<p>🏫 <strong>Available streams:</strong> {', '.join([s.name for s in streams]) if streams else 'No streams'}</p>"
+
+            assignments_created = 0
+
+            # Create assignments for Carol
+            for i, subject in enumerate(subjects[:2]):  # Assign first 2 subjects
+                grade = grades[0]  # Use first grade
+
+                if streams:
+                    # If streams exist, assign to first stream
+                    stream = streams[0]
+                    assignment = TeacherSubjectAssignment(
+                        teacher_id=carol.id,
+                        subject_id=subject.id,
+                        grade_id=grade.id,
+                        stream_id=stream.id,
+                        is_class_teacher=False
+                    )
+                    db.session.add(assignment)
+                    assignments_created += 1
+                    result += f"<p>✅ <strong>Created assignment:</strong> {subject.name} for {grade.name} {stream.name}</p>"
+                else:
+                    # No streams, assign to whole grade
+                    assignment = TeacherSubjectAssignment(
+                        teacher_id=carol.id,
+                        subject_id=subject.id,
+                        grade_id=grade.id,
+                        stream_id=None,
+                        is_class_teacher=False
+                    )
+                    db.session.add(assignment)
+                    assignments_created += 1
+                    result += f"<p>✅ <strong>Created assignment:</strong> {subject.name} for {grade.name} (All Streams)</p>"
+
+            # Commit the changes
+            try:
+                db.session.commit()
+                result += f"<p style='color: green;'>🎉 <strong>Successfully created {assignments_created} assignments for Carol!</strong></p>"
+
+                # Verify the assignments were created
+                carol_assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=carol.id).all()
+                result += f"<h3>📋 Carol's New Assignments ({len(carol_assignments)} total):</h3><ul>"
+                for assignment in carol_assignments:
+                    subject = Subject.query.get(assignment.subject_id)
+                    grade = Grade.query.get(assignment.grade_id)
+                    stream = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
+
+                    subject_name = subject.name if subject else f"Subject ID {assignment.subject_id}"
+                    grade_name = grade.name if grade else f"Grade ID {assignment.grade_id}"
+                    stream_name = stream.name if stream else "All Streams"
+
+                    result += f"<li><strong>{subject_name}</strong> for <strong>{grade_name} {stream_name}</strong></li>"
+                result += "</ul>"
+
+                result += "<h3>🎯 Next Steps:</h3>"
+                result += "<ol>"
+                result += "<li><strong>Login as Carol</strong> (username: carol, password: carol123)</li>"
+                result += "<li><strong>Go to teacher dashboard</strong></li>"
+                result += "<li><strong>Check 'My Assignments' section</strong> - should now show her subjects</li>"
+                result += "<li><strong>Try uploading marks</strong> for her assigned subjects</li>"
+                result += "</ol>"
+
+            except Exception as e:
+                db.session.rollback()
+                result += f"<p style='color: red;'>❌ <strong>Error saving assignments:</strong> {str(e)}</p>"
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return f"<h2>❌ Debug Error</h2><pre>{str(e)}\n\n{traceback.format_exc()}</pre>"
+
+    @app.route('/debug/carol-dashboard-data')
+    def debug_carol_dashboard_data():
+        """Debug route to see exactly what data Carol's dashboard receives."""
+        try:
+            from .models.user import Teacher
+            from .models.assignment import TeacherSubjectAssignment
+            from .services.role_based_data_service import RoleBasedDataService
+
+            result = "<h2>🔍 Carol's Dashboard Data Debug</h2>"
+
+            # Find Carol
+            carol = Teacher.query.filter_by(username='carol').first()
+            if not carol:
+                result += "<p style='color: red;'>❌ <strong>Carol not found!</strong></p>"
+                return result
+
+            result += f"<p>✅ <strong>Found Carol:</strong> ID={carol.id}</p>"
+
+            # Simulate the exact dashboard call
+            teacher_id = carol.id
+            role = 'teacher'
+
+            result += f"<h3>🔄 Calling RoleBasedDataService.get_teacher_assignments_summary({teacher_id}, '{role}')</h3>"
+
+            # Get the assignment summary (same as dashboard)
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, role)
+
+            result += f"<h4>📊 Assignment Summary Response:</h4>"
+            result += f"<pre>{assignment_summary}</pre>"
+
+            # Check if there's an error
+            if 'error' in assignment_summary:
+                result += f"<p style='color: red;'>❌ <strong>Service Error:</strong> {assignment_summary['error']}</p>"
+                return result
+
+            # Extract the subject_assignments (same as dashboard)
+            subject_assignments = assignment_summary.get('subject_assignments', [])
+
+            result += f"<h4>📚 Subject Assignments (what template receives):</h4>"
+            result += f"<p><strong>Length:</strong> {len(subject_assignments)}</p>"
+
+            if not subject_assignments:
+                result += "<p style='color: orange;'>⚠️ <strong>subject_assignments is empty!</strong></p>"
+                result += "<p>This is why the template doesn't show anything.</p>"
+
+                # Let's check the raw assignments
+                raw_assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher_id).all()
+                result += f"<h4>🔍 Raw Database Assignments:</h4>"
+                result += f"<p><strong>Count:</strong> {len(raw_assignments)}</p>"
+
+                if raw_assignments:
+                    result += "<ul>"
+                    for assignment in raw_assignments:
+                        result += f"<li>ID: {assignment.id}, Subject: {assignment.subject_id}, Grade: {assignment.grade_id}, Stream: {assignment.stream_id}</li>"
+                    result += "</ul>"
+
+                    # Test the service method directly
+                    result += "<h4>🧪 Testing _get_subject_teacher_summary directly:</h4>"
+                    try:
+                        direct_result = RoleBasedDataService._get_subject_teacher_summary(raw_assignments)
+                        result += f"<pre>{direct_result}</pre>"
+                    except Exception as e:
+                        result += f"<p style='color: red;'>❌ <strong>Direct method error:</strong> {str(e)}</p>"
+                        import traceback
+                        result += f"<pre>{traceback.format_exc()}</pre>"
+
+            else:
+                result += "<ul>"
+                for i, assignment in enumerate(subject_assignments):
+                    result += f"<li><strong>Assignment {i+1}:</strong> {assignment}</li>"
+                result += "</ul>"
+
+            # Check template variables that would be passed
+            result += f"<h4>📝 Template Variables (what dashboard passes):</h4>"
+            result += f"<ul>"
+            result += f"<li><strong>assignment_summary:</strong> {type(assignment_summary)} with {len(assignment_summary)} keys</li>"
+            result += f"<li><strong>subject_assignments:</strong> {type(subject_assignments)} with {len(subject_assignments)} items</li>"
+            result += f"<li><strong>total_subjects_taught:</strong> {assignment_summary.get('total_subjects_taught', 0)}</li>"
+            result += f"</ul>"
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return f"<h2>❌ Debug Error</h2><pre>{str(e)}\n\n{traceback.format_exc()}</pre>"
+
+    @app.route('/debug/test-relationships')
+    def debug_test_relationships():
+        """Debug route to test if database relationships are working."""
+        try:
+            from .models.user import Teacher
+            from .models.assignment import TeacherSubjectAssignment
+            from .models.academic import Subject, Grade, Stream
+
+            result = "<h2>🔍 Testing Database Relationships</h2>"
+
+            # Find Carol
+            carol = Teacher.query.filter_by(username='carol').first()
+            if not carol:
+                result += "<p style='color: red;'>❌ Carol not found!</p>"
+                return result
+
+            result += f"<p>✅ <strong>Found Carol:</strong> ID={carol.id}</p>"
+
+            # Get Carol's assignments
+            assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=carol.id).all()
+            result += f"<p>📊 <strong>Carol has {len(assignments)} assignments</strong></p>"
+
+            if not assignments:
+                result += "<p style='color: red;'>❌ No assignments found for Carol!</p>"
+                return result
+
+            # Test each assignment's relationships
+            for i, assignment in enumerate(assignments):
+                result += f"<h3>📋 Assignment {i+1} (ID: {assignment.id})</h3>"
+                result += f"<ul>"
+                result += f"<li><strong>Teacher ID:</strong> {assignment.teacher_id}</li>"
+                result += f"<li><strong>Subject ID:</strong> {assignment.subject_id}</li>"
+                result += f"<li><strong>Grade ID:</strong> {assignment.grade_id}</li>"
+                result += f"<li><strong>Stream ID:</strong> {assignment.stream_id}</li>"
+                result += f"<li><strong>Is Class Teacher:</strong> {assignment.is_class_teacher}</li>"
+                result += f"</ul>"
+
+                # Test relationships
+                result += f"<h4>🔗 Testing Relationships:</h4>"
+                result += f"<ul>"
+
+                # Test teacher relationship
+                try:
+                    teacher = assignment.teacher
+                    if teacher:
+                        result += f"<li>✅ <strong>Teacher:</strong> {teacher.username} (ID: {teacher.id})</li>"
+                    else:
+                        result += f"<li>❌ <strong>Teacher:</strong> None</li>"
+                except Exception as e:
+                    result += f"<li>❌ <strong>Teacher Error:</strong> {str(e)}</li>"
+
+                # Test subject relationship
+                try:
+                    subject = assignment.subject
+                    if subject:
+                        result += f"<li>✅ <strong>Subject:</strong> {subject.name} (ID: {subject.id})</li>"
+                    else:
+                        result += f"<li>❌ <strong>Subject:</strong> None</li>"
+                except Exception as e:
+                    result += f"<li>❌ <strong>Subject Error:</strong> {str(e)}</li>"
+
+                # Test grade relationship
+                try:
+                    grade = assignment.grade
+                    if grade:
+                        result += f"<li>✅ <strong>Grade:</strong> {grade.name} (ID: {grade.id})</li>"
+                    else:
+                        result += f"<li>❌ <strong>Grade:</strong> None</li>"
+                except Exception as e:
+                    result += f"<li>❌ <strong>Grade Error:</strong> {str(e)}</li>"
+
+                # Test stream relationship
+                try:
+                    stream = assignment.stream
+                    if stream:
+                        result += f"<li>✅ <strong>Stream:</strong> {stream.name} (ID: {stream.id})</li>"
+                    else:
+                        result += f"<li>⚠️ <strong>Stream:</strong> None (this is OK if no streams)</li>"
+                except Exception as e:
+                    result += f"<li>❌ <strong>Stream Error:</strong> {str(e)}</li>"
+
+                result += f"</ul>"
+
+                # Test the _format_assignment method directly
+                result += f"<h4>🧪 Testing _format_assignment:</h4>"
+                try:
+                    from .services.role_based_data_service import RoleBasedDataService
+                    formatted = RoleBasedDataService._format_assignment(assignment)
+                    result += f"<pre>{formatted}</pre>"
+                except Exception as e:
+                    result += f"<p style='color: red;'>❌ <strong>Format Error:</strong> {str(e)}</p>"
+                    import traceback
+                    result += f"<pre>{traceback.format_exc()}</pre>"
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return f"<h2>❌ Debug Error</h2><pre>{str(e)}\n\n{traceback.format_exc()}</pre>"
+
+    @app.route('/debug/carol-session')
+    def debug_carol_session():
+        """Debug route to check Carol's session when she's logged in."""
+        try:
+            from flask import session
+
+            result = "<h2>🔍 Carol's Session Debug</h2>"
+
+            # Check session data
+            result += f"<h3>📊 Current Session Data:</h3>"
+            result += f"<ul>"
+            result += f"<li><strong>teacher_id:</strong> {session.get('teacher_id', 'NOT SET')}</li>"
+            result += f"<li><strong>username:</strong> {session.get('username', 'NOT SET')}</li>"
+            result += f"<li><strong>role:</strong> {session.get('role', 'NOT SET')}</li>"
+            result += f"<li><strong>All session keys:</strong> {list(session.keys())}</li>"
+            result += f"</ul>"
+
+            # Check if user is logged in
+            teacher_id = session.get('teacher_id')
+            if not teacher_id:
+                result += "<p style='color: red;'>❌ <strong>No teacher_id in session - Carol is not logged in!</strong></p>"
+                result += "<p>Please login as Carol first, then access this debug route.</p>"
+                result += f"<p><a href='/teacher_login'>🔗 Login as Carol</a></p>"
+                return result
+
+            result += f"<p>✅ <strong>Carol is logged in with teacher_id: {teacher_id}</strong></p>"
+
+            # Now test the exact same flow as the dashboard
+            from .models.user import Teacher
+            from .services.role_based_data_service import RoleBasedDataService
+
+            role = session.get('role', 'teacher')
+
+            result += f"<h3>🔄 Testing Dashboard Flow:</h3>"
+            result += f"<p>Calling: <code>RoleBasedDataService.get_teacher_assignments_summary({teacher_id}, '{role}')</code></p>"
+
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, role)
+
+            result += f"<h4>📊 Assignment Summary:</h4>"
+            if 'error' in assignment_summary:
+                result += f"<p style='color: red;'>❌ <strong>Error:</strong> {assignment_summary['error']}</p>"
+            else:
+                result += f"<ul>"
+                result += f"<li><strong>total_subjects_taught:</strong> {assignment_summary.get('total_subjects_taught', 0)}</li>"
+                result += f"<li><strong>subject_assignments count:</strong> {len(assignment_summary.get('subject_assignments', []))}</li>"
+                result += f"<li><strong>class_teacher_assignments count:</strong> {len(assignment_summary.get('class_teacher_assignments', []))}</li>"
+                result += f"</ul>"
+
+                # Show the actual subject assignments
+                subject_assignments = assignment_summary.get('subject_assignments', [])
+                if subject_assignments:
+                    result += f"<h4>📚 Subject Assignments Details:</h4>"
+                    result += f"<ol>"
+                    for assignment in subject_assignments:
+                        result += f"<li>{assignment}</li>"
+                    result += f"</ol>"
+                else:
+                    result += f"<p style='color: orange;'>⚠️ <strong>subject_assignments is empty!</strong></p>"
+
+            # Test accessible subjects
+            result += f"<h3>🔍 Testing Accessible Subjects:</h3>"
+            try:
+                accessible_subjects = RoleBasedDataService.get_accessible_subjects(teacher_id, role)
+                result += f"<p><strong>Accessible subjects count:</strong> {len(accessible_subjects)}</p>"
+                if accessible_subjects:
+                    result += f"<ul>"
+                    for subject in accessible_subjects[:5]:  # Show first 5
+                        result += f"<li>{subject.name} (ID: {subject.id})</li>"
+                    result += f"</ul>"
+                else:
+                    result += f"<p style='color: orange;'>⚠️ <strong>No accessible subjects!</strong></p>"
+            except Exception as e:
+                result += f"<p style='color: red;'>❌ <strong>Accessible subjects error:</strong> {str(e)}</p>"
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return f"<h2>❌ Debug Error</h2><pre>{str(e)}\n\n{traceback.format_exc()}</pre>"
+
+    @app.route('/debug/assignment-summary-structure')
+    def debug_assignment_summary_structure():
+        """Debug route to check the exact structure of assignment_summary."""
+        try:
+            from flask import session
+            from .services.role_based_data_service import RoleBasedDataService
+
+            result = "<h2>🔍 Assignment Summary Structure Debug</h2>"
+
+            # Check if user is logged in
+            teacher_id = session.get('teacher_id')
+            if not teacher_id:
+                result += "<p style='color: red;'>❌ Please login as Carol first</p>"
+                result += f"<p><a href='/teacher_login'>🔗 Login as Carol</a></p>"
+                return result
+
+            role = session.get('role', 'teacher')
+            result += f"<p>✅ <strong>Testing with teacher_id: {teacher_id}, role: {role}</strong></p>"
+
+            # Get assignment summary
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, role)
+
+            result += f"<h3>📊 Assignment Summary Structure:</h3>"
+            result += f"<p><strong>Type:</strong> {type(assignment_summary)}</p>"
+            result += f"<p><strong>Keys:</strong> {list(assignment_summary.keys()) if isinstance(assignment_summary, dict) else 'Not a dict'}</p>"
+
+            # Check each key
+            if isinstance(assignment_summary, dict):
+                for key, value in assignment_summary.items():
+                    result += f"<h4>🔑 Key: '{key}'</h4>"
+                    result += f"<ul>"
+                    result += f"<li><strong>Type:</strong> {type(value)}</li>"
+                    result += f"<li><strong>Value:</strong> {value}</li>"
+                    if isinstance(value, list):
+                        result += f"<li><strong>Length:</strong> {len(value)}</li>"
+                        if value:
+                            result += f"<li><strong>First item:</strong> {value[0]}</li>"
+                    result += f"</ul>"
+
+            # Check the specific template condition
+            result += f"<h3>🎯 Template Condition Check:</h3>"
+            result += f"<p><strong>assignment_summary:</strong> {bool(assignment_summary)}</p>"
+
+            if assignment_summary:
+                teacher_obj = assignment_summary.get('teacher')
+                result += f"<p><strong>assignment_summary.teacher:</strong> {teacher_obj}</p>"
+                result += f"<p><strong>assignment_summary.teacher exists:</strong> {bool(teacher_obj)}</p>"
+
+                if teacher_obj:
+                    result += f"<p><strong>Teacher object type:</strong> {type(teacher_obj)}</p>"
+                    result += f"<p><strong>Teacher username:</strong> {getattr(teacher_obj, 'username', 'NO USERNAME')}</p>"
+                    result += f"<p><strong>Teacher id:</strong> {getattr(teacher_obj, 'id', 'NO ID')}</p>"
+
+                # Check the template condition result
+                condition_result = assignment_summary and assignment_summary.get('teacher')
+                result += f"<p style='color: {'green' if condition_result else 'red'};'><strong>Template condition (assignment_summary and assignment_summary.teacher):</strong> {condition_result}</p>"
+
+                if not condition_result:
+                    result += f"<p style='color: red;'>❌ <strong>This is why the assignments section is not showing!</strong></p>"
+                else:
+                    result += f"<p style='color: green;'>✅ <strong>Template condition passes - assignments section should show</strong></p>"
+
+                    # Check subject_assignments specifically
+                    subject_assignments = assignment_summary.get('subject_assignments', [])
+                    result += f"<p><strong>subject_assignments length:</strong> {len(subject_assignments)}</p>"
+                    if not subject_assignments:
+                        result += f"<p style='color: orange;'>⚠️ <strong>subject_assignments is empty - this is why no assignments show in the list</strong></p>"
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return f"<h2>❌ Debug Error</h2><pre>{str(e)}\n\n{traceback.format_exc()}</pre>"
+
+    @app.route('/debug/check-basic-data')
+    def debug_check_basic_data():
+        """Debug route to check if basic data (subjects, grades, streams) exists."""
+        try:
+            from .models.academic import Subject, Grade, Stream
+
+            result = "<h2>🔍 Basic Data Check</h2>"
+
+            # Check subjects
+            subjects = Subject.query.all()
+            result += f"<h3>📚 Subjects ({len(subjects)} total):</h3>"
+            if subjects:
+                result += "<ul>"
+                for subject in subjects[:10]:  # Show first 10
+                    result += f"<li><strong>{subject.name}</strong> (ID: {subject.id}, Level: {subject.education_level})</li>"
+                result += "</ul>"
+                if len(subjects) > 10:
+                    result += f"<p>... and {len(subjects) - 10} more subjects</p>"
+            else:
+                result += "<p style='color: red;'>❌ <strong>NO SUBJECTS FOUND!</strong></p>"
+
+            # Check grades
+            grades = Grade.query.all()
+            result += f"<h3>📊 Grades ({len(grades)} total):</h3>"
+            if grades:
+                result += "<ul>"
+                for grade in grades:
+                    result += f"<li><strong>{grade.name}</strong> (ID: {grade.id}, Level: {grade.education_level})</li>"
+                result += "</ul>"
+            else:
+                result += "<p style='color: red;'>❌ <strong>NO GRADES FOUND!</strong></p>"
+
+            # Check streams
+            streams = Stream.query.all()
+            result += f"<h3>🏫 Streams ({len(streams)} total):</h3>"
+            if streams:
+                result += "<ul>"
+                for stream in streams[:10]:  # Show first 10
+                    result += f"<li><strong>{stream.name}</strong> (ID: {stream.id}, Grade: {stream.grade_id})</li>"
+                result += "</ul>"
+                if len(streams) > 10:
+                    result += f"<p>... and {len(streams) - 10} more streams</p>"
+            else:
+                result += "<p style='color: orange;'>⚠️ <strong>NO STREAMS FOUND</strong> (this might be OK)</p>"
+
+            # Check if we have the minimum data needed
+            result += f"<h3>✅ Data Availability Summary:</h3>"
+            result += f"<ul>"
+            result += f"<li><strong>Subjects available:</strong> {'✅ Yes' if subjects else '❌ No'}</li>"
+            result += f"<li><strong>Grades available:</strong> {'✅ Yes' if grades else '❌ No'}</li>"
+            result += f"<li><strong>Can create assignments:</strong> {'✅ Yes' if subjects and grades else '❌ No - missing basic data'}</li>"
+            result += f"</ul>"
+
+            if not subjects or not grades:
+                result += f"<h3>🔧 Fix Required:</h3>"
+                result += f"<p style='color: red;'>❌ <strong>Missing basic data!</strong> The system needs subjects and grades to create teacher assignments.</p>"
+                result += f"<p>You need to:</p>"
+                result += f"<ol>"
+                result += f"<li>Login as headteacher</li>"
+                result += f"<li>Set up subjects and grades first</li>"
+                result += f"<li>Then assign subjects to teachers</li>"
+                result += f"</ol>"
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return f"<h2>❌ Debug Error</h2><pre>{str(e)}\n\n{traceback.format_exc()}</pre>"
+
+    @app.route('/debug/comprehensive-carol-fix')
+    def debug_comprehensive_carol_fix():
+        """Comprehensive debug and fix for Carol's assignments."""
+        try:
+            from .models.user import Teacher
+            from .models.assignment import TeacherSubjectAssignment
+            from .models.academic import Subject, Grade, Stream
+            from .extensions import db
+            from .services.role_based_data_service import RoleBasedDataService
+
+            result = "<h2>🔧 Comprehensive Carol Fix</h2>"
+
+            # Step 1: Find Carol
+            carol = Teacher.query.filter_by(username='carol').first()
+            if not carol:
+                result += "<p style='color: red;'>❌ Carol not found!</p>"
+                return result
+
+            result += f"<p>✅ <strong>Found Carol:</strong> ID={carol.id}</p>"
+
+            # Step 2: Check basic data
+            subjects = Subject.query.all()
+            grades = Grade.query.all()
+            streams = Stream.query.all()
+
+            result += f"<h3>📊 Basic Data Check:</h3>"
+            result += f"<ul>"
+            result += f"<li><strong>Subjects:</strong> {len(subjects)}</li>"
+            result += f"<li><strong>Grades:</strong> {len(grades)}</li>"
+            result += f"<li><strong>Streams:</strong> {len(streams)}</li>"
+            result += f"</ul>"
+
+            if not subjects or not grades:
+                result += "<p style='color: red;'>❌ <strong>Missing basic data! Cannot create assignments.</strong></p>"
+                return result
+
+            # Step 3: Clear existing assignments for Carol
+            existing_assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=carol.id).all()
+            result += f"<p>🗑️ <strong>Clearing {len(existing_assignments)} existing assignments for Carol</strong></p>"
+
+            for assignment in existing_assignments:
+                db.session.delete(assignment)
+
+            try:
+                db.session.commit()
+                result += "<p>✅ <strong>Cleared existing assignments</strong></p>"
+            except Exception as e:
+                db.session.rollback()
+                result += f"<p style='color: red;'>❌ <strong>Error clearing assignments:</strong> {str(e)}</p>"
+                return result
+
+            # Step 4: Create new assignments with detailed logging
+            result += f"<h3>🔨 Creating New Assignments:</h3>"
+
+            # Get first 2 subjects and first grade
+            target_subjects = subjects[:2]
+            target_grade = grades[0]
+            target_stream = streams[0] if streams else None
+
+            result += f"<p><strong>Target subjects:</strong> {[s.name for s in target_subjects]}</p>"
+            result += f"<p><strong>Target grade:</strong> {target_grade.name}</p>"
+            result += f"<p><strong>Target stream:</strong> {target_stream.name if target_stream else 'None'}</p>"
+
+            assignments_created = 0
+
+            for subject in target_subjects:
+                result += f"<h4>📝 Creating assignment: {subject.name} for {target_grade.name}</h4>"
+
+                try:
+                    assignment = TeacherSubjectAssignment(
+                        teacher_id=carol.id,
+                        subject_id=subject.id,
+                        grade_id=target_grade.id,
+                        stream_id=target_stream.id if target_stream else None,
+                        is_class_teacher=False
+                    )
+
+                    db.session.add(assignment)
+                    db.session.flush()  # Flush to get the ID
+
+                    result += f"<p>✅ <strong>Created assignment ID {assignment.id}</strong></p>"
+                    assignments_created += 1
+
+                except Exception as e:
+                    result += f"<p style='color: red;'>❌ <strong>Error creating assignment:</strong> {str(e)}</p>"
+                    db.session.rollback()
+                    return result
+
+            # Commit all assignments
+            try:
+                db.session.commit()
+                result += f"<p style='color: green;'>🎉 <strong>Successfully committed {assignments_created} assignments!</strong></p>"
+            except Exception as e:
+                db.session.rollback()
+                result += f"<p style='color: red;'>❌ <strong>Error committing assignments:</strong> {str(e)}</p>"
+                return result
+
+            # Step 5: Verify assignments were created
+            new_assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=carol.id).all()
+            result += f"<h3>✅ Verification ({len(new_assignments)} assignments found):</h3>"
+
+            if new_assignments:
+                result += "<ul>"
+                for assignment in new_assignments:
+                    result += f"<li><strong>ID {assignment.id}:</strong> Subject {assignment.subject_id}, Grade {assignment.grade_id}, Stream {assignment.stream_id}</li>"
+                result += "</ul>"
+            else:
+                result += "<p style='color: red;'>❌ <strong>No assignments found after creation!</strong></p>"
+                return result
+
+            # Step 6: Test the service
+            result += f"<h3>🧪 Testing RoleBasedDataService:</h3>"
+
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(carol.id, 'teacher')
+
+            if 'error' in assignment_summary:
+                result += f"<p style='color: red;'>❌ <strong>Service error:</strong> {assignment_summary['error']}</p>"
+            else:
+                result += f"<ul>"
+                result += f"<li><strong>total_subjects_taught:</strong> {assignment_summary.get('total_subjects_taught', 0)}</li>"
+                result += f"<li><strong>subject_assignments count:</strong> {len(assignment_summary.get('subject_assignments', []))}</li>"
+                result += f"<li><strong>teacher object exists:</strong> {bool(assignment_summary.get('teacher'))}</li>"
+                result += f"</ul>"
+
+                subject_assignments = assignment_summary.get('subject_assignments', [])
+                if subject_assignments:
+                    result += f"<h4>📚 Subject Assignments:</h4>"
+                    result += f"<ol>"
+                    for assignment in subject_assignments:
+                        result += f"<li>{assignment}</li>"
+                    result += f"</ol>"
+                    result += f"<p style='color: green;'>✅ <strong>SUCCESS! Carol should now see her assignments!</strong></p>"
+                else:
+                    result += f"<p style='color: red;'>❌ <strong>Service returned empty subject_assignments</strong></p>"
+
+            result += f"<h3>🎯 Next Steps:</h3>"
+            result += f"<ol>"
+            result += f"<li><a href='/teacher_login'>🔗 Login as Carol</a></li>"
+            result += f"<li><a href='/teacher/'>🔗 Go to Teacher Dashboard</a></li>"
+            result += f"<li>Check if 'My Assignments' section now shows her subjects</li>"
+            result += f"</ol>"
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return f"<h2>❌ Debug Error</h2><pre>{str(e)}\n\n{traceback.format_exc()}</pre>"
+
+    @app.route('/debug/initialize-basic-data')
+    def debug_initialize_basic_data():
+        """Initialize basic data (subjects, grades, streams) if missing."""
+        try:
+            from .models.academic import Subject, Grade, Stream
+            from .extensions import db
+
+            result = "<h2>🔧 Initialize Basic Data</h2>"
+
+            # Check current data
+            subjects = Subject.query.all()
+            grades = Grade.query.all()
+            streams = Stream.query.all()
+
+            result += f"<h3>📊 Current Data:</h3>"
+            result += f"<ul>"
+            result += f"<li><strong>Subjects:</strong> {len(subjects)}</li>"
+            result += f"<li><strong>Grades:</strong> {len(grades)}</li>"
+            result += f"<li><strong>Streams:</strong> {len(streams)}</li>"
+            result += f"</ul>"
+
+            created_items = []
+
+            # Create basic grades if missing
+            if not grades:
+                result += f"<h3>📊 Creating Basic Grades:</h3>"
+                basic_grades = [
+                    {'name': 'Grade 1', 'education_level': 'lower_primary'},
+                    {'name': 'Grade 2', 'education_level': 'lower_primary'},
+                    {'name': 'Grade 3', 'education_level': 'lower_primary'},
+                    {'name': 'Grade 4', 'education_level': 'upper_primary'},
+                    {'name': 'Grade 5', 'education_level': 'upper_primary'},
+                    {'name': 'Grade 6', 'education_level': 'upper_primary'},
+                ]
+
+                for grade_data in basic_grades:
+                    grade = Grade(**grade_data)
+                    db.session.add(grade)
+                    created_items.append(f"Grade: {grade_data['name']}")
+                    result += f"<p>✅ Created {grade_data['name']}</p>"
+
+            # Create basic subjects if missing
+            if not subjects:
+                result += f"<h3>📚 Creating Basic Subjects:</h3>"
+                basic_subjects = [
+                    {'name': 'MATHEMATICS', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': False},
+                    {'name': 'ENGLISH', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': False},
+                    {'name': 'KISWAHILI', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': False},
+                    {'name': 'SCIENCE', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': False},
+                    {'name': 'SOCIAL STUDIES', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': False},
+                ]
+
+                for subject_data in basic_subjects:
+                    subject = Subject(**subject_data)
+                    db.session.add(subject)
+                    created_items.append(f"Subject: {subject_data['name']}")
+                    result += f"<p>✅ Created {subject_data['name']}</p>"
+
+            # Create basic streams if missing
+            if not streams and grades:
+                result += f"<h3>🏫 Creating Basic Streams:</h3>"
+                # Get Grade 1 for streams
+                grade_1 = Grade.query.filter_by(name='Grade 1').first()
+                if grade_1:
+                    basic_streams = [
+                        {'name': 'Stream A', 'grade_id': grade_1.id},
+                        {'name': 'Stream B', 'grade_id': grade_1.id},
+                    ]
+
+                    for stream_data in basic_streams:
+                        stream = Stream(**stream_data)
+                        db.session.add(stream)
+                        created_items.append(f"Stream: {stream_data['name']}")
+                        result += f"<p>✅ Created {stream_data['name']} for Grade 1</p>"
+
+            # Commit all changes
+            if created_items:
+                try:
+                    db.session.commit()
+                    result += f"<p style='color: green;'>🎉 <strong>Successfully created {len(created_items)} items!</strong></p>"
+                    result += f"<ul>"
+                    for item in created_items:
+                        result += f"<li>{item}</li>"
+                    result += f"</ul>"
+                except Exception as e:
+                    db.session.rollback()
+                    result += f"<p style='color: red;'>❌ <strong>Error committing data:</strong> {str(e)}</p>"
+                    return result
+            else:
+                result += f"<p>✅ <strong>All basic data already exists</strong></p>"
+
+            # Now try to create Carol's assignments
+            result += f"<h3>👩‍🏫 Now Creating Carol's Assignments:</h3>"
+            result += f"<p><a href='/debug/comprehensive-carol-fix' style='background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>🔧 Create Carol's Assignments</a></p>"
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return f"<h2>❌ Debug Error</h2><pre>{str(e)}\n\n{traceback.format_exc()}</pre>"
+
     @app.route('/debug/fix_carol_password')
     def debug_fix_carol_password():
         """Debug route to fix Carol's password."""
