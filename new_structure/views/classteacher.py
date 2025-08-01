@@ -1137,12 +1137,22 @@ def dashboard():
     from ..services.school_config_service import SchoolConfigService
     school_info = SchoolConfigService.get_school_info_dict()
 
+    # Organize subjects by education level for the template
+    all_subjects = Subject.query.all()
+    subjects_by_education_level = {
+        'lower_primary': [s.name for s in all_subjects if s.education_level == 'lower_primary'],
+        'upper_primary': [s.name for s in all_subjects if s.education_level == 'upper_primary'],
+        'junior_secondary': [s.name for s in all_subjects if s.education_level == 'junior_secondary'],
+        'senior_secondary': [s.name for s in all_subjects if s.education_level == 'senior_secondary']
+    }
+
     # Render the class teacher dashboard
     return render_template(
         "classteacher.html",
         school_info=school_info,
         grades=grades,
         grades_dict=grades_dict,
+        subjects_by_education_level=subjects_by_education_level,
         terms=terms,
         assessment_types=assessment_types,
         streams=streams,
