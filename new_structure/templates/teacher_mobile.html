@@ -1396,11 +1396,14 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         const educationLevel = document.getElementById('education_level').value;
         const gradeSelect = document.getElementById('grade');
 
-        // Clear current options
-        gradeSelect.innerHTML = '<option value="">🎓 Select Grade</option>';
-
-        // Use the grades data passed from Flask to get proper grade IDs
-        const allGrades = {{ grades|tojson }};
+        // Store all original options if not already stored
+        if (!window.originalGradeOptions) {
+            window.originalGradeOptions = Array.from(gradeSelect.options).map(option => ({
+                value: option.value,
+                text: option.textContent,
+                selected: option.selected
+            }));
+        }
 
         // Define grade name mappings for each education level
         const gradeNamesByEducationLevel = {
@@ -1409,14 +1412,30 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
             'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
         };
 
+        // Clear current options
+        gradeSelect.innerHTML = '<option value="">🎓 Select Grade</option>';
+
         if (educationLevel && gradeNamesByEducationLevel[educationLevel]) {
-            gradeNamesByEducationLevel[educationLevel].forEach(gradeName => {
-                // Find the grade object with matching name
-                const gradeObj = allGrades.find(g => g.name === gradeName);
-                if (gradeObj) {
+            // Add only the grades for the selected education level
+            window.originalGradeOptions.forEach(gradeOption => {
+                if (gradeOption.value !== '') { // Skip the default option
+                    const gradeName = gradeOption.text.trim();
+
+                    if (gradeNamesByEducationLevel[educationLevel].includes(gradeName)) {
+                        const option = document.createElement('option');
+                        option.value = gradeOption.value;
+                        option.textContent = gradeOption.text;
+                        gradeSelect.appendChild(option);
+                    }
+                }
+            });
+        } else {
+            // If no education level selected, show all grades
+            window.originalGradeOptions.forEach(gradeOption => {
+                if (gradeOption.value !== '') { // Skip the default option
                     const option = document.createElement('option');
-                    option.value = gradeObj.id;
-                    option.textContent = gradeObj.name;
+                    option.value = gradeOption.value;
+                    option.textContent = gradeOption.text;
                     gradeSelect.appendChild(option);
                 }
             });
@@ -1591,6 +1610,40 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
 
     // Initialize grade streams data (if available)
     window.gradeStreams = {{ grades_dict|tojson if grades_dict else '{}' }};
+
+    // Test function for debugging dropdown functionality
+    window.testDropdowns = function() {
+        console.log('🧪 Testing dropdown functionality...');
+
+        // Test education levels
+        const educationLevels = ['lower_primary', 'upper_primary', 'junior_secondary'];
+
+        educationLevels.forEach(level => {
+            console.log(`\n📚 Testing ${level}:`);
+
+            // Set education level
+            document.getElementById('education_level').value = level;
+            updateGradesByEducationLevel();
+
+            // Check grades
+            const gradeOptions = Array.from(document.getElementById('grade').options)
+                .filter(opt => opt.value !== '')
+                .map(opt => opt.textContent);
+            console.log(`  Grades: ${gradeOptions.join(', ')}`);
+
+            // Test first grade
+            if (gradeOptions.length > 0) {
+                const firstGradeOption = document.querySelector('#grade option[value]:not([value=""])');
+                if (firstGradeOption) {
+                    document.getElementById('grade').value = firstGradeOption.value;
+                    console.log(`  Testing grade: ${firstGradeOption.textContent} (ID: ${firstGradeOption.value})`);
+                    updateStreams();
+                }
+            }
+        });
+
+        console.log('🧪 Test completed!');
+    };
 
     // Mobile-specific functions
     function saveStudentMark(studentId) {
