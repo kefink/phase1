@@ -260,6 +260,8 @@ def dashboard():
                         db.session.rollback()
                         print(f"Error updating component max marks: {e}")
 
+                print(f"🔍 DEBUG: Starting stream validation for stream: {stream}, grade: {grade}")
+
                 # Handle both stream ID (from mobile) and stream name (from desktop)
                 stream_obj = None
 
@@ -267,6 +269,7 @@ def dashboard():
                 if stream.isdigit():
                     stream_id = int(stream)
                     stream_obj = Stream.query.get(stream_id)
+                    print(f"🔍 DEBUG: Looking up stream ID {stream_id}, found: {stream_obj}")
 
                     # Validate that the stream belongs to the selected grade
                     if stream_obj:
@@ -275,12 +278,19 @@ def dashboard():
                             # Mobile form submits grade ID
                             grade_id = int(grade)
                             grade_obj = Grade.query.get(grade_id)
+                            print(f"🔍 DEBUG: Looking up grade ID {grade_id}, found: {grade_obj}")
                         else:
                             # Desktop form submits grade name
                             grade_obj = Grade.query.filter_by(name=grade).first()
+                            print(f"🔍 DEBUG: Looking up grade name '{grade}', found: {grade_obj}")
 
                         if not grade_obj or stream_obj.grade_id != grade_obj.id:
+                            print(f"❌ DEBUG: Stream validation failed - stream belongs to grade {stream_obj.grade_id}, expected {grade_obj.id if grade_obj else 'None'}")
                             stream_obj = None  # Invalid stream for this grade
+                        else:
+                            print(f"✅ DEBUG: Stream validation passed - stream {stream_id} belongs to grade {grade_obj.name}")
+                    else:
+                        print(f"❌ DEBUG: Stream ID {stream_id} not found in database")
                 else:
                     # Desktop format: extract stream letter from "Stream X" format
                     stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
@@ -299,6 +309,8 @@ def dashboard():
                         ).first()
 
                 if stream_obj:
+                    print(f"✅ DEBUG: Stream object found, getting students for stream_id: {stream_obj.id}")
+
                     # Get pagination parameters
                     page = request.form.get('page', 1, type=int)
                     per_page = 20  # Students per page
@@ -309,6 +321,7 @@ def dashboard():
                         page=page, per_page=per_page, error_out=False
                     )
                     students = students_pagination.items
+                    print(f"🔍 DEBUG: Found {len(students)} students for marks processing")
 
                     # Pagination info
                     pagination_info = {
@@ -337,24 +350,74 @@ def dashboard():
 
         # Handle submit marks request (save marks - adapted from classteacher)
         elif "submit_marks" in request.form:
-            print(f"DEBUG: Submit marks request received")
-            print(f"DEBUG: Form data: {dict(request.form)}")
-            print(f"DEBUG: Required fields - education_level: {education_level}, subject: {subject}, grade: {grade}, stream: {stream}, term: {term}, assessment_type: {assessment_type}, total_marks: {total_marks}")
+            print(f"🔥 DEBUG: Submit marks request received")
+            print(f"🔥 DEBUG: Form data: {dict(request.form)}")
+            print(f"🔥 DEBUG: Required fields - education_level: {education_level}, subject: {subject}, grade: {grade}, stream: {stream}, term: {term}, assessment_type: {assessment_type}, total_marks: {total_marks}")
 
             if not all([education_level, subject, grade, stream, term, assessment_type, total_marks > 0]):
                 error_message = "Missing required information"
-                print(f"DEBUG: Missing required information - stopping processing")
+                print(f"❌ DEBUG: Missing required information - stopping processing")
             else:
-                # Extract stream letter and get objects
-                stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
-                stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
+                print(f"✅ DEBUG: All required fields present, proceeding with marks processing")
+
+                # Use the same validation logic as upload_marks (handle both IDs and names)
+                stream_obj = None
+
+                # Check if stream is a numeric ID (from mobile form)
+                if stream.isdigit():
+                    stream_id = int(stream)
+                    stream_obj = Stream.query.get(stream_id)
+                    print(f"🔍 DEBUG: Submit - Looking up stream ID {stream_id}, found: {stream_obj}")
+
+                    # Validate that the stream belongs to the selected grade
+                    if stream_obj:
+                        # Handle both grade ID (from mobile) and grade name (from desktop)
+                        if grade.isdigit():
+                            # Mobile form submits grade ID
+                            grade_id = int(grade)
+                            grade_obj = Grade.query.get(grade_id)
+                            print(f"🔍 DEBUG: Submit - Looking up grade ID {grade_id}, found: {grade_obj}")
+                        else:
+                            # Desktop form submits grade name
+                            grade_obj = Grade.query.filter_by(name=grade).first()
+                            print(f"🔍 DEBUG: Submit - Looking up grade name '{grade}', found: {grade_obj}")
+
+                        if not grade_obj or stream_obj.grade_id != grade_obj.id:
+                            print(f"❌ DEBUG: Submit - Stream validation failed")
+                            stream_obj = None  # Invalid stream for this grade
+                        else:
+                            print(f"✅ DEBUG: Submit - Stream validation passed")
+                else:
+                    # Desktop format: extract stream letter from "Stream X" format
+                    stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
+
+                    # Handle both grade ID and grade name for desktop compatibility
+                    if grade.isdigit():
+                        # Grade submitted as ID
+                        grade_id = int(grade)
+                        stream_obj = Stream.query.filter_by(
+                            name=stream_letter, grade_id=grade_id
+                        ).first()
+                    else:
+                        # Grade submitted as name (original desktop logic)
+                        stream_obj = Stream.query.join(Grade).filter(
+                            Grade.name == grade, Stream.name == stream_letter
+                        ).first()
+                    print(f"🔍 DEBUG: Submit - Desktop stream lookup, found: {stream_obj}")
+
+                # Get other database objects
                 subject_obj = Subject.query.filter_by(name=subject).first()
                 term_obj = Term.query.filter_by(name=term).first()
                 assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
+                print(f"🔍 DEBUG: Submit - Database objects - Subject: {subject_obj}, Term: {term_obj}, Assessment: {assessment_type_obj}")
+
                 if not (stream_obj and subject_obj and term_obj and assessment_type_obj):
                     error_message = "Invalid selection for grade, stream, subject, term, or assessment type"
+                    print(f"❌ DEBUG: Submit - Missing database objects, stopping processing")
                 else:
+                    print(f"✅ DEBUG: Submit - All database objects found, proceeding with student lookup")
+
                     # Get pagination parameters for marks submission
                     page = request.form.get('page', 1, type=int)
                     per_page = 20  # Students per page
@@ -365,6 +428,7 @@ def dashboard():
                         page=page, per_page=per_page, error_out=False
                     )
                     students = students_pagination.items
+                    print(f"🔍 DEBUG: Submit - Found {len(students)} students for marks processing")
 
                     # Pagination info
                     pagination_info = {
@@ -384,8 +448,9 @@ def dashboard():
                         marks_added = 0
                         marks_updated = 0
 
-                        print(f"DEBUG: Starting marks processing for {len(students)} students")
-                        print(f"DEBUG: Subject object: {subject_obj.name}, is_composite: {subject_obj.is_composite}")
+                        print(f"🔥 DEBUG: Submit - Starting marks processing for {len(students)} students")
+                        print(f"🔥 DEBUG: Submit - Subject object: {subject_obj.name}, is_composite: {subject_obj.is_composite}")
+                        print(f"🔥 DEBUG: Submit - Form keys containing 'mark': {[k for k in request.form.keys() if 'mark_' in k]}")
 
                         try:
                             # Check if this is a composite subject (using proven classteacher logic)
@@ -492,8 +557,9 @@ def dashboard():
                                 for student in students:
                                     student_key = student.name.replace(' ', '_')
 
-                                    # Try multiple field naming patterns
+                                    # Try multiple field naming patterns (MOBILE USES mark_{student.id})
                                     possible_keys = [
+                                        f"mark_{student.id}",  # MOBILE FORMAT - ADD THIS FIRST!
                                         f"mark_{student_key}_{subject_obj.id}",
                                         f"mark_{student_key}_{subject_obj.name}",  # Add subject name pattern
                                         f"mark_{student_key}_1",
@@ -560,7 +626,7 @@ def dashboard():
                             db.session.commit()
 
                             # Show success message and enable subject report download
-                            print(f"DEBUG: Final results - marks_added: {marks_added}, marks_updated: {marks_updated}")
+                            print(f"🎉 DEBUG: Submit - Final results - marks_added: {marks_added}, marks_updated: {marks_updated}")
 
                             if marks_added > 0 or marks_updated > 0:
                                 show_download_button = True
@@ -569,12 +635,18 @@ def dashboard():
 
                                 # Check if this is a mobile request and redirect to subject report
                                 use_mobile = request.args.get('mobile') == 'true' or request.form.get('mobile') == 'true'
+                                print(f"📱 DEBUG: Submit - Mobile request detected: {use_mobile}")
+
                                 if use_mobile:
+                                    print(f"🚀 DEBUG: Submit - Redirecting to subject report for mobile")
+                                    print(f"🚀 DEBUG: Submit - Redirect params: subject={subject}, grade={grade}, stream={stream}, term={term}, assessment_type={assessment_type}")
                                     # For mobile, redirect to subject report after successful submission
                                     return redirect(url_for('teacher.generate_subject_report',
                                                           subject=subject, grade=grade, stream=stream,
                                                           term=term, assessment_type=assessment_type,
                                                           mobile='true'))
+                                else:
+                                    print(f"🖥️ DEBUG: Submit - Desktop request, staying on current page")
                             else:
                                 print("DEBUG: No marks were processed - checking form data...")
                                 print(f"DEBUG: Total form fields: {len(request.form)}")
@@ -685,32 +757,51 @@ def generate_subject_report():
     try:
         # Get database objects with comprehensive error handling
 
-        # 1. Find Grade
+        # 1. Find Grade (handle both ID and name)
         print(f"🔍 Looking for grade: '{grade}'")
-        grade_obj = Grade.query.filter_by(name=grade).first()
-        print(f"Grade found: {grade_obj}")
+        if grade.isdigit():
+            # Mobile submits grade ID
+            grade_id = int(grade)
+            grade_obj = Grade.query.get(grade_id)
+            print(f"Grade lookup by ID {grade_id}: {grade_obj}")
+        else:
+            # Desktop submits grade name
+            grade_obj = Grade.query.filter_by(name=grade).first()
+            print(f"Grade lookup by name '{grade}': {grade_obj}")
+
         if not grade_obj:
             print(f"❌ Grade '{grade}' not found")
             flash(f"Grade '{grade}' not found in database", "error")
             return redirect(url_for('teacher.dashboard'))
 
-        # 2. Find Stream with multiple fallback strategies
-        stream_letter = stream.replace("Stream ", "").strip() if stream.startswith("Stream ") else stream.strip()
-        print(f"🔍 Looking for stream: '{stream_letter}' in grade_id: {grade_obj.id}")
-        stream_obj = Stream.query.filter_by(grade_id=grade_obj.id, name=stream_letter).first()
-        print(f"Stream found: {stream_obj}")
+        # 2. Find Stream (handle both ID and name)
+        print(f"🔍 Looking for stream: '{stream}'")
+        if stream.isdigit():
+            # Mobile submits stream ID
+            stream_id = int(stream)
+            stream_obj = Stream.query.get(stream_id)
+            print(f"Stream lookup by ID {stream_id}: {stream_obj}")
 
-        # Fallback strategies for stream
-        if not stream_obj:
-            print(f"❌ Stream '{stream_letter}' not found, trying fallback")
+            # Validate that stream belongs to the grade
+            if stream_obj and stream_obj.grade_id != grade_obj.id:
+                print(f"❌ Stream {stream_id} belongs to grade {stream_obj.grade_id}, not {grade_obj.id}")
+                stream_obj = None
+        else:
+            # Desktop submits stream name
+            stream_letter = stream.replace("Stream ", "").strip() if stream.startswith("Stream ") else stream.strip()
+            print(f"🔍 Looking for stream name: '{stream_letter}' in grade_id: {grade_obj.id}")
+            stream_obj = Stream.query.filter_by(grade_id=grade_obj.id, name=stream_letter).first()
+            print(f"Stream lookup by name: {stream_obj}")
+
+        # Fallback strategies for stream (only for name-based lookups)
+        if not stream_obj and not stream.isdigit():
+            print(f"❌ Stream '{stream}' not found, trying fallback")
             # Try with just the last character
             if len(stream) > 0:
                 alt_stream_letter = stream[-1]
                 print(f"🔍 Trying alternative stream: '{alt_stream_letter}'")
                 stream_obj = Stream.query.filter_by(grade_id=grade_obj.id, name=alt_stream_letter).first()
                 print(f"Alternative stream found: {stream_obj}")
-                if stream_obj:
-                    stream_letter = alt_stream_letter
 
         # 3. Find Subject
         print(f"🔍 Looking for subject: '{subject}'")
