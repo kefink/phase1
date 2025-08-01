@@ -856,7 +856,7 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 <i class="fas fa-graduation-cap"></i>
                 Education Level
             </label>
-            <select id="education_level" name="education_level" class="mobile-form-control mobile-form-select" required onchange="updateSubjectsByEducationLevel(); updateGradesByEducationLevel();">
+            <select id="education_level" name="education_level" class="mobile-form-control mobile-form-select" required>
                 <option value="">🎯 Select Education Level</option>
                 <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>🎓 Lower Primary (Grades 1-3)</option>
                 <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>📚 Upper Primary (Grades 4-6)</option>
@@ -886,7 +886,7 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 <i class="fas fa-layer-group"></i>
                 Grade
             </label>
-            <select name="grade" id="grade" class="mobile-form-control mobile-form-select" required onchange="updateStreams()">
+            <select name="grade" id="grade" class="mobile-form-control mobile-form-select" required>
                 <option value="">Select Grade</option>
                 {% for grade_obj in grades %}
                 <option value="{{ grade_obj.id }}" {% if grade == grade_obj.id|string %}selected{% endif %}>
@@ -1393,8 +1393,12 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
     }
 
     function updateGradesByEducationLevel() {
+        console.log('🔥 updateGradesByEducationLevel called!');
         const educationLevel = document.getElementById('education_level').value;
         const gradeSelect = document.getElementById('grade');
+
+        console.log('🎯 Education level:', educationLevel);
+        console.log('📋 Grade select element:', gradeSelect);
 
         // Store all original options if not already stored
         if (!window.originalGradeOptions) {
@@ -1403,6 +1407,7 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 text: option.textContent,
                 selected: option.selected
             }));
+            console.log('💾 Stored original options:', window.originalGradeOptions);
         }
 
         // Define grade name mappings for each education level
@@ -1615,6 +1620,11 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
     window.testDropdowns = function() {
         console.log('🧪 Testing dropdown functionality...');
 
+        // Check if functions exist
+        console.log('updateGradesByEducationLevel exists:', typeof updateGradesByEducationLevel);
+        console.log('updateSubjectsByEducationLevel exists:', typeof updateSubjectsByEducationLevel);
+        console.log('updateStreams exists:', typeof updateStreams);
+
         // Test education levels
         const educationLevels = ['lower_primary', 'upper_primary', 'junior_secondary'];
 
@@ -1644,6 +1654,50 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
 
         console.log('🧪 Test completed!');
     };
+
+    // Simple test function to check if grade update works
+    window.testGradeUpdate = function() {
+        console.log('🔧 Testing grade update directly...');
+        console.log('Education level element:', document.getElementById('education_level'));
+        console.log('Grade element:', document.getElementById('grade'));
+
+        // Set to junior secondary and test
+        document.getElementById('education_level').value = 'junior_secondary';
+        console.log('Set education level to junior_secondary');
+
+        updateGradesByEducationLevel();
+
+        const gradeOptions = Array.from(document.getElementById('grade').options);
+        console.log('Grade options after update:', gradeOptions.map(opt => ({value: opt.value, text: opt.textContent})));
+    };
+
+    // Add event listener for education level change (more reliable than inline onchange)
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 DOM loaded, setting up event listeners...');
+
+        const educationLevelSelect = document.getElementById('education_level');
+        if (educationLevelSelect) {
+            console.log('✅ Found education level select, adding event listener');
+            educationLevelSelect.addEventListener('change', function() {
+                console.log('🔥 Education level changed to:', this.value);
+                updateSubjectsByEducationLevel();
+                updateGradesByEducationLevel();
+            });
+        } else {
+            console.log('❌ Education level select not found!');
+        }
+
+        const gradeSelect = document.getElementById('grade');
+        if (gradeSelect) {
+            console.log('✅ Found grade select, adding event listener');
+            gradeSelect.addEventListener('change', function() {
+                console.log('🔥 Grade changed to:', this.value);
+                updateStreams();
+            });
+        } else {
+            console.log('❌ Grade select not found!');
+        }
+    });
 
     // Mobile-specific functions
     function saveStudentMark(studentId) {
