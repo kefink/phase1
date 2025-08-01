@@ -161,6 +161,11 @@ def dashboard():
     print(f"🔍 DEBUG - Assignment summary teacher: {assignment_summary.get('teacher')}")
     print(f"🔍 DEBUG - Subject assignments count: {len(assignment_summary.get('subject_assignments', []))}")
 
+    # Get recent reports for this teacher
+    from ..services.teacher_assignment_service import get_teacher_recent_reports
+    recent_reports = get_teacher_recent_reports(teacher_id, limit=10)
+    print(f"🔍 DEBUG: Found {len(recent_reports)} recent reports for teacher")
+
     if 'error' in assignment_summary:
         print(f"❌ DEBUG - Error in assignment summary: {assignment_summary['error']}")
         flash(f"Error loading assignments: {assignment_summary['error']}", "error")
@@ -699,6 +704,16 @@ def dashboard():
 
     template_name = "teacher_mobile.html" if use_mobile else "teacher.html"
 
+    # Debug template variables before rendering
+    print(f"🎯 DEBUG: Template variables before rendering:")
+    print(f"  - show_students: {show_students}")
+    print(f"  - students count: {len(students) if students else 0}")
+    print(f"  - education_level: {education_level}")
+    print(f"  - subject: {subject}")
+    print(f"  - grade: {grade}")
+    print(f"  - stream: {stream}")
+    print(f"  - use_mobile: {use_mobile}")
+
     # Render the teacher dashboard
     return render_template(
         template_name,
@@ -1022,6 +1037,26 @@ def generate_subject_report():
             # Add mobile support to report data
             use_mobile = request.args.get('mobile') == 'true'
             report_data['use_mobile'] = use_mobile
+
+            # Cache the report for recent reports functionality
+            from ..services.cache_service import cache_report
+            try:
+                # Use grade name for caching (consistent with recent reports)
+                grade_name = grade_obj.name
+                stream_name = stream_obj.name
+
+                cache_report(
+                    grade=grade_name,
+                    stream=stream_name,
+                    term=term,
+                    assessment_type=assessment_type,
+                    report_data=report_data,
+                    expiry=86400  # 24 hours
+                )
+                print(f"✅ DEBUG: Report cached successfully for recent reports")
+            except Exception as cache_error:
+                print(f"⚠️ DEBUG: Report caching failed: {cache_error}")
+
             return render_template('subject_report.html', **report_data)
         except Exception as template_error:
             print(f"❌ Template rendering error: {template_error}")
