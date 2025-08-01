@@ -268,16 +268,58 @@ def dashboard():
                     stream_id = int(stream)
                     stream_obj = Stream.query.get(stream_id)
 
+                    print(f"🔍 DEBUG: Looking for stream ID {stream_id}")
+                    print(f"🔍 DEBUG: Found stream: {stream_obj}")
+                    if stream_obj:
+                        print(f"🔍 DEBUG: Stream details - ID: {stream_obj.id}, Name: {stream_obj.name}, Grade ID: {stream_obj.grade_id}")
+
                     # Validate that the stream belongs to the selected grade
                     if stream_obj:
-                        grade_obj = Grade.query.filter_by(name=grade).first()
+                        # Handle both grade ID (from mobile) and grade name (from desktop)
+                        if grade.isdigit():
+                            # Mobile form submits grade ID
+                            grade_id = int(grade)
+                            grade_obj = Grade.query.get(grade_id)
+                            print(f"🔍 DEBUG: Looking for grade ID {grade_id}")
+                        else:
+                            # Desktop form submits grade name
+                            grade_obj = Grade.query.filter_by(name=grade).first()
+                            print(f"🔍 DEBUG: Looking for grade name '{grade}'")
+
+                        print(f"🔍 DEBUG: Found grade: {grade_obj}")
+                        if grade_obj:
+                            print(f"🔍 DEBUG: Grade details - ID: {grade_obj.id}, Name: {grade_obj.name}")
+                            print(f"🔍 DEBUG: Stream grade ID: {stream_obj.grade_id}, Expected grade ID: {grade_obj.id}")
+
                         if not grade_obj or stream_obj.grade_id != grade_obj.id:
+                            print(f"❌ DEBUG: Stream {stream_id} does not belong to grade {grade}")
+                            # List all streams for debugging
+                            all_streams = Stream.query.all()
+                            print(f"🔍 DEBUG: All streams in database:")
+                            for s in all_streams:
+                                print(f"  - Stream ID: {s.id}, Name: {s.name}, Grade ID: {s.grade_id}")
+
+                            # List all grades for debugging
+                            all_grades = Grade.query.all()
+                            print(f"🔍 DEBUG: All grades in database:")
+                            for g in all_grades:
+                                print(f"  - Grade ID: {g.id}, Name: {g.name}")
+
                             stream_obj = None  # Invalid stream for this grade
+                        else:
+                            print(f"✅ DEBUG: Stream {stream_id} belongs to grade {grade}")
                 else:
                     # Desktop format: extract stream letter from "Stream X" format
                     stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
-                    # Get the stream object by name and grade
-                    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
+
+                    # Handle both grade ID and grade name for desktop compatibility
+                    if grade.isdigit():
+                        # Grade submitted as ID
+                        grade_id = int(grade)
+                        stream_obj = Stream.query.filter_by(name=stream_letter, grade_id=grade_id).first()
+                    else:
+                        # Grade submitted as name (original desktop logic)
+                        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
 
                 if stream_obj:
                     # Get pagination parameters
