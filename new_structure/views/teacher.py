@@ -566,6 +566,15 @@ def dashboard():
                                 show_download_button = True
                                 show_subject_report = True  # Enable subject-specific report
                                 flash(f"Successfully saved {marks_added} new marks and updated {marks_updated} existing marks.", "success")
+
+                                # Check if this is a mobile request and redirect to subject report
+                                use_mobile = request.args.get('mobile') == 'true' or request.form.get('mobile') == 'true'
+                                if use_mobile:
+                                    # For mobile, redirect to subject report after successful submission
+                                    return redirect(url_for('teacher.generate_subject_report',
+                                                          subject=subject, grade=grade, stream=stream,
+                                                          term=term, assessment_type=assessment_type,
+                                                          mobile='true'))
                             else:
                                 print("DEBUG: No marks were processed - checking form data...")
                                 print(f"DEBUG: Total form fields: {len(request.form)}")
@@ -919,6 +928,9 @@ def generate_subject_report():
 
         print(f"🔍 Attempting to render template 'subject_report.html'...")
         try:
+            # Add mobile support to report data
+            use_mobile = request.args.get('mobile') == 'true'
+            report_data['use_mobile'] = use_mobile
             return render_template('subject_report.html', **report_data)
         except Exception as template_error:
             print(f"❌ Template rendering error: {template_error}")

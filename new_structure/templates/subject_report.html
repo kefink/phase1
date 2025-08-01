@@ -37,6 +37,30 @@
         color: white;
         border-radius: 15px 15px 0 0;
         margin: -20px -20px 30px -20px;
+        position: relative;
+      }
+
+      .mobile-back-button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: background 0.3s;
+      }
+
+      .mobile-back-button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        text-decoration: none;
       }
 
       .school-name {
@@ -641,6 +665,17 @@
 
     <div class="report-container">
       <div class="report-header">
+        <!-- Mobile Back Button -->
+        {% if use_mobile %}
+        <a
+          href="{{ url_for('teacher.dashboard', mobile='true') }}"
+          class="mobile-back-button"
+        >
+          <i class="fas fa-arrow-left"></i>
+          Back to Dashboard
+        </a>
+        {% endif %}
+
         <!-- School Logo and Name -->
         <div
           style="
