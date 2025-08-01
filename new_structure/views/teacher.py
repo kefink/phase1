@@ -84,6 +84,26 @@ def get_streams(grade_id):
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
+@teacher_bp.route('/debug_log', methods=['POST'])
+@teacher_required
+def debug_log():
+    """Debug endpoint to log frontend issues."""
+    try:
+        data = request.get_json()
+        message = data.get('message', 'No message')
+        debug_data = data.get('data', {})
+        timestamp = data.get('timestamp', 'No timestamp')
+
+        print(f"\n🐛 FRONTEND DEBUG [{timestamp}]: {message}")
+        if debug_data:
+            print(f"📊 Debug Data: {debug_data}")
+        print("=" * 50)
+
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"❌ Debug log error: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
 @teacher_bp.route('/mobile', methods=['GET', 'POST'])
 @teacher_required
 def mobile_dashboard():
