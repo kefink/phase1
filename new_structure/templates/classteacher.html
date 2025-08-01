@@ -267,6 +267,284 @@
             color: white;
         }
 
+        /* Advanced Marks Table Styles */
+        .subject-marks-config {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .subject-marks-config h5 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .subject-marks-config .help-text {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .selected-subjects-display {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .subject-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .subject-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .subject-checkbox-item label {
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .total-marks-input {
+            width: 80px;
+            padding: 4px 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-align: center;
+        }
+
+        .total-marks-input:focus {
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.15);
+            outline: none;
+        }
+
+        /* Advanced Table Wrapper */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .advanced-marks-table {
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .advanced-marks-table th {
+            background: rgba(255,255,255,0.1);
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            padding: 12px 8px;
+        }
+
+        .advanced-marks-table td {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 8px;
+            text-align: center;
+        }
+
+        .student-name-cell {
+            text-align: left !important;
+            font-weight: 500;
+            min-width: 150px;
+        }
+
+        .subject-info-header {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            font-weight: normal;
+            margin-top: 4px;
+        }
+
+        /* Mark Entry Styles */
+        .simplified-mark-entry {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mark-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .mark-input-container input.student-mark {
+            width: 60px;
+            text-align: center;
+            padding: 6px 4px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            font-size: 13px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .mark-input-container input.student-mark:focus {
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.15);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+        }
+
+        .mark-input-container input.student-mark.has-value {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: rgba(40, 167, 69, 0.5);
+        }
+
+        /* Percentage Display */
+        .percentage-display {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .percentage-value {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .percentage-bar {
+            height: 4px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 60px;
+        }
+
+        .percentage-fill {
+            height: 100%;
+            background-color: #6c757d;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            border-radius: 2px;
+        }
+
+        /* Student Row Hover Effects */
+        .student-row {
+            transition: background-color 0.2s ease;
+        }
+
+        .student-row:hover {
+            background-color: rgba(255,255,255,0.05) !important;
+        }
+
+        .student-row:nth-child(even) {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        /* Animation for mark updates */
+        @keyframes mark-updated {
+            0% { background-color: rgba(255,255,255,0.1); }
+            50% { background-color: rgba(0, 123, 255, 0.3); }
+            100% { background-color: rgba(40, 167, 69, 0.2); }
+        }
+
+        .mark-updated {
+            animation: mark-updated 0.5s ease;
+        }
+
+        /* Print Options Dropdown Styles */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            z-index: 1000;
+            border-radius: 8px;
+            padding: 8px 0;
+            border: 1px solid rgba(255,255,255,0.2);
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 8px 16px;
+            clear: both;
+            font-weight: 400;
+            color: white;
+            text-align: inherit;
+            text-decoration: none;
+            white-space: nowrap;
+            background-color: transparent;
+            border: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .dropdown-divider {
+            height: 0;
+            margin: 8px 0;
+            overflow: hidden;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Stream Status Styles */
+        .stream-status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .stream-status-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        .stream-status-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .premium-tab-nav {
@@ -285,6 +563,21 @@
 
             .tab-icon {
                 margin: 0 !important;
+            }
+
+            .subject-checkbox-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .mark-input-container input.student-mark {
+                width: 50px;
+                font-size: 12px;
+            }
+
+            .student-name-cell {
+                min-width: 120px;
             }
         }
     </style>
@@ -622,13 +915,30 @@
                                         <td>{{ report.created_at.strftime('%Y-%m-%d') if report.created_at else 'N/A' }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-primary btn-sm" onclick="viewReport({{ report.id }})">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="viewReport({{ report.id }})" title="View Report">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <button class="btn btn-outline-success btn-sm" onclick="downloadReport({{ report.id }})">
+                                                <button class="btn btn-outline-success btn-sm" onclick="downloadReport({{ report.id }})" title="Download Report">
                                                     <i class="fas fa-download"></i>
                                                 </button>
-                                                <button class="btn btn-outline-danger btn-sm" onclick="deleteReport({{ report.id }})">
+                                                <div class="dropdown d-inline-block">
+                                                    <button class="btn btn-outline-info btn-sm dropdown-toggle" onclick="togglePrintOptions({{ report.id }})" title="Print Options">
+                                                        <i class="fas fa-print"></i>
+                                                    </button>
+                                                    <div id="print-options-{{ report.id }}" class="dropdown-menu" style="display: none;">
+                                                        <button class="dropdown-item" onclick="printReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')">
+                                                            <i class="fas fa-print me-2"></i>Print Report
+                                                        </button>
+                                                        <button class="dropdown-item" onclick="saveAsPDF('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')">
+                                                            <i class="fas fa-file-pdf me-2"></i>Save as PDF
+                                                        </button>
+                                                        <div class="dropdown-divider"></div>
+                                                        <button class="dropdown-item" onclick="emailReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')">
+                                                            <i class="fas fa-envelope me-2"></i>Email Report
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <button class="btn btn-outline-danger btn-sm" onclick="deleteReport({{ report.id }})" title="Delete Report">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>
@@ -902,6 +1212,118 @@
                                         <i class="fas fa-table me-1"></i>
                                         Generate
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Grade Marksheet Section -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-layer-group me-2"></i>
+                                        Generate Grade Marksheet (All Streams)
+                                    </h5>
+                                    <p class="mb-0 text-muted">Select grade, term, and assessment type to generate a marksheet for all streams in the grade</p>
+                                </div>
+                                <div class="card-body">
+                                    <form id="stream-marksheet-form" method="POST" class="needs-validation" novalidate>
+                                        {{ csrf_token() }}
+
+                                        <div class="row mb-3">
+                                            <div class="col-md-4 mb-3">
+                                                <label for="stream_grade" class="form-label">Grade</label>
+                                                <select id="stream_grade" name="stream_grade" class="form-select" required onchange="checkStreamStatus()">
+                                                    <option value="">Select Grade</option>
+                                                    {% for grade_obj in grades %}
+                                                        <option value="{{ grade_obj.name }}">{{ grade_obj.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-4 mb-3">
+                                                <label for="stream_term" class="form-label">Term</label>
+                                                <select id="stream_term" name="stream_term" class="form-select" required onchange="checkStreamStatus()">
+                                                    <option value="">Select Term</option>
+                                                    {% for term_obj in terms %}
+                                                        <option value="{{ term_obj.name }}">{{ term_obj.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-4 mb-3">
+                                                <label for="stream_assessment_type" class="form-label">Assessment Type</label>
+                                                <select id="stream_assessment_type" name="stream_assessment_type" class="form-select" required onchange="checkStreamStatus()">
+                                                    <option value="">Select Assessment Type</option>
+                                                    {% for assessment_obj in assessment_types %}
+                                                        <option value="{{ assessment_obj.name }}">{{ assessment_obj.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <!-- Stream Status Information -->
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <div class="marksheet-info p-3" style="background: rgba(255,255,255,0.1); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                                                    <strong><i class="fas fa-info-circle me-2"></i>Grade Marksheet Status:</strong>
+                                                    <p class="mb-2">A grade marksheet combines results from all streams in the selected grade. All streams must have their marks entered before generating.</p>
+                                                    <button type="button" class="btn btn-outline-light btn-sm" onclick="checkStreamStatus()">
+                                                        <i class="fas fa-sync-alt me-1"></i>
+                                                        Refresh Status
+                                                    </button>
+                                                </div>
+
+                                                <div id="stream-status-container" class="stream-status-list mt-3" style="display: none;">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h6 class="mb-0">Stream Status</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div id="stream-status-list">
+                                                                <!-- Stream status items will be populated here -->
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Parent Notification Option -->
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <div class="p-3" style="background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.2); border-radius: 8px;">
+                                                    <label class="form-check-label d-flex align-items-center gap-2" style="cursor: pointer; font-weight: 500;">
+                                                        <input type="checkbox" name="notify_parents" class="form-check-input" style="transform: scale(1.2);">
+                                                        <span>📧 Notify Parents via Email</span>
+                                                    </label>
+                                                    <small class="text-muted d-block mt-1">
+                                                        Send an automated email notification to parents when the marksheet is generated
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Action Buttons -->
+                                        <div class="row">
+                                            <div class="col-12 text-center">
+                                                <div class="d-flex gap-3 justify-content-center">
+                                                    <button type="submit" id="preview-marksheet-btn" name="generate_stream_marksheet" value="1"
+                                                            class="btn btn-info" disabled>
+                                                        <i class="fas fa-eye me-2"></i>
+                                                        Preview Grade Marksheet
+                                                    </button>
+                                                    <button type="submit" id="download-marksheet-btn" name="download_stream_marksheet" value="1"
+                                                            class="btn btn-success" disabled>
+                                                        <i class="fas fa-download me-2"></i>
+                                                        Download Grade Marksheet
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -1387,7 +1809,7 @@
             </div>
         </div>
 
-        <!-- Student Marks Display Section -->
+        <!-- Advanced Student Marks Display System -->
         {% if show_students and students %}
         <div class="row mb-4">
             <div class="col-12">
@@ -1395,11 +1817,81 @@
                     <div class="card-header">
                         <h4 class="card-title mb-0">
                             <i class="fas fa-users me-2"></i>
-                            Student Marks - {{ subject }} ({{ grade }} {{ stream }})
+                            Student Marks Entry - {{ grade }} {{ stream }} - {{ subject_name or 'Selected Subject' }}
                         </h4>
+                        <div class="card-actions">
+                            <span class="badge bg-info">{{ students|length }} Students</span>
+                            <span class="badge bg-warning">Max: {{ total_marks }} marks</span>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <form method="POST" id="marksForm">
+                        <!-- Subject Selection and Configuration -->
+                        <div class="subject-marks-config mb-4">
+                            <h5>Subject Configuration</h5>
+                            <p class="help-text">
+                                <strong>📚 Flexible Subject Upload:</strong> Configure maximum raw marks for each subject.
+                                This allows different subjects to have different maximum marks based on curriculum requirements.
+                            </p>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Selected Subjects:</label>
+                                    <div class="selected-subjects-display">
+                                        {% if subjects %}
+                                            {% for subject in subjects %}
+                                            <div class="subject-checkbox-item">
+                                                <input type="checkbox"
+                                                       id="subject_{{ subject.id }}"
+                                                       class="subject-checkbox"
+                                                       data-subject-id="{{ subject.id }}"
+                                                       checked>
+                                                <label for="subject_{{ subject.id }}">{{ subject.name }}</label>
+                                                <input type="number"
+                                                       class="total-marks-input"
+                                                       data-subject-id="{{ subject.id }}"
+                                                       value="{{ total_marks }}"
+                                                       min="1"
+                                                       max="200"
+                                                       title="Maximum raw marks for {{ subject.name }}">
+                                            </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="subject-checkbox-item">
+                                                <input type="checkbox"
+                                                       id="subject_current"
+                                                       class="subject-checkbox"
+                                                       data-subject-id="{{ subject }}"
+                                                       checked>
+                                                <label for="subject_current">{{ subject_name or 'Current Subject' }}</label>
+                                                <input type="number"
+                                                       class="total-marks-input"
+                                                       data-subject-id="{{ subject }}"
+                                                       value="{{ total_marks }}"
+                                                       min="1"
+                                                       max="200"
+                                                       title="Maximum raw marks">
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Quick Actions:</label>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAllSubjects()">
+                                            <i class="fas fa-check-double me-1"></i>Select All
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="deselectAllSubjects()">
+                                            <i class="fas fa-times me-1"></i>Deselect All
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info btn-sm" onclick="setUniformMarks()">
+                                            <i class="fas fa-equals me-1"></i>Set Uniform Marks
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form method="POST" id="marksForm" class="advanced-marks-form">
                             {{ csrf_token() }}
                             <input type="hidden" name="education_level" value="{{ education_level }}">
                             <input type="hidden" name="subject" value="{{ subject }}">
@@ -1409,50 +1901,119 @@
                             <input type="hidden" name="assessment_type" value="{{ assessment_type }}">
                             <input type="hidden" name="total_marks" value="{{ total_marks }}">
 
-                            <div class="table-responsive">
-                                <table class="table table-dark table-striped">
+                            <!-- Advanced Table Wrapper -->
+                            <div class="table-wrapper">
+                                <table class="advanced-marks-table table table-dark">
                                     <thead>
                                         <tr>
-                                            <th>Student Name</th>
-                                            <th>Raw Mark (out of {{ total_marks }})</th>
-                                            <th>Percentage</th>
-                                            <th>Grade</th>
+                                            <th class="student-name-header">Student Name</th>
+                                            {% if subjects %}
+                                                {% for subject_obj in subjects %}
+                                                <th class="{% if subject_obj.is_composite %}composite-subject-header{% endif %}"
+                                                    data-subject-id="{{ subject_obj.id }}">
+                                                    {{ subject_obj.name }}
+                                                    <div class="subject-info-header">
+                                                        <span class="subject-info" id="subject_info_{{ loop.index0 }}">
+                                                            Max Raw: {{ total_marks }}
+                                                        </span>
+                                                    </div>
+                                                </th>
+                                                {% endfor %}
+                                            {% else %}
+                                                <th data-subject-id="{{ subject }}">
+                                                    {{ subject_name or 'Current Subject' }}
+                                                    <div class="subject-info-header">
+                                                        <span class="subject-info">Max Raw: {{ total_marks }}</span>
+                                                    </div>
+                                                </th>
+                                            {% endif %}
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for student in students %}
-                                        <tr>
-                                            <td>
+                                        <tr class="student-row">
+                                            <td class="student-name-cell">
                                                 <strong>{{ student.name }}</strong>
                                                 <br>
                                                 <small class="text-muted">ID: {{ student.id }}</small>
                                             </td>
-                                            <td>
-                                                <input type="number"
-                                                       class="form-control mark-input"
-                                                       name="mark_{{ student.id }}"
-                                                       id="mark_{{ student.id }}"
-                                                       min="0"
-                                                       max="{{ total_marks }}"
-                                                       step="0.5"
-                                                       data-student-id="{{ student.id }}"
-                                                       data-total-marks="{{ total_marks }}"
-                                                       placeholder="Enter mark">
-                                            </td>
-                                            <td>
-                                                <span id="percentage_{{ student.id }}" class="badge bg-secondary">-</span>
-                                            </td>
-                                            <td>
-                                                <span id="grade_{{ student.id }}" class="badge bg-secondary">-</span>
-                                            </td>
+                                            {% if subjects %}
+                                                {% for subject_obj in subjects %}
+                                                <td class="subject-cell" data-subject-id="{{ subject_obj.id }}">
+                                                    <div class="simplified-mark-entry">
+                                                        <div class="mark-input-container">
+                                                            <input type="number"
+                                                                name="mark_{{ student.id }}_{{ subject_obj.id }}"
+                                                                value="0"
+                                                                min="0"
+                                                                max="{{ total_marks }}"
+                                                                step="0.5"
+                                                                required
+                                                                class="student-mark form-control"
+                                                                data-student="{{ student.id }}"
+                                                                data-subject="{{ subject_obj.id }}"
+                                                                data-subject-index="{{ loop.index0 }}"
+                                                                data-max-mark="{{ total_marks }}"
+                                                                oninput="updatePercentage(this)"
+                                                                onchange="updatePercentage(this)"
+                                                                title="Enter raw mark for {{ subject_obj.name }} (Max: {{ total_marks }})">
+                                                        </div>
+                                                        <div class="percentage-display">
+                                                            <span id="percentage_{{ student.id }}_{{ subject_obj.id }}"
+                                                                  class="percentage-value badge bg-secondary">0%</span>
+                                                            <div class="percentage-bar">
+                                                                <div class="percentage-fill" style="width: 0%"></div>
+                                                            </div>
+                                                            <input type="hidden"
+                                                                name="percentage_{{ student.id }}_{{ subject_obj.id }}"
+                                                                id="hidden_percentage_{{ student.id }}_{{ subject_obj.id }}"
+                                                                value="0">
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {% endfor %}
+                                            {% else %}
+                                                <td class="subject-cell" data-subject-id="{{ subject }}">
+                                                    <div class="simplified-mark-entry">
+                                                        <div class="mark-input-container">
+                                                            <input type="number"
+                                                                name="mark_{{ student.id }}"
+                                                                id="mark_{{ student.id }}"
+                                                                value="0"
+                                                                min="0"
+                                                                max="{{ total_marks }}"
+                                                                step="0.5"
+                                                                required
+                                                                class="student-mark form-control"
+                                                                data-student="{{ student.id }}"
+                                                                data-subject="{{ subject }}"
+                                                                data-max-mark="{{ total_marks }}"
+                                                                oninput="updatePercentage(this)"
+                                                                onchange="updatePercentage(this)"
+                                                                title="Enter raw mark (Max: {{ total_marks }})">
+                                                        </div>
+                                                        <div class="percentage-display">
+                                                            <span id="percentage_{{ student.id }}"
+                                                                  class="percentage-value badge bg-secondary">0%</span>
+                                                            <div class="percentage-bar">
+                                                                <div class="percentage-fill" style="width: 0%"></div>
+                                                            </div>
+                                                            <input type="hidden"
+                                                                name="percentage_{{ student.id }}"
+                                                                id="hidden_percentage_{{ student.id }}"
+                                                                value="0">
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            {% endif %}
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
 
-                            <div class="d-grid mt-3">
-                                <button type="submit" name="submit_marks" class="btn btn-success btn-lg">
+                            <div class="text-center mt-4">
+                                <button type="submit" name="submit_marks" value="1" class="btn btn-success btn-lg" id="submit-marks-btn">
                                     <i class="fas fa-save me-2"></i>
                                     Submit All Marks
                                 </button>
@@ -2116,11 +2677,433 @@
             }
         }
 
+        // Print Options Functions
+        function togglePrintOptions(reportId) {
+            const printOptions = document.getElementById(`print-options-${reportId}`);
+
+            // Close any other open dropdowns first
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (menu.id !== `print-options-${reportId}`) {
+                    menu.style.display = 'none';
+                }
+            });
+
+            // Toggle current dropdown
+            if (printOptions.style.display === 'none' || printOptions.style.display === '') {
+                printOptions.style.display = 'block';
+            } else {
+                printOptions.style.display = 'none';
+            }
+        }
+
+        function printReport(grade, stream, term, assessmentType) {
+            // Open the report in a new window and print it
+            const printUrl = `/classteacher/preview_class_report/${grade}/${stream}/${term}/${assessmentType}`;
+            const printWindow = window.open(printUrl, '_blank', 'width=800,height=600');
+
+            if (printWindow) {
+                printWindow.onload = function() {
+                    printWindow.print();
+                };
+            } else {
+                alert('Please allow popups to print reports');
+            }
+        }
+
+        function saveAsPDF(grade, stream, term, assessmentType) {
+            // Open the report in a new window with PDF instructions
+            const pdfUrl = `/classteacher/preview_class_report/${grade}/${stream}/${term}/${assessmentType}`;
+            const pdfWindow = window.open(pdfUrl, '_blank', 'width=800,height=600');
+
+            if (pdfWindow) {
+                pdfWindow.onload = function() {
+                    // Add PDF save instructions to the page
+                    const instructionsDiv = pdfWindow.document.createElement('div');
+                    instructionsDiv.style.cssText = `
+                        position: fixed;
+                        top: 10px;
+                        right: 10px;
+                        background: rgba(0,0,0,0.9);
+                        color: white;
+                        padding: 15px;
+                        border-radius: 8px;
+                        z-index: 1000;
+                        max-width: 300px;
+                        font-family: Arial, sans-serif;
+                    `;
+
+                    instructionsDiv.innerHTML = `
+                        <h3 style="margin: 0 0 10px 0; font-size: 16px;">Save as PDF Instructions</h3>
+                        <p style="margin: 0; font-size: 14px;">
+                            1. Press <strong>Ctrl+P</strong> (or <strong>Cmd+P</strong> on Mac)<br>
+                            2. Select <strong>"Save as PDF"</strong> from printer options<br>
+                            3. Click <strong>"Save"</strong> to download
+                        </p>
+                        <button onclick="this.parentElement.remove()" style="margin-top: 10px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Close Instructions
+                        </button>
+                    `;
+
+                    pdfWindow.document.body.insertBefore(instructionsDiv, pdfWindow.document.body.firstChild);
+                };
+            } else {
+                alert('Please allow popups to save reports as PDF');
+            }
+        }
+
+        function emailReport(grade, stream, term, assessmentType) {
+            // Placeholder for email functionality
+            alert(`Email report feature coming soon!\nReport: ${grade} ${stream} - ${term} ${assessmentType}`);
+        }
+
+        // Function to check stream status for grade marksheet
+        function checkStreamStatus() {
+            const grade = document.getElementById('stream_grade').value;
+            const term = document.getElementById('stream_term').value;
+            const assessmentType = document.getElementById('stream_assessment_type').value;
+            const statusContainer = document.getElementById('stream-status-container');
+            const statusList = document.getElementById('stream-status-list');
+            const previewBtn = document.getElementById('preview-marksheet-btn');
+            const downloadBtn = document.getElementById('download-marksheet-btn');
+
+            // Clear the status list
+            statusList.innerHTML = '';
+
+            if (grade && term && assessmentType) {
+                statusContainer.style.display = 'block';
+
+                // Add loading indicator
+                statusList.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Checking stream status...</p></div>';
+
+                // Simulate API call (replace with actual endpoint when available)
+                setTimeout(() => {
+                    // Mock data - replace with actual API call
+                    const mockStreams = [
+                        { name: 'A', has_report: true },
+                        { name: 'B', has_report: false },
+                        { name: 'C', has_report: true }
+                    ];
+
+                    statusList.innerHTML = '';
+                    let allStreamsReady = true;
+
+                    if (mockStreams && mockStreams.length > 0) {
+                        mockStreams.forEach(stream => {
+                            const statusItem = document.createElement('div');
+                            statusItem.className = 'stream-status-item d-flex align-items-center mb-2 p-2';
+                            statusItem.style.background = 'rgba(255,255,255,0.05)';
+                            statusItem.style.borderRadius = '6px';
+
+                            const indicator = document.createElement('span');
+                            indicator.className = `stream-status-indicator me-2`;
+                            indicator.style.display = 'inline-block';
+                            indicator.style.width = '12px';
+                            indicator.style.height = '12px';
+                            indicator.style.borderRadius = '50%';
+                            indicator.style.backgroundColor = stream.has_report ? '#28a745' : '#dc3545';
+
+                            const text = document.createElement('span');
+                            text.textContent = `Stream ${stream.name}: ${stream.has_report ? 'Report Ready' : 'Report Missing'}`;
+                            text.style.color = 'white';
+
+                            statusItem.appendChild(indicator);
+                            statusItem.appendChild(text);
+                            statusList.appendChild(statusItem);
+
+                            if (!stream.has_report) {
+                                allStreamsReady = false;
+                            }
+                        });
+
+                        // Enable/disable buttons based on status
+                        previewBtn.disabled = !allStreamsReady;
+                        downloadBtn.disabled = !allStreamsReady;
+
+                        if (!allStreamsReady) {
+                            const warningText = document.createElement('div');
+                            warningText.className = 'alert alert-warning mt-3';
+                            warningText.innerHTML = '<strong><i class="fas fa-exclamation-triangle me-2"></i>Note:</strong> All streams must have reports generated before creating a grade marksheet.';
+                            statusList.appendChild(warningText);
+                        } else {
+                            const successText = document.createElement('div');
+                            successText.className = 'alert alert-success mt-3';
+                            successText.innerHTML = '<strong><i class="fas fa-check-circle me-2"></i>Ready!</strong> All stream reports are available. You can now generate the grade marksheet.';
+                            statusList.appendChild(successText);
+                        }
+                    } else {
+                        statusList.innerHTML = '<div class="alert alert-info">No streams found for this grade.</div>';
+                        previewBtn.disabled = true;
+                        downloadBtn.disabled = true;
+                    }
+                }, 1000);
+
+                /*
+                // Actual API call - uncomment when backend is ready
+                fetch(`/classteacher/api/check_stream_status/${grade}/${term}/${assessmentType}`, {
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Handle actual API response
+                })
+                .catch(error => {
+                    console.error('Error checking stream status:', error);
+                    statusList.innerHTML = '<div class="alert alert-danger">Error checking stream status. Please try again.</div>';
+                    previewBtn.disabled = true;
+                    downloadBtn.disabled = true;
+                });
+                */
+            } else {
+                statusContainer.style.display = 'none';
+                previewBtn.disabled = true;
+                downloadBtn.disabled = true;
+            }
+        }
+
+        // Advanced Percentage Calculation Functions
+        function updatePercentage(inputElement) {
+            console.log("Updating percentage...");
+
+            // Get the student and subject information from data attributes
+            const student = inputElement.dataset.student;
+            const subject = inputElement.dataset.subject;
+            const subjectIndex = inputElement.dataset.subjectIndex;
+
+            // Get the max raw mark from the corresponding total marks input or data attribute
+            const maxRawMark = parseFloat(inputElement.dataset.maxMark) || parseFloat(inputElement.getAttribute('max')) || 100;
+
+            // Get the raw mark value
+            let rawMark = parseFloat(inputElement.value) || 0;
+
+            // Ensure the raw mark doesn't exceed the max mark
+            if (rawMark > maxRawMark) {
+                rawMark = maxRawMark;
+                inputElement.value = rawMark;
+            }
+
+            // Calculate percentage
+            const percentage = maxRawMark > 0 ? Math.round((rawMark / maxRawMark) * 100) : 0;
+
+            // Update percentage display
+            const percentageElement = document.getElementById(`percentage_${student}_${subject}`) ||
+                                    document.getElementById(`percentage_${student}`);
+            if (percentageElement) {
+                percentageElement.textContent = `${percentage}%`;
+
+                // Update badge color based on percentage
+                percentageElement.className = 'percentage-value badge';
+                if (percentage >= 80) {
+                    percentageElement.classList.add('bg-success');
+                } else if (percentage >= 60) {
+                    percentageElement.classList.add('bg-warning');
+                } else if (percentage >= 40) {
+                    percentageElement.classList.add('bg-info');
+                } else {
+                    percentageElement.classList.add('bg-danger');
+                }
+            }
+
+            // Update percentage bar
+            const percentageBar = percentageElement?.parentElement?.querySelector('.percentage-fill');
+            if (percentageBar) {
+                percentageBar.style.width = `${percentage}%`;
+                percentageBar.style.backgroundColor = percentage >= 60 ? '#28a745' : percentage >= 40 ? '#ffc107' : '#dc3545';
+            }
+
+            // Update hidden percentage field
+            const hiddenPercentageElement = document.getElementById(`hidden_percentage_${student}_${subject}`) ||
+                                          document.getElementById(`hidden_percentage_${student}`);
+            if (hiddenPercentageElement) {
+                hiddenPercentageElement.value = percentage;
+            }
+
+            // Calculate and display grade
+            const grade = calculateGrade(percentage);
+            const gradeElement = document.getElementById(`grade_${student}_${subject}`) ||
+                               document.getElementById(`grade_${student}`);
+            if (gradeElement) {
+                gradeElement.textContent = grade;
+                gradeElement.className = 'badge';
+                if (grade === 'EE') {
+                    gradeElement.classList.add('bg-success');
+                } else if (grade === 'ME') {
+                    gradeElement.classList.add('bg-primary');
+                } else if (grade === 'AE') {
+                    gradeElement.classList.add('bg-warning');
+                } else {
+                    gradeElement.classList.add('bg-danger');
+                }
+            }
+
+            console.log(`Updated: Student ${student}, Subject ${subject}, Raw: ${rawMark}/${maxRawMark}, Percentage: ${percentage}%, Grade: ${grade}`);
+        }
+
+        // Function to calculate grade based on percentage
+        function calculateGrade(percentage) {
+            if (percentage >= 80) return 'EE';
+            if (percentage >= 60) return 'ME';
+            if (percentage >= 40) return 'AE';
+            return 'BE';
+        }
+
+        // Function to calculate the overall subject mark from component marks
+        function calculateOverallSubjectMark(student, subject) {
+            console.log(`Calculating overall mark for student: ${student}, subject: ${subject}`);
+
+            // Find all component inputs for this student and subject
+            const componentInputs = document.querySelectorAll(`input.component-mark[data-student="${student}"][data-subject="${subject}"]`);
+            console.log(`Found ${componentInputs.length} component inputs`);
+
+            if (componentInputs.length === 0) return;
+
+            // Calculate total raw marks and total max marks
+            let totalMaxMarks = 0;
+            let totalRawMarks = 0;
+
+            componentInputs.forEach(input => {
+                const rawMark = parseInt(input.value) || 0;
+                const maxMark = parseInt(input.dataset.maxMark) || 100;
+                const weight = parseFloat(input.dataset.componentWeight) || 1;
+
+                totalRawMarks += rawMark * weight;
+                totalMaxMarks += maxMark * weight;
+            });
+
+            // Calculate overall percentage
+            const overallPercentage = totalMaxMarks > 0 ? Math.round((totalRawMarks / totalMaxMarks) * 100) : 0;
+
+            // Update overall percentage display
+            const overallPercentageElement = document.getElementById(`overall_percentage_display_${student}_${subject}`);
+            if (overallPercentageElement) {
+                overallPercentageElement.textContent = `${overallPercentage}%`;
+            }
+
+            // Update overall percentage bar
+            const overallPercentageBar = overallPercentageElement?.parentElement?.querySelector('.percentage-fill');
+            if (overallPercentageBar) {
+                overallPercentageBar.style.width = `${overallPercentage}%`;
+            }
+
+            // Update hidden overall mark field
+            const overallMarkElement = document.getElementById(`overall_mark_${student}_${subject}`);
+            if (overallMarkElement) {
+                overallMarkElement.value = Math.round(totalRawMarks);
+            }
+
+            // Update hidden overall percentage field
+            const hiddenOverallPercentageElement = document.getElementById(`hidden_percentage_${student}_${subject}`);
+            if (hiddenOverallPercentageElement) {
+                hiddenOverallPercentageElement.value = overallPercentage;
+            }
+
+            console.log(`Overall calculation: ${totalRawMarks}/${totalMaxMarks} = ${overallPercentage}%`);
+        }
+
+        // Function to update component percentage
+        function updateComponentPercentage(inputElement) {
+            const rawMark = parseInt(inputElement.value) || 0;
+            const maxMark = parseInt(inputElement.dataset.maxMark) || 100;
+            const percentage = maxMark > 0 ? Math.round((rawMark / maxMark) * 100) : 0;
+
+            // Update component percentage display if exists
+            const componentId = inputElement.dataset.component;
+            const student = inputElement.dataset.student;
+            const subject = inputElement.dataset.subject;
+
+            const componentPercentageElement = document.getElementById(`component_percentage_${student}_${subject}_${componentId}`);
+            if (componentPercentageElement) {
+                componentPercentageElement.textContent = `${percentage}%`;
+            }
+        }
+
+        // Subject Configuration Functions
+        function selectAllSubjects() {
+            const checkboxes = document.querySelectorAll('.subject-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                if (checkbox.dataset.subjectId) {
+                    toggleSubjectVisibility(checkbox, checkbox.dataset.subjectId);
+                }
+            });
+        }
+
+        function deselectAllSubjects() {
+            const checkboxes = document.querySelectorAll('.subject-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                if (checkbox.dataset.subjectId) {
+                    toggleSubjectVisibility(checkbox, checkbox.dataset.subjectId);
+                }
+            });
+        }
+
+        function setUniformMarks() {
+            const marks = prompt('Enter uniform maximum marks for all subjects:', '100');
+            if (marks && !isNaN(marks) && marks > 0) {
+                const marksInputs = document.querySelectorAll('.total-marks-input');
+                marksInputs.forEach(input => {
+                    input.value = marks;
+                });
+            }
+        }
+
+        function toggleSubjectVisibility(checkbox, subjectId) {
+            console.log(`Toggling subject visibility for ID: ${subjectId}, checked: ${checkbox.checked}`);
+
+            const subjectHeaders = document.querySelectorAll(`th[data-subject-id="${subjectId}"]`);
+            const subjectCells = document.querySelectorAll(`td[data-subject-id="${subjectId}"]`);
+
+            if (checkbox.checked) {
+                subjectHeaders.forEach(header => header.style.display = '');
+                subjectCells.forEach(cell => cell.style.display = '');
+            } else {
+                subjectHeaders.forEach(header => header.style.display = 'none');
+                subjectCells.forEach(cell => cell.style.display = 'none');
+            }
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             // Restore active tab from sessionStorage
             const activeTab = sessionStorage.getItem('activeTab') || 'recent-reports';
             switchMainTab(activeTab);
+
+            // Initialize subject checkboxes
+            document.querySelectorAll('.subject-checkbox').forEach(checkbox => {
+                if (checkbox && checkbox.dataset.subjectId) {
+                    toggleSubjectVisibility(checkbox, checkbox.dataset.subjectId);
+                }
+
+                checkbox.addEventListener('change', function() {
+                    toggleSubjectVisibility(this, this.dataset.subjectId);
+                });
+            });
+
+            // Initialize total marks inputs
+            document.querySelectorAll('.total-marks-input').forEach(input => {
+                input.addEventListener('change', function() {
+                    const subjectId = this.dataset.subjectId;
+                    const newMaxMark = this.value;
+
+                    // Update all input fields for this subject
+                    const subjectInputs = document.querySelectorAll(`input[data-subject="${subjectId}"]`);
+                    subjectInputs.forEach(subjectInput => {
+                        subjectInput.setAttribute('max', newMaxMark);
+                        subjectInput.dataset.maxMark = newMaxMark;
+
+                        // Recalculate percentage if there's a value
+                        if (subjectInput.value) {
+                            updatePercentage(subjectInput);
+                        }
+                    });
+
+                    // Update subject info header
+                    const subjectInfo = document.getElementById(`subject_info_${subjectId}`);
+                    if (subjectInfo) {
+                        subjectInfo.textContent = `Max Raw: ${newMaxMark}`;
+                    }
+                });
+            });
         });
 
         // Form submission handlers
@@ -2148,6 +3131,24 @@
                     });
                 }
             });
+
+            // Close print options dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!event.target.matches('.dropdown-toggle') && !event.target.closest('.dropdown-menu')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        menu.style.display = 'none';
+                    });
+                }
+            });
+
+            // Add event listeners for grade marksheet form fields if they exist
+            const streamGrade = document.getElementById('stream_grade');
+            const streamTerm = document.getElementById('stream_term');
+            const streamAssessment = document.getElementById('stream_assessment_type');
+
+            if (streamGrade) streamGrade.addEventListener('change', checkStreamStatus);
+            if (streamTerm) streamTerm.addEventListener('change', checkStreamStatus);
+            if (streamAssessment) streamAssessment.addEventListener('change', checkStreamStatus);
         });
     </script>
 </body>
