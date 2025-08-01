@@ -196,7 +196,7 @@
                     <i class="fas fa-user me-1"></i>
                     Welcome, {{ session.get('teacher_name', 'Teacher') }}
                 </span>
-                <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                <a class="nav-link" href="{{ url_for('auth.logout_route') }}">
                     <i class="fas fa-sign-out-alt me-1"></i>
                     Logout
                 </a>
