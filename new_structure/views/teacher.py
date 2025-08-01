@@ -188,7 +188,7 @@ def dashboard():
     }
 
     # Get form data (only accessible options)
-    grades = [grade.name for grade in accessible_grades]
+    grades = accessible_grades  # Pass the actual grade objects, not just names
     grades_dict = {grade.name: grade.id for grade in accessible_grades}
     terms = [term.name for term in Term.query.all()]
     assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
