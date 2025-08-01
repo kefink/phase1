@@ -1393,24 +1393,8 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
     }
 
     function updateGradesByEducationLevel() {
-        console.log('🔥 updateGradesByEducationLevel called!');
-
-        // Send debug info to server
-        fetch('/teacher/debug_log', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                message: 'updateGradesByEducationLevel called',
-                timestamp: new Date().toISOString()
-            })
-        }).catch(e => console.log('Debug log failed:', e));
-
         const educationLevel = document.getElementById('education_level').value;
         const gradeSelect = document.getElementById('grade');
-
-        console.log('🎯 Education level:', educationLevel);
-        console.log('📋 Grade select element:', gradeSelect);
-        console.log('📋 Grade select innerHTML before:', gradeSelect.innerHTML);
 
         // Store all original options if not already stored
         if (!window.originalGradeOptions) {
@@ -1419,17 +1403,6 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 text: option.textContent,
                 selected: option.selected
             }));
-            console.log('💾 Stored original options:', window.originalGradeOptions);
-
-            // Send original options to server for debugging
-            fetch('/teacher/debug_log', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    message: 'Original grade options stored',
-                    data: window.originalGradeOptions
-                })
-            }).catch(e => console.log('Debug log failed:', e));
         }
 
         // Define grade name mappings for each education level
@@ -1441,49 +1414,22 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
 
         // Clear current options
         gradeSelect.innerHTML = '<option value="">🎓 Select Grade</option>';
-        console.log('📋 Cleared grade select, innerHTML now:', gradeSelect.innerHTML);
 
         if (educationLevel && gradeNamesByEducationLevel[educationLevel]) {
-            console.log('✅ Education level found, expected grades:', gradeNamesByEducationLevel[educationLevel]);
-
-            let addedCount = 0;
             // Add only the grades for the selected education level
             window.originalGradeOptions.forEach(gradeOption => {
                 if (gradeOption.value !== '') { // Skip the default option
                     const gradeName = gradeOption.text.trim();
-                    console.log(`🔍 Checking grade: "${gradeName}" against expected grades`);
 
                     if (gradeNamesByEducationLevel[educationLevel].includes(gradeName)) {
                         const option = document.createElement('option');
                         option.value = gradeOption.value;
                         option.textContent = gradeOption.text;
                         gradeSelect.appendChild(option);
-                        addedCount++;
-                        console.log(`✅ Added grade: ${gradeName} (ID: ${gradeOption.value})`);
-                    } else {
-                        console.log(`❌ Skipped grade: ${gradeName} (not in expected list)`);
                     }
                 }
             });
-
-            console.log(`📊 Total grades added: ${addedCount}`);
-            console.log('📋 Final grade select innerHTML:', gradeSelect.innerHTML);
-
-            // Send final result to server
-            fetch('/teacher/debug_log', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    message: 'Grade update completed',
-                    educationLevel: educationLevel,
-                    expectedGrades: gradeNamesByEducationLevel[educationLevel],
-                    addedCount: addedCount,
-                    finalHTML: gradeSelect.innerHTML
-                })
-            }).catch(e => console.log('Debug log failed:', e));
-
         } else {
-            console.log('❌ No education level or no grades for this level');
             // If no education level selected, show all grades
             window.originalGradeOptions.forEach(gradeOption => {
                 if (gradeOption.value !== '') { // Skip the default option
@@ -1726,39 +1672,17 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
 
         const educationLevelSelect = document.getElementById('education_level');
         if (educationLevelSelect) {
-            console.log('✅ Found education level select, adding event listener');
             educationLevelSelect.addEventListener('change', function() {
-                console.log('🔥 Education level changed to:', this.value);
-
-                // Send event to server for debugging
-                fetch('/teacher/debug_log', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        message: 'Education level changed',
-                        data: {
-                            newValue: this.value,
-                            timestamp: new Date().toISOString()
-                        }
-                    })
-                }).catch(e => console.log('Debug log failed:', e));
-
                 updateSubjectsByEducationLevel();
                 updateGradesByEducationLevel();
             });
-        } else {
-            console.log('❌ Education level select not found!');
         }
 
         const gradeSelect = document.getElementById('grade');
         if (gradeSelect) {
-            console.log('✅ Found grade select, adding event listener');
             gradeSelect.addEventListener('change', function() {
-                console.log('🔥 Grade changed to:', this.value);
                 updateStreams();
             });
-        } else {
-            console.log('❌ Grade select not found!');
         }
     });
 
