@@ -991,81 +991,107 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
     {% endif %}
 
     {% if students %}
-    <div class="mobile-table-container mobile-table-swipe" style="margin-top: 2rem;">
-        <table class="mobile-table">
-            <thead>
-                <tr>
-                    <th>
-                        <i class="fas fa-user"></i>
-                        Student Name
-                    </th>
-                    <th>
-                        <i class="fas fa-edit"></i>
-                        Marks
-                    </th>
-                    <th>
-                        <i class="fas fa-cog"></i>
-                        Action
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for student in students %}
-                <tr data-student-id="{{ student.id }}">
-                    <td>
-                        <div class="student-info">
-                            <div class="student-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--bs-primary), var(--bs-info)); display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 0.5rem;">
-                                {{ student.name[0] }}
-                            </div>
-                            <div style="display: inline-block;">
-                                <strong>{{ student.name }}</strong><br>
-                                <small class="text-muted">ID: {{ student.id }}</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="mobile-input-group-horizontal">
-                            <input type="number"
-                                   class="mobile-form-control"
-                                   placeholder="0-{{ total_marks or 100 }}"
-                                   min="0"
-                                   max="{{ total_marks or 100 }}"
-                                   data-student="{{ student.id }}"
-                                   style="width: 80px; font-size: 1rem;">
-                            <span class="mobile-badge mobile-badge-secondary">
-                                /{{ total_marks or 100 }}
-                            </span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="action-buttons" style="display: flex; gap: 0.5rem;">
-                            <button class="mobile-btn mobile-btn-success"
-                                    style="padding: 0.5rem; min-width: auto;"
-                                    onclick="saveStudentMark({{ student.id }})"
-                                    data-tooltip="Save marks">
-                                <i class="fas fa-save"></i>
-                            </button>
-                            <button class="mobile-btn mobile-btn-info"
-                                    style="padding: 0.5rem; min-width: auto;"
-                                    onclick="viewStudentHistory({{ student.id }})"
-                                    data-tooltip="View history">
-                                <i class="fas fa-history"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Mobile Marks Entry Form -->
+    <form id="mobile-marks-form" method="POST" action="{{ url_for('teacher.dashboard') }}" class="mobile-marks-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="submit_marks" value="1"/>
+        <input type="hidden" name="education_level" value="{{ education_level }}"/>
+        <input type="hidden" name="subject" value="{{ subject }}"/>
+        <input type="hidden" name="grade" value="{{ grade }}"/>
+        <input type="hidden" name="stream" value="{{ stream }}"/>
+        <input type="hidden" name="term" value="{{ term }}"/>
+        <input type="hidden" name="assessment_type" value="{{ assessment_type }}"/>
+        <input type="hidden" name="total_marks" value="{{ total_marks }}"/>
 
+        <!-- Subject Header -->
+        <div class="mobile-subject-header" style="background: linear-gradient(135deg, var(--bs-primary), var(--bs-info)); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+            <h3 style="margin: 0; font-size: 1.2rem;">📚 {{ subject }} - Marks Entry</h3>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 0.9rem;">
+                Grade {{ grade }} {{ stream }} | {{ term }} | {{ assessment_type }} | Total: {{ total_marks }}
+            </p>
+        </div>
+
+        <div class="mobile-table-container mobile-table-swipe">
+            <table class="mobile-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <i class="fas fa-user"></i>
+                            Student
+                        </th>
+                        <th>
+                            <i class="fas fa-edit"></i>
+                            Raw Mark
+                        </th>
+                        <th>
+                            <i class="fas fa-percent"></i>
+                            %
+                        </th>
+                        <th>
+                            <i class="fas fa-medal"></i>
+                            Grade
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr data-student-id="{{ student.id }}">
+                        <td>
+                            <div class="student-info">
+                                <div class="student-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--bs-primary), var(--bs-info)); display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 0.5rem;">
+                                    {{ student.name[0] }}
+                                </div>
+                                <div style="display: inline-block;">
+                                    <strong style="font-size: 0.9rem;">{{ student.name }}</strong><br>
+                                    <small class="text-muted">ID: {{ student.id }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="number"
+                                   name="mark_{{ student.id }}"
+                                   class="mobile-form-control mark-input"
+                                   placeholder="0"
+                                   min="0"
+                                   max="{{ total_marks }}"
+                                   step="0.1"
+                                   data-student-id="{{ student.id }}"
+                                   data-total-marks="{{ total_marks }}"
+                                   oninput="updateMobilePercentage({{ student.id }})"
+                                   style="width: 70px; font-size: 1rem; text-align: center;">
+                        </td>
+                        <td>
+                            <span id="percentage_{{ student.id }}" class="mobile-badge mobile-badge-info" style="font-size: 0.8rem;">
+                                0%
+                            </span>
+                        </td>
+                        <td>
+                            <span id="grade_{{ student.id }}" class="mobile-badge mobile-badge-secondary" style="font-size: 0.8rem;">
+                                -
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Submit Button -->
+        <div style="margin-top: 2rem; text-align: center;">
+            <button type="submit" class="mobile-btn mobile-btn-success mobile-btn-block" style="font-size: 1.1rem; padding: 1rem;">
+                <i class="fas fa-save"></i>
+                Submit All Marks
+            </button>
+        </div>
+    </form>
         <!-- Mobile-friendly pagination -->
         {% if pagination_info and pagination_info.pages > 1 %}
         <div class="mobile-pagination" style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1rem; padding: 1rem;">
             {% if pagination_info.has_prev %}
-            <a href="?page={{ pagination_info.prev_num }}" class="mobile-btn mobile-btn-outline-primary mobile-btn-sm">
+            <button type="submit" name="page" value="{{ pagination_info.prev_num }}" class="mobile-btn mobile-btn-outline-primary mobile-btn-sm">
                 <i class="fas fa-chevron-left"></i>
                 Previous
-            </a>
+            </button>
             {% endif %}
 
             <span class="mobile-badge mobile-badge-primary">
@@ -1073,14 +1099,13 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
             </span>
 
             {% if pagination_info.has_next %}
-            <a href="?page={{ pagination_info.next_num }}" class="mobile-btn mobile-btn-outline-primary mobile-btn-sm">
+            <button type="submit" name="page" value="{{ pagination_info.next_num }}" class="mobile-btn mobile-btn-outline-primary mobile-btn-sm">
                 Next
                 <i class="fas fa-chevron-right"></i>
-            </a>
+            </button>
             {% endif %}
         </div>
         {% endif %}
-    </div>
     {% endif %}
 </div>
 
@@ -1531,6 +1556,63 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
             }
         }
     }
+
+    // Real-time grade conversion for mobile marks entry
+    function updateMobilePercentage(studentId) {
+        const markInput = document.querySelector(`input[name="mark_${studentId}"]`);
+        const percentageDisplay = document.getElementById(`percentage_${studentId}`);
+        const gradeDisplay = document.getElementById(`grade_${studentId}`);
+
+        if (!markInput || !percentageDisplay || !gradeDisplay) return;
+
+        const rawMark = parseFloat(markInput.value) || 0;
+        const totalMarks = parseFloat(markInput.getAttribute('data-total-marks')) || 100;
+
+        // Calculate percentage
+        const percentage = totalMarks > 0 ? (rawMark / totalMarks) * 100 : 0;
+
+        // Update percentage display
+        percentageDisplay.textContent = percentage.toFixed(1) + '%';
+        percentageDisplay.className = 'mobile-badge ' + (percentage >= 50 ? 'mobile-badge-success' : 'mobile-badge-warning');
+
+        // Calculate grade based on percentage
+        let grade = '-';
+        if (rawMark > 0) {
+            if (percentage >= 90) grade = 'EE1';
+            else if (percentage >= 75) grade = 'EE2';
+            else if (percentage >= 58) grade = 'ME1';
+            else if (percentage >= 41) grade = 'ME2';
+            else if (percentage >= 31) grade = 'AE1';
+            else if (percentage >= 21) grade = 'AE2';
+            else if (percentage >= 11) grade = 'BE1';
+            else grade = 'BE2';
+        }
+
+        // Update grade display with color coding
+        gradeDisplay.textContent = grade;
+        if (grade.startsWith('EE')) {
+            gradeDisplay.className = 'mobile-badge mobile-badge-success';
+        } else if (grade.startsWith('ME')) {
+            gradeDisplay.className = 'mobile-badge mobile-badge-info';
+        } else if (grade.startsWith('AE')) {
+            gradeDisplay.className = 'mobile-badge mobile-badge-warning';
+        } else if (grade.startsWith('BE')) {
+            gradeDisplay.className = 'mobile-badge mobile-badge-danger';
+        } else {
+            gradeDisplay.className = 'mobile-badge mobile-badge-secondary';
+        }
+    }
+
+    // Initialize percentages on page load for existing marks
+    document.addEventListener('DOMContentLoaded', function() {
+        const markInputs = document.querySelectorAll('.mark-input');
+        markInputs.forEach(input => {
+            const studentId = input.getAttribute('data-student-id');
+            if (studentId && input.value) {
+                updateMobilePercentage(studentId);
+            }
+        });
+    });
 
     function updateRegularPercentage(studentKey, mark, totalMarks) {
         const percentage = totalMarks > 0 ? Math.round((mark / totalMarks) * 100) : 0;
