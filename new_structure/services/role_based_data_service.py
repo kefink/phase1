@@ -27,8 +27,11 @@ class RoleBasedDataService:
             if not teacher:
                 return {'error': 'Teacher not found'}
             
-            # Get all assignments for this teacher
-            teacher_assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher_id).all()
+            # Get all assignments for this teacher (exclude assignments with null subjects)
+            teacher_assignments = TeacherSubjectAssignment.query.filter(
+                TeacherSubjectAssignment.teacher_id == teacher_id,
+                TeacherSubjectAssignment.subject_id.isnot(None)
+            ).all()
             
             # Initialize summary data
             summary = {
@@ -65,7 +68,9 @@ class RoleBasedDataService:
     def _get_headteacher_summary():
         """Get summary data for headteacher (all data)."""
         try:
-            all_assignments = TeacherSubjectAssignment.query.all()
+            all_assignments = TeacherSubjectAssignment.query.filter(
+                TeacherSubjectAssignment.subject_id.isnot(None)
+            ).all()
             
             class_assignments = []
             subject_assignments = []
@@ -191,7 +196,8 @@ class RoleBasedDataService:
     def _format_assignment(assignment):
         """Format assignment data for display."""
         try:
-            return {
+            # Create a formatted assignment object that includes both formatted data and original objects
+            formatted_data = {
                 'id': assignment.id,
                 'teacher_id': assignment.teacher_id,
                 'teacher_username': assignment.teacher.username if assignment.teacher else 'Unknown',
@@ -203,12 +209,22 @@ class RoleBasedDataService:
                 'stream_id': assignment.stream_id,
                 'stream_name': assignment.stream.name if assignment.stream else None,
                 'is_class_teacher': assignment.is_class_teacher,
-                'education_level': RoleBasedDataService._get_education_level(assignment.grade.name if assignment.grade else '')
+                'education_level': RoleBasedDataService._get_education_level(assignment.grade.name if assignment.grade else ''),
+                # Include original objects for template compatibility
+                'subject': assignment.subject,
+                'grade': assignment.grade,
+                'stream': assignment.stream,
+                'teacher': assignment.teacher
             }
+            return formatted_data
         except Exception as e:
             return {
                 'id': assignment.id if assignment else 0,
-                'error': f'Error formatting assignment: {str(e)}'
+                'error': f'Error formatting assignment: {str(e)}',
+                'subject': None,
+                'grade': None,
+                'stream': None,
+                'teacher': None
             }
     
     @staticmethod
