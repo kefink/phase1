@@ -260,11 +260,24 @@ def dashboard():
                         db.session.rollback()
                         print(f"Error updating component max marks: {e}")
 
-                # Extract stream letter from "Stream X" format
-                stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
+                # Handle both stream ID (from mobile) and stream name (from desktop)
+                stream_obj = None
 
-                # Get the stream object
-                stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
+                # Check if stream is a numeric ID (from mobile form)
+                if stream.isdigit():
+                    stream_id = int(stream)
+                    stream_obj = Stream.query.get(stream_id)
+
+                    # Validate that the stream belongs to the selected grade
+                    if stream_obj:
+                        grade_obj = Grade.query.filter_by(name=grade).first()
+                        if not grade_obj or stream_obj.grade_id != grade_obj.id:
+                            stream_obj = None  # Invalid stream for this grade
+                else:
+                    # Desktop format: extract stream letter from "Stream X" format
+                    stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
+                    # Get the stream object by name and grade
+                    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
 
                 if stream_obj:
                     # Get pagination parameters
@@ -294,9 +307,14 @@ def dashboard():
                         show_students = True
                         show_download_button = False
                     else:
-                        error_message = f"No students found for grade {grade} stream {stream_letter}"
+                        stream_name = stream_obj.name if stream_obj else stream
+                        error_message = f"No students found for grade {grade} stream {stream_name}"
                 else:
-                    error_message = f"Stream {stream_letter} not found for grade {grade}"
+                    if stream.isdigit():
+                        error_message = f"Stream ID {stream} not found or does not belong to grade {grade}"
+                    else:
+                        stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else stream
+                        error_message = f"Stream {stream_letter} not found for grade {grade}"
 
         # Handle submit marks request (save marks - adapted from classteacher)
         elif "submit_marks" in request.form:
