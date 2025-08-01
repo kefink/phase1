@@ -181,6 +181,112 @@
                 padding-right: 1rem;
             }
         }
+
+        /* Premium Tab Navigation Styles */
+        .premium-tab-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .premium-tab-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.25) !important;
+            color: white !important;
+            border-color: rgba(255,255,255,0.4) !important;
+        }
+
+        .premium-tab-button.active {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .premium-tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .premium-tab-button:hover::before {
+            left: 100%;
+        }
+
+        /* Tab Content Animation */
+        .tab-content-container {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Management Card Hover Effects */
+        .management-card .card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .management-card .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* Enhanced Form Styles for Tabs */
+        .tab-content-container .form-select,
+        .tab-content-container .form-control {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-content-container .form-select:focus,
+        .tab-content-container .form-control:focus {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.4);
+            color: white;
+            box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.1);
+        }
+
+        .tab-content-container .form-select option {
+            background: #2c3e50;
+            color: white;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .premium-tab-nav {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+            }
+
+            .premium-tab-button {
+                padding: 12px 15px !important;
+                font-size: 14px;
+            }
+
+            .tab-label {
+                display: none;
+            }
+
+            .tab-icon {
+                margin: 0 !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-dark text-light">
@@ -328,54 +434,661 @@
         </div>
         {% endif %}
 
-        <!-- All Reports Section -->
+        <!-- Premium Tab Navigation System -->
+        <div class="premium-tab-navigation mb-4">
+            <div class="premium-tab-nav" style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 12px;
+                max-width: 1000px;
+                margin: 0 auto;
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            ">
+                <button class="premium-tab-button active"
+                        onclick="switchMainTab('recent-reports')"
+                        data-tab="recent-reports"
+                        style="
+                            background: rgba(255,255,255,0.2);
+                            border: 1px solid rgba(255,255,255,0.3);
+                            color: white;
+                            padding: 15px 20px;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            font-weight: 500;
+                            backdrop-filter: blur(10px);
+                        ">
+                    <div class="tab-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <span class="tab-label">Recent Reports</span>
+                </button>
+
+                <button class="premium-tab-button"
+                        onclick="switchMainTab('upload-marks')"
+                        data-tab="upload-marks"
+                        style="
+                            background: rgba(255,255,255,0.1);
+                            border: 1px solid rgba(255,255,255,0.2);
+                            color: rgba(255,255,255,0.8);
+                            padding: 15px 20px;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            font-weight: 500;
+                            backdrop-filter: blur(10px);
+                        ">
+                    <div class="tab-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <span class="tab-label">Upload Marks</span>
+                </button>
+
+                <button class="premium-tab-button"
+                        onclick="switchMainTab('generate-reports')"
+                        data-tab="generate-reports"
+                        style="
+                            background: rgba(255,255,255,0.1);
+                            border: 1px solid rgba(255,255,255,0.2);
+                            color: rgba(255,255,255,0.8);
+                            padding: 15px 20px;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            font-weight: 500;
+                            backdrop-filter: blur(10px);
+                        ">
+                    <div class="tab-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <span class="tab-label">Generate Reports</span>
+                </button>
+
+                <button class="premium-tab-button"
+                        onclick="switchMainTab('subject-analytics')"
+                        data-tab="subject-analytics"
+                        style="
+                            background: rgba(255,255,255,0.1);
+                            border: 1px solid rgba(255,255,255,0.2);
+                            color: rgba(255,255,255,0.8);
+                            padding: 15px 20px;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            font-weight: 500;
+                            backdrop-filter: blur(10px);
+                        ">
+                    <div class="tab-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <span class="tab-label">Subject Analytics</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Content Containers -->
+
+        <!-- Recent Reports Tab Content -->
+        <div id="recent-reports-tab" class="tab-content-container active" style="display: block;">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Recent Reports
+                    </h3>
+                    <div class="card-actions">
+                        <button type="button" class="btn btn-outline-light btn-sm" onclick="alert('View All Reports - Coming Soon!')">
+                            <i class="fas fa-external-link-alt me-1"></i>
+                            View All
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Advanced Filter Controls -->
+                    <div class="row mb-4 p-3" style="background: rgba(255,255,255,0.1); border-radius: 10px;">
+                        <div class="col-md-3 mb-2">
+                            <label for="sort-reports" class="form-label">Sort by</label>
+                            <select id="sort-reports" class="form-select" onchange="sortReports(this.value)">
+                                <option value="date">Date (newest first)</option>
+                                <option value="grade">Grade</option>
+                                <option value="term">Term</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label for="filter-grade" class="form-label">Grade</label>
+                            <select id="filter-grade" class="form-select" onchange="filterReports()">
+                                <option value="">All Grades</option>
+                                {% for grade_obj in grades %}
+                                    <option value="{{ grade_obj.name }}">{{ grade_obj.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label for="filter-term" class="form-label">Term</label>
+                            <select id="filter-term" class="form-select" onchange="filterReports()">
+                                <option value="">All Terms</option>
+                                {% for term_obj in terms %}
+                                    <option value="{{ term_obj.name }}">{{ term_obj.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button onclick="resetFilters()" class="btn btn-outline-light w-100">
+                                <i class="fas fa-undo me-1"></i>
+                                Reset Filters
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modern Reports Table -->
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-hashtag me-1"></i> ID</th>
+                                    <th><i class="fas fa-layer-group me-1"></i> Grade</th>
+                                    <th><i class="fas fa-stream me-1"></i> Stream</th>
+                                    <th><i class="fas fa-calendar me-1"></i> Term</th>
+                                    <th><i class="fas fa-clipboard-check me-1"></i> Assessment</th>
+                                    <th><i class="fas fa-clock me-1"></i> Date</th>
+                                    <th><i class="fas fa-cogs me-1"></i> Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-table-body">
+                                {% if recent_reports %}
+                                    {% for report in recent_reports %}
+                                    <tr>
+                                        <td><strong>{{ report.id }}</strong></td>
+                                        <td><span class="badge bg-info">{{ report.grade }}</span></td>
+                                        <td><span class="badge bg-success">{{ report.stream }}</span></td>
+                                        <td>{{ report.term.replace('_', ' ').title() }}</td>
+                                        <td>{{ report.assessment_type }}</td>
+                                        <td>{{ report.created_at.strftime('%Y-%m-%d') if report.created_at else 'N/A' }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="viewReport({{ report.id }})">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-outline-success btn-sm" onclick="downloadReport({{ report.id }})">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                                <button class="btn btn-outline-danger btn-sm" onclick="deleteReport({{ report.id }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                                            <p class="text-muted">No recent reports found. Generate your first report!</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Marks Tab Content -->
+        <div id="upload-marks-tab" class="tab-content-container" style="display: none;">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-upload me-2"></i>
+                        Upload Class Marks
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Sub-tabs for Manual Entry vs Bulk Upload -->
+                    <div class="nav nav-pills mb-4" style="background: rgba(255,255,255,0.1); padding: 5px; border-radius: 10px;">
+                        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#manual-entry" type="button" style="color: white; border-radius: 8px;">
+                            <i class="fas fa-keyboard me-2"></i>
+                            Manual Entry
+                        </button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#bulk-upload" type="button" style="color: rgba(255,255,255,0.7); border-radius: 8px;">
+                            <i class="fas fa-file-upload me-2"></i>
+                            Bulk Upload
+                        </button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- Manual Entry Tab -->
+                        <div class="tab-pane fade show active" id="manual-entry">
+                            <form method="POST" class="needs-validation" novalidate>
+                                {{ csrf_token() }}
+
+                                <div class="row mb-4">
+                                    <div class="col-md-3 mb-3">
+                                        <label for="manual_education_level" class="form-label">Education Level</label>
+                                        <select class="form-select" id="manual_education_level" name="education_level" required>
+                                            <option value="">Select Education Level</option>
+                                            <option value="lower_primary">Lower Primary</option>
+                                            <option value="upper_primary">Upper Primary</option>
+                                            <option value="junior_secondary">Junior Secondary</option>
+                                            <option value="senior_secondary">Senior Secondary</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label for="manual_grade" class="form-label">Grade</label>
+                                        <select class="form-select" id="manual_grade" name="grade" required>
+                                            <option value="">Select Grade</option>
+                                            {% for grade_obj in grades %}
+                                                <option value="{{ grade_obj.name }}" data-education-level="{{ grade_obj.education_level }}">
+                                                    {{ grade_obj.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label for="manual_stream" class="form-label">Stream</label>
+                                        <select class="form-select" id="manual_stream" name="stream" required>
+                                            <option value="">Select Stream</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label for="manual_subject" class="form-label">Subject</label>
+                                        <select class="form-select" id="manual_subject" name="subject" required>
+                                            <option value="">Select Subject</option>
+                                            {% for subject_id, subject_info in subjects_by_education_level.items() %}
+                                                {% for subject in subject_info %}
+                                                    <option value="{{ subject.id }}" data-education-level="{{ subject.education_level }}">
+                                                        {{ subject.name }}
+                                                    </option>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="manual_term" class="form-label">Term</label>
+                                        <select class="form-select" id="manual_term" name="term" required>
+                                            <option value="">Select Term</option>
+                                            {% for term_obj in terms %}
+                                                <option value="{{ term_obj.name }}">{{ term_obj.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="manual_assessment" class="form-label">Assessment Type</label>
+                                        <select class="form-select" id="manual_assessment" name="assessment_type" required>
+                                            <option value="">Select Assessment Type</option>
+                                            {% for assessment_obj in assessment_types %}
+                                                <option value="{{ assessment_obj.name }}">{{ assessment_obj.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" name="show_students" class="btn btn-success btn-lg">
+                                        <i class="fas fa-users me-2"></i>
+                                        Load Students for Mark Entry
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Bulk Upload Tab -->
+                        <div class="tab-pane fade" id="bulk-upload">
+                            <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                                {{ csrf_token() }}
+
+                                <div class="row mb-4">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="bulk_grade" class="form-label">Grade</label>
+                                        <select class="form-select" id="bulk_grade" name="grade" required>
+                                            <option value="">Select Grade</option>
+                                            {% for grade_obj in grades %}
+                                                <option value="{{ grade_obj.name }}" data-education-level="{{ grade_obj.education_level }}">
+                                                    {{ grade_obj.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="bulk_stream" class="form-label">Stream</label>
+                                        <select class="form-select" id="bulk_stream" name="stream" required>
+                                            <option value="">Select Stream</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="bulk_term" class="form-label">Term</label>
+                                        <select class="form-select" id="bulk_term" name="term" required>
+                                            <option value="">Select Term</option>
+                                            {% for term_obj in terms %}
+                                                <option value="{{ term_obj.name }}">{{ term_obj.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="bulk_assessment" class="form-label">Assessment Type</label>
+                                        <select class="form-select" id="bulk_assessment" name="assessment_type" required>
+                                            <option value="">Select Assessment Type</option>
+                                            {% for assessment_obj in assessment_types %}
+                                                <option value="{{ assessment_obj.name }}">{{ assessment_obj.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="marks_file" class="form-label">Upload File</label>
+                                        <input type="file" class="form-control" id="marks_file" name="marks_file"
+                                               accept=".xlsx,.xls,.csv" required>
+                                        <div class="form-text">Supported formats: Excel (.xlsx, .xls) and CSV (.csv)</div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" name="bulk_upload_marks" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-cloud-upload-alt me-2"></i>
+                                        Upload Marks File
+                                    </button>
+                                </div>
+                            </form>
+
+                            <hr class="my-4">
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-download me-2"></i>Download Templates</h6>
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="alert('Template download coming soon!')">
+                                            <i class="fas fa-file-excel me-1"></i>
+                                            Marks Template
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info btn-sm" onclick="alert('Template download coming soon!')">
+                                            <i class="fas fa-users me-1"></i>
+                                            Students Template
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Upload Instructions</h6>
+                                    <ul class="list-unstyled small">
+                                        <li><i class="fas fa-check text-success me-1"></i>Use the provided templates</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>Ensure student names match exactly</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>Include all required columns</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>Save as Excel or CSV format</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Reports Tab Content -->
+        <div id="generate-reports-tab" class="tab-content-container" style="display: none;">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Generate Reports
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Class Report Card -->
+                        <div class="col-lg-4 mb-3">
+                            <div class="card bg-success h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-alt fa-3x mb-3"></i>
+                                    <h5>Class Report</h5>
+                                    <p class="card-text">Generate comprehensive class performance reports</p>
+                                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#reportModal">
+                                        <i class="fas fa-file-alt me-1"></i>
+                                        Generate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Individual Report Card -->
+                        <div class="col-lg-4 mb-3">
+                            <div class="card bg-info h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user-graduate fa-3x mb-3"></i>
+                                    <h5>Individual Reports</h5>
+                                    <p class="card-text">Generate individual student performance reports</p>
+                                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#studentReportModal">
+                                        <i class="fas fa-user-graduate me-1"></i>
+                                        Generate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Marksheet Card -->
+                        <div class="col-lg-4 mb-3">
+                            <div class="card bg-warning h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-table fa-3x mb-3"></i>
+                                    <h5>Marksheet</h5>
+                                    <p class="card-text">Generate and print class marksheets</p>
+                                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#marksheetModal">
+                                        <i class="fas fa-table me-1"></i>
+                                        Generate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject Analytics Tab Content -->
+        <div id="subject-analytics-tab" class="tab-content-container" style="display: none;">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Subject Analytics
+                    </h3>
+                    <p class="mb-0 text-muted">Comprehensive analytics for all subjects you teach</p>
+                </div>
+                <div class="card-body">
+                    <!-- Analytics Controls -->
+                    <div class="row mb-4 p-3" style="background: rgba(255,255,255,0.1); border-radius: 10px;">
+                        <div class="col-md-6 mb-3">
+                            <label for="subject-analytics-filter" class="form-label">
+                                <i class="fas fa-filter me-1"></i> Filter by Subject:
+                            </label>
+                            <select id="subject-analytics-filter" class="form-select" onchange="loadSubjectAnalytics()">
+                                <option value="">All My Subjects</option>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button onclick="refreshAnalytics()" class="btn btn-outline-light">
+                                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                                </button>
+                                <button onclick="alert('Upload marks feature coming soon!')" class="btn btn-primary">
+                                    <i class="fas fa-upload me-1"></i> Upload Marks
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Content -->
+                    <div id="subject-analytics-content">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-success mb-3" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h5>Loading Subject Analytics</h5>
+                            <p class="text-muted">Analyzing performance data for your subjects...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Management Hub Section -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title mb-0">
-                            <i class="fas fa-archive me-2"></i>
-                            All Reports
+                            <i class="fas fa-cogs me-2"></i>
+                            Management Hub
                         </h3>
+                        <div class="card-actions">
+                            <span class="badge bg-info">{{ (total_students or 0) + (total_teachers or 0) + (total_subjects or 0) }} Items</span>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-lg-4 mb-3">
-                                <div class="card bg-secondary">
+                        <!-- Management Filters -->
+                        <div class="management-filters mb-4">
+                            <div class="nav nav-pills mb-3" style="background: rgba(255,255,255,0.1); padding: 5px; border-radius: 10px;">
+                                <button class="nav-link active" data-filter="all" onclick="filterManagement('all')" style="color: white; border-radius: 8px;">All</button>
+                                <button class="nav-link" data-filter="core" onclick="filterManagement('core')" style="color: rgba(255,255,255,0.7); border-radius: 8px;">Core</button>
+                                <button class="nav-link" data-filter="assignments" onclick="filterManagement('assignments')" style="color: rgba(255,255,255,0.7); border-radius: 8px;">Assignments</button>
+                                <button class="nav-link" data-filter="structure" onclick="filterManagement('structure')" style="color: rgba(255,255,255,0.7); border-radius: 8px;">Structure</button>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="management-search" placeholder="Search management options..." class="form-control" onkeyup="searchManagement()">
+                            </div>
+                        </div>
+
+                        <!-- Management Cards Grid -->
+                        <div class="row" id="management-cards">
+                            <!-- Core Management Cards -->
+                            <div class="col-lg-4 mb-3 management-card" data-category="core">
+                                <div class="card bg-primary h-100">
                                     <div class="card-body text-center">
-                                        <i class="fas fa-file-alt fa-3x mb-3"></i>
-                                        <h5>Class Reports</h5>
-                                        <p class="card-text">View all generated class reports</p>
+                                        <div class="premium-indicator mb-2">
+                                            <span class="badge bg-light text-dark">Core</span>
+                                        </div>
+                                        <i class="fas fa-users fa-3x mb-3"></i>
+                                        <h5>Manage Students</h5>
+                                        <p class="card-text">Add, edit, and organize student records with advanced filtering</p>
                                         <button type="button" class="btn btn-light" onclick="alert('Feature coming soon!')">
-                                            <i class="fas fa-eye me-1"></i>
-                                            View Reports
+                                            <i class="fas fa-users me-1"></i>
+                                            Manage
                                         </button>
+                                        <div class="badge bg-success mt-2">{{ total_students or 0 }} Students</div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-4 mb-3">
-                                <div class="card bg-info">
+
+                            <div class="col-lg-4 mb-3 management-card" data-category="core">
+                                <div class="card bg-success h-100">
                                     <div class="card-body text-center">
-                                        <i class="fas fa-user-graduate fa-3x mb-3"></i>
-                                        <h5>Individual Reports</h5>
-                                        <p class="card-text">View all individual student reports</p>
+                                        <div class="premium-indicator mb-2">
+                                            <span class="badge bg-light text-dark">Core</span>
+                                        </div>
+                                        <i class="fas fa-book fa-3x mb-3"></i>
+                                        <h5>Manage Subjects</h5>
+                                        <p class="card-text">Configure subjects and curriculum with smart organization</p>
                                         <button type="button" class="btn btn-light" onclick="alert('Feature coming soon!')">
-                                            <i class="fas fa-eye me-1"></i>
-                                            View Reports
+                                            <i class="fas fa-book me-1"></i>
+                                            Manage
                                         </button>
+                                        <div class="badge bg-warning mt-2">{{ total_subjects or 0 }} Subjects</div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-4 mb-3">
-                                <div class="card bg-warning">
+
+                            <div class="col-lg-4 mb-3 management-card" data-category="core">
+                                <div class="card bg-info h-100">
                                     <div class="card-body text-center">
-                                        <i class="fas fa-table fa-3x mb-3"></i>
-                                        <h5>Marksheets</h5>
-                                        <p class="card-text">View all generated marksheets</p>
+                                        <div class="premium-indicator mb-2">
+                                            <span class="badge bg-light text-dark">Hub</span>
+                                        </div>
+                                        <i class="fas fa-chalkboard-teacher fa-3x mb-3"></i>
+                                        <h5>Teacher Hub</h5>
+                                        <p class="card-text">Comprehensive teacher and assignment management center</p>
                                         <button type="button" class="btn btn-light" onclick="alert('Feature coming soon!')">
-                                            <i class="fas fa-eye me-1"></i>
-                                            View Reports
+                                            <i class="fas fa-chalkboard-teacher me-1"></i>
+                                            Manage
                                         </button>
+                                        <div class="badge bg-info mt-2">{{ total_teachers or 0 }} Teachers</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Structure Management Cards -->
+                            <div class="col-lg-4 mb-3 management-card" data-category="structure">
+                                <div class="card bg-warning h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-layer-group fa-3x mb-3"></i>
+                                        <h5>Grades & Streams</h5>
+                                        <p class="card-text">Configure grade levels and class streams</p>
+                                        <button type="button" class="btn btn-light" onclick="alert('Feature coming soon!')">
+                                            <i class="fas fa-layer-group me-1"></i>
+                                            Manage
+                                        </button>
+                                        <div class="badge bg-info mt-2">{{ total_grades or 0 }} Grades</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 mb-3 management-card" data-category="structure">
+                                <div class="card bg-secondary h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                                        <h5>Terms & Assessments</h5>
+                                        <p class="card-text">Manage academic terms and assessment types</p>
+                                        <button type="button" class="btn btn-light" onclick="alert('Feature coming soon!')">
+                                            <i class="fas fa-calendar-alt me-1"></i>
+                                            Manage
+                                        </button>
+                                        <div class="badge bg-warning mt-2">Academic Setup</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Assignments Management Cards -->
+                            <div class="col-lg-4 mb-3 management-card" data-category="assignments">
+                                <div class="card bg-danger h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-tie fa-3x mb-3"></i>
+                                        <h5>Staff Management</h5>
+                                        <p class="card-text">Manage school staff, assignments, and professional profiles</p>
+                                        <button type="button" class="btn btn-light" onclick="alert('Feature coming soon!')">
+                                            <i class="fas fa-user-tie me-1"></i>
+                                            Manage
+                                        </button>
+                                        <div class="badge bg-success mt-2">
+                                            <i class="fas fa-shield-alt me-1"></i> Enhanced
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -429,8 +1142,8 @@
             </div>
         </div>
 
-        <!-- Main Action Cards -->
-        <div class="row mb-4">
+        <!-- Main Action Cards (Hidden - Replaced by Tab System) -->
+        <div class="row mb-4" style="display: none;">
             <!-- Upload Marks Card -->
             <div class="col-lg-6 mb-3">
                 <div class="card h-100">
@@ -1181,6 +1894,234 @@
         }
 
         setupGradeFiltering();
+
+        // Setup stream loading for new tab forms
+        setupStreamLoading('manual_grade', 'manual_stream');
+        setupStreamLoading('bulk_grade', 'bulk_stream');
+
+        // Tab Switching System
+        function switchMainTab(tabId) {
+            console.log(`Switching to tab: ${tabId}`);
+
+            // Hide all tab content containers
+            document.querySelectorAll('.tab-content-container').forEach(function(tab) {
+                tab.style.display = 'none';
+                tab.classList.remove('active');
+            });
+
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.premium-tab-button').forEach(function(button) {
+                button.classList.remove('active');
+                button.style.background = 'rgba(255,255,255,0.1)';
+                button.style.color = 'rgba(255,255,255,0.8)';
+                button.style.border = '1px solid rgba(255,255,255,0.2)';
+            });
+
+            // Show selected tab content
+            const targetTab = document.getElementById(tabId + '-tab');
+            if (targetTab) {
+                targetTab.style.display = 'block';
+                targetTab.classList.add('active');
+                console.log(`Successfully activated tab: ${tabId}`);
+            }
+
+            // Activate selected tab button
+            const selectedButton = document.querySelector(`[data-tab="${tabId}"]`);
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+                selectedButton.style.background = 'rgba(255,255,255,0.2)';
+                selectedButton.style.color = 'white';
+                selectedButton.style.border = '1px solid rgba(255,255,255,0.3)';
+            }
+
+            // Store active tab in sessionStorage
+            sessionStorage.setItem('activeTab', tabId);
+
+            // Load specific content for certain tabs
+            if (tabId === 'subject-analytics') {
+                loadSubjectAnalytics();
+            }
+        }
+
+        // Management Hub Filtering
+        function filterManagement(category) {
+            const cards = document.querySelectorAll('.management-card');
+            const buttons = document.querySelectorAll('[data-filter]');
+
+            // Update button states
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.color = 'rgba(255,255,255,0.7)';
+            });
+
+            const activeButton = document.querySelector(`[data-filter="${category}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+                activeButton.style.color = 'white';
+            }
+
+            // Filter cards
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Management Search
+        function searchManagement() {
+            const searchTerm = document.getElementById('management-search').value.toLowerCase();
+            const cards = document.querySelectorAll('.management-card');
+
+            cards.forEach(card => {
+                const title = card.querySelector('h5').textContent.toLowerCase();
+                const description = card.querySelector('.card-text').textContent.toLowerCase();
+
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Reports Filtering and Sorting
+        function sortReports(sortBy) {
+            const tbody = document.getElementById('reports-table-body');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                let aValue, bValue;
+
+                switch(sortBy) {
+                    case 'date':
+                        aValue = a.cells[5].textContent;
+                        bValue = b.cells[5].textContent;
+                        return new Date(bValue) - new Date(aValue); // Newest first
+                    case 'grade':
+                        aValue = a.cells[1].textContent;
+                        bValue = b.cells[1].textContent;
+                        return aValue.localeCompare(bValue);
+                    case 'term':
+                        aValue = a.cells[3].textContent;
+                        bValue = b.cells[3].textContent;
+                        return aValue.localeCompare(bValue);
+                    default:
+                        return 0;
+                }
+            });
+
+            // Clear and re-append sorted rows
+            tbody.innerHTML = '';
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function filterReports() {
+            const gradeFilter = document.getElementById('filter-grade').value;
+            const termFilter = document.getElementById('filter-term').value;
+            const rows = document.querySelectorAll('#reports-table-body tr');
+
+            rows.forEach(row => {
+                const grade = row.cells[1]?.textContent || '';
+                const term = row.cells[3]?.textContent || '';
+
+                const gradeMatch = !gradeFilter || grade.includes(gradeFilter);
+                const termMatch = !termFilter || term.includes(termFilter);
+
+                if (gradeMatch && termMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('sort-reports').value = 'date';
+            document.getElementById('filter-grade').value = '';
+            document.getElementById('filter-term').value = '';
+
+            // Show all rows
+            document.querySelectorAll('#reports-table-body tr').forEach(row => {
+                row.style.display = '';
+            });
+
+            // Re-sort by date
+            sortReports('date');
+        }
+
+        // Subject Analytics Functions
+        function loadSubjectAnalytics() {
+            const content = document.getElementById('subject-analytics-content');
+            const subjectId = document.getElementById('subject-analytics-filter').value;
+
+            // Show loading state
+            content.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-success mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5>Loading Subject Analytics</h5>
+                    <p class="text-muted">Analyzing performance data for your subjects...</p>
+                </div>
+            `;
+
+            // Simulate loading (replace with actual API call)
+            setTimeout(() => {
+                content.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card bg-primary">
+                                <div class="card-body text-center">
+                                    <h3>85%</h3>
+                                    <p>Average Performance</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card bg-success">
+                                <div class="card-body text-center">
+                                    <h3>42</h3>
+                                    <p>Students Assessed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Analytics data will be populated when you have uploaded marks for your subjects.
+                    </div>
+                `;
+            }, 1500);
+        }
+
+        function refreshAnalytics() {
+            loadSubjectAnalytics();
+        }
+
+        // Report Action Functions
+        function viewReport(reportId) {
+            alert(`Viewing report ${reportId} - Feature coming soon!`);
+        }
+
+        function downloadReport(reportId) {
+            alert(`Downloading report ${reportId} - Feature coming soon!`);
+        }
+
+        function deleteReport(reportId) {
+            if (confirm(`Are you sure you want to delete report ${reportId}?`)) {
+                alert(`Deleting report ${reportId} - Feature coming soon!`);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Restore active tab from sessionStorage
+            const activeTab = sessionStorage.getItem('activeTab') || 'recent-reports';
+            switchMainTab(activeTab);
+        });
 
         // Form submission handlers
         document.addEventListener('DOMContentLoaded', function() {
