@@ -545,6 +545,52 @@
             background: rgba(255,255,255,0.1);
         }
 
+        /* Validation Error and Confirmation Dialog Animations */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .validation-error-message {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .confirmation-dialog {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Performance Level Colors */
+        .performance-ee .percentage-fill {
+            background-color: #28a745 !important;
+        }
+
+        .performance-me .percentage-fill {
+            background-color: #17a2b8 !important;
+        }
+
+        .performance-ae .percentage-fill {
+            background-color: #ffc107 !important;
+        }
+
+        .performance-be .percentage-fill {
+            background-color: #dc3545 !important;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .premium-tab-nav {
@@ -2756,7 +2802,324 @@
             alert(`Email report feature coming soon!\nReport: ${grade} ${stream} - ${term} ${assessmentType}`);
         }
 
-        // Function to check stream status for grade marksheet
+        // Advanced Form Validation Functions
+        function showValidationError(message) {
+            // Remove any existing error messages
+            const existingError = document.querySelector('.validation-error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Create error message element
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'validation-error-message';
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #dc3545;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 300px;
+                font-family: Arial, sans-serif;
+                animation: slideInRight 0.3s ease-out;
+            `;
+
+            errorDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 18px;"></i>
+                    <div>
+                        <strong>Validation Error</strong>
+                        <p style="margin: 5px 0 0 0; font-size: 14px;">${message}</p>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(errorDiv);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv && errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function showConfirmationDialog(message, onConfirm) {
+            // Remove any existing confirmation dialog
+            const existingDialog = document.querySelector('.confirmation-dialog');
+            if (existingDialog) {
+                existingDialog.remove();
+            }
+
+            // Create confirmation dialog
+            const dialogDiv = document.createElement('div');
+            dialogDiv.className = 'confirmation-dialog';
+            dialogDiv.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10001;
+                animation: fadeIn 0.3s ease-out;
+            `;
+
+            dialogDiv.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    max-width: 400px;
+                    width: 90%;
+                    text-align: center;
+                ">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                        <i class="fas fa-question-circle" style="color: #ffc107; font-size: 24px;"></i>
+                        <h3 style="margin: 0; color: #333;">Confirm Submission</h3>
+                    </div>
+                    <p style="margin-bottom: 25px; color: #666; line-height: 1.5;">${message}</p>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button onclick="closeConfirmationDialog()" style="
+                            padding: 10px 20px;
+                            border: 1px solid #ddd;
+                            background: white;
+                            color: #666;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">Cancel</button>
+                        <button onclick="confirmSubmission()" style="
+                            padding: 10px 20px;
+                            border: none;
+                            background: #007bff;
+                            color: white;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">Confirm</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(dialogDiv);
+
+            // Store the callback function
+            window.confirmationCallback = onConfirm;
+        }
+
+        function closeConfirmationDialog() {
+            const dialog = document.querySelector('.confirmation-dialog');
+            if (dialog) {
+                dialog.remove();
+            }
+            window.confirmationCallback = null;
+        }
+
+        function confirmSubmission() {
+            closeConfirmationDialog();
+            if (window.confirmationCallback) {
+                window.confirmationCallback();
+            }
+        }
+
+        // Advanced Grade and Subject Management Functions
+        window.originalGradeOptions = {};
+
+        function storeOriginalGradeOptions() {
+            // Store options for the main form
+            const gradeSelect = document.getElementById('grade');
+            if (gradeSelect) {
+                window.originalGradeOptions['grade'] = Array.from(gradeSelect.options).map(opt => ({
+                    value: opt.value,
+                    textContent: opt.textContent,
+                    dataset: opt.dataset
+                }));
+            }
+
+            // Store options for manual entry form
+            const manualGradeSelect = document.getElementById('manual_grade');
+            if (manualGradeSelect) {
+                window.originalGradeOptions['manual_grade'] = Array.from(manualGradeSelect.options).map(opt => ({
+                    value: opt.value,
+                    textContent: opt.textContent,
+                    dataset: opt.dataset
+                }));
+            }
+
+            // Store options for bulk upload form
+            const bulkGradeSelect = document.getElementById('bulk_grade');
+            if (bulkGradeSelect) {
+                window.originalGradeOptions['bulk_grade'] = Array.from(bulkGradeSelect.options).map(opt => ({
+                    value: opt.value,
+                    textContent: opt.textContent,
+                    dataset: opt.dataset
+                }));
+            }
+        }
+
+        function restoreOriginalGradeOptions(gradeSelect) {
+            if (!window.originalGradeOptions || !window.originalGradeOptions[gradeSelect.id]) {
+                console.error("Cannot restore original options - none stored for", gradeSelect.id);
+                return;
+            }
+
+            // Clear current options
+            gradeSelect.innerHTML = '';
+
+            // Add back all original options
+            window.originalGradeOptions[gradeSelect.id].forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt.value;
+                option.textContent = opt.textContent;
+                if (opt.dataset) {
+                    Object.keys(opt.dataset).forEach(key => {
+                        option.dataset[key] = opt.dataset[key];
+                    });
+                }
+                gradeSelect.appendChild(option);
+            });
+        }
+
+        function filterGradesByEducationLevel(educationLevel, gradeSelect) {
+            console.log("Filtering grades for education level:", educationLevel);
+
+            // Define the mapping between education levels and grades (Kenya CBC Structure)
+            const educationLevelGradeMapping = {
+                'pre_primary': ['PP1', 'PP2'],
+                'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
+                'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
+                'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9'],
+                'senior_secondary': ['Grade 10', 'Grade 11', 'Grade 12']
+            };
+
+            const allowedGrades = educationLevelGradeMapping[educationLevel] || [];
+
+            // Clear current options
+            gradeSelect.innerHTML = '<option value="">Select Grade</option>';
+
+            // Add only the grades that match the education level
+            if (window.originalGradeOptions && window.originalGradeOptions[gradeSelect.id]) {
+                window.originalGradeOptions[gradeSelect.id].forEach(opt => {
+                    if (opt.value === '' || allowedGrades.includes(opt.value)) {
+                        const option = document.createElement('option');
+                        option.value = opt.value;
+                        option.textContent = opt.textContent;
+                        if (opt.dataset) {
+                            Object.keys(opt.dataset).forEach(key => {
+                                option.dataset[key] = opt.dataset[key];
+                            });
+                        }
+                        gradeSelect.appendChild(option);
+                    }
+                });
+            }
+
+            console.log(`Filtered to ${allowedGrades.length} grades for ${educationLevel}`);
+        }
+
+        function addSelectedSubjectsToForm() {
+            const form = document.getElementById('marksForm');
+            if (!form) {
+                console.error('Form not found!');
+                return false;
+            }
+
+            const selectedSubjects = [];
+
+            // Get all checked subject checkboxes
+            const checkboxes = document.querySelectorAll('.subject-checkbox:checked');
+            checkboxes.forEach(checkbox => {
+                if (checkbox.dataset.subjectId) {
+                    selectedSubjects.push(checkbox.dataset.subjectId);
+                }
+            });
+
+            // Remove existing selected_subjects inputs
+            const existingInputs = form.querySelectorAll('input[name="selected_subjects"]');
+            existingInputs.forEach(input => input.remove());
+
+            // Add new selected_subjects inputs
+            selectedSubjects.forEach(subjectId => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'selected_subjects';
+                input.value = subjectId;
+                form.appendChild(input);
+            });
+
+            console.log(`Added ${selectedSubjects.length} selected subjects to form:`, selectedSubjects);
+            return selectedSubjects.length > 0;
+        }
+
+        function initializeSelectedSubjects() {
+            // Add selected subjects to form on page load
+            addSelectedSubjectsToForm();
+
+            // Add event listeners to checkboxes to update selected subjects when changed
+            const checkboxes = document.querySelectorAll('.subject-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    addSelectedSubjectsToForm();
+                });
+            });
+        }
+
+        function validateMarksForm() {
+            console.log('=== FORM VALIDATION STARTED ===');
+
+            // Ensure selected subjects are added to form
+            const hasSelectedSubjects = addSelectedSubjectsToForm();
+
+            if (!hasSelectedSubjects) {
+                console.log('No subjects selected - showing error message');
+                showValidationError('Please select at least one subject before submitting marks.');
+                return false;
+            }
+
+            // Check if any marks have been entered
+            const markInputs = document.querySelectorAll('.student-mark, .component-mark');
+            let hasMarks = false;
+
+            markInputs.forEach(input => {
+                if (input.value && parseInt(input.value) > 0) {
+                    hasMarks = true;
+                }
+            });
+
+            if (!hasMarks) {
+                console.log('No marks entered - showing confirmation dialog');
+                showConfirmationDialog(
+                    'No marks have been entered. Are you sure you want to submit an empty marksheet?',
+                    function() {
+                        console.log('User confirmed empty submission');
+                        submitMarksForm();
+                    }
+                );
+                return false;
+            }
+
+            console.log('Form validation passed, submitting...');
+            return true;
+        }
+
+        function submitMarksForm() {
+            console.log('Submitting marks form programmatically...');
+            const form = document.getElementById('marksForm');
+            if (form) {
+                form.submit();
+            }
+        }
+
+        // Function to check stream status for grade marksheet (REAL API INTEGRATION)
         function checkStreamStatus() {
             const grade = document.getElementById('stream_grade').value;
             const term = document.getElementById('stream_term').value;
@@ -2775,20 +3138,25 @@
                 // Add loading indicator
                 statusList.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Checking stream status...</p></div>';
 
-                // Simulate API call (replace with actual endpoint when available)
-                setTimeout(() => {
-                    // Mock data - replace with actual API call
-                    const mockStreams = [
-                        { name: 'A', has_report: true },
-                        { name: 'B', has_report: false },
-                        { name: 'C', has_report: true }
-                    ];
-
+                // Real API call to check stream status
+                fetch(`/classteacher/api/check_stream_status/${encodeURIComponent(grade)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`, {
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
                     statusList.innerHTML = '';
                     let allStreamsReady = true;
 
-                    if (mockStreams && mockStreams.length > 0) {
-                        mockStreams.forEach(stream => {
+                    if (data.success && data.streams && data.streams.length > 0) {
+                        data.streams.forEach(stream => {
                             const statusItem = document.createElement('div');
                             statusItem.className = 'stream-status-item d-flex align-items-center mb-2 p-2';
                             statusItem.style.background = 'rgba(255,255,255,0.05)';
@@ -2835,24 +3203,13 @@
                         previewBtn.disabled = true;
                         downloadBtn.disabled = true;
                     }
-                }, 1000);
-
-                /*
-                // Actual API call - uncomment when backend is ready
-                fetch(`/classteacher/api/check_stream_status/${grade}/${term}/${assessmentType}`, {
-                    credentials: 'same-origin'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Handle actual API response
                 })
                 .catch(error => {
                     console.error('Error checking stream status:', error);
-                    statusList.innerHTML = '<div class="alert alert-danger">Error checking stream status. Please try again.</div>';
+                    statusList.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>Error checking stream status. Please try again.</div>';
                     previewBtn.disabled = true;
                     downloadBtn.disabled = true;
                 });
-                */
             } else {
                 statusContainer.style.display = 'none';
                 previewBtn.disabled = true;
@@ -3062,8 +3419,314 @@
             }
         }
 
+        // Bulk Upload Functions
+        function updateBulkGrades() {
+            const educationLevel = document.getElementById('bulk_education_level')?.value;
+            const gradeSelect = document.getElementById('bulk_grade');
+
+            if (!gradeSelect) return;
+
+            if (educationLevel) {
+                // Filter grades based on education level
+                filterGradesByEducationLevel(educationLevel, gradeSelect);
+
+                // Clear the stream dropdown since grade has changed
+                const streamSelect = document.getElementById('bulk_stream');
+                if (streamSelect) {
+                    streamSelect.innerHTML = '<option value="">Select Stream</option>';
+                }
+
+                console.log("Updated bulk form grades for education level:", educationLevel);
+            } else {
+                // If no education level is selected, restore all grade options
+                if (window.originalGradeOptions && window.originalGradeOptions['bulk_grade']) {
+                    restoreOriginalGradeOptions(gradeSelect);
+                }
+            }
+        }
+
+        function fetchBulkStreams() {
+            const grade = document.getElementById('bulk_grade')?.value;
+            const streamSelect = document.getElementById('bulk_stream');
+
+            if (!streamSelect || !grade) return;
+
+            console.log('fetchBulkStreams called with grade:', grade);
+
+            // Clear existing options and add loading indicator
+            streamSelect.innerHTML = '<option value="">Loading streams...</option>';
+            streamSelect.disabled = true;
+
+            // Real API call to fetch streams
+            fetch(`/classteacher/api/streams/${encodeURIComponent(grade)}`, {
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Clear loading indicator
+                streamSelect.innerHTML = '<option value="">Select Stream</option>';
+                streamSelect.disabled = false;
+
+                if (data.streams && data.streams.length > 0) {
+                    data.streams.forEach(streamName => {
+                        const option = document.createElement('option');
+                        // Handle both "Stream A" and "A" formats
+                        const cleanStreamName = streamName.replace('Stream ', '');
+                        option.value = cleanStreamName;
+                        option.textContent = streamName;
+                        streamSelect.appendChild(option);
+                    });
+                    console.log(`Loaded ${data.streams.length} streams for grade ${grade}`);
+                } else {
+                    streamSelect.innerHTML = '<option value="">No streams available</option>';
+                    console.log(`No streams found for grade ${grade}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching streams:', error);
+                streamSelect.innerHTML = '<option value="">Error loading streams</option>';
+                streamSelect.disabled = false;
+
+                // Show user-friendly error message
+                showValidationError('Failed to load streams. Please try again.');
+            });
+        }
+
+        function updateBulkPercentage(inputElement, studentSubjectId) {
+            const totalMarksInput = document.getElementsByName('total_marks')[0];
+            if (!totalMarksInput) return;
+
+            const totalMarks = parseInt(totalMarksInput.value) || 100;
+            const mark = parseInt(inputElement.value) || 0;
+
+            // Calculate percentage and ensure it doesn't exceed 100%
+            let percentage = (mark / totalMarks) * 100;
+            if (percentage > 100) {
+                percentage = 100;
+                inputElement.value = totalMarks; // Cap the mark at total marks
+            }
+
+            // Update percentage display
+            const percentageElement = document.getElementById(`percentage_${studentSubjectId}`);
+            if (percentageElement) {
+                percentageElement.textContent = `${Math.round(percentage)}%`;
+
+                // Update color based on performance
+                percentageElement.className = 'badge';
+                if (percentage >= 80) {
+                    percentageElement.classList.add('bg-success');
+                } else if (percentage >= 60) {
+                    percentageElement.classList.add('bg-warning');
+                } else if (percentage >= 40) {
+                    percentageElement.classList.add('bg-info');
+                } else {
+                    percentageElement.classList.add('bg-danger');
+                }
+            }
+
+            // Update visual indicator
+            updatePerformanceIndicator(percentageElement, percentage);
+        }
+
+        function updatePerformanceIndicator(percentageCell, percentage) {
+            if (!percentageCell) return;
+
+            // Remove existing performance classes
+            percentageCell.classList.remove('performance-ee', 'performance-me', 'performance-ae', 'performance-be');
+
+            // Add appropriate performance class
+            if (percentage >= 80) {
+                percentageCell.classList.add('performance-ee');
+            } else if (percentage >= 60) {
+                percentageCell.classList.add('performance-me');
+            } else if (percentage >= 40) {
+                percentageCell.classList.add('performance-ae');
+            } else {
+                percentageCell.classList.add('performance-be');
+            }
+        }
+
+        // Function to fetch subjects by education level (REAL API INTEGRATION)
+        function fetchSubjectsForEducationLevel(educationLevel) {
+            if (!educationLevel) return;
+
+            console.log('Fetching subjects for education level:', educationLevel);
+
+            // Real API call to fetch subjects
+            fetch(`/classteacher/get_subjects_by_education_level/${encodeURIComponent(educationLevel)}`, {
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.subjects) {
+                    console.log(`Loaded ${data.subjects.length} subjects for ${educationLevel}`);
+
+                    // Update subject selection UI if it exists
+                    updateSubjectSelectionUI(data.subjects);
+
+                    // Trigger any dependent updates
+                    if (window.subjectUpdateCallback) {
+                        window.subjectUpdateCallback(data.subjects);
+                    }
+                } else {
+                    console.log(`No subjects found for ${educationLevel}`);
+                    showValidationError(`No subjects found for ${educationLevel}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching subjects:', error);
+                showValidationError('Failed to load subjects. Please try again.');
+            });
+        }
+
+        function updateSubjectSelectionUI(subjects) {
+            // Update subject checkboxes if they exist
+            const subjectContainer = document.querySelector('.selected-subjects-display');
+            if (!subjectContainer) return;
+
+            // Clear existing subjects
+            subjectContainer.innerHTML = '';
+
+            // Add new subjects
+            subjects.forEach((subject, index) => {
+                const subjectItem = document.createElement('div');
+                subjectItem.className = 'subject-checkbox-item';
+
+                subjectItem.innerHTML = `
+                    <input type="checkbox"
+                           id="subject_${subject.id}"
+                           class="subject-checkbox"
+                           data-subject-id="${subject.id}"
+                           checked>
+                    <label for="subject_${subject.id}">${subject.name}</label>
+                    <input type="number"
+                           class="total-marks-input"
+                           data-subject-id="${subject.id}"
+                           value="100"
+                           min="1"
+                           max="200"
+                           title="Maximum raw marks for ${subject.name}">
+                `;
+
+                subjectContainer.appendChild(subjectItem);
+
+                // Add event listeners
+                const checkbox = subjectItem.querySelector('.subject-checkbox');
+                const marksInput = subjectItem.querySelector('.total-marks-input');
+
+                checkbox.addEventListener('change', function() {
+                    toggleSubjectVisibility(this, this.dataset.subjectId);
+                    addSelectedSubjectsToForm();
+                });
+
+                marksInput.addEventListener('change', function() {
+                    const subjectId = this.dataset.subjectId;
+                    const newMaxMark = this.value;
+
+                    // Update all input fields for this subject
+                    const subjectInputs = document.querySelectorAll(`input[data-subject="${subjectId}"]`);
+                    subjectInputs.forEach(subjectInput => {
+                        subjectInput.setAttribute('max', newMaxMark);
+                        subjectInput.dataset.maxMark = newMaxMark;
+
+                        // Recalculate percentage if there's a value
+                        if (subjectInput.value) {
+                            updatePercentage(subjectInput);
+                        }
+                    });
+                });
+            });
+
+            // Initialize subject visibility
+            subjects.forEach(subject => {
+                const checkbox = document.getElementById(`subject_${subject.id}`);
+                if (checkbox) {
+                    toggleSubjectVisibility(checkbox, subject.id);
+                }
+            });
+
+            // Update selected subjects in form
+            addSelectedSubjectsToForm();
+        }
+
+        // Function to fetch streams for a grade (REAL API INTEGRATION)
+        function fetchStreamsForGrade(grade, streamSelectId) {
+            const streamSelect = document.getElementById(streamSelectId);
+            if (!streamSelect || !grade) return;
+
+            console.log(`Fetching streams for grade: ${grade}, target: ${streamSelectId}`);
+
+            // Clear existing options and add loading indicator
+            streamSelect.innerHTML = '<option value="">Loading streams...</option>';
+            streamSelect.disabled = true;
+
+            // Real API call to fetch streams
+            fetch(`/classteacher/api/streams/${encodeURIComponent(grade)}`, {
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Clear loading indicator
+                streamSelect.innerHTML = '<option value="">Select Stream</option>';
+                streamSelect.disabled = false;
+
+                if (data.streams && data.streams.length > 0) {
+                    data.streams.forEach(streamName => {
+                        const option = document.createElement('option');
+                        // Handle both "Stream A" and "A" formats
+                        const cleanStreamName = streamName.replace('Stream ', '');
+                        option.value = cleanStreamName;
+                        option.textContent = streamName;
+                        streamSelect.appendChild(option);
+                    });
+                    console.log(`Loaded ${data.streams.length} streams for grade ${grade}`);
+                } else {
+                    streamSelect.innerHTML = '<option value="">No streams available</option>';
+                    console.log(`No streams found for grade ${grade}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching streams:', error);
+                streamSelect.innerHTML = '<option value="">Error loading streams</option>';
+                streamSelect.disabled = false;
+
+                // Show user-friendly error message
+                showValidationError('Failed to load streams. Please try again.');
+            });
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Store original grade options for filtering
+            storeOriginalGradeOptions();
+
+            // Initialize selected subjects
+            initializeSelectedSubjects();
+
             // Restore active tab from sessionStorage
             const activeTab = sessionStorage.getItem('activeTab') || 'recent-reports';
             switchMainTab(activeTab);
@@ -3078,6 +3741,108 @@
                     toggleSubjectVisibility(this, this.dataset.subjectId);
                 });
             });
+
+            // Initialize education level filtering for main form
+            const educationLevel = document.getElementById('education_level');
+            if (educationLevel) {
+                educationLevel.addEventListener('change', function() {
+                    console.log("Education level changed to:", this.value);
+                    if (this.value) {
+                        const gradeSelect = document.getElementById('grade');
+                        if (gradeSelect) {
+                            filterGradesByEducationLevel(this.value, gradeSelect);
+                        }
+
+                        // Fetch subjects for this education level
+                        fetchSubjectsForEducationLevel(this.value);
+                    }
+                });
+
+                // Initialize if education level is already selected
+                if (educationLevel.value) {
+                    const gradeSelect = document.getElementById('grade');
+                    if (gradeSelect) {
+                        filterGradesByEducationLevel(educationLevel.value, gradeSelect);
+                    }
+                    // Fetch subjects for the pre-selected education level
+                    fetchSubjectsForEducationLevel(educationLevel.value);
+                }
+            }
+
+            // Initialize education level filtering for manual entry form
+            const manualEducationLevel = document.getElementById('manual_education_level');
+            if (manualEducationLevel) {
+                manualEducationLevel.addEventListener('change', function() {
+                    console.log("Manual education level changed to:", this.value);
+                    if (this.value) {
+                        const gradeSelect = document.getElementById('manual_grade');
+                        if (gradeSelect) {
+                            filterGradesByEducationLevel(this.value, gradeSelect);
+                        }
+                    }
+                });
+            }
+
+            // Initialize bulk upload form
+            const bulkEducationLevel = document.getElementById('bulk_education_level');
+            if (bulkEducationLevel) {
+                bulkEducationLevel.addEventListener('change', updateBulkGrades);
+
+                // Initialize if education level is already selected
+                if (bulkEducationLevel.value) {
+                    updateBulkGrades();
+                }
+            }
+
+            // Initialize bulk grade change handler
+            const bulkGrade = document.getElementById('bulk_grade');
+            if (bulkGrade) {
+                bulkGrade.addEventListener('change', fetchBulkStreams);
+            }
+
+            // Initialize main form grade change handler
+            const mainGrade = document.getElementById('grade');
+            if (mainGrade) {
+                mainGrade.addEventListener('change', function() {
+                    if (this.value) {
+                        fetchStreamsForGrade(this.value, 'stream');
+                    }
+                });
+
+                // Initialize if grade is already selected
+                if (mainGrade.value) {
+                    fetchStreamsForGrade(mainGrade.value, 'stream');
+                }
+            }
+
+            // Initialize manual form grade change handler
+            const manualGrade = document.getElementById('manual_grade');
+            if (manualGrade) {
+                manualGrade.addEventListener('change', function() {
+                    if (this.value) {
+                        fetchStreamsForGrade(this.value, 'manual_stream');
+                    }
+                });
+            }
+
+            // Add form validation to marks submission
+            const submitMarksBtn = document.getElementById('submit-marks-btn');
+            if (submitMarksBtn) {
+                submitMarksBtn.addEventListener('click', function(e) {
+                    console.log('Submit marks button clicked - validating form...');
+
+                    // Run validation
+                    const isValid = validateMarksForm();
+
+                    if (!isValid) {
+                        e.preventDefault(); // Prevent form submission if validation fails
+                        return false;
+                    }
+
+                    // Allow normal form submission to proceed
+                    console.log('Form validation passed, allowing normal submission...');
+                });
+            }
 
             // Initialize total marks inputs
             document.querySelectorAll('.total-marks-input').forEach(input => {
