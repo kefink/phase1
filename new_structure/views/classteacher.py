@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash
 from sqlalchemy import text
 import pandas as pd
 import os
+import traceback
 from io import BytesIO
 from werkzeug.utils import secure_filename
 from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark, Teacher, TeacherSubjectAssignment
@@ -225,6 +226,81 @@ def test_edit_marks():
                           subject_objects=subject_objects)
 
 
+@classteacher_bp.route('/simplified')
+@classteacher_required
+def simplified_dashboard():
+    """Simplified class teacher dashboard with clean UX."""
+    teacher_id = session.get('teacher_id')
+    
+    # Get comprehensive teacher portal summary
+    portal_summary = FlexibleMarksService.get_teacher_portal_summary(teacher_id)
+    
+    if 'error' in portal_summary:
+        flash(f"Error loading teacher information: {portal_summary['error']}", "error")
+        portal_summary = {}
+    
+    # Get role-based assignment summary
+    assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, session.get('role', 'classteacher'))
+    
+    if 'error' in assignment_summary:
+        assignment_summary = {'total_subjects_taught': 0, 'grades_involved': []}
+    
+    # Get recent reports
+    marks_query = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType).order_by(Mark.created_at.desc())
+    marks = marks_query.limit(50).all()
+    
+    recent_reports = []
+    seen_combinations = set()
+    for mark in marks:
+        combination = (mark.student.stream.grade.name, mark.student.stream.name, mark.term.name, mark.assessment_type.name)
+        if combination not in seen_combinations:
+            seen_combinations.add(combination)
+            
+            # Get mark count for this combination
+            mark_count = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType).filter(
+                Grade.name == mark.student.stream.grade.name,
+                Stream.name == mark.student.stream.name,
+                Term.name == mark.term.name,
+                AssessmentType.name == mark.assessment_type.name
+            ).count()
+            
+            recent_reports.append({
+                'grade': mark.student.stream.grade.name,
+                'stream': f"Stream {mark.student.stream.name}",
+                'term': mark.term.name,
+                'assessment_type': mark.assessment_type.name,
+                'date': mark.created_at.strftime('%Y-%m-%d') if mark.created_at else 'N/A',
+                'mark_count': mark_count
+            })
+            
+            if len(recent_reports) >= 10:
+                break
+    
+    # Get data for forms
+    grades = [grade.name for grade in Grade.query.all()]
+    terms = [term.name for term in Term.query.all()]
+    assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
+    
+    # Get management statistics
+    total_students = Student.query.count()
+    
+    # Get school information
+    from ..services.school_config_service import SchoolConfigService
+    school_info = SchoolConfigService.get_school_info_dict()
+    
+    return render_template(
+        "classteacher_simplified.html",
+        school_info=school_info,
+        assignment_summary=assignment_summary,
+        portal_summary=portal_summary,
+        total_subjects_taught=assignment_summary.get('total_subjects_taught', 0),
+        total_students=total_students,
+        recent_reports=recent_reports,
+        grades=grades,
+        terms=terms,
+        assessment_types=assessment_types
+    )
+
 @classteacher_bp.route('/analytics')
 @classteacher_required
 def analytics_dashboard():
@@ -356,6 +432,9 @@ def dashboard():
         subject_assignments = []
     if not isinstance(subject_assignments, list):
         subject_assignments = []
+
+    # Create JSON-safe version for the template (for JavaScript usage)
+    subject_assignments_json_safe = RoleBasedDataService.make_assignments_json_safe(subject_assignments)
 
     # Initialize variables for teacher's assigned stream/grade (if any)
     stream = None
@@ -1173,6 +1252,7 @@ def dashboard():
         recent_reports=recent_reports,
         class_teacher_assignments=class_teacher_assignments,
         subject_assignments=subject_assignments,
+        subject_assignments_json_safe=subject_assignments_json_safe,
         confirmation_message=confirmation_message,
         total_students=total_students,
         total_teachers=total_teachers,
@@ -3576,7 +3656,6 @@ def get_streams_by_level(grade):
         return jsonify({"success": True, "streams": streams_data})
     except Exception as e:
         print(f"Error fetching streams: {str(e)}")
-        import traceback
         traceback.print_exc()
         return jsonify({"success": False, "message": str(e), "streams": []})
 
@@ -3621,114 +3700,136 @@ def get_subjects_by_education_level(education_level):
 @classteacher_required
 def download_marks_template():
     """Route to download the marks upload template."""
-    # Get parameters from the request
-    education_level = request.args.get('education_level', '')
-    grade_level = request.args.get('grade', '')
-    stream_name = request.args.get('stream', '')
-    term = request.args.get('term', '')
-    assessment_type = request.args.get('assessment_type', '')
-    file_format = request.args.get('format', 'xlsx')
+    try:
+        # Get parameters from the request
+        education_level = request.args.get('education_level', '')
+        grade_level = request.args.get('grade', '')
+        stream_name = request.args.get('stream', '')
+        term = request.args.get('term', '')
+        assessment_type = request.args.get('assessment_type', '')
+        file_format = request.args.get('format', 'xlsx')
 
-    # If specific parameters are provided, generate a customized template
-    if education_level and grade_level and stream_name:
-        # Extract stream letter from "Stream X" format
-        stream_letter = stream_name.replace("Stream ", "") if stream_name.startswith("Stream ") else stream_name[-1]
+        print(f"=== TEMPLATE DOWNLOAD REQUEST ===")
+        print(f"Education Level: {education_level}")
+        print(f"Grade: {grade_level}")
+        print(f"Stream: {stream_name}")
+        print(f"Term: {term}")
+        print(f"Assessment Type: {assessment_type}")
 
-        # Get the stream object
-        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade_level, Stream.name == stream_letter).first()
+        # If specific parameters are provided, generate a customized template
+        if education_level and grade_level and stream_name:
+            # Extract stream letter from "Stream X" format
+            stream_letter = stream_name.replace("Stream ", "") if stream_name.startswith("Stream ") else stream_name[-1]
 
-        if stream_obj:
-            # Get students for this stream
-            students = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name).all()
+            # Get the stream object
+            stream_obj = Stream.query.join(Grade).filter(Grade.name == grade_level, Stream.name == stream_letter).first()
 
-            # Get subjects for this education level
-            subjects = [subject.name for subject in Subject.query.filter_by(education_level=education_level).all()]
+            if stream_obj:
+                # Get students for this stream
+                students = Student.query.filter_by(stream_id=stream_obj.id).order_by(Student.name).all()
 
-            if students and subjects:
-                try:
-                    # Import the template generator
-                    from ..static.templates.marks_upload_template import create_marks_upload_template
+                # Get subjects for this education level
+                subjects = [subject.name for subject in Subject.query.filter_by(education_level=education_level).all()]
 
-                    # Get term and assessment type objects
-                    term_obj = Term.query.filter_by(name=term).first()
-                    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+                print(f"Found {len(students)} students and {len(subjects)} subjects")
 
-                    # Default total marks value
-                    default_total_marks = 100
+                if students and subjects:
+                    try:
+                        # Import the template generator from utils
+                        from ..utils.marks_upload_template import create_marks_template
 
-                    # Get total marks for each subject
-                    subject_total_marks = {}
-                    for subject_name in subjects:
-                        subject = Subject.query.filter_by(name=subject_name).first()
-                        if subject:
-                            # Check if any marks exist for this subject to get the total_marks
-                            mark = Mark.query.filter_by(
-                                subject_id=subject.id,
-                                term_id=term_obj.id,
-                                assessment_type_id=assessment_type_obj.id
-                            ).first()
+                        # Default total marks value
+                        default_total_marks = 100
 
-                            if mark:
-                                subject_total_marks[subject_name] = mark.total_marks
-                            else:
-                                # Default to default_total_marks if no marks exist
-                                subject_total_marks[subject_name] = default_total_marks
+                        # Create a custom template
+                        template_data = create_marks_template(
+                            students=students,
+                            subjects=subjects,
+                            grade=grade_level,
+                            stream=stream_name,
+                            term=term,
+                            assessment_type=assessment_type,
+                            total_marks=default_total_marks
+                        )
 
-                    # Create a custom template
-                    template_path = create_marks_upload_template(
-                        students=students,
-                        subjects=subjects,
-                        total_marks=default_total_marks,
-                        grade=grade_level,
-                        stream=stream_name,
-                        term=term,
-                        assessment_type=assessment_type,
-                        subject_total_marks=subject_total_marks
-                    )
+                        print(f"Template created successfully, size: {len(template_data.getvalue())} bytes")
 
-                    # Return the template file
-                    return send_file(
-                        template_path,
-                        as_attachment=True,
-                        download_name=f"marks_template_{grade_level}_{stream_letter}_{term}_{assessment_type}.xlsx",
-                        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                    )
-                except Exception as e:
-                    flash(f"Error creating template: {str(e)}", "error")
-                    return redirect(url_for('classteacher.dashboard'))
+                        # Create the filename
+                        filename = f"marks_template_{grade_level}_{stream_letter}_{term}_{assessment_type}.xlsx".replace(" ", "_")
 
-    # If no specific parameters or an error occurred, return a generic template
-    template_path = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        'static',
-        'templates',
-        f"marks_upload_template_example_{education_level if education_level else 'upper_primary'}.{file_format}"
-    )
+                        # Create response with proper headers
+                        response = make_response(send_file(
+                            template_data,
+                            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            as_attachment=True,
+                            download_name=filename
+                        ))
+                        
+                        # Add additional headers to ensure download
+                        response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+                        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                        response.headers['Pragma'] = 'no-cache'
+                        response.headers['Expires'] = '0'
+                        
+                        print(f"Sending response with filename: {filename}")
+                        return response
+                        
+                    except Exception as e:
+                        print(f"Error creating custom template: {str(e)}")
+                        traceback.print_exc()
+                        flash(f"Error creating template: {str(e)}", "error")
+                        return redirect(url_for('classteacher.dashboard'))
+                else:
+                    print("No students or subjects found for the specified parameters")
 
-    # Check if the template file exists
-    if not os.path.exists(template_path):
-        # If not, create it
+        # If no specific parameters or an error occurred, return a generic template
+        print("Creating generic template...")
         try:
-            from ..static.templates.marks_upload_template import create_empty_marks_template
-            create_empty_marks_template(education_level if education_level else 'upper_primary')
+            from ..utils.marks_upload_template import create_simple_marks_template
+            
+            template_data = create_simple_marks_template(
+                grade=grade_level,
+                stream=stream_name,
+                term=term,
+                assessment_type=assessment_type
+            )
+            
+            print(f"Generic template created, size: {len(template_data.getvalue())} bytes")
+            
+            # Create filename for generic template
+            filename = f"marks_template_{grade_level or 'generic'}_{term or 'generic'}.xlsx".replace(" ", "_")
+            
+            # Create response with proper headers
+            response = make_response(send_file(
+                template_data,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name=filename
+            ))
+            
+            # Add headers to ensure download
+            response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+            response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            
+            print(f"Sending generic template response with filename: {filename}")
+            return response
+            
         except Exception as e:
-            flash(f"Error creating template: {str(e)}", "error")
+            print(f"Error creating generic template: {str(e)}")
+            traceback.print_exc()
+            flash(f"Error creating generic template: {str(e)}", "error")
             return redirect(url_for('classteacher.dashboard'))
+            
+    except Exception as e:
+        print(f"General error in download_marks_template: {str(e)}")
+        traceback.print_exc()
+        flash(f"Error processing template request: {str(e)}", "error")
+        return redirect(url_for('classteacher.dashboard'))
 
-    # Set the appropriate mimetype based on the file format
-    if file_format == 'csv':
-        mimetype = 'text/csv'
-        filename = f"marks_template_example_{education_level if education_level else 'general'}.csv"
-    else:
-        mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        filename = f"marks_template_example_{education_level if education_level else 'general'}.xlsx"
-
-    return send_file(
-        template_path,
-        as_attachment=True,
-        download_name=filename,
-        mimetype=mimetype
-    )
 
 @classteacher_bp.route('/generate_grade_marksheet/<grade>/<term>/<assessment_type>/<action>')
 @classteacher_required

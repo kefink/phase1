@@ -15,8 +15,11 @@ try:
     # Define the port
     PORT = 8080
 
-    print("🚀 Hillview School Management System")
-    print(f"📍 Server running on: http://127.0.0.1:{PORT}")
+    # Only show startup messages if this is the main process (not reloader)
+    if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+        print("🚀 Hillview School Management System")
+        print(f"📍 Server running on: http://127.0.0.1:{PORT}")
+        print("⏳ Starting application...")
 
     # Import create_app from the new_structure package
     from new_structure import create_app
@@ -24,9 +27,11 @@ try:
     # Create the Flask application
     app = create_app('development')
 
-    print("✅ Application initialized successfully")
-    print("🌐 Ready to accept connections...")
-    print("")
+    # Only show success message for the main process
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        print("✅ Application initialized successfully")
+        print("🌐 Ready to accept connections...")
+        print("")
 
     app.run(debug=True, host='127.0.0.1', port=PORT, threaded=True, use_reloader=True)
 

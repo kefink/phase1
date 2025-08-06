@@ -48,5 +48,6 @@ def setup_logging(app):
     mark_validation_logger.setLevel(logging.INFO)
     mark_validation_logger.addHandler(mark_validation_handler)
     
-    # Log startup message
-    app.logger.info('Application logging configured')
+    # Log startup message only for the main process
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        app.logger.info('Application logging configured')

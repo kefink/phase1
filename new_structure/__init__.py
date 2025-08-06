@@ -2,6 +2,7 @@
 Application factory for the Hillview School Management System.
 This file initializes the Flask application and registers extensions and blueprints.
 """
+import os
 from flask import Flask, request, abort, session, redirect, url_for, jsonify
 from datetime import datetime
 from .extensions import db, csrf
@@ -3555,7 +3556,8 @@ def create_app(config_name='default'):
 
 
 
-    # Log application startup
-    app.logger.info("Application initialized")
+    # Log application startup only for the main process
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        app.logger.info("Application initialized")
 
     return app

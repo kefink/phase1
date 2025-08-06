@@ -337,3 +337,34 @@ class RoleBasedDataService:
         except Exception as e:
             print(f"Error getting accessible streams: {str(e)}")
             return []
+
+    @staticmethod
+    def make_assignments_json_safe(assignments):
+        """
+        Convert assignment data to JSON-safe format by removing SQLAlchemy objects.
+        Use this when you need to pass assignment data to templates that use tojson filter.
+        """
+        if not assignments:
+            return []
+        
+        json_safe_assignments = []
+        for assignment in assignments:
+            if isinstance(assignment, dict):
+                # Create a copy without any potential SQLAlchemy objects
+                json_safe_assignment = {
+                    'id': assignment.get('id'),
+                    'teacher_id': assignment.get('teacher_id'),
+                    'teacher_username': assignment.get('teacher_username'),
+                    'teacher_full_name': assignment.get('teacher_full_name'),
+                    'subject_id': assignment.get('subject_id'),
+                    'subject_name': assignment.get('subject_name'),
+                    'grade_id': assignment.get('grade_id'),
+                    'grade_level': assignment.get('grade_level'),
+                    'stream_id': assignment.get('stream_id'),
+                    'stream_name': assignment.get('stream_name'),
+                    'is_class_teacher': assignment.get('is_class_teacher'),
+                    'education_level': assignment.get('education_level')
+                }
+                json_safe_assignments.append(json_safe_assignment)
+        
+        return json_safe_assignments
