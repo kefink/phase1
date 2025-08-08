@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manage Teachers - Hillview School (Class Teacher)</title>
+    <!-- Solar Theme Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
@@ -13,39 +21,164 @@
       href="{{ url_for('static', filename='css/manage_pages_enhanced.css') }}"
     />
     <style>
-      /* Override container styles for manage pages */
+      /* Solar Theme: variables and mappings (override legacy vars) */
+      :root {
+        /* Solar palette */
+        --solar-bg-primary: #fdf6e3;
+        --solar-bg-secondary: #eee8d5;
+        --solar-bg-tertiary: #d6d2c4;
+        --solar-accent-yellow: #b58900;
+        --solar-accent-blue: #268bd2;
+        --solar-accent-green: #859900;
+        --solar-accent-red: #dc322f;
+        --solar-text-primary: #002b36;
+        --solar-text-secondary: #073642;
+
+        /* Map legacy vars used on this page to Solar */
+        --primary-color: var(--solar-accent-blue);
+        --secondary-color: var(--solar-accent-green);
+        --warning-color: var(--solar-accent-yellow);
+        --error-color: var(--solar-accent-red);
+        --white: #ffffff;
+        --text-dark: var(--solar-text-primary);
+        --border-color: rgba(238, 232, 213, 0.5);
+        --shadow-md: 0 10px 30px rgba(181, 137, 0, 0.1);
+        --border-radius: 10px;
+        --border-radius-lg: 16px;
+        --spacing-sm: 8px;
+        --spacing-md: 12px;
+        --spacing-lg: 20px;
+        --spacing-xl: 32px;
+        --transition: all 0.25s ease;
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          #fdf6e3 0%,
+          #eee8d5 100%
+        ) !important;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif !important;
+        color: var(--solar-text-primary) !important;
+        min-height: 100vh !important;
+      }
+
+      /* Heroicons Solar Theme Classes */
+      .heroicon-solar-blue {
+        fill: var(--solar-accent-blue);
+      }
+      .heroicon-solar-green {
+        fill: var(--solar-accent-green);
+      }
+      .heroicon-solar-yellow {
+        fill: var(--solar-accent-yellow);
+      }
+      .heroicon-solar-red {
+        fill: var(--solar-accent-red);
+      }
+
+      /* Container */
       .manage-container {
         max-width: 95% !important;
         width: 95% !important;
         margin: 80px auto 60px !important;
         padding: var(--spacing-xl) !important;
+        background: rgba(253, 246, 227, 0.8) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 20px 60px rgba(181, 137, 0, 0.15) !important;
+        border: 1px solid rgba(238, 232, 213, 0.3) !important;
       }
 
-      /* Page header styling */
+      /* Page header */
       .page-header {
-        background: var(--white);
-        padding: var(--spacing-lg);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-color);
-        margin-bottom: var(--spacing-xl);
+        background: linear-gradient(
+          135deg,
+          var(--solar-accent-blue) 0%,
+          var(--solar-accent-green) 100%
+        ) !important;
+        color: white !important;
+        padding: 40px !important;
+        border-radius: 20px !important;
+        box-shadow: 0 16px 40px rgba(38, 139, 210, 0.25) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        margin-bottom: 40px !important;
+        position: relative !important;
+        overflow: hidden !important;
       }
-
+      .page-header::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+            circle at 20% 50%,
+            rgba(255, 255, 255, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(255, 255, 255, 0.1) 0%,
+            transparent 50%
+          );
+        opacity: 0.6;
+      }
       .page-header h1 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-sm);
-        font-size: 2.5rem;
+        color: #fff !important;
+        margin-bottom: 12px !important;
+        font-size: 42px !important;
+        font-weight: 700 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.25) !important;
+      }
+      .page-subtitle {
+        color: rgba(255, 255, 255, 0.95) !important;
+        font-size: 18px !important;
       }
 
+      .nav-links {
+        display: flex !important;
+        gap: 12px !important;
+        flex-wrap: wrap !important;
+        margin-top: 12px !important;
+      }
       .nav-links a {
-        color: var(--primary-color);
-        text-decoration: none;
-        font-weight: 500;
-        margin-right: var(--spacing-md);
+        color: rgba(255, 255, 255, 0.95) !important;
+        text-decoration: none !important;
+        font-weight: 500 !important;
+        padding: 10px 18px !important;
+        border-radius: 50px !important;
+        background: rgba(255, 255, 255, 0.15) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+      .nav-links a:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+        color: #fff !important;
+        transform: translateY(-2px) !important;
       }
 
-      .nav-links a:hover {
-        text-decoration: underline;
+      /* Cards/sections */
+      .form-card,
+      .students-section {
+        background: rgba(255, 255, 255, 0.92) !important;
+        border: 1px solid rgba(238, 232, 213, 0.5) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 16px 40px rgba(181, 137, 0, 0.08) !important;
+      }
+      .form-card h2,
+      .students-section h2 {
+        color: var(--solar-text-primary) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
       }
 
       /* Forms grid layout */
@@ -56,108 +189,6 @@
         margin: var(--spacing-xl) 0;
       }
 
-      /* Section styling */
-      .form-card,
-      .students-section {
-        background: var(--white);
-        padding: var(--spacing-lg);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-color);
-        margin-bottom: var(--spacing-xl);
-      }
-
-      .form-card h2,
-      .students-section h2 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-lg);
-        font-size: 1.3rem;
-      }
-
-      /* Form styling */
-      .form-group {
-        margin-bottom: var(--spacing-lg);
-      }
-
-      .form-group label {
-        display: block;
-        margin-bottom: var(--spacing-sm);
-        color: var(--text-dark);
-        font-weight: 500;
-      }
-
-      .form-control {
-        width: 100%;
-        padding: var(--spacing-md);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        font-size: 1rem;
-        color: var(--text-dark);
-        background: var(--white);
-      }
-
-      .form-control:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
-      }
-
-      /* Button styling */
-      .manage-btn {
-        background: var(--primary-color);
-        color: var(--white);
-        border: none;
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: var(--border-radius);
-        cursor: pointer;
-        transition: var(--transition);
-        font-size: 1rem;
-        font-weight: 500;
-      }
-
-      .manage-btn:hover {
-        background: var(--secondary-color);
-      }
-
-      /* Action buttons */
-      .action-buttons {
-        display: flex;
-        gap: var(--spacing-sm);
-        flex-wrap: wrap;
-      }
-
-      .edit-btn,
-      .delete-btn {
-        padding: var(--spacing-sm) var(--spacing-md);
-        border: none;
-        border-radius: var(--border-radius);
-        cursor: pointer;
-        font-size: 0.9rem;
-        transition: var(--transition);
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-      }
-
-      .edit-btn {
-        background: var(--warning-color);
-        color: var(--text-dark);
-      }
-
-      .edit-btn:hover {
-        background: #e0a800;
-        text-decoration: none;
-      }
-
-      .delete-btn {
-        background: var(--error-color);
-        color: var(--white);
-      }
-
-      .delete-btn:hover {
-        background: #c82333;
-      }
-
       /* Table improvements */
       .table-responsive {
         overflow-x: auto;
@@ -166,101 +197,55 @@
         box-shadow: var(--shadow-md);
         background: var(--white);
       }
-
       table {
-        width: 100%;
-        min-width: 800px;
-        border-collapse: collapse;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
       }
-
-      th,
-      td {
-        padding: var(--spacing-md);
-        text-align: left;
-        border-bottom: 1px solid var(--border-color);
-      }
-
       th {
-        background: var(--primary-color);
-        color: var(--white);
-        font-weight: 600;
+        background: linear-gradient(
+          135deg,
+          var(--solar-accent-blue),
+          var(--solar-accent-green)
+        ) !important;
+        color: #fff !important;
         position: sticky;
         top: 0;
-        z-index: 10;
+        z-index: 1;
       }
-
-      tr:nth-child(even) {
-        background: rgba(31, 125, 83, 0.05);
-      }
-
       tr:hover {
-        background: rgba(31, 125, 83, 0.1);
+        background: rgba(38, 139, 210, 0.06) !important;
       }
 
-      /* Assignment sections */
-      .assignment-section h3 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-md);
-        font-size: 1.2rem;
+      /* Button styling */
+      .manage-btn {
+        background: var(--solar-accent-blue) !important;
+        box-shadow: 0 8px 24px rgba(38, 139, 210, 0.25) !important;
+      }
+      .manage-btn:hover {
+        background: #1b76b9 !important;
+      }
+      .edit-btn {
+        background: #fff3d1 !important;
+        color: #7a5800 !important;
+        border: 1px solid #ffe499 !important;
+      }
+      .edit-btn:hover {
+        background: #ffe599 !important;
+      }
+      .delete-btn {
+        background: #ffecec !important;
+        color: #8a0f18 !important;
+        border: 1px solid #ffc9ce !important;
+      }
+      .delete-btn:hover {
+        background: #ffd9dd !important;
       }
 
-      /* Search styling */
-      #student-filter {
-        margin-bottom: var(--spacing-lg);
-      }
-
-      #student-filter label {
-        display: block;
-        margin-bottom: var(--spacing-sm);
-        color: var(--text-dark);
-        font-weight: 500;
-      }
-
-      #teacher-search {
-        width: 100%;
-        max-width: 400px;
-        padding: var(--spacing-md);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-      }
-
-      /* Responsive design */
-      @media (max-width: 768px) {
-        .manage-container {
-          max-width: 98% !important;
-          width: 98% !important;
-          padding: var(--spacing-md) !important;
-        }
-
-        .forms-grid {
-          grid-template-columns: 1fr;
-          gap: var(--spacing-lg);
-        }
-
-        .action-buttons {
-          flex-direction: column;
-        }
-      }
-
-      /* Enhanced Teacher Management Styles */
-      .filter-controls {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-      }
-
-      .filter-controls label {
-        font-weight: 600;
-        color: #495057;
-        margin-right: 8px;
-      }
-
-      .filter-controls select {
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        background: white;
-        color: #495057;
+      /* Action buttons */
+      .action-buttons {
+        display: flex;
+        gap: 6px;
+        align-items: center;
       }
 
       /* Status and Role Badges */
@@ -379,46 +364,6 @@
         font-size: 0.9em;
       }
 
-      /* Enhanced Action Buttons */
-      .action-buttons {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-      }
-
-      .view-btn,
-      .edit-btn {
-        background: none;
-        border: none;
-        font-size: 1.2em;
-        cursor: pointer;
-        padding: 6px;
-        border-radius: 4px;
-        transition: background-color 0.2s;
-      }
-
-      .view-btn:hover {
-        background: #e3f2fd;
-      }
-
-      .edit-btn:hover {
-        background: #fff3e0;
-      }
-
-      .delete-btn {
-        background: none;
-        border: none;
-        font-size: 1.1em;
-        cursor: pointer;
-        padding: 6px;
-        border-radius: 4px;
-        transition: background-color 0.2s;
-      }
-
-      .delete-btn:hover {
-        background: #ffebee;
-      }
-
       /* Table Enhancements */
       #teachers-table th {
         background: #f8f9fa;
@@ -466,16 +411,78 @@
   <body>
     <div class="manage-container">
       <header class="page-header">
-        <h1>👨‍🏫 Manage Teachers</h1>
+        <h1>
+          <svg
+            class="heroicon-solar-blue"
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+            />
+          </svg>
+          Manage Teachers
+        </h1>
         <p class="page-subtitle">
           Add, edit, and manage teacher profiles and information
         </p>
         <div class="nav-links">
-          <a href="{{ url_for('classteacher.teacher_management_hub') }}"
-            >Teacher Hub</a
-          >
-          <a href="{{ url_for('classteacher.dashboard') }}">Dashboard</a>
-          <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+          <a href="{{ url_for('classteacher.teacher_management_hub') }}">
+            <svg
+              class="heroicon-solar-green"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zm0 5.25a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75zm0 5.25a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75z"
+              />
+            </svg>
+            Teacher Hub
+          </a>
+          <a href="{{ url_for('classteacher.dashboard') }}">
+            <svg
+              class="heroicon-solar-blue"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M11.47 2.47a.75.75 0 011.06 0l8.25 8.25a.75.75 0 01-1.06 1.06L12 4.81 4.28 11.78a.75.75 0 11-1.06-1.06l8.25-8.25zM4.5 12.75a.75.75 0 01.75-.75h1.5a.75.75 0 01.75.75V19.5h9V12.75a.75.75 0 011.5 0V20.25c0 .414-.336.75-.75.75h-12a.75.75 0 01-.75-.75V12.75z"
+              />
+            </svg>
+            Dashboard
+          </a>
+          <a href="{{ url_for('auth.logout_route') }}">
+            <svg
+              class="heroicon-solar-red"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M3.75 3A.75.75 0 013 3.75v16.5c0 .414.336.75.75.75h9a.75.75 0 000-1.5H4.5V4.5h8.25a.75.75 0 000-1.5h-9zM15.22 8.47a.75.75 0 011.06 0l3.75 3.75a.75.75 0 010 1.06l-3.75 3.75a.75.75 0 11-1.06-1.06l2.47-2.47H9.75a.75.75 0 010-1.5h7.94l-2.47-2.47a.75.75 0 010-1.06z"
+              />
+            </svg>
+            Logout
+          </a>
         </div>
       </header>
 
@@ -536,7 +543,23 @@
       <div class="forms-grid">
         <!-- Add Teacher Form -->
         <div class="form-card">
-          <h2>➕ Add New Teacher</h2>
+          <h2>
+            <svg
+              class="heroicon-solar-green"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M12 3.75a8.25 8.25 0 100 16.5 8.25 8.25 0 000-16.5zM12.75 8.25a.75.75 0 00-1.5 0V11.25H8.25a.75.75 0 000 1.5h3V15.75a.75.75 0 001.5 0V12.75h3a.75.75 0 000-1.5h-3V8.25z"
+              />
+            </svg>
+            Add New Teacher
+          </h2>
           <form
             method="POST"
             action="{{ url_for('classteacher.manage_teachers') }}"
@@ -755,14 +778,46 @@
               class="manage-btn"
               style="width: 100%; margin-top: 15px"
             >
-              ➕ Add Teacher
+              <span style="display: inline-flex; align-items: center; gap: 8px">
+                <svg
+                  class="heroicon-solar-blue"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M12 3.75a8.25 8.25 0 100 16.5 8.25 8.25 0 000-16.5zM12.75 8.25a.75.75 0 00-1.5 0V11.25H8.25a.75.75 0 000 1.5h3V15.75a.75.75 0 001.5 0V12.75h3a.75.75 0 000-1.5h-3V8.25z"
+                  />
+                </svg>
+                Add Teacher
+              </span>
             </button>
           </form>
         </div>
 
         <!-- This is the second column for tips -->
         <div class="form-card">
-          <h2>💡 Teacher Management Tips</h2>
+          <h2>
+            <svg
+              class="heroicon-solar-yellow"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M12 1.5a7.5 7.5 0 00-4.5 13.5v1.125c0 .621.504 1.125 1.125 1.125h6.75c.621 0 1.125-.504 1.125-1.125V15A7.5 7.5 0 0012 1.5zm-2.25 18a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5z"
+              />
+            </svg>
+            Teacher Management Tips
+          </h2>
           <div class="tips-content">
             <p>Here are some tips for managing teachers effectively:</p>
             <ul>
@@ -789,7 +844,23 @@
 
       <!-- Teacher Assignments Section -->
       <div class="students-section">
-        <h2>📚 My Teaching Assignments</h2>
+        <h2>
+          <svg
+            class="heroicon-solar-blue"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M3 6.75A2.25 2.25 0 015.25 4.5h6.5A2.25 2.25 0 0114 6.75v10.5a.75.75 0 01-1.2.6L9 15.75l-3.8 2.1a.75.75 0 01-1.2-.6V6.75zM15.75 6a.75.75 0 01.75-.75h3a2.25 2.25 0 012.25 2.25v10.5a.75.75 0 01-1.2.6l-2.3-1.27-2.3 1.27a.75.75 0 01-1.2-.6V6z"
+            />
+          </svg>
+          My Teaching Assignments
+        </h2>
 
         <!-- Class Teacher Assignments -->
         <div class="assignment-section" style="margin-bottom: 20px">
@@ -948,7 +1019,23 @@
 
       <!-- Teachers Table -->
       <div class="students-section">
-        <h2>👥 Existing Teachers</h2>
+        <h2>
+          <svg
+            class="heroicon-solar-green"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+            />
+          </svg>
+          Existing Teachers
+        </h2>
         <div id="student-filter">
           <label for="teacher-search">Search teachers:</label>
           <input
@@ -1089,17 +1176,46 @@
                   <div class="action-buttons">
                     <button
                       class="view-btn"
-                      onclick="viewTeacherDetails({{ teacher.id }}, '{{ teacher.username }}')"
+                      data-id="{{ teacher.id }}"
+                      data-username="{{ teacher.username }}"
                       title="View Details"
                     >
-                      👁️
+                      <svg
+                        class="heroicon-solar-blue"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M12 5.25c-4.714 0-8.703 2.978-10.5 6.75 1.797 3.772 5.786 6.75 10.5 6.75s8.703-2.978 10.5-6.75C20.703 8.228 16.714 5.25 12 5.25zM12 9a3.75 3.75 0 110 7.5A3.75 3.75 0 0112 9z"
+                        />
+                      </svg>
                     </button>
                     <button
                       class="edit-btn"
-                      onclick="editTeacher({{ teacher.id }}, '{{ teacher.username }}', '{{ teacher.role }}')"
+                      data-id="{{ teacher.id }}"
+                      data-username="{{ teacher.username }}"
+                      data-role="{{ teacher.role }}"
                       title="Edit Teacher"
                     >
-                      ✏️
+                      <svg
+                        class="heroicon-solar-yellow"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M21.731 2.269a2.25 2.25 0 00-3.182 0l-1.4 1.4 3.182 3.182 1.4-1.4a2.25 2.25 0 000-3.182zM18.331 6.169l-11.28 11.28a2.25 2.25 0 00-.574 1.02l-.58 2.322a.75.75 0 00.908.908l2.322-.58c.379-.095.734-.29 1.02-.574l11.28-11.28-3.096-3.096z"
+                        />
+                      </svg>
                     </button>
                     <form
                       method="POST"
@@ -1123,7 +1239,20 @@
                         class="delete-btn"
                         title="Delete Teacher"
                       >
-                        🗑️
+                        <svg
+                          class="heroicon-solar-red"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            clip-rule="evenodd"
+                            d="M6.75 7.5a.75.75 0 01.75-.75h9a.75.75 0 01.75.75v11.25A2.25 2.25 0 0115 21H9A2.25 2.25 0 016.75 18.75V7.5zm3-3A.75.75 0 0110.5 3h3a.75.75 0 010 1.5h-3A.75.75 0 019.75 4.5zm-3 3A.75.75 0 017.5 6h9a.75.75 0 010 1.5H7.5A.75.75 0 016.75 6.75z"
+                          />
+                        </svg>
                       </button>
                     </form>
                   </div>
@@ -1153,6 +1282,30 @@
         // Default to classteacher endpoint
         return `/classteacher/teacher_streams/${gradeId}`;
       }
+
+      // Delegated click handlers for action buttons (avoid inline onclick)
+      document.addEventListener("click", function (e) {
+        const viewBtn = e.target.closest(".view-btn");
+        if (viewBtn) {
+          const id = parseInt(viewBtn.dataset.id);
+          const username = viewBtn.dataset.username;
+          if (!Number.isNaN(id) && username) {
+            viewTeacherDetails(id, username);
+          }
+          e.preventDefault();
+          return;
+        }
+        const editBtn = e.target.closest(".edit-btn");
+        if (editBtn) {
+          const id = parseInt(editBtn.dataset.id);
+          const username = editBtn.dataset.username;
+          const role = editBtn.dataset.role;
+          if (!Number.isNaN(id) && username && role) {
+            editTeacher(id, username, role);
+          }
+          e.preventDefault();
+        }
+      });
 
       // Function to extract streams from response data (handles different response formats)
       function extractStreamsFromResponse(data) {
@@ -1341,7 +1494,12 @@
               width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
               box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             ">
-              <h3 style="margin-bottom: 20px; color: #1f7d53;">✏️ Edit Teacher: ${username}</h3>
+              <h3 style="margin-bottom: 20px; color: #1f7d53; display:flex; align-items:center; gap:8px;">
+                <svg class="heroicon-solar-yellow" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M21.731 2.269a2.25 2.25 0 00-3.182 0l-1.4 1.4 3.182 3.182 1.4-1.4a2.25 2.25 0 000-3.182zM18.331 6.169l-11.28 11.28a2.25 2.25 0 00-.574 1.02l-.58 2.322a.75.75 0 00.908.908l2.322-.58c.379-.095.734-.29 1.02-.574l11.28-11.28-3.096-3.096z"/>
+                </svg>
+                Edit Teacher: ${username}
+              </h3>
 
               <form method="POST" action="{{ url_for('classteacher.manage_teachers') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -1438,7 +1596,7 @@
                   <button type="submit" name="update_teacher" style="
                     background: #1f7d53; color: white; border: none; padding: 10px 20px;
                     border-radius: 5px; cursor: pointer;
-                  ">💾 Save Changes</button>
+                  ">Save Changes</button>
                 </div>
               </form>
             </div>

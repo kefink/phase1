@@ -9,7 +9,12 @@ import secrets
 import string
 
 from ..models import db
-from ..models.parent import Parent, ParentStudent, ParentEmailLog
+# ParentEmailLog may not exist yet; import defensively
+try:
+    from ..models.parent import Parent, ParentStudent, ParentEmailLog
+except ImportError:
+    from ..models.parent import Parent, ParentStudent
+    ParentEmailLog = None  # Optional feature not yet available
 from ..models.academic import Student, Grade, Stream
 from ..services.parent_email_service import ParentEmailService
 
@@ -36,6 +41,16 @@ def parent_required(f):
 @parent_simple_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """Parent login page."""
+    
+    def get_context():
+        """Get template context variables."""
+        return {
+            'school_info': {
+                'school_name': 'Hillview School',
+                'logo_url': '/static/images/default_logo.png'
+            }
+        }
+    
     if request.method == 'POST':
         try:
             email = request.form.get('email', '').strip().lower()
@@ -43,31 +58,31 @@ def login():
             
             if not email or not password:
                 flash('Email and password are required.', 'error')
-                return render_template('parent_login.html')
+                return render_template('parent_login.html', **get_context())
             
             # Find parent by email
             parent = Parent.query.filter_by(email=email).first()
             
             if not parent:
                 flash('Invalid email or password.', 'error')
-                return render_template('parent_login.html')
+                return render_template('parent_login.html', **get_context())
             
             # Check if account is locked
             if parent.is_locked():
                 flash('Account is temporarily locked due to multiple failed login attempts. Please try again later.', 'error')
-                return render_template('parent_login.html')
+                return render_template('parent_login.html', **get_context())
             
             # Check password
             if not parent.check_password(password):
                 parent.lock_account()
                 db.session.commit()
                 flash('Invalid email or password.', 'error')
-                return render_template('parent_login.html')
+                return render_template('parent_login.html', **get_context())
             
             # Check if account is active
             if not parent.is_active:
                 flash('Your account has been deactivated. Please contact the school.', 'error')
-                return render_template('parent_login.html')
+                return render_template('parent_login.html', **get_context())
             
             # Successful login
             parent.unlock_account()
@@ -84,7 +99,8 @@ def login():
         except Exception as e:
             flash(f'Login error: {str(e)}', 'error')
     
-    return render_template('parent_login.html')
+    # Provide context for template
+    return render_template('parent_login.html', **get_context())
 
 @parent_simple_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -158,16 +174,25 @@ def dashboard():
         # Get linked children with their class information
         children_query = db.session.query(
             ParentStudent, Student, Grade, Stream
-        ).join(Student).join(Grade).join(Stream).filter(
+        ).join(
+            Student, ParentStudent.student_id == Student.id
+        ).join(
+            Grade, Student.grade_id == Grade.id
+        ).join(
+            Stream, Student.stream_id == Stream.id
+        ).filter(
             ParentStudent.parent_id == parent.id
         ).order_by(Grade.name, Stream.name, Student.name)
         
         children = children_query.all()
         
-        # Get recent email notifications
-        recent_emails = ParentEmailLog.query.filter_by(
-            parent_id=parent.id
-        ).order_by(ParentEmailLog.created_at.desc()).limit(5).all()
+        # Get recent email notifications (if model available)
+        if ParentEmailLog:
+            recent_emails = ParentEmailLog.query.filter_by(
+                parent_id=parent.id
+            ).order_by(ParentEmailLog.created_at.desc()).limit(5).all()
+        else:
+            recent_emails = []
         
         return render_template('parent_dashboard.html',
                              parent=parent,
@@ -200,7 +225,13 @@ def children():
         # Get linked children with detailed information
         children_query = db.session.query(
             ParentStudent, Student, Grade, Stream
-        ).join(Student).join(Grade).join(Stream).filter(
+        ).join(
+            Student, ParentStudent.student_id == Student.id
+        ).join(
+            Grade, Student.grade_id == Grade.id
+        ).join(
+            Stream, Student.stream_id == Stream.id
+        ).filter(
             ParentStudent.parent_id == parent.id
         ).order_by(Grade.name, Stream.name, Student.name)
         

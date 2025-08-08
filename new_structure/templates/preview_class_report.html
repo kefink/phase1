@@ -11,34 +11,51 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
+    <!-- Solar Theme CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/classteacher-base.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/classteacher-forms.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/classteacher-buttons.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/classteacher-navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/classteacher-flexbox.css') }}"
+    />
     <style>
-      body {
+      /* Solar Theme Report Styles */
+      body.solar-theme {
         font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
         margin: 0;
         padding: 15px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: #333;
+        background: var(--solar-base03);
+        color: var(--solar-base0);
         font-size: 12px;
         min-height: 100vh;
       }
       .report-container {
         max-width: 100%;
         margin: 0 auto;
-        background: white;
+        background: var(--solar-base2);
         padding: 0;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 20px 60px rgba(0, 43, 54, 0.15);
         border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid var(--solar-base01);
         overflow: hidden;
       }
       .header {
-        background: linear-gradient(
-          135deg,
-          #1e3c72 0%,
-          #2a5298 50%,
-          #4a90e2 100%
-        );
-        color: white;
+        background: var(--solar-base02);
+        color: var(--solar-base1);
         padding: 20px 30px;
         margin: 0;
         display: flex;
@@ -46,22 +63,8 @@
         align-items: center;
         font-weight: bold;
         position: relative;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      }
-
-      .header::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(
-          45deg,
-          rgba(255, 255, 255, 0.1) 0%,
-          transparent 100%
-        );
-        pointer-events: none;
+        box-shadow: 0 4px 20px rgba(0, 43, 54, 0.1);
+        border-bottom: 2px solid var(--solar-yellow);
       }
 
       .header-left {
@@ -79,10 +82,10 @@
         width: auto;
         height: auto;
         border-radius: 8px;
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        border: 2px solid var(--solar-base01);
+        box-shadow: 0 4px 15px rgba(0, 43, 54, 0.2);
         object-fit: contain;
-        background: rgba(255, 255, 255, 0.9);
+        background: var(--solar-base2);
         padding: 4px;
         transition: all 0.3s ease;
       }
@@ -185,7 +188,8 @@
         font-size: 20px;
         font-weight: 700;
         letter-spacing: 2px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        color: var(--solar-base3);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         z-index: 1;
       }
 
@@ -199,21 +203,23 @@
         font-size: 18px;
         font-weight: 700;
         margin-bottom: 4px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        color: var(--solar-base3);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
       }
 
       .school-details {
         font-size: 11px;
         opacity: 0.95;
+        color: var(--solar-base2);
         font-weight: 400;
         line-height: 1.4;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
 
       .class-info-section {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        background: var(--solar-base3);
         padding: 15px 30px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid var(--solar-base2);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -232,14 +238,14 @@
         align-items: center;
         gap: 8px;
         padding: 8px 15px;
-        background: rgba(255, 255, 255, 0.7);
+        background: var(--solar-base2);
         border-radius: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 2px 8px rgba(0, 43, 54, 0.1);
+        border: 1px solid var(--solar-base1);
       }
 
       .class-info-label {
-        color: #495057;
+        color: var(--solar-base01);
         font-weight: 500;
         font-size: 11px;
         text-transform: uppercase;
@@ -247,7 +253,7 @@
       }
 
       .class-info-value {
-        color: #1e3c72;
+        color: var(--solar-base00);
         font-weight: 700;
         font-size: 13px;
       }
@@ -268,7 +274,7 @@
       .header h1 {
         margin: 0;
         font-size: 32px;
-        color: #2c3e50;
+        color: var(--solar-base3);
         font-weight: bold;
         text-transform: uppercase;
         letter-spacing: 2px;
@@ -279,7 +285,7 @@
       .header h1:before,
       .header h1:after {
         content: "★";
-        color: #3498db;
+        color: var(--solar-blue);
         font-size: 18px;
         position: relative;
         top: -5px;
@@ -289,22 +295,22 @@
       .header p {
         margin: 8px 0;
         font-size: 16px;
-        color: #34495e;
+        color: var(--solar-base2);
       }
       .report-title {
         font-size: 24px;
         font-weight: bold;
-        color: #2c3e50;
+        color: var(--solar-base3);
         margin: 15px 0 10px;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         letter-spacing: 1px;
       }
 
       .report-subtitle {
         font-size: 16px;
-        color: #34495e;
+        color: var(--solar-base01);
         margin: 5px 0 15px;
-        background-color: #f8f9fa;
+        background-color: var(--solar-base3);
         padding: 8px 15px;
         border-radius: 5px;
         display: inline-block;
@@ -1342,7 +1348,7 @@
       }
     </script>
   </head>
-  <body>
+  <body class="solar-theme">
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %}

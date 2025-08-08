@@ -13,224 +13,277 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#b58900" />
 
     <title>
       Reports Dashboard - {{ school_info.school_name|default('Hillview School
       Management System') }}
     </title>
 
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-
-    <!-- Fonts -->
+    <!-- Inter font for Solar theme -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-
-    <!-- Legacy CSS -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/headteacher.css') }}"
-    />
+
     <style>
+      /* Solar Theme Tokens + heroicon base */
+      :root {
+        --solar-bg-1: #fdf6e3;
+        --solar-bg-2: #eee8d5;
+        --solar-bg-3: #d6d2c4;
+        --solar-primary: #b58900;
+        --solar-secondary: #268bd2;
+        --solar-green: #859900;
+        --solar-red: #dc322f;
+        --solar-text-primary: #002b36;
+        --solar-text-secondary: #073642;
+        --border-color: rgba(238, 232, 213, 0.55);
+        --shadow-md: 0 14px 34px rgba(0, 43, 54, 0.12);
+        --radius: 16px;
+      }
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--solar-bg-1) 0%,
+          var(--solar-bg-2) 60%,
+          var(--solar-bg-3) 100%
+        );
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        color: var(--solar-text-primary);
+      }
+      .heroicon {
+        display: inline-block;
+        width: 1.15rem;
+        height: 1.15rem;
+        fill: currentColor;
+        vertical-align: middle;
+      }
+      .heroicon-lg {
+        width: 1.6rem;
+        height: 1.6rem;
+      }
+      .heroicon-xl {
+        width: 2rem;
+        height: 2rem;
+      }
+      .heroicon-solar-yellow {
+        color: var(--solar-primary);
+      }
+      .heroicon-solar-blue {
+        color: var(--solar-secondary);
+      }
+      .heroicon-solar-green {
+        color: var(--solar-green);
+      }
+
       .reports-container {
         max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
+        margin: 24px auto 48px;
+        padding: 0 16px;
+      }
+      .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(253, 246, 227, 0.7);
+        color: var(--solar-text-secondary);
+        border: 1px solid var(--border-color);
+        padding: 10px 14px;
+        border-radius: 999px;
+        text-decoration: none;
+        transition: 0.25s ease;
+      }
+      .back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
       }
 
       .reports-header {
+        margin: 18px 0 28px;
+        background: linear-gradient(
+          145deg,
+          rgba(253, 246, 227, 0.95) 0%,
+          rgba(238, 232, 213, 0.9) 100%
+        );
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: var(--shadow-md);
         text-align: center;
-        margin-bottom: 40px;
-        padding: 30px;
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-        border-radius: 15px;
+      }
+      .reports-header h1 {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        margin: 0 0 6px;
+        color: var(--solar-text-primary);
+      }
+      .reports-header p {
+        margin: 0;
+        color: var(--solar-text-secondary);
       }
 
       .reports-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 25px;
-        margin-bottom: 40px;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 22px;
       }
-
       .report-card {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        border: 2px solid #e9ecef;
-        transition: all 0.3s ease;
+        background: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: var(--shadow-md);
+        transition: 0.25s ease;
         cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
       }
-
       .report-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        border-color: #28a745;
+        transform: translateY(-4px);
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.12);
       }
 
-      .report-icon {
-        font-size: 48px;
-        text-align: center;
-        margin-bottom: 15px;
+      .report-icon-wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 12px;
       }
-
       .report-title {
-        font-size: 20px;
-        font-weight: bold;
-        color: #2c3e50;
-        margin-bottom: 10px;
         text-align: center;
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin-bottom: 6px;
+        color: var(--solar-text-primary);
       }
-
       .report-description {
-        color: #6c757d;
         text-align: center;
-        line-height: 1.5;
-        margin-bottom: 20px;
+        color: var(--solar-text-secondary);
+        margin-bottom: 14px;
       }
 
       .report-actions {
         display: flex;
         gap: 10px;
         justify-content: center;
+        margin-top: auto;
       }
-
-      .report-btn {
-        padding: 10px 20px;
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-radius: 10px;
         border: none;
-        border-radius: 6px;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all 0.3s ease;
         cursor: pointer;
-      }
-
-      .report-btn-primary {
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-      }
-
-      .report-btn-primary:hover {
-        background: linear-gradient(135deg, #20c997, #17a2b8);
-        transform: translateY(-1px);
-        color: white;
+        transition: 0.2s ease;
         text-decoration: none;
       }
-
-      .report-btn-secondary {
-        background: #f8f9fa;
-        color: #6c757d;
-        border: 1px solid #dee2e6;
+      .btn-primary {
+        background: var(--solar-secondary);
+        color: #fff;
       }
-
-      .report-btn-secondary:hover {
-        background: #e9ecef;
-        color: #495057;
-        text-decoration: none;
+      .btn-primary:hover {
+        filter: brightness(0.95);
+      }
+      .btn-secondary {
+        background: rgba(253, 246, 227, 0.8);
+        color: var(--solar-text-secondary);
+        border: 1px solid var(--border-color);
+      }
+      .btn-secondary:hover {
+        background: rgba(238, 232, 213, 0.9);
       }
 
       .recent-reports {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        border: 2px solid #e9ecef;
+        margin-top: 28px;
+        background: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: var(--shadow-md);
       }
-
       .recent-reports h3 {
-        color: #2c3e50;
-        margin-bottom: 20px;
-        font-size: 20px;
-        border-bottom: 2px solid #28a745;
-        padding-bottom: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 12px;
+        color: var(--solar-text-primary);
+        border-bottom: 2px solid var(--solar-primary);
+        padding-bottom: 8px;
       }
-
       .recent-report-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 15px 0;
-        border-bottom: 1px solid #e9ecef;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-color);
       }
-
       .recent-report-item:last-child {
         border-bottom: none;
       }
-
-      .recent-report-info {
-        flex: 1;
-      }
-
       .recent-report-title {
-        font-weight: 500;
-        color: #2c3e50;
-        margin-bottom: 4px;
+        font-weight: 600;
+        color: var(--solar-text-primary);
       }
-
       .recent-report-meta {
         font-size: 12px;
-        color: #6c757d;
+        color: var(--solar-text-secondary);
       }
-
       .recent-report-status {
-        padding: 4px 12px;
-        border-radius: 20px;
+        padding: 4px 10px;
+        border-radius: 999px;
         font-size: 12px;
-        font-weight: 500;
-        background: #d4edda;
-        color: #155724;
+        font-weight: 600;
+        background: #e7f2d9;
+        color: var(--solar-green);
+        border: 1px solid rgba(133, 153, 0, 0.25);
       }
 
-      .back-button {
-        display: inline-block;
-        padding: 12px 24px;
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        font-weight: 500;
-        margin-bottom: 20px;
-        transition: all 0.3s ease;
-      }
-
-      .back-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        text-decoration: none;
-        color: white;
-      }
-
-      .coming-soon {
-        background: #fff3cd;
-        color: #856404;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 500;
-        margin-top: 10px;
+      footer {
         text-align: center;
+        margin-top: 36px;
+        padding: 10px;
+        color: var(--solar-text-secondary);
       }
     </style>
   </head>
   <body>
     <div class="reports-container">
       <a href="{{ url_for('admin.dashboard') }}" class="back-button">
-        ← Back to Dashboard
+        <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            fill-rule="evenodd"
+            d="M9.53 3.97a.75.75 0 010 1.06L4.56 10h15.19a.75.75 0 010 1.5H4.56l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        Back to Dashboard
       </a>
 
       <div class="reports-header">
-        <h1>📋 Comprehensive Reports Dashboard</h1>
+        <h1>
+          <svg
+            class="heroicon heroicon-lg heroicon-solar-yellow"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6zM6 5.25a.75.75 0 00-.75.75v12c0 .414.336.75.75.75h12a.75.75 0 00.75-.75V6a.75.75 0 00-.75-.75H6z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Comprehensive Reports Dashboard
+        </h1>
         <p>
           Generate detailed reports for academic analysis and administrative
           purposes
@@ -239,26 +292,98 @@
 
       <!-- Available Report Types -->
       <div class="reports-grid">
-        {% for report in report_types %}
-        <div class="report-card" onclick="generateReport('{{ report.id }}')">
-          <div class="report-icon">{{ report.icon }}</div>
+        {% for report in report_types %} {% set rid = (report.id|string)|lower
+        %}
+        <div
+          class="report-card"
+          data-action="open-report"
+          data-report-id="{{ report.id }}"
+        >
+          <div class="report-icon-wrap">
+            {% if 'config' in rid %}
+            <svg
+              class="heroicon heroicon-xl heroicon-solar-yellow"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M11.078 2.25h1.844a1.125 1.125 0 011.09.84l.27 1.08c.2.01.4.03.596.064l.98-.735a1.125 1.125 0 011.453.165l1.305 1.305c.39.39.44 1.002.165 1.453l-.735.98c.117.315.214.64.28.972l1.08.27c.46.115.84.53.84 1.09v1.844c0 .56-.38.975-.84 1.09l-1.08.27a8.2 8.2 0 01-.28.972l.735.98c.275.45.225 1.062-.165 1.453l-1.305 1.305a1.125 1.125 0 01-1.453.165l-.98-.735a8.5 8.5 0 01-.972.28l-.27 1.08c-.115.46-.53.84-1.09.84h-1.844c-.56 0-.975-.38-1.09-.84l-.27-1.08a8.5 8.5 0 01-.972-.28l-.98.735a1.125 1.125 0 01-1.453-.165L4.998 17.1a1.125 1.125 0 01-.165-1.453l.735-.98a8.2 8.2 0 01-.28-.972l-1.08-.27A1.125 1.125 0 013.368 12V10.156c0-.56.38-.975.84-1.09l1.08-.27c.066-.332.163-.657.28-.972l-.735-.98a1.125 1.125 0 01.165-1.453L6.303 3.086a1.125 1.125 0 011.453-.165l.98.735c.196-.033.396-.054.596-.064l.27-1.08c.115-.46.53-.84 1.09-.84zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            {% elif 'grade' in rid %}
+            <svg
+              class="heroicon heroicon-xl heroicon-solar-blue"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                d="M3 3.75A.75.75 0 013.75 3h16.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H3.75a.75.75 0 01-.75-.75V3.75z"
+              />
+              <path
+                d="M7.5 7.5a.75.75 0 011.5 0v8.25a.75.75 0 01-1.5 0V7.5zM11.25 10.5a.75.75 0 011.5 0v5.25a.75.75 0 01-1.5 0V10.5zM15 9a.75.75 0 011.5 0v6.75a.75.75 0 01-1.5 0V9z"
+              />
+            </svg>
+            {% elif 'view' in rid or 'all' in rid or 'list' in rid %}
+            <svg
+              class="heroicon heroicon-xl heroicon-solar-green"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3.75 6.75A.75.75 0 014.5 6h15a.75.75 0 010 1.5h-15a.75.75 0 01-.75-.75zM3.75 12a.75.75 0 01.75-.75h15a.75.75 0 010 1.5h-15A.75.75 0 013.75 12zm0 5.25a.75.75 0 01.75-.75h15a.75.75 0 010 1.5h-15a.75.75 0 01-.75-.75z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            {% else %}
+            <svg
+              class="heroicon heroicon-xl heroicon-solar-yellow"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                d="M6.75 4.5A2.25 2.25 0 019 2.25h6a2.25 2.25 0 012.25 2.25v15a.75.75 0 01-1.148.638 6.47 6.47 0 00-3.602-1.088H9a2.25 2.25 0 01-2.25-2.25v-12z"
+              />
+              <path
+                d="M3 6.75A2.25 2.25 0 015.25 4.5H9A2.25 2.25 0 0111.25 6.75v12A2.25 2.25 0 019 21H5.25A2.25 2.25 0 013 18.75v-12z"
+              />
+            </svg>
+            {% endif %}
+          </div>
           <div class="report-title">{{ report.title }}</div>
           <div class="report-description">{{ report.description }}</div>
           <div class="report-actions">
             <button
-              class="report-btn report-btn-primary"
-              onclick="generateReport('{{ report.id }}')"
+              class="btn btn-primary"
+              data-action="generate-report"
+              data-report-id="{{ report.id }}"
             >
-              Generate Report
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  fill-rule="evenodd"
+                  d="M12 2.25a.75.75 0 01.75.75V11h8a.75.75 0 010 1.5h-8v8a.75.75 0 01-1.5 0v-8H3a.75.75 0 010-1.5h8V3a.75.75 0 01.75-.75z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Generate
             </button>
             <button
-              class="report-btn report-btn-secondary"
-              onclick="previewReport('{{ report.id }}')"
+              class="btn btn-secondary"
+              data-action="preview-report"
+              data-report-id="{{ report.id }}"
             >
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  fill-rule="evenodd"
+                  d="M1.72 12.53c.58-.77 4.92-6.03 10.28-6.03 5.36 0 9.7 5.26 10.28 6.03a.75.75 0 010 .94c-.58.77-4.92 6.03-10.28 6.03-5.36 0-9.7-5.26-10.28-6.03a.75.75 0 010-.94zm10.28-4.53a4.5 4.5 0 100 9 4.5 4.5 0 000-9z"
+                  clip-rule="evenodd"
+                />
+              </svg>
               Preview
             </button>
           </div>
-          <div class="coming-soon">Coming Soon - Advanced Reporting</div>
         </div>
         {% endfor %}
       </div>
@@ -266,10 +391,21 @@
       <!-- Recent Reports -->
       {% if recent_reports %}
       <div class="recent-reports">
-        <h3>📄 Recent Reports</h3>
+        <h3>
+          <svg
+            class="heroicon heroicon-solar-blue"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M6.75 3A2.25 2.25 0 004.5 5.25v13.5A2.25 2.25 0 006.75 21h10.5A2.25 2.25 0 0019.5 18.75V9.31a2.25 2.25 0 00-.66-1.59l-3.06-3.06A2.25 2.25 0 0014.19 4.5H6.75z"
+            />
+          </svg>
+          Recent Reports
+        </h3>
         {% for report in recent_reports %}
         <div class="recent-report-item">
-          <div class="recent-report-info">
+          <div>
             <div class="recent-report-title">{{ report.title }}</div>
             <div class="recent-report-meta">
               {{ report.date }} | {{ report.type }}
@@ -282,10 +418,23 @@
       {% endif %}
 
       <!-- Quick Actions -->
-      <div class="recent-reports" style="margin-top: 30px">
-        <h3>⚡ Quick Report Actions</h3>
+      <div class="recent-reports" style="margin-top: 28px">
+        <h3>
+          <svg
+            class="heroicon heroicon-solar-green"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M4.5 3.75A.75.75 0 015.25 3h13.5a.75.75 0 01.75.75v9a.75.75 0 01-.75.75h-8.69l-2.53 2.53A.75.75 0 017 15.75V13.5H5.25a.75.75 0 01-.75-.75v-9z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Quick Report Actions
+        </h3>
         <div class="recent-report-item">
-          <div class="recent-report-info">
+          <div>
             <div class="recent-report-title">
               Current Term Performance Summary
             </div>
@@ -294,51 +443,46 @@
             </div>
           </div>
           <button
-            class="report-btn report-btn-primary"
-            onclick="generateQuickReport('current_term')"
+            class="btn btn-primary"
+            data-action="generate-quick"
+            data-type="current_term"
           >
             Generate Now
           </button>
         </div>
         <div class="recent-report-item">
-          <div class="recent-report-info">
+          <div>
             <div class="recent-report-title">Grade Level Comparison</div>
             <div class="recent-report-meta">
               Compare performance across all grade levels
             </div>
           </div>
           <button
-            class="report-btn report-btn-primary"
-            onclick="generateQuickReport('grade_comparison')"
+            class="btn btn-primary"
+            data-action="generate-quick"
+            data-type="grade_comparison"
           >
             Generate Now
           </button>
         </div>
         <div class="recent-report-item">
-          <div class="recent-report-info">
+          <div>
             <div class="recent-report-title">Subject Performance Analysis</div>
             <div class="recent-report-meta">
               Detailed analysis of all subjects
             </div>
           </div>
           <button
-            class="report-btn report-btn-primary"
-            onclick="generateQuickReport('subject_analysis')"
+            class="btn btn-primary"
+            data-action="generate-quick"
+            data-type="subject_analysis"
           >
             Generate Now
           </button>
         </div>
       </div>
 
-      <!-- Footer -->
-      <footer
-        style="
-          text-align: center;
-          margin-top: 40px;
-          padding: 20px;
-          color: #6c757d;
-        "
-      >
+      <footer>
         <p>
           {{ school_info.school_name|default('School Management System') }}
           powered by CbcTeachkit
@@ -347,23 +491,40 @@
     </div>
 
     <script>
-      function generateReport(reportId) {
-        alert(
-          `Generating ${reportId} report... This feature will be available soon!`
-        );
-      }
-
-      function previewReport(reportId) {
-        alert(
-          `Previewing ${reportId} report... This feature will be available soon!`
-        );
-      }
-
-      function generateQuickReport(reportType) {
-        alert(
-          `Generating ${reportType} quick report... This feature will be available soon!`
-        );
-      }
+      // Delegated actions
+      document.addEventListener("click", function (e) {
+        const el = e.target.closest("[data-action]");
+        if (!el) return;
+        const action = el.dataset.action;
+        switch (action) {
+          case "open-report": {
+            const id = el.dataset.reportId;
+            alert(`Opening ${id} report...`);
+            break;
+          }
+          case "generate-report": {
+            const id = el.dataset.reportId;
+            alert(
+              `Generating ${id} report... This feature will be available soon!`
+            );
+            break;
+          }
+          case "preview-report": {
+            const id = el.dataset.reportId;
+            alert(
+              `Previewing ${id} report... This feature will be available soon!`
+            );
+            break;
+          }
+          case "generate-quick": {
+            const type = el.dataset.type;
+            alert(
+              `Generating ${type} quick report... This feature will be available soon!`
+            );
+            break;
+          }
+        }
+      });
     </script>
   </body>
 </html>

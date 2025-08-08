@@ -123,22 +123,32 @@ class ReportBasedAnalyticsService:
             cutoff_date = datetime.now() - timedelta(days=days_back)
             filtered_reports = []
             
+            print(f"DEBUG: Filtering reports with filters: grade={grade_filter}, term={term_filter}, assessment={assessment_filter}")
+            print(f"DEBUG: Total available reports: {len(available_reports)}")
+            
             for report in available_reports:
                 report_date = datetime.fromisoformat(report['generated_at'])
                 
+                print(f"DEBUG: Checking report: {report['grade']} {report['stream']} {report['term']} {report['assessment_type']}")
+                
                 # Apply filters
                 if report_date < cutoff_date:
+                    print(f"DEBUG: Filtered out by date (too old)")
                     continue
                     
                 if grade_filter and report['grade'] != grade_filter:
+                    print(f"DEBUG: Filtered out by grade: {report['grade']} != {grade_filter}")
                     continue
                     
                 if term_filter and report['term'] != term_filter:
+                    print(f"DEBUG: Filtered out by term: {report['term']} != {term_filter}")
                     continue
                     
                 if assessment_filter and report['assessment_type'] != assessment_filter:
+                    print(f"DEBUG: Filtered out by assessment: {report['assessment_type']} != {assessment_filter}")
                     continue
                 
+                print(f"DEBUG: Report PASSED filters: {report['assessment_type']}")
                 filtered_reports.append(report)
             
             if not filtered_reports:

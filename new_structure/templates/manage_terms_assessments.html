@@ -4,285 +4,152 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manage Terms & Assessments - Hillview School (Class Teacher)</title>
+    <!-- Ensure Inter font and remove conflicting CSS include -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/manage_pages_enhanced.css') }}"
-    />
     <style>
-      /* Override container styles for manage pages */
+      /* Solar Theme Tokens + Heroicon utilities */
+      :root {
+        --solar-bg-1: #fdf6e3;
+        --solar-bg-2: #eee8d5;
+        --solar-bg-3: #d6d2c4;
+        --solar-primary: #b58900;
+        --solar-secondary: #268bd2;
+        --solar-green: #859900;
+        --solar-red: #dc322f;
+        --solar-text-primary: #002b36;
+        --solar-text-secondary: #073642;
+      }
+
+      /* Map legacy vars used below to Solar palette */
+      :root {
+        --primary-color: var(--solar-primary) !important;
+        --secondary-color: var(--solar-secondary) !important;
+        --background-color: var(--solar-bg-2) !important;
+        --white: #ffffff !important;
+        --border-color: rgba(238, 232, 213, 0.5) !important;
+        --shadow-md: 0 10px 30px rgba(181, 137, 0, 0.1) !important;
+        --border-radius: 10px !important;
+        --border-radius-lg: 16px !important;
+        --spacing-sm: 8px !important;
+        --spacing-md: 12px !important;
+        --spacing-lg: 20px !important;
+        --spacing-xl: 32px !important;
+        --transition: all 0.25s ease !important;
+        --text-dark: var(--solar-text-primary) !important;
+        --text-light: #6b7280 !important;
+        --warning-color: #f3c614 !important;
+        --error-color: var(--solar-red) !important;
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--solar-bg-1) 0%,
+          var(--solar-bg-2) 60%,
+          var(--solar-bg-3) 100%
+        ) !important;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif !important;
+        color: var(--solar-text-primary) !important;
+      }
+
+      .heroicon {
+        display: inline-block;
+        width: 1.1rem;
+        height: 1.1rem;
+        fill: currentColor;
+        vertical-align: middle;
+      }
+
+      .heroicon-lg {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+
+      .heroicon-solar-blue {
+        color: var(--solar-secondary);
+      }
+
+      .heroicon-solar-green {
+        color: var(--solar-green);
+      }
+
+      .heroicon-solar-yellow {
+        color: var(--solar-primary);
+      }
+
+      .heroicon-solar-red {
+        color: var(--solar-red);
+      }
+
+      /* Page layout/header overrides for Solar look */
       .manage-container {
         max-width: 95% !important;
         width: 95% !important;
-        margin: 80px auto 60px !important;
-        padding: var(--spacing-xl) !important;
+        margin: 60px auto !important;
+        padding: 0 !important;
+        background: transparent !important;
       }
 
-      /* Page header styling */
       .page-header {
-        background: var(--white);
-        padding: var(--spacing-lg);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-color);
-        margin-bottom: var(--spacing-xl);
+        background: linear-gradient(
+          145deg,
+          rgba(253, 246, 227, 0.95) 0%,
+          rgba(238, 232, 213, 0.9) 100%
+        ) !important;
+        backdrop-filter: blur(14px);
+        padding: 30px !important;
+        border-radius: 24px !important;
+        box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15) !important;
+        border: 1px solid rgba(238, 232, 213, 0.5) !important;
+        margin-bottom: 24px !important;
       }
 
       .page-header h1 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-sm);
-        font-size: 2.5rem;
-      }
-
-      .nav-links a {
-        color: var(--primary-color);
-        text-decoration: none;
-        font-weight: 500;
-        margin-right: var(--spacing-md);
-      }
-
-      .nav-links a:hover {
-        text-decoration: underline;
-      }
-
-      /* Statistics section */
-      .stats-section {
-        background: var(--white);
-        padding: var(--spacing-lg);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-color);
-        margin-bottom: var(--spacing-xl);
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--spacing-lg);
-      }
-
-      .stat-card {
-        background: rgba(31, 125, 83, 0.1);
-        padding: var(--spacing-lg);
-        border-radius: var(--border-radius);
-        border: 1px solid var(--border-color);
-        text-align: center;
-      }
-
-      .stat-card h3 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-sm);
-        font-size: 1.1rem;
-      }
-
-      .stat-value {
-        font-size: 2rem;
-        font-weight: 600;
-        color: var(--primary-color);
-      }
-
-      /* Forms grid layout */
-      .forms-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--spacing-xl);
-        margin: var(--spacing-xl) 0;
-      }
-
-      /* Form card styling */
-      .form-card {
-        background: var(--white);
-        padding: var(--spacing-lg);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-color);
-      }
-
-      .form-card h2 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-lg);
-        font-size: 1.3rem;
-      }
-
-      /* Section styling */
-      .terms-section,
-      .assessments-section {
-        background: var(--white);
-        padding: var(--spacing-lg);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-color);
-        margin-bottom: var(--spacing-xl);
-      }
-
-      .terms-section h2,
-      .assessments-section h2 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-lg);
-        font-size: 1.5rem;
-      }
-
-      /* Form styling */
-      .form-group {
-        margin-bottom: var(--spacing-lg);
-      }
-
-      .form-group label {
-        display: block;
-        margin-bottom: var(--spacing-sm);
-        color: var(--text-dark);
-        font-weight: 500;
-      }
-
-      .form-control {
-        width: 100%;
-        padding: var(--spacing-md);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        font-size: 1rem;
-        color: var(--text-dark);
-        background: var(--white);
-      }
-
-      .form-control:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
-      }
-
-      /* Button styling */
-      .manage-btn {
-        background: var(--primary-color);
-        color: var(--white);
-        border: none;
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: var(--border-radius);
-        cursor: pointer;
-        transition: var(--transition);
-        font-size: 1rem;
-        font-weight: 500;
-      }
-
-      .manage-btn:hover {
-        background: var(--secondary-color);
-      }
-
-      /* Table improvements */
-      .table-responsive {
-        overflow-x: auto;
-        margin: var(--spacing-lg) 0;
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        background: var(--white);
-      }
-
-      table {
-        width: 100%;
-        min-width: 600px;
-        border-collapse: collapse;
-      }
-
-      th,
-      td {
-        padding: var(--spacing-md);
-        text-align: left;
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      th {
-        background: var(--primary-color);
-        color: var(--white);
-        font-weight: 600;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-      }
-
-      tr:nth-child(even) {
-        background: rgba(31, 125, 83, 0.05);
-      }
-
-      tr:hover {
-        background: rgba(31, 125, 83, 0.1);
-      }
-
-      /* Action buttons */
-      .action-buttons {
         display: flex;
-        gap: var(--spacing-sm);
+        align-items: center;
+        gap: 10px;
+        color: var(--solar-text-primary) !important;
+        margin: 0 0 10px 0 !important;
+        font-size: 2rem !important;
+      }
+
+      .page-subtitle {
+        margin: 0 0 14px 0;
+        color: var(--solar-text-secondary);
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 12px;
         flex-wrap: wrap;
       }
 
-      .edit-btn,
-      .delete-btn {
-        padding: var(--spacing-sm) var(--spacing-md);
-        border: none;
-        border-radius: var(--border-radius);
-        cursor: pointer;
-        font-size: 0.9rem;
-        transition: var(--transition);
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-      }
-
-      .edit-btn {
-        background: var(--warning-color);
-        color: var(--text-dark);
-      }
-
-      .edit-btn:hover {
-        background: #e0a800;
-        text-decoration: none;
-      }
-
-      .delete-btn {
-        background: var(--error-color);
-        color: var(--white);
-      }
-
-      .delete-btn:hover {
-        background: #c82333;
-      }
-
-      /* Checkbox styling */
-      .checkbox-group {
-        display: flex;
+      .nav-links a {
+        display: inline-flex;
         align-items: center;
-        gap: var(--spacing-sm);
-        margin-top: var(--spacing-sm);
+        gap: 8px;
+        color: var(--solar-text-secondary) !important;
+        background: rgba(253, 246, 227, 0.5);
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(238, 232, 213, 0.6);
+        text-decoration: none;
       }
 
-      .checkbox-group input[type="checkbox"] {
-        width: auto;
-        margin: 0;
+      .nav-links a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
       }
 
-      /* Message styling */
-      .message {
-        padding: var(--spacing-md);
-        border-radius: var(--border-radius);
-        margin-bottom: var(--spacing-lg);
-      }
-
-      .message-error {
-        background: rgba(220, 53, 69, 0.1);
-        border: 1px solid var(--error-color);
-        color: var(--error-color);
-      }
-
-      .message-success {
-        background: rgba(31, 125, 83, 0.1);
-        border: 1px solid var(--primary-color);
-        color: var(--primary-color);
-      }
-
-      /* Enhanced Terms & Assessments Specific Styling */
-
-      /* Enhanced Statistics Section */
+      /* Statistics section */
       .stats-section {
         background: white;
         padding: 2.5rem;
@@ -367,7 +234,192 @@
         display: block;
       }
 
-      /* Enhanced Checkbox Styling */
+      /* Forms grid layout */
+      .forms-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-xl);
+        margin: var(--spacing-xl) 0;
+      }
+
+      /* Form card styling */
+      .form-card {
+        background: var(--white);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+      }
+
+      .form-card h2 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.3rem;
+      }
+
+      /* Section styling */
+      .terms-section,
+      .assessments-section {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(31, 125, 83, 0.1);
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .terms-section::before,
+      .assessments-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #17a2b8, var(--primary-color));
+      }
+
+      .terms-section h2,
+      .assessments-section h2 {
+        color: var(--primary-color);
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      /* Form styling */
+      .form-group {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        color: var(--text-dark);
+        font-weight: 500;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        color: var(--text-dark);
+        background: var(--white);
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
+      }
+
+      /* Button styling */
+      .manage-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--primary-color);
+        color: var(--white);
+        border: none;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      .manage-btn:hover {
+        background: var(--secondary-color);
+      }
+
+      /* Table improvements */
+      .table-responsive {
+        overflow-x: auto;
+        margin: var(--spacing-lg) 0;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        background: var(--white);
+      }
+
+      table {
+        width: 100%;
+        min-width: 600px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      th {
+        background: var(--primary-color);
+        color: var(--white);
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      tr:nth-child(even) {
+        background: rgba(31, 125, 83, 0.05);
+      }
+
+      tr:hover {
+        background: rgba(31, 125, 83, 0.1);
+      }
+
+      /* Action buttons */
+      .action-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap;
+      }
+
+      .edit-btn,
+      .delete-btn {
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+
+      .edit-btn {
+        background: #fdf0c7 !important;
+        color: var(--solar-text-primary) !important;
+        border: 1px solid rgba(245, 199, 0, 0.3) !important;
+      }
+
+      .edit-btn:hover {
+        background: #fde9aa !important;
+      }
+
+      .delete-btn {
+        background: #fbe3e5 !important;
+        color: var(--solar-red) !important;
+        border: 1px solid rgba(220, 50, 47, 0.25) !important;
+      }
+
+      .delete-btn:hover {
+        background: #f8d2d6 !important;
+      }
+
+      /* Checkbox styling */
       .checkbox-group {
         display: flex;
         align-items: center;
@@ -410,6 +462,7 @@
       /* Enhanced Number Input Styling */
       input[type="number"] {
         -moz-appearance: textfield;
+        appearance: textfield;
       }
 
       input[type="number"]::-webkit-outer-spin-button,
@@ -464,41 +517,6 @@
         opacity: 0.5;
       }
 
-      /* Enhanced Section Styling */
-      .terms-section,
-      .assessments-section {
-        background: white;
-        padding: 2.5rem;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(31, 125, 83, 0.1);
-        margin-bottom: 3rem;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .terms-section::before,
-      .assessments-section::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #17a2b8, var(--primary-color));
-      }
-
-      .terms-section h2,
-      .assessments-section h2 {
-        color: var(--primary-color);
-        margin-bottom: 2rem;
-        font-size: 1.8rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
       /* Enhanced Responsive design */
       @media (max-width: 768px) {
         .stats-grid {
@@ -530,18 +548,78 @@
     </style>
   </head>
   <body>
-    <div class="manage-container">
+    <div
+      class="manage-container"
+      id="manage-root"
+      data-is-headteacher="{{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }}"
+    >
       <header class="page-header">
-        <h1>📅 Manage Terms & Assessments</h1>
+        <h1>
+          <!-- Heroicon: calendar-days -->
+          <svg
+            class="heroicon heroicon-lg heroicon-solar-yellow"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M6.75 2.25a.75.75 0 01.75.75V4.5h9V3a.75.75 0 011.5 0V4.5h.75A2.25 2.25 0 0121.75 6.75v10.5A2.25 2.25 0 0119.5 19.5H4.5A2.25 2.25 0 012.25 17.25V6.75A2.25 2.25 0 014.5 4.5h.75V3a.75.75 0 01.75-.75zM4.5 6h15a.75.75 0 01.75.75V9H3.75V6.75A.75.75 0 014.5 6z"
+            />
+            <path d="M7.5 12.75h3v3h-3v-3z" />
+          </svg>
+          Manage Terms & Assessments
+        </h1>
         <p class="page-subtitle">
           Organize academic terms, assessment types, and evaluation periods
         </p>
         <div class="nav-links">
-          <a href="{{ url_for('classteacher.teacher_management_hub') }}"
-            >Teacher Hub</a
-          >
-          <a href="{{ url_for('classteacher.dashboard') }}">Dashboard</a>
-          <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+          <a href="{{ url_for('classteacher.teacher_management_hub') }}">
+            <!-- Heroicon: rectangle-stack -->
+            <svg
+              class="heroicon heroicon-solar-blue"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 18H6A2.25 2.25 0 013.75 15.75V6zM6 5.25a.75.75 0 00-.75.75v9.75c0 .414.336.75.75.75h11.25a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H16.5V6a.75.75 0 00-.75-.75H6z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            Teacher Hub
+          </a>
+          <a href="{{ url_for('classteacher.dashboard') }}">
+            <!-- Heroicon: squares-2x2 -->
+            <svg
+              class="heroicon heroicon-solar-green"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                d="M3.75 4.5A2.25 2.25 0 016 2.25h3A2.25 2.25 0 0111.25 4.5v3A2.25 2.25 0 019 9.75H6A2.25 2.25 0 013.75 7.5v-3zM12.75 4.5A2.25 2.25 0 0115 2.25h3A2.25 2.25 0 0120.75 4.5v3A2.25 2.25 0 0118 9.75h-3A2.25 2.25 0 0112.75 7.5v-3zM3.75 13.5A2.25 2.25 0 016 11.25h3A2.25 2.25 0 0111.25 13.5v3A2.25 2.25 0 019 18.75H6A2.25 2.25 0 013.75 16.5v-3zM12.75 13.5A2.25 2.25 0 0115 11.25h3A2.25 2.25 0 0120.75 13.5v3A2.25 2.25 0 0118 18.75h-3A2.25 2.25 0 0112.75 16.5v-3z"
+              />
+            </svg>
+            Dashboard
+          </a>
+          <a href="{{ url_for('auth.logout_route') }}">
+            <!-- Heroicon: arrow-right-on-rectangle -->
+            <svg
+              class="heroicon heroicon-solar-red"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3.75 5.25A2.25 2.25 0 016 3h6a2.25 2.25 0 012.25 2.25v2.378a.75.75 0 01-1.5 0V5.25a.75.75 0 00-.75-.75H6a.75.75 0 00-.75.75v13.5c0 .414.336.75.75.75h6a.75.75 0 00.75-.75v-2.378a.75.75 0 011.5 0v2.378A2.25 2.25 0 0112 21H6a2.25 2.25 0 01-2.25-2.25V5.25z"
+                clip-rule="evenodd"
+              />
+              <path
+                fill-rule="evenodd"
+                d="M14.47 15.28a.75.75 0 001.06 0l3-3a.75.75 0 000-1.06l-3-3a.75.75 0 10-1.06 1.06l1.72 1.72H9a.75.75 0 000 1.5h7.19l-1.72 1.72a.75.75 0 000 1.06z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            Logout
+          </a>
         </div>
       </header>
 
@@ -556,7 +634,19 @@
 
       <!-- Statistics Section -->
       <div class="stats-section">
-        <h2>📊 Academic Overview</h2>
+        <h2>
+          <!-- Heroicon: chart-bar -->
+          <svg
+            class="heroicon heroicon-solar-blue"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M2.25 13.5a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v6a.75.75 0 01-.75.75H3a.75.75 0 01-.75-.75v-6zM8.25 9a.75.75 0 01.75-.75H11.25a.75.75 0 01.75.75v10.5a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75V9zM14.25 5.25a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v14.25a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z"
+            />
+          </svg>
+          Academic Overview
+        </h2>
         <div class="stats-grid">
           <div class="stat-card">
             <h3>Total Terms</h3>
@@ -581,7 +671,19 @@
       <div class="forms-grid">
         <!-- Add New Term Form -->
         <div class="form-card">
-          <h2>📅 Add New Term</h2>
+          <h2>
+            <!-- Heroicon: calendar-days -->
+            <svg
+              class="heroicon heroicon-solar-yellow"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                d="M6.75 2.25a.75.75 0 01.75.75V4.5h9V3a.75.75 0 011.5 0V4.5h.75A2.25 2.25 0 0121.75 6.75v10.5A2.25 2.25 0 0119.5 19.5H4.5A2.25 2.25 0 012.25 17.25V6.75A2.25 2.25 0 014.5 4.5h.75V3a.75.75 0 01.75-.75zM4.5 6h15a.75.75 0 01.75.75V9H3.75V6.75A.75.75 0 014.5 6z"
+              />
+            </svg>
+            Add New Term
+          </h2>
           <form
             method="POST"
             action="{{ url_for('classteacher.manage_terms_assessments') }}"
@@ -642,6 +744,11 @@
             </div>
 
             <button type="submit" name="add_term" class="manage-btn">
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 4.5a.75.75 0 01.75.75V11.25H18a.75.75 0 010 1.5h-5.25V18a.75.75 0 01-1.5 0v-5.25H6a.75.75 0 010-1.5h5.25V5.25A.75.75 0 0112 4.5z"
+                />
+              </svg>
               Add Term
             </button>
           </form>
@@ -649,7 +756,19 @@
 
         <!-- Add New Assessment Type Form -->
         <div class="form-card">
-          <h2>📝 Add New Assessment Type</h2>
+          <h2>
+            <!-- Heroicon: document-text -->
+            <svg
+              class="heroicon heroicon-solar-blue"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                d="M4.5 3.75A2.25 2.25 0 016.75 1.5h10.5A2.25 2.25 0 0119.5 3.75v16.5a.75.75 0 01-1.17.624l-3.66-2.44a2.25 2.25 0 00-1.24-.384H6.75A2.25 2.25 0 014.5 15.75V3.75z"
+              />
+            </svg>
+            Add New Assessment Type
+          </h2>
           <form
             method="POST"
             action="{{ url_for('classteacher.manage_terms_assessments') }}"
@@ -704,6 +823,11 @@
             </div>
 
             <button type="submit" name="add_assessment" class="manage-btn">
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 4.5a.75.75 0 01.75.75V11.25H18a.75.75 0 010 1.5h-5.25V18a.75.75 0 01-1.5 0v-5.25H6a.75.75 0 010-1.5h5.25V5.25A.75.75 0 0112 4.5z"
+                />
+              </svg>
               Add Assessment Type
             </button>
           </form>
@@ -712,7 +836,19 @@
 
       <!-- Terms Section -->
       <div class="terms-section">
-        <h2>📅 Existing Terms</h2>
+        <h2>
+          <!-- Heroicon: calendar-days -->
+          <svg
+            class="heroicon heroicon-solar-yellow"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M6.75 2.25a.75.75 0 01.75.75V4.5h9V3a.75.75 0 011.5 0V4.5h.75A2.25 2.25 0 0121.75 6.75v10.5A2.25 2.25 0 0119.5 19.5H4.5A2.25 2.25 0 012.25 17.25V6.75A2.25 2.25 0 014.5 4.5h.75V3a.75.75 0 01.75-.75zM4.5 6h15a.75.75 0 01.75.75V9H3.75V6.75A.75.75 0 014.5 6z"
+            />
+          </svg>
+          Existing Terms
+        </h2>
         {% if terms %}
         <div class="table-responsive">
           <table>
@@ -755,15 +891,38 @@
                 <td>
                   <div class="action-buttons">
                     <button
-                      class="edit-btn"
-                      onclick="editTerm({{ term.id }}, '{{ term.name }}', '{{ term.academic_year if term.academic_year else '' }}')"
+                      class="edit-btn edit-term-btn"
+                      data-term-id="{{ term.id }}"
+                      data-term-name="{{ term.name }}"
+                      data-academic-year="{{ term.academic_year if term.academic_year else '' }}"
                     >
+                      <svg
+                        class="heroicon"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M16.862 3.487a2.1 2.1 0 112.97 2.97L8.36 17.93a4.2 4.2 0 01-1.672 1.05l-2.66.887a.6.6 0 01-.759-.76l.887-2.659a4.2 4.2 0 011.05-1.673L16.862 3.487z"
+                        />
+                      </svg>
                       Edit
                     </button>
                     <button
-                      class="delete-btn"
-                      onclick="deleteTerm({{ term.id }}, '{{ term.name }}')"
+                      class="delete-btn delete-term-btn"
+                      data-term-id="{{ term.id }}"
+                      data-term-name="{{ term.name }}"
                     >
+                      <svg
+                        class="heroicon"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M9 2.25A1.5 1.5 0 007.5 3.75V4.5H4.5a.75.75 0 000 1.5h.69l.62 12a2.25 2.25 0 002.247 2.1h7.226a2.25 2.25 0 002.247-2.1l.62-12h.69a.75.75 0 000-1.5H16.5V3.75A1.5 1.5 0 0015 2.25H9z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
                       Delete
                     </button>
                   </div>
@@ -780,7 +939,19 @@
 
       <!-- Assessment Types Section -->
       <div class="assessments-section">
-        <h2>📝 Existing Assessment Types</h2>
+        <h2>
+          <!-- Heroicon: document-text -->
+          <svg
+            class="heroicon heroicon-solar-blue"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M4.5 3.75A2.25 2.25 0 016.75 1.5h10.5A2.25 2.25 0 0119.5 3.75v16.5a.75.75 0 01-1.17.624l-3.66-2.44a2.25 2.25 0 00-1.24-.384H6.75A2.25 2.25 0 014.5 15.75V3.75z"
+            />
+          </svg>
+          Existing Assessment Types
+        </h2>
         {% if assessment_types %}
         <div class="table-responsive">
           <table>
@@ -819,15 +990,40 @@
                 <td>
                   <div class="action-buttons">
                     <button
-                      class="edit-btn"
-                      onclick="editAssessment({{ assessment.id }}, '{{ assessment.name }}', '{{ assessment.weight if assessment.weight else '' }}', '{{ assessment.group if assessment.group else '' }}', {{ 'true' if assessment.show_on_reports else 'false' }})"
+                      class="edit-btn edit-assessment-btn"
+                      data-assessment-id="{{ assessment.id }}"
+                      data-assessment-name="{{ assessment.name }}"
+                      data-assessment-weight="{{ assessment.weight if assessment.weight else '' }}"
+                      data-assessment-group="{{ assessment.group if assessment.group else '' }}"
+                      data-show-on-reports="{{ 'true' if assessment.show_on_reports else 'false' }}"
                     >
+                      <svg
+                        class="heroicon"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M16.862 3.487a2.1 2.1 0 112.97 2.97L8.36 17.93a4.2 4.2 0 01-1.672 1.05l-2.66.887a.6.6 0 01-.759-.76l.887-2.659a4.2 4.2 0 011.05-1.673L16.862 3.487z"
+                        />
+                      </svg>
                       Edit
                     </button>
                     <button
-                      class="delete-btn"
-                      onclick="deleteAssessment({{ assessment.id }}, '{{ assessment.name }}')"
+                      class="delete-btn delete-assessment-btn"
+                      data-assessment-id="{{ assessment.id }}"
+                      data-assessment-name="{{ assessment.name }}"
                     >
+                      <svg
+                        class="heroicon"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M9 2.25A1.5 1.5 0 007.5 3.75V4.5H4.5a.75.75 0 000 1.5h.69l.62 12a2.25 2.25 0 002.247 2.1h7.226a2.25 2.25 0 002.247-2.1l.62-12h.69a.75.75 0 000-1.5H16.5V3.75A1.5 1.5 0 0015 2.25H9z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
                       Delete
                     </button>
                   </div>
@@ -847,17 +1043,60 @@
     </div>
 
     <script>
-      // Functions for editing and deleting terms and assessments
+      // Delegate button clicks to avoid inline onclick and fix lints
+      document.addEventListener("DOMContentLoaded", function () {
+        document.body.addEventListener("click", function (e) {
+          const termEdit = e.target.closest(".edit-term-btn");
+          if (termEdit) {
+            editTerm(
+              termEdit.dataset.termId,
+              termEdit.dataset.termName,
+              termEdit.dataset.academicYear || ""
+            );
+            return;
+          }
+          const termDelete = e.target.closest(".delete-term-btn");
+          if (termDelete) {
+            deleteTerm(termDelete.dataset.termId, termDelete.dataset.termName);
+            return;
+          }
+          const assessEdit = e.target.closest(".edit-assessment-btn");
+          if (assessEdit) {
+            const showOnReports = assessEdit.dataset.showOnReports === "true";
+            editAssessment(
+              assessEdit.dataset.assessmentId,
+              assessEdit.dataset.assessmentName,
+              assessEdit.dataset.assessmentWeight || "",
+              assessEdit.dataset.assessmentGroup || "",
+              showOnReports
+            );
+            return;
+          }
+          const assessDelete = e.target.closest(".delete-assessment-btn");
+          if (assessDelete) {
+            deleteAssessment(
+              assessDelete.dataset.assessmentId,
+              assessDelete.dataset.assessmentName
+            );
+          }
+        });
+      });
+
+      // Headteacher flag read from DOM data attribute (avoid Jinja in JS)
+      const isHeadteacher =
+        document.getElementById("manage-root")?.dataset.isHeadteacher ===
+        "true";
+
+      // Helper functions used by delegated handlers
       function editTerm(id, name, academicYear) {
-        // For now, just populate the form with existing values
-        document.getElementById("term_name").value = name;
-        if (academicYear) {
-          document.getElementById("academic_year").value = academicYear;
-        }
+        // Populate the term form with existing values
+        const termNameEl = document.getElementById("term_name");
+        const acadYearEl = document.getElementById("academic_year");
+        if (termNameEl) termNameEl.value = name || "";
+        if (acadYearEl) acadYearEl.value = academicYear || "";
         // Scroll to form
-        document
-          .querySelector(".form-card")
-          .scrollIntoView({ behavior: "smooth" });
+        const formCard = document.querySelector(".form-card");
+        if (formCard) formCard.scrollIntoView({ behavior: "smooth" });
       }
 
       function deleteTerm(id, name) {
@@ -866,7 +1105,6 @@
             `Are you sure you want to delete the term "${name}"? This action cannot be undone.`
           )
         ) {
-          // Create a form to submit the delete request
           const form = document.createElement("form");
           form.method = "POST";
           form.action =
@@ -890,57 +1128,47 @@
           form.appendChild(csrfToken);
           form.appendChild(termId);
           form.appendChild(deleteAction);
-
           document.body.appendChild(form);
           form.submit();
         }
       }
 
       function editAssessment(id, name, weight, group, showOnReports) {
-        // Populate the assessment form with existing values
-        document.getElementById("assessment_name").value = name;
-        if (weight) {
-          document.getElementById("assessment_weight").value = weight;
-        }
-        if (group) {
-          document.getElementById("assessment_group").value = group;
-        }
-        document.getElementById("show_on_reports").checked = showOnReports;
-
-        // Scroll to form
-        document
-          .querySelectorAll(".form-card")[1]
-          .scrollIntoView({ behavior: "smooth" });
+        const nameEl = document.getElementById("assessment_name");
+        const weightEl = document.getElementById("assessment_weight");
+        const groupEl = document.getElementById("assessment_group");
+        const showEl = document.getElementById("show_on_reports");
+        if (nameEl) nameEl.value = name || "";
+        if (weightEl) weightEl.value = weight || "";
+        if (groupEl) groupEl.value = group || "";
+        if (showEl) showEl.checked = !!showOnReports;
+        const cards = document.querySelectorAll(".form-card");
+        if (cards && cards[1]) cards[1].scrollIntoView({ behavior: "smooth" });
       }
 
       function deleteAssessment(id, name) {
-        // Check if user is headteacher (has universal access)
-        const isHeadteacher = {{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }};
-
         let confirmMessage = `Are you sure you want to delete the assessment type "${name}"? This action cannot be undone.`;
         let forceDelete = false;
 
         if (isHeadteacher) {
-          // For headteachers, offer force delete option
-          const userChoice = confirm(confirmMessage + "\n\nClick OK to proceed with normal delete, or Cancel to see force delete option.");
-
+          const userChoice = confirm(
+            confirmMessage +
+              "\n\nClick OK to proceed with normal delete, or Cancel to see force delete option."
+          );
           if (!userChoice) {
-            // User clicked Cancel, offer force delete
-            const forceChoice = confirm(`Force delete "${name}"? This will delete the assessment type AND all associated marks. This action cannot be undone.`);
+            const forceChoice = confirm(
+              `Force delete "${name}"? This will delete the assessment type AND all associated marks. This action cannot be undone.`
+            );
             if (forceChoice) {
               forceDelete = true;
             } else {
-              return; // User cancelled
+              return; // cancelled
             }
           }
         } else {
-          // Regular confirmation for non-headteachers
-          if (!confirm(confirmMessage)) {
-            return;
-          }
+          if (!confirm(confirmMessage)) return;
         }
 
-        // Create a form to submit the delete request
         const form = document.createElement("form");
         form.method = "POST";
         form.action = '{{ url_for("classteacher.manage_terms_assessments") }}';
@@ -960,7 +1188,10 @@
         deleteAction.name = "delete_assessment";
         deleteAction.value = "1";
 
-        // Add force delete flag if needed
+        form.appendChild(csrfToken);
+        form.appendChild(assessmentId);
+        form.appendChild(deleteAction);
+
         if (forceDelete) {
           const forceDeleteInput = document.createElement("input");
           forceDeleteInput.type = "hidden";
@@ -968,10 +1199,6 @@
           forceDeleteInput.value = "true";
           form.appendChild(forceDeleteInput);
         }
-
-        form.appendChild(csrfToken);
-        form.appendChild(assessmentId);
-        form.appendChild(deleteAction);
 
         document.body.appendChild(form);
         form.submit();

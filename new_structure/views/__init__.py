@@ -17,25 +17,21 @@ from .subject_config_api import subject_config_api
 from .missing_routes import missing_routes_bp
 from .mobile_performance_api import mobile_performance_api
 
-# Import parent portal blueprints with error handling - TEMPORARILY DISABLED
-# try:
-#     from .parent_simple import parent_simple_bp
-#     parent_bp_available = True
-# except ImportError:
-#     parent_simple_bp = None
-#     parent_bp_available = False
-parent_simple_bp = None
-parent_bp_available = False
+# Import parent portal blueprints with error handling
+try:
+    from .parent_simple import parent_simple_bp
+    parent_bp_available = True
+except ImportError:
+    parent_simple_bp = None
+    parent_bp_available = False
 
-# Import parent management blueprint with error handling - TEMPORARILY DISABLED
-# try:
-#     from .parent_management import parent_management_bp
-#     parent_mgmt_bp_available = True
-# except ImportError:
-#     parent_management_bp = None
-#     parent_mgmt_bp_available = False
-parent_management_bp = None
-parent_mgmt_bp_available = False
+# Import parent management blueprint with error handling
+try:
+    from .parent_management import parent_management_bp
+    parent_mgmt_bp_available = True
+except ImportError:
+    parent_management_bp = None
+    parent_mgmt_bp_available = False
 
 # Import email configuration blueprint with error handling - TEMPORARILY DISABLED
 # try:

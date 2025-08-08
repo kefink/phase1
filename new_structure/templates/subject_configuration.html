@@ -4,15 +4,61 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Subject Configuration - {{ school_name }}</title>
+
+    <!-- Heroicons - Premium SVG Icons (No external dependencies, guaranteed display) -->
+    <style>
+      /* Heroicons SVG Icon Base Styles */
+      .heroicon {
+        display: inline-block;
+        width: 1.25rem;
+        height: 1.25rem;
+        fill: currentColor;
+        vertical-align: middle;
+      }
+
+      .heroicon-lg {
+        width: 1.8rem;
+        height: 1.8rem;
+      }
+
+      .heroicon-xl {
+        width: 2.5rem;
+        height: 2.5rem;
+      }
+
+      /* Solar Theme Heroicon Colors */
+      .heroicon-solar-yellow {
+        fill: #b58900;
+      }
+      .heroicon-solar-blue {
+        fill: #268bd2;
+      }
+      .heroicon-solar-green {
+        fill: #859900;
+      }
+      .heroicon-solar-red {
+        fill: #dc322f;
+      }
+    </style>
+
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
-    />
+
+    <!-- SOLAR THEME OVERRIDES - MUST COME AFTER BOOTSTRAP -->
     <style>
+      /* FORCE SOLAR THEME BACKGROUND - HIGHEST PRIORITY */
+      html {
+        background: linear-gradient(
+          135deg,
+          #fdf6e3 0%,
+          #eee8d5 50%,
+          #d6d2c4 100%
+        ) !important;
+        min-height: 100vh !important;
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -20,18 +66,56 @@
       }
 
       body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        padding: 20px;
+        background: linear-gradient(
+          135deg,
+          #fdf6e3 0%,
+          #eee8d5 50%,
+          #d6d2c4 100%
+        ) !important;
+        min-height: 100vh !important;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        overflow-x: hidden !important;
+        background-attachment: fixed !important;
+      }
+
+      /* Override any Bootstrap or external CSS backgrounds */
+      body,
+      html,
+      .container,
+      .container-fluid,
+      .container-lg,
+      .container-md,
+      .container-sm,
+      .container-xl,
+      .container-xxl {
+        background: linear-gradient(
+          135deg,
+          #fdf6e3 0%,
+          #eee8d5 50%,
+          #d6d2c4 100%
+        ) !important;
+      }
+
+      /* Force Solar background on all possible containers */
+      div,
+      main,
+      section,
+      article {
+        background: transparent !important;
       }
 
       .config-container {
-        background: rgba(255, 255, 255, 0.95);
+        background: linear-gradient(
+          145deg,
+          rgba(253, 246, 227, 0.95) 0%,
+          rgba(238, 232, 213, 0.9) 100%
+        );
         backdrop-filter: blur(15px);
         border-radius: 25px;
-        box-shadow: 0 20px 40px rgba(31, 38, 135, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
+        border: 2px solid rgba(181, 137, 0, 0.2);
         max-width: 1400px;
         margin: 0 auto;
         padding: 40px;
@@ -40,14 +124,14 @@
       .config-header {
         text-align: center;
         margin-bottom: 40px;
-        color: #2c3e50;
+        color: #002b36;
       }
 
       .config-header h1 {
         font-size: 2.5rem;
         font-weight: 700;
         margin-bottom: 10px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, #b58900, #268bd2);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -55,7 +139,7 @@
 
       .config-header .lead {
         font-size: 1.1rem;
-        color: #6c757d;
+        color: #586e75;
         font-weight: 400;
       }
 
@@ -69,12 +153,16 @@
       }
 
       .config-card {
-        background: rgba(255, 255, 255, 0.9);
+        background: linear-gradient(
+          145deg,
+          rgba(253, 246, 227, 0.95) 0%,
+          rgba(238, 232, 213, 0.9) 100%
+        );
         border-radius: 20px;
         padding: 30px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 2px solid rgba(181, 137, 0, 0.3);
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 25px rgba(0, 43, 54, 0.1);
         flex: 1 1 400px;
         max-width: 450px;
         min-height: 320px;
@@ -91,14 +179,14 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
+        background: linear-gradient(90deg, #b58900, #268bd2);
         border-radius: 20px 20px 0 0;
       }
 
       .config-card:hover {
         transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 20px 40px rgba(0, 43, 54, 0.2);
+        border-color: rgba(181, 137, 0, 0.6);
       }
 
       /* Card Header Styling */
@@ -108,19 +196,19 @@
         align-items: center;
         margin-bottom: 25px;
         padding-bottom: 15px;
-        border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+        border-bottom: 2px solid rgba(181, 137, 0, 0.2);
       }
 
       .subject-name {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #2c3e50;
+        color: #002b36;
         text-transform: capitalize;
         margin: 0;
       }
 
       .education-level-badge {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, #b58900, #859900);
         color: white;
         padding: 8px 16px;
         border-radius: 25px;
@@ -128,7 +216,7 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 15px rgba(181, 137, 0, 0.3);
       }
 
       /* Toggle Section */
@@ -138,15 +226,15 @@
         align-items: center;
         margin-bottom: 25px;
         padding: 20px;
-        background: rgba(102, 126, 234, 0.05);
+        background: rgba(181, 137, 0, 0.08);
         border-radius: 15px;
-        border: 1px solid rgba(102, 126, 234, 0.1);
+        border: 1px solid rgba(181, 137, 0, 0.2);
       }
 
       .toggle-label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #495057;
+        color: #073642;
       }
 
       .toggle-controls {
@@ -165,15 +253,15 @@
       }
 
       .status-composite {
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #859900, #b58900);
         color: white;
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        box-shadow: 0 4px 15px rgba(133, 153, 0, 0.3);
       }
 
       .status-simple {
-        background: linear-gradient(135deg, #dc3545, #fd7e14);
+        background: linear-gradient(135deg, #dc322f, #cb4b16);
         color: white;
-        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        box-shadow: 0 4px 15px rgba(220, 50, 47, 0.3);
       }
 
       /* Modern Toggle Switch */
@@ -197,10 +285,10 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(135deg, #e9ecef, #dee2e6);
+        background: linear-gradient(135deg, #93a1a1, #839496);
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         border-radius: 38px;
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: inset 0 2px 4px rgba(0, 43, 54, 0.1);
       }
 
       .slider:before {
@@ -210,33 +298,33 @@
         width: 30px;
         left: 4px;
         bottom: 4px;
-        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        background: linear-gradient(135deg, #fdf6e3, #eee8d5);
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         border-radius: 50%;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 8px rgba(0, 43, 54, 0.2);
       }
 
       input:checked + .slider {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #b58900, #268bd2);
+        box-shadow: 0 0 20px rgba(181, 137, 0, 0.4);
       }
 
       input:checked + .slider:before {
         transform: translateX(32px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 43, 54, 0.3);
       }
 
       /* Component Information */
       .component-info {
         background: linear-gradient(
           135deg,
-          rgba(40, 167, 69, 0.05),
-          rgba(25, 135, 84, 0.05)
+          rgba(133, 153, 0, 0.08),
+          rgba(181, 137, 0, 0.08)
         );
         border-radius: 15px;
         padding: 20px;
         margin-top: 20px;
-        border: 1px solid rgba(40, 167, 69, 0.2);
+        border: 1px solid rgba(133, 153, 0, 0.2);
         backdrop-filter: blur(10px);
       }
 
@@ -245,12 +333,12 @@
         align-items: flex-start;
         gap: 12px;
         font-size: 0.95rem;
-        color: #495057;
+        color: #586e75;
         line-height: 1.5;
       }
 
       .info-text i {
-        color: #28a745;
+        color: #859900;
         margin-top: 2px;
         font-size: 1.1rem;
       }
@@ -271,7 +359,7 @@
       }
 
       .btn-primary {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, #b58900, #859900);
         border: none;
         border-radius: 25px;
         padding: 15px 30px;
@@ -283,17 +371,18 @@
         align-items: center;
         gap: 10px;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 8px 25px rgba(181, 137, 0, 0.3);
       }
 
       .btn-primary:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 15px 35px rgba(181, 137, 0, 0.4);
         color: white;
+        background: linear-gradient(135deg, #859900, #b58900);
       }
 
       .btn-secondary {
-        background: linear-gradient(135deg, #6c757d, #495057);
+        background: linear-gradient(135deg, #586e75, #073642);
         border: none;
         border-radius: 25px;
         padding: 15px 30px;
@@ -305,13 +394,14 @@
         align-items: center;
         gap: 10px;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+        box-shadow: 0 8px 25px rgba(88, 110, 117, 0.3);
       }
 
       .btn-secondary:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(108, 117, 125, 0.4);
+        box-shadow: 0 15px 35px rgba(88, 110, 117, 0.4);
         color: white;
+        background: linear-gradient(135deg, #073642, #002b36);
       }
 
       /* Responsive Design */
@@ -357,7 +447,26 @@
   <body>
     <div class="config-container">
       <div class="config-header">
-        <h1><i class="fas fa-cogs"></i> Subject Configuration</h1>
+        <h1>
+          <!-- Heroicon: cog-6-tooth (solid) - Settings/Configuration icon -->
+          <svg
+            class="heroicon heroicon-lg heroicon-solar-yellow"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.032.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.570.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.032-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348L13.928 3.817c-.151-.904-.933-1.567-1.85-1.567h-1.844z"
+              clip-rule="evenodd"
+            />
+            <path
+              fill-rule="evenodd"
+              d="M12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Subject Configuration
+        </h1>
         <p class="lead">
           Toggle English and Kiswahili between composite and simple modes. Raw
           marks for composite subjects are entered during marks upload.
@@ -411,7 +520,18 @@
             id="components-{{ config.subject_name }}-{{ config.education_level }}"
           >
             <div class="info-text">
-              <i class="fas fa-info-circle"></i>
+              <!-- Heroicon: information-circle (solid) - Info icon -->
+              <svg
+                class="heroicon heroicon-solar-blue"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z"
+                  clip-rule="evenodd"
+                />
+              </svg>
               <span>
                 When composite mode is enabled, this subject will show
                 <strong>{{ config.component_1_name }}</strong> and
@@ -428,11 +548,30 @@
       <!-- Action Buttons -->
       <div class="action-buttons">
         <button id="saveAllBtn" class="btn-primary" type="button">
-          <i class="fas fa-save"></i> Save All Configurations
+          <!-- Heroicon: document-check (solid) - Save icon -->
+          <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
+            <path
+              fill-rule="evenodd"
+              d="M3.75 3.375c0-1.036.84-1.875 1.875-1.875H9.75a.75.75 0 01.75.75v3.75h3.75a.75.75 0 01.75.75v6.75a.75.75 0 01-.75.75h-9a.75.75 0 01-.75-.75V3.375zm6 8.25a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-3a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h3a.75.75 0 000-1.5h-3z"
+              clip-rule="evenodd"
+            />
+            <path
+              d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z"
+            />
+          </svg>
+          Save All Configurations
         </button>
 
         <a href="{{ url_for('universal.dashboard') }}" class="btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Dashboard
+          <!-- Heroicon: arrow-left (solid) - Back arrow icon -->
+          <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
+            <path
+              fill-rule="evenodd"
+              d="M9.53 2.47a.75.75 0 010 1.06L4.81 8.25H15a6.75 6.75 0 010 13.5H9a.75.75 0 010-1.5h6a5.25 5.25 0 100-10.5H4.81l4.72 4.72a.75.75 0 11-1.06 1.06l-6-6a.75.75 0 010-1.06l6-6a.75.75 0 011.06 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Back to Dashboard
         </a>
       </div>
     </div>
@@ -532,7 +671,7 @@
         if (saveBtn) {
           saveBtn.disabled = true;
           saveBtn.innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            '<svg class="heroicon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25A.75.75 0 0112.75 3v7.25H20a.75.75 0 010 1.5h-7.25V19a.75.75 0 01-1.5 0v-7.25H4a.75.75 0 010-1.5h7.25V3a.75.75 0 01.75-.75z"/></svg> Saving...';
         }
 
         // Get CSRF token if available
@@ -597,7 +736,7 @@
             if (saveBtn) {
               saveBtn.disabled = false;
               saveBtn.innerHTML =
-                '<i class="fas fa-save"></i> Save All Configurations';
+                '<svg class="heroicon" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M3.75 3.375c0-1.036.84-1.875 1.875-1.875H9.75a.75.75 0 01.75.75v3.75h3.75a.75.75 0 01.75.75v6.75a.75.75 0 01-.75.75h-9a.75.75 0 01-.75-.75V3.375zm6 8.25a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-3a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h3a.75.75 0 000-1.5h-3z" clip-rule="evenodd"/><path d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z"/></svg> Save All Configurations';
             }
           });
       }
@@ -707,13 +846,13 @@
 
         notification.innerHTML = `
           <div style="display: flex; align-items: flex-start; gap: 15px; width: 100%;">
-            <i class="fas fa-${
+            ${
               type === "success"
-                ? "check-circle"
+                ? '<svg class="heroicon-lg heroicon-solar-green" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/></svg>'
                 : type === "error"
-                ? "exclamation-triangle"
-                : "info-circle"
-            }" style="font-size: 24px; margin-top: 2px; flex-shrink: 0;"></i>
+                ? '<svg class="heroicon-lg heroicon-solar-red" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/></svg>'
+                : '<svg class="heroicon-lg heroicon-solar-blue" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/></svg>'
+            }
             <div style="flex: 1; word-wrap: break-word; overflow-wrap: break-word;">
               ${message}
             </div>

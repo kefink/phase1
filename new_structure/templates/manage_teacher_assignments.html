@@ -4,328 +4,265 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manage Teacher Assignments - Hillview School</title>
+    <!-- Inter font for Solar theme -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
     <style>
-      /* Override container styles for manage pages */
+      /* Solar Theme Tokens + Heroicon classes */
+      :root {
+        --solar-bg-1: #fdf6e3;
+        --solar-bg-2: #eee8d5;
+        --solar-bg-3: #d6d2c4;
+        --solar-primary: #b58900;
+        --solar-secondary: #268bd2;
+        --solar-green: #859900;
+        --solar-red: #dc322f;
+        --solar-text-primary: #002b36;
+        --solar-text-secondary: #073642;
+      }
+      /* Map legacy variables to Solar */
+      :root {
+        --primary-color: var(--solar-primary) !important;
+        --secondary-color: var(--solar-secondary) !important;
+        --background-color: var(--solar-bg-2) !important;
+        --white: #ffffff !important;
+        --border-color: rgba(238, 232, 213, 0.5) !important;
+        --shadow-md: 0 10px 30px rgba(181, 137, 0, 0.1) !important;
+        --border-radius: 10px !important;
+        --border-radius-lg: 16px !important;
+        --spacing-sm: 8px !important;
+        --spacing-md: 12px !important;
+        --spacing-lg: 20px !important;
+        --spacing-xl: 32px !important;
+        --transition: all 0.25s ease !important;
+      }
+      body {
+        background: linear-gradient(
+            135deg,
+            var(--solar-bg-1) 0%,
+            var(--solar-bg-2) 60%,
+            var(--solar-bg-3) 100%
+          ) !important;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif !important;
+        color: var(--solar-text-primary) !important;
+      }
+      .heroicon {
+        display: inline-block;
+        width: 1.1rem;
+        height: 1.1rem;
+        fill: currentColor;
+        vertical-align: middle;
+      }
+      .heroicon-lg {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+      .heroicon-solar-blue {
+        color: var(--solar-secondary);
+      }
+      .heroicon-solar-green {
+        color: var(--solar-green);
+      }
+      .heroicon-solar-yellow {
+        color: var(--solar-primary);
+      }
+      .heroicon-solar-red {
+        color: var(--solar-red);
+      }
+
+      /* Container + Header - Solar glass look */
       .manage-container {
         max-width: 95% !important;
         width: 95% !important;
-        margin: 80px auto 60px !important;
-        padding: var(--spacing-xl) !important;
+        margin: 40px auto 60px !important;
+        padding: 0 !important;
+        background: transparent !important;
       }
-
-      /* Page header styling */
       .page-header {
-        background: var(--white);
-        padding: var(--spacing-lg);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-color);
-        margin-bottom: var(--spacing-xl);
+        background: linear-gradient(
+            145deg,
+            rgba(253, 246, 227, 0.95) 0%,
+            rgba(238, 232, 213, 0.9) 100%
+          ) !important;
+        backdrop-filter: blur(15px);
+        padding: 30px !important;
+        border-radius: 24px !important;
+        box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15) !important;
+        border: 1px solid rgba(238, 232, 213, 0.5) !important;
+        margin-bottom: 24px !important;
       }
-
       .page-header h1 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-sm);
-        font-size: 2.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--solar-text-primary) !important;
+        margin: 0 0 10px 0 !important;
       }
-
+      .nav-links {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
       .nav-links a {
-        color: var(--primary-color);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--solar-text-secondary) !important;
+        background: rgba(253, 246, 227, 0.5);
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(238, 232, 213, 0.6);
         text-decoration: none;
-        font-weight: 500;
-        margin-right: var(--spacing-md);
       }
-
       .nav-links a:hover {
-        text-decoration: underline;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
       }
 
-      /* Tab styling */
+      /* Tabs - Solar */
       .tab {
         overflow: hidden;
-        border: 1px solid var(--border-color);
-        background-color: var(--background-color);
-        border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-        margin-bottom: 0;
+        border: 1px solid var(--border-color) !important;
+        background: rgba(253, 246, 227, 0.6) !important;
+        border-radius: 16px 16px 0 0 !important;
+        margin-bottom: 0 !important;
       }
-
       .tab button {
-        background-color: inherit;
-        float: left;
+        background: transparent;
         border: none;
-        outline: none;
         cursor: pointer;
-        padding: var(--spacing-lg) var(--spacing-xl);
-        transition: var(--transition);
-        font-size: 1rem;
-        font-weight: 500;
-        color: var(--text-dark);
+        padding: 16px 22px;
+        color: var(--solar-text-primary);
+        font-weight: 600;
       }
-
       .tab button:hover {
-        background-color: rgba(31, 125, 83, 0.1);
+        background: rgba(38, 139, 210, 0.08);
       }
-
       .tab button.active {
-        background-color: var(--primary-color);
-        color: var(--white);
+        background: var(--solar-primary) !important;
+        color: #fff !important;
       }
-
-      /* Tab content styling */
       .tabcontent {
         display: none;
-        padding: var(--spacing-xl);
-        background: var(--white);
+        padding: 24px;
+        background: #fff;
         border: 1px solid var(--border-color);
         border-top: none;
-        border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+        border-radius: 0 0 16px 16px;
         box-shadow: var(--shadow-md);
       }
-
       .tabcontent.active {
         display: block;
       }
 
-      .tabcontent h2 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-lg);
-        font-size: 1.5rem;
-      }
-
-      /* Table improvements */
-      .table-responsive {
-        overflow-x: auto;
-        margin: var(--spacing-lg) 0;
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        background: var(--white);
-      }
-
+      /* Table */
       .data-table {
         width: 100%;
-        min-width: 800px;
         border-collapse: collapse;
       }
-
       .data-table th,
       .data-table td {
-        padding: var(--spacing-md);
-        text-align: left;
+        padding: 12px 14px;
         border-bottom: 1px solid var(--border-color);
       }
-
       .data-table th {
-        background: var(--primary-color);
-        color: var(--white);
-        font-weight: 600;
+        background: var(--solar-primary);
+        color: #fff;
         position: sticky;
         top: 0;
-        z-index: 10;
+        z-index: 1;
+      }
+      .data-table tbody tr:nth-child(even) {
+        background: rgba(181, 137, 0, 0.05);
+      }
+      .data-table tbody tr:hover {
+        background: rgba(38, 139, 210, 0.08);
       }
 
-      .data-table tr:nth-child(even) {
-        background: rgba(31, 125, 83, 0.05);
-      }
-
-      .data-table tr:hover {
-        background: rgba(31, 125, 83, 0.1);
-      }
-
-      /* Action buttons */
-      .action-buttons {
-        display: flex;
-        gap: var(--spacing-sm);
-        flex-wrap: wrap;
-      }
-
+      /* Buttons */
+      .btn,
       .edit-btn,
-      .delete-btn,
-      .btn {
-        padding: var(--spacing-sm) var(--spacing-md);
+      .delete-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        text-decoration: none;
         border: none;
-        border-radius: var(--border-radius);
         cursor: pointer;
-        font-size: 0.9rem;
         transition: var(--transition);
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
       }
-
-      .edit-btn {
-        background: var(--warning-color);
-        color: var(--text-dark);
-      }
-
-      .edit-btn:hover {
-        background: #e0a800;
-        text-decoration: none;
-      }
-
-      .delete-btn {
-        background: var(--error-color);
-        color: var(--white);
-      }
-
-      .delete-btn:hover {
-        background: #c82333;
-      }
-
       .btn {
-        background: var(--primary-color);
-        color: var(--white);
+        background: var(--solar-secondary);
+        color: #fff;
       }
-
       .btn:hover {
-        background: var(--secondary-color);
-        text-decoration: none;
-      }
-
-      /* Responsive design */
-      @media (max-width: 768px) {
-        .manage-container {
-          max-width: 98% !important;
-          width: 98% !important;
-          padding: var(--spacing-md) !important;
-        }
-
-        .tab button {
-          padding: var(--spacing-md);
-          font-size: 0.9rem;
-        }
-
-        .action-buttons {
-          flex-direction: column;
-        }
-      }
-      .action-buttons {
-        display: flex;
-        gap: 5px;
+        filter: brightness(0.95);
       }
       .edit-btn {
-        display: inline-block;
-        padding: 5px 10px;
-        background-color: #4a6741;
-        color: white;
-        text-decoration: none;
-        border-radius: 3px;
-        font-size: 0.8rem;
+        background: #fdf0c7;
+        color: var(--solar-text-primary);
+        border: 1px solid rgba(245, 199, 0, 0.3);
       }
       .edit-btn:hover {
-        background-color: #3a5331;
+        background: #fde9aa;
       }
       .delete-btn {
-        padding: 5px 10px;
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 0.8rem;
+        background: #fbe3e5;
+        color: var(--solar-red);
+        border: 1px solid rgba(220, 50, 47, 0.25);
       }
       .delete-btn:hover {
-        background-color: #c82333;
+        background: #f8d2d6;
       }
-      .transfer-btn {
-        padding: 5px 10px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 0.8rem;
-      }
-      .transfer-btn:hover {
-        background-color: #0069d9;
-      }
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-      }
-      .modal-content {
-        background-color: #fff;
-        margin: 10% auto;
-        padding: 20px;
-        border-radius: 8px;
-        width: 80%;
-        max-width: 500px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      }
-      .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-      .close:hover {
-        color: #000;
-      }
-      .tab {
-        overflow: hidden;
-        border: 1px solid #ccc;
-        background-color: #f1f1f1;
-        margin-bottom: 20px;
-      }
-      .tab button {
-        background-color: inherit;
-        float: left;
-        border: none;
-        outline: none;
-        cursor: pointer;
-        padding: 14px 16px;
-        transition: 0.3s;
-        font-size: 17px;
-      }
-      .tab button:hover {
-        background-color: #ddd;
-      }
-      .tab button.active {
-        background-color: #4a6741;
-        color: white;
-      }
-      .tabcontent {
-        display: none;
-        padding: 6px 12px;
-        border: 1px solid #ccc;
-        border-top: none;
-      }
+
       .filter-section {
         margin-bottom: 20px;
         padding: 15px;
-        background-color: #f8f9fa;
-        border-radius: 5px;
+        background: rgba(238, 232, 213, 0.6);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
       }
-      .filter-section select {
-        margin-right: 10px;
-        padding: 5px;
+      .filter-section h3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 10px 0;
+        color: var(--solar-text-secondary);
       }
+
+      /* Remove legacy duplicate tab block (replaced by Solar styles above) */
     </style>
   </head>
   <body>
     <div class="manage-container">
         <header class="page-header">
-          <h1>Manage Teacher Assignments</h1>
+          <h1>
+            <!-- Heroicon: rectangle-stack (solid) -->
+            <svg class="heroicon heroicon-lg heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 18H6A2.25 2.25 0 013.75 15.75V6zM6 5.25a.75.75 0 00-.75.75v9.75c0 .414.336.75.75.75h11.25a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H16.5V6a.75.75 0 00-.75-.75H6z" clip-rule="evenodd"/></svg>
+            Manage Teacher Assignments
+          </h1>
           <div class="nav-links">
-            <a href="{{ url_for('classteacher.teacher_management_hub') }}"
-              >Teacher Hub</a
-            >
-            |
-            <a href="{{ url_for('classteacher.dashboard') }}"
-              >Dashboard</a
-            >
-            |
-            <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+            <a href="{{ url_for('classteacher.teacher_management_hub') }}">
+              <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3.375 4.5A2.625 2.625 0 016 1.875h12A2.625 2.625 0 0120.625 4.5v12A2.625 2.625 0 0118 19.125H6A2.625 2.625 0 013.375 16.5v-12zM6 3.375a1.125 1.125 0 00-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h12c.621 0 1.125-.504 1.125-1.125v-12A1.125 1.125 0 0018 3.375H6z" clip-rule="evenodd"/></svg>
+              Teacher Hub
+            </a>
+            <a href="{{ url_for('classteacher.dashboard') }}">
+              <svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13.5A1.5 1.5 0 014.5 12h15a1.5 1.5 0 010 3h-15A1.5 1.5 0 013 13.5zM3 7.5A1.5 1.5 0 014.5 6h15a1.5 1.5 0 010 3h-15A1.5 1.5 0 013 7.5zM3 19.5A1.5 1.5 0 014.5 18h9a1.5 1.5 0 010 3h-9A1.5 1.5 0 013 19.5z"/></svg>
+              Dashboard
+            </a>
+            <a href="{{ url_for('auth.logout_route') }}">
+              <svg class="heroicon heroicon-solar-red" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3.75 5.25A2.25 2.25 0 016 3h6a2.25 2.25 0 012.25 2.25v2.378a.75.75 0 01-1.5 0V5.25a.75.75 0 00-.75-.75H6a.75.75 0 00-.75.75v13.5c0 .414.336.75.75.75h6a.75.75 0 00.75-.75v-2.378a.75.75 0 011.5 0v2.378A2.25 2.25 0 0112 21H6a2.25 2.25 0 01-2.25-2.25V5.25z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M14.47 15.28a.75.75 0 001.06 0l3-3a.75.75 0 000-1.06l-3-3a.75.75 0 10-1.06 1.06l1.72 1.72H9a.75.75 0 000 1.5h7.19l-1.72 1.72a.75.75 0 000 1.06z" clip-rule="evenodd"/></svg>
+              Logout
+            </a>
           </div>
         </header>
 
@@ -344,16 +281,19 @@
 
         <!-- Tab navigation -->
         <div class="tab">
-          <button
-            class="tablinks active"
-            onclick="openTab(event, 'ClassTeachers')"
-          >
+          <button class="tablinks active" onclick="openTab(event, 'ClassTeachers')">
+            <!-- Heroicon: academic-cap -->
+            <svg class="heroicon heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path d="M11.7 2.37a.75.75 0 01.6 0l8.25 3.75a.75.75 0 010 1.36L12.3 11.23a.75.75 0 01-.6 0L3.45 7.48a.75.75 0 010-1.36L11.7 2.37z"/><path d="M4.5 12.75v3.38a.75.75 0 00.44.68l6.75 3.05a.75.75 0 00.62 0l6.75-3.05a.75.75 0 00.44-.68v-3.38l-6.59 2.99a2.25 2.25 0 01-1.92 0L4.5 12.75z"/></svg>
             Class Teacher Assignments
           </button>
           <button class="tablinks" onclick="openTab(event, 'SubjectTeachers')">
+            <!-- Heroicon: book-open -->
+            <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M2.25 5.25A2.25 2.25 0 014.5 3h6.75A2.25 2.25 0 0113.5 5.25v13.5a.75.75 0 01-1.148.638 6.466 6.466 0 00-3.602-1.088H4.5a2.25 2.25 0 01-2.25-2.25V5.25z"/><path d="M12.75 5.25A2.25 2.25 0 0115 3h4.5A2.25 2.25 0 0121.75 5.25v10.5A2.25 2.25 0 0119.5 18h-3.75a6.466 6.466 0 00-3.602 1.088.75.75 0 01-1.148-.638V5.25z"/></svg>
             Subject Teacher Assignments
           </button>
           <button class="tablinks" onclick="openTab(event, 'BulkTransfer')">
+            <!-- Heroicon: arrows-right-left -->
+            <svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 7.5A.75.75 0 013 6.75h12.19l-1.72-1.72a.75.75 0 111.06-1.06l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 01-1.06-1.06l1.72-1.72H3A.75.75 0 012.25 7.5zM21.75 16.5a.75.75 0 00-.75-.75H8.81l1.72-1.72a.75.75 0 10-1.06-1.06l-3 3a.75.75 0 000 1.06l3 3a.75.75 0 001.06-1.06l-1.72-1.72H21a.75.75 0 00.75-.75z" clip-rule="evenodd"/></svg>
             Bulk Transfer
           </button>
         </div>
@@ -389,35 +329,31 @@
             </thead>
             <tbody id="classTeacherTableBody">
               {% for assignment in class_teacher_assignments %}
-              <tr
-                data-grade="{{ assignment.grade_id }}"
-                data-education-level="{{ assignment.education_level }}"
-              >
+              <tr data-grade="{{ assignment.grade_id }}" data-education-level="{{ assignment.education_level }}">
                 <td>{{ assignment.grade_level }}</td>
-                <td>
-                  {{ assignment.stream_name if assignment.stream_name else 'All
-                  Streams' }}
-                </td>
+                <td>{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}</td>
                 <td>{{ assignment.teacher_username }}</td>
                 <td>
                   <div class="action-buttons">
                     <button
-                      class="edit-btn"
-                      onclick="openReassignModal('{{ assignment.id }}', '{{ assignment.grade_level }}', '{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}', '{{ assignment.teacher_username }}')"
+                      class="edit-btn reassign-class-btn"
+                      data-assignment-id="{{ assignment.id }}"
+                      data-grade="{{ assignment.grade_level }}"
+                      data-stream="{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}"
+                      data-teacher="{{ assignment.teacher_username }}"
                     >
+                      <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M16.023 9.348h4.998a.75.75 0 010 1.5h-3.248l-1.78 6.398a.75.75 0 11-1.446-.402l1.476-5.312H9.727l-1.78 6.398a.75.75 0 01-1.446-.402l1.476-5.312H2.99a.75.75 0 010-1.5h4.998l.53-1.917a2.25 2.25 0 012.162-1.627h2.65a2.25 2.25 0 012.162 1.627l.531 1.917z"/></svg>
                       Reassign
                     </button>
-                    <a
-                      href="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=assignment.teacher_id) }}"
-                      class="edit-btn"
-                    >
+                    <a href="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=assignment.teacher_id) }}" class="edit-btn">
+                      <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6c0-1.243 1.007-2.25 2.25-2.25h5.25A2.25 2.25 0 0121.75 6v12A2.25 2.25 0 0119.5 20.25h-5.25A2.25 2.25 0 0112 18V6z"/><path d="M1.5 6A2.25 2.25 0 013.75 3.75H9A2.25 2.25 0 0111.25 6v12A2.25 2.25 0 019 20.25H3.75A2.25 2.25 0 011.5 18V6z"/></svg>
                       Manage Subjects
                     </a>
                   </div>
                 </td>
               </tr>
               {% endfor %}
-            </tbody>
+              </tbody>
           </table>
         </div>
 
@@ -462,52 +398,48 @@
             </thead>
             <tbody id="subjectTeacherTableBody">
               {% for assignment in subject_assignments %}
-              <tr
-                data-grade="{{ assignment.grade_id }}"
-                data-subject="{{ assignment.subject_id }}"
-                data-education-level="{{ assignment.education_level }}"
-              >
+              <tr data-grade="{{ assignment.grade_id }}" data-subject="{{ assignment.subject_id }}" data-education-level="{{ assignment.education_level }}">
                 <td>{{ assignment.subject_name }}</td>
                 <td>{{ assignment.grade_level }}</td>
-                <td>
-                  {{ assignment.stream_name if assignment.stream_name else 'All
-                  Streams' }}
-                </td>
+                <td>{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}</td>
                 <td>{{ assignment.teacher_username }}</td>
                 <td>
                   <div class="action-buttons">
                     <button
-                      class="edit-btn"
-                      onclick="openReassignSubjectModal('{{ assignment.id }}', '{{ assignment.subject_name }}', '{{ assignment.grade_level }}', '{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}', '{{ assignment.teacher_username }}')"
+                      class="edit-btn reassign-subject-btn"
+                      data-assignment-id="{{ assignment.id }}"
+                      data-subject="{{ assignment.subject_name }}"
+                      data-grade="{{ assignment.grade_level }}"
+                      data-stream="{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}"
+                      data-teacher="{{ assignment.teacher_username }}"
                     >
+                      <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M16.023 9.348h4.998a.75.75 0 010 1.5h-3.248l-1.78 6.398a.75.75 0 11-1.446-.402l1.476-5.312H9.727l-1.78 6.398a.75.75 0 01-1.446-.402l1.476-5.312H2.99a.75.75 0 010-1.5h4.998l.53-1.917a2.25 2.25 0 012.162-1.627h2.65a2.25 2.25 0 012.162 1.627l.531 1.917z"/></svg>
                       Reassign
                     </button>
-                    <a
-                      href="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=assignment.teacher_id) }}"
-                      class="edit-btn"
-                    >
+                    <a href="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=assignment.teacher_id) }}" class="edit-btn">
+                      <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6c0-1.243 1.007-2.25 2.25-2.25h5.25A2.25 2.25 0 0121.75 6v12A2.25 2.25 0 0119.5 20.25h-5.25A2.25 2.25 0 0112 18V6z"/><path d="M1.5 6A2.25 2.25 0 013.75 3.75H9A2.25 2.25 0 0111.25 6v12A2.25 2.25 0 019 20.25H3.75A2.25 2.25 0 011.5 18V6z"/></svg>
                       Manage Subjects
                     </a>
                   </div>
                 </td>
               </tr>
               {% endfor %}
-            </tbody>
+              </tbody>
           </table>
         </div>
 
         <!-- Bulk Transfer Tab -->
         <div id="BulkTransfer" class="tabcontent">
-          <h2>Bulk Transfer Assignments</h2>
+          <h2>
+            <svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 7.5A.75.75 0 013 6.75h12.19l-1.72-1.72a.75.75 0 111.06-1.06l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 01-1.06-1.06l1.72-1.72H3A.75.75 0 012.25 7.5zM21.75 16.5a.75.75 0 00-.75-.75H8.81l1.72-1.72a.75.75 0 10-1.06-1.06l-3 3a.75.75 0 000 1.06l3 3a.75.75 0 001.06-1.06l-1.72-1.72H21a.75.75 0 00.75-.75z" clip-rule="evenodd"/></svg>
+            Bulk Transfer Assignments
+          </h2>
           <p>
             Use this form to transfer all assignments from one teacher to
             another.
           </p>
 
-          <form
-            method="POST"
-            action="{{ url_for('classteacher.bulk_transfer_assignments') }}"
-          >
+          <form id="bulkTransferForm" method="POST" action="{{ url_for('classteacher.bulk_transfer_assignments') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
             <div class="form-group">
@@ -562,12 +494,8 @@
               </label>
             </div>
 
-            <button
-              type="submit"
-              name="bulk_transfer"
-              class="btn btn-primary"
-              onclick="return confirm('Are you sure you want to transfer all selected assignments? This action cannot be undone.')"
-            >
+            <button type="submit" name="bulk_transfer" class="btn">
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 7.5A.75.75 0 013 6.75h12.19l-1.72-1.72a.75.75 0 111.06-1.06l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 01-1.06-1.06l1.72-1.72H3A.75.75 0 012.25 7.5zM21.75 16.5a.75.75 0 00-.75-.75H8.81l1.72-1.72a.75.75 0 10-1.06-1.06l-3 3a.75.75 0 000 1.06l3 3a.75.75 0 001.06-1.06l-1.72-1.72H21a.75.75 0 00.75-.75z" clip-rule="evenodd"/></svg>
               Transfer Assignments
             </button>
           </form>
@@ -696,10 +624,38 @@
       document.addEventListener("DOMContentLoaded", function () {
         setTimeout(function () {
           const messages = document.querySelectorAll(".message");
-          messages.forEach((message) => {
-            message.style.display = "none";
-          });
+          messages.forEach((message) => { message.style.display = "none"; });
         }, 5000);
+
+        // Delegated handlers for reassignment buttons (avoid inline onclick with Jinja)
+        document.body.addEventListener('click', function(e) {
+          const classBtn = e.target.closest('.reassign-class-btn');
+          if (classBtn) {
+            const id = classBtn.dataset.assignmentId;
+            const grade = classBtn.dataset.grade;
+            const stream = classBtn.dataset.stream;
+            const teacher = classBtn.dataset.teacher;
+            openReassignModal(id, grade, stream, teacher);
+          }
+          const subjBtn = e.target.closest('.reassign-subject-btn');
+          if (subjBtn) {
+            const id = subjBtn.dataset.assignmentId;
+            const subject = subjBtn.dataset.subject;
+            const grade = subjBtn.dataset.grade;
+            const stream = subjBtn.dataset.stream;
+            const teacher = subjBtn.dataset.teacher;
+            openReassignSubjectModal(id, subject, grade, stream, teacher);
+          }
+        });
+
+        // Confirm on bulk transfer submit
+        const bulkForm = document.getElementById('bulkTransferForm');
+        if (bulkForm) {
+          bulkForm.addEventListener('submit', function(ev) {
+            const ok = confirm('Are you sure you want to transfer all selected assignments? This action cannot be undone.');
+            if (!ok) ev.preventDefault();
+          });
+        }
       });
 
       // Tab functionality

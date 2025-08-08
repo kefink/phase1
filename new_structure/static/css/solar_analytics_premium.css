@@ -1,0 +1,1110 @@
+/* 
+ * Solar Analytics Premium Styling
+ * Premium dark theme with solar color palette for Analytics Dashboard
+ */
+
+/* Essential CSS Variables - Inline to guarantee availability */
+:root {
+  --bg-primary: #002b36;
+  --bg-secondary: #073642;
+  --bg-tertiary: #586e75;
+  --bg-card: rgba(0, 43, 54, 0.95);
+  --bg-card-hover: rgba(7, 54, 66, 0.98);
+  --primary-color: #b58900;
+  --secondary-color: #2aa198;
+  --text-white: #fdf6e3;
+  --text-secondary: #93a1a1;
+  --glass-border: rgba(253, 246, 227, 0.1);
+  --glass-bg-strong: rgba(0, 43, 54, 0.9);
+  --glass-backdrop-strong: blur(20px);
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* EMERGENCY NUCLEAR OVERRIDE - Kill base template completely */
+html,
+html *,
+body,
+body *,
+body.analytics-page,
+body.analytics-page *,
+.analytics-page,
+.analytics-page *,
+div,
+div *,
+section,
+section *,
+.container,
+.container *,
+.content-wrapper,
+.content-wrapper *,
+.page-container,
+.page-container * {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Kill any element with white or light background */
+*[style*="white"],
+*[style*="#fff"],
+*[style*="#ffffff"],
+*[style*="rgb(255"],
+*[style*="rgba(255, 255, 255"] {
+  background: #002b36 !important;
+  background-color: #002b36 !important;
+}
+
+/* Purple gradient destroyer */
+*[style*="#667eea"],
+*[style*="#764ba2"],
+*[style*="667eea"],
+*[style*="764ba2"] {
+  background: #002b36 !important;
+  background-color: #002b36 !important;
+  background-image: none !important;
+}
+
+/* Establish base solar background */
+html,
+body.analytics-page {
+  background: #002b36 !important;
+  background-image: radial-gradient(
+      circle at 20% 80%,
+      rgba(181, 137, 0, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(42, 161, 152, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 40%,
+      rgba(211, 54, 130, 0.05) 0%,
+      transparent 50%
+    ) !important;
+  background-attachment: fixed !important;
+  min-height: 100vh !important;
+  color: #fdf6e3 !important;
+}
+
+/* AGGRESSIVE BASE TEMPLATE OVERRIDES - Force Solar Theme Completely */
+
+/* Override base template purple gradient (#667eea to #764ba2) */
+body.analytics-page,
+body.analytics-page .page-container,
+.analytics-page,
+.analytics-page .page-container {
+  background: var(--bg-primary) !important;
+  background-image: radial-gradient(
+      circle at 20% 80%,
+      rgba(181, 137, 0, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(42, 161, 152, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 40%,
+      rgba(211, 54, 130, 0.05) 0%,
+      transparent 50%
+    ) !important;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Destroy any white backgrounds from base template */
+body.analytics-page *,
+.analytics-page *,
+body.analytics-page .page-header,
+.analytics-page .page-header,
+body.analytics-page .content-wrapper,
+.analytics-page .content-wrapper,
+body.analytics-page .breadcrumb-nav,
+.analytics-page .breadcrumb-nav {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Override Modern Base Template Container */
+.analytics-page .page-container {
+  background: var(--bg-primary) !important;
+  padding: var(--spacing-lg) !important;
+}
+
+.analytics-page .content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Override Base Template Page Header */
+.analytics-page .page-header,
+body.analytics-page .page-header {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin-bottom: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* KILL ALL WHITE BACKGROUNDS FROM BASE TEMPLATE - NUCLEAR OPTION */
+.analytics-page .card,
+.analytics-page .widget,
+.analytics-page .panel,
+.analytics-page .section,
+.analytics-page .box,
+.analytics-page .container,
+.analytics-page .wrapper,
+body.analytics-page .card,
+body.analytics-page .widget,
+body.analytics-page .panel,
+body.analytics-page .section,
+body.analytics-page .box,
+body.analytics-page .container,
+body.analytics-page .wrapper {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Universal white background killer - use with extreme prejudice */
+.analytics-page [style*="background: white"],
+.analytics-page [style*="background-color: white"],
+.analytics-page [style*="background: #fff"],
+.analytics-page [style*="background-color: #fff"],
+.analytics-page [style*="background: #ffffff"],
+.analytics-page [style*="background-color: #ffffff"],
+body.analytics-page [style*="background: white"],
+body.analytics-page [style*="background-color: white"],
+body.analytics-page [style*="background: #fff"],
+body.analytics-page [style*="background-color: #fff"],
+body.analytics-page [style*="background: #ffffff"],
+body.analytics-page [style*="background-color: #ffffff"] {
+  background: #002b36 !important;
+  background-color: #002b36 !important;
+  background-image: none !important;
+}
+
+/* Kill any card or container with white background */
+.analytics-page *[style*="rgba(255, 255, 255"],
+body.analytics-page *[style*="rgba(255, 255, 255"] {
+  background: #002b36 !important;
+  background-color: #002b36 !important;
+}
+
+/* Target specific sections visible in screenshots */
+.analytics-page .analytics-filters-section,
+.analytics-page .detailed-performance,
+.analytics-page .top-performers,
+.analytics-page .performance-breakdown,
+.analytics-page .modern-grid,
+.analytics-page .grid-cols-4,
+.analytics-page .action-buttons,
+.analytics-page .analytics-actions,
+body.analytics-page .analytics-filters-section,
+body.analytics-page .detailed-performance,
+body.analytics-page .top-performers,
+body.analytics-page .performance-breakdown,
+body.analytics-page .modern-grid,
+body.analytics-page .grid-cols-4,
+body.analytics-page .action-buttons,
+body.analytics-page .analytics-actions {
+  background: rgba(0, 43, 54, 0.9) !important;
+  background-color: rgba(0, 43, 54, 0.9) !important;
+  border: 1px solid rgba(253, 246, 227, 0.1) !important;
+  border-radius: 0.75rem !important;
+  padding: 1.5rem !important;
+  color: #fdf6e3 !important;
+  backdrop-filter: blur(10px) !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Make sure headers in these sections are visible */
+.analytics-page h2,
+.analytics-page h3,
+.analytics-page h4,
+.analytics-page .section-title,
+body.analytics-page h2,
+body.analytics-page h3,
+body.analytics-page h4,
+body.analytics-page .section-title {
+  color: #fdf6e3 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Target any loading or content areas */
+.analytics-page .loading,
+.analytics-page .content,
+.analytics-page .section-content,
+body.analytics-page .loading,
+body.analytics-page .content,
+body.analytics-page .section-content {
+  color: #93a1a1 !important;
+}
+
+/* Container Override */
+.analytics-page .container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+}
+
+/* Force Solar Theme on All Child Elements */
+.analytics-page * {
+  color: var(--text-white);
+}
+
+.analytics-page .breadcrumb-nav {
+  background: var(--glass-bg-strong) !important;
+  backdrop-filter: var(--glass-backdrop-strong) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+/* Override any white backgrounds */
+.analytics-page .page-header,
+.analytics-page .content-wrapper,
+.analytics-page .breadcrumb-nav {
+  background: transparent !important;
+}
+
+/* Premium Page Header */
+.analytics-page-header {
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    var(--bg-tertiary) 50%,
+    var(--primary-color) 100%
+  );
+  border: 2px solid var(--primary-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  text-align: center;
+  box-shadow: var(--shadow-2xl), inset 0 1px 0 rgba(253, 246, 227, 0.1),
+    0 0 30px rgba(181, 137, 0, 0.2);
+  backdrop-filter: var(--glass-backdrop-strong);
+  position: relative;
+  overflow: hidden;
+}
+
+.analytics-page-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent 0%,
+    rgba(181, 137, 0, 0.1) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.analytics-page-header h1 {
+  color: var(--text-white);
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: var(--spacing-md);
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 1;
+}
+
+.analytics-page-header p {
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  opacity: 0.9;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Breadcrumb Navigation - Solar Style */
+.breadcrumb {
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 0.9rem;
+  backdrop-filter: var(--glass-backdrop);
+  box-shadow: var(--shadow-md);
+}
+
+.breadcrumb a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.breadcrumb a:hover {
+  color: var(--text-white);
+  text-shadow: 0 0 8px var(--primary-color);
+}
+
+.breadcrumb-separator {
+  color: var(--text-accent);
+}
+
+/* Quick Insights Section - Premium Cards */
+.quick-insights {
+  background: rgba(0, 43, 54, 0.9) !important;
+  border: 2px solid rgba(253, 246, 227, 0.1) !important;
+  border-radius: 1rem !important;
+  padding: 2rem !important;
+  margin-bottom: 2rem !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  position: relative;
+  overflow: hidden;
+  color: #fdf6e3 !important;
+}
+
+.quick-insights::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--primary-color) 50%,
+    transparent 100%
+  );
+}
+
+.quick-insights h3 {
+  color: var(--text-white);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.quick-insights h3 i {
+  color: var(--primary-color);
+}
+
+/* Insights Grid - Premium Layout */
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.insight-card {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 43, 54, 0.95) 0%,
+    rgba(7, 54, 66, 0.98) 100%
+  ) !important;
+  border: 1px solid rgba(253, 246, 227, 0.1) !important;
+  border-radius: 0.75rem !important;
+  padding: 1.5rem !important;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  color: #fdf6e3 !important;
+}
+
+.insight-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 50%,
+    var(--primary-dark) 100%
+  );
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.insight-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-2xl), 0 0 20px rgba(181, 137, 0, 0.3);
+}
+
+.insight-card:hover::before {
+  transform: scaleX(1);
+}
+
+.insight-value {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-sm);
+  text-shadow: 0 0 10px rgba(181, 137, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.insight-card:hover .insight-value {
+  text-shadow: 0 0 20px rgba(181, 137, 0, 0.5);
+}
+
+.insight-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+/* Analytics Filters Section - Premium Styling */
+.analytics-filters-section {
+  background: var(--glass-bg-strong);
+  border: 2px solid var(--glass-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  backdrop-filter: var(--glass-backdrop-strong);
+  box-shadow: var(--shadow-glass);
+}
+
+.analytics-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.analytics-actions h2 {
+  color: var(--text-white);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.analytics-actions h2 i {
+  color: var(--secondary-color);
+}
+
+.action-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+/* Form Controls - Solar Theme */
+.form-group {
+  position: relative;
+}
+
+.form-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-select {
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-white);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  backdrop-filter: var(--glass-backdrop);
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(181, 137, 0, 0.2);
+  background: var(--bg-card-hover);
+}
+
+.form-select option {
+  background: var(--bg-secondary);
+  color: var(--text-white);
+  padding: var(--spacing-sm);
+}
+
+/* Analytics Content Grid - Premium Layout */
+.analytics-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+.analytics-full-width {
+  grid-column: 1 / -1;
+}
+
+/* Analytics Components - Premium Cards */
+.analytics-component {
+  background: var(--glass-bg-strong);
+  border: 2px solid var(--glass-border-strong);
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--glass-backdrop-strong);
+  box-shadow: var(--shadow-glass);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.analytics-component:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2xl), 0 0 30px rgba(181, 137, 0, 0.15);
+}
+
+.component-header {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-dark) 100%
+  );
+  color: var(--text-white);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.component-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(253, 246, 227, 0.3) 50%,
+    transparent 100%
+  );
+}
+
+.component-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.component-header h3 i {
+  color: var(--text-white);
+  opacity: 0.9;
+}
+
+.component-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.component-content {
+  padding: var(--spacing-xl);
+}
+
+/* Top Performers List - Premium Styling */
+.top-performers-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.performer-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.performer-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(
+    180deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  );
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.performer-item:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.performer-item:hover::before {
+  transform: scaleY(1);
+}
+
+.performer-rank {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--primary-color);
+  min-width: 40px;
+  text-align: center;
+}
+
+.performer-info {
+  flex: 1;
+}
+
+.performer-name {
+  color: var(--text-white);
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.performer-details {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.performer-score {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--secondary-color);
+  text-shadow: 0 0 8px rgba(42, 161, 152, 0.3);
+}
+
+/* Subject Performance Analysis */
+.subject-performance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.subject-item {
+  padding: var(--spacing-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+}
+
+.subject-item:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--primary-color);
+}
+
+.subject-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.subject-name {
+  color: var(--text-white);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.subject-performance {
+  color: var(--primary-color);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.subject-details {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.subject-status {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-xs);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-exceeding {
+  background: rgba(133, 153, 0, 0.2);
+  color: var(--status-success);
+  border: 1px solid var(--status-success);
+}
+
+.status-meeting {
+  background: rgba(42, 161, 152, 0.2);
+  color: var(--secondary-color);
+  border: 1px solid var(--secondary-color);
+}
+
+.status-approaching {
+  background: rgba(181, 137, 0, 0.2);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.status-below {
+  background: rgba(220, 50, 47, 0.2);
+  color: var(--status-error);
+  border: 1px solid var(--status-error);
+}
+
+/* Loading States - Premium Animation */
+.loading-state {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
+.loading-state i {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* No Data State - Premium Styling */
+.no-data-message {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  background: var(--bg-surface);
+  border: 2px dashed var(--glass-border);
+  border-radius: var(--radius-lg);
+  margin: var(--spacing-lg) 0;
+}
+
+.no-data-message i {
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-md);
+  opacity: 0.6;
+}
+
+.no-data-message p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Modern Buttons - Solar Theme */
+.modern-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  transition: left 0.3s ease;
+}
+
+.modern-btn:hover::before {
+  left: 100%;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: var(--text-white);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-light);
+  box-shadow: 0 0 15px rgba(181, 137, 0, 0.4);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline:hover {
+  background: var(--primary-color);
+  color: var(--text-white);
+}
+
+.btn-sm {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 0.8rem;
+}
+
+/* Grid System - Premium Layout */
+.modern-grid {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* Responsive Design - Mobile First */
+@media (max-width: 1200px) {
+  .analytics-content-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-page-header {
+    padding: var(--spacing-xl) var(--spacing-lg);
+  }
+
+  .analytics-page-header h1 {
+    font-size: 2.5rem;
+  }
+
+  .analytics-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-buttons {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .action-buttons .modern-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .insights-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .subject-performance-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-page-header h1 {
+    font-size: 2rem;
+  }
+
+  .analytics-page-header p {
+    font-size: 1rem;
+  }
+
+  .performer-item {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+
+  .performer-rank {
+    min-width: auto;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .analytics-component,
+  .quick-insights,
+  .analytics-filters-section {
+    border-width: 3px;
+  }
+
+  .insight-card {
+    border-width: 2px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* COMPREHENSIVE BASE TEMPLATE OVERRIDES */
+/* Force Solar Theme on Analytics Page - Override ALL Base Template Styles */
+
+/* Override ALL background colors that might leak through */
+.analytics-page,
+.analytics-page html,
+.analytics-page body,
+.analytics-page .page-container,
+.analytics-page .content-wrapper,
+.analytics-page .container,
+.analytics-page main,
+.analytics-page section,
+.analytics-page article {
+  background: var(--bg-primary) !important;
+  background-image: radial-gradient(
+      circle at 20% 80%,
+      rgba(181, 137, 0, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(42, 161, 152, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 40%,
+      rgba(211, 54, 130, 0.05) 0%,
+      transparent 50%
+    ) !important;
+}
+
+/* Override any white or light content areas */
+.analytics-page .page-header,
+.analytics-page .breadcrumb-nav,
+.analytics-page .content-area,
+.analytics-page .main-content,
+.analytics-page .sidebar,
+.analytics-page .panel,
+.analytics-page .card-body,
+.analytics-page .section-content {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Force text colors in analytics page */
+.analytics-page h1,
+.analytics-page h2,
+.analytics-page h3,
+.analytics-page h4,
+.analytics-page h5,
+.analytics-page h6 {
+  color: var(--text-white) !important;
+}
+
+.analytics-page p,
+.analytics-page span,
+.analytics-page div,
+.analytics-page label {
+  color: var(--text-secondary) !important;
+}
+
+/* Override breadcrumb styling completely */
+.analytics-page .breadcrumb,
+.analytics-page .breadcrumb-nav {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: var(--glass-backdrop) !important;
+}
+
+.analytics-page .breadcrumb a {
+  color: var(--primary-color) !important;
+}
+
+.analytics-page .breadcrumb-separator {
+  color: var(--text-accent) !important;
+}
+
+/* Fix any remaining layout issues */
+.analytics-page .row,
+.analytics-page .col,
+.analytics-page .grid,
+.analytics-page .flex {
+  background: transparent !important;
+}
+
+/* Ensure proper spacing and layout */
+.analytics-page .container {
+  padding: var(--spacing-xl) !important;
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+}

@@ -6,7 +6,11 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from functools import wraps
 from ..services.auth_service import is_authenticated, get_role
 from ..models import db
-from ..models.parent import Parent, ParentStudent, ParentEmailLog, EmailTemplate
+try:
+    from ..models.parent import Parent, ParentStudent, ParentEmailLog, EmailTemplate
+except ImportError:
+    from ..models.parent import Parent, ParentStudent, EmailTemplate
+    ParentEmailLog = None  # Optional when email logs are not enabled
 from ..models.academic import Student, Grade, Stream
 from ..models.user import Teacher
 from datetime import datetime
@@ -119,6 +123,17 @@ def test_dashboard():
 def dashboard():
     """Parent management dashboard for headteachers."""
     try:
+        # Get filter parameters
+        grade_filter = request.args.get('grade_filter', '')
+        stream_filter = request.args.get('stream_filter', '')
+        education_level_filter = request.args.get('education_level_filter', '')
+        search_query = request.args.get('search', '')
+        
+        # Pagination parameters
+        students_page = request.args.get('students_page', 1, type=int)
+        parents_page = request.args.get('parents_page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        
         # Get statistics
         total_parents = Parent.query.count()
         active_parents = Parent.query.filter_by(is_active=True).count()
@@ -130,11 +145,63 @@ def dashboard():
         # Get recent parents (last 10)
         recent_parents = Parent.query.order_by(Parent.created_at.desc()).limit(10).all()
         
-        # Get parents without children linked
-        parents_without_children = db.session.query(Parent).outerjoin(ParentStudent).filter(ParentStudent.parent_id.is_(None)).all()
+        # Get parents without children linked with pagination
+        parents_without_children_query = db.session.query(Parent).outerjoin(ParentStudent).filter(ParentStudent.parent_id.is_(None))
         
-        # Get students without parents linked
-        students_without_parents = db.session.query(Student).outerjoin(ParentStudent).filter(ParentStudent.student_id.is_(None)).all()
+        # Apply search filter for parents if provided
+        if search_query:
+            parents_without_children_query = parents_without_children_query.filter(
+                db.or_(
+                    Parent.first_name.ilike(f'%{search_query}%'),
+                    Parent.last_name.ilike(f'%{search_query}%'),
+                    Parent.email.ilike(f'%{search_query}%')
+                )
+            )
+        
+        parents_without_children_paginated = parents_without_children_query.paginate(
+            page=parents_page, per_page=per_page, error_out=False
+        )
+        
+        # Get students without parents linked with filtering and pagination
+        students_without_parents_query = db.session.query(Student, Grade, Stream)\
+            .join(Grade, Student.grade_id == Grade.id)\
+            .join(Stream, Student.stream_id == Stream.id)\
+            .outerjoin(ParentStudent, Student.id == ParentStudent.student_id)\
+            .filter(ParentStudent.student_id.is_(None))
+        
+        # Apply filters
+        if grade_filter:
+            students_without_parents_query = students_without_parents_query.filter(Grade.id == grade_filter)
+        
+        if stream_filter:
+            students_without_parents_query = students_without_parents_query.filter(Stream.id == stream_filter)
+        
+        if education_level_filter:
+            students_without_parents_query = students_without_parents_query.filter(Grade.education_level == education_level_filter)
+        
+        if search_query:
+            students_without_parents_query = students_without_parents_query.filter(
+                db.or_(
+                    Student.name.ilike(f'%{search_query}%'),
+                    Student.admission_number.ilike(f'%{search_query}%')
+                )
+            )
+        
+        students_without_parents_query = students_without_parents_query.order_by(Grade.name, Stream.name, Student.name)
+        
+        students_without_parents_paginated = students_without_parents_query.paginate(
+            page=students_page, per_page=per_page, error_out=False
+        )
+        
+        # Get filter options
+        all_grades = Grade.query.order_by(Grade.name).all()
+        all_streams = Stream.query.order_by(Stream.name).all()
+        education_levels = db.session.query(Grade.education_level).distinct().filter(Grade.education_level.isnot(None)).all()
+        education_levels = [level[0] for level in education_levels if level[0]]
+        
+        # Get summary counts for filtered data
+        total_students_without_parents = students_without_parents_query.count()
+        total_parents_without_children = parents_without_children_query.count()
         
         return render_template('parent_management_dashboard.html',
                              total_parents=total_parents,
@@ -142,10 +209,25 @@ def dashboard():
                              verified_parents=verified_parents,
                              total_links=total_links,
                              recent_parents=recent_parents,
-                             parents_without_children=parents_without_children,
-                             students_without_parents=students_without_parents)
+                             parents_without_children=parents_without_children_paginated.items,
+                             parents_pagination=parents_without_children_paginated,
+                             students_without_parents=students_without_parents_paginated.items,
+                             students_pagination=students_without_parents_paginated,
+                             all_grades=all_grades,
+                             all_streams=all_streams,
+                             education_levels=education_levels,
+                             current_filters={
+                                 'grade_filter': grade_filter,
+                                 'stream_filter': stream_filter,
+                                 'education_level_filter': education_level_filter,
+                                 'search_query': search_query,
+                                 'per_page': per_page
+                             },
+                             total_students_without_parents=total_students_without_parents,
+                             total_parents_without_children=total_parents_without_children)
     
     except Exception as e:
+        db.session.rollback()
         flash(f'Error loading parent management dashboard: {str(e)}', 'error')
         return redirect(url_for('admin.dashboard'))
 
@@ -243,7 +325,10 @@ def link_parent_student():
     
     # Get all parents and students for the form
     parents = Parent.query.filter_by(is_active=True).order_by(Parent.first_name, Parent.last_name).all()
-    students = db.session.query(Student, Grade, Stream).join(Grade).join(Stream).order_by(Grade.name, Stream.name, Student.name).all()
+    students = db.session.query(Student, Grade, Stream)\
+        .join(Grade, Student.grade_id == Grade.id)\
+        .join(Stream, Student.stream_id == Stream.id)\
+        .order_by(Grade.name, Stream.name, Student.name).all()
     
     return render_template('link_parent_student.html', parents=parents, students=students)
 
@@ -257,14 +342,18 @@ def view_parent(parent_id):
         # Get linked children with their class information
         children_query = db.session.query(
             ParentStudent, Student, Grade, Stream
-        ).join(Student).join(Grade).join(Stream).filter(
-            ParentStudent.parent_id == parent_id
-        ).order_by(Grade.name, Stream.name, Student.name)
+        ).join(Student, ParentStudent.student_id == Student.id)\
+         .join(Grade, Student.grade_id == Grade.id)\
+         .join(Stream, Student.stream_id == Stream.id)\
+         .filter(ParentStudent.parent_id == parent_id)\
+         .order_by(Grade.name, Stream.name, Student.name)
         
         children = children_query.all()
         
         # Get email logs for this parent
-        email_logs = ParentEmailLog.query.filter_by(parent_id=parent_id).order_by(ParentEmailLog.created_at.desc()).limit(10).all()
+        email_logs = []
+        if ParentEmailLog:
+            email_logs = ParentEmailLog.query.filter_by(parent_id=parent_id).order_by(ParentEmailLog.created_at.desc()).limit(10).all()
         
         return render_template('view_parent.html', 
                              parent=parent, 
@@ -360,7 +449,9 @@ def search_students():
     try:
         students_query = db.session.query(
             Student, Grade, Stream
-        ).join(Grade).join(Stream).filter(
+        ).join(Grade, Student.grade_id == Grade.id)\
+         .join(Stream, Student.stream_id == Stream.id)\
+         .filter(
             db.or_(
                 Student.name.ilike(f'%{query}%'),
                 Student.admission_number.ilike(f'%{query}%')
@@ -382,3 +473,116 @@ def search_students():
     
     except Exception as e:
         return jsonify({'error': str(e)})
+
+@parent_management_bp.route('/bulk_link_students', methods=['POST'])
+@headteacher_required
+def bulk_link_students():
+    """Bulk link multiple students to a parent."""
+    try:
+        parent_id = request.form.get('parent_id', type=int)
+        student_ids = request.form.getlist('student_ids[]')
+        relationship_type = request.form.get('relationship_type', 'parent')
+        
+        if not parent_id or not student_ids:
+            return jsonify({'success': False, 'message': 'Please select a parent and at least one student.'})
+        
+        # Verify parent exists
+        parent = Parent.query.get(parent_id)
+        if not parent:
+            return jsonify({'success': False, 'message': 'Parent not found.'})
+        
+        linked_count = 0
+        errors = []
+        
+        for student_id in student_ids:
+            try:
+                # Check if link already exists
+                existing_link = ParentStudent.query.filter_by(parent_id=parent_id, student_id=student_id).first()
+                if existing_link:
+                    student = Student.query.get(student_id)
+                    errors.append(f'{student.name if student else f"Student {student_id}"} is already linked to this parent.')
+                    continue
+                
+                # Create the link
+                link = ParentStudent(
+                    parent_id=parent_id,
+                    student_id=student_id,
+                    relationship_type=relationship_type,
+                    is_primary_contact=False,
+                    created_by=session.get('teacher_id')
+                )
+                
+                db.session.add(link)
+                linked_count += 1
+                
+            except Exception as e:
+                errors.append(f'Error linking student {student_id}: {str(e)}')
+        
+        db.session.commit()
+        
+        message = f'Successfully linked {linked_count} student(s) to {parent.get_full_name()}.'
+        if errors:
+            message += f' {len(errors)} error(s): ' + '; '.join(errors[:3])
+            if len(errors) > 3:
+                message += f' and {len(errors) - 3} more...'
+        
+        return jsonify({'success': True, 'message': message})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'})
+
+@parent_management_bp.route('/export_unlinked_data')
+@headteacher_required
+def export_unlinked_data():
+    """Export unlinked students and parents data as CSV."""
+    try:
+        import csv
+        from io import StringIO
+        from flask import make_response
+        
+        # Get unlinked students with class information
+        students_query = db.session.query(Student, Grade, Stream)\
+            .join(Grade, Student.grade_id == Grade.id)\
+            .join(Stream, Student.stream_id == Stream.id)\
+            .outerjoin(ParentStudent, Student.id == ParentStudent.student_id)\
+            .filter(ParentStudent.student_id.is_(None))\
+            .order_by(Grade.name, Stream.name, Student.name)
+        
+        students_data = students_query.all()
+        
+        # Get unlinked parents
+        parents_data = db.session.query(Parent)\
+            .outerjoin(ParentStudent)\
+            .filter(ParentStudent.parent_id.is_(None))\
+            .order_by(Parent.first_name, Parent.last_name).all()
+        
+        # Create CSV content
+        output = StringIO()
+        
+        # Write students data
+        output.write("=== STUDENTS WITHOUT PARENTS ===\n")
+        output.write("Name,Admission Number,Grade,Stream,Education Level\n")
+        
+        for student, grade, stream in students_data:
+            output.write(f'"{student.name}","{student.admission_number}","{grade.name}","{stream.name}","{grade.education_level or ""}"\n')
+        
+        output.write("\n=== PARENTS WITHOUT CHILDREN ===\n")
+        output.write("First Name,Last Name,Email,Phone,Status,Verified\n")
+        
+        for parent in parents_data:
+            status = "Active" if parent.is_active else "Inactive"
+            verified = "Yes" if parent.is_verified else "No"
+            phone = parent.phone or ""
+            output.write(f'"{parent.first_name}","{parent.last_name}","{parent.email}","{phone}","{status}","{verified}"\n')
+        
+        # Create response
+        response = make_response(output.getvalue())
+        response.headers["Content-Disposition"] = "attachment; filename=unlinked_data.csv"
+        response.headers["Content-type"] = "text/csv"
+        
+        return response
+    
+    except Exception as e:
+        flash(f'Error exporting data: {str(e)}', 'error')
+        return redirect(url_for('parent_management.dashboard'))

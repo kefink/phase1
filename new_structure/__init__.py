@@ -386,7 +386,7 @@ def create_app(config_name='default'):
             user_role = session.get('role', '').lower()
 
             object_permissions = {
-                'headteacher': ['student', 'teacher', 'report', 'mark', 'grade', 'stream', 'streams', 'api', 'get_grade_streams', 'teacher_streams', 'get_streams'],
+                'headteacher': ['student', 'teacher', 'report', 'mark', 'grade', 'stream', 'streams', 'api', 'get_grade_streams', 'teacher_streams', 'get_streams', 'view_parent', 'parent'],
                 'classteacher': ['student', 'report', 'mark', 'get_grade_streams', 'teacher_streams', 'streams', 'get_streams'],
                 'teacher': ['mark', 'get_streams', 'streams']
             }

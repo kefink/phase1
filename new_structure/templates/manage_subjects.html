@@ -13,66 +13,168 @@
       href="{{ url_for('static', filename='css/manage_pages_enhanced.css') }}"
     />
     <style>
-        /* Override container styles for manage pages */
-        .manage-container {
-            max-width: 95% !important;
-            width: 95% !important;
-            margin: 80px auto 60px !important;
-            padding: var(--spacing-xl) !important;
+        /* SOLAR THEME - FORCE BACKGROUND */
+        html {
+            background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #d6d2c4 100%) !important;
+            min-height: 100vh !important;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* Page header styling */
+        body {
+            background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #d6d2c4 100%) !important;
+            min-height: 100vh !important;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            overflow-x: hidden !important;
+            background-attachment: fixed !important;
+        }
+
+        /* Override any Bootstrap or external CSS backgrounds */
+        body, html, .container, .container-fluid {
+            background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #d6d2c4 100%) !important;
+        }
+
+        /* Heroicon Colors - Solar Theme */
+        .heroicon-solar-blue { fill: #268bd2; }
+        .heroicon-solar-yellow { fill: #b58900; }
+        .heroicon-solar-green { fill: #859900; }
+        .heroicon-solar-red { fill: #dc322f; }
+        .heroicon-solar-orange { fill: #cb4b16; }
+        .heroicon-solar-cyan { fill: #2aa198; }
+        .heroicon-solar-violet { fill: #6c71c4; }
+        .heroicon-solar-magenta { fill: #d33682; }
+        .heroicon-solar-dark { fill: #002b36; }
+        .heroicon-solar-light { fill: #93a1a1; }
+
+        /* Override container styles for manage pages */
+        .manage-container {
+            background: transparent !important;
+            max-width: 95% !important;
+            width: 95% !important;
+            margin: 20px auto !important;
+            padding: 0 !important;
+        }
+
+        /* Page header styling - Solar Theme */
         .page-header {
-            background: var(--white);
-            padding: var(--spacing-lg);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
-            margin-bottom: var(--spacing-xl);
+            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
+            border: 2px solid rgba(181, 137, 0, 0.2);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #b58900, #268bd2, #859900, #dc322f);
+            border-radius: 25px 25px 0 0;
         }
 
         .page-header h1 {
-            color: var(--primary-color);
-            margin-bottom: var(--spacing-sm);
-            font-size: 2.5rem;
+            color: #002b36;
+            margin-bottom: 10px;
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #b58900, #268bd2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-subtitle {
+            color: #586e75;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
         .nav-links a {
-            color: var(--primary-color);
+            color: #268bd2;
             text-decoration: none;
-            font-weight: 500;
-            margin-right: var(--spacing-md);
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: rgba(38, 139, 210, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(38, 139, 210, 0.2);
         }
 
         .nav-links a:hover {
-            text-decoration: underline;
+            background: rgba(38, 139, 210, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(38, 139, 210, 0.15);
+            text-decoration: none;
         }
 
-        /* Section styling */
+        /* Section styling - Solar Theme Enhanced */
         .search-filter-section,
         .add-subject-section,
         .bulk-upload-section,
-        .subjects-list-section {
-            background: var(--white);
-            padding: var(--spacing-lg);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
-            margin-bottom: var(--spacing-xl);
+        .subjects-list-section,
+        .students-section {
+            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
+            border: 2px solid rgba(181, 137, 0, 0.2);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-filter-section::before,
+        .students-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #859900, #268bd2, #b58900);
+            border-radius: 25px 25px 0 0;
         }
 
         .section-title {
-            color: var(--primary-color);
-            margin-bottom: var(--spacing-lg);
-            font-size: 1.3rem;
+            color: #002b36;
+            margin-bottom: 25px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        /* Forms grid layout */
+        /* Forms grid layout - Solar Enhanced */
         .forms-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-xl);
-            margin: var(--spacing-xl) 0;
+            gap: 30px;
+            margin: 30px 0;
         }
 
         /* Responsive design */
@@ -80,201 +182,303 @@
             .manage-container {
                 max-width: 98% !important;
                 width: 98% !important;
-                padding: var(--spacing-md) !important;
+                padding: 15px !important;
             }
 
             .forms-grid {
                 grid-template-columns: 1fr;
-                gap: var(--spacing-lg);
+                gap: 25px;
+            }
+
+            .search-input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-input-group input[type="text"] {
+                min-width: 100%;
+                margin-bottom: 15px;
             }
         }
 
-        /* Button styling */
-        .btn, .search-btn, .clear-search-btn, .add-btn, .upload-btn {
-            background: var(--primary-color);
-            color: var(--white);
+        /* Button styling - Solar Theme */
+        .btn, .search-btn, .clear-search-btn, .add-btn, .upload-btn, .manage-btn {
             border: none;
-            padding: var(--spacing-md) var(--spacing-lg);
-            border-radius: var(--border-radius);
+            padding: 15px 25px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: var(--transition);
+            font-weight: 600;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .btn:hover, .search-btn:hover, .add-btn:hover, .upload-btn:hover {
-            background: var(--secondary-color);
+        .btn, .search-btn, .add-btn, .upload-btn, .manage-btn {
+            background: linear-gradient(135deg, #268bd2 0%, #2c5aa0 100%);
+            color: #fdf6e3;
+            box-shadow: 0 4px 15px rgba(38, 139, 210, 0.3);
+        }
+
+        .btn:hover, .search-btn:hover, .add-btn:hover, .upload-btn:hover, .manage-btn:hover {
+            background: linear-gradient(135deg, #2c5aa0 0%, #1e3f73 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(38, 139, 210, 0.4);
             text-decoration: none;
+            color: #fdf6e3;
         }
 
         .clear-search-btn {
-            background: var(--error-color);
+            background: linear-gradient(135deg, #dc322f 0%, #a02622 100%);
+            color: #fdf6e3;
+            box-shadow: 0 4px 15px rgba(220, 50, 47, 0.3);
         }
 
         .clear-search-btn:hover {
-            background: #c82333;
+            background: linear-gradient(135deg, #a02622 0%, #7a1c1a 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(220, 50, 47, 0.4);
+            text-decoration: none;
+            color: #fdf6e3;
         }
 
-        /* Table improvements */
+        /* Table improvements - Solar Theme */
         .table-responsive {
             overflow-x: auto;
-            margin: var(--spacing-lg) 0;
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            background: var(--white);
+            margin: 25px 0;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 43, 54, 0.1);
+            background: linear-gradient(145deg, rgba(253, 246, 227, 0.98) 0%, rgba(238, 232, 213, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(181, 137, 0, 0.15);
         }
 
         table {
             width: 100%;
             min-width: 600px;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: transparent;
         }
 
         th, td {
-            padding: var(--spacing-md);
+            padding: 18px 20px;
             text-align: left;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid rgba(88, 110, 117, 0.15);
         }
 
         th {
-            background: var(--primary-color);
-            color: var(--white);
-            font-weight: 600;
+            background: linear-gradient(135deg, #268bd2 0%, #2c5aa0 100%);
+            color: #fdf6e3;
+            font-weight: 700;
             position: sticky;
             top: 0;
             z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+
+        th:first-child {
+            border-radius: 20px 0 0 0;
+        }
+
+        th:last-child {
+            border-radius: 0 20px 0 0;
         }
 
         tr:nth-child(even) {
-            background: rgba(31, 125, 83, 0.05);
+            background: rgba(238, 232, 213, 0.3);
         }
 
         tr:hover {
-            background: rgba(31, 125, 83, 0.1);
+            background: rgba(181, 137, 0, 0.1);
+            transform: scale(1.01);
+            transition: all 0.3s ease;
         }
 
-        /* Form styling */
+        tbody tr:last-child td:first-child {
+            border-radius: 0 0 0 20px;
+        }
+
+        tbody tr:last-child td:last-child {
+            border-radius: 0 0 20px 0;
+        }
+
+        /* Form styling - Solar Theme Enhanced */
         .form-card {
-            background: var(--white);
-            padding: var(--spacing-lg);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
+            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
+            border: 2px solid rgba(181, 137, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #b58900, #859900, #268bd2);
+            border-radius: 25px 25px 0 0;
         }
 
         .form-card h2 {
-            color: var(--primary-color);
-            margin-bottom: var(--spacing-lg);
-            font-size: 1.3rem;
+            color: #002b36;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .form-group {
-            margin-bottom: var(--spacing-lg);
+            margin-bottom: 25px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: var(--spacing-sm);
-            color: var(--text-dark);
-            font-weight: 500;
+            margin-bottom: 10px;
+            color: #002b36;
+            font-weight: 600;
+            font-size: 1rem;
         }
 
         .form-control {
             width: 100%;
-            padding: var(--spacing-md);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
+            padding: 15px 20px;
+            border: 2px solid rgba(88, 110, 117, 0.2);
+            border-radius: 12px;
             font-size: 1rem;
-            color: var(--text-dark);
-            background: var(--white);
+            color: #002b36;
+            background: rgba(253, 246, 227, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .form-control:focus {
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
+            border-color: #268bd2;
+            box-shadow: 0 0 0 4px rgba(38, 139, 210, 0.1);
+            transform: translateY(-2px);
+            background: rgba(253, 246, 227, 1);
         }
 
-        .manage-btn {
-            background: var(--primary-color);
-            color: var(--white);
-            border: none;
-            padding: var(--spacing-md) var(--spacing-lg);
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-        .manage-btn:hover {
-            background: var(--secondary-color);
-        }
-
-        /* Search and filter styling */
+        /* Search and filter styling - Solar Enhanced */
         .search-input-group {
             display: flex;
-            gap: var(--spacing-sm);
+            gap: 15px;
             align-items: center;
-            margin-bottom: var(--spacing-md);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .search-input-group input[type="text"] {
             flex: 1;
-            padding: var(--spacing-md);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
+            min-width: 250px;
+            padding: 15px 20px;
+            border: 2px solid rgba(88, 110, 117, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #002b36;
+            background: rgba(253, 246, 227, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .search-input-group input[type="text"]:focus {
+            border-color: #268bd2;
+            box-shadow: 0 0 0 4px rgba(38, 139, 210, 0.1);
+            transform: translateY(-2px);
+            background: rgba(253, 246, 227, 1);
+        }
+
+        .search-input-group input[type="text"]::placeholder {
+            color: #93a1a1;
         }
 
         .level-selector {
-            margin-top: var(--spacing-md);
+            margin-top: 20px;
         }
 
         .level-selector label {
             display: block;
-            margin-bottom: var(--spacing-sm);
-            color: var(--text-dark);
-            font-weight: 500;
+            margin-bottom: 10px;
+            color: #002b36;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .level-selector select {
             width: 100%;
-            padding: var(--spacing-md);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            background: var(--white);
+            padding: 15px 20px;
+            border: 2px solid rgba(88, 110, 117, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #002b36;
+            background: rgba(253, 246, 227, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
         }
 
-        /* Action buttons */
+        .level-selector select:focus {
+            border-color: #268bd2;
+            box-shadow: 0 0 0 4px rgba(38, 139, 210, 0.1);
+            transform: translateY(-2px);
+            background: rgba(253, 246, 227, 1);
+        }
+
+        /* Action buttons - Solar Theme */
         .delete-btn, .edit-btn {
-            padding: var(--spacing-sm) var(--spacing-md);
+            padding: 12px 16px;
             border: none;
-            border-radius: var(--border-radius);
+            border-radius: 10px;
             cursor: pointer;
-            margin-right: var(--spacing-sm);
+            margin-right: 8px;
             font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .delete-btn {
-            background: var(--error-color);
-            color: var(--white);
+            background: linear-gradient(135deg, #dc322f 0%, #a02622 100%);
+            color: #fdf6e3;
+            box-shadow: 0 4px 15px rgba(220, 50, 47, 0.3);
         }
 
         .delete-btn:hover {
-            background: #c82333;
+            background: linear-gradient(135deg, #a02622 0%, #7a1c1a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 50, 47, 0.4);
         }
 
         .edit-btn {
-            background: var(--warning-color);
-            color: var(--text-dark);
+            background: linear-gradient(135deg, #b58900 0%, #8b6914 100%);
+            color: #fdf6e3;
+            box-shadow: 0 4px 15px rgba(181, 137, 0, 0.3);
         }
 
         .edit-btn:hover {
-            background: #e0a800;
+            background: linear-gradient(135deg, #8b6914 0%, #6b4f0a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(181, 137, 0, 0.4);
         }
 
-        /* Modal styling */
+        /* Modal styling - Solar Theme */
         .modal {
             display: none;
             position: fixed;
@@ -283,209 +487,272 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 43, 54, 0.8);
+            backdrop-filter: blur(8px);
         }
 
         .modal-content {
-            background-color: var(--white);
-            margin: 15% auto;
-            padding: var(--spacing-xl);
-            border-radius: var(--border-radius-lg);
+            background: linear-gradient(145deg, rgba(253, 246, 227, 0.98) 0%, rgba(238, 232, 213, 0.95) 100%);
+            backdrop-filter: blur(15px);
+            margin: 10% auto;
+            padding: 40px;
+            border-radius: 25px;
             width: 80%;
             max-width: 500px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 25px 50px rgba(0, 43, 54, 0.3);
+            border: 2px solid rgba(181, 137, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #268bd2, #b58900, #859900);
+            border-radius: 25px 25px 0 0;
         }
 
         .close {
-            color: #aaa;
+            color: #93a1a1;
             float: right;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
             cursor: pointer;
+            transition: all 0.3s ease;
+            line-height: 1;
         }
 
         .close:hover {
-            color: var(--text-dark);
+            color: #dc322f;
+            transform: scale(1.1);
         }
 
-        /* Pagination styling */
+        /* Pagination styling - Solar Theme */
         .pagination-container {
-            margin-top: var(--spacing-xl);
+            margin-top: 30px;
             text-align: center;
+            background: linear-gradient(145deg, rgba(253, 246, 227, 0.9) 0%, rgba(238, 232, 213, 0.8) 100%);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 43, 54, 0.1);
+            border: 2px solid rgba(181, 137, 0, 0.15);
         }
 
         .pagination {
             display: inline-flex;
             list-style: none;
             padding: 0;
-            margin: 0 0 var(--spacing-md) 0;
-        }
-
-        .pagination li {
-            margin: 0 2px;
+            margin: 0 0 15px 0;
+            gap: 8px;
         }
 
         .pagination li a,
         .pagination li span {
             display: block;
-            padding: var(--spacing-sm) var(--spacing-md);
+            padding: 12px 16px;
             text-decoration: none;
-            color: var(--text-dark);
-            background: var(--white);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
+            color: #002b36;
+            background: rgba(253, 246, 227, 0.8);
+            border: 2px solid rgba(88, 110, 117, 0.2);
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 44px;
+            text-align: center;
         }
 
         .pagination li a:hover {
-            background: var(--primary-color);
-            color: var(--white);
+            background: linear-gradient(135deg, #268bd2 0%, #2c5aa0 100%);
+            color: #fdf6e3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(38, 139, 210, 0.3);
         }
 
         .pagination li.active span {
-            background: var(--primary-color);
-            color: var(--white);
-            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #268bd2 0%, #2c5aa0 100%);
+            color: #fdf6e3;
+            border-color: #268bd2;
+            box-shadow: 0 4px 15px rgba(38, 139, 210, 0.3);
         }
 
         .pagination li.disabled span {
-            color: #999;
+            color: #93a1a1;
             cursor: not-allowed;
+            background: rgba(147, 161, 161, 0.1);
         }
 
         .pagination-info {
-            color: var(--text-light);
-            font-size: 0.9rem;
+            color: #586e75;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
 
-        /* Enhanced search and filter section */
+        /* Enhanced search and filter section - Solar Theme */
         .search-filter-section h2 {
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-            font-size: 1.6rem;
-            font-weight: 700;
+            color: #002b36;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
+            background: linear-gradient(135deg, #b58900, #268bd2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .search-box {
-            margin-bottom: 1.5rem;
-        }
-
-        .search-input-group {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-input-group input[type="text"] {
-            flex: 1;
-            min-width: 250px;
-            padding: 1rem 1.5rem;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .search-input-group input[type="text"]:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(31, 125, 83, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .search-btn, .clear-search-btn {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .search-btn {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #2c5530 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(31, 125, 83, 0.3);
-        }
-
-        .search-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(31, 125, 83, 0.4);
-        }
-
-        .clear-search-btn {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-        }
-
-        .clear-search-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
-            text-decoration: none;
-        }
-
-        .level-selector label {
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 0.8rem;
-            font-size: 1.05rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .level-selector label::before {
-            content: '🎓';
-            font-size: 1.2rem;
-        }
-
-        .level-selector select {
-            padding: 1rem 1.5rem;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: white;
-        }
-
-        .level-selector select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(31, 125, 83, 0.1);
-            transform: translateY(-2px);
+            margin-bottom: 25px;
         }
 
         /* Enhanced subject actions */
         .subject-actions {
-            margin-bottom: 2rem;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(238, 232, 213, 0.3);
+            border-radius: 15px;
+            border: 1px solid rgba(181, 137, 0, 0.2);
         }
 
-        #student-filter label::before {
-            content: '🔍';
-            margin-right: 8px;
+        #student-filter label {
+            font-weight: 600;
+            color: #002b36;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #subject-search {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(88, 110, 117, 0.2);
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #002b36;
+            background: rgba(253, 246, 227, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        #subject-search:focus {
+            border-color: #268bd2;
+            box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.1);
+            background: rgba(253, 246, 227, 1);
+        }
+
+        /* Message styling - Solar Theme */
+        #message-container {
+            margin-bottom: 25px;
+        }
+
+        .message {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-left: 4px solid;
+            backdrop-filter: blur(10px);
+        }
+
+        .message-error {
+            background: rgba(220, 50, 47, 0.1);
+            color: #dc322f;
+            border-left-color: #dc322f;
+        }
+
+        .message-success {
+            background: rgba(133, 153, 0, 0.1);
+            color: #859900;
+            border-left-color: #859900;
+        }
+
+        /* Tips content styling */
+        .tips-content {
+            color: #586e75;
+            line-height: 1.6;
+        }
+
+        .tips-content ul {
+            padding-left: 20px;
+            margin-top: 15px;
+        }
+
+        .tips-content li {
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .tips-content li::marker {
+            color: #268bd2;
+        }
+
+        /* Enhanced hover effects */
+        .form-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 50px rgba(0, 43, 54, 0.2);
+        }
+
+        .search-filter-section:hover,
+        .students-section:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 25px 50px rgba(0, 43, 54, 0.18);
+        }
+
+        /* Checkbox styling */
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #268bd2;
+            cursor: pointer;
+        }
+
+        /* Loading animation for future use */
+        @keyframes solar-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .loading {
+            animation: solar-pulse 2s infinite;
         }
     </style>
   </head>
   <body>
     <div class="manage-container">
         <header class="page-header">
-          <h1>📖 Manage Subjects</h1>
+          <h1>
+            <svg class="heroicon-solar-blue" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M6 3C4.34315 3 3 4.34315 3 6V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V6C21 4.34315 19.6569 3 18 3H6ZM6.25 7C6.25 6.58579 6.58579 6.25 7 6.25H17C17.4142 6.25 17.75 6.58579 17.75 7C17.75 7.41421 17.4142 7.75 17 7.75H7C6.58579 7.75 6.25 7.41421 6.25 7ZM6.25 10.5C6.25 10.0858 6.58579 9.75 7 9.75H17C17.4142 9.75 17.75 10.0858 17.75 10.5C17.75 10.9142 17.4142 11.25 17 11.25H7C6.58579 11.25 6.25 10.9142 6.25 10.5ZM6.25 14C6.25 13.5858 6.58579 13.25 7 13.25H13C13.4142 13.25 13.75 13.5858 13.75 14C13.75 14.4142 13.4142 14.75 13 14.75H7C6.58579 14.75 6.25 14.4142 6.25 14Z"/>
+            </svg>
+            Manage Subjects
+          </h1>
           <p class="page-subtitle">
             Add, edit, and organize subjects across different education levels
           </p>
           <div class="nav-links">
-            <a href="{{ url_for('classteacher.teacher_management_hub') }}"
-              >Teacher Hub</a
-            >
-            <a href="{{ url_for('classteacher.dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+            <a href="{{ url_for('classteacher.teacher_management_hub') }}">
+              <svg class="heroicon-solar-green" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M11.0991 1.29289C11.4896 0.902369 12.1228 0.902369 12.5133 1.29289L22.5133 11.2929C22.9038 11.6834 22.9038 12.3166 22.5133 12.7071C22.1228 13.0976 21.4896 13.0976 21.0991 12.7071L20.0124 11.6204V20C20.0124 21.6569 18.6693 23 17.0124 23H7.01245C5.3556 23 4.01245 21.6569 4.01245 20V11.6204L2.92578 12.7071C2.53526 13.0976 1.90209 13.0976 1.51157 12.7071C1.12104 12.3166 1.12104 11.6834 1.51157 11.2929L11.5116 1.29289Z"/>
+              </svg>
+              Teacher Hub
+            </a>
+            <a href="{{ url_for('classteacher.dashboard') }}">
+              <svg class="heroicon-solar-blue" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M3 6C3 4.34315 4.34315 3 6 3H8C9.65685 3 11 4.34315 11 6V8C11 9.65685 9.65685 11 8 11H6C4.34315 11 3 9.65685 3 8V6ZM6 5C5.44772 5 5 5.44772 5 6V8C5 8.55228 5.44772 9 6 9H8C8.55228 9 9 8.55228 9 8V6C9 5.44772 8.55228 5 8 5H6ZM13 6C13 4.34315 14.3431 3 16 3H18C19.6569 3 21 4.34315 21 6V8C21 9.65685 19.6569 11 18 11H16C14.3431 11 13 9.65685 13 8V6ZM16 5C15.4477 5 15 5.44772 15 6V8C15 8.55228 15.4477 9 16 9H18C18.5523 9 19 8.55228 19 8V6C19 5.44772 18.5523 5 18 5H16ZM3 16C3 14.3431 4.34315 13 6 13H8C9.65685 13 11 14.3431 11 16V18C11 19.6569 9.65685 21 8 21H6C4.34315 21 3 19.6569 3 18V16ZM6 15C5.44772 15 5 15.4477 5 16V18C5 18.5523 5.44772 19 6 19H8C8.55228 19 9 18.5523 9 18V16C9 15.4477 8.55228 15 8 15H6ZM13 16C13 14.3431 14.3431 13 16 13H18C19.6569 13 21 14.3431 21 16V18C21 19.6569 19.6569 21 18 21H16C14.3431 21 13 19.6569 13 18V16ZM16 15C15.4477 15 15 15.4477 15 16V18C15 18.5523 15.4477 19 16 19H18C18.5523 19 19 18.5523 19 18V16C19 15.4477 18.5523 15 18 15H16Z"/>
+              </svg>
+              Dashboard
+            </a>
+            <a href="{{ url_for('auth.logout_route') }}">
+              <svg class="heroicon-solar-red" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 3.75C16.0858 3.75 15.75 4.08579 15.75 4.5C15.75 4.91421 16.0858 5.25 16.5 5.25H19.5C19.9142 5.25 20.25 5.58579 20.25 6V18C20.25 18.4142 19.9142 18.75 19.5 18.75H16.5C16.0858 18.75 15.75 19.0858 15.75 19.5C15.75 19.9142 16.0858 20.25 16.5 20.25H19.5C20.7426 20.25 21.75 19.2426 21.75 18V6C21.75 4.75736 20.7426 3.75 19.5 3.75H16.5ZM9.96967 7.96967C10.2626 7.67678 10.7374 7.67678 11.0303 7.96967L14.0303 10.9697C14.3232 11.2626 14.3232 11.7374 14.0303 12.0303L11.0303 15.0303C10.7374 15.3232 10.2626 15.3232 9.96967 15.0303C9.67678 14.7374 9.67678 14.2626 9.96967 13.9697L11.1893 12.75H4.5C4.08579 12.75 3.75 12.4142 3.75 12C3.75 11.5858 4.08579 11.25 4.5 11.25H11.1893L9.96967 10.0303C9.67678 9.73744 9.67678 9.26256 9.96967 7.96967Z"/>
+              </svg>
+              Logout
+            </a>
           </div>
         </header>
 
@@ -500,16 +767,31 @@
 
         <!-- Search and Filter Section -->
         <div class="search-filter-section">
-          <h2>🔍 Search & Filter Subjects</h2>
+          <h2>
+            <svg class="heroicon-solar-yellow" width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M18.319 14.4326C20.7628 11.2941 20.542 6.75347 17.6569 3.86829C14.5327 0.744098 9.46734 0.744098 6.34315 3.86829C3.21895 6.99249 3.21895 12.0578 6.34315 15.182C9.22833 18.0672 13.769 18.2879 16.9075 15.8442C16.921 15.8595 16.9351 15.8745 16.9497 15.8891L21.1924 20.1317C21.5829 20.5223 22.2161 20.5223 22.6066 20.1317C22.9971 19.7412 22.9971 19.1081 22.6066 18.7175L18.364 14.4749C18.3493 14.4603 18.3343 14.4462 18.319 14.4326ZM16.2426 5.28251C18.5858 7.62565 18.5858 11.4246 16.2426 13.7678C13.8995 16.1109 10.1005 16.1109 7.75736 13.7678C5.41421 11.4246 5.41421 7.62565 7.75736 5.28251C10.1005 2.93936 13.8995 2.93936 16.2426 5.28251Z"/>
+            </svg>
+            Search & Filter Subjects
+          </h2>
           <!-- Search Form -->
           <div class="search-box">
             <form method="GET" action="{{ url_for('classteacher.manage_subjects') }}" id="search-form">
               <div class="search-input-group">
                 <input type="text" name="search" id="search-input" placeholder="Search subjects..." value="{{ search_query }}">
                 <input type="hidden" name="education_level" value="{{ current_education_level }}">
-                <button type="submit" class="search-btn">Search</button>
+                <button type="submit" class="search-btn">
+                  <svg class="heroicon-solar-light" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M18.319 14.4326C20.7628 11.2941 20.542 6.75347 17.6569 3.86829C14.5327 0.744098 9.46734 0.744098 6.34315 3.86829C3.21895 6.99249 3.21895 12.0578 6.34315 15.182C9.22833 18.0672 13.769 18.2879 16.9075 15.8442C16.921 15.8595 16.9351 15.8745 16.9497 15.8891L21.1924 20.1317C21.5829 20.5223 22.2161 20.5223 22.6066 20.1317C22.9971 19.7412 22.9971 19.1081 22.6066 18.7175L18.364 14.4749C18.3493 14.4603 18.3343 14.4462 18.319 14.4326ZM16.2426 5.28251C18.5858 7.62565 18.5858 11.4246 16.2426 13.7678C13.8995 16.1109 10.1005 16.1109 7.75736 13.7678C5.41421 11.4246 5.41421 7.62565 7.75736 5.28251C10.1005 2.93936 13.8995 2.93936 16.2426 5.28251Z"/>
+                  </svg>
+                  Search
+                </button>
                 {% if search_query %}
-                  <a href="{{ url_for('classteacher.manage_subjects', education_level=current_education_level) }}" class="clear-search-btn">Clear</a>
+                  <a href="{{ url_for('classteacher.manage_subjects', education_level=current_education_level) }}" class="clear-search-btn">
+                    <svg class="heroicon-solar-light" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"/>
+                    </svg>
+                    Clear
+                  </a>
                 {% endif %}
               </div>
             </form>
@@ -517,7 +799,12 @@
 
           <!-- Educational level selector -->
           <div class="level-selector">
-            <label for="filter_education_level">Filter by Education Level:</label>
+            <label for="filter_education_level">
+              <svg class="heroicon-solar-green" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M11.7071 4.29289C12.0976 4.68342 12.0976 5.31658 11.7071 5.70711L6.41421 11H20C20.5523 11 21 11.4477 21 12C21 12.5523 20.5523 13 20 13H6.41421L11.7071 18.2929C12.0976 18.6834 12.0976 19.3166 11.7071 19.7071C11.3166 20.0976 10.6834 20.0976 10.2929 19.7071L3.29289 12.7071C2.90237 12.3166 2.90237 11.6834 3.29289 11.2929L10.2929 4.29289C10.6834 3.90237 11.3166 3.90237 11.7071 4.29289Z"/>
+              </svg>
+              Filter by Education Level:
+            </label>
             <form method="GET" action="{{ url_for('classteacher.manage_subjects') }}" id="filter-form">
               <select id="filter_education_level" name="education_level" onchange="document.getElementById('filter-form').submit()">
                 <option value="">All Levels</option>
@@ -537,7 +824,12 @@
         <div class="forms-grid">
           <!-- Add Subject Form -->
           <div class="form-card">
-            <h2>➕ Add New Subject</h2>
+            <h2>
+              <svg class="heroicon-solar-green" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 3.75C12.4142 3.75 12.75 4.08579 12.75 4.5V11.25H19.5C19.9142 11.25 20.25 11.5858 20.25 12C20.25 12.4142 19.9142 12.75 19.5 12.75H12.75V19.5C12.75 19.9142 12.4142 20.25 12 20.25C11.5858 20.25 11.25 19.9142 11.25 19.5V12.75H4.5C4.08579 12.75 3.75 12.4142 3.75 12C3.75 11.5858 4.08579 11.25 4.5 11.25H11.25V4.5C11.25 4.08579 11.5858 3.75 12 3.75Z"/>
+              </svg>
+              Add New Subject
+            </h2>
             <form
               method="POST"
               action="{{ url_for('classteacher.manage_subjects') }}"
@@ -574,6 +866,9 @@
               </div>
 
               <button type="submit" name="add_subject" class="manage-btn">
+                <svg class="heroicon-solar-light" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 3.75C12.4142 3.75 12.75 4.08579 12.75 4.5V11.25H19.5C19.9142 11.25 20.25 11.5858 20.25 12C20.25 12.4142 19.9142 12.75 19.5 12.75H12.75V19.5C12.75 19.9142 12.4142 20.25 12 20.25C11.5858 20.25 11.25 19.9142 11.25 19.5V12.75H4.5C4.08579 12.75 3.75 12.4142 3.75 12C3.75 11.5858 4.08579 11.25 4.5 11.25H11.25V4.5C11.25 4.08579 11.5858 3.75 12 3.75Z"/>
+                </svg>
                 Add Subject
               </button>
             </form>
@@ -581,7 +876,12 @@
 
           <!-- This is the second column for tips -->
           <div class="form-card">
-            <h2>💡 Subject Management Tips</h2>
+            <h2>
+              <svg class="heroicon-solar-yellow" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.25C12.4142 2.25 12.75 2.58579 12.75 3V4.31802C14.4463 4.53748 15.75 5.9588 15.75 7.68182V8.25H16.5C18.1569 8.25 19.5 9.59315 19.5 11.25V16.5C19.5 18.1569 18.1569 19.5 16.5 19.5H7.5C5.84315 19.5 4.5 18.1569 4.5 16.5V11.25C4.5 9.59315 5.84315 8.25 7.5 8.25H8.25V7.68182C8.25 5.9588 9.55374 4.53748 11.25 4.31802V3C11.25 2.58579 11.5858 2.25 12 2.25ZM9.75 8.25H14.25V7.68182C14.25 6.7568 13.4252 6 12.5 6H11.5C10.5748 6 9.75 6.7568 9.75 7.68182V8.25ZM7.5 9.75C6.67157 9.75 6 10.4216 6 11.25V16.5C6 17.3284 6.67157 18 7.5 18H16.5C17.3284 18 18 17.3284 18 16.5V11.25C18 10.4216 17.3284 9.75 16.5 9.75H7.5Z"/>
+              </svg>
+              Subject Management Tips
+            </h2>
             <div class="tips-content">
               <p>Here are some tips for managing subjects effectively:</p>
               <ul>
@@ -609,10 +909,20 @@
 
         <!-- Subjects Table - improved structure -->
         <div class="students-section">
-          <h2>📚 Existing Subjects</h2>
+          <h2>
+            <svg class="heroicon-solar-blue" width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M6 3C4.34315 3 3 4.34315 3 6V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V6C21 4.34315 19.6569 3 18 3H6ZM6.25 7C6.25 6.58579 6.58579 6.25 7 6.25H17C17.4142 6.25 17.75 6.58579 17.75 7C17.75 7.41421 17.4142 7.75 17 7.75H7C6.58579 7.75 6.25 7.41421 6.25 7ZM6.25 10.5C6.25 10.0858 6.58579 9.75 7 9.75H17C17.4142 9.75 17.75 10.0858 17.75 10.5C17.75 10.9142 17.4142 11.25 17 11.25H7C6.58579 11.25 6.25 10.9142 6.25 10.5ZM6.25 14C6.25 13.5858 6.58579 13.25 7 13.25H13C13.4142 13.25 13.75 13.5858 13.75 14C13.75 14.4142 13.4142 14.75 13 14.75H7C6.58579 14.75 6.25 14.4142 6.25 14Z"/>
+            </svg>
+            Existing Subjects
+          </h2>
           <div class="subject-actions">
             <div id="student-filter">
-              <label for="subject-search">Search subjects:</label>
+              <label for="subject-search">
+                <svg class="heroicon-solar-yellow" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M18.319 14.4326C20.7628 11.2941 20.542 6.75347 17.6569 3.86829C14.5327 0.744098 9.46734 0.744098 6.34315 3.86829C3.21895 6.99249 3.21895 12.0578 6.34315 15.182C9.22833 18.0672 13.769 18.2879 16.9075 15.8442C16.921 15.8595 16.9351 15.8745 16.9497 15.8891L21.1924 20.1317C21.5829 20.5223 22.2161 20.5223 22.6066 20.1317C22.9971 19.7412 22.9971 19.1081 22.6066 18.7175L18.364 14.4749C18.3493 14.4603 18.3343 14.4462 18.319 14.4326ZM16.2426 5.28251C18.5858 7.62565 18.5858 11.4246 16.2426 13.7678C13.8995 16.1109 10.1005 16.1109 7.75736 13.7678C5.41421 11.4246 5.41421 7.62565 7.75736 5.28251C10.1005 2.93936 13.8995 2.93936 16.2426 5.28251Z"/>
+                </svg>
+                Search subjects:
+              </label>
               <input
                 type="text"
                 id="subject-search"
@@ -643,6 +953,9 @@
                 class="delete-btn"
                 onclick="deleteSelectedSubjects()"
               >
+                <svg class="heroicon-solar-light" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 00-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z"/>
+                </svg>
                 Delete Selected Subjects
               </button>
             </form>
@@ -699,6 +1012,9 @@
                         name="delete_subject"
                         class="delete-btn"
                       >
+                        <svg class="heroicon-solar-light" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 00-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z"/>
+                        </svg>
                         Delete
                       </button>
                     </form>
@@ -707,6 +1023,10 @@
                       class="edit-btn"
                       onclick="openEditModal('{{ subject.id }}', '{{ subject.name }}', '{{ subject.education_level }}')"
                     >
+                      <svg class="heroicon-solar-light" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z"/>
+                        <path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z"/>
+                      </svg>
                       Edit
                     </button>
                   </td>
@@ -728,7 +1048,7 @@
                 <li class="disabled"><span>&lsaquo; Previous</span></li>
               {% endif %}
 
-              {% for page_num in pagination.iter_pages() %}
+              {% for page_num in pagination.iter_pages %}
                 {% if page_num %}
                   {% if page_num == pagination.page %}
                     <li class="active"><span>{{ page_num }}</span></li>

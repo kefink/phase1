@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0"
+    />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <meta
+      name="description"
+      content="Student Dashboard - {{ school_info.school_name|default('Hillview School') }} Management System"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#2aa198" />
+
+    <title>
+      Student Dashboard - {{ school_info.school_name|default('Hillview School
+      Management System') }}
+    </title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+    <!-- Modern Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <!-- External CSS Files -->
+    <link rel="stylesheet" href="/static/css/student-base.css" />
+    <link rel="stylesheet" href="/static/css/student-forms.css" />
+    <link rel="stylesheet" href="/static/css/student-components.css" />
+    <link rel="stylesheet" href="/static/css/student-layout.css" />
+  </head>
+
+  <body class="solar-theme">
+    <!-- Error Message Section -->
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <!-- Confirmation Message Section -->
+    {% if message %}
+    <div class="alert alert-success">{{ message }}</div>
+    {% endif %}
+
+    <div class="app-container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-logo">
+            <img
+              src="/static/images/logo.png"
+              alt="{{ school_info.school_name|default('Hillview School') }} Logo"
+            />
+            <h1>Student Portal</h1>
+          </div>
+          <button class="sidebar-toggle" id="sidebar-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="sidebar-body">
+          <div class="nav-section">
+            <div class="nav-section-title">Main</div>
+            <ul class="nav">
+              <li class="nav-item">
+                <a
+                  href="/student/dashboard"
+                  class="nav-link {% if active_page == 'dashboard' %}active{% endif %}"
+                >
+                  <i class="fas fa-home"></i> Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/student/courses"
+                  class="nav-link {% if active_page == 'courses' %}active{% endif %}"
+                >
+                  <i class="fas fa-book"></i> Courses
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/student/assignments"
+                  class="nav-link {% if active_page == 'assignments' %}active{% endif %}"
+                >
+                  <i class="fas fa-tasks"></i> Assignments {% if
+                  pending_assignments > 0 %}
+                  <span class="badge badge-warning"
+                    >{{ pending_assignments }}</span
+                  >
+                  {% endif %}
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/student/grades"
+                  class="nav-link {% if active_page == 'grades' %}active{% endif %}"
+                >
+                  <i class="fas fa-chart-line"></i> Grades
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-section-title">Academic</div>
+            <ul class="nav">
+              <li class="nav-item">
+                <a
+                  href="/student/attendance"
+                  class="nav-link {% if active_page == 'attendance' %}active{% endif %}"
+                >
+                  <i class="fas fa-calendar-check"></i> Attendance
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/student/exams"
+                  class="nav-link {% if active_page == 'exams' %}active{% endif %}"
+                >
+                  <i class="fas fa-file-alt"></i> Exams {% if upcoming_exams > 0
+                  %}
+                  <span class="badge badge-info">{{ upcoming_exams }}</span>
+                  {% endif %}
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/student/timetable"
+                  class="nav-link {% if active_page == 'timetable' %}active{% endif %}"
+                >
+                  <i class="fas fa-clock"></i> Timetable
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-section-title">Resources</div>
+            <ul class="nav">
+              <li class="nav-item">
+                <a
+                  href="/student/library"
+                  class="nav-link {% if active_page == 'library' %}active{% endif %}"
+                >
+                  <i class="fas fa-book-reader"></i> Library
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/student/resources"
+                  class="nav-link {% if active_page == 'resources' %}active{% endif %}"
+                >
+                  <i class="fas fa-folder-open"></i> Learning Resources
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="nav">
+            <a href="/student/settings" class="nav-link">
+              <i class="fas fa-cog"></i> Settings
+            </a>
+            <a href="/logout" class="nav-link">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-wrapper">
+        <!-- Navbar -->
+        <div class="navbar">
+          <div class="navbar-left">
+            <button id="menu-toggle" class="navbar-toggle">
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <h3 class="navbar-title">
+              {{ page_title|default('Student Dashboard') }}
+            </h3>
+
+            <ul class="navbar-breadcrumb d-none d-md-flex">
+              <li class="navbar-breadcrumb-item">
+                <a href="/student/dashboard" class="navbar-breadcrumb-link"
+                  >Home</a
+                >
+              </li>
+              {% if breadcrumb %}
+              <li class="navbar-breadcrumb-item">
+                <a href="{{ breadcrumb.url }}" class="navbar-breadcrumb-link"
+                  >{{ breadcrumb.text }}</a
+                >
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+
+          <div class="navbar-right">
+            <div class="navbar-search">
+              <form action="/student/search" method="GET">
+                <i class="fas fa-search navbar-search-icon"></i>
+                <input
+                  type="text"
+                  class="navbar-search-input"
+                  placeholder="Search..."
+                  name="q"
+                />
+              </form>
+            </div>
+
+            <div class="navbar-menu">
+              <div class="navbar-menu-item">
+                <button class="navbar-menu-btn notification-btn">
+                  <i class="fas fa-bell"></i>
+                  {% if notifications_count > 0 %}
+                  <span class="badge badge-danger"
+                    >{{ notifications_count }}</span
+                  >
+                  {% endif %}
+                </button>
+
+                <div class="dropdown-menu notification-dropdown">
+                  <div
+                    class="dropdown-header d-flex justify-content-between align-items-center"
+                  >
+                    <h6 class="mb-0">Notifications</h6>
+                    <a href="/student/notifications" class="text-muted"
+                      >View All</a
+                    >
+                  </div>
+
+                  <div class="dropdown-divider"></div>
+
+                  <div class="notification-list-wrapper">
+                    {% if notifications %}
+                    <ul class="notification-list">
+                      {% for notification in notifications %}
+                      <li
+                        class="notification-item {% if not notification.read %}unread{% endif %}"
+                      >
+                        <div class="notification-icon">
+                          <i class="fas fa-{{ notification.icon }}"></i>
+                        </div>
+                        <div class="notification-content">
+                          <p class="notification-text">
+                            {{ notification.message }}
+                          </p>
+                          <p class="notification-time">
+                            {{ notification.time }}
+                          </p>
+                        </div>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-center py-3">No new notifications</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="navbar-user">
+                <img
+                  src="{{ student.avatar|default('/static/images/avatar.jpg') }}"
+                  alt="{{ student.name }}"
+                  class="navbar-user-avatar"
+                />
+
+                <div class="navbar-user-info d-none d-md-block">
+                  <p class="navbar-user-name">{{ student.name }}</p>
+                  <p class="navbar-user-role">{{ student.class }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+          {% block content %}
+          <div class="page-header">
+            <h1 class="page-title">Welcome, {{ student.name }}</h1>
+            <p class="page-subtitle">
+              Here's an overview of your academic progress
+            </p>
+          </div>
+
+          <div class="student-dashboard-layout">
+            <div class="dashboard-main">
+              <!-- Academic Progress -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Academic Progress</h3>
+                  <button
+                    id="refresh-dashboard"
+                    class="btn btn-sm btn-outline-primary"
+                  >
+                    <i class="fas fa-sync-alt"></i> Refresh
+                  </button>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div
+                        class="progress-chart"
+                        data-percentage="78"
+                        data-color="#2aa198"
+                      ></div>
+                      <h4 class="text-center mt-3">Overall Progress</h4>
+                    </div>
+                    <div class="col-md-4">
+                      <div
+                        class="progress-chart"
+                        data-percentage="85"
+                        data-color="#859900"
+                      ></div>
+                      <h4 class="text-center mt-3">Attendance</h4>
+                    </div>
+                    <div class="col-md-4">
+                      <div
+                        class="progress-chart"
+                        data-percentage="72"
+                        data-color="#268bd2"
+                      ></div>
+                      <h4 class="text-center mt-3">Assignments</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Grades -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Recent Grades</h3>
+                  <a href="/student/grades" class="btn btn-sm btn-link"
+                    >View All</a
+                  >
+                </div>
+                <div class="card-body">
+                  {% if recent_grades %}
+                  <div class="recent-grades-list">
+                    {% for grade in recent_grades %}
+                    <div class="grade-item">
+                      <div class="grade-item-header">
+                        <h4 class="grade-item-title">{{ grade.title }}</h4>
+                        <span class="grade-item-subject"
+                          >{{ grade.subject }}</span
+                        >
+                      </div>
+                      <div class="grade-item-details">
+                        <span
+                          class="grade-item-score {% if grade.score >= 80 %}text-success{% elif grade.score >= 60 %}text-warning{% else %}text-danger{% endif %}"
+                        >
+                          {{ grade.score }}%
+                        </span>
+                        <span class="grade-item-date">{{ grade.date }}</span>
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% else %}
+                  <p class="empty-state">No recent grades</p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Subject Performance -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Subject Performance</h3>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    {% for subject in subjects %}
+                    <div class="col-md-6 mb-4">
+                      <div
+                        class="grade-chart"
+                        data-subject="{{ subject.name }}"
+                        data-grades="{{ subject.grades|tojson }}"
+                      ></div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="dashboard-sidebar">
+              <!-- Upcoming Assignments -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Upcoming Assignments</h3>
+                  <a href="/student/assignments" class="btn btn-sm btn-link"
+                    >View All</a
+                  >
+                </div>
+                <div class="card-body">
+                  {% if upcoming_assignments %}
+                  <div class="upcoming-assignments-list">
+                    {% for assignment in upcoming_assignments %}
+                    <div class="assignment-item">
+                      <div class="assignment-item-header">
+                        <h4 class="assignment-item-title">
+                          {{ assignment.title }}
+                        </h4>
+                        <span class="assignment-item-subject"
+                          >{{ assignment.subject }}</span
+                        >
+                      </div>
+                      <div class="assignment-item-details">
+                        <span class="assignment-item-due-date">
+                          <i class="fas fa-calendar-alt"></i> Due: {{
+                          assignment.due_date }}
+                        </span>
+                        <a
+                          href="/student/assignment/{{ assignment.id }}"
+                          class="btn-sm btn-primary"
+                          >View</a
+                        >
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% else %}
+                  <p class="empty-state">No upcoming assignments</p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Attendance -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Attendance</h3>
+                  <a href="/student/attendance" class="btn btn-sm btn-link"
+                    >Details</a
+                  >
+                </div>
+                <div class="card-body">
+                  <div
+                    id="attendance-chart"
+                    data-attendance='{"present": 42, "absent": 3, "late": 5}'
+                  ></div>
+                  <div class="attendance-stats mt-3">
+                    <div class="stat-item">
+                      <span class="stat-value">84%</span>
+                      <span class="stat-label">Attendance Rate</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-value">42</span>
+                      <span class="stat-label">Present</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-value">3</span>
+                      <span class="stat-label">Absent</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-value">5</span>
+                      <span class="stat-label">Late</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Announcements -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Announcements</h3>
+                </div>
+                <div class="card-body">
+                  {% if announcements %}
+                  <div class="announcements-list">
+                    {% for announcement in announcements %}
+                    <div class="announcement-item">
+                      <div class="announcement-item-header">
+                        <h4 class="announcement-item-title">
+                          {{ announcement.title }}
+                        </h4>
+                        <span class="announcement-item-date"
+                          >{{ announcement.date }}</span
+                        >
+                      </div>
+                      <div class="announcement-item-content">
+                        <p>{{ announcement.content }}</p>
+                      </div>
+                      <div class="announcement-item-footer">
+                        <span class="announcement-item-author"
+                          >Posted by: {{ announcement.author }}</span
+                        >
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% else %}
+                  <p class="empty-state">No announcements</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        © 2025 {{ school_info.school_name|default('Hillview School') }} -
+        Student Portal v2.5
+      </p>
+    </footer>
+
+    <!-- External JavaScript -->
+    <script src="/static/js/student-main.js"></script>
+    <script src="/static/js/student-dashboard.js"></script>
+    <script src="/static/js/student-assignments.js"></script>
+    <script src="/static/js/student-utils.js"></script>
+  </body>
+</html>

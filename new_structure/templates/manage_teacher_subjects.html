@@ -4,292 +4,287 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manage Teacher Subjects - Hillview School</title>
+    <!-- Inter font for Solar theme -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
     <style>
-      /* Override container styles for manage pages */
+      /* Solar Theme Tokens + heroicon base */
+      :root {
+        --solar-bg-1: #fdf6e3;
+        --solar-bg-2: #eee8d5;
+        --solar-bg-3: #d6d2c4;
+        --solar-primary: #b58900;
+        --solar-secondary: #268bd2;
+        --solar-green: #859900;
+        --solar-red: #dc322f;
+        --solar-text-primary: #002b36;
+        --solar-text-secondary: #073642;
+      }
+      :root {
+        --primary-color: var(--solar-primary) !important;
+        --secondary-color: var(--solar-secondary) !important;
+        --white: #ffffff !important;
+        --border-color: rgba(238, 232, 213, 0.5) !important;
+        --shadow-md: 0 10px 30px rgba(181, 137, 0, 0.1) !important;
+        --border-radius: 10px !important;
+        --border-radius-lg: 16px !important;
+        --spacing-sm: 8px !important;
+        --spacing-md: 12px !important;
+        --spacing-lg: 20px !important;
+        --spacing-xl: 32px !important;
+        --transition: all 0.25s ease !important;
+      }
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--solar-bg-1) 0%,
+          var(--solar-bg-2) 60%,
+          var(--solar-bg-3) 100%
+        ) !important;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif !important;
+        color: var(--solar-text-primary) !important;
+      }
+      .heroicon {
+        display: inline-block;
+        width: 1.1rem;
+        height: 1.1rem;
+        fill: currentColor;
+        vertical-align: middle;
+      }
+      .heroicon-lg {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+      .heroicon-solar-blue {
+        color: var(--solar-secondary);
+      }
+      .heroicon-solar-green {
+        color: var(--solar-green);
+      }
+      .heroicon-solar-yellow {
+        color: var(--solar-primary);
+      }
+      .heroicon-solar-red {
+        color: var(--solar-red);
+      }
+
+      /* Container */
       .manage-container {
         max-width: 95% !important;
         width: 95% !important;
-        margin: 80px auto 60px !important;
-        padding: var(--spacing-xl) !important;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin: 40px auto 60px !important;
+        padding: 0 !important;
+        background: transparent !important;
       }
-
-      /* Responsive design */
-      @media (max-width: 1024px) {
-        .manage-container {
-          max-width: 98% !important;
-          width: 98% !important;
-          padding: var(--spacing-lg) !important;
-        }
+      .page-header {
+        background: linear-gradient(
+          145deg,
+          rgba(253, 246, 227, 0.95) 0%,
+          rgba(238, 232, 213, 0.9) 100%
+        ) !important;
+        backdrop-filter: blur(15px);
+        padding: 30px !important;
+        border-radius: 24px !important;
+        box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15) !important;
+        border: 1px solid rgba(238, 232, 213, 0.5) !important;
+        margin-bottom: 24px !important;
       }
-
-      @media (max-width: 768px) {
-        .manage-container {
-          max-width: 98% !important;
-          width: 98% !important;
-          padding: var(--spacing-md) !important;
-        }
-      }
-
-      .action-buttons {
+      .page-header h1 {
         display: flex;
-        gap: 5px;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 10px 0;
+        color: var(--solar-text-primary) !important;
       }
-      .edit-btn {
-        display: inline-block;
-        padding: 5px 10px;
-        background-color: #4a6741;
-        color: white;
+      .nav-links {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .nav-links a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--solar-text-secondary) !important;
+        background: rgba(253, 246, 227, 0.5);
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(238, 232, 213, 0.6);
         text-decoration: none;
-        border-radius: 3px;
-        font-size: 0.8rem;
       }
-      .edit-btn:hover {
-        background-color: #3a5331;
+      .nav-links a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
       }
-      .delete-btn {
-        padding: 5px 10px;
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 0.8rem;
-      }
-      .delete-btn:hover {
-        background-color: #c82333;
-      }
-      .add-btn {
-        padding: 5px 10px;
-        background-color: #28a745;
-        color: white;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 0.8rem;
-      }
-      .add-btn:hover {
-        background-color: #218838;
-      }
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-      }
-      .modal-content {
-        background-color: #fff;
-        margin: 10% auto;
-        padding: 20px;
-        border-radius: 8px;
-        width: 80%;
-        max-width: 500px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      }
-      .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-      .close:hover {
-        color: #000;
-      }
+
+      /* Filters */
       .filter-section {
         margin-bottom: 20px;
         padding: 15px;
-        background-color: #f8f9fa;
-        border-radius: 5px;
+        background: rgba(238, 232, 213, 0.6);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
       }
-      .filter-section select {
-        margin-right: 10px;
-        padding: 5px;
-      }
-      .subject-group {
-        margin-bottom: 20px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 15px;
-      }
-      .subject-group h3 {
-        margin-top: 0;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
-      }
-      .checkbox-group {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 10px;
-        margin-top: 10px;
-      }
-      .checkbox-item {
+      .filter-section h3 {
         display: flex;
         align-items: center;
-      }
-      .checkbox-item input {
-        margin-right: 8px;
-      }
-      .highlight-message {
-        animation: highlight 2s ease-in-out;
-        border: 2px solid #4a6741;
-        box-shadow: 0 0 10px rgba(74, 103, 65, 0.5);
-      }
-      @keyframes highlight {
-        0% {
-          background-color: #4a6741;
-          color: white;
-        }
-        100% {
-          background-color: #d4edda;
-          color: #155724;
-        }
-      }
-      .highlight-row {
-        animation: highlight-row 3s ease-in-out;
-      }
-      @keyframes highlight-row {
-        0% {
-          background-color: #4a6741;
-          color: white;
-        }
-        50% {
-          background-color: #d4edda;
-          color: #155724;
-        }
-        100% {
-          background-color: transparent;
-          color: inherit;
-        }
+        gap: 8px;
+        margin: 0 0 10px 0;
+        color: var(--solar-text-secondary);
       }
 
-      /* Enhanced table styling */
+      /* Table */
       .data-table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
-        background: white;
-        border-radius: 8px;
+        background: #fff;
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-md);
       }
       .data-table th,
       .data-table td {
-        border: 1px solid #e0e0e0;
-        padding: 12px 15px;
+        border-bottom: 1px solid var(--border-color);
+        padding: 12px 14px;
         text-align: left;
       }
       .data-table th {
-        background: linear-gradient(135deg, #4a6741 0%, #3a5331 100%);
-        color: white;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
+        background: var(--solar-primary);
+        color: #fff;
+        text-transform: none;
+        letter-spacing: 0;
       }
       .data-table tbody tr:nth-child(even) {
-        background-color: #f8f9fa;
+        background: rgba(181, 137, 0, 0.05);
       }
       .data-table tbody tr:hover {
-        background-color: #e8f5e8;
-        transition: background-color 0.2s ease;
+        background: rgba(38, 139, 210, 0.08);
       }
 
-      /* Responsive table */
-      @media (max-width: 768px) {
-        .data-table {
-          font-size: 0.9rem;
-        }
-        .data-table th,
-        .data-table td {
-          padding: 8px 10px;
-        }
-        .action-buttons {
-          flex-direction: column;
-          gap: 3px;
-        }
-        .edit-btn,
-        .delete-btn {
-          font-size: 0.75rem;
-          padding: 4px 8px;
-        }
-      }
-
-      /* Enhanced page header styling */
-      .page-header {
-        background: linear-gradient(135deg, #4a6741 0%, #3a5331 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(74, 103, 65, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        margin-bottom: 2rem;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .page-header h1 {
-        color: white !important;
-        margin-bottom: 1rem;
-        font-size: 2.2rem;
-        font-weight: 700;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-      }
-
-      .nav-links {
-        position: relative;
-        z-index: 2;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin-top: 1rem;
-      }
-
-      .nav-links a {
-        color: rgba(255, 255, 255, 0.9) !important;
+      /* Buttons */
+      .btn,
+      .edit-btn,
+      .delete-btn,
+      .add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 10px;
         text-decoration: none;
-        font-weight: 500;
-        padding: 8px 16px;
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+      .btn {
+        background: var(--solar-secondary);
+        color: #fff;
+      }
+      .edit-btn {
+        background: #fdf0c7;
+        color: var(--solar-text-primary);
+        border: 1px solid rgba(245, 199, 0, 0.3);
+      }
+      .edit-btn:hover {
+        background: #fde9aa;
+      }
+      .delete-btn {
+        background: #fbe3e5;
+        color: var(--solar-red);
+        border: 1px solid rgba(220, 50, 47, 0.25);
+      }
+      .delete-btn:hover {
+        background: #f8d2d6;
+      }
+      .add-btn {
+        background: #e7f2d9;
+        color: var(--solar-green);
+        border: 1px solid rgba(133, 153, 0, 0.25);
+      }
+      .add-btn:hover {
+        background: #d8ebc2;
       }
 
-      .nav-links a:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      .subject-group {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 15px;
       }
     </style>
   </head>
   <body>
     <div class="manage-container">
       <header class="page-header">
-        <h1>Manage Teacher Subjects: {{ teacher.username }}</h1>
+        <h1>
+          <!-- Heroicon: book-open -->
+          <svg
+            class="heroicon heroicon-lg heroicon-solar-yellow"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M2.25 5.25A2.25 2.25 0 014.5 3h6.75A2.25 2.25 0 0113.5 5.25v13.5a.75.75 0 01-1.148.638 6.466 6.466 0 00-3.602-1.088H4.5a2.25 2.25 0 01-2.25-2.25V5.25z"
+            />
+            <path
+              d="M12.75 5.25A2.25 2.25 0 0115 3h4.5A2.25 2.25 0 0121.75 5.25v10.5A2.25 2.25 0 0119.5 18h-3.75a6.466 6.466 0 00-3.602 1.088.75.75 0 01-1.148-.638V5.25z"
+            />
+          </svg>
+          Manage Teacher Subjects: {{ teacher.username }}
+        </h1>
         <div class="nav-links">
-          <a href="{{ url_for('classteacher.manage_teacher_assignments') }}"
-            >Back to Teacher Assignments</a
-          >
-          |
-          <a href="{{ url_for('classteacher.dashboard') }}"
-            >Back to Dashboard</a
-          >
-          |
-          <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+          <a href="{{ url_for('classteacher.manage_teacher_assignments') }}">
+            <svg
+              class="heroicon heroicon-solar-blue"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M2.625 6A2.625 2.625 0 015.25 3.375h13.5A2.625 2.625 0 0121.375 6v9.75A2.625 2.625 0 0118.75 18.375H5.25A2.625 2.625 0 012.625 15.75V6zM5.25 4.875a1.125 1.125 0 00-1.125 1.125v9.75c0 .621.504 1.125 1.125 1.125h13.5c.621 0 1.125-.504 1.125-1.125V6a1.125 1.125 0 00-1.125-1.125H5.25z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            Back to Teacher Assignments
+          </a>
+          <a href="{{ url_for('classteacher.dashboard') }}">
+            <svg
+              class="heroicon heroicon-solar-green"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                d="M3 13.5A1.5 1.5 0 014.5 12h15a1.5 1.5 0 010 3h-15A1.5 1.5 0 013 13.5zM3 7.5A1.5 1.5 0 014.5 6h15a1.5 1.5 0 010 3h-15A1.5 1.5 0 013 7.5zM3 19.5A1.5 1.5 0 014.5 18h9a1.5 1.5 0 010 3h-9A1.5 1.5 0 013 19.5z"
+              />
+            </svg>
+            Back to Dashboard
+          </a>
+          <a href="{{ url_for('auth.logout_route') }}">
+            <svg
+              class="heroicon heroicon-solar-red"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3.75 5.25A2.25 2.25 0 016 3h6a2.25 2.25 0 012.25 2.25v2.378a.75.75 0 01-1.5 0V5.25a.75.75 0 00-.75-.75H6a.75.75 0 00-.75.75v13.5c0 .414.336.75.75.75h6a.75.75 0 00.75-.75v-2.378a.75.75 0 011.5 0v2.378A2.25 2.25 0 0112 21H6a2.25 2.25 0 01-2.25-2.25V5.25z"
+                clip-rule="evenodd"
+              />
+              <path
+                fill-rule="evenodd"
+                d="M14.47 15.28a.75.75 0 001.06 0l3-3a.75.75 0 000-1.06l-3-3a.75.75 0 10-1.06 1.06l1.72 1.72H9a.75.75 0 000 1.5h7.19l-1.72 1.72a.75.75 0 000 1.06z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            Logout
+          </a>
         </div>
       </header>
 
@@ -366,7 +361,6 @@
                     method="POST"
                     action="{{ url_for('classteacher.manage_teacher_subjects', teacher_id=teacher.id) }}"
                     style="display: inline"
-                    onsubmit="return confirm('Are you sure you want to remove this subject assignment?')"
                   >
                     <input
                       type="hidden"
@@ -382,14 +376,41 @@
                       type="submit"
                       name="remove_subject"
                       class="delete-btn"
+                      onclick="return confirm('Remove this subject assignment?')"
                     >
+                      <svg
+                        class="heroicon"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M16.5 4.5a3 3 0 00-3-3h-3a3 3 0 00-3 3H3.75a.75.75 0 000 1.5H4.5v12A3 3 0 007.5 21h9a3 3 0 003-3v-12h.75a.75.75 0 000-1.5H16.5zm-6-1.5a1.5 1.5 0 00-1.5 1.5h6a1.5 1.5 0 00-1.5-1.5h-3zM8.25 7.5a.75.75 0 011.5 0v9a.75.75 0 01-1.5 0v-9zM12 7.5a.75.75 0 01.75.75v9a.75.75 0 01-1.5 0v-9A.75.75 0 0112 7.5zm3 .75a.75.75 0 00-1.5 0v9a.75.75 0 001.5 0v-9z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
                       Remove
                     </button>
                   </form>
                   <button
-                    class="edit-btn"
-                    onclick="openChangeSubjectModal('{{ assignment.id }}', '{{ assignment.subject_name }}', '{{ assignment.grade_level }}', '{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}')"
+                    class="edit-btn change-subject-btn"
+                    data-assignment-id="{{ assignment.id }}"
+                    data-subject="{{ assignment.subject_name }}"
+                    data-grade="{{ assignment.grade_level }}"
+                    data-stream="{{ assignment.stream_name if assignment.stream_name else 'All Streams' }}"
                   >
+                    <svg
+                      class="heroicon"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path
+                        d="M21.731 2.269a2.625 2.625 0 00-3.713 0l-1.92 1.92 3.713 3.713 1.92-1.92a2.625 2.625 0 000-3.713z"
+                      />
+                      <path
+                        d="M2.684 16.311a2.25 2.25 0 01.59-1.014L14.4 4.17l3.713 3.713L6.987 19.01a2.25 2.25 0 01-1.014.59l-3.34.956a.75.75 0 01-.923-.923l.956-3.34z"
+                      />
+                    </svg>
                     Change Subject
                   </button>
                 </div>
@@ -467,7 +488,14 @@
             </div>
           </div>
 
-          <button type="submit" name="add_subjects" class="btn btn-primary">
+          <button type="submit" name="add_subjects" class="btn">
+            <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                fill-rule="evenodd"
+                d="M12 2.25a.75.75 0 01.75.75V11h8a.75.75 0 010 1.5h-8v8a.75.75 0 01-1.5 0v-8H3a.75.75 0 010-1.5h8V3a.75.75 0 01.75-.75z"
+                clip-rule="evenodd"
+              />
+            </svg>
             Add Subject Assignments
           </button>
         </form>
@@ -526,6 +554,14 @@
       </div>
     </div>
 
+    <!-- Embedded data as JSON to avoid JS linter issues with Jinja -->
+    <script id="subjectsData" type="application/json">
+      {{ subjects | tojson | safe }}
+    </script>
+    <script id="streamsData" type="application/json">
+      {{ streams | tojson | safe }}
+    </script>
+
     <script>
       // Auto-hide messages after 5 seconds
       document.addEventListener("DOMContentLoaded", function () {
@@ -542,11 +578,13 @@
 
       // Filter assignments
       function filterAssignments() {
-        const educationLevel = document.getElementById("educationLevelFilter").value;
+        const educationLevel = document.getElementById(
+          "educationLevelFilter"
+        ).value;
         const gradeId = document.getElementById("gradeFilter").value;
         const rows = document.querySelectorAll("#assignmentsTableBody tr");
 
-        rows.forEach(row => {
+        rows.forEach((row) => {
           let showRow = true;
 
           if (educationLevel && row.dataset.educationLevel !== educationLevel) {
@@ -568,11 +606,14 @@
         const subjectsContainer = document.getElementById("subjectsContainer");
 
         // Filter grades by education level
-        Array.from(gradeSelect.options).forEach(option => {
+        Array.from(gradeSelect.options).forEach((option) => {
           if (option.value === "") return; // Skip the placeholder option
 
           const optionEducationLevel = option.dataset.educationLevel;
-          option.style.display = !educationLevel || optionEducationLevel === educationLevel ? "" : "none";
+          option.style.display =
+            !educationLevel || optionEducationLevel === educationLevel
+              ? ""
+              : "none";
         });
 
         // Reset grade selection if current selection doesn't match education level
@@ -585,34 +626,33 @@
 
         // Update subjects based on education level
         if (!educationLevel) {
-          subjectsContainer.innerHTML = "<p>Please select an education level first</p>";
+          subjectsContainer.innerHTML =
+            "<p>Please select an education level first</p>";
           return;
         }
 
-        // Get subjects for the selected education level
-        const subjects = [
-          {% for subject in subjects %}
-          {
-            id: {{ subject.id }},
-            name: "{{ subject.name }}",
-            educationLevel: "{{ subject.education_level }}"
-          },
-          {% endfor %}
-        ];
-
-        const filteredSubjects = subjects.filter(subject => subject.educationLevel === educationLevel);
+        // Read subjects from embedded JSON
+        const subjectsList = JSON.parse(
+          document.getElementById("subjectsData").textContent || "[]"
+        );
+        const filteredSubjects = subjectsList.filter(
+          (s) => s.education_level === educationLevel
+        );
 
         if (filteredSubjects.length === 0) {
-          subjectsContainer.innerHTML = "<p>No subjects found for this education level</p>";
+          subjectsContainer.innerHTML =
+            "<p>No subjects found for this education level</p>";
           return;
         }
 
         // Group subjects by education level
         let html = `<div class="subject-group">
-          <h3>${educationLevel.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} Subjects</h3>
+          <h3>${educationLevel
+            .replace("_", " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase())} Subjects</h3>
           <div class="checkbox-group">`;
 
-        filteredSubjects.forEach(subject => {
+        filteredSubjects.forEach((subject) => {
           html += `
             <div class="checkbox-item">
               <input type="checkbox" id="subject_${subject.id}" name="subject_ids" value="${subject.id}">
@@ -640,20 +680,15 @@
 
         if (!gradeId) return;
 
-        // Get streams for the selected grade
-        const streams = [
-          {% for stream in streams %}
-          {
-            id: {{ stream.id }},
-            name: "{{ stream.name }}",
-            gradeId: {{ stream.grade_id }}
-          },
-          {% endfor %}
-        ];
+        // Read streams from embedded JSON
+        const streamsList = JSON.parse(
+          document.getElementById("streamsData").textContent || "[]"
+        );
+        const filteredStreams = streamsList.filter(
+          (stream) => String(stream.grade_id) === String(gradeId)
+        );
 
-        const filteredStreams = streams.filter(stream => stream.gradeId == gradeId);
-
-        filteredStreams.forEach(stream => {
+        filteredStreams.forEach((stream) => {
           const option = document.createElement("option");
           option.value = stream.id;
           option.textContent = stream.name;
@@ -664,7 +699,9 @@
       // Change subject modal functions
       function openChangeSubjectModal(assignmentId, subject, grade, stream) {
         document.getElementById("change_assignment_id").value = assignmentId;
-        document.getElementById("current_assignment").value = `${subject} - ${grade} ${stream}`;
+        document.getElementById(
+          "current_assignment"
+        ).value = `${subject} - ${grade} ${stream}`;
         document.getElementById("changeSubjectModal").style.display = "block";
       }
 
@@ -673,11 +710,24 @@
       }
 
       // Close modal when clicking outside
-      window.onclick = function(event) {
+      window.onclick = function (event) {
         if (event.target == document.getElementById("changeSubjectModal")) {
           closeChangeSubjectModal();
         }
-      }
+      };
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // Delegated handler for change subject
+        document.body.addEventListener("click", function (e) {
+          const btn = e.target.closest(".change-subject-btn");
+          if (!btn) return;
+          const id = btn.dataset.assignmentId;
+          const subject = btn.dataset.subject;
+          const grade = btn.dataset.grade;
+          const stream = btn.dataset.stream;
+          openChangeSubjectModal(id, subject, grade, stream);
+        });
+      });
     </script>
   </body>
 </html>

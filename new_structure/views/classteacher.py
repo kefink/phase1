@@ -1,6 +1,7 @@
 """
 Class Teacher views for the Hillview School Management System.
 """
+import json
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, send_file, jsonify, make_response
 from werkzeug.security import generate_password_hash
 from sqlalchemy import text
@@ -301,6 +302,53 @@ def simplified_dashboard():
         assessment_types=assessment_types
     )
 
+@classteacher_bp.route('/debug_composite_subjects')
+@classteacher_required
+def debug_composite_subjects():
+    """Debug route to check composite subject status"""
+    subjects = Subject.query.all()
+    debug_info = []
+    
+    for subject in subjects:
+        components = subject.get_components() if subject.is_composite else []
+        component_info = []
+        
+        for component in components:
+            component_info.append({
+                'name': component.name,
+                'weight': component.weight,
+                'max_raw_mark': component.max_raw_mark
+            })
+        
+        debug_info.append({
+            'subject_name': subject.name,
+            'is_composite': subject.is_composite,
+            'education_level': subject.education_level,
+            'components': component_info
+        })
+    
+    return f"<pre>{json.dumps(debug_info, indent=2)}</pre>"
+
+@classteacher_bp.route('/clear_cache')
+@classteacher_required
+def clear_cache():
+    """Clear all cached reports to ensure fresh data"""
+    try:
+        # Clear the in-memory cache and directory cache
+        import shutil
+        import os
+        
+        cache_dir = 'cache'
+        if os.path.exists(cache_dir):
+            shutil.rmtree(cache_dir)
+            os.makedirs(cache_dir, exist_ok=True)
+        
+        flash('All report caches have been cleared. Reports will now show fresh data with composite subject fixes.', 'success')
+    except Exception as e:
+        flash(f'Error clearing cache: {str(e)}', 'error')
+    
+    return redirect(url_for('classteacher.dashboard'))
+
 @classteacher_bp.route('/analytics')
 @classteacher_required
 def analytics_dashboard():
@@ -317,14 +365,45 @@ def analytics_dashboard():
             flash('Teacher not found.', 'error')
             return redirect(url_for('auth.classteacher_login'))
 
+        # Get filter parameters from request
+        term_filter = request.args.get('term')
+        assessment_filter_id = request.args.get('assessment_type')
+        grade_filter = request.args.get('grade')
+
+        # Convert filter IDs to names for the ReportBasedAnalyticsService
+        term_filter_name = None
+        assessment_filter_name = None
+        grade_filter_name = None
+
+        if term_filter:
+            term_obj = Term.query.get(term_filter)
+            if term_obj:
+                term_filter_name = term_obj.name
+
+        if assessment_filter_id:
+            assessment_obj = AssessmentType.query.get(assessment_filter_id)
+            if assessment_obj:
+                assessment_filter_name = assessment_obj.name
+
+        if grade_filter:
+            grade_obj = Grade.query.get(grade_filter)
+            if grade_obj:
+                grade_filter_name = grade_obj.name
+
+        print(f"DEBUG: Analytics filters - term ID: {term_filter} -> name: {term_filter_name}")
+        print(f"DEBUG: Analytics filters - assessment ID: {assessment_filter_id} -> name: {assessment_filter_name}")
+        print(f"DEBUG: Analytics filters - grade ID: {grade_filter} -> name: {grade_filter_name}")
+
         # Get analytics data - prioritize report-based analytics
         try:
             from ..services.report_based_analytics_service import ReportBasedAnalyticsService
 
-            # Try report-based analytics first
-            analytics_data = ReportBasedAnalyticsService.get_analytics_dashboard_data(
-                role='classteacher',
-                teacher_id=teacher_id
+            # Try report-based analytics first WITH FILTERS (using names, not IDs)
+            analytics_data = ReportBasedAnalyticsService.get_report_based_analytics(
+                grade_filter=grade_filter_name,
+                term_filter=term_filter_name,
+                assessment_filter=assessment_filter_name,
+                days_back=90  # Increase to get more data
             )
 
             # If no report data available, fall back to traditional analytics
@@ -341,9 +420,15 @@ def analytics_dashboard():
                     'data_source': 'live_calculation'
                 })
 
-                flash('Analytics based on live data calculation. Generate reports for more accurate insights.', 'info')
+                if assessment_filter_name:
+                    flash(f'No cached reports for "{assessment_filter_name}" assessment type. Showing live data calculation.', 'warning')
+                else:
+                    flash('Analytics based on live data calculation. Generate reports for more accurate insights.', 'info')
             else:
-                flash('Analytics based on generated reports - reflecting actual academic workflow.', 'success')
+                if assessment_filter_name:
+                    flash(f'Analytics filtered by "{assessment_filter_name}" assessment type - based on generated reports.', 'success')
+                else:
+                    flash('Analytics based on generated reports - reflecting actual academic workflow.', 'success')
 
         except Exception as e:
             print(f"Error loading analytics: {e}")
@@ -354,11 +439,17 @@ def analytics_dashboard():
         terms = [term.name for term in Term.query.all()]
         assessment_types = [at.name for at in AssessmentType.query.all()]
 
+        print(f"DEBUG: Available assessment types in database: {assessment_types}")
+        print(f"DEBUG: Selected assessment filter ID: '{assessment_filter_id}' -> Name: '{assessment_filter_name}'")
+
         return render_template('classteacher_analytics.html',
                              teacher=teacher,
                              analytics_data=analytics_data,
                              terms=terms,
                              assessment_types=assessment_types,
+                             current_term_filter=term_filter,
+                             current_assessment_filter=assessment_filter_id,
+                             current_grade_filter=grade_filter,
                              page_title="Academic Performance Analytics")
 
     except Exception as e:
@@ -1982,6 +2073,13 @@ def manage_students():
 @teacher_or_classteacher_required
 def preview_class_report(grade, stream, term, assessment_type):
     """Route for previewing class reports."""
+    
+    # Invalidate any existing cache for this report to ensure fresh data with composite fixes
+    try:
+        invalidate_cache(grade, stream, term, assessment_type)
+    except Exception as cache_error:
+        print(f"Warning: Could not invalidate cache: {cache_error}")
+    
     # Check if this is a form submission for subject selection
     if request.method == 'POST':
         # Get the selected subjects from the form
@@ -2160,33 +2258,68 @@ def preview_class_report(grade, stream, term, assessment_type):
                 total_marks_value = 0
 
                 for subject in filtered_subjects:
-                    if student.id in marks_dict and subject.id in marks_dict[student.id]:
-                        mark_value = marks_dict[student.id][subject.id]
-                        # Convert raw mark to percentage
-                        mark_obj = Mark.query.filter_by(
-                            student_id=student.id,
-                            subject_id=subject.id,
-                            term_id=term_obj.id,
-                            assessment_type_id=assessment_type_obj.id
-                        ).first()
-
-                        if mark_obj and hasattr(mark_obj, 'percentage') and mark_obj.percentage is not None:
-                            # Use the percentage value directly
-                            percentage_value = mark_obj.percentage
+                    if subject.is_composite:
+                        # Handle composite subjects by calculating total from component marks
+                        print(f"DEBUG: Processing composite subject: {subject.name}")
+                        components = subject.get_components()
+                        component_total = 0
+                        has_component_marks = False
+                        
+                        for component in components:
+                            from ..models.academic import ComponentMark
+                            component_mark = ComponentMark.query.filter_by(
+                                component_id=component.id
+                            ).join(
+                                Mark, ComponentMark.mark_id == Mark.id
+                            ).filter(
+                                Mark.student_id == student.id,
+                                Mark.term_id == term_obj.id,
+                                Mark.assessment_type_id == assessment_type_obj.id
+                            ).first()
+                            
+                            if component_mark and component_mark.raw_mark is not None:
+                                print(f"DEBUG: {student.name} - {subject.name} - {component.name}: {component_mark.raw_mark}")
+                                component_total += component_mark.raw_mark
+                                has_component_marks = True
+                            else:
+                                print(f"DEBUG: {student.name} - {subject.name} - {component.name}: No mark found")
+                        
+                        print(f"DEBUG: {student.name} - {subject.name} - TOTAL: {component_total}")
+                        if has_component_marks:
+                            filtered_marks[subject.name] = component_total
+                            subject_count += 1
+                            total_marks_value += component_total
                         else:
-                            # Calculate percentage from raw mark
-                            total_marks = mark_obj.total_marks if mark_obj and mark_obj.total_marks > 0 else 100
-                            percentage_value = (mark_value / total_marks) * 100
-
-                        # Ensure percentage doesn't exceed 100%
-                        if percentage_value > 100:
-                            percentage_value = 100.0
-
-                        filtered_marks[subject.name] = percentage_value
-                        subject_count += 1
-                        total_marks_value += percentage_value
+                            filtered_marks[subject.name] = 0
                     else:
-                        filtered_marks[subject.name] = 0
+                        # Handle regular subjects as before
+                        if student.id in marks_dict and subject.id in marks_dict[student.id]:
+                            mark_value = marks_dict[student.id][subject.id]
+                            # Convert raw mark to percentage
+                            mark_obj = Mark.query.filter_by(
+                                student_id=student.id,
+                                subject_id=subject.id,
+                                term_id=term_obj.id,
+                                assessment_type_id=assessment_type_obj.id
+                            ).first()
+
+                            if mark_obj and hasattr(mark_obj, 'percentage') and mark_obj.percentage is not None:
+                                # Use the percentage value directly
+                                percentage_value = mark_obj.percentage
+                            else:
+                                # Calculate percentage from raw mark
+                                total_marks = mark_obj.total_marks if mark_obj and mark_obj.total_marks > 0 else 100
+                                percentage_value = (mark_value / total_marks) * 100
+
+                            # Ensure percentage doesn't exceed 100%
+                            if percentage_value > 100:
+                                percentage_value = 100.0
+
+                            filtered_marks[subject.name] = percentage_value
+                            subject_count += 1
+                            total_marks_value += percentage_value
+                        else:
+                            filtered_marks[subject.name] = 0
             else:
                 # Fallback to report data if student not found
                 student_data["student_id"] = 0

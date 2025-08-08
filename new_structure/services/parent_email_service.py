@@ -16,7 +16,11 @@ from typing import Optional, Dict, List, Any
 from jinja2 import Template
 
 from ..models import db
-from ..models.parent import Parent, ParentStudent, ParentEmailLog, EmailTemplate
+try:
+    from ..models.parent import Parent, ParentStudent, ParentEmailLog, EmailTemplate
+except ImportError:
+    from ..models.parent import Parent, ParentStudent, EmailTemplate
+    ParentEmailLog = None  # Optional when email logs are not enabled
 from ..models.academic import Student, Grade, Stream
 from ..models.school_setup import SchoolSetup
 
@@ -179,22 +183,23 @@ class ParentEmailService:
             success, message = ParentEmailService.send_email(parent.email, subject, html_content)
             
             # Log email attempt
-            email_log = ParentEmailLog(
-                parent_id=parent.id,
-                email_type='verification',
-                subject=subject,
-                recipient_email=parent.email,
-                template_id=template.id,
-                status='sent' if success else 'failed',
-                sent_at=datetime.utcnow() if success else None,
-                error_message=None if success else message
-            )
-            db.session.add(email_log)
-            
-            if success:
-                db.session.commit()
-            else:
-                db.session.rollback()
+            if ParentEmailLog:
+                email_log = ParentEmailLog(
+                    parent_id=parent.id,
+                    email_type='verification',
+                    subject=subject,
+                    recipient_email=parent.email,
+                    template_id=template.id,
+                    status='sent' if success else 'failed',
+                    sent_at=datetime.utcnow() if success else None,
+                    error_message=None if success else message
+                )
+                db.session.add(email_log)
+                
+                if success:
+                    db.session.commit()
+                else:
+                    db.session.rollback()
             
             return success, message
             
@@ -244,22 +249,23 @@ class ParentEmailService:
             success, message = ParentEmailService.send_email(parent.email, subject, html_content)
             
             # Log email attempt
-            email_log = ParentEmailLog(
-                parent_id=parent.id,
-                email_type='reset',
-                subject=subject,
-                recipient_email=parent.email,
-                template_id=template.id,
-                status='sent' if success else 'failed',
-                sent_at=datetime.utcnow() if success else None,
-                error_message=None if success else message
-            )
-            db.session.add(email_log)
-            
-            if success:
-                db.session.commit()
-            else:
-                db.session.rollback()
+            if ParentEmailLog:
+                email_log = ParentEmailLog(
+                    parent_id=parent.id,
+                    email_type='reset',
+                    subject=subject,
+                    recipient_email=parent.email,
+                    template_id=template.id,
+                    status='sent' if success else 'failed',
+                    sent_at=datetime.utcnow() if success else None,
+                    error_message=None if success else message
+                )
+                db.session.add(email_log)
+                
+                if success:
+                    db.session.commit()
+                else:
+                    db.session.rollback()
             
             return success, message
             
@@ -316,23 +322,24 @@ class ParentEmailService:
             success, message = ParentEmailService.send_email(parent.email, subject, html_content)
 
             # Log email attempt
-            email_log = ParentEmailLog(
-                parent_id=parent.id,
-                student_id=student.id,
-                email_type='result_notification',
-                subject=subject,
-                recipient_email=parent.email,
-                template_id=template.id,
-                status='sent' if success else 'failed',
-                sent_at=datetime.utcnow() if success else None,
-                error_message=None if success else message
-            )
-            db.session.add(email_log)
+            if ParentEmailLog:
+                email_log = ParentEmailLog(
+                    parent_id=parent.id,
+                    student_id=student.id,
+                    email_type='result_notification',
+                    subject=subject,
+                    recipient_email=parent.email,
+                    template_id=template.id,
+                    status='sent' if success else 'failed',
+                    sent_at=datetime.utcnow() if success else None,
+                    error_message=None if success else message
+                )
+                db.session.add(email_log)
 
-            if success:
-                db.session.commit()
-            else:
-                db.session.rollback()
+                if success:
+                    db.session.commit()
+                else:
+                    db.session.rollback()
 
             return success, message
 

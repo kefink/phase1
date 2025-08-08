@@ -217,9 +217,9 @@ def dashboard():
         # Calculate additional missing statistics with error handling
         print("🔍 Starting enhanced calculations...")
         try:
-            from models import Assessment, Mark, Grade
-            total_assessments = Assessment.query.count()
-            print(f"🔍 ASSESSMENTS: Found {total_assessments} assessments")
+            # Count assessments using AssessmentType instead of Assessment
+            total_assessments = AssessmentType.query.count()
+            print(f"🔍 ASSESSMENTS: Found {total_assessments} assessment types")
         except Exception as e:
             print(f"❌ Error calculating assessments: {e}")
             total_assessments = 0
@@ -267,18 +267,18 @@ def dashboard():
             # Get recent marks to calculate performance
             recent_marks = Mark.query.limit(100).all()  # Sample recent marks
             if recent_marks:
-                valid_marks = [mark.marks for mark in recent_marks if mark.marks is not None]
+                valid_marks = [mark.mark for mark in recent_marks if mark.mark is not None]
                 if valid_marks:
                     avg_performance = sum(valid_marks) / len(valid_marks)
 
                 # Find top performing class (simplified)
                 class_averages = {}
                 for mark in recent_marks:
-                    if mark.student and mark.student.stream and mark.marks is not None:
+                    if mark.student and mark.student.stream and mark.mark is not None:
                         class_key = f"{mark.student.stream.grade.name} {mark.student.stream.name}"
                         if class_key not in class_averages:
                             class_averages[class_key] = []
-                        class_averages[class_key].append(mark.marks)
+                        class_averages[class_key].append(mark.mark)
 
                 # Calculate class averages
                 for class_name, marks in class_averages.items():

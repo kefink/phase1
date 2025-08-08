@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0"
+    />
+    <meta
+      name="description"
+      content="Headteacher Dashboard - {{ school_info.school_name or 'Hillview School' }} Management System"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#667eea" />
+
+    <title>
+      Headteacher Dashboard - {{ school_info.school_name or 'Hillview School
+      Management System' }}
+    </title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- jsPDF for PDF export -->
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+
+    <!-- html2canvas for chart capture -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <!-- Bootswatch Solar Theme - Main Theme -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='bootstrap.min.css') }}"
+    />
+
+    <!-- Modular CSS Files -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/headteacher-base.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/headteacher-navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/headteacher-components.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/headteacher-charts.css') }}"
+    />
+
+    <!-- Mobile Responsive Dashboard Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/mobile_responsive_dashboard.css') }}"
+    />
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/headteacher-main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/headteacher-charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/headteacher-analytics.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/headteacher-forms.js') }}"></script>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation">
+      <div class="navbar-container">
+        <a class="navbar-brand" href="{{ url_for('main.dashboard') }}">
+          <i class="fas fa-graduation-cap"></i>
+          Academic Performance
+        </a>
+        <ul class="navbar-nav">
+          <li>
+            <a class="nav-link" href="{{ url_for('main.dashboard') }}"
+              ><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a
+            >
+          </li>
+          <li>
+            <a
+              class="nav-link"
+              id="universal-access-link"
+              href="{{ url_for('universal.dashboard') }}"
+              ><i class="fas fa-users-cog"></i> <span>UNIVERSAL ACCESS</span></a
+            >
+          </li>
+          <li>
+            <a class="nav-link" href="{{ url_for('reports.index') }}"
+              ><i class="fas fa-chart-line"></i><span>Reports</span></a
+            >
+          </li>
+          <li>
+            <a class="nav-link" href="{{ url_for('admin.students') }}"
+              ><i class="fas fa-users"></i><span>Students</span></a
+            >
+          </li>
+          <li>
+            <a class="nav-link" href="{{ url_for('admin.teachers') }}"
+              ><i class="fas fa-chalkboard-teacher"></i><span>Teachers</span></a
+            >
+          </li>
+          <li>
+            <a class="nav-link" href="{{ url_for('admin.subjects') }}"
+              ><i class="fas fa-book"></i><span>Subjects</span></a
+            >
+          </li>
+          <li>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}"
+              ><i class="fas fa-sign-out-alt"></i><span>Logout</span></a
+            >
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-title">
+          <h1><i class="fas fa-tachometer-alt"></i> Headteacher Dashboard</h1>
+          <p>Welcome back! Here's your school performance overview.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-outline" onclick="toggleFilterPanel()">
+            <i class="fas fa-filter"></i> Filters
+          </button>
+          <button class="btn-outline" onclick="refreshDashboard()">
+            <i class="fas fa-sync"></i> Refresh
+          </button>
+          <button class="btn" onclick="generateComprehensiveReport()">
+            <i class="fas fa-file-alt"></i> Generate Report
+          </button>
+        </div>
+      </div>
+
+      <!-- System Alerts -->
+      <div class="alerts-section">
+        <div class="section-header">
+          <h2>
+            <i class="fas fa-exclamation-triangle"></i> System Alerts
+            <span class="alerts-count"
+              >{{ system_alerts|length if system_alerts else 0 }} Alert{{ 's' if
+              (system_alerts|length != 1) else '' }}</span
+            >
+          </h2>
+        </div>
+        <div class="system-alerts-container">
+          {% if system_alerts %} {% for alert in system_alerts %}
+          <div class="system-alert alert-{{ alert.type }}">
+            <div class="alert-content">
+              <div class="alert-icon">
+                {% if alert.type == 'critical' %}
+                <i class="fas fa-exclamation-circle"></i>
+                {% elif alert.type == 'warning' %}
+                <i class="fas fa-exclamation-triangle"></i>
+                {% elif alert.type == 'info' %}
+                <i class="fas fa-info-circle"></i>
+                {% endif %}
+              </div>
+              <div class="alert-text">
+                <div class="alert-title">{{ alert.title }}</div>
+                <div class="alert-message">{{ alert.message }}</div>
+                <div class="alert-time">
+                  {{ alert.timestamp.strftime('%Y-%m-%d %H:%M') if
+                  alert.timestamp }}
+                </div>
+              </div>
+            </div>
+            <div class="alert-actions">
+              <button
+                class="btn-sm"
+                onclick="showAlertDetails('{{ alert.title }}')"
+              >
+                Details
+              </button>
+              <button class="btn-sm btn-outline" onclick="dismissAlert(this)">
+                Dismiss
+              </button>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <div class="no-alerts-container">
+            <div class="no-alerts-content">
+              <i class="fas fa-shield-alt"></i>
+              <h3>All Systems Operational</h3>
+              <p>
+                No system alerts at this time. All systems are running smoothly.
+              </p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Filter Panel -->
+      <div id="filterPanel" class="filter-panel" style="display: none">
+        <div class="filter-header">
+          <h3><i class="fas fa-sliders-h"></i> Advanced Filters</h3>
+          <button class="btn-sm btn-outline" onclick="resetFilters()">
+            Reset All
+          </button>
+        </div>
+        <div class="filter-content">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="gradeFilter">Grade:</label>
+              <select id="gradeFilter">
+                <option value="">All Grades</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+                <option value="9">Grade 9</option>
+                <option value="10">Grade 10</option>
+                <option value="11">Grade 11</option>
+                <option value="12">Grade 12</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="termFilter">Term:</label>
+              <select id="termFilter">
+                <option value="">All Terms</option>
+                <option value="1">Term 1</option>
+                <option value="2">Term 2</option>
+                <option value="3">Term 3</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="performanceFilter">Performance Level:</label>
+              <select id="performanceFilter">
+                <option value="">All Levels</option>
+                <option value="EE">Exceeds Expectations</option>
+                <option value="ME">Meets Expectations</option>
+                <option value="AE">Approaches Expectations</option>
+                <option value="BE">Below Expectations</option>
+              </select>
+            </div>
+          </div>
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="dateFrom">From Date:</label>
+              <input type="date" id="dateFrom" class="form-control" />
+            </div>
+            <div class="filter-group">
+              <label for="dateTo">To Date:</label>
+              <input type="date" id="dateTo" class="form-control" />
+            </div>
+            <div class="filter-group filter-actions">
+              <button class="btn" onclick="applyFilters()">
+                <i class="fas fa-search"></i> Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon primary">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number" id="total-assessed">
+              {{ total_students_assessed }}
+            </div>
+            <div class="stat-label">Students Assessed</div>
+            <div class="stat-trend">
+              <i class="fas fa-arrow-up"></i> +5.2% from last term
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon success">
+            <i class="fas fa-trophy"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number" id="best-class">
+              {{ best_performing_class }}
+            </div>
+            <div class="stat-label">Best Performing Class</div>
+            <div class="stat-trend">
+              <i class="fas fa-medal"></i> {{ best_class_average }}% average
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon info">
+            <i class="fas fa-percentage"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number" id="school-average">
+              {{ school_average }}%
+            </div>
+            <div class="stat-label">School Average</div>
+            <div class="stat-trend">
+              <i class="fas fa-arrow-up"></i> +2.8% improvement
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon warning">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number" id="reports-generated">
+              {{ reports_generated }}
+            </div>
+            <div class="stat-label">Reports Generated</div>
+            <div class="stat-trend">
+              <i class="fas fa-clock"></i> This month
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <div class="charts-grid">
+          <div class="chart-container">
+            <div class="chart-header">
+              <h3>Performance Distribution</h3>
+              <div class="chart-actions">
+                <button class="btn-sm btn-outline" onclick="resetFilters()">
+                  <i class="fas fa-undo"></i> Reset
+                </button>
+              </div>
+            </div>
+            <div class="chart-content">
+              <canvas id="performanceDonutChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart-header">
+              <h3>Class Comparison</h3>
+              <div class="chart-actions">
+                <button
+                  class="btn-sm btn-outline"
+                  onclick="exportChartsAsPDF()"
+                >
+                  <i class="fas fa-download"></i> Export PDF
+                </button>
+              </div>
+            </div>
+            <div class="chart-content">
+              <canvas id="classComparisonChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Analytics -->
+      <div class="analytics-section">
+        <div class="section-header">
+          <h2><i class="fas fa-chart-line"></i> Advanced Analytics</h2>
+          <button class="btn-outline" onclick="openAnalyticsDashboard()">
+            <i class="fas fa-external-link-alt"></i> Full Analytics
+          </button>
+        </div>
+
+        <div class="analytics-grid">
+          <!-- Performance Heatmap -->
+          <div class="analytics-card">
+            <div class="analytics-header">
+              <h3>Performance Heatmap</h3>
+              <select id="heatmapMetric" onchange="updateHeatmap()">
+                <option value="average">Class Average</option>
+                <option value="excellence">Excellence Rate</option>
+                <option value="mastery">Mastery Rate</option>
+              </select>
+            </div>
+            <div class="heatmap-container" id="heatmapContainer"></div>
+          </div>
+
+          <!-- Performance Alerts -->
+          <div class="analytics-card">
+            <div class="analytics-header">
+              <h3>Performance Alerts</h3>
+              <button class="btn-sm" onclick="generatePerformanceAlerts()">
+                <i class="fas fa-refresh"></i> Refresh
+              </button>
+            </div>
+            <div class="alerts-container" id="performanceAlerts"></div>
+          </div>
+        </div>
+
+        <!-- Drill-down Analytics -->
+        <div class="drill-down-section">
+          <div class="section-header">
+            <h3>Detailed Analytics</h3>
+            <p class="section-subtitle">
+              Click on any chart element above for detailed analysis
+            </p>
+          </div>
+          <div id="drillDownContainer"></div>
+        </div>
+      </div>
+
+      <!-- Performance Assessment Results -->
+      <div class="performance-section">
+        <div class="section-header">
+          <h2><i class="fas fa-chart-bar"></i> Detailed Assessment Results</h2>
+          <div class="section-actions">
+            <button class="btn-outline" onclick="toggleFilters()">
+              <i class="fas fa-filter"></i> Filter Results
+            </button>
+            <button class="btn-outline" onclick="exportPerformanceData()">
+              <i class="fas fa-download"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Performance Filters -->
+        <div
+          id="performance-filters"
+          class="performance-filters"
+          style="display: none"
+        >
+          <div class="filters-grid">
+            <div class="filter-item">
+              <label for="grade-filter">Grade:</label>
+              <select id="grade-filter" onchange="filterPerformanceData()">
+                <option value="">All Grades</option>
+                {% for grade in available_grades %}
+                <option value="{{ grade }}">Grade {{ grade }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="filter-item">
+              <label for="term-filter">Term:</label>
+              <select id="term-filter" onchange="filterPerformanceData()">
+                <option value="">All Terms</option>
+                <option value="1">Term 1</option>
+                <option value="2">Term 2</option>
+                <option value="3">Term 3</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label for="assessment-filter">Assessment:</label>
+              <select id="assessment-filter" onchange="filterPerformanceData()">
+                <option value="">All Assessments</option>
+                <option value="Midterm">Midterm</option>
+                <option value="Final">Final</option>
+                <option value="Quiz">Quiz</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <button class="btn-outline" onclick="filterPerformanceData()">
+                <i class="fas fa-search"></i> Apply
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Table -->
+        <div class="performance-table-container">
+          <div class="table-responsive">
+            <table class="performance-table">
+              <thead>
+                <tr>
+                  <th>Grade & Stream</th>
+                  <th>Term</th>
+                  <th>Assessment</th>
+                  <th>Students</th>
+                  <th>Class Avg</th>
+                  <th>EE1</th>
+                  <th>EE2</th>
+                  <th>ME1</th>
+                  <th>ME2</th>
+                  <th>AE1</th>
+                  <th>AE2</th>
+                  <th>BE1</th>
+                  <th>BE2</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for data in performance_data %}
+                <tr
+                  class="performance-row"
+                  data-grade="{{ data.grade }}"
+                  data-term="{{ data.term }}"
+                  data-assessment="{{ data.assessment_type }}"
+                >
+                  <td class="class-info">
+                    <strong>{{ data.grade }} {{ data.stream }}</strong>
+                  </td>
+                  <td>{{ data.term }}</td>
+                  <td>{{ data.assessment_type }}</td>
+                  <td class="student-count">{{ data.total_students }}</td>
+                  <td class="class-average">
+                    <span
+                      class="average-badge average-{{ 'excellent' if data.class_average >= 80 else 'good' if data.class_average >= 60 else 'needs-improvement' }}"
+                    >
+                      {{ "%.1f"|format(data.class_average) }}%
+                    </span>
+                  </td>
+                  <td class="performance-cell ee1">
+                    {{ data.performance_counts.EE1 }}
+                  </td>
+                  <td class="performance-cell ee2">
+                    {{ data.performance_counts.EE2 }}
+                  </td>
+                  <td class="performance-cell me1">
+                    {{ data.performance_counts.ME1 }}
+                  </td>
+                  <td class="performance-cell me2">
+                    {{ data.performance_counts.ME2 }}
+                  </td>
+                  <td class="performance-cell ae1">
+                    {{ data.performance_counts.AE1 }}
+                  </td>
+                  <td class="performance-cell ae2">
+                    {{ data.performance_counts.AE2 }}
+                  </td>
+                  <td class="performance-cell be1">
+                    {{ data.performance_counts.BE1 }}
+                  </td>
+                  <td class="performance-cell be2">
+                    {{ data.performance_counts.BE2 }}
+                  </td>
+                  <td class="actions">
+                    <button
+                      class="btn-sm"
+                      onclick="viewClassDetails('{{ data.grade }}', '{{ data.stream }}')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div id="pagination-container" class="pagination-container">
+            <div class="pagination-info">
+              <span id="pagination-info"></span>
+            </div>
+            <div class="pagination-controls">
+              <button
+                class="btn-outline"
+                onclick="previousPage()"
+                id="prev-btn"
+              >
+                <i class="fas fa-chevron-left"></i> Previous
+              </button>
+              <div id="page-numbers" class="page-numbers"></div>
+              <div id="page-info" class="page-info"></div>
+              <button class="btn-outline" onclick="nextPage()" id="next-btn">
+                Next <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Template Data Integration Script -->
+    <script>
+      // Global variables for chart filtering and pagination
+      let performanceChart = null;
+      let comparisonChart = null;
+      let currentPage = 1;
+      const itemsPerPage = 10;
+      let allPerformanceData = [];
+      let filteredData = [];
+      let activeFilters = { performanceLevel: null, grade: null };
+
+      // Initialize dashboard with template data
+      document.addEventListener("DOMContentLoaded", function () {
+          // Store all performance data for filtering and pagination
+          const rows = document.querySelectorAll(".performance-row");
+          allPerformanceData = Array.from(rows).map((row) => ({
+              element: row,
+              grade: row.dataset.grade,
+              term: row.dataset.term,
+              assessment: row.dataset.assessment,
+          }));
+          filteredData = [...allPerformanceData];
+
+          // Initialize pagination
+          if (allPerformanceData.length > 0) {
+              displayPage();
+              updatePaginationInfo();
+          } else {
+              document.getElementById("pagination-container").style.display = "none";
+          }
+
+          // Initialize charts and animations
+          initializeCharts();
+          animateCounters();
+
+          // Initialize advanced analytics
+          generatePerformanceHeatmap();
+          generatePerformanceAlerts();
+          initializeDrillDown();
+
+          // Force Universal Access link visibility
+          setTimeout(function() {
+              const universalLink = document.getElementById('universal-access-link');
+              if (universalLink) {
+                  universalLink.style.display = 'flex';
+                  universalLink.style.visibility = 'visible';
+                  universalLink.style.opacity = '1';
+              }
+          }, 100);
+      });
+
+      // Initialize Charts
+      function initializeCharts() {
+          const performanceData = {{ performance_data | tojson }};
+
+          // Calculate overall performance distribution
+          const performanceDistribution = {
+              'EE1': 0, 'EE2': 0, 'ME1': 0, 'ME2': 0,
+              'AE1': 0, 'AE2': 0, 'BE1': 0, 'BE2': 0
+          };
+
+          const classData = [];
+
+          performanceData.forEach(data => {
+              Object.keys(performanceDistribution).forEach(key => {
+                  performanceDistribution[key] += data.performance_counts[key] || 0;
+              });
+
+              classData.push({
+                  label: `${data.grade} ${data.stream}`,
+                  average: data.class_average,
+                  students: data.total_students
+              });
+          });
+
+          // Create Performance Distribution Donut Chart
+          createPerformanceDonutChart(performanceDistribution);
+
+          // Create Class Comparison Bar Chart
+          createClassComparisonChart(classData);
+      }
+
+      function createPerformanceDonutChart(data) {
+          const ctx = document.getElementById('performanceDonutChart').getContext('2d');
+
+          if (performanceChart) {
+              performanceChart.destroy();
+          }
+
+          performanceChart = new Chart(ctx, {
+              type: 'doughnut',
+              data: {
+                  labels: ['EE1 (≥90%)', 'EE2 (75-89%)', 'ME1 (58-74%)', 'ME2 (41-57%)',
+                           'AE1 (31-40%)', 'AE2 (21-30%)', 'BE1 (11-20%)', 'BE2 (<11%)'],
+                  datasets: [{
+                      data: [data.EE1, data.EE2, data.ME1, data.ME2, data.AE1, data.AE2, data.BE1, data.BE2],
+                      backgroundColor: [
+                          '#10B981', '#34D399', '#60A5FA', '#93C5FD',
+                          '#FBBF24', '#FCD34D', '#F87171', '#FCA5A5'
+                      ],
+                      borderWidth: 3,
+                      borderColor: '#ffffff',
+                      hoverBorderWidth: 5
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          position: 'bottom',
+                          labels: {
+                              padding: 20,
+                              usePointStyle: true,
+                              font: { size: 11 }
+                          }
+                      },
+                      tooltip: {
+                          callbacks: {
+                              label: function(context) {
+                                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                  const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                  return `${context.label}: ${context.parsed} students (${percentage}%)`;
+                              }
+                          }
+                      }
+                  },
+                  animation: { animateRotate: true, duration: 2000 }
+              }
+          });
+      }
+
+      function createClassComparisonChart(data) {
+          const ctx = document.getElementById('classComparisonChart').getContext('2d');
+
+          if (comparisonChart) {
+              comparisonChart.destroy();
+          }
+
+          data.sort((a, b) => b.average - a.average);
+
+          comparisonChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: data.map(item => item.label),
+                  datasets: [{
+                      label: 'Class Average',
+                      data: data.map(item => item.average),
+                      backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                      borderColor: 'rgba(102, 126, 234, 1)',
+                      borderWidth: 2,
+                      borderRadius: 8,
+                      borderSkipped: false,
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                          callbacks: {
+                              label: function(context) {
+                                  const classInfo = data[context.dataIndex];
+                                  return [
+                                      `Class Average: ${context.parsed.y.toFixed(2)}`,
+                                      `Students: ${classInfo.students}`
+                                  ];
+                              }
+                          }
+                      }
+                  },
+                  scales: {
+                      y: {
+                          beginAtZero: true,
+                          title: { display: true, text: 'Class Average' },
+                          grid: { color: 'rgba(0,0,0,0.1)' }
+                      },
+                      x: {
+                          title: { display: true, text: 'Classes' },
+                          grid: { display: false }
+                      }
+                  },
+                  animation: { duration: 2000, easing: 'easeOutQuart' }
+              }
+          });
+      }
+
+      // Animate counter numbers
+      function animateCounters() {
+          const counters = document.querySelectorAll('.stat-number');
+
+          counters.forEach(counter => {
+              const target = parseFloat(counter.textContent.replace(/[^\d.]/g, ''));
+              if (isNaN(target)) return;
+
+              const increment = target / 50;
+              let current = 0;
+              const timer = setInterval(() => {
+                  current += increment;
+                  if (current >= target) {
+                      current = target;
+                      clearInterval(timer);
+                  }
+
+                  if (counter.id === 'school-average') {
+                      counter.textContent = current.toFixed(1) + '%';
+                  } else if (counter.id === 'best-class') {
+                      return;
+                  } else {
+                      counter.textContent = Math.floor(current);
+                  }
+              }, 40);
+          });
+      }
+
+      // Advanced Analytics Functions
+      function generatePerformanceHeatmap() {
+          updateHeatmap();
+      }
+
+      function updateHeatmap() {
+          const metric = document.getElementById('heatmapMetric').value;
+          const performanceData = {{ performance_data | tojson }};
+          const container = document.getElementById('heatmapContainer');
+
+          container.innerHTML = '';
+
+          performanceData.forEach(data => {
+              const cell = document.createElement('div');
+              cell.className = 'heatmap-cell';
+
+              let value, color;
+
+              switch(metric) {
+                  case 'average':
+                      value = data.class_average.toFixed(1);
+                      color = getHeatmapColor(data.class_average, 0, 100);
+                      break;
+                  case 'excellence':
+                      const excellenceRate = ((data.performance_counts.EE1 + data.performance_counts.EE2) / data.total_students * 100);
+                      value = excellenceRate.toFixed(1) + '%';
+                      color = getHeatmapColor(excellenceRate, 0, 100);
+                      break;
+                  case 'mastery':
+                      const masteryRate = ((data.performance_counts.ME1 + data.performance_counts.ME2) / data.total_students * 100);
+                      value = masteryRate.toFixed(1) + '%';
+                      color = getHeatmapColor(masteryRate, 0, 100);
+                      break;
+              }
+
+              cell.style.background = color;
+              cell.innerHTML = `
+                  <div class="heatmap-label">${data.grade} ${data.stream}</div>
+                  <div class="heatmap-value">${value}</div>
+              `;
+
+              container.appendChild(cell);
+          });
+      }
+
+      function getHeatmapColor(value, min, max) {
+          const ratio = (value - min) / (max - min);
+
+          if (ratio >= 0.8) return 'linear-gradient(135deg, #10B981, #059669)';
+          if (ratio >= 0.6) return 'linear-gradient(135deg, #3B82F6, #1D4ED8)';
+          if (ratio >= 0.4) return 'linear-gradient(135deg, #F59E0B, #D97706)';
+          return 'linear-gradient(135deg, #EF4444, #DC2626)';
+      }
+
+      function generatePerformanceAlerts() {
+          const performanceData = {{ performance_data | tojson }};
+          const alertsContainer = document.getElementById('performanceAlerts');
+          const alerts = [];
+
+          performanceData.forEach(data => {
+              const classLabel = `${data.grade} ${data.stream}`;
+
+              if (data.class_average < 30) {
+                  alerts.push({
+                      type: 'critical',
+                      icon: '🚨',
+                      title: 'Critical Performance Alert',
+                      message: `${classLabel} has a very low class average of ${data.class_average.toFixed(1)}. Immediate intervention required.`
+                  });
+              }
+
+              const excellenceRate = (data.performance_counts.EE1 + data.performance_counts.EE2) / data.total_students * 100;
+              if (excellenceRate < 20) {
+                  alerts.push({
+                      type: 'warning',
+                      icon: '⚠️',
+                      title: 'Low Excellence Rate',
+                      message: `${classLabel} has only ${excellenceRate.toFixed(1)}% of students achieving excellence.`
+                  });
+              }
+
+              if (data.class_average > 80) {
+                  alerts.push({
+                      type: 'info',
+                      icon: '🎉',
+                      title: 'Outstanding Performance',
+                      message: `${classLabel} is performing exceptionally well with ${data.class_average.toFixed(1)}% average.`
+                  });
+              }
+          });
+
+          alerts.sort((a, b) => {
+              const priority = { critical: 3, warning: 2, info: 1 };
+              return priority[b.type] - priority[a.type];
+          });
+
+          alertsContainer.innerHTML = '';
+
+          if (alerts.length === 0) {
+              alertsContainer.innerHTML = `
+                  <div class="alert-item alert-info">
+                      <div class="alert-header">
+                          <span class="alert-icon">✅</span>
+                          <span class="alert-title">All Clear</span>
+                      </div>
+                      <div class="alert-message">No performance alerts. All classes performing within expected ranges.</div>
+                  </div>
+              `;
+          } else {
+              alerts.forEach(alert => {
+                  const alertElement = document.createElement('div');
+                  alertElement.className = `alert-item alert-${alert.type}`;
+                  alertElement.innerHTML = `
+                      <div class="alert-header">
+                          <span class="alert-icon">${alert.icon}</span>
+                          <span class="alert-title">${alert.title}</span>
+                      </div>
+                      <div class="alert-message">${alert.message}</div>
+                  `;
+                  alertsContainer.appendChild(alertElement);
+              });
+          }
+      }
+
+      function initializeDrillDown() {
+          const container = document.getElementById('drillDownContainer');
+          container.innerHTML = `
+              <div class="drill-down-placeholder">
+                  Click on any chart element above to see detailed analytics
+              </div>
+          `;
+      }
+
+      // Pagination and filtering functions
+      function displayPage() {
+          allPerformanceData.forEach((item) => {
+              item.element.style.display = "none";
+          });
+
+          const startIndex = (currentPage - 1) * itemsPerPage;
+          const endIndex = startIndex + itemsPerPage;
+          const pageData = filteredData.slice(startIndex, endIndex);
+
+          pageData.forEach((item) => {
+              item.element.style.display = "";
+          });
+
+          updatePaginationControls();
+      }
+
+      function updatePaginationInfo() {
+          const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+          const startItem = filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+          const endItem = Math.min(currentPage * itemsPerPage, filteredData.length);
+
+          const paginationContainer = document.getElementById("pagination-container");
+          const paginationInfo = document.getElementById("pagination-info");
+          const pageInfo = document.getElementById("page-info");
+
+          if (filteredData.length > 0) {
+              paginationContainer.style.display = "flex";
+              if (filteredData.length > itemsPerPage) {
+                  paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${filteredData.length} results`;
+                  pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                  generatePageNumbers(totalPages);
+              } else {
+                  paginationInfo.textContent = `Showing all ${filteredData.length} results`;
+                  pageInfo.textContent = `Page 1 of 1`;
+                  document.getElementById("page-numbers").innerHTML = "";
+              }
+          } else {
+              paginationContainer.style.display = "none";
+          }
+      }
+
+      function generatePageNumbers(totalPages) {
+          const pageNumbers = document.getElementById("page-numbers");
+          pageNumbers.innerHTML = "";
+
+          const maxVisiblePages = 5;
+          let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+          let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+          if (endPage - startPage + 1 < maxVisiblePages) {
+              startPage = Math.max(1, endPage - maxVisiblePages + 1);
+          }
+
+          for (let i = startPage; i <= endPage; i++) {
+              const pageBtn = document.createElement("button");
+              pageBtn.textContent = i;
+              pageBtn.className = i === currentPage ? "btn page-btn active" : "btn-outline page-btn";
+              pageBtn.onclick = () => goToPage(i);
+              pageNumbers.appendChild(pageBtn);
+          }
+      }
+
+      function goToPage(page) {
+          const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+          if (page >= 1 && page <= totalPages) {
+              currentPage = page;
+              displayPage();
+              updatePaginationInfo();
+          }
+      }
+
+      function updatePaginationControls() {
+          const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+          const prevButton = document.querySelector('button[onclick="previousPage()"]');
+          const nextButton = document.querySelector('button[onclick="nextPage()"]');
+
+          if (prevButton) prevButton.disabled = currentPage === 1;
+          if (nextButton) nextButton.disabled = currentPage === totalPages || totalPages === 0;
+      }
+
+      function previousPage() {
+          if (currentPage > 1) {
+              currentPage--;
+              displayPage();
+              updatePaginationInfo();
+          }
+      }
+
+      function nextPage() {
+          const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+          if (currentPage < totalPages) {
+              currentPage++;
+              displayPage();
+              updatePaginationInfo();
+          }
+      }
+
+      // Filter and export functions
+      function toggleFilters() {
+          const filterSection = document.getElementById("performance-filters");
+          if (filterSection.style.display === "none") {
+              filterSection.style.display = "block";
+          } else {
+              filterSection.style.display = "none";
+          }
+      }
+
+      function filterPerformanceData() {
+          const gradeFilter = document.getElementById("grade-filter").value;
+          const termFilter = document.getElementById("term-filter").value;
+          const assessmentFilter = document.getElementById("assessment-filter").value;
+
+          filteredData = allPerformanceData.filter((item) => {
+              return (
+                  (!gradeFilter || item.grade === gradeFilter) &&
+                  (!termFilter || item.term === termFilter) &&
+                  (!assessmentFilter || item.assessment === assessmentFilter)
+              );
+          });
+
+          currentPage = 1;
+          displayPage();
+          updatePaginationInfo();
+      }
+
+      function exportPerformanceData() {
+          const headers = [
+              "Grade", "Stream", "Term", "Assessment Type", "Students", "Class Average",
+              "EE1 Count", "EE2 Count", "ME1 Count", "ME2 Count",
+              "AE1 Count", "AE2 Count", "BE1 Count", "BE2 Count"
+          ];
+          let csvContent = headers.join(",") + "\n";
+
+          filteredData.forEach((item) => {
+              const row = item.element;
+              const cells = row.querySelectorAll("td");
+              const rowData = Array.from(cells).map((cell) => {
+                  let content = cell.textContent.trim();
+                  content = content.replace(/\s+/g, " ");
+                  if (content.includes(",") || content.includes('"')) {
+                      content = '"' + content.replace(/"/g, '""') + '"';
+                  }
+                  return content;
+              });
+              csvContent += rowData.join(",") + "\n";
+          });
+
+          const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+          const link = document.createElement("a");
+          const url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", "performance_assessment_results.csv");
+          link.style.visibility = "hidden";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+      }
+
+      // Additional utility functions
+      function toggleFilterPanel() {
+          const panel = document.getElementById('filterPanel');
+          if (panel.style.display === 'none' || panel.style.display === '') {
+              panel.style.display = 'block';
+              panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          } else {
+              panel.style.display = 'none';
+          }
+      }
+
+      function refreshDashboard() {
+          showNotification('Refreshing dashboard data...', 'info');
+          setTimeout(() => { location.reload(); }, 1000);
+      }
+
+      function generateComprehensiveReport() {
+          showNotification('Generating comprehensive school report...', 'info');
+          setTimeout(() => {
+              showNotification('Report generation started. You will be notified when ready.', 'success');
+          }, 1500);
+      }
+
+      function openAnalyticsDashboard() {
+          window.location.href = "{{ url_for('admin.analytics_dashboard') }}";
+      }
+
+      function applyFilters() {
+          const grade = document.getElementById('gradeFilter').value;
+          const term = document.getElementById('termFilter').value;
+          const performance = document.getElementById('performanceFilter').value;
+          const dateFrom = document.getElementById('dateFrom').value;
+          const dateTo = document.getElementById('dateTo').value;
+
+          showNotification('Applying filters...', 'info');
+          console.log('Filters applied:', { grade, term, performance, dateFrom, dateTo });
+
+          setTimeout(() => {
+              showNotification('Filters applied successfully!', 'success');
+          }, 1000);
+      }
+
+      function resetFilters() {
+          document.getElementById('gradeFilter').value = '';
+          document.getElementById('termFilter').value = '';
+          document.getElementById('performanceFilter').value = '';
+          document.getElementById('dateFrom').value = '';
+          document.getElementById('dateTo').value = '';
+
+          showNotification('Filters reset', 'info');
+      }
+
+      function showNotification(message, type = 'info') {
+          const notification = document.createElement('div');
+          notification.className = `notification notification-${type}`;
+          notification.innerHTML = `
+              <div class="notification-content">
+                  <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                  <span>${message}</span>
+              </div>
+              <button class="notification-close" onclick="this.parentElement.remove()">
+                  <i class="fas fa-times"></i>
+              </button>
+          `;
+
+          notification.style.cssText = `
+              position: fixed; top: 20px; right: 20px;
+              background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6'};
+              color: white; padding: 1rem 1.5rem; border-radius: 0.5rem;
+              box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); z-index: 9999;
+              display: flex; align-items: center; gap: 1rem; max-width: 400px;
+              animation: slideInRight 0.3s ease;
+          `;
+
+          document.body.appendChild(notification);
+
+          setTimeout(() => {
+              if (notification.parentElement) {
+                  notification.style.animation = 'slideOutRight 0.3s ease';
+                  setTimeout(() => notification.remove(), 300);
+              }
+          }, 5000);
+      }
+
+      function viewClassDetails(grade, stream) {
+          showNotification(`Loading details for ${grade} ${stream}...`, 'info');
+      }
+
+      function dismissAlert(button) {
+          const alertElement = button.closest('.system-alert');
+          alertElement.style.transform = 'translateX(100%)';
+          alertElement.style.opacity = '0';
+          setTimeout(() => {
+              alertElement.remove();
+          }, 300);
+      }
+
+      function showAlertDetails(alertTitle) {
+          alert(`Showing details for: ${alertTitle}\n\nThis feature will be enhanced with a modal dialog in future updates.`);
+      }
+
+      async function exportChartsAsPDF() {
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('landscape', 'mm', 'a4');
+
+          try {
+              pdf.setFontSize(20);
+              pdf.text('Performance Overview Report', 20, 20);
+              pdf.setFontSize(12);
+              pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
+
+              const performanceCanvas = document.getElementById('performanceDonutChart');
+              const performanceImgData = performanceCanvas.toDataURL('image/png');
+              pdf.addImage(performanceImgData, 'PNG', 20, 40, 120, 80);
+
+              const comparisonCanvas = document.getElementById('classComparisonChart');
+              const comparisonImgData = comparisonCanvas.toDataURL('image/png');
+              pdf.addImage(comparisonImgData, 'PNG', 150, 40, 120, 80);
+
+              pdf.setFontSize(14);
+              pdf.text('Key Statistics:', 20, 140);
+              pdf.setFontSize(10);
+
+              const totalStudents = document.getElementById('total-assessed').textContent;
+              const bestClass = document.getElementById('best-class').textContent;
+              const schoolAverage = document.getElementById('school-average').textContent;
+              const reportsGenerated = document.getElementById('reports-generated').textContent;
+
+              pdf.text(`Total Students Assessed: ${totalStudents}`, 20, 150);
+              pdf.text(`Best Performing Class: ${bestClass}`, 20, 160);
+              pdf.text(`School Average: ${schoolAverage}`, 20, 170);
+              pdf.text(`Reports Generated: ${reportsGenerated}`, 20, 180);
+
+              pdf.save('performance-overview.pdf');
+              showNotification('Charts exported successfully!', 'success');
+
+          } catch (error) {
+              console.error('Export failed:', error);
+              showNotification('Export failed. Please try again.', 'error');
+          }
+      }
+
+      // Add notification animations
+      const style = document.createElement('style');
+      style.textContent = `
+          @keyframes slideInRight {
+              from { transform: translateX(100%); opacity: 0; }
+              to { transform: translateX(0); opacity: 1; }
+          }
+          @keyframes slideOutRight {
+              from { transform: translateX(0); opacity: 1; }
+              to { transform: translateX(100%); opacity: 0; }
+          }
+          .notification-content { display: flex; align-items: center; gap: 0.5rem; flex: 1; }
+          .notification-close { background: none; border: none; color: white; cursor: pointer; padding: 0.25rem; border-radius: 0.25rem; transition: background 0.2s ease; }
+          .notification-close:hover { background: rgba(255, 255, 255, 0.2); }
+      `;
+      document.head.appendChild(style);
+
+      // Add smooth scrolling for better UX
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+          anchor.addEventListener("click", function (e) {
+              e.preventDefault();
+              const target = document.querySelector(this.getAttribute("href"));
+              if (target) {
+                  target.scrollIntoView({
+                      behavior: "smooth",
+                  });
+              }
+          });
+      });
+    </script>
+  </body>
+</html>

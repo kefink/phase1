@@ -9,57 +9,158 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <!-- Inter font for Solar theme -->
     <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <style>
+      /* Solar Theme Tokens + heroicon base */
       :root {
-          --primary-color: {{ config.primary_color or '#1f7d53' }};
-          --secondary-color: {{ config.secondary_color or '#18230f' }};
+        --solar-bg-1: #fdf6e3;
+        --solar-bg-2: #eee8d5;
+        --solar-bg-3: #d6d2c4;
+        --solar-primary: #b58900;
+        --solar-secondary: #268bd2;
+        --solar-green: #859900;
+        --solar-red: #dc322f;
+        --solar-text-primary: #002b36;
+        --solar-text-secondary: #073642;
+      }
+      :root {
+        /* Map legacy vars to Solar */
+        --primary-color: var(--solar-primary) !important;
+        --secondary-color: var(--solar-secondary) !important;
+        --white: #ffffff !important;
+        --border-color: rgba(238, 232, 213, 0.5) !important;
+        --shadow-md: 0 10px 30px rgba(181, 137, 0, 0.1) !important;
+        --border-radius: 12px !important;
+        --border-radius-lg: 18px !important;
+        --spacing-sm: 8px !important;
+        --spacing-md: 12px !important;
+        --spacing-lg: 20px !important;
+        --spacing-xl: 32px !important;
+        --transition: all 0.25s ease !important;
+      }
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--solar-bg-1) 0%,
+          var(--solar-bg-2) 60%,
+          var(--solar-bg-3) 100%
+        );
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        color: var(--solar-text-primary);
+      }
+      .heroicon {
+        display: inline-block;
+        width: 1.1rem;
+        height: 1.1rem;
+        fill: currentColor;
+        vertical-align: middle;
+      }
+      .heroicon-lg {
+        width: 1.6rem;
+        height: 1.6rem;
+      }
+      .heroicon-xl {
+        width: 2rem;
+        height: 2rem;
+      }
+      .heroicon-solar-blue {
+        color: var(--solar-secondary);
+      }
+      .heroicon-solar-green {
+        color: var(--solar-green);
+      }
+      .heroicon-solar-yellow {
+        color: var(--solar-primary);
+      }
+      .heroicon-solar-red {
+        color: var(--solar-red);
+      }
+
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--solar-text-primary);
+      }
+      .btn-outline-secondary {
+        border-color: rgba(0, 0, 0, 0.12);
+        color: var(--solar-text-secondary);
+        background: rgba(253, 246, 227, 0.5);
+      }
+      .btn-outline-secondary:hover {
+        background: rgba(238, 232, 213, 0.8);
+        color: var(--solar-text-primary);
       }
 
       .staff-card {
-          border-left: 4px solid var(--primary-color);
-          transition: all 0.3s ease;
+        border-left: 4px solid var(--solar-primary);
+        transition: var(--transition);
+        border-radius: var(--border-radius);
       }
-
       .staff-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
       }
 
       .role-badge {
-          background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-          color: white;
-          padding: 0.25rem 0.75rem;
-          border-radius: 20px;
-          font-size: 0.85rem;
-          font-weight: 500;
+        background: linear-gradient(
+          135deg,
+          var(--solar-primary),
+          var(--solar-secondary)
+        );
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
       }
 
       .assignment-section {
-          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-          border-radius: 10px;
-          padding: 1.5rem;
-          margin-bottom: 1.5rem;
+        background: linear-gradient(
+          135deg,
+          rgba(253, 246, 227, 0.9),
+          rgba(238, 232, 213, 0.9)
+        );
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-md);
       }
 
       .btn-primary {
-          background: var(--primary-color);
-          border-color: var(--primary-color);
+        background: var(--solar-secondary);
+        border-color: var(--solar-secondary);
       }
-
       .btn-primary:hover {
-          background: var(--secondary-color);
-          border-color: var(--secondary-color);
+        background: #1e78bd;
+        border-color: #1e78bd;
       }
 
       .staff-stats {
-          background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-          color: white;
-          border-radius: 10px;
-          padding: 1.5rem;
+        background: linear-gradient(
+          135deg,
+          var(--solar-primary),
+          var(--solar-secondary)
+        );
+        color: white;
+        border-radius: var(--border-radius);
+        padding: 1.25rem;
+        box-shadow: var(--shadow-md);
+      }
+
+      .card {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-md);
+      }
+      .card-header {
+        background: rgba(253, 246, 227, 0.6);
       }
     </style>
   </head>
@@ -68,15 +169,39 @@
       <div class="row">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0">
-              <i class="fas fa-users-cog text-primary me-2"></i>
+            <h1 class="h3 mb-0 page-title">
+              <svg
+                class="heroicon heroicon-lg heroicon-solar-yellow"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5 1.343 3.5 3 3.5z"
+                />
+                <path
+                  d="M3 8.5C3 6.567 4.79 5 7 5s4 1.567 4 3.5S9.21 12 7 12 3 10.433 3 8.5z"
+                />
+                <path
+                  d="M7 13c-2.761 0-5 1.79-5 4v.5A2.5 2.5 0 004.5 20h5.55a6.5 6.5 0 01.46-5h-3.51z"
+                />
+                <path
+                  d="M16 13a5 5 0 00-5 5v.5c0 .276.224.5.5.5H21.5a.5.5 0 00.5-.5V18a5 5 0 00-5-5z"
+                />
+              </svg>
               Staff Management
             </h1>
             <a
               href="{{ url_for('classteacher.dashboard') }}"
               class="btn btn-outline-secondary"
             >
-              <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  fill-rule="evenodd"
+                  d="M9.53 3.97a.75.75 0 010 1.06L4.56 10h15.19a.75.75 0 010 1.5H4.56l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Back to Dashboard
             </a>
           </div>
         </div>
@@ -86,28 +211,70 @@
       <div class="row mb-4">
         <div class="col-md-3">
           <div class="staff-stats text-center">
-            <i class="fas fa-users fa-2x mb-2"></i>
+            <svg
+              class="heroicon heroicon-xl mb-2"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5 1.343 3.5 3 3.5z"
+              />
+              <path
+                d="M3 8.5C3 6.567 4.79 5 7 5s4 1.567 4 3.5S9.21 12 7 12 3 10.433 3 8.5z"
+              />
+              <path
+                d="M7 13c-2.761 0-5 1.79-5 4v.5A2.5 2.5 0 004.5 20h14a2.5 2.5 0 002.5-2.5V17a5 5 0 00-5-5h-8z"
+              />
+            </svg>
             <h4>{{ teachers|length }}</h4>
             <p class="mb-0">Total Teachers</p>
           </div>
         </div>
         <div class="col-md-3">
           <div class="staff-stats text-center">
-            <i class="fas fa-user-tie fa-2x mb-2"></i>
+            <svg
+              class="heroicon heroicon-xl mb-2"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M12 2.25a5.25 5.25 0 015.25 5.25v1.088a6.75 6.75 0 012.25 5.012V18a3 3 0 01-3 3H7.5a3 3 0 01-3-3v-4.4a6.75 6.75 0 012.25-5.012V7.5A5.25 5.25 0 0112 2.25zm0 3a2.25 2.25 0 00-2.25 2.25v.75h4.5V7.5A2.25 2.25 0 0012 5.25z"
+                clip-rule="evenodd"
+              />
+            </svg>
             <h4>{{ active_teachers }}</h4>
             <p class="mb-0">Active Teachers</p>
           </div>
         </div>
         <div class="col-md-3">
           <div class="staff-stats text-center">
-            <i class="fas fa-chalkboard-teacher fa-2x mb-2"></i>
+            <svg
+              class="heroicon heroicon-xl mb-2"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M12 3a9 9 0 100 18 9 9 0 000-18z" />
+              <path
+                d="M9 9.75a.75.75 0 011.5 0V12h3.75a.75.75 0 110 1.5H10.5v2.25a.75.75 0 11-1.5 0V13.5H6.75a.75.75 0 110-1.5H9V9.75z"
+              />
+            </svg>
             <h4>{{ class_teachers }}</h4>
             <p class="mb-0">Class Teachers</p>
           </div>
         </div>
         <div class="col-md-3">
           <div class="staff-stats text-center">
-            <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+            <svg
+              class="heroicon heroicon-xl mb-2"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                d="M11.7 2.3a1 1 0 011.6 0l8 10a1 1 0 01-.8 1.7H3.5a1 1 0 01-.8-1.7l9-10z"
+              />
+              <path d="M12 6l6 7H6l6-7z" />
+            </svg>
             <h4>{{ qualified_teachers }}</h4>
             <p class="mb-0">With Qualifications</p>
           </div>
@@ -116,16 +283,33 @@
 
       <!-- School Leadership Assignment -->
       <div class="assignment-section">
-        <h4 class="mb-3">
-          <i class="fas fa-crown text-warning me-2"></i>
+        <h4 class="mb-3 d-flex align-items-center gap-2">
+          <svg
+            class="heroicon heroicon-lg heroicon-solar-yellow"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M12 2l2.39 4.84 5.34.78-3.86 3.76.91 5.31L12 14.77l-4.78 2.51.91-5.31L4.27 7.62l5.34-.78L12 2z"
+            />
+          </svg>
           School Leadership
         </h4>
         <div class="row">
           <div class="col-md-6">
             <div class="card">
               <div class="card-body">
-                <h6 class="card-title">
-                  <i class="fas fa-user-tie me-2"></i>
+                <h6 class="card-title d-flex align-items-center gap-2">
+                  <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                    />
+                    <path
+                      fill-rule="evenodd"
+                      d="M3 20.25a9 9 0 1118 0v.75H3v-.75z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
                   Headteacher
                 </h6>
                 {% if current_headteacher %}
@@ -141,7 +325,7 @@
                 </p>
                 <button
                   class="btn btn-sm btn-outline-primary"
-                  onclick="changeHeadteacher()"
+                  data-action="change-headteacher"
                 >
                   Change Headteacher
                 </button>
@@ -149,7 +333,7 @@
                 <p class="text-muted mb-2">No headteacher assigned</p>
                 <button
                   class="btn btn-sm btn-primary"
-                  onclick="assignHeadteacher()"
+                  data-action="assign-headteacher"
                 >
                   Assign Headteacher
                 </button>
@@ -160,8 +344,17 @@
           <div class="col-md-6">
             <div class="card">
               <div class="card-body">
-                <h6 class="card-title">
-                  <i class="fas fa-user-friends me-2"></i>
+                <h6 class="card-title d-flex align-items-center gap-2">
+                  <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                    />
+                    <path
+                      fill-rule="evenodd"
+                      d="M3 20.25a9 9 0 1118 0v.75H3v-.75z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
                   Deputy Headteacher
                 </h6>
                 {% if current_deputy %}
@@ -177,13 +370,16 @@
                 </p>
                 <button
                   class="btn btn-sm btn-outline-primary"
-                  onclick="changeDeputy()"
+                  data-action="change-deputy"
                 >
                   Change Deputy
                 </button>
                 {% else %}
                 <p class="text-muted mb-2">No deputy headteacher assigned</p>
-                <button class="btn btn-sm btn-primary" onclick="assignDeputy()">
+                <button
+                  class="btn btn-sm btn-primary"
+                  data-action="assign-deputy"
+                >
                   Assign Deputy
                 </button>
                 {% endif %}
@@ -200,12 +396,27 @@
             <div
               class="card-header d-flex justify-content-between align-items-center"
             >
-              <h5 class="mb-0">
-                <i class="fas fa-list me-2"></i>
+              <h5 class="mb-0 d-flex align-items-center gap-2">
+                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    fill-rule="evenodd"
+                    d="M3.75 6.75A.75.75 0 014.5 6h15a.75.75 0 010 1.5h-15a.75.75 0 01-.75-.75zM3.75 12a.75.75 0 01.75-.75h15a.75.75 0 010 1.5h-15A.75.75 0 013.75 12zm0 5.25a.75.75 0 01.75-.75h15a.75.75 0 010 1.5h-15a.75.75 0 01-.75-.75z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
                 All Teachers
               </h5>
-              <button class="btn btn-primary btn-sm" onclick="addNewTeacher()">
-                <i class="fas fa-plus me-1"></i>
+              <button
+                class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2"
+                data-action="show-add-teacher"
+              >
+                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    fill-rule="evenodd"
+                    d="M12 2.25a.75.75 0 01.75.75V11h8a.75.75 0 010 1.5h-8v8a.75.75 0 01-1.5 0v-8H3a.75.75 0 010-1.5h8V3a.75.75 0 01.75-.75z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
                 Add Teacher
               </button>
             </div>
@@ -226,19 +437,55 @@
                         >
                       </div>
 
-                      <p class="text-muted small mb-2">
-                        <i class="fas fa-id-badge me-1"></i>
+                      <p
+                        class="text-muted small mb-2 d-flex align-items-center gap-1"
+                      >
+                        <svg
+                          class="heroicon"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M14.25 6.087a.75.75 0 010 1.326l-2.25 1.2a.75.75 0 01-1.114-.66V4.5a.75.75 0 011.114-.66l2.25 1.2zM4.5 3.75A1.5 1.5 0 003 5.25v13.5A1.5 1.5 0 004.5 20.25h15a1.5 1.5 0 001.5-1.5V5.25a1.5 1.5 0 00-1.5-1.5h-15z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
                         {{ teacher.employee_id or 'No ID' }}
                       </p>
 
                       {% if teacher.qualification %}
-                      <p class="text-muted small mb-2">
-                        <i class="fas fa-graduation-cap me-1"></i>
+                      <p
+                        class="text-muted small mb-2 d-flex align-items-center gap-1"
+                      >
+                        <svg
+                          class="heroicon"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M11.7 2.3a1 1 0 011.6 0l8 10a1 1 0 01-.8 1.7H3.5a1 1 0 01-.8-1.7l9-10z"
+                          />
+                          <path d="M12 6l6 7H6l6-7z" />
+                        </svg>
                         {{ teacher.qualification }}
                       </p>
                       {% endif %} {% if teacher.email %}
-                      <p class="text-muted small mb-2">
-                        <i class="fas fa-envelope me-1"></i>
+                      <p
+                        class="text-muted small mb-2 d-flex align-items-center gap-1"
+                      >
+                        <svg
+                          class="heroicon"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M1.5 6A2.25 2.25 0 013.75 3.75h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6z"
+                          />
+                          <path
+                            d="M2.33 6.46l8.74 5.46a1.5 1.5 0 001.86 0l8.74-5.46"
+                          />
+                        </svg>
                         {{ teacher.email }}
                       </p>
                       {% endif %}
@@ -256,15 +503,39 @@
                         <div class="btn-group btn-group-sm">
                           <button
                             class="btn btn-outline-primary"
-                            onclick="editTeacher({{ teacher.id }})"
+                            data-action="edit-teacher"
+                            data-teacher-id="{{ teacher.id }}"
                           >
-                            <i class="fas fa-edit"></i>
+                            <svg
+                              class="heroicon"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M21.731 2.269a2.625 2.625 0 00-3.713 0l-1.92 1.92 3.713 3.713 1.92-1.92a2.625 2.625 0 000-3.713z"
+                              />
+                              <path
+                                d="M2.684 16.311a2.25 2.25 0 01.59-1.014L14.4 4.17l3.713 3.713L6.987 19.01a2.25 2.25 0 01-1.014.59l-3.34.956a.75.75 0 01-.923-.923l.956-3.34z"
+                              />
+                            </svg>
                           </button>
                           <button
                             class="btn btn-outline-info"
-                            onclick="assignSubjects({{ teacher.id }})"
+                            data-action="assign-subjects"
+                            data-teacher-id="{{ teacher.id }}"
                           >
-                            <i class="fas fa-book"></i>
+                            <svg
+                              class="heroicon"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M2.25 5.25A2.25 2.25 0 014.5 3h6.75A2.25 2.25 0 0113.5 5.25v13.5a.75.75 0 01-1.148.638 6.466 6.466 0 00-3.602-1.088H4.5a2.25 2.25 0 01-2.25-2.25V5.25z"
+                              />
+                              <path
+                                d="M12.75 5.25A2.25 2.25 0 0115 3h4.5A2.25 2.25 0 0121.75 5.25v10.5A2.25 2.25 0 0119.5 18h-3.75a6.466 6.466 0 00-3.602 1.088.75.75 0 01-1.148-.638V5.25z"
+                              />
+                            </svg>
                           </button>
                         </div>
                       </div>
@@ -290,8 +561,19 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="editTeacherModalLabel">
-              <i class="fas fa-edit me-2"></i>Edit Teacher
+            <h5
+              class="modal-title d-flex align-items-center gap-2"
+              id="editTeacherModalLabel"
+            >
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M21.731 2.269a2.625 2.625 0 00-3.713 0l-1.92 1.92 3.713 3.713 1.92-1.92a2.625 2.625 0 000-3.713z"
+                />
+                <path
+                  d="M2.684 16.311a2.25 2.25 0 01.59-1.014L14.4 4.17l3.713 3.713L6.987 19.01a2.25 2.25 0 01-1.014.59l-3.34.956a.75.75 0 01-.923-.923l.956-3.34z"
+                />
+              </svg>
+              Edit Teacher
             </h5>
             <button
               type="button"
@@ -428,10 +710,17 @@
             </button>
             <button
               type="button"
-              class="btn btn-primary"
-              onclick="saveTeacherChanges()"
+              class="btn btn-primary d-inline-flex align-items-center gap-2"
+              data-action="save-teacher-changes"
             >
-              <i class="fas fa-save me-1"></i>Save Changes
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  fill-rule="evenodd"
+                  d="M4.5 12a7.5 7.5 0 1112.53 5.303l3.184 3.183a.75.75 0 11-1.06 1.06l-3.183-3.183A7.5 7.5 0 014.5 12zm7.5-3.75a.75.75 0 00-.75.75v2.25H9a.75.75 0 000 1.5h2.25V15a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9a.75.75 0 00-.75-.75z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Save Changes
             </button>
           </div>
         </div>
@@ -449,9 +738,19 @@
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="subjectAssignmentModalLabel">
-              <i class="fas fa-book me-2"></i>Assign Subjects to
-              <span id="assignTeacherName"></span>
+            <h5
+              class="modal-title d-flex align-items-center gap-2"
+              id="subjectAssignmentModalLabel"
+            >
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M2.25 5.25A2.25 2.25 0 014.5 3h6.75A2.25 2.25 0 0113.5 5.25v13.5a.75.75 0 01-1.148.638 6.466 6.466 0 00-3.602-1.088H4.5a2.25 2.25 0 01-2.25-2.25V5.25z"
+                />
+                <path
+                  d="M12.75 5.25A2.25 2.25 0 0115 3h4.5A2.25 2.25 0 0121.75 5.25v10.5A2.25 2.25 0 0119.5 18h-3.75a6.466 6.466 0 00-3.602 1.088.75.75 0 01-1.148-.638V5.25z"
+                />
+              </svg>
+              Assign Subjects to <span id="assignTeacherName"></span>
             </h5>
             <button
               type="button"
@@ -498,10 +797,17 @@
             </button>
             <button
               type="button"
-              class="btn btn-primary"
-              onclick="saveSubjectAssignments()"
+              class="btn btn-primary d-inline-flex align-items-center gap-2"
+              data-action="save-subject-assignments"
             >
-              <i class="fas fa-save me-1"></i>Save Assignments
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  fill-rule="evenodd"
+                  d="M3 4.5A1.5 1.5 0 014.5 3h15A1.5 1.5 0 0121 4.5V15a1.5 1.5 0 01-1.5 1.5H12l-3.72 3.72A.75.75 0 017 19.5V16.5H4.5A1.5 1.5 0 013 15V4.5z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Save Assignments
             </button>
           </div>
         </div>
@@ -519,8 +825,18 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="addTeacherModalLabel">
-              <i class="fas fa-user-plus me-2"></i>Add New Teacher
+            <h5
+              class="modal-title d-flex align-items-center gap-2"
+              id="addTeacherModalLabel"
+            >
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  fill-rule="evenodd"
+                  d="M12 2.25a.75.75 0 01.75.75V11h8a.75.75 0 010 1.5h-8v8a.75.75 0 01-1.5 0v-8H3a.75.75 0 010-1.5h8V3a.75.75 0 01.75-.75z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Add New Teacher
             </h5>
             <button
               type="button"
@@ -674,10 +990,17 @@
             </button>
             <button
               type="button"
-              class="btn btn-primary"
-              onclick="saveNewTeacher()"
+              class="btn btn-primary d-inline-flex align-items-center gap-2"
+              data-action="save-new-teacher"
             >
-              <i class="fas fa-user-plus me-1"></i>Add Teacher
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  fill-rule="evenodd"
+                  d="M12 2.25a.75.75 0 01.75.75V11h8a.75.75 0 010 1.5h-8v8a.75.75 0 01-1.5 0v-8H3a.75.75 0 010-1.5h8V3a.75.75 0 01.75-.75z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Add Teacher
             </button>
           </div>
         </div>
@@ -692,6 +1015,7 @@
           .querySelector("meta[name=csrf-token]")
           .getAttribute("content");
       }
+
       function assignHeadteacher() {
         // Implementation for headteacher assignment
         alert("Headteacher assignment feature - to be implemented");
@@ -973,6 +1297,45 @@
             alert("Error creating teacher");
           });
       }
+
+      // Delegated event handlers replacing inline onclick attributes
+      document.addEventListener("click", function (e) {
+        const el = e.target.closest("[data-action]");
+        if (!el) return;
+        const action = el.dataset.action;
+        switch (action) {
+          case "change-headteacher":
+            changeHeadteacher();
+            break;
+          case "assign-headteacher":
+            assignHeadteacher();
+            break;
+          case "change-deputy":
+            changeDeputy();
+            break;
+          case "assign-deputy":
+            assignDeputy();
+            break;
+          case "show-add-teacher":
+            addNewTeacher();
+            break;
+          case "edit-teacher":
+            editTeacher(el.dataset.teacherId);
+            break;
+          case "assign-subjects":
+            assignSubjects(el.dataset.teacherId);
+            break;
+          case "save-teacher-changes":
+            saveTeacherChanges();
+            break;
+          case "save-subject-assignments":
+            saveSubjectAssignments();
+            break;
+          case "save-new-teacher":
+            saveNewTeacher();
+            break;
+        }
+      });
     </script>
   </body>
 </html>

@@ -1,0 +1,137 @@
+/* Solar Theme Integration for Class Teacher */
+:root {
+    /* Use Solar theme colors from bootstrap.min.css */
+    --primary-color: #b58900;
+    --secondary-color: #839496;
+    --accent-color: #268bd2;
+    --success-color: #2aa198;
+    --warning-color: #cb4b16;
+    --danger-color: #d33682;
+    --info-color: #268bd2;
+
+    /* Text Colors - Solar theme */
+    --text-primary: #839496;
+    --text-secondary: #657b83;
+    --text-muted: #586e75;
+    --text-white: #fdf6e3;
+
+    /* Solar Dark Background */
+    --glass-bg: rgba(7, 54, 66, 0.8);
+    --glass-border: rgba(131, 148, 150, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 43, 54, 0.5);
+    --glass-backdrop: blur(8px);
+
+    /* Background - Solar theme */
+    --bg-primary: #002b36;
+    --bg-secondary: #073642;
+    --bg-card: rgba(7, 54, 66, 0.8);
+    --bg-card-hover: rgba(7, 54, 66, 0.9);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    --shadow-glass: 0 8px 32px 0 rgba(0, 43, 54, 0.5);
+
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-2xl: 32px;
+    --radius-full: 50%;
+
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+
+    /* Transitions */
+    --transition-fast: all 0.15s ease-out;
+    --transition-normal: all 0.3s ease-out;
+    --transition-slow: all 0.5s ease-out;
+    --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Gradients - Solar theme */
+    --gradient-primary: linear-gradient(135deg, #b58900 0%, #cb4b16 100%);
+    --gradient-secondary: linear-gradient(135deg, #839496 0%, #657b83 100%);
+    --gradient-success: linear-gradient(135deg, #2aa198 0%, #268bd2 100%);
+    --gradient-warning: linear-gradient(135deg, #cb4b16 0%, #b58900 100%);
+    --gradient-danger: linear-gradient(135deg, #d33682 0%, #cb4b16 100%);
+    --gradient-info: linear-gradient(135deg, #268bd2 0%, #2aa198 100%);
+    --gradient-card: linear-gradient(135deg, rgba(7, 54, 66, 0.9) 0%, rgba(0, 43, 54, 0.8) 100%);
+}
+
+/* Global Styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Animated Background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    z-index: -2;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 20% 80%, rgba(181, 137, 0, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(38, 139, 210, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(42, 161, 152, 0.1) 0%, transparent 50%);
+    z-index: -1;
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-20px) rotate(1deg); }
+    66% { transform: translateY(10px) rotate(-1deg); }
+}
+
+/* Animation keyframes */
+@keyframes pulse {
+    0% { 
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(181, 137, 0, 0.7);
+    }
+    70% { 
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(181, 137, 0, 0);
+    }
+    100% { 
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(181, 137, 0, 0);
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes button-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

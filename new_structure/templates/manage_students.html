@@ -7,7 +7,7 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#b58900">
 
     <title>Manage Students - {{ school_info.school_name or 'Hillview School' }} (Class Teacher)</title>
 
@@ -16,63 +16,300 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
+    <!-- Professional Solar Theme Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-
-    <!-- Legacy CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_pages_enhanced.css') }}">
     <style>
-        /* Override container styles for manage pages */
-        .manage-container {
-            max-width: 95% !important;
-            width: 95% !important;
-            margin: 80px auto 60px !important;
-            padding: var(--spacing-xl) !important;
+        /* SOLAR THEME - FORCE BACKGROUND */
+        html {
+            background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #d6d2c4 100%) !important;
+            min-height: 100vh !important;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* Forms grid layout */
+        body {
+            background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #d6d2c4 100%) !important;
+            min-height: 100vh !important;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            overflow-x: hidden !important;
+            background-attachment: fixed !important;
+        }
+
+        /* Override any Bootstrap or external CSS backgrounds */
+        body, html, .container, .container-fluid {
+            background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #d6d2c4 100%) !important;
+        }
+
+        /* Heroicon Colors - Solar Theme */
+        .heroicon-solar-blue { fill: #268bd2; }
+        .heroicon-solar-yellow { fill: #b58900; }
+        .heroicon-solar-green { fill: #859900; }
+        .heroicon-solar-red { fill: #dc322f; }
+        .heroicon-solar-orange { fill: #cb4b16; }
+        .heroicon-solar-cyan { fill: #2aa198; }
+        .heroicon-solar-violet { fill: #6c71c4; }
+        .heroicon-solar-magenta { fill: #d33682; }
+        .heroicon-solar-dark { fill: #002b36; }
+        .heroicon-solar-light { fill: #93a1a1; }
+        /* Override container styles for manage pages - Solar Theme */
+        .manage-container {
+            background: transparent !important;
+            max-width: 95% !important;
+            width: 95% !important;
+            margin: 20px auto !important;
+            padding: 0 !important;
+        }
+
+        /* Page header styling - Solar Theme */
+        .page-header {
+            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
+            border: 2px solid rgba(181, 137, 0, 0.2);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #b58900, #268bd2, #859900, #dc322f);
+            border-radius: 25px 25px 0 0;
+        }
+
+        .page-header h1 {
+            color: #002b36;
+            margin-bottom: 10px;
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #b58900, #268bd2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-subtitle {
+            color: #586e75;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #268bd2;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: rgba(38, 139, 210, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(38, 139, 210, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links a:hover {
+            background: rgba(38, 139, 210, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(38, 139, 210, 0.15);
+            text-decoration: none;
+        }
+
+        /* Forms grid layout - Solar Enhanced */
         .forms-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-xl);
-            margin: var(--spacing-xl) 0;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        /* Section styling - Solar Theme Enhanced */
+        .search-filter-section,
+        .add-student-section,
+        .bulk-upload-section,
+        .students-list-section,
+        .students-section {
+            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
+            border: 2px solid rgba(181, 137, 0, 0.2);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-filter-section::before,
+        .students-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #859900, #268bd2, #b58900);
+            border-radius: 25px 25px 0 0;
         }
 
         .form-card {
-            background: var(--white);
-            padding: var(--spacing-lg);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
+            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
+            border: 2px solid rgba(181, 137, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #b58900, #859900, #268bd2);
+            border-radius: 25px 25px 0 0;
         }
 
         .form-card h2 {
-            color: var(--primary-color);
-            margin-bottom: var(--spacing-lg);
-            font-size: 1.3rem;
+            color: #002b36;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
+        /* Form styling - Solar Theme Enhanced */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #002b36;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(88, 110, 117, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #002b36;
+            background: rgba(253, 246, 227, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #268bd2;
+            box-shadow: 0 0 0 4px rgba(38, 139, 210, 0.1);
+            transform: translateY(-2px);
+            background: rgba(253, 246, 227, 1);
+        }
+
+        /* Button styling - Solar Theme */
+        .btn, .search-btn, .clear-search-btn, .add-btn, .upload-btn, .manage-btn {
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn, .search-btn, .add-btn, .upload-btn, .manage-btn {
+            background: linear-gradient(135deg, #268bd2 0%, #2c5aa0 100%);
+            color: #fdf6e3;
+            box-shadow: 0 4px 15px rgba(38, 139, 210, 0.3);
+        }
+
+        .btn:hover, .search-btn:hover, .add-btn:hover, .upload-btn:hover, .manage-btn:hover {
+            background: linear-gradient(135deg, #2c5aa0 0%, #1e3f73 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(38, 139, 210, 0.4);
+            text-decoration: none;
+            color: #fdf6e3;
+        }
+
+        .clear-search-btn {
+            background: linear-gradient(135deg, #dc322f 0%, #a02622 100%);
+            color: #fdf6e3;
+            box-shadow: 0 4px 15px rgba(220, 50, 47, 0.3);
+        }
+
+        .clear-search-btn:hover {
+            background: linear-gradient(135deg, #a02622 0%, #7a1c1a 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(220, 50, 47, 0.4);
+            text-decoration: none;
+            color: #fdf6e3;
+        }
+
+        /* Level selector - Solar Theme */
         .level-selector {
-            background: var(--white);
-            padding: var(--spacing-lg);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
-            margin-bottom: var(--spacing-xl);
+            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
+            border: 2px solid rgba(181, 137, 0, 0.2);
+            margin-bottom: 30px;
         }
 
-        .students-section {
-            background: var(--white);
-            padding: var(--spacing-lg);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
-            margin-top: var(--spacing-xl);
-        }
-
+        /* Students section enhancement */
         .students-section h2 {
-            color: var(--primary-color);
-            margin-bottom: var(--spacing-lg);
+            color: #002b36;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(135deg, #b58900, #268bd2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         /* Responsive design */
@@ -80,12 +317,22 @@
             .manage-container {
                 max-width: 98% !important;
                 width: 98% !important;
-                padding: var(--spacing-md) !important;
+                padding: 15px !important;
             }
 
             .forms-grid {
                 grid-template-columns: 1fr;
-                gap: var(--spacing-lg);
+                gap: 25px;
+            }
+
+            .search-input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-input-group input[type="text"] {
+                min-width: 100%;
+                margin-bottom: 15px;
             }
         }
 
@@ -388,41 +635,81 @@
 
         /* Table improvements */
         .table-responsive {
-            overflow-x: auto;
-            margin: var(--spacing-lg) 0;
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            background: var(--white);
+            background: rgba(253, 246, 227, 0.7) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 8px 32px rgba(181, 137, 0, 0.15) !important;
+            padding: 20px !important;
+            margin: var(--spacing-lg) 0 !important;
         }
 
         table {
-            width: 100%;
-            min-width: 800px; /* Ensure table doesn't get too cramped */
-            border-collapse: collapse;
+            width: 100% !important;
+            min-width: 800px !important;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            border-radius: 16px !important;
+            overflow: hidden !important;
+            box-shadow: 0 8px 32px rgba(181, 137, 0, 0.1) !important;
+            background: rgba(255, 255, 255, 0.9) !important;
         }
 
         th, td {
-            padding: var(--spacing-md);
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-            white-space: nowrap;
+            padding: 16px 20px !important;
+            text-align: left !important;
+            border: none !important;
+            border-bottom: 1px solid rgba(238, 232, 213, 0.8) !important;
+            white-space: nowrap !important;
         }
 
         th {
-            background: var(--primary-color);
-            color: var(--white);
-            font-weight: 600;
-            position: sticky;
+            background: linear-gradient(135deg, #268bd2, #2aa198) !important;
+            color: white !important;
+            font-weight: 600 !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            font-size: 14px !important;
+            position: sticky !important;
             top: 0;
             z-index: 10;
         }
 
+        td {
+            color: #002b36 !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+            font-size: 14px !important;
+            line-height: 1.5 !important;
+            vertical-align: middle !important;
+        }
+
+        tr {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
         tr:nth-child(even) {
-            background: rgba(31, 125, 83, 0.05);
+            background: rgba(238, 232, 213, 0.3) !important;
         }
 
         tr:hover {
-            background: rgba(31, 125, 83, 0.1);
+            background: rgba(268, 189, 210, 0.15) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 16px rgba(181, 137, 0, 0.1) !important;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none !important;
+        }
+
+        th:first-child, td:first-child {
+            border-top-left-radius: 12px !important;
+            border-bottom-left-radius: 12px !important;
+        }
+
+        th:last-child, td:last-child {
+            border-top-right-radius: 12px !important;
+            border-bottom-right-radius: 12px !important;
         }
 
         /* Improve button styling */
@@ -467,14 +754,34 @@
 <body>
     <div class="container manage-container">
         <header class="page-header">
-            <h1>👨‍🎓 Manage Students</h1>
+            <h1>
+                <svg class="heroicon-solar-blue" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z"/>
+                </svg>
+                Manage Students
+            </h1>
             <p class="page-subtitle">
                 Add, edit, and manage student profiles and information
             </p>
             <div class="nav-links">
-                <a href="{{ url_for('classteacher.teacher_management_hub') }}">Teacher Hub</a>
-                <a href="{{ url_for('classteacher.dashboard') }}">Dashboard</a>
-                <a href="{{ url_for('auth.logout_route') }}">Logout</a>
+                <a href="{{ url_for('classteacher.teacher_management_hub') }}">
+                    <svg class="heroicon-solar-green" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M11.0991 1.29289C11.4896 0.902369 12.1228 0.902369 12.5133 1.29289L22.5133 11.2929C22.9038 11.6834 22.9038 12.3166 22.5133 12.7071C22.1228 13.0976 21.4896 13.0976 21.0991 12.7071L20.0124 11.6204V20C20.0124 21.6569 18.6693 23 17.0124 23H7.01245C5.3556 23 4.01245 21.6569 4.01245 20V11.6204L2.92578 12.7071C2.53526 13.0976 1.90209 13.0976 1.51157 12.7071C1.12104 12.3166 1.12104 11.6834 1.51157 11.2929L11.5116 1.29289Z"/>
+                    </svg>
+                    Teacher Hub
+                </a>
+                <a href="{{ url_for('classteacher.dashboard') }}">
+                    <svg class="heroicon-solar-blue" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M3 6C3 4.34315 4.34315 3 6 3H8C9.65685 3 11 4.34315 11 6V8C11 9.65685 9.65685 11 8 11H6C4.34315 11 3 9.65685 3 8V6ZM6 5C5.44772 5 5 5.44772 5 6V8C5 8.55228 5.44772 9 6 9H8C8.55228 9 9 8.55228 9 8V6C9 5.44772 8.55228 5 8 5H6ZM13 6C13 4.34315 14.3431 3 16 3H18C19.6569 3 21 4.34315 21 6V8C21 9.65685 19.6569 11 18 11H16C14.3431 11 13 9.65685 13 8V6ZM16 5C15.4477 5 15 5.44772 15 6V8C15 8.55228 15.4477 9 16 9H18C18.5523 9 19 8.55228 19 8V6C19 5.44772 18.5523 5 18 5H16ZM3 16C3 14.3431 4.34315 13 6 13H8C9.65685 13 11 14.3431 11 16V18C11 19.6569 9.65685 21 8 21H6C4.34315 21 3 19.6569 3 18V16ZM6 15C5.44772 15 5 15.4477 5 16V18C5 18.5523 5.44772 19 6 19H8C8.55228 19 9 18.5523 9 18V16C9 15.4477 8.55228 15 8 15H6ZM13 16C13 14.3431 14.3431 13 16 13H18C19.6569 13 21 14.3431 21 16V18C21 19.6569 19.6569 21 18 21H16C14.3431 21 13 19.6569 13 18V16ZM16 15C15.4477 15 15 15.4477 15 16V18C15 18.5523 15.4477 19 16 19H18C18.5523 19 19 18.5523 19 18V16C19 15.4477 18.5523 15 18 15H16Z"/>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('auth.logout_route') }}">
+                    <svg class="heroicon-solar-red" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 3.75C16.0858 3.75 15.75 4.08579 15.75 4.5C15.75 4.91421 16.0858 5.25 16.5 5.25H19.5C19.9142 5.25 20.25 5.58579 20.25 6V18C20.25 18.4142 19.9142 18.75 19.5 18.75H16.5C16.0858 18.75 15.75 19.0858 15.75 19.5C15.75 19.9142 16.0858 20.25 16.5 20.25H19.5C20.7426 20.25 21.75 19.2426 21.75 18V6C21.75 4.75736 20.7426 3.75 19.5 3.75H16.5ZM9.96967 7.96967C10.2626 7.67678 10.7374 7.67678 11.0303 7.96967L14.0303 10.9697C14.3232 11.2626 14.3232 11.7374 14.0303 12.0303L11.0303 15.0303C10.7374 15.3232 10.2626 15.3232 9.96967 15.0303C9.67678 14.7374 9.67678 14.2626 9.96967 13.9697L11.1893 12.75H4.5C4.08579 12.75 3.75 12.4142 3.75 12C3.75 11.5858 4.08579 11.25 4.5 11.25H11.1893L9.96967 10.0303C9.67678 9.73744 9.67678 9.26256 9.96967 7.96967Z"/>
+                    </svg>
+                    Logout
+                </a>
             </div>
         </header>
 
@@ -551,7 +858,12 @@
                             <option value="Female">Female</option>
                         </select>
                     </div>
-                    <button type="submit" class="manage-btn">Add Student</button>
+                    <button type="submit" class="manage-btn">
+                        <svg class="heroicon-solar-blue" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"/>
+                        </svg>
+                        Add Student
+                    </button>
                 </form>
             </div>
 
@@ -630,7 +942,12 @@
                             <strong>💡 Recommendation:</strong> Use the <strong>Full Excel Template</strong> for best experience - it includes instructions and formatting!
                         </div>
                     </div>
-                    <button type="submit" class="manage-btn">Upload Students</button>
+                    <button type="submit" class="manage-btn">
+                        <svg class="heroicon-solar-green" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M11.47 1.72a.75.75 0 011.06 0l3 3a.75.75 0 01-1.06 1.06L12 3.31 9.53 5.78a.75.75 0 01-1.06-1.06l3-3zm-3 9.56a.75.75 0 000 1.06L12 15.87l3.47-3.53a.75.75 0 111.06 1.06l-4 4.06a.75.75 0 01-1.06 0l-4-4.06a.75.75 0 010-1.06z"/>
+                        </svg>
+                        Upload Students
+                    </button>
                 </form>
             </div>
         </div>
@@ -683,7 +1000,12 @@
                             </select>
                         </div>
                         <div class="form-group filter-buttons">
-                            <button type="submit" class="filter-btn">Apply Filters</button>
+                            <button type="submit" class="filter-btn">
+                                <svg class="heroicon-solar-blue" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M3.792 2.938A.75.75 0 014.5 2.25h15a.75.75 0 01.708 1.063l-8.25 19.5a.75.75 0 01-1.416 0l-8.25-19.5a.75.75 0 01.5-.875z"/>
+                                </svg>
+                                Apply Filters
+                            </button>
                             <a href="{{ url_for('classteacher.manage_students') }}" class="reset-btn">Reset Filters</a>
                         </div>
                     </div>
@@ -703,8 +1025,18 @@
                         <!-- Delete Buttons -->
                         <div class="bulk-action-group">
                             <h4>Delete Actions</h4>
-                            <button type="button" class="delete-all-btn" onclick="deleteAllStudents()">Delete All Learners</button>
-                            <button type="button" class="delete-selected-btn" onclick="deleteSelectedStudents()">Delete Selected Learners</button>
+                            <button type="button" class="delete-all-btn" onclick="deleteAllStudents()">
+                                <svg class="heroicon-solar-red" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 00-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z"/>
+                                </svg>
+                                Delete All Learners
+                            </button>
+                            <button type="button" class="delete-selected-btn" onclick="deleteSelectedStudents()">
+                                <svg class="heroicon-solar-red" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.586 2.586A2 2 0 0010 2h4a2 2 0 011.414.586L17 4.5a.5.5 0 01-.5.5h-9a.5.5 0 01-.5-.5L8.586 2.586zM16 6v12a3 3 0 01-3 3H11a3 3 0 01-3-3V6h8zm-1.5 3a.5.5 0 00-1 0v6a.5.5 0 001 0V9zm-3 0a.5.5 0 00-1 0v6a.5.5 0 001 0V9z"/>
+                                </svg>
+                                Delete Selected Learners
+                            </button>
                         </div>
 
                         <!-- Bulk Edit Form -->
@@ -756,7 +1088,12 @@
                                         </div>
                                     </div>
 
-                                    <button type="button" class="update-btn" onclick="bulkEditStudents()">Apply Changes</button>
+                                    <button type="button" class="update-btn" onclick="bulkEditStudents()">
+                                        <svg class="heroicon-solar-green" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M20.25 12c0 4.556-3.694 8.25-8.25 8.25S3.75 16.556 3.75 12 7.444 3.75 12 3.75s8.25 3.694 8.25 8.25zm-11.03-2.47a.75.75 0 010 1.06l2.25 2.25a.75.75 0 001.06 0l4.5-4.5a.75.75 0 00-1.06-1.06L12 11.25l-1.72-1.72a.75.75 0 00-1.06 0z"/>
+                                        </svg>
+                                        Apply Changes
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -771,7 +1108,10 @@
                             <i class="fa fa-download"></i> Download Current View
                         </a>
                         <a href="{{ url_for('classteacher.download_class_list', all_grades=1) }}" class="download-btn">
-                            <i class="fa fa-download"></i> Download All Students
+                            <svg class="heroicon-solar-green" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.25c.621 0 1.125.504 1.125 1.125v8.689l2.97-2.97a1.125 1.125 0 011.59 1.591l-4.875 4.875a1.123 1.123 0 01-1.59 0L6.345 10.685a1.125 1.125 0 111.59-1.591l2.97 2.97V3.375c0-.621.504-1.125 1.125-1.125zm-8.25 12.75a1.125 1.125 0 011.125-1.125h12.25a1.125 1.125 0 010 2.25H4.875a1.125 1.125 0 01-1.125-1.125z"/>
+                            </svg> 
+                            Download All Students
                         </a>
                         <div class="download-select">
                             <select id="download_grade" onchange="updateDownloadStreams()">
@@ -787,7 +1127,12 @@
                                 <!-- Will be populated by JavaScript -->
                             </select>
                         </div>
-                        <button type="button" class="download-btn" onclick="downloadSelectedClass()">Download Selected Class</button>
+                        <button type="button" class="download-btn" onclick="downloadSelectedClass()">
+                            <svg class="heroicon-solar-blue" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.25c.621 0 1.125.504 1.125 1.125v8.689l2.97-2.97a1.125 1.125 0 011.59 1.591l-4.875 4.875a1.123 1.123 0 01-1.59 0L6.345 10.685a1.125 1.125 0 111.59-1.591l2.97 2.97V3.375c0-.621.504-1.125 1.125-1.125zm-8.25 12.75a1.125 1.125 0 011.125-1.125h12.25a1.125 1.125 0 010 2.25H4.875a1.125 1.125 0 01-1.125-1.125z"/>
+                            </svg>
+                            Download Selected Class
+                        </button>
                     </div>
                 </div>
 
@@ -836,7 +1181,12 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                                     <input type="hidden" name="action" value="delete_student">
                                                     <input type="hidden" name="student_id" value="{{ student.id }}">
-                                                    <button type="submit" class="delete-btn">Delete</button>
+                                                    <button type="submit" class="delete-btn">
+                                                        <svg class="heroicon-solar-red" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 00-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z"/>
+                                                        </svg>
+                                                        Delete
+                                                    </button>
                                                 </form>
                                             </td>
                                         </tr>

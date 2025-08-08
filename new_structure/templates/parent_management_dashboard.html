@@ -5,9 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parent Management Dashboard - Hillview School</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/heroicons@2.0.18/24/outline/index.js" type="module"></script>
     <style>
-        .parent-dashboard {
+        :root {
+            /* Solar Theme Colors */
+            --solar-base03: #002b36;
+            --solar-base02: #073642;
+            --solar-base01: #586e75;
+            --solar-base00: #657b83;
+            --solar-base0: #839496;
+            --solar-base1: #93a1a1;
+            --solar-base2: #eee8d5;
+            --solar-base3: #fdf6e3;
+            --solar-yellow: #b58900;
+            --solar-orange: #cb4b16;
+            --solar-red: #dc322f;
+            --solar-magenta: #d33682;
+            --solar-violet: #6c71c4;
+            --solar-blue: #268bd2;
+            --solar-cyan: #2aa198;
+            --solar-green: #859900;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--solar-base3) 0%, var(--solar-base2) 100%);
+            color: var(--solar-base02);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
             padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
@@ -71,9 +98,11 @@
         }
         
         .action-icon {
-            font-size: 3em;
-            color: #667eea;
-            margin-bottom: 15px;
+            width: 32px;
+            height: 32px;
+            color: var(--solar-blue);
+            margin: 0 auto 15px;
+            display: block;
         }
         
         .action-title {
@@ -237,13 +266,354 @@
         .alert-item:last-child {
             border-bottom: none;
         }
+        
+        /* Enhanced Filters and Search */
+        .filters-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        .filter-input {
+            padding: 10px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .filters-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        
+        .btn-filter {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-filter:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-clear {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-clear:hover {
+            background: #5a6268;
+        }
+        
+        .btn-export {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-export:hover {
+            background: #218838;
+        }
+        
+        /* Enhanced Lists */
+        .enhanced-list {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .list-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .list-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .select-all-btn {
+            background: #17a2b8;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .select-all-btn:hover {
+            background: #138496;
+        }
+        
+        .bulk-action-btn {
+            background: #fd7e14;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .bulk-action-btn:hover {
+            background: #e8680c;
+        }
+        
+        .bulk-action-btn.show {
+            display: inline-block;
+        }
+        
+        .enhanced-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .enhanced-table th {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 2px solid #e1e5e9;
+        }
+        
+        .enhanced-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+        
+        .enhanced-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .student-checkbox {
+            margin-right: 10px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+        
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #667eea;
+            border: 1px solid #e1e5e9;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination a:hover {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .pagination .current {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .pagination .disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .per-page-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .modal-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+        
+        .search-parent-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .parent-search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .parent-option {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.3s ease;
+        }
+        
+        .parent-option:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .parent-option.selected {
+            background-color: #e3f2fd;
+            border-left: 4px solid #667eea;
+        }
+        
+        /* Icon styling fixes */
+        .section-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--solar-blue);
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .btn-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .btn-small-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
     <div class="parent-dashboard">
         <!-- Header -->
         <div class="dashboard-header">
-            <h1><i class="fas fa-user-friends"></i> Parent Management Dashboard</h1>
+            <h1>
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                Parent Management Dashboard
+            </h1>
             <p>Manage parent accounts and student-parent relationships</p>
         </div>
 
@@ -270,24 +640,30 @@
         <!-- Quick Actions -->
         <div class="actions-grid">
             <div class="action-card">
-                <div class="action-icon">
-                    <i class="fas fa-user-plus"></i>
-                </div>
+                <svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                </svg>
                 <div class="action-title">Add New Parent</div>
                 <div class="action-desc">Create a new parent account and set up login credentials</div>
                 <a href="{{ url_for('parent_management.add_parent') }}" class="btn-primary">
-                    <i class="fas fa-plus"></i> Add Parent
+                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Add Parent
                 </a>
             </div>
             
             <div class="action-card">
-                <div class="action-icon">
-                    <i class="fas fa-link"></i>
-                </div>
+                <svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                </svg>
                 <div class="action-title">Link Parent & Student</div>
                 <div class="action-desc">Connect existing parents with their children in the system</div>
                 <a href="{{ url_for('parent_management.link_parent_student') }}" class="btn-primary">
-                    <i class="fas fa-link"></i> Create Link
+                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                    </svg>
+                    Create Link
                 </a>
             </div>
         </div>
@@ -296,7 +672,10 @@
         {% if recent_parents %}
         <div class="recent-parents">
             <h2 class="section-title">
-                <i class="fas fa-clock"></i> Recent Parents
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Recent Parents
             </h2>
             <ul class="parent-list">
                 {% for parent in recent_parents %}
@@ -313,7 +692,11 @@
                             {{ 'Verified' if parent.is_verified else 'Unverified' }}
                         </span>
                         <a href="{{ url_for('parent_management.view_parent', parent_id=parent.id) }}" class="btn-view">
-                            <i class="fas fa-eye"></i> View
+                            <svg class="btn-small-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            View
                         </a>
                     </div>
                 </li>
@@ -322,58 +705,350 @@
         </div>
         {% endif %}
 
-        <!-- Alerts -->
-        <div class="alerts-section">
-            {% if parents_without_children %}
-            <div class="alert-card">
-                <div class="alert-title">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Parents Without Children ({{ parents_without_children|length }})
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <h3 class="section-title">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+                Advanced Filters
+            </h3>
+            <form method="GET" id="filtersForm">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Search</label>
+                        <input type="text" name="search" class="filter-input" 
+                               placeholder="Name, email, or admission number..." 
+                               value="{{ current_filters.search_query }}">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Grade</label>
+                        <select name="grade_filter" class="filter-input">
+                            <option value="">All Grades</option>
+                            {% for grade in all_grades %}
+                            <option value="{{ grade.id }}" 
+                                    {{ 'selected' if current_filters.grade_filter == grade.id|string }}>
+                                {{ grade.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Stream</label>
+                        <select name="stream_filter" class="filter-input">
+                            <option value="">All Streams</option>
+                            {% for stream in all_streams %}
+                            <option value="{{ stream.id }}" 
+                                    {{ 'selected' if current_filters.stream_filter == stream.id|string }}>
+                                {{ stream.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Education Level</label>
+                        <select name="education_level_filter" class="filter-input">
+                            <option value="">All Levels</option>
+                            {% for level in education_levels %}
+                            <option value="{{ level }}" 
+                                    {{ 'selected' if current_filters.education_level_filter == level }}>
+                                {{ level.title() }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Items per page</label>
+                        <select name="per_page" class="filter-input">
+                            <option value="10" {{ 'selected' if current_filters.per_page == 10 }}>10</option>
+                            <option value="25" {{ 'selected' if current_filters.per_page == 25 }}>25</option>
+                            <option value="50" {{ 'selected' if current_filters.per_page == 50 }}>50</option>
+                            <option value="100" {{ 'selected' if current_filters.per_page == 100 }}>100</option>
+                        </select>
+                    </div>
                 </div>
-                <ul class="alert-list">
-                    {% for parent in parents_without_children[:5] %}
-                    <li class="alert-item">
-                        {{ parent.get_full_name() }} ({{ parent.email }})
-                        <a href="{{ url_for('parent_management.link_parent_student') }}" style="float: right; color: #667eea;">Link</a>
-                    </li>
-                    {% endfor %}
-                    {% if parents_without_children|length > 5 %}
-                    <li class="alert-item" style="text-align: center; font-style: italic;">
-                        ... and {{ parents_without_children|length - 5 }} more
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-            {% endif %}
+                
+                <div class="filters-actions">
+                    <a href="{{ url_for('parent_management.export_unlinked_data') }}" class="btn-export">
+                        <svg class="btn-small-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Export Data
+                    </a>
+                    <button type="button" class="btn-clear" onclick="clearFilters()">
+                        <svg class="btn-small-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Clear
+                    </button>
+                    <button type="submit" class="btn-filter">
+                        <svg class="btn-small-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
 
-            {% if students_without_parents %}
-            <div class="alert-card">
-                <div class="alert-title">
-                    <i class="fas fa-user-graduate"></i>
-                    Students Without Parents ({{ students_without_parents|length }})
+        <!-- Enhanced Students Without Parents List -->
+        {% if students_without_parents %}
+        <div class="enhanced-list">
+            <div class="list-header">
+                <div class="list-title">
+                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    Students Without Parents ({{ total_students_without_parents }})
                 </div>
-                <ul class="alert-list">
-                    {% for student in students_without_parents[:5] %}
-                    <li class="alert-item">
-                        {{ student.name }} ({{ student.admission_number }})
-                        <a href="{{ url_for('parent_management.link_parent_student') }}" style="float: right; color: #667eea;">Link</a>
-                    </li>
+                <div class="list-actions">
+                    <button type="button" class="select-all-btn" onclick="toggleSelectAll('students')">
+                        <svg class="btn-small-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Select All
+                    </button>
+                    <button type="button" class="bulk-action-btn" id="bulkLinkBtn" onclick="openBulkLinkModal()">
+                        <svg class="btn-small-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                        </svg>
+                        Bulk Link Selected
+                    </button>
+                </div>
+            </div>
+            
+            <table class="enhanced-table">
+                <thead>
+                    <tr>
+                        <th width="5%">
+                            <input type="checkbox" id="selectAllStudents" onchange="toggleSelectAll('students')">
+                        </th>
+                        <th>Student Name</th>
+                        <th>Admission Number</th>
+                        <th>Grade</th>
+                        <th>Stream</th>
+                        <th>Education Level</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student, grade, stream in students_without_parents %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="student-checkbox" value="{{ student.id }}" 
+                                   onchange="updateBulkActionButton()">
+                        </td>
+                        <td><strong>{{ student.name }}</strong></td>
+                        <td>{{ student.admission_number }}</td>
+                        <td>{{ grade.name }}</td>
+                        <td>{{ stream.name }}</td>
+                        <td>{{ grade.education_level or 'N/A' }}</td>
+                        <td>
+                            <a href="{{ url_for('parent_management.link_parent_student') }}?student_id={{ student.id }}" 
+                               class="btn-view">
+                                <svg class="btn-small-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                </svg>
+                                Link
+                            </a>
+                        </td>
+                    </tr>
                     {% endfor %}
-                    {% if students_without_parents|length > 5 %}
-                    <li class="alert-item" style="text-align: center; font-style: italic;">
-                        ... and {{ students_without_parents|length - 5 }} more
-                    </li>
+                </tbody>
+            </table>
+            
+            <!-- Pagination for Students -->
+            {% if students_pagination.pages > 1 %}
+            <div class="pagination">
+                {% if students_pagination.has_prev %}
+                    <a href="{{ url_for('parent_management.dashboard', students_page=students_pagination.prev_num, **current_filters) }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                {% else %}
+                    <span class="disabled"><i class="fas fa-chevron-left"></i> Previous</span>
+                {% endif %}
+                
+                {% for page_num in students_pagination.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != students_pagination.page %}
+                            <a href="{{ url_for('parent_management.dashboard', students_page=page_num, **current_filters) }}">{{ page_num }}</a>
+                        {% else %}
+                            <span class="current">{{ page_num }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span>...</span>
                     {% endif %}
-                </ul>
+                {% endfor %}
+                
+                {% if students_pagination.has_next %}
+                    <a href="{{ url_for('parent_management.dashboard', students_page=students_pagination.next_num, **current_filters) }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% else %}
+                    <span class="disabled">Next <i class="fas fa-chevron-right"></i></span>
+                {% endif %}
+                
+                <div class="per-page-selector">
+                    <span>Showing {{ students_pagination.per_page * (students_pagination.page - 1) + 1 }} - 
+                          {{ students_pagination.per_page * (students_pagination.page - 1) + students_pagination.items|length }} 
+                          of {{ students_pagination.total }}</span>
+                </div>
             </div>
             {% endif %}
         </div>
+        {% endif %}
+
+        <!-- Enhanced Parents Without Children List -->
+        {% if parents_without_children %}
+        <div class="enhanced-list">
+            <div class="list-header">
+                <div class="list-title">
+                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                    </svg>
+                    Parents Without Children ({{ total_parents_without_children }})
+                </div>
+            </div>
+            
+            <table class="enhanced-table">
+                <thead>
+                    <tr>
+                        <th>Parent Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Verified</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for parent in parents_without_children %}
+                    <tr>
+                        <td><strong>{{ parent.get_full_name() }}</strong></td>
+                        <td>{{ parent.email }}</td>
+                        <td>{{ parent.phone or 'N/A' }}</td>
+                        <td>
+                            <span class="status-badge {{ 'status-active' if parent.is_active else 'status-inactive' }}">
+                                {{ 'Active' if parent.is_active else 'Inactive' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge {{ 'status-verified' if parent.is_verified else 'status-unverified' }}">
+                                {{ 'Yes' if parent.is_verified else 'No' }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('parent_management.link_parent_student') }}?parent_id={{ parent.id }}" 
+                               class="btn-view">
+                                <i class="fas fa-link"></i> Link
+                            </a>
+                            <a href="{{ url_for('parent_management.view_parent', parent_id=parent.id) }}" 
+                               class="btn-view" style="margin-left: 5px;">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Pagination for Parents -->
+            {% if parents_pagination.pages > 1 %}
+            <div class="pagination">
+                {% if parents_pagination.has_prev %}
+                    <a href="{{ url_for('parent_management.dashboard', parents_page=parents_pagination.prev_num, **current_filters) }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                {% else %}
+                    <span class="disabled"><i class="fas fa-chevron-left"></i> Previous</span>
+                {% endif %}
+                
+                {% for page_num in parents_pagination.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != parents_pagination.page %}
+                            <a href="{{ url_for('parent_management.dashboard', parents_page=page_num, **current_filters) }}">{{ page_num }}</a>
+                        {% else %}
+                            <span class="current">{{ page_num }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span>...</span>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if parents_pagination.has_next %}
+                    <a href="{{ url_for('parent_management.dashboard', parents_page=parents_pagination.next_num, **current_filters) }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% else %}
+                    <span class="disabled">Next <i class="fas fa-chevron-right"></i></span>
+                {% endif %}
+                
+                <div class="per-page-selector">
+                    <span>Showing {{ parents_pagination.per_page * (parents_pagination.page - 1) + 1 }} - 
+                          {{ parents_pagination.per_page * (parents_pagination.page - 1) + parents_pagination.items|length }} 
+                          of {{ parents_pagination.total }}</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
         <!-- Back Button -->
         <div style="text-align: center; margin-top: 30px;">
             <a href="{{ url_for('admin.dashboard') }}" class="btn-primary">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Dashboard
             </a>
+        </div>
+    </div>
+
+    <!-- Bulk Link Modal -->
+    <div id="bulkLinkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Bulk Link Students to Parent</h3>
+                <span class="close" onclick="closeBulkLinkModal()">&times;</span>
+            </div>
+            <div id="selectedStudentsInfo"></div>
+            
+            <div style="margin: 20px 0;">
+                <label class="filter-label">Search for Parent:</label>
+                <input type="text" id="parentSearchInput" class="search-parent-input" 
+                       placeholder="Type parent name or email..." onkeyup="searchParents()">
+                
+                <div id="parentSearchResults" class="parent-search-results" style="display: none;">
+                    <!-- Parent search results will appear here -->
+                </div>
+                
+                <div id="selectedParentInfo" style="display: none; margin-top: 15px; padding: 15px; background: #e8f5e8; border-radius: 8px;">
+                    <!-- Selected parent info will appear here -->
+                </div>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <label class="filter-label">Relationship Type:</label>
+                <select id="bulkRelationshipType" class="filter-input">
+                    <option value="parent">Parent</option>
+                    <option value="guardian">Guardian</option>
+                    <option value="relative">Relative</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px;">
+                <button type="button" class="btn-clear" onclick="closeBulkLinkModal()">Cancel</button>
+                <button type="button" class="btn-filter" onclick="performBulkLink()" id="performBulkLinkBtn" disabled>
+                    <svg class="btn-small-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                    </svg>
+                    Link Students
+                </button>
+            </div>
         </div>
     </div>
 
@@ -390,5 +1065,204 @@
             </div>
         {% endif %}
     {% endwith %}
+
+    <script>
+        let selectedParentId = null;
+        let selectedStudents = [];
+        
+        function clearFilters() {
+            // Clear all filter inputs
+            document.querySelectorAll('.filter-input').forEach(input => {
+                if (input.type === 'text') {
+                    input.value = '';
+                } else {
+                    input.selectedIndex = 0;
+                }
+            });
+            
+            // Submit the form to reload with cleared filters
+            document.getElementById('filtersForm').submit();
+        }
+        
+        function toggleSelectAll(type) {
+            const checkbox = document.getElementById('selectAll' + type.charAt(0).toUpperCase() + type.slice(1));
+            const checkboxes = document.querySelectorAll('.' + type.slice(0, -1) + '-checkbox');
+            
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+            });
+            
+            updateBulkActionButton();
+        }
+        
+        function updateBulkActionButton() {
+            const checkedBoxes = document.querySelectorAll('.student-checkbox:checked');
+            const bulkBtn = document.getElementById('bulkLinkBtn');
+            
+            if (checkedBoxes.length > 0) {
+                bulkBtn.classList.add('show');
+            } else {
+                bulkBtn.classList.remove('show');
+            }
+            
+            // Update select all checkbox state
+            const allCheckboxes = document.querySelectorAll('.student-checkbox');
+            const selectAllCheckbox = document.getElementById('selectAllStudents');
+            
+            if (checkedBoxes.length === allCheckboxes.length) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedBoxes.length > 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+        }
+        
+        function openBulkLinkModal() {
+            const checkedBoxes = document.querySelectorAll('.student-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert('Please select at least one student.');
+                return;
+            }
+            
+            selectedStudents = Array.from(checkedBoxes).map(cb => cb.value);
+            
+            // Show selected students info
+            const studentNames = Array.from(checkedBoxes).map(cb => {
+                const row = cb.closest('tr');
+                return row.cells[1].textContent.trim();
+            });
+            
+            document.getElementById('selectedStudentsInfo').innerHTML = `
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">
+                    <strong>Selected Students (${studentNames.length}):</strong><br>
+                    ${studentNames.join(', ')}
+                </div>
+            `;
+            
+            document.getElementById('bulkLinkModal').style.display = 'block';
+        }
+        
+        function closeBulkLinkModal() {
+            document.getElementById('bulkLinkModal').style.display = 'none';
+            selectedParentId = null;
+            document.getElementById('parentSearchInput').value = '';
+            document.getElementById('parentSearchResults').style.display = 'none';
+            document.getElementById('selectedParentInfo').style.display = 'none';
+            document.getElementById('performBulkLinkBtn').disabled = true;
+        }
+        
+        let searchTimeout;
+        function searchParents() {
+            clearTimeout(searchTimeout);
+            const query = document.getElementById('parentSearchInput').value.trim();
+            
+            if (query.length < 2) {
+                document.getElementById('parentSearchResults').style.display = 'none';
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                fetch(`{{ url_for('parent_management.search_parents') }}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const resultsDiv = document.getElementById('parentSearchResults');
+                        
+                        if (data.parents && data.parents.length > 0) {
+                            resultsDiv.innerHTML = data.parents.map(parent => `
+                                <div class="parent-option" onclick="selectParentForBulk(${parent.id}, '${parent.name}', '${parent.email}')">
+                                    <strong>${parent.name}</strong><br>
+                                    <small>${parent.email}</small>
+                                </div>
+                            `).join('');
+                            resultsDiv.style.display = 'block';
+                        } else {
+                            resultsDiv.innerHTML = '<div class="parent-option">No parents found</div>';
+                            resultsDiv.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error searching parents:', error);
+                    });
+            }, 300);
+        }
+        
+        function selectParentForBulk(id, name, email) {
+            selectedParentId = id;
+            document.getElementById('selectedParentInfo').innerHTML = `
+                <strong>Selected Parent:</strong><br>
+                ${name}<br>
+                <small>${email}</small>
+            `;
+            document.getElementById('selectedParentInfo').style.display = 'block';
+            document.getElementById('parentSearchResults').style.display = 'none';
+            document.getElementById('performBulkLinkBtn').disabled = false;
+        }
+        
+        function performBulkLink() {
+            if (!selectedParentId || selectedStudents.length === 0) {
+                alert('Please select a parent and students.');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('parent_id', selectedParentId);
+            formData.append('relationship_type', document.getElementById('bulkRelationshipType').value);
+            
+            selectedStudents.forEach(studentId => {
+                formData.append('student_ids[]', studentId);
+            });
+            
+            document.getElementById('performBulkLinkBtn').disabled = true;
+            document.getElementById('performBulkLinkBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Linking...';
+            
+            fetch('{{ url_for("parent_management.bulk_link_students") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload(); // Reload to see changes
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while linking students.');
+            })
+            .finally(() => {
+                closeBulkLinkModal();
+            });
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('bulkLinkModal');
+            if (event.target == modal) {
+                closeBulkLinkModal();
+            }
+        }
+        
+        // Auto-hide flash messages
+        setTimeout(function() {
+            const flashMessages = document.querySelector('.flash-messages');
+            if (flashMessages) {
+                flashMessages.style.opacity = '0';
+                flashMessages.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => flashMessages.remove(), 500);
+            }
+        }, 5000);
+        
+        // Initialize checkbox states
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBulkActionButton();
+        });
+    </script>
 </body>
 </html>

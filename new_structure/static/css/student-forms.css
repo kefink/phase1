@@ -1,0 +1,326 @@
+/* Student Dashboard - Forms Styles */
+
+/* Form controls */
+.form-control,
+input,
+textarea,
+select {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
+  color: var(--input-text);
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.form-control:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(42, 161, 152, 0.25);
+}
+
+.form-control::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--input-placeholder);
+}
+
+/* Form layout */
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -var(--spacing-sm);
+  margin-left: -var(--spacing-sm);
+}
+
+.form-row > .form-group {
+  padding-right: var(--spacing-sm);
+  padding-left: var(--spacing-sm);
+  flex: 1 0 0%;
+}
+
+/* Form labels */
+label {
+  display: inline-block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+  color: var(--text-bright);
+}
+
+/* Form help text */
+.form-text {
+  display: block;
+  margin-top: var(--spacing-xs);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Form validation */
+.is-valid {
+  border-color: var(--success) !important;
+}
+
+.is-invalid {
+  border-color: var(--danger) !important;
+}
+
+.invalid-feedback {
+  display: none;
+  width: 100%;
+  margin-top: var(--spacing-xs);
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+.was-validated .form-control:invalid ~ .invalid-feedback,
+.was-validated .form-control.is-invalid ~ .invalid-feedback {
+  display: block;
+}
+
+/* Form switches and checkboxes */
+.form-check {
+  position: relative;
+  display: block;
+  padding-left: 1.5rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.form-check-input {
+  position: absolute;
+  margin-top: 0.25rem;
+  margin-left: -1.5rem;
+  width: auto;
+}
+
+.form-check-label {
+  margin-bottom: 0;
+}
+
+.custom-control {
+  position: relative;
+  display: block;
+  min-height: 1.5rem;
+  padding-left: 2.5rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.custom-control-input {
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+}
+
+.custom-control-label {
+  position: relative;
+  margin-bottom: 0;
+  vertical-align: top;
+}
+
+.custom-control-label::before {
+  position: absolute;
+  top: 0.25rem;
+  left: -2.5rem;
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  pointer-events: none;
+  content: "";
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+}
+
+.custom-control-label::after {
+  position: absolute;
+  top: 0.25rem;
+  left: -2.5rem;
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  content: "";
+  background: no-repeat 50% / 50% 50%;
+}
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23fff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e");
+}
+
+.custom-switch {
+  padding-left: 3.5rem;
+}
+
+.custom-switch .custom-control-label::before {
+  left: -3.5rem;
+  width: 2rem;
+  border-radius: 1rem;
+}
+
+.custom-switch .custom-control-label::after {
+  top: calc(0.25rem + 2px);
+  left: calc(-3.5rem + 2px);
+  width: calc(1rem - 4px);
+  height: calc(1rem - 4px);
+  background-color: var(--input-border);
+  border-radius: 0.5rem;
+  transition: transform var(--transition-normal),
+    background-color var(--transition-normal);
+}
+
+.custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+  background-color: var(--input-bg);
+  transform: translateX(1rem);
+}
+
+/* File upload */
+.custom-file {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  height: calc(1.5em + var(--spacing-sm) * 2 + 2px);
+  margin-bottom: 0;
+}
+
+.custom-file-input {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: calc(1.5em + var(--spacing-sm) * 2 + 2px);
+  margin: 0;
+  opacity: 0;
+}
+
+.custom-file-label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  height: calc(1.5em + var(--spacing-sm) * 2 + 2px);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--input-text);
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
+}
+
+.custom-file-label::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: block;
+  height: calc(1.5em + var(--spacing-sm) * 2);
+  padding: var(--spacing-sm) var(--spacing-md);
+  line-height: 1.5;
+  color: var(--text-bright);
+  content: "Browse";
+  background-color: var(--bg-active);
+  border-left: 1px solid var(--input-border);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* Drag and drop file upload */
+.drag-drop-area {
+  border: 2px dashed var(--input-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.drag-drop-area:hover,
+.drag-drop-area.drag-over {
+  border-color: var(--primary);
+  background-color: rgba(42, 161, 152, 0.05);
+}
+
+.drag-drop-area .icon {
+  font-size: 2rem;
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-sm);
+}
+
+.drag-drop-area .text {
+  color: var(--text-secondary);
+}
+
+.drag-drop-area .text strong {
+  color: var(--text-bright);
+}
+
+/* Student-specific form styles */
+.assignment-form .form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.assignment-form label {
+  font-weight: 600;
+}
+
+.feedback-form textarea {
+  min-height: 120px;
+}
+
+.search-form {
+  position: relative;
+}
+
+.search-form .form-control {
+  padding-right: 2.5rem;
+}
+
+.search-form .search-icon {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* Form actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+@media (max-width: 576px) {
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-row > .form-group {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    margin-bottom: var(--spacing-sm);
+  }
+}

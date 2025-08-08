@@ -4,25 +4,61 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ page_title }} - {{ school_info.school_name|default('School Management System') }}</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
+    <!-- Heroicons - Premium SVG Icons (No external dependencies, guaranteed display) -->
     <style>
+      /* FORCE SOLAR THEME BACKGROUND - HIGHEST PRIORITY */
+      html, body {
+        background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #d6d2c4 100%) !important;
+        background-attachment: fixed !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 100vh !important;
+      }
+      
+      /* Universal page specific override */
+      .container, .main-container, .wrapper, div {
+        background: transparent !important;
+      }
+      
+      /* Heroicons SVG Icon Base Styles */
+      .heroicon {
+        display: inline-block;
+        width: 1.25rem;
+        height: 1.25rem;
+        fill: currentColor;
+        vertical-align: middle;
+      }
+
+      .heroicon-lg {
+        width: 1.8rem;
+        height: 1.8rem;
+      }
+
+      .heroicon-xl {
+        width: 2.5rem;
+        height: 2.5rem;
+      }
+
+      .heroicon-2xl {
+        width: 3rem;
+        height: 3rem;
+      }
+
+      /* Solar Theme Color Palette - Professional Academic Colors */
       :root {
-        --primary-color: #1f7d53;
-        --secondary-color: #18230f;
-        --accent-color: #4ade80;
-        --bg-primary: #ffffff;
-        --bg-secondary: #f8fafc;
-        --bg-tertiary: #f1f5f9;
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
-        --border-color: #e2e8f0;
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --error-color: #ef4444;
-        --info-color: #3b82f6;
+        --primary-color: #b58900;        /* Solar Yellow - Primary branding */
+        --secondary-color: #268bd2;      /* Solar Blue - Secondary actions */
+        --accent-color: #859900;         /* Solar Green - Success/positive */
+        --bg-primary: #fdf6e3;           /* Solar Base3 - Light background */
+        --bg-secondary: #eee8d5;         /* Solar Base2 - Secondary background */
+        --bg-tertiary: #93a1a1;          /* Solar Base1 - Tertiary elements */
+        --text-primary: #002b36;         /* Solar Base03 - Primary text */
+        --text-secondary: #586e75;       /* Solar Base01 - Secondary text */
+        --border-color: #93a1a1;         /* Solar Base1 - Borders */
+        --success-color: #859900;        /* Solar Green - Success states */
+        --warning-color: #cb4b16;        /* Solar Orange - Warning states */
+        --error-color: #dc322f;          /* Solar Red - Error states */
+        --info-color: #268bd2;           /* Solar Blue - Info states */
         --radius-sm: 0.375rem;
         --radius-md: 0.5rem;
         --radius-lg: 0.75rem;
@@ -36,6 +72,33 @@
         --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       }
 
+      /* Solar Theme Icon Coloring System */
+      .heroicon-navigation { color: #268bd2 !important; } /* Solar Blue */
+      .heroicon-management { color: #b58900 !important; } /* Solar Yellow */
+      .heroicon-students { color: #859900 !important; } /* Solar Green */
+      .heroicon-subjects { color: #cb4b16 !important; } /* Solar Orange */
+      .heroicon-teachers { color: #6c71c4 !important; } /* Solar Violet */
+      .heroicon-marks { color: #d33682 !important; } /* Solar Magenta */
+      .heroicon-reports { color: #2aa198 !important; } /* Solar Cyan */
+      .heroicon-config { color: #586e75 !important; } /* Solar Base01 */
+      .heroicon-success { color: #859900 !important; } /* Solar Green */
+      .heroicon-warning { color: #cb4b16 !important; } /* Solar Orange */
+      .heroicon-error { color: #dc322f !important; } /* Solar Red */
+
+      /* Enhanced icon styling with hover effects */
+      .card-icon,
+      .quick-action-icon,
+      .stat-icon {
+        transition: all 0.3s ease;
+      }
+
+      .card-icon:hover,
+      .quick-action-icon:hover {
+        transform: scale(1.1);
+        filter: brightness(1.2);
+      }
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -43,18 +106,51 @@
       }
 
       body {
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(
+          135deg,
+          #fdf6e3 0%,
+          #eee8d5 50%,
+          #d6d2c4 100%
+        ) !important;
         color: var(--text-primary);
         line-height: 1.6;
-        min-height: 100vh;
+        min-height: 100vh !important;
+        overflow-x: hidden;
+      }
+
+      /* Force Solar Theme Background - Maximum Specificity */
+      body.solar-theme {
+        background: linear-gradient(
+          135deg,
+          #fdf6e3 0%,
+          #eee8d5 50%,
+          #d6d2c4 100%
+        ) !important;
+        background-attachment: fixed !important;
+      }
+
+      html {
+        background: linear-gradient(
+          135deg,
+          #fdf6e3 0%,
+          #eee8d5 50%,
+          #d6d2c4 100%
+        ) !important;
+      }
       }
 
       /* Navigation */
       .navbar {
-        background: rgba(255, 255, 255, 0.95);
+        background: linear-gradient(
+          135deg,
+          #002b36 0%,
+          #073642 100%
+        );
         backdrop-filter: blur(10px);
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 2px solid #b58900;
         padding: var(--spacing-md) var(--spacing-xl);
         position: sticky;
         top: 0;
@@ -62,13 +158,17 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        box-shadow: 0 4px 16px rgba(0, 43, 54, 0.2);
       }
 
       .navbar-brand {
         font-size: 1.5rem;
         font-weight: 700;
-        color: var(--primary-color);
+        color: #fdf6e3;
         text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
       }
 
       .navbar-nav {
@@ -79,32 +179,41 @@
       }
 
       .nav-link {
-        color: var(--text-secondary);
+        color: #93a1a1;
         text-decoration: none;
         font-weight: 500;
         padding: var(--spacing-sm) var(--spacing-md);
         border-radius: var(--radius-md);
         transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
       }
 
       .nav-link:hover {
-        color: var(--primary-color);
-        background: var(--bg-secondary);
+        color: #fdf6e3;
+        background: rgba(181, 137, 0, 0.15);
+        transform: translateY(-1px);
+        border-color: rgba(181, 137, 0, 0.4);
       }
 
       .logout-btn {
-        background: var(--error-color);
+        background: #dc322f;
         color: white;
         padding: var(--spacing-sm) var(--spacing-md);
         border-radius: var(--radius-md);
         text-decoration: none;
         font-weight: 500;
         transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
       }
 
       .logout-btn:hover {
-        background: #dc2626;
+        background: #cb4b16;
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(220, 50, 47, 0.3);
       }
 
       /* Main Container */
@@ -112,6 +221,14 @@
         max-width: 1400px;
         margin: 0 auto;
         padding: var(--spacing-xl);
+        background: transparent !important;
+        min-height: 100vh;
+        border-radius: 0;
+      }
+
+      /* Force transparent container with maximum specificity */
+      body .container {
+        background: transparent !important;
       }
 
       /* Header */
@@ -144,18 +261,47 @@
 
       /* Cards */
       .card {
-        background: rgba(255, 255, 255, 0.9);
+        background: linear-gradient(
+          145deg,
+          rgba(253, 246, 227, 0.95) 0%,
+          rgba(238, 232, 213, 0.9) 100%
+        );
         backdrop-filter: blur(10px);
-        border: 1px solid var(--border-color);
+        border: 1px solid rgba(147, 161, 161, 0.2);
         border-radius: var(--radius-lg);
         padding: var(--spacing-lg);
-        box-shadow: var(--shadow-md);
+        box-shadow: 
+          0 8px 32px rgba(0, 43, 54, 0.1),
+          0 2px 8px rgba(0, 43, 54, 0.05),
+          inset 0 1px 0 rgba(253, 246, 227, 0.5);
         transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+        opacity: 0.6;
       }
 
       .card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
+        transform: translateY(-4px);
+        box-shadow: 
+          0 20px 40px rgba(0, 43, 54, 0.15),
+          0 8px 16px rgba(0, 43, 54, 0.1),
+          inset 0 1px 0 rgba(253, 246, 227, 0.8);
+        border-color: rgba(181, 137, 0, 0.3);
+      }
+
+      .card:hover::before {
+        opacity: 1;
+        background: linear-gradient(90deg, transparent, var(--primary-color), var(--accent-color), transparent);
       }
 
       .card-header {
@@ -182,6 +328,39 @@
       .stat-card {
         text-align: center;
         padding: var(--spacing-lg);
+        background: linear-gradient(
+          145deg,
+          rgba(253, 246, 227, 0.95) 0%,
+          rgba(238, 232, 213, 0.9) 100%
+        );
+        border: 1px solid rgba(147, 161, 161, 0.2);
+        border-radius: var(--radius-lg);
+        box-shadow: 
+          0 8px 32px rgba(0, 43, 54, 0.1),
+          0 2px 8px rgba(0, 43, 54, 0.05),
+          inset 0 1px 0 rgba(253, 246, 227, 0.5);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+        opacity: 0.6;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 
+          0 12px 24px rgba(0, 43, 54, 0.15),
+          0 4px 8px rgba(0, 43, 54, 0.1),
+          inset 0 1px 0 rgba(253, 246, 227, 0.8);
       }
 
       .stat-number {
@@ -211,31 +390,61 @@
       }
 
       .class-card {
-        background: rgba(255, 255, 255, 0.9);
-        border: 2px solid var(--border-color);
+        background: linear-gradient(
+          145deg,
+          rgba(253, 246, 227, 0.95) 0%,
+          rgba(238, 232, 213, 0.9) 100%
+        );
+        border: 2px solid rgba(181, 137, 0, 0.3);
         border-radius: var(--radius-lg);
         padding: var(--spacing-lg);
         cursor: pointer;
         transition: all 0.3s ease;
         text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 
+          0 4px 16px rgba(0, 43, 54, 0.08),
+          0 1px 4px rgba(0, 43, 54, 0.04),
+          inset 0 1px 0 rgba(253, 246, 227, 0.4);
+      }
+
+      .class-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #b58900, transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
       }
 
       .class-card:hover {
-        border-color: var(--primary-color);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
+        border-color: #268bd2;
+        transform: translateY(-4px);
+        box-shadow: 
+          0 12px 24px rgba(38, 139, 210, 0.15),
+          0 4px 8px rgba(38, 139, 210, 0.1),
+          inset 0 1px 0 rgba(253, 246, 227, 0.6);
+      }
+
+      .class-card:hover::before {
+        opacity: 1;
+        background: linear-gradient(90deg, transparent, #b58900, #268bd2, transparent);
       }
 
       .class-name {
         font-size: 1.25rem;
         font-weight: 600;
-        color: var(--primary-color);
+        color: #268bd2;
         margin-bottom: var(--spacing-sm);
       }
 
       .class-info {
         font-size: 0.875rem;
-        color: var(--text-secondary);
+        color: #586e75;
         margin-bottom: var(--spacing-sm);
       }
 
@@ -247,7 +456,7 @@
       }
 
       .action-btn {
-        background: var(--primary-color);
+        background: #b58900;
         color: white;
         border: none;
         padding: var(--spacing-xs) var(--spacing-sm);
@@ -258,23 +467,24 @@
       }
 
       .action-btn:hover {
-        background: #166534;
+        background: #cb4b16;
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(181, 137, 0, 0.3);
       }
 
       .action-btn.secondary {
-        background: var(--text-secondary);
+        background: #586e75;
       }
 
       .action-btn.secondary:hover {
-        background: var(--text-primary);
+        background: #002b36;
       }
 
       /* Loading States */
       .loading {
         text-align: center;
         padding: var(--spacing-xl);
-        color: var(--text-secondary);
+        color: #586e75;
       }
 
       .loading i {
@@ -331,7 +541,7 @@
       .management-category h3 {
         font-size: 1.5rem;
         font-weight: 600;
-        color: var(--primary-color);
+        color: #268bd2;
         margin-bottom: var(--spacing-lg);
         display: flex;
         align-items: center;
@@ -345,40 +555,70 @@
       }
 
       .quick-action-card {
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid var(--border-color);
+        background: linear-gradient(
+          145deg,
+          rgba(253, 246, 227, 0.95) 0%,
+          rgba(238, 232, 213, 0.9) 100%
+        );
+        border: 1px solid rgba(147, 161, 161, 0.2);
         border-radius: var(--radius-lg);
         padding: var(--spacing-lg);
         text-decoration: none;
         color: inherit;
         transition: all 0.3s ease;
         display: block;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 
+          0 4px 16px rgba(0, 43, 54, 0.08),
+          0 1px 4px rgba(0, 43, 54, 0.04),
+          inset 0 1px 0 rgba(253, 246, 227, 0.4);
+      }
+
+      .quick-action-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
       }
 
       .quick-action-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
-        border-color: var(--primary-color);
+        transform: translateY(-4px);
+        box-shadow: 
+          0 12px 24px rgba(0, 43, 54, 0.12),
+          0 4px 8px rgba(0, 43, 54, 0.08),
+          inset 0 1px 0 rgba(253, 246, 227, 0.6);
+        border-color: rgba(181, 137, 0, 0.4);
         text-decoration: none;
         color: inherit;
       }
 
+      .quick-action-card:hover::before {
+        opacity: 0.8;
+        background: linear-gradient(90deg, transparent, #b58900, #268bd2, transparent);
+      }
+
       .quick-action-icon {
         font-size: 2rem;
-        color: var(--primary-color);
+        color: #b58900;
         margin-bottom: var(--spacing-sm);
       }
 
       .quick-action-title {
         font-size: 1.125rem;
         font-weight: 600;
-        color: var(--text-primary);
+        color: #002b36;
         margin-bottom: var(--spacing-xs);
       }
 
       .quick-action-desc {
         font-size: 0.875rem;
-        color: var(--text-secondary);
+        color: #586e75;
         margin: 0;
       }
 
@@ -390,7 +630,7 @@
       .section-header h2 {
         font-size: 2rem;
         font-weight: 600;
-        color: var(--primary-color);
+        color: #268bd2;
         margin-bottom: var(--spacing-sm);
         display: flex;
         align-items: center;
@@ -399,7 +639,7 @@
       }
 
       .section-header p {
-        color: var(--text-secondary);
+        color: #586e75;
         font-size: 1rem;
       }
 
@@ -408,16 +648,16 @@
         text-align: center;
       }
       .text-success {
-        color: var(--success-color);
+        color: #859900;
       }
       .text-warning {
-        color: var(--warning-color);
+        color: #b58900;
       }
       .text-error {
-        color: var(--error-color);
+        color: #dc322f;
       }
       .text-info {
-        color: var(--info-color);
+        color: #268bd2;
       }
       .mb-0 {
         margin-bottom: 0;
@@ -436,21 +676,35 @@
       }
     </style>
   </head>
-  <body>
+  <body class="solar-theme">
     <!-- Navigation -->
     <nav class="navbar">
       <a href="{{ url_for('admin.dashboard') }}" class="navbar-brand">
-        <i class="fas fa-school"></i> {{ school_info.school_name|default('School Management System') }}
+        <!-- Heroicon: academic-cap (solid) - School icon -->
+        <svg class="heroicon heroicon-management" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M11.7 2.805a.75.75 0 01.6 0A60.65 60.65 0 0122.83 8.72a.75.75 0 01-.231 1.337 49.949 49.949 0 00-9.902 3.912l-.003.002-.34.18a.75.75 0 01-.707 0A50.009 50.009 0 007.5 12.174v-.224c0-.131.067-.248.172-.311a54.614 54.614 0 014.653-2.52.75.75 0 00-.65-1.352 56.129 56.129 0 00-4.78 2.589 1.858 1.858 0 00-.859 1.228 49.803 49.803 0 00-4.634-1.527.75.75 0 01-.231-1.337A60.653 60.653 0 0111.7 2.805z"/>
+          <path d="M13.06 15.473a48.45 48.45 0 017.666-3.282c.134 1.414.22 2.843.255 4.285a.75.75 0 01-.46.71 47.878 47.878 0 00-8.105 4.342.75.75 0 01-.832 0 47.877 47.877 0 00-8.104-4.342.75.75 0 01-.461-.71c.035-1.442.121-2.87.255-4.286A48.4 48.4 0 016 13.18v1.27a1.5 1.5 0 00-.14 2.508c-.09.38-.222.753-.397 1.11.452.213.901.434 1.346.661a6.729 6.729 0 00.551-1.608 1.5 1.5 0 00.14-2.67v-.645a48.549 48.549 0 013.44 1.668 2.25 2.25 0 002.12 0z"/>
+          <path d="M4.462 19.462c.42-.419.753-.89 1-1.394.453.213.902.434 1.347.661a6.743 6.743 0 01-1.286 1.794.75.75 0 11-1.06-1.06z"/>
+        </svg>
+        {{ school_info.school_name|default('School Management System') }}
       </a>
       <ul class="navbar-nav">
         <li>
           <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
-            <i class="fas fa-tachometer-alt"></i> Dashboard
+            <!-- Heroicon: chart-bar-square (solid) - Dashboard icon -->
+            <svg class="heroicon heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm4.5 7.5a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zm3.75-1.5a.75.75 0 00-1.5 0v4.5a.75.75 0 001.5 0V12zm3.75-3a.75.75 0 00-1.5 0v7.5a.75.75 0 001.5 0V9z" clip-rule="evenodd"/>
+            </svg>
+            Dashboard
           </a>
         </li>
         <li>
           <a href="{{ url_for('universal.dashboard') }}" class="nav-link">
-            <i class="fas fa-users-cog"></i> Universal Access
+            <!-- Heroicon: users-cog (solid) - Universal Access icon -->
+            <svg class="heroicon heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z" clip-rule="evenodd"/>
+            </svg>
+            Universal Access
           </a>
         </li>
         <li>
@@ -458,12 +712,20 @@
             href="{{ url_for('permission.manage_permissions') }}"
             class="nav-link"
           >
-            <i class="fas fa-key"></i> Permissions
+            <!-- Heroicon: key (solid) - Permissions icon -->
+            <svg class="heroicon heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M15.75 1.5a6.75 6.75 0 00-6.651 7.906c.067.39-.032.717-.221.906l-6.5 6.499a3 3 0 00-.878 2.121v2.818c0 .414.336.75.75.75H6a.75.75 0 00.75-.75v-1.5h1.5A.75.75 0 009 19.5V18h1.5a.75.75 0 00.53-.22l2.658-2.658c.19-.189.517-.288.906-.22A6.75 6.75 0 1015.75 1.5zm1.5 3a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>
+            </svg>
+            Permissions
           </a>
         </li>
         <li>
           <a href="{{ url_for('auth.logout_route') }}" class="logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Logout
+            <!-- Heroicon: arrow-right-on-rectangle (solid) - Logout icon -->
+            <svg class="heroicon heroicon-error" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm10.72 4.72a.75.75 0 011.06 0l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H9a.75.75 0 010-1.5h10.94l-1.72-1.72a.75.75 0 010-1.06z" clip-rule="evenodd"/>
+            </svg>
+            Logout
           </a>
         </li>
       </ul>
@@ -474,7 +736,10 @@
       <!-- Page Header -->
       <div class="page-header">
         <h1 class="page-title">
-          <i class="fas fa-users-cog"></i>
+          <!-- Heroicon: cog-6-tooth (solid) - Universal Class Management icon -->
+          <svg class="heroicon heroicon-xl heroicon-management" fill="currentColor" viewBox="0 0 24 24">
+            <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.570.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348L13.928 3.817c-.151-.904-.933-1.567-1.85-1.567h-1.844zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd"/>
+          </svg>
           Universal Class Management
         </h1>
         <p class="page-subtitle">
@@ -519,7 +784,10 @@
       <div class="management-hub">
         <div class="section-header">
           <h2>
-            <i class="fas fa-cogs"></i>
+            <!-- Heroicon: cog-6-tooth (solid) - Comprehensive Management Hub -->
+            <svg class="heroicon heroicon-lg heroicon-management" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.570.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348L13.928 3.817c-.151-.904-.933-1.567-1.85-1.567h-1.844zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd"/>
+            </svg>
             Comprehensive Management Hub
           </h2>
           <p>Access all classteacher functions with universal permissions</p>
@@ -527,14 +795,23 @@
 
         <!-- Core Management Functions -->
         <div class="management-category">
-          <h3><i class="fas fa-users"></i> Student Management</h3>
+          <h3>
+            <!-- Heroicon: users (solid) - Student Management -->
+            <svg class="heroicon heroicon-lg heroicon-students" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z" clip-rule="evenodd"/>
+            </svg>
+            Student Management
+          </h3>
           <div class="quick-actions-grid">
             <a
               href="{{ url_for('universal.proxy_manage_students') }}"
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-users"></i>
+                <!-- Heroicon: users (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-students" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Manage Students</h4>
               <p class="quick-action-desc">
@@ -547,7 +824,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-download"></i>
+                <!-- Heroicon: arrow-down-tray (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M12 2.25a.75.75 0 01.75.75v11.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3a.75.75 0 01.75-.75zm-9 13.5a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Student Template</h4>
               <p class="quick-action-desc">Download student upload template</p>
@@ -558,7 +838,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-list"></i>
+                <!-- Heroicon: list-bullet (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-reports" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M2.625 6.75a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875 0A.75.75 0 018.25 6h12a.75.75 0 010 1.5h-12a.75.75 0 01-.75-.75zM2.625 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zM7.5 12a.75.75 0 01.75-.75h12a.75.75 0 010 1.5h-12A.75.75 0 017.5 12zm-4.875 5.25a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875 0a.75.75 0 01.75-.75h12a.75.75 0 010 1.5h-12a.75.75 0 01-.75-.75z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Class Lists</h4>
               <p class="quick-action-desc">Export class lists as CSV</p>
@@ -568,14 +851,23 @@
 
         <!-- Subject Management -->
         <div class="management-category">
-          <h3><i class="fas fa-book"></i> Subject Management</h3>
+          <h3>
+            <!-- Heroicon: book-open (solid) - Subject Management -->
+            <svg class="heroicon heroicon-lg heroicon-subjects" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M11.25 4.533A9.707 9.707 0 006 3a9.735 9.735 0 00-3.25.555.75.75 0 00-.5.707v14.25a.75.75 0 001 .707A8.237 8.237 0 016 18.75c1.995 0 3.823.707 5.25 1.886V4.533zM12.75 20.636A8.214 8.214 0 0118 18.75c.966 0 1.89.166 2.75.47a.75.75 0 001-.708V4.262a.75.75 0 00-.5-.707A9.735 9.735 0 0018 3a9.707 9.707 0 00-5.25 1.533v16.103z"/>
+            </svg>
+            Subject Management
+          </h3>
           <div class="quick-actions-grid">
             <a
               href="{{ url_for('universal.proxy_manage_subjects') }}"
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-book"></i>
+                <!-- Heroicon: book-open (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-subjects" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M11.25 4.533A9.707 9.707 0 006 3a9.735 9.735 0 00-3.25.555.75.75 0 00-.5.707v14.25a.75.75 0 001 .707A8.237 8.237 0 016 18.75c1.995 0 3.823.707 5.25 1.886V4.533zM12.75 20.636A8.214 8.214 0 0118 18.75c.966 0 1.89.166 2.75.47a.75.75 0 001-.708V4.262a.75.75 0 00-.5-.707A9.735 9.735 0 0018 3a9.707 9.707 0 00-5.25 1.533v16.103z"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Manage Subjects</h4>
               <p class="quick-action-desc">Configure subjects and curriculum</p>
@@ -586,7 +878,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-download"></i>
+                <!-- Heroicon: arrow-down-tray (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M12 2.25a.75.75 0 01.75.75v11.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3a.75.75 0 01.75-.75zm-9 13.5a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Subject Template</h4>
               <p class="quick-action-desc">Download subject upload template</p>
@@ -597,7 +892,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-file-export"></i>
+                <!-- Heroicon: arrow-up-tray (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-reports" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M11.47 2.47a.75.75 0 011.06 0l4.5 4.5a.75.75 0 01-1.06 1.06l-3.22-3.22V16.5a.75.75 0 01-1.5 0V4.81L8.03 8.03a.75.75 0 01-1.06-1.06l4.5-4.5zM3 15.75a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Export Subjects</h4>
               <p class="quick-action-desc">Export subjects as CSV/Excel</p>
@@ -607,14 +905,25 @@
 
         <!-- Teacher Management -->
         <div class="management-category">
-          <h3><i class="fas fa-chalkboard-teacher"></i> Teacher Management</h3>
+          <h3>
+            <!-- Heroicon: academic-cap (solid) - Teacher Management -->
+            <svg class="heroicon heroicon-lg heroicon-teachers" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M11.7 2.805a.75.75 0 01.6 0A60.65 60.65 0 0122.83 8.72a.75.75 0 01-.231 1.337 49.949 49.949 0 00-9.902 3.912l-.003.002-.34.18a.75.75 0 01-.707 0A50.009 50.009 0 007.5 12.174v-.224c0-.131.067-.248.172-.311a54.614 54.614 0 014.653-2.52.75.75 0 00-.65-1.352 56.129 56.129 0 00-4.78 2.589 1.858 1.858 0 00-.859 1.228 49.803 49.803 0 00-4.634-1.527.75.75 0 01-.231-1.337A60.653 60.653 0 0111.7 2.805z"/>
+              <path d="M13.06 15.473a48.45 48.45 0 017.666-3.282c.134 1.414.22 2.843.255 4.285a.75.75 0 01-.46.71 47.878 47.878 0 00-8.105 4.342.75.75 0 01-.832 0 47.877 47.877 0 00-8.104-4.342.75.75 0 01-.461-.71c.035-1.442.121-2.87.255-4.286A48.4 48.4 0 016 13.18v1.27a1.5 1.5 0 00-.14 2.508c-.09.38-.222.753-.397 1.11.452.213.901.434 1.346.661a6.729 6.729 0 00.551-1.608 1.5 1.5 0 00.14-2.67v-.645a48.549 48.549 0 013.44 1.668 2.25 2.25 0 002.12 0z"/>
+              <path d="M4.462 19.462c.42-.419.753-.89 1-1.394.453.213.902.434 1.347.661a6.743 6.743 0 01-1.286 1.794.75.75 0 11-1.06-1.06z"/>
+            </svg>
+            Teacher Management
+          </h3>
           <div class="quick-actions-grid">
             <a
               href="{{ url_for('universal.proxy_teacher_management_hub') }}"
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-users-cog"></i>
+                <!-- Heroicon: cog-6-tooth (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-config" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.570.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348L13.928 3.817c-.151-.904-.933-1.567-1.85-1.567h-1.844zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Teacher Hub</h4>
               <p class="quick-action-desc">Central teacher management</p>
@@ -625,7 +934,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-chalkboard-teacher"></i>
+                <!-- Heroicon: user-plus (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-teachers" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M5.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM2.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM18.75 7.5a.75.75 0 00-1.5 0v2.25H15a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H21a.75.75 0 000-1.5h-2.25V7.5z"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Manage Teachers</h4>
               <p class="quick-action-desc">Add, edit teacher records</p>
@@ -680,7 +992,11 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-tasks"></i>
+                <!-- Heroicon: clipboard-document-list (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-subjects" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M7.502 6h7.128A3.375 3.375 0 0118 9.375v9.375a3 3 0 003-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 00-.673-.05A3 3 0 0015 1.5h-1.5a3 3 0 00-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6zM13.5 3A1.5 1.5 0 0012 4.5h4.5A1.5 1.5 0 0015 3h-1.5z" clip-rule="evenodd"/>
+                  <path fill-rule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.839 1.875-1.875 1.875h-9.75A1.875 1.875 0 013 20.625V9.375zM6 12a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V12zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75zM6 15a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V15zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75zM6 18a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V18zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Assign Subjects</h4>
               <p class="quick-action-desc">Assign subjects to teachers</p>
@@ -691,7 +1007,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-exchange-alt"></i>
+                <!-- Heroicon: arrow-path-rounded-square (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-teachers" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-1.449.388 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.515a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.038-4.035z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Teacher Assignments</h4>
               <p class="quick-action-desc">Manage teacher transfers</p>
@@ -702,7 +1021,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-user-cog"></i>
+                <!-- Heroicon: user-circle (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-config" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Staff Report Settings</h4>
               <p class="quick-action-desc">
@@ -714,14 +1036,23 @@
 
         <!-- Marks Management -->
         <div class="management-category">
-          <h3><i class="fas fa-chart-line"></i> Marks Management</h3>
+          <h3>
+            <!-- Heroicon: chart-bar (solid) - Marks Management -->
+            <svg class="heroicon heroicon-lg heroicon-marks" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z"/>
+            </svg>
+            Marks Management
+          </h3>
           <div class="quick-actions-grid">
             <a
               href="{{ url_for('universal.proxy_classteacher_dashboard') }}"
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-upload"></i>
+                <!-- Heroicon: arrow-up-tray (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-marks" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M11.47 2.47a.75.75 0 011.06 0l4.5 4.5a.75.75 0 01-1.06 1.06l-3.22-3.22V16.5a.75.75 0 01-1.5 0V4.81L8.03 8.03a.75.75 0 01-1.06-1.06l4.5-4.5zM3 15.75a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Upload Marks</h4>
               <p class="quick-action-desc">Bulk marks upload interface</p>
@@ -732,7 +1063,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-download"></i>
+                <!-- Heroicon: arrow-down-tray (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M12 2.25a.75.75 0 01.75.75v11.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3a.75.75 0 01.75-.75zm-9 13.5a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Marks Template</h4>
               <p class="quick-action-desc">Download marks upload template</p>
@@ -743,7 +1077,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-users"></i>
+                <!-- Heroicon: user-group (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-teachers" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Collaborative Marks</h4>
               <p class="quick-action-desc">Multi-teacher marks system</p>
@@ -753,14 +1090,24 @@
 
         <!-- Reports Management -->
         <div class="management-category">
-          <h3><i class="fas fa-file-pdf"></i> Reports Management</h3>
+          <h3>
+            <!-- Heroicon: document-chart-bar (solid) - Reports Management -->
+            <svg class="heroicon heroicon-lg heroicon-reports" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625zM7.5 15a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 017.5 15zm.75 2.25a.75.75 0 000 1.5H12a.75.75 0 000-1.5H8.25z" clip-rule="evenodd"/>
+              <path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z"/>
+            </svg>
+            Reports Management
+          </h3>
           <div class="quick-actions-grid">
             <a
               href="{{ url_for('universal.proxy_view_all_reports') }}"
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-chart-bar"></i>
+                <!-- Heroicon: chart-bar-square (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-reports" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm4.5 7.5a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zm3.75-1.5a.75.75 0 00-1.5 0v4.5a.75.75 0 001.5 0V12zm3.75-3a.75.75 0 00-1.5 0v7.5a.75.75 0 001.5 0V9z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">View All Reports</h4>
               <p class="quick-action-desc">Browse and manage all reports</p>
@@ -771,7 +1118,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-layer-group"></i>
+                <!-- Heroicon: squares-2x2 (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-reports" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h2.25a3 3 0 013 3v2.25a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm9.75 0a3 3 0 013-3H18a3 3 0 013 3v2.25a3 3 0 01-3 3h-2.25a3 3 0 01-3-3V6zM3 15.75a3 3 0 013-3h2.25a3 3 0 013 3V18a3 3 0 01-3 3H6a3 3 0 01-3-3v-2.25zm9.75 0a3 3 0 013-3H18a3 3 0 013 3V18a3 3 0 01-3 3h-2.25a3 3 0 01-3-3v-2.25z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Grade Reports</h4>
               <p class="quick-action-desc">Multi-stream grade analysis</p>
@@ -782,7 +1132,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-cog"></i>
+                <!-- Heroicon: cog-8-tooth (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-config" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 01-.517.608 7.45 7.45 0 00-.478.198.798.798 0 01-.796-.064l-.453-.324a1.875 1.875 0 00-2.416.2l-.243.243a1.875 1.875 0 00-.2 2.416l.324.453a.798.798 0 01.064.796 7.448 7.448 0 00-.198.478.798.798 0 01-.608.517l-.55.092a1.875 1.875 0 00-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 01-.064.796l-.324.453a1.875 1.875 0 00.2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 01.796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 01.517-.608 7.52 7.52 0 00.478-.198.798.798 0 01.796.064l.453.324a1.875 1.875 0 002.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 01-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 001.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 01-.608-.517 7.507 7.507 0 00-.198-.478.798.798 0 01.064-.796l.324-.453a1.875 1.875 0 00-.2-2.416l-.243-.243a1.875 1.875 0 00-2.416-.2l-.453.324a.798.798 0 01-.796.064 7.462 7.462 0 00-.478-.198.798.798 0 01-.517-.608l-.091-.55a1.875 1.875 0 00-1.85-1.566h-.344zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Report Configuration</h4>
               <p class="quick-action-desc">
@@ -794,14 +1147,23 @@
 
         <!-- System Configuration -->
         <div class="management-category">
-          <h3><i class="fas fa-cogs"></i> System Configuration</h3>
+          <h3>
+            <!-- Heroicon: cog-6-tooth (solid) - System Configuration -->
+            <svg class="heroicon heroicon-lg heroicon-config" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.570.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348L13.928 3.817c-.151-.904-.933-1.567-1.85-1.567h-1.844zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd"/>
+            </svg>
+            System Configuration
+          </h3>
           <div class="quick-actions-grid">
             <a
               href="{{ url_for('universal.proxy_manage_grades_streams') }}"
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-layer-group"></i>
+                <!-- Heroicon: squares-plus (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-config" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M1.5 7.125c0-1.036.84-1.875 1.875-1.875h6c1.036 0 1.875.84 1.875 1.875v3.75c0 1.036-.84 1.875-1.875 1.875h-6A1.875 1.875 0 011.5 10.875v-3.75zm12 1.5c0-1.036.84-1.875 1.875-1.875h5.25c1.035 0 1.875.84 1.875 1.875v8.25c0 1.035-.84 1.875-1.875 1.875h-5.25a1.875 1.875 0 01-1.875-1.875v-8.25zm-10.5 9c0-1.036.84-1.875 1.875-1.875h6c1.036 0 1.875.84 1.875 1.875v2.25c0 1.035-.84 1.875-1.875 1.875h-6A1.875 1.875 0 013 19.875v-2.25z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Grades & Streams</h4>
               <p class="quick-action-desc">
@@ -814,7 +1176,11 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-calendar-alt"></i>
+                <!-- Heroicon: calendar-days (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-config" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12.75 12.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM7.5 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM8.25 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM9.75 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM10.5 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM12.75 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM14.25 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM15 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM16.5 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM15 12.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM16.5 13.5a.75.75 0 100-1.5.75.75 0 000 1.5z"/>
+                  <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Terms & Assessments</h4>
               <p class="quick-action-desc">
@@ -827,7 +1193,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-cog"></i>
+                <!-- Heroicon: adjustments-horizontal (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-config" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.75 12.75h1.5a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5zM12 6a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 0112 6zM12 18a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 0112 18zM3.75 6.75h1.5a.75.75 0 100-1.5h-1.5a.75.75 0 000 1.5zM5.25 18.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 010 1.5zM3 12a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 013 12zM9 3.75a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zM12.75 12a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0zM9 15.75a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Report Configuration</h4>
               <p class="quick-action-desc">
@@ -840,7 +1209,11 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-school"></i>
+                <!-- Heroicon: building-library (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-management" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M11.584 2.376a.75.75 0 01.832 0l9 6a.75.75 0 11-.832 1.248L12 3.901 3.416 9.624a.75.75 0 01-.832-1.248l9-6z"/>
+                  <path fill-rule="evenodd" d="M20.25 10.332v9.918H21a.75.75 0 010 1.5H3a.75.75 0 010-1.5h.75v-9.918a.75.75 0 01.634-.74L12 8.35l7.616 1.322a.75.75 0 01.634.74zm-7.5 2.418a.75.75 0 00-1.5 0v6.75a.75.75 0 001.5 0v-6.75zm3 0a.75.75 0 00-1.5 0v6.75a.75.75 0 001.5 0v-6.75zm-7.5 0a.75.75 0 00-1.5 0v6.75a.75.75 0 001.5 0v-6.75zm3 0a.75.75 0 00-1.5 0v6.75a.75.75 0 001.5 0v-6.75z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">School Setup</h4>
               <p class="quick-action-desc">
@@ -853,7 +1226,11 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-puzzle-piece"></i>
+                <!-- Heroicon: puzzle-piece (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-subjects" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M11.25 5.337c0-.355-.186-.676-.401-.959a1.647 1.647 0 01-.349-1.003c0-1.036 1.007-1.875 2.25-1.875S15 2.34 15 3.375c0 .369-.128.713-.349 1.003-.215.283-.401.604-.401.959 0 .332.278.598.61.578 1.91-.114 3.79.613 5.305 2.073a9.63 9.63 0 012.029 4.129c.238 1.063-.234 2.176-1.264 2.293a1.55 1.55 0 00-.988.503 1.55 1.55 0 00-.503.988c-.118 1.03-1.23 1.502-2.293 1.264a9.63 9.63 0 01-4.129-2.029c-1.46-1.515-2.187-3.395-2.073-5.305.02-.332-.246-.61-.578-.61z"/>
+                  <path d="M12.75 18.663c0 .355.186.676.401.959.215.29.349.634.349 1.003 0 1.036-1.007 1.875-2.25 1.875s-2.25-.839-2.25-1.875c0-.369.128-.713.349-1.003.215-.283.401-.604.401-.959 0-.332-.278-.598-.61-.578-1.91.114-3.79-.613-5.305-2.073a9.63 9.63 0 01-2.029-4.129c-.238-1.063.234-2.176 1.264-2.293a1.55 1.55 0 00.988-.503 1.55 1.55 0 00.503-.988c.118-1.03 1.23-1.502 2.293-1.264a9.63 9.63 0 014.129 2.029c1.46 1.515 2.187 3.395 2.073 5.305-.02.332.246.61.578.61z"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Subject Configuration</h4>
               <p class="quick-action-desc">
@@ -866,7 +1243,11 @@
         <!-- Enhanced Permission Management -->
         <div class="management-category">
           <h3>
-            <i class="fas fa-shield-alt"></i> Enhanced Permission Management
+            <!-- Heroicon: shield-check (solid) - Enhanced Permission Management -->
+            <svg class="heroicon heroicon-lg heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.814 3.051 10.92 7.835 13.745a.75.75 0 00.83 0C15.699 20.67 18.75 15.564 18.75 9.75a12.74 12.74 0 00-.635-4.235.75.75 0 00-.722-.516 11.209 11.209 0 01-7.877-3.08zM9.53 8.47a.75.75 0 00-1.06 1.06l1.72 1.72a.75.75 0 001.06 0l3.97-3.97a.75.75 0 00-1.06-1.06L10.22 9.22l-1.69-1.75z" clip-rule="evenodd"/>
+            </svg>
+            Enhanced Permission Management
           </h3>
           <div class="quick-actions-grid">
             <a
@@ -874,7 +1255,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-key"></i>
+                <!-- Heroicon: key (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M15.75 1.5a6.75 6.75 0 00-6.651 7.906c.067.39-.032.717-.221.906l-6.5 6.499a3 3 0 00-.878 2.121v2.818c0 .414.336.75.75.75H6a.75.75 0 00.75-.75v-1.5h1.5A.75.75 0 009 19.5V18h1.5a.75.75 0 00.53-.22l2.658-2.658c.19-.189.517-.288.906-.22A6.75 6.75 0 1015.75 1.5zm1.5 3a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Function Permissions</h4>
               <p class="quick-action-desc">
@@ -887,7 +1271,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-users-cog"></i>
+                <!-- Heroicon: user-group (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-teachers" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Class Permissions</h4>
               <p class="quick-action-desc">
@@ -900,7 +1287,10 @@
               class="quick-action-card"
             >
               <div class="quick-action-icon">
-                <i class="fas fa-inbox"></i>
+                <!-- Heroicon: inbox (solid) -->
+                <svg class="heroicon heroicon-2xl heroicon-warning" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clip-rule="evenodd"/>
+                </svg>
               </div>
               <h4 class="quick-action-title">Permission Requests</h4>
               <p class="quick-action-desc">
@@ -915,12 +1305,18 @@
       <div class="class-selector">
         <div class="card">
           <div class="card-header">
-            <i class="fas fa-school card-icon"></i>
+            <!-- Heroicon: building-office-2 (solid) - School class icon -->
+            <svg class="heroicon heroicon-lg card-icon heroicon-management" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z"/>
+            </svg>
             <h2 class="card-title">Select Class to Manage</h2>
           </div>
           <div class="class-grid" id="classGrid">
             <div class="loading">
-              <i class="fas fa-spinner"></i>
+              <!-- Heroicon: arrow-path (solid) - Loading spinner -->
+              <svg class="heroicon heroicon-xl heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-1.449.388 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.515a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.038-4.035z" clip-rule="evenodd"/>
+              </svg>
               <p>Loading classes...</p>
             </div>
           </div>
@@ -955,7 +1351,10 @@
         if (classes.length === 0) {
           grid.innerHTML = `
                     <div class="loading">
-                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        <!-- Heroicon: exclamation-triangle (solid) -->
+                        <svg class="heroicon heroicon-xl heroicon-warning" fill="currentColor" viewBox="0 0 24 24">
+                          <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+                        </svg>
                         <p>No classes found. Please set up grades and streams first.</p>
                     </div>
                 `;
@@ -966,14 +1365,18 @@
         classes.forEach((classItem) => {
           const typeIcon =
             classItem.type === "single_class"
-              ? "fas fa-users"
-              : "fas fa-layer-group";
+              ? `<svg class="heroicon heroicon-students" fill="currentColor" viewBox="0 0 24 24">
+                   <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z" clip-rule="evenodd"/>
+                 </svg>`
+              : `<svg class="heroicon heroicon-config" fill="currentColor" viewBox="0 0 24 24">
+                   <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h2.25a3 3 0 013 3v2.25a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm9.75 0a3 3 0 013-3H18a3 3 0 013 3v2.25a3 3 0 01-3 3h-2.25a3 3 0 01-3-3V6zM3 15.75a3 3 0 013-3h2.25a3 3 0 013 3V18a3 3 0 01-3 3H6a3 3 0 01-3-3v-2.25zm9.75 0a3 3 0 013-3H18a3 3 0 013 3V18a3 3 0 01-3 3h-2.25a3 3 0 01-3-3v-2.25z" clip-rule="evenodd"/>
+                 </svg>`;
           html += `
                     <div class="class-card" onclick="selectClass('${
                       classItem.value
                     }')">
                         <div class="class-name">
-                            <i class="${typeIcon}"></i>
+                            ${typeIcon}
                             ${classItem.label}
                         </div>
                         <div class="class-info">
@@ -990,17 +1393,27 @@
                             <button class="action-btn" onclick="event.stopPropagation(); manageStudents('${
                               classItem.value
                             }')">
-                                <i class="fas fa-users"></i> Students
+                                <svg class="heroicon heroicon-students" fill="currentColor" viewBox="0 0 24 24" style="width: 0.8rem; height: 0.8rem;">
+                                  <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z" clip-rule="evenodd"/>
+                                </svg>
+                                Students
                             </button>
                             <button class="action-btn" onclick="event.stopPropagation(); manageMarks('${
                               classItem.value
                             }')">
-                                <i class="fas fa-chart-line"></i> Marks
+                                <svg class="heroicon heroicon-marks" fill="currentColor" viewBox="0 0 24 24" style="width: 0.8rem; height: 0.8rem;">
+                                  <path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z"/>
+                                </svg>
+                                Marks
                             </button>
                             <button class="action-btn secondary" onclick="event.stopPropagation(); generateReports('${
                               classItem.value
                             }')">
-                                <i class="fas fa-file-alt"></i> Reports
+                                <svg class="heroicon heroicon-reports" fill="currentColor" viewBox="0 0 24 24" style="width: 0.8rem; height: 0.8rem;">
+                                  <path fill-rule="evenodd" d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625zM7.5 15a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 017.5 15zm.75 2.25a.75.75 0 000 1.5H12a.75.75 0 000-1.5H8.25z" clip-rule="evenodd"/>
+                                  <path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z"/>
+                                </svg>
+                                Reports
                             </button>
                         </div>
                     </div>
@@ -1038,10 +1451,17 @@
         const grid = document.getElementById("classGrid");
         grid.innerHTML = `
                 <div class="loading">
-                    <i class="fas fa-exclamation-triangle text-error"></i>
+                    <!-- Heroicon: exclamation-triangle (solid) -->
+                    <svg class="heroicon heroicon-xl heroicon-error" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+                    </svg>
                     <p>${message}</p>
                     <button class="action-btn" onclick="loadClassGrid()" style="margin-top: 1rem;">
-                        <i class="fas fa-sync-alt"></i> Retry
+                        <!-- Heroicon: arrow-path (solid) -->
+                        <svg class="heroicon heroicon-navigation" fill="currentColor" viewBox="0 0 24 24" style="width: 0.8rem; height: 0.8rem;">
+                          <path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-1.449.388 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.515a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.038-4.035z" clip-rule="evenodd"/>
+                        </svg>
+                        Retry
                     </button>
                 </div>
             `;

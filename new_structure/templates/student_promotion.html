@@ -17,12 +17,6 @@
       rel="stylesheet"
     />
 
-    <!-- Icons -->
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-    />
-
     <!-- Modern CSS Framework -->
     <link
       rel="stylesheet"
@@ -30,884 +24,340 @@
     />
 
     <style>
-      /* Student Promotion Specific Styles */
+      /* Solar Theme Tokens + Premium Styling */
       :root {
-        --promotion-primary: #667eea;
-        --promotion-secondary: #764ba2;
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #3b82f6;
+        /* Solar palette */
+        --solar-bg-1: #fdf6e3;
+        --solar-bg-2: #eee8d5;
+        --solar-bg-3: #d6d2c4;
+        --solar-primary: #b58900;
+        --solar-secondary: #268bd2;
+        --solar-green: #859900;
+        --solar-red: #dc322f;
+        --solar-text-primary: #002b36;
+        --solar-text-secondary: #073642;
+
+        /* Map promotion colors to Solar */
+        --promotion-primary: var(--solar-primary) !important;
+        --promotion-secondary: var(--solar-secondary) !important;
+        --promotion-primary-rgb: 181, 137, 0 !important;
+        
+        /* Enhanced Solar variables for consistency */
+        --primary-color: var(--solar-primary) !important;
+        --secondary-color: var(--solar-secondary) !important;
+        --background-color: var(--solar-bg-2) !important;
+        --text-primary: var(--solar-text-primary) !important;
+        --text-secondary: var(--solar-text-secondary) !important;
+        --border-color: rgba(238, 232, 213, 0.5) !important;
+        --shadow-md: 0 20px 40px rgba(0, 43, 54, 0.15) !important;
+        --border-radius: 12px !important;
+        --border-radius-lg: 20px !important;
+        --transition: all 0.3s ease !important;
       }
 
+      /* Inter font override */
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+        color: var(--solar-text-primary) !important;
+      }
+
+      /* Inline Heroicon utilities */
+      .heroicon { 
+        width: 1.1rem; 
+        height: 1.1rem; 
+        fill: currentColor; 
+        vertical-align: middle; 
+        display: inline-block; 
+      }
+      .heroicon-lg { width: 1.5rem; height: 1.5rem; }
+      .heroicon-solar-blue { color: var(--solar-secondary); }
+      .heroicon-solar-green { color: var(--solar-green); }
+      .heroicon-solar-yellow { color: var(--solar-primary); }
+      .heroicon-solar-red { color: var(--solar-red); }
+
+      /* Premium Solar backgrounds and glass effects */
       .page-container {
-        background: linear-gradient(
-          135deg,
-          var(--promotion-primary) 0%,
-          var(--promotion-secondary) 100%
-        );
+        background: linear-gradient(135deg, var(--solar-bg-1) 0%, var(--solar-bg-2) 60%, var(--solar-bg-3) 100%) !important;
         min-height: 100vh;
-        padding: var(--space-2);
       }
-
+      
+      .content-wrapper, .promotion-header, .batch-controls, .promotion-controls, .analytics-section-compact, .grade-section {
+        background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%) !important;
+        backdrop-filter: blur(15px);
+        box-shadow: var(--shadow-md) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: var(--border-radius-lg) !important;
+      }
+      
       .content-wrapper {
-        max-width: 1400px;
-        margin: 0 auto;
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: var(--radius-xl);
-        padding: var(--space-3);
-        box-shadow: var(--shadow-xl);
-        backdrop-filter: blur(10px);
+        max-width: 95%;
+        margin: 40px auto 60px;
+        padding: 0;
       }
 
+      /* Enhanced header styling */
       .promotion-header {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: var(--radius-2xl);
-        padding: var(--space-3);
-        margin-bottom: var(--space-2);
-        box-shadow: var(--shadow-xl);
+        padding: 30px !important;
+        margin-bottom: 24px !important;
+      }
+      .promotion-header h1 {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        color: var(--solar-text-primary) !important;
+        margin: 0 0 12px 0 !important;
+        font-size: 2.2rem !important;
+        font-weight: 800 !important;
+      }
+
+      /* Premium button styling */
+      .btn-promotion, .btn-primary, .btn-success, .btn-warning, .btn-danger {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 12px 20px !important;
+        border-radius: 12px !important;
+        text-decoration: none !important;
+        border: none !important;
+        cursor: pointer !important;
+        transition: var(--transition) !important;
+        font-weight: 600 !important;
+        font-family: "Inter", sans-serif !important;
       }
-
-      .promotion-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: var(--space-2);
-        margin-bottom: var(--space-2);
-      }
-
-      .stat-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: var(--radius-xl);
-        padding: var(--space-2);
-        text-align: center;
-        box-shadow: var(--shadow-lg);
-        transition: all 0.3s ease;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--promotion-primary), var(--promotion-secondary));
-      }
-
-      .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-xl);
-        background: rgba(255, 255, 255, 1);
-      }
-
-      .stat-number {
-        font-size: 2.8rem;
-        font-weight: 800;
-        color: var(--promotion-primary);
-        margin-bottom: var(--space-2);
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      .stat-label {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      .stat-icon {
-        font-size: 2rem;
-        color: var(--promotion-secondary);
-        margin-bottom: var(--space-3);
-        opacity: 0.8;
-      }
-
-      /* Advanced Analytics Section */
-      .analytics-section {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: var(--radius-2xl);
-        padding: var(--space-6);
-        margin-bottom: var(--space-6);
-        box-shadow: var(--shadow-xl);
-      }
-
-      .analytics-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: var(--space-2);
-        margin-top: var(--space-1);
-      }
-
-      .chart-container {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 16px;
-        padding: var(--space-2);
-        text-align: center;
-        min-height: 200px;
-        transition: all 0.3s ease;
-      }
-
-      .chart-container:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border-color: rgba(255, 255, 255, 0.3);
-      }
-
-      .chart-header {
-        margin-bottom: var(--space-2);
-      }
-
-      .chart-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: var(--space-1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--space-2);
-      }
-
-      .chart-subtitle {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        opacity: 0.8;
-      }
-
-      .chart-content {
-        position: relative;
-      }
-
-      .chart-stats {
-        margin-top: var(--space-2);
-        display: flex;
-        justify-content: space-around;
-        gap: var(--space-2);
-        flex-wrap: wrap;
-      }
-
-      .stat-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: var(--space-1);
-      }
-
-      .stat-label {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        opacity: 0.8;
-      }
-
-      .stat-value {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-primary);
-      }
-
-      .promote-count {
-        color: #10b981;
-      }
-
-      .graduate-count {
-        color: #667eea;
-      }
-
-      /* Performance Trends Placeholder Styles */
-      .chart-placeholder {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 140px;
-        padding: var(--space-2);
-        text-align: center;
-      }
-
-      .placeholder-icon {
-        font-size: 2rem;
-        color: var(--text-secondary);
-        opacity: 0.3;
-        margin-bottom: var(--space-2);
-      }
-
-      .placeholder-text h4 {
-        color: var(--text-primary);
-        margin-bottom: var(--space-1);
-        font-size: 1rem;
-      }
-
-      .placeholder-text p {
-        color: var(--text-secondary);
-        opacity: 0.8;
-        margin-bottom: var(--space-2);
-        line-height: 1.4;
-        font-size: 0.9rem;
-      }
-
-      .placeholder-features {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-1);
-        align-items: flex-start;
-      }
-
-      .feature-item {
-        display: flex;
-        align-items: center;
-        gap: var(--space-1);
-        color: var(--text-secondary);
-        font-size: 0.8rem;
-      }
-
-      .feature-item i {
-        color: #10b981;
-        font-size: 0.7rem;
-      }
-
-      /* Compact Analytics Section - New Styling */
-      .analytics-section-compact {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      }
-
-      .analytics-header-compact {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid rgba(102, 126, 234, 0.2);
-      }
-
-      .analytics-cards-compact {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 12px;
-      }
-
-      .analytics-card-compact {
-        background: rgba(255, 255, 255, 0.8);
-        border-radius: 12px;
-        padding: 12px;
-        border: 1px solid rgba(102, 126, 234, 0.2);
-        transition: all 0.3s ease;
-        min-height: 180px;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .analytics-card-compact:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.15);
-        border-color: rgba(102, 126, 234, 0.4);
-      }
-
-      .card-title-compact {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 8px;
-        padding-bottom: 6px;
-        border-bottom: 1px solid rgba(102, 126, 234, 0.1);
-      }
-
-      .chart-area-compact {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 120px;
-      }
-
-      .card-stats-compact {
-        display: flex;
-        justify-content: space-around;
-        gap: 8px;
-        margin-top: 8px;
-        padding-top: 8px;
-        border-top: 1px solid rgba(102, 126, 234, 0.1);
-      }
-
-      .stat-compact {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        text-align: center;
-      }
-
-      .stat-compact strong {
-        color: var(--text-primary);
-        font-size: 0.9rem;
-      }
-
-      .promote-stat strong {
-        color: #10b981;
-      }
-
-      .graduate-stat strong {
-        color: #667eea;
-      }
-
-      /* Placeholder Card Specific Styles */
-      .placeholder-card {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-        border: 1px dashed rgba(102, 126, 234, 0.3);
-      }
-
-      .placeholder-compact {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 12px;
-      }
-
-      .placeholder-icon-compact {
-        font-size: 2rem;
-        color: rgba(102, 126, 234, 0.4);
-        margin-bottom: 8px;
-      }
-
-      .placeholder-text-compact {
-        color: var(--text-secondary);
-      }
-
-      .placeholder-text-compact strong {
-        color: var(--text-primary);
-        font-size: 0.9rem;
-        display: block;
-        margin-bottom: 4px;
-      }
-
-      .placeholder-text-compact p {
-        font-size: 0.8rem;
-        margin: 0;
-        opacity: 0.8;
-      }
-
-      /* Batch Processing Controls */
-      .batch-controls {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: var(--radius-2xl);
-        padding: var(--space-2);
-        margin-bottom: var(--space-2);
-        box-shadow: var(--shadow-xl);
-      }
-
-      .batch-actions {
-        display: flex;
-        gap: var(--space-3);
-        flex-wrap: wrap;
-        margin-top: var(--space-4);
-      }
-
-      .batch-btn {
-        padding: var(--space-3) var(--space-5);
-        border-radius: var(--radius-lg);
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        font-size: 0.9rem;
-      }
-
-      .batch-btn-primary {
-        background: linear-gradient(135deg, var(--promotion-primary), var(--promotion-secondary));
-        color: white;
-      }
-
-      .batch-btn-success {
-        background: linear-gradient(135deg, var(--success-color), #059669);
-        color: white;
-      }
-
-      .batch-btn-warning {
-        background: linear-gradient(135deg, var(--warning-color), #d97706);
-        color: white;
-      }
-
-      .batch-btn-danger {
-        background: linear-gradient(135deg, var(--danger-color), #dc2626);
-        color: white;
-      }
-
-      .batch-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
-      }
-
-      .promotion-controls {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: var(--radius-2xl);
-        padding: var(--space-2);
-        margin-bottom: var(--space-2);
-        box-shadow: var(--shadow-xl);
-      }
-
-      /* Filter Controls */
-      .filter-form {
-        margin-top: var(--space-4);
-      }
-
-      .filter-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--space-4);
-        align-items: end;
-      }
-
-      .filter-item {
-        display: flex;
-        flex-direction: column;
-        min-width: 150px;
-      }
-
-      .filter-item label {
-        font-weight: 500;
-        color: var(--text-primary);
-        margin-bottom: var(--space-2);
-        font-size: 0.9rem;
-      }
-
-      .filter-item select {
-        padding: var(--space-2) var(--space-3);
-        border: 2px solid rgba(103, 126, 234, 0.2);
-        border-radius: var(--radius-lg);
-        background: white;
-        color: var(--text-primary);
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-      }
-
-      .filter-item select:focus {
-        outline: none;
-        border-color: var(--promotion-primary);
-        box-shadow: 0 0 0 3px rgba(103, 126, 234, 0.1);
-      }
-
-      .btn-filter {
-        padding: var(--space-2) var(--space-4);
-        border: none;
-        border-radius: var(--radius-lg);
-        background: var(--promotion-primary);
-        color: white;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        font-size: 0.9rem;
-      }
-
-      .btn-filter:hover {
-        background: var(--promotion-secondary);
-        transform: translateY(-2px);
-      }
-
-      .btn-clear {
-        background: var(--warning-color) !important;
-        text-decoration: none;
-      }
-
-      .btn-clear:hover {
-        background: #d97706 !important;
-      }
-
-      /* Pagination Controls */
-      .pagination-controls {
-        display: flex;
-        align-items: center;
-        gap: var(--space-4);
-      }
-
-      .pagination-info {
-        flex: 1;
-      }
-
-      .btn-pagination {
-        padding: var(--space-2) var(--space-4);
-        border: 2px solid var(--promotion-primary);
-        border-radius: var(--radius-lg);
-        background: white;
-        color: var(--promotion-primary);
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-      }
-
-      .btn-pagination:hover {
-        background: var(--promotion-primary);
-        color: white;
-        transform: translateY(-2px);
-      }
-
-      .page-info {
-        padding: var(--space-2) var(--space-4);
-        background: rgba(103, 126, 234, 0.1);
-        border-radius: var(--radius-lg);
-        color: var(--promotion-primary);
-        font-weight: 600;
-      }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .filter-row {
-          flex-direction: column;
-          align-items: stretch;
-        }
-
-        .filter-item {
-          min-width: auto;
-        }
-
-        .pagination-controls {
-          flex-direction: column;
-          gap: var(--space-2);
-        }
-
-        .pagination-info {
-          text-align: center;
-        }
-      }
-
-      .control-group {
-        display: flex;
-        gap: var(--space-4);
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      .academic-year-selector {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-      }
-
-      .academic-year-selector select {
-        padding: var(--space-3);
-        border-radius: var(--radius-lg);
-        border: 2px solid var(--border-color);
-        background: white;
-        font-weight: 500;
-      }
-
-      .promotion-actions {
-        display: flex;
-        gap: var(--space-3);
-      }
-
       .btn-promotion {
-        padding: var(--space-3) var(--space-6);
-        border-radius: var(--radius-lg);
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
+        background: var(--solar-secondary) !important;
+        color: #fff !important;
+      }
+      .btn-promotion:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(38, 139, 210, 0.3) !important;
       }
 
-      .btn-primary {
-        background: var(--promotion-primary);
-        color: white;
+      /* Enhanced stats cards */
+      .promotion-stats {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+        gap: 20px !important;
+        margin-top: 24px !important;
+      }
+      .stat-card {
+        background: rgba(253, 246, 227, 0.8) !important;
+        border: 1px solid rgba(238, 232, 213, 0.6) !important;
+        border-radius: 16px !important;
+        padding: 20px !important;
+        transition: var(--transition) !important;
+      }
+      .stat-card:hover {
+        transform: translateY(-4px) !important;
+        box-shadow: 0 12px 28px rgba(0, 43, 54, 0.15) !important;
+      }
+      .stat-icon {
+        margin-bottom: 12px !important;
+      }
+      .stat-number {
+        font-size: 2rem !important;
+        font-weight: 800 !important;
+        color: var(--solar-primary) !important;
+        margin-bottom: 8px !important;
+      }
+      .stat-label {
+        color: var(--solar-text-secondary) !important;
+        font-weight: 500 !important;
       }
 
-      .btn-primary:hover {
-        background: var(--promotion-secondary);
-        transform: translateY(-1px);
+      /* Enhanced analytics section */
+      .analytics-section-compact {
+        margin: 24px 0 !important;
+        padding: 24px !important;
+      }
+      .analytics-header-compact {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        margin-bottom: 20px !important;
+        font-size: 1.3rem !important;
+        font-weight: 700 !important;
+        color: var(--solar-text-primary) !important;
+      }
+      .analytics-cards-compact {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 20px !important;
+      }
+      .analytics-card-compact {
+        background: rgba(253, 246, 227, 0.6) !important;
+        border: 1px solid rgba(238, 232, 213, 0.5) !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        transition: var(--transition) !important;
+      }
+      .analytics-card-compact:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(0, 43, 54, 0.1) !important;
       }
 
-      .btn-success {
-        background: var(--success-color);
-        color: white;
-      }
-
-      .btn-warning {
-        background: var(--warning-color);
-        color: white;
-      }
-
-      .grade-section {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: var(--radius-2xl);
-        margin-bottom: var(--space-6);
-        box-shadow: var(--shadow-xl);
-        overflow: hidden;
-      }
-
+      /* Enhanced grade sections */
       .grade-header {
-        background: linear-gradient(
-          135deg,
-          var(--promotion-primary),
-          var(--promotion-secondary)
-        );
-        color: white;
-        padding: var(--space-6);
-        display: flex;
-        justify-content: between;
-        align-items: center;
+        background: linear-gradient(135deg, var(--solar-primary), var(--solar-secondary)) !important;
+        color: #fff !important;
+        padding: 20px 24px !important;
+        border-radius: 16px 16px 0 0 !important;
+        margin: 0 !important;
       }
-
       .grade-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 0;
+        margin: 0 !important;
+        font-size: 1.4rem !important;
+        font-weight: 700 !important;
       }
-
       .grade-summary {
-        display: flex;
-        gap: var(--space-4);
-        font-size: 0.875rem;
+        display: flex !important;
+        gap: 20px !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        margin-top: 8px !important;
+      }
+      .grade-summary span {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-weight: 500 !important;
+        opacity: 0.95 !important;
       }
 
+      /* Enhanced table styling */
       .students-table {
-        width: 100%;
-        border-collapse: collapse;
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-top: 0 !important;
       }
-
-      .students-table th,
-      .students-table td {
-        padding: var(--space-4);
-        text-align: left;
-        border-bottom: 1px solid var(--border-color);
-      }
-
       .students-table th {
-        background: rgba(var(--promotion-primary-rgb), 0.1);
-        font-weight: 600;
-        color: var(--text-primary);
+        background: var(--solar-primary) !important;
+        color: #fff !important;
+        padding: 16px 12px !important;
+        font-weight: 600 !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+      }
+      .students-table td {
+        padding: 12px !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        vertical-align: middle !important;
+      }
+      .students-table tbody tr:nth-child(even) {
+        background: rgba(181, 137, 0, 0.04) !important;
+      }
+      .students-table tbody tr:hover {
+        background: rgba(38, 139, 210, 0.08) !important;
+        transform: scale(1.001) !important;
       }
 
-      .students-table tr:hover {
-        background: rgba(var(--promotion-primary-rgb), 0.05);
+      /* Enhanced pagination */
+      .pagination-container {
+        margin: 24px 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 12px !important;
+      }
+      .btn-pagination {
+        background: rgba(253, 246, 227, 0.8) !important;
+        border: 1px solid var(--solar-primary) !important;
+        color: var(--solar-text-primary) !important;
+        padding: 8px 16px !important;
+        border-radius: 8px !important;
+        text-decoration: none !important;
+        transition: var(--transition) !important;
+        font-weight: 500 !important;
+      }
+      .btn-pagination:hover, .btn-pagination.active {
+        background: var(--solar-primary) !important;
+        color: #fff !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(181, 137, 0, 0.3) !important;
       }
 
-      .student-checkbox {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
+      /* Enhanced batch controls */
+      .batch-controls {
+        padding: 24px !important;
+        margin: 24px 0 !important;
+      }
+      .batch-controls h3 {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        color: var(--solar-text-primary) !important;
+        margin-bottom: 20px !important;
+        font-size: 1.3rem !important;
+        font-weight: 700 !important;
       }
 
-      .promotion-select {
-        padding: var(--space-2);
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border-color);
-        background: white;
-        min-width: 120px;
+      /* Remove any conflicting CSS from modern_classteacher.css */
+      .promotion-header,
+      .batch-controls,
+      .analytics-section-compact,
+      .grade-section {
+        background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%) !important;
       }
 
-      .stream-select {
-        padding: var(--space-2);
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border-color);
-        background: white;
-        min-width: 100px;
+      /* Navigation link hover effects */
+      .promotion-header a[style*="rgba(253, 246, 227, 0.5)"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08) !important;
+        background: rgba(253, 246, 227, 0.8) !important;
       }
-
-      .notes-input {
-        padding: var(--space-2);
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border-color);
-        background: white;
-        min-width: 150px;
-        font-size: 0.875rem;
-      }
-
-      .status-badge {
-        padding: var(--space-1) var(--space-3);
-        border-radius: var(--radius-full);
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-
-      .status-eligible {
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--success-color);
-      }
-
-      .status-final {
-        background: rgba(245, 158, 11, 0.1);
-        color: var(--warning-color);
-      }
-
-      .status-inactive {
-        background: rgba(107, 114, 128, 0.1);
-        color: var(--text-secondary);
-      }
-
-      .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-      }
-
-      .loading-spinner {
-        background: white;
-        padding: var(--space-8);
-        border-radius: var(--radius-2xl);
-        text-align: center;
-      }
-
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid var(--border-color);
-        border-top: 4px solid var(--promotion-primary);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 0 auto var(--space-4);
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Mobile Responsive */
-      @media (max-width: 768px) {
-        .page-container {
-          padding: var(--space-4);
-        }
-
-        .promotion-header {
-          padding: var(--space-6);
-        }
-
-        .promotion-stats {
-          grid-template-columns: repeat(2, 1fr);
-        }
-
-        .control-group {
-          flex-direction: column;
-          align-items: stretch;
-        }
-
-        .promotion-actions {
-          justify-content: center;
-        }
-
-        .students-table {
-          font-size: 0.875rem;
-        }
-
-        .students-table th,
-        .students-table td {
-          padding: var(--space-2);
-        }
+      .promotion-header a[style*="linear-gradient"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(133, 153, 0, 0.3) !important;
+        filter: brightness(1.05) !important;
       }
     </style>
   </head>
   <body>
+    <!-- Inject promotion data as JSON to avoid Jinja inside JS -->
+    <script id="promotion-data" type="application/json">{{ promotion_data_json | tojson }}</script>
+
     <div class="page-container">
       <div class="content-wrapper">
         <!-- Header -->
         <div class="promotion-header">
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: var(--space-4);
-            "
-          >
-            <div>
-              <h1
-                style="
-                  margin: 0;
-                  color: var(--text-primary);
-                  font-size: 2rem;
-                  font-weight: 800;
-                "
-              >
-                <i
-                  class="fas fa-graduation-cap"
-                  style="
-                    color: var(--promotion-primary);
-                    margin-right: var(--space-3);
-                  "
-                ></i>
-                Student Promotion Management
-              </h1>
-              <p
-                style="
-                  margin: var(--space-2) 0 0;
-                  color: var(--text-secondary);
-                  font-size: 1rem;
-                "
-              >
-                Manage student promotions for Academic Year {{
-                promotion_data.academic_year or '2024' }}
-              </p>
-            </div>
-            <div style="display: flex; gap: var(--space-3);">
-              <a
-                href="{{ url_for('admin.dashboard') }}"
-                class="btn-promotion btn-primary"
-              >
-                <i class="fas fa-arrow-left"></i>
-                Back to Dashboard
-              </a>
-              <a
-                href="{{ url_for('admin.create_sample_promotion_data') }}"
-                class="btn-promotion"
-                style="background: linear-gradient(135deg, var(--success-color), #059669); color: white;"
-                onclick="return confirm('This will create sample students for testing. Continue?')"
-              >
-                <i class="fas fa-database"></i>
-                Create Sample Data
-              </a>
-            </div>
+          <h1>
+            <svg class="heroicon heroicon-lg heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path d="M11.7 2.37a.75.75 0 01.6 0l8.25 3.75a.75.75 0 010 1.36L12.3 11.23a.75.75 0 01-.6 0L3.45 7.48a.75.75 0 010-1.36L11.7 2.37z"/><path d="M4.5 12.75v3.38a.75.75 0 00.44.68l6.75 3.05a.75.75 0 00.62 0l6.75-3.05a.75.75 0 00.44-.68v-3.38l-6.59 2.99a2.25 2.25 0 01-1.92 0L4.5 12.75z"/></svg>
+            Student Promotion Management
+          </h1>
+          <p style="margin: 12px 0 20px; color: var(--solar-text-secondary); font-size: 1rem;">
+            Manage student promotions for Academic Year {{ promotion_data.academic_year or '2024' }}
+          </p>
+          
+          <!-- Navigation Links -->
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
+            <a href="{{ url_for('admin.dashboard') }}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--solar-text-secondary); background: rgba(253, 246, 227, 0.5); padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(238, 232, 213, 0.6); text-decoration: none; transition: var(--transition);">
+              <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.5 12a.75.75 0 01-.75.75H7.56l3.22 3.22a.75.75 0 11-1.06 1.06l-4.5-4.5a.75.75 0 010-1.06l4.5-4.5a.75.75 0 111.06 1.06L7.56 11.25h11.19c.414 0 .75.336.75.75z" clip-rule="evenodd"/></svg>
+              Dashboard
+            </a>
+            <a href="{{ url_for('admin.manage_terms_assessments') }}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--solar-text-secondary); background: rgba(253, 246, 227, 0.5); padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(238, 232, 213, 0.6); text-decoration: none; transition: var(--transition);">
+              <svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5m-9-6h.008v.008H12V12z"/></svg>
+              Terms & Assessments
+            </a>
+            <a href="{{ url_for('admin.manage_grades_streams') }}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--solar-text-secondary); background: rgba(253, 246, 227, 0.5); padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(238, 232, 213, 0.6); text-decoration: none; transition: var(--transition);">
+              <svg class="heroicon heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 19.5H6A2.25 2.25 0 013.75 17.25V6zM6 5.25a.75.75 0 00-.75.75v11.25c0 .414.336.75.75.75h11.25a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H16.5V6a.75.75 0 00-.75-.75H6z" clip-rule="evenodd"/></svg>
+              Grades & Streams
+            </a>
+            <a
+              href="{{ url_for('admin.create_sample_promotion_data') }}"
+              style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--solar-green), #059669); color: white; padding: 8px 14px; border-radius: 999px; text-decoration: none; transition: var(--transition);"
+              data-action="create-sample-data"
+            >
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 1.343-9 3s4.03 3 9 3 9-1.343 9-3-4.03-3-9-3z"/><path d="M21 9.75c0 1.657-4.03 3-9 3s-9-1.343-9-3V12c0 1.657 4.03 3 9 3s9-1.343 9-3V9.75z"/><path d="M21 14.25c0 1.657-4.03 3-9 3s-9-1.343-9-3V16.5c0 1.657 4.03 3 9 3s9-1.343 9-3v-2.25z"/></svg>
+              Create Sample Data
+            </a>
           </div>
 
           <!-- Enhanced Promotion Statistics -->
           <div class="promotion-stats">
             <div class="stat-card">
               <div class="stat-icon">
-                <i class="fas fa-users"></i>
+                <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path d="M1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 007 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/></svg>
               </div>
               <div class="stat-number">
                 {{ promotion_data.promotion_summary.total_students or 0 }}
@@ -916,7 +366,7 @@
             </div>
             <div class="stat-card">
               <div class="stat-icon">
-                <i class="fas fa-arrow-up"></i>
+                <svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3a.75.75 0 01.75.75v13.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3.75A.75.75 0 0112 3z" clip-rule="evenodd"/></svg>
               </div>
               <div class="stat-number">
                 {{ promotion_data.promotion_summary.eligible_for_promotion or 0 }}
@@ -925,7 +375,7 @@
             </div>
             <div class="stat-card">
               <div class="stat-icon">
-                <i class="fas fa-graduation-cap"></i>
+                <svg class="heroicon heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path d="M11.7 2.37a.75.75 0 01.6 0l8.25 3.75a.75.75 0 010 1.36L12.3 11.23a.75.75 0 01-.6 0L3.45 7.48a.75.75 0 010-1.36L11.7 2.37z"/><path d="M4.5 12.75v3.38a.75.75 0 00.44.68l6.75 3.05a.75.75 0 00.62 0l6.75-3.05a.75.75 0 00.44-.68v-3.38l-6.59 2.99a2.25 2.25 0 01-1.92 0L4.5 12.75z"/></svg>
               </div>
               <div class="stat-number">
                 {{ promotion_data.promotion_summary.final_grade_students or 0 }}
@@ -934,7 +384,7 @@
             </div>
             <div class="stat-card">
               <div class="stat-icon">
-                <i class="fas fa-layer-group"></i>
+                <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 19.5H6A2.25 2.25 0 013.75 17.25V6zM6 5.25a.75.75 0 00-.75.75v11.25c0 .414.336.75.75.75h11.25a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H16.5V6a.75.75 0 00-.75-.75H6z" clip-rule="evenodd"/></svg>
               </div>
               <div class="stat-number">
                 {% if promotion_data.students_by_grade %}
@@ -947,14 +397,14 @@
             </div>
             <div class="stat-card">
               <div class="stat-icon">
-                <i class="fas fa-redo"></i>
+                <svg class="heroicon heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-1.449.388 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.515a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9A9 9 0 1020.163 13.41z" clip-rule="evenodd"/></svg>
               </div>
               <div class="stat-number" id="repeat-count">0</div>
               <div class="stat-label">To Repeat</div>
             </div>
             <div class="stat-card">
               <div class="stat-icon">
-                <i class="fas fa-exchange-alt"></i>
+                <svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 7.5A.75.75 0 013 6.75h12.19l-1.72-1.72a.75.75 0 111.06-1.06l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 01-1.06-1.06l1.72-1.72H3A.75.75 0 012.25 7.5zM21.75 16.5a.75.75 0 00-.75-.75H8.81l1.72-1.72a.75.75 0 10-1.06-1.06l-3 3a.75.75 0 000 1.06l3 3a.75.75 0 001.06-1.06l-1.72-1.72H21a.75.75 0 00.75-.75z" clip-rule="evenodd"/></svg>
               </div>
               <div class="stat-number" id="transfer-count">0</div>
               <div class="stat-label">To Transfer</div>
@@ -965,7 +415,7 @@
         <!-- Advanced Analytics Section -->
         <div class="analytics-section-compact">
           <div class="analytics-header-compact">
-            <i class="fas fa-chart-bar"></i>
+            <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13.5A1.5 1.5 0 014.5 12h15a1.5 1.5 0 010 3h-15A1.5 1.5 0 013 13.5zM3 7.5A1.5 1.5 0 014.5 6h15a1.5 1.5 0 010 3h-15A1.5 1.5 0 013 7.5zM3 19.5A1.5 1.5 0 014.5 18h9a1.5 1.5 0 010 3h-9A1.5 1.5 0 013 19.5z"/></svg>
             <span>Promotion Analytics</span>
           </div>
 
@@ -973,7 +423,7 @@
             <!-- Grade Distribution Chart -->
             <div class="analytics-card-compact">
               <div class="card-title-compact">
-                <i class="fas fa-graduation-cap"></i>
+                <svg class="heroicon heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path d="M11.7 2.37a.75.75 0 01.6 0l8.25 3.75a.75.75 0 010 1.36L12.3 11.23a.75.75 0 01-.6 0L3.45 7.48a.75.75 0 010-1.36L11.7 2.37z"/><path d="M4.5 12.75v3.38a.75.75 0 00.44.68l6.75 3.05a.75.75 0 00.62 0l6.75-3.05a.75.75 0 00.44-.68v-3.38l-6.59 2.99a2.25 2.25 0 01-1.92 0L4.5 12.75z"/></svg>
                 Grade Distribution
               </div>
               <div class="chart-area-compact">
@@ -992,7 +442,7 @@
             <!-- Promotion Actions Chart -->
             <div class="analytics-card-compact">
               <div class="card-title-compact">
-                <i class="fas fa-arrow-up"></i>
+                <svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3a.75.75 0 01.75.75v13.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3.75A.75.75 0 0112 3z" clip-rule="evenodd"/></svg>
                 Promotion Actions
               </div>
               <div class="chart-area-compact">
@@ -1011,12 +461,13 @@
             <!-- Performance Trends Placeholder -->
             <div class="analytics-card-compact placeholder-card">
               <div class="card-title-compact">
-                <i class="fas fa-chart-line"></i>
+                <!-- Heroicon: chart-line -->
+                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13.5A1.5 1.5 0 014.5 12h15a1.5 1.5 0 010 3h-15A1.5 1.5 0 013 13.5zM3 7.5A1.5 1.5 0 014.5 6h15a1.5 1.5 0 010 3h-15A1.5 1.5 0 013 7.5zM3 19.5A1.5 1.5 0 014.5 18h9a1.5 1.5 0 010 3h-9A1.5 1.5 0 013 19.5z"/></svg>
                 Performance Trends
               </div>
               <div class="placeholder-compact">
                 <div class="placeholder-icon-compact">
-                  <i class="fas fa-chart-line"></i>
+                  <svg class="heroicon heroicon-lg heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
                 </div>
                 <div class="placeholder-text-compact">
                   <strong>Coming Soon</strong>
@@ -1030,40 +481,39 @@
         <!-- Batch Processing Controls -->
         <div class="batch-controls">
           <h3 style="color: var(--text-primary); margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2);">
-            <i class="fas fa-tasks"></i> Batch Processing
+            <svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M9 2.25A2.25 2.25 0 006.75 4.5v.75H6A2.25 2.25 0 003.75 7.5v12A2.25 2.25 0 006 21.75h12A2.25 2.25 0 0020.25 19.5v-12A2.25 2.25 0 0018 5.25h-.75V4.5A2.25 2.25 0 0015 2.25H9zm0 1.5h6A.75.75 0 0115.75 4.5v.75h-7.5V4.5A.75.75 0 019 3.75zm7.28 7.22a.75.75 0 00-1.06-1.06l-4.97 4.97-2.22-2.22a.75.75 0 10-1.06 1.06l2.75 2.75a.75.75 0 001.06 0l5.5-5.5z" clip-rule="evenodd"/></svg>
+            Batch Processing
           </h3>
           <div class="batch-actions">
-            <button class="batch-btn batch-btn-primary" onclick="selectAllEligible()">
-              <i class="fas fa-check-double"></i>
+            <button class="batch-btn batch-btn-primary" data-action="select-all-eligible">
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.76 9.76 0 0012 2.25zm-1.03 12.28l-2.47-2.47a.75.75 0 10-1.06 1.06l3 3a.75.75 0 001.06 0l6.5-6.5a.75.75 0 10-1.06-1.06l-6.97 6.97z" clip-rule="evenodd"/></svg>
               Select All Eligible
             </button>
-            <button class="batch-btn batch-btn-success" onclick="promoteSelected()">
-              <i class="fas fa-arrow-up"></i>
+            <button class="batch-btn batch-btn-success" data-action="promote-selected">
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3a.75.75 0 01.75.75v13.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3.75A.75.75 0 0112 3z" clip-rule="evenodd"/></svg>
               Promote Selected
             </button>
-            <button class="batch-btn batch-btn-warning" onclick="repeatSelected()">
-              <i class="fas fa-redo"></i>
+            <button class="batch-btn batch-btn-warning" data-action="repeat-selected">
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-1.449.388 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.515a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9A9 9 0 1020.163 13.41z" clip-rule="evenodd"/></svg>
               Repeat Selected
             </button>
-            <button class="batch-btn batch-btn-danger" onclick="clearSelection()">
-              <i class="fas fa-times"></i>
+            <button class="batch-btn batch-btn-danger" data-action="clear-selection">
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 11-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd"/></svg>
               Clear Selection
             </button>
-            <button class="batch-btn batch-btn-primary" onclick="exportPromotionReport()">
-              <i class="fas fa-download"></i>
+            <button class="batch-btn batch-btn-primary" data-action="export-report">
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3 16.5A1.5 1.5 0 014.5 15h3a.75.75 0 010 1.5h-3a.75.75 0 00-.75.75v1.5c0 .414.336.75.75.75h15a.75.75 0 00.75-.75v-1.5a.75.75 0 00-.75-.75h-3A.75.75 0 0116.5 15h3A1.5 1.5 0 0121 16.5v1.5A2.25 2.25 0 0118.75 20.25h-13.5A2.25 2.25 0 013 18v-1.5z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M12 3a.75.75 0 01.75.75v8.69l2.47-2.47a.75.75 0 111.06 1.06l-3.75 3.75a.75.75 0 01-1.06 0L7.72 11.03a.75.75 0 111.06-1.06l2.47 2.47V3.75A.75.75 0 0112 3z" clip-rule="evenodd"/></svg>
               Export Report
             </button>
-            <button class="batch-btn batch-btn-primary" onclick="previewPromotions()">
-              <i class="fas fa-eye"></i>
+            <button class="batch-btn batch-btn-primary" data-action="preview-promotions">
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5.25c-4.657 0-8.64 2.88-10.5 6.75 1.86 3.87 5.843 6.75 10.5 6.75s8.64-2.88 10.5-6.75c-1.86-3.87-5.843-6.75-10.5-6.75z"/><path d="M12 9.75a2.25 2.25 0 110 4.5 2.25 2.25 0 010-4.5z"/></svg>
               Preview Changes
             </button>
           </div>
           <div style="margin-top: var(--space-4); padding: var(--space-3); background: rgba(59, 130, 246, 0.1); border-radius: var(--radius-lg); border-left: 4px solid var(--info-color);">
-            <p style="margin: 0; color: var(--info-color); font-weight: 500;">
-              <i class="fas fa-info-circle"></i>
-              Selected: <span id="selected-count">0</span> students |
-              Ready for promotion: <span id="promotion-ready">0</span> |
-              Requires review: <span id="review-required">0</span>
+            <p style="margin: 0; color: var(--info-color); font-weight: 500; display: flex; align-items: center; gap: 8px;">
+              <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.76 9.76 0 0012 2.25zM12.75 7.5a.75.75 0 10-1.5 0 .75.75 0 001.5 0zM12 9.75a.75.75 0 01.75.75v5.25a.75.75 0 11-1.5 0V10.5A.75.75 0 0112 9.75z" clip-rule="evenodd"/></svg>
+              Selected: <span id="selected-count">0</span> students | Ready for promotion: <span id="promotion-ready">0</span> | Requires review: <span id="review-required">0</span>
             </p>
           </div>
         </div>
@@ -1071,8 +521,9 @@
         <!-- Filter Controls -->
         <div class="promotion-controls">
           <div class="control-group">
-            <h3 style="color: var(--text-primary); margin-bottom: var(--space-4);">
-              <i class="fas fa-filter"></i> Filter Students
+            <h3 style="color: var(--text-primary); margin-bottom: var(--space-4); display: flex; align-items: center; gap: 8px;">
+              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 6A1.5 1.5 0 013.75 4.5h16.5a1.5 1.5 0 011.5 1.5v.214a1.5 1.5 0 01-.439 1.061l-6.06 6.06a1.5 1.5 0 00-.439 1.061V19.5a.75.75 0 01-1.088.67l-3-1.5A.75.75 0 019.75 18v-3.604a1.5 1.5 0 00-.439-1.061l-6.06-6.06A1.5 1.5 0 012.25 6.214V6z" clip-rule="evenodd"/></svg>
+              Filter Students
             </h3>
             <form method="GET" action="{{ url_for('admin.student_promotion') }}" class="filter-form">
               <div class="filter-row">
@@ -1118,7 +569,7 @@
 
                 <div class="filter-item">
                   <label for="per_page">Per Page:</label>
-                  <select id="per_page" name="per_page" onchange="this.form.submit()">
+                  <select id="per_page" name="per_page">
                     <option value="25" {% if promotion_data.pagination.per_page == 25 %}selected{% endif %}>25</option>
                     <option value="50" {% if promotion_data.pagination.per_page == 50 %}selected{% endif %}>50</option>
                     <option value="100" {% if promotion_data.pagination.per_page == 100 %}selected{% endif %}>100</option>
@@ -1126,11 +577,13 @@
                 </div>
 
                 <div class="filter-item">
-                  <button type="button" onclick="applyFilters()" class="btn-filter">
-                    <i class="fas fa-search"></i> Apply Filters
+                  <button type="button" class="btn-filter" data-action="apply-filters">
+                    <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 104.773 11.523l4.727 4.727a.75.75 0 101.06-1.06l-4.727-4.727A6.75 6.75 0 0010.5 3.75zm0 1.5a5.25 5.25 0 100 10.5 5.25 5.25 0 000-10.5z" clip-rule="evenodd"/></svg>
+                    Apply Filters
                   </button>
                   <a href="{{ url_for('admin.student_promotion') }}" class="btn-filter btn-clear">
-                    <i class="fas fa-times"></i> Clear
+                    <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 11-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd"/></svg>
+                    Clear
                   </a>
                 </div>
               </div>
@@ -1141,7 +594,7 @@
           </div>
         </div>
 
-        <!-- Promotion Controls -->
+        <!-- Promotion Controls (top buttons) -->
         <div class="promotion-controls">
           <div class="control-group">
             <div class="academic-year-selector">
@@ -1159,35 +612,24 @@
             </div>
 
             <div class="promotion-actions">
-              <button
-                type="button"
-                class="btn-promotion btn-primary"
-                onclick="selectAllEligible()"
-              >
-                <i class="fas fa-check-double"></i>
+              <button type="button" class="btn-promotion btn-primary" data-action="select-all-eligible">
+                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.76 9.76 0 0012 2.25zm-1.03 12.28l-2.47-2.47a.75.75 0 10-1.06 1.06l3 3a.75.75 0 001.06 0l6.5-6.5a.75.75 0 10-1.06-1.06l-6.97 6.97z" clip-rule="evenodd"/></svg>
                 Select All Eligible
               </button>
-              <button
-                type="button"
-                class="btn-promotion btn-warning"
-                onclick="clearAllSelections()"
-              >
-                <i class="fas fa-times"></i>
+              <button type="button" class="btn-promotion btn-warning" data-action="clear-selection">
+                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 11-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd"/></svg>
                 Clear Selections
               </button>
-              <button
-                type="button"
-                class="btn-promotion btn-success"
-                onclick="processPromotions()"
-              >
-                <i class="fas fa-rocket"></i>
+              <button type="button" class="btn-promotion btn-success" data-action="process-promotions">
+                <!-- Heroicon: rocket (use arrow-up as proxy) -->
+                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3a.75.75 0 01.75.75v13.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3.75A.75.75 0 0112 3z" clip-rule="evenodd"/></svg>
                 Process Promotions
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Students by Grade -->
+        <!-- Students by Grade - replace small icons in grade summary -->
         {% if promotion_data.success and promotion_data.students_by_grade %} {%
         for grade_name, grade_data in promotion_data.students_by_grade.items()
         %}
@@ -1198,16 +640,16 @@
             </div>
             <div class="grade-summary">
               <span
-                ><i class="fas fa-users"></i> {{ grade_data.total_count }}
+                ><svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path d="M1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/></svg> {{ grade_data.total_count }}
                 students</span
               >
               <span
-                ><i class="fas fa-arrow-up"></i> {{ grade_data.eligible_count }}
+                ><svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3a.75.75 0 01.75.75v13.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3.75A.75.75 0 0112 3z" clip-rule="evenodd"/></svg> {{ grade_data.eligible_count }}
                 eligible</span
               >
               {% if grade_data.final_grade_count > 0 %}
               <span
-                ><i class="fas fa-graduation-cap"></i> {{
+                ><svg class="heroicon heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path d="M11.7 2.37a.75.75 0 01.6 0l8.25 3.75a.75.75 0 010 1.36L12.3 11.23a.75.75 0 01-.6 0L3.45 7.48a.75.75 0 010-1.36L11.7 2.37z"/><path d="M4.5 12.75v3.38a.75.75 0 00.44.68l6.75 3.05a.75.75 0 00.62 0l6.75-3.05a.75.75 0 00.44-.68v-3.38l-6.59 2.99a2.25 2.25 0 01-1.92 0L4.5 12.75z"/></svg> {{
                 grade_data.final_grade_count }} graduating</span
               >
               {% endif %}
@@ -1223,7 +665,6 @@
                       type="checkbox"
                       class="student-checkbox grade-select-all"
                       data-grade="{{ grade_name }}"
-                      onchange="toggleGradeSelection('{{ grade_name }}')"
                     />
                   </th>
                   <th>Student Name</th>
@@ -1254,7 +695,6 @@
                       %}checked{%
                       endif
                       %}
-                      onchange="updateStudentSelection({{ student.id }})"
                     />
                   </td>
                   <td style="font-weight: 600">{{ student.name }}</td>
@@ -1275,7 +715,6 @@
                     <select
                       class="promotion-select"
                       data-student-id="{{ student.id }}"
-                      onchange="updatePromotionAction({{ student.id }})"
                     >
                       {% if student.is_final_grade %}
                       <option value="graduate" selected>Graduate</option>
@@ -1311,7 +750,7 @@
                     <select
                       class="stream-select"
                       data-student-id="{{ student.id }}"
-                      style="{% if student.is_final_grade %}display: none;{% endif %}"
+                      data-final="{{ 1 if student.is_final_grade else 0 }}"
                     >
                       <option value="">Select Stream</option>
                       <!-- Streams will be populated by JavaScript -->
@@ -1354,7 +793,8 @@
                         stream_id=promotion_data.filters.stream_id,
                         per_page=promotion_data.pagination.per_page) }}"
                  class="btn-pagination">
-                <i class="fas fa-chevron-left"></i> Previous
+                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.5 12a.75.75 0 01-.75.75H7.56l3.22 3.22a.75.75 0 11-1.06 1.06l-4.5-4.5a.75.75 0 010-1.06l4.5-4.5a.75.75 0 111.06 1.06L7.56 11.25h11.19c.414 0 .75.336.75.75z" clip-rule="evenodd"/></svg>
+                Previous
               </a>
               {% endif %}
 
@@ -1370,7 +810,8 @@
                         stream_id=promotion_data.filters.stream_id,
                         per_page=promotion_data.pagination.per_page) }}"
                  class="btn-pagination">
-                Next <i class="fas fa-chevron-right"></i>
+                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 12a.75.75 0 01.75-.75h11.19l-3.22-3.22a.75.75 0 011.06-1.06l4.5 4.5a.75.75 0 010 1.06l-4.5 4.5a.75.75 0 01-1.06-1.06L16.44 12H5.25A.75.75 0 014.5 12z" clip-rule="evenodd"/></svg>
+                Next
               </a>
               {% endif %}
             </div>
@@ -1381,14 +822,16 @@
         {% else %}
         <div class="grade-section">
           <div style="padding: var(--space-8); text-align: center">
-            <i
-              class="fas fa-exclamation-triangle"
+            <svg
+              class="heroicon heroicon-lg heroicon-solar-yellow"
               style="
-                font-size: 3rem;
+                width: 3rem;
+                height: 3rem;
                 color: var(--warning-color);
                 margin-bottom: var(--space-4);
               "
-            ></i>
+              viewBox="0 0 24 24" fill="currentColor"
+            ><path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/></svg>
             <h3
               style="color: var(--text-primary); margin-bottom: var(--space-2)"
             >
@@ -1414,10 +857,12 @@
               </div>
               <div style="margin-top: var(--space-6);">
                 <a href="{{ url_for('admin.student_promotion') }}" class="btn-clear" style="text-decoration: none; display: inline-block; margin-right: var(--space-2);">
-                  <i class="fas fa-refresh"></i> Clear All Filters
+                  <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-1.449.388 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.515a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9A9 9 0 1020.163 13.41z" clip-rule="evenodd"/></svg>
+                  Clear All Filters
                 </a>
                 <a href="{{ url_for('classteacher.manage_students') }}" class="btn-filter" style="text-decoration: none; display: inline-block;">
-                  <i class="fas fa-users"></i> Manage Students
+                  <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path d="M1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 007 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/></svg>
+                  Manage Students
                 </a>
               </div>
               {% endif %}
@@ -1454,121 +899,146 @@
 
       if (document.querySelector('.page-container') || document.title.includes('Student Promotion')) {
         console.log('✅ Page condition met - executing JavaScript');
-        // Global variables with error handling
-        let promotionData;
-        try {
-          {% if promotion_data_json %}
-          promotionData = {{ promotion_data_json | tojson }};
-          {% else %}
-          promotionData = { students_by_grade: {}, available_streams: {}, pagination: { page: 1, total_pages: 1 } };
-          {% endif %}
-
-          if (!promotionData || typeof promotionData !== 'object') {
-            console.warn('Invalid promotion data structure, using defaults');
-            promotionData = { students_by_grade: {}, available_streams: {}, pagination: { page: 1, total_pages: 1 } };
-          }
-        } catch (error) {
-          console.warn('Error loading student promotion data, using defaults:', error.message);
-          promotionData = { students_by_grade: {}, available_streams: {}, pagination: { page: 1, total_pages: 1 } };
+        // Load promotion data from JSON script
+        let promotionData = { students_by_grade: {}, available_streams: {}, pagination: { page: 1, total_pages: 1 } };
+        const dataEl = document.getElementById('promotion-data');
+        if (dataEl && dataEl.textContent) {
+          try { promotionData = JSON.parse(dataEl.textContent); } catch (e) { console.warn('Error parsing promotion data JSON, using defaults:', e.message); }
         }
+        let selectedStudents = new Map();
+        let availableStreams = promotionData.available_streams || {};
+        let charts = {};
 
-      let selectedStudents = new Map();
-      let availableStreams = promotionData.available_streams || {};
-      let charts = {};
+        // Dynamic filtering functions
+        function updateGradeOptions() {
+          console.log('🔍 updateGradeOptions called');
+          const educationLevelSelect = document.getElementById('education_level');
+          const gradeSelect = document.getElementById('grade_id');
 
-      // Dynamic filtering functions
-      function updateGradeOptions() {
-        console.log('🔍 updateGradeOptions called');
-        const educationLevelSelect = document.getElementById('education_level');
-        const gradeSelect = document.getElementById('grade_id');
-
-        if (!educationLevelSelect || !gradeSelect) {
-          console.error('❌ Filter elements not found');
-          return;
-        }
-
-        const selectedEducationLevel = educationLevelSelect.value;
-        console.log('🔍 Selected education level:', selectedEducationLevel);
-
-        // Store current grade selection to preserve it if it's still valid
-        const currentGradeSelection = gradeSelect.value;
-        let isCurrentGradeStillValid = false;
-
-        // Show/hide grade options based on education level
-        let visibleGrades = 0;
-        Array.from(gradeSelect.options).forEach(option => {
-          if (option.value === '') {
-            option.style.display = 'block'; // Always show "All Grades"
+          if (!educationLevelSelect || !gradeSelect) {
+            console.error('❌ Filter elements not found');
             return;
           }
 
-          const gradeEducationLevel = option.getAttribute('data-education-level');
-          if (!selectedEducationLevel || gradeEducationLevel === selectedEducationLevel) {
-            option.style.display = 'block';
-            option.disabled = false;
-            visibleGrades++;
+          const selectedEducationLevel = educationLevelSelect.value;
+          console.log('🔍 Selected education level:', selectedEducationLevel);
 
-            // Check if current selection is still valid
-            if (option.value === currentGradeSelection) {
-              isCurrentGradeStillValid = true;
-            }
-          } else {
-            option.style.display = 'none';
-            option.disabled = true;
-          }
-        });
+          // Store current grade selection to preserve it if it's still valid
+          const currentGradeSelection = gradeSelect.value;
+          let isCurrentGradeStillValid = false;
 
-        // Reset grade selection only if current selection is no longer valid
-        if (!isCurrentGradeStillValid && currentGradeSelection !== '') {
-          gradeSelect.value = '';
-          console.log('🔍 Reset grade selection (no longer valid for selected education level)');
-        }
-
-        console.log(`🔍 Showing ${visibleGrades} grades for education level: ${selectedEducationLevel || 'All'}`);
-
-        // Update streams when grade options change
-        updateStreamOptions();
-      }
-
-      function updateStreamOptions() {
-        console.log('🔍 updateStreamOptions called');
-        const gradeSelect = document.getElementById('grade_id');
-        const streamSelect = document.getElementById('stream_id');
-        const educationLevelSelect = document.getElementById('education_level');
-
-        if (!gradeSelect || !streamSelect) {
-          console.error('❌ Grade or stream select elements not found');
-          return;
-        }
-
-        const selectedGradeId = gradeSelect.value;
-        const selectedEducationLevel = educationLevelSelect ? educationLevelSelect.value : '';
-        console.log('🔍 Selected grade ID:', selectedGradeId);
-
-        // Store current stream selection to preserve it if it's still valid
-        const currentStreamSelection = streamSelect.value;
-        let isCurrentStreamStillValid = false;
-
-        if (!selectedGradeId) {
-          // Show streams based on education level if no specific grade is selected
-          let visibleStreams = 0;
-          Array.from(streamSelect.options).forEach(option => {
+          // Show/hide grade options based on education level
+          let visibleGrades = 0;
+          Array.from(gradeSelect.options).forEach(option => {
             if (option.value === '') {
-              option.style.display = 'block'; // Always show "All Streams"
-              option.disabled = false;
+              option.style.display = 'block'; // Always show "All Grades"
               return;
             }
 
-            const streamGradeName = option.getAttribute('data-grade-name');
+            const gradeEducationLevel = option.getAttribute('data-education-level');
+            if (!selectedEducationLevel || gradeEducationLevel === selectedEducationLevel) {
+              option.style.display = 'block';
+              option.disabled = false;
+              visibleGrades++;
 
-            // If education level is selected, only show streams from grades in that level
-            if (selectedEducationLevel) {
-              const gradeOption = Array.from(gradeSelect.options).find(opt =>
-                opt.textContent.trim() === streamGradeName &&
-                opt.getAttribute('data-education-level') === selectedEducationLevel &&
-                opt.style.display !== 'none'
-              );
-              if (gradeOption) {
+              // Check if current selection is still valid
+              if (option.value === currentGradeSelection) {
+                isCurrentGradeStillValid = true;
+              }
+            } else {
+              option.style.display = 'none';
+              option.disabled = true;
+            }
+          });
+
+          // Reset grade selection only if current selection is no longer valid
+          if (!isCurrentGradeStillValid && currentGradeSelection !== '') {
+            gradeSelect.value = '';
+            console.log('🔍 Reset grade selection (no longer valid for selected education level)');
+          }
+
+          console.log(`🔍 Showing ${visibleGrades} grades for education level: ${selectedEducationLevel || 'All'}`);
+
+          // Update streams when grade options change
+          updateStreamOptions();
+        }
+
+        function updateStreamOptions() {
+          console.log('🔍 updateStreamOptions called');
+          const gradeSelect = document.getElementById('grade_id');
+          const streamSelect = document.getElementById('stream_id');
+          const educationLevelSelect = document.getElementById('education_level');
+
+          if (!gradeSelect || !streamSelect) {
+            console.error('❌ Grade or stream select elements not found');
+            return;
+          }
+
+          const selectedGradeId = gradeSelect.value;
+          const selectedEducationLevel = educationLevelSelect ? educationLevelSelect.value : '';
+          console.log('🔍 Selected grade ID:', selectedGradeId);
+
+          // Store current stream selection to preserve it if it's still valid
+          const currentStreamSelection = streamSelect.value;
+          let isCurrentStreamStillValid = false;
+
+          if (!selectedGradeId) {
+            // Show streams based on education level if no specific grade is selected
+            let visibleStreams = 0;
+            Array.from(streamSelect.options).forEach(option => {
+              if (option.value === '') {
+                option.style.display = 'block'; // Always show "All Streams"
+                option.disabled = false;
+                return;
+              }
+
+              const streamGradeName = option.getAttribute('data-grade-name');
+
+              // If education level is selected, only show streams from grades in that level
+              if (selectedEducationLevel) {
+                const gradeOption = Array.from(gradeSelect.options).find(opt =>
+                  opt.textContent.trim() === streamGradeName &&
+                  opt.getAttribute('data-education-level') === selectedEducationLevel &&
+                  opt.style.display !== 'none'
+                );
+                if (gradeOption) {
+                  option.style.display = 'block';
+                  option.disabled = false;
+                  visibleStreams++;
+                  if (option.value === currentStreamSelection) {
+                    isCurrentStreamStillValid = true;
+                  }
+                } else {
+                  option.style.display = 'none';
+                  option.disabled = true;
+                }
+              } else {
+                option.style.display = 'block';
+                option.disabled = false;
+                visibleStreams++;
+                if (option.value === currentStreamSelection) {
+                  isCurrentStreamStillValid = true;
+                }
+              }
+            });
+            console.log(`🔍 Showing ${visibleStreams} streams (no specific grade selected)`);
+          } else {
+            // Get the selected grade name
+            const selectedGradeOption = gradeSelect.options[gradeSelect.selectedIndex];
+            const selectedGradeName = selectedGradeOption.textContent.trim();
+            console.log('🔍 Selected grade name:', selectedGradeName);
+
+            // Show/hide stream options based on selected grade
+            let visibleStreams = 0;
+            Array.from(streamSelect.options).forEach(option => {
+              if (option.value === '') {
+                option.style.display = 'block'; // Always show "All Streams"
+                option.disabled = false;
+                return;
+              }
+
+              const streamGradeName = option.getAttribute('data-grade-name');
+              if (streamGradeName === selectedGradeName) {
                 option.style.display = 'block';
                 option.disabled = false;
                 visibleStreams++;
@@ -1579,326 +1049,291 @@
                 option.style.display = 'none';
                 option.disabled = true;
               }
-            } else {
-              option.style.display = 'block';
-              option.disabled = false;
-              visibleStreams++;
-              if (option.value === currentStreamSelection) {
-                isCurrentStreamStillValid = true;
-              }
-            }
-          });
-          console.log(`🔍 Showing ${visibleStreams} streams (no specific grade selected)`);
-        } else {
-          // Get the selected grade name
-          const selectedGradeOption = gradeSelect.options[gradeSelect.selectedIndex];
-          const selectedGradeName = selectedGradeOption.textContent.trim();
-          console.log('🔍 Selected grade name:', selectedGradeName);
-
-          // Show/hide stream options based on selected grade
-          let visibleStreams = 0;
-          Array.from(streamSelect.options).forEach(option => {
-            if (option.value === '') {
-              option.style.display = 'block'; // Always show "All Streams"
-              option.disabled = false;
-              return;
-            }
-
-            const streamGradeName = option.getAttribute('data-grade-name');
-            if (streamGradeName === selectedGradeName) {
-              option.style.display = 'block';
-              option.disabled = false;
-              visibleStreams++;
-              if (option.value === currentStreamSelection) {
-                isCurrentStreamStillValid = true;
-              }
-            } else {
-              option.style.display = 'none';
-              option.disabled = true;
-            }
-          });
-          console.log(`🔍 Showing ${visibleStreams} streams for grade: ${selectedGradeName}`);
-        }
-
-        // Reset stream selection only if current selection is no longer valid
-        if (!isCurrentStreamStillValid && currentStreamSelection !== '') {
-          streamSelect.value = '';
-          console.log('🔍 Reset stream selection (no longer valid for selected grade)');
-        }
-      }
-
-      // Apply filters function
-      function applyFilters() {
-        console.log('🔍 applyFilters called');
-        const form = document.querySelector('.filter-form');
-        if (form) {
-          console.log('🔍 Submitting filter form');
-          form.submit();
-        } else {
-          console.error('❌ Filter form not found');
-        }
-      }
-
-      // Helper function to update grade statistics
-      function updateGradeStats(gradeData) {
-        try {
-          const totalGrades = gradeData.length;
-          const largestGrade = gradeData.reduce((max, current) =>
-            current.count > max.count ? current : max,
-            { grade: '-', count: 0 }
-          );
-
-          const totalGradesEl = document.getElementById('totalGrades');
-          const largestGradeEl = document.getElementById('largestGrade');
-
-          if (totalGradesEl) totalGradesEl.textContent = totalGrades;
-          if (largestGradeEl) {
-            largestGradeEl.textContent =
-              totalGrades > 0 ? `Grade ${largestGrade.grade} (${largestGrade.count})` : '-';
+            });
+            console.log(`🔍 Showing ${visibleStreams} streams for grade: ${selectedGradeName}`);
           }
-        } catch (error) {
-          console.error('❌ Error updating grade stats:', error);
+
+          // Reset stream selection only if current selection is no longer valid
+          if (!isCurrentStreamStillValid && currentStreamSelection !== '') {
+            streamSelect.value = '';
+            console.log('🔍 Reset stream selection (no longer valid for selected grade)');
+          }
         }
-      }
 
-      // Helper function to calculate promotion actions
-      function calculatePromotionActions() {
-        let promote = 0;
-        let repeat = 0;
-        let transfer = 0;
-        let graduate = 0;
+        // Apply filters function
+        function applyFilters() {
+          console.log('🔍 applyFilters called');
+          const form = document.querySelector('.filter-form');
+          if (form) {
+            console.log('🔍 Submitting filter form');
+            form.submit();
+          } else {
+            console.error('❌ Filter form not found');
+          }
+        }
 
-        // Count students by their promotion actions
-        Object.keys(promotionData.students_by_grade || {}).forEach(grade => {
-          const students = promotionData.students_by_grade[grade].students || [];
+        // Helper function to update grade statistics
+        function updateGradeStats(gradeData) {
+          try {
+            const totalGrades = gradeData.length;
+            const largestGrade = gradeData.reduce((max, current) =>
+              current.count > max.count ? current : max,
+              { grade: '-', count: 0 }
+            );
 
-          students.forEach(student => {
-            // Grade 9 students graduate, others get promoted
-            if (grade === '9') {
-              graduate++;
-            } else {
-              promote++;
+            const totalGradesEl = document.getElementById('totalGrades');
+            const largestGradeEl = document.getElementById('largestGrade');
+
+            if (totalGradesEl) totalGradesEl.textContent = totalGrades;
+            if (largestGradeEl) {
+              largestGradeEl.textContent =
+                totalGrades > 0 ? `Grade ${largestGrade.grade} (${largestGrade.count})` : '-';
             }
-            // Note: repeat and transfer would be based on actual student data/marks
-            // For now, we'll show the basic promote/graduate split
+          } catch (error) {
+            console.error('❌ Error updating grade stats:', error);
+          }
+        }
+
+        // Helper function to calculate promotion actions
+        function calculatePromotionActions() {
+          let promote = 0;
+          let repeat = 0;
+          let transfer = 0;
+          let graduate = 0;
+
+          // Count students by their promotion actions
+          Object.keys(promotionData.students_by_grade || {}).forEach(grade => {
+            const students = promotionData.students_by_grade[grade].students || [];
+
+            students.forEach(student => {
+              // Grade 9 students graduate, others get promoted
+              if (grade === '9') {
+                graduate++;
+              } else {
+                promote++;
+              }
+              // Note: repeat and transfer would be based on actual student data/marks
+              // For now, we'll show the basic promote/graduate split
+            });
           });
+
+          return { promote, repeat, transfer, graduate };
+        }
+
+        // Helper function to update action statistics
+        function updateActionStats(actionData) {
+          try {
+            const promoteCountEl = document.getElementById('promoteCount');
+            const graduateCountEl = document.getElementById('graduateCount');
+
+            if (promoteCountEl) promoteCountEl.textContent = actionData.promote;
+            if (graduateCountEl) graduateCountEl.textContent = actionData.graduate;
+          } catch (error) {
+            console.error('❌ Error updating action stats:', error);
+          }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simple test to see if JavaScript is running
+            console.log('🚀 JavaScript is running - DOMContentLoaded fired');
+
+            initializeStreamSelectors();
+            // Hide stream selects for final grade
+            document.querySelectorAll('.stream-select').forEach(sel => { if (sel.dataset.final === '1') sel.style.display = 'none'; });
+            initializeSelectedStudents();
+
+            // Wait for Chart.js to load before initializing charts
+            function waitForChartJs() {
+              if (typeof Chart !== 'undefined') {
+                initializeCharts();
+              } else {
+                console.log('⏳ Waiting for Chart.js to load...');
+                setTimeout(waitForChartJs, 100);
+              }
+            }
+
+            waitForChartJs();
+            updateStatistics();
+
+            // Initialize filtering
+            updateGradeOptions();
+            updateStreamOptions();
+
+            // Add event listeners for real-time cascading
+            const educationLevelSelect = document.getElementById('education_level');
+            const gradeSelect = document.getElementById('grade_id');
+
+            if (educationLevelSelect) {
+              educationLevelSelect.addEventListener('change', function() {
+                console.log('🔍 Education level changed to:', this.value);
+                updateGradeOptions();
+              });
+            }
+
+            if (gradeSelect) {
+              gradeSelect.addEventListener('change', function() {
+                console.log('🔍 Grade changed to:', this.value);
+                updateStreamOptions();
+              });
+            }
         });
 
-        return { promote, repeat, transfer, graduate };
-      }
+        // Enhanced Analytics Functions
+        function initializeCharts() {
+            console.log('🎯 Initializing charts...');
+            console.log('🎯 Chart.js available:', typeof Chart !== 'undefined');
+            console.log('🎯 Promotion data:', promotionData);
 
-      // Helper function to update action statistics
-      function updateActionStats(actionData) {
-        try {
-          const promoteCountEl = document.getElementById('promoteCount');
-          const graduateCountEl = document.getElementById('graduateCount');
+            // Also send to server if possible
+            fetch('/headteacher/debug-log', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    message: '🎯 Initializing charts...',
+                    data: {
+                        hasPromotionData: !!promotionData,
+                        studentsCount: Object.keys(promotionData.students_by_grade || {}).length,
+                        chartJsAvailable: typeof Chart !== 'undefined'
+                    }
+                })
+            }).catch(() => {}); // Silent fail
 
-          if (promoteCountEl) promoteCountEl.textContent = actionData.promote;
-          if (graduateCountEl) graduateCountEl.textContent = actionData.graduate;
-        } catch (error) {
-          console.error('❌ Error updating action stats:', error);
-        }
-      }
-
-      // Initialize page
-      document.addEventListener('DOMContentLoaded', function() {
-          // Simple test to see if JavaScript is running
-          console.log('🚀 JavaScript is running - DOMContentLoaded fired');
-
-          initializeStreamSelectors();
-          initializeSelectedStudents();
-
-          // Wait for Chart.js to load before initializing charts
-          function waitForChartJs() {
-            if (typeof Chart !== 'undefined') {
-              initializeCharts();
-            } else {
-              console.log('⏳ Waiting for Chart.js to load...');
-              setTimeout(waitForChartJs, 100);
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.error('❌ Chart.js is not loaded!');
+                return;
             }
-          }
 
-          waitForChartJs();
-          updateStatistics();
+            // Grade Distribution Chart
+            const gradeCtx = document.getElementById('gradeChart');
+            if (gradeCtx) {
+                fetch('/headteacher/debug-log', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: '🎯 Found grade chart canvas'})
+                }).catch(() => {});
 
-          // Initialize filtering
-          updateGradeOptions();
-          updateStreamOptions();
+                try {
+                    const gradeData = Object.keys(promotionData.students_by_grade || {}).map(grade => ({
+                        grade: grade,
+                        count: promotionData.students_by_grade[grade].students.length
+                    }));
 
-          // Add event listeners for real-time cascading
-          const educationLevelSelect = document.getElementById('education_level');
-          const gradeSelect = document.getElementById('grade_id');
+                    fetch('/headteacher/debug-log', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            message: '🎯 Grade data prepared',
+                            data: gradeData
+                        })
+                    }).catch(() => {});
 
-          if (educationLevelSelect) {
-            educationLevelSelect.addEventListener('change', function() {
-              console.log('🔍 Education level changed to:', this.value);
-              updateGradeOptions();
-            });
-          }
+                    // Update grade statistics
+                    updateGradeStats(gradeData);
 
-          if (gradeSelect) {
-            gradeSelect.addEventListener('change', function() {
-              console.log('🔍 Grade changed to:', this.value);
-              updateStreamOptions();
-            });
-          }
-      });
+                    if (gradeData.length === 0) {
+                        fetch('/headteacher/debug-log', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({message: '🎯 No grade data available, showing placeholder'})
+                        }).catch(() => {});
+                        gradeCtx.getContext('2d').fillText('No data available', 150, 100);
+                        return;
+                    }
 
-      // Enhanced Analytics Functions
-      function initializeCharts() {
-          console.log('🎯 Initializing charts...');
-          console.log('🎯 Chart.js available:', typeof Chart !== 'undefined');
-          console.log('🎯 Promotion data:', promotionData);
+                    charts.gradeChart = new Chart(gradeCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: gradeData.map(d => `Grade ${d.grade}`),
+                            datasets: [{
+                                data: gradeData.map(d => d.count),
+                                backgroundColor: [
+                                    '#667eea', '#764ba2', '#10b981', '#f59e0b',
+                                    '#ef4444', '#3b82f6', '#8b5cf6', '#06b6d4'
+                                ],
+                                borderWidth: 3,
+                                borderColor: '#ffffff',
+                                hoverBorderWidth: 4,
+                                hoverOffset: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        padding: 15,
+                                        usePointStyle: true,
+                                        font: { size: 12 },
+                                        color: '#374151'
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((context.parsed * 100) / total).toFixed(1);
+                                            return `${context.label}: ${context.parsed} students (${percentage}%)`;
+                                        }
+                                    }
+                                }
+                            },
+                            animation: {
+                                animateRotate: true,
+                                duration: 1000
+                            }
+                        }
+                    });
+                    fetch('/headteacher/debug-log', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({message: '🎯 Grade chart created successfully'})
+                    }).catch(() => {});
+                } catch (error) {
+                    fetch('/headteacher/debug-log', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            message: '❌ Error creating grade chart',
+                            error: error.message
+                        })
+                    }).catch(() => {});
+                }
+            } else {
+                fetch('/headteacher/debug-log', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: '❌ Grade chart canvas not found'})
+                }).catch(() => {});
+            }
 
-          // Also send to server if possible
-          fetch('/headteacher/debug-log', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({
-                  message: '🎯 Initializing charts...',
-                  data: {
-                      hasPromotionData: !!promotionData,
-                      studentsCount: Object.keys(promotionData.students_by_grade || {}).length,
-                      chartJsAvailable: typeof Chart !== 'undefined'
-                  }
-              })
-          }).catch(() => {}); // Silent fail
+            // Promotion Actions Chart
+            const actionCtx = document.getElementById('actionChart');
+            if (actionCtx) {
+                fetch('/headteacher/debug-log', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: '🎯 Found action chart canvas'})
+                }).catch(() => {});
 
-          // Check if Chart.js is loaded
-          if (typeof Chart === 'undefined') {
-              console.error('❌ Chart.js is not loaded!');
-              return;
-          }
+                try {
+                    const actionData = calculatePromotionActions();
+                    fetch('/headteacher/debug-log', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            message: '🎯 Action data calculated',
+                            data: actionData
+                        })
+                    }).catch(() => {});
 
-          // Grade Distribution Chart
-          const gradeCtx = document.getElementById('gradeChart');
-          if (gradeCtx) {
-              fetch('/headteacher/debug-log', {
-                  method: 'POST',
-                  headers: {'Content-Type': 'application/json'},
-                  body: JSON.stringify({message: '🎯 Found grade chart canvas'})
-              }).catch(() => {});
+                    // Update action statistics
+                    updateActionStats(actionData);
 
-              try {
-                  const gradeData = Object.keys(promotionData.students_by_grade || {}).map(grade => ({
-                      grade: grade,
-                      count: promotionData.students_by_grade[grade].students.length
-                  }));
-
-                  fetch('/headteacher/debug-log', {
-                      method: 'POST',
-                      headers: {'Content-Type': 'application/json'},
-                      body: JSON.stringify({
-                          message: '🎯 Grade data prepared',
-                          data: gradeData
-                      })
-                  }).catch(() => {});
-
-                  // Update grade statistics
-                  updateGradeStats(gradeData);
-
-                  if (gradeData.length === 0) {
-                      fetch('/headteacher/debug-log', {
-                          method: 'POST',
-                          headers: {'Content-Type': 'application/json'},
-                          body: JSON.stringify({message: '🎯 No grade data available, showing placeholder'})
-                      }).catch(() => {});
-                      gradeCtx.getContext('2d').fillText('No data available', 150, 100);
-                      return;
-                  }
-
-                  charts.gradeChart = new Chart(gradeCtx, {
-                      type: 'doughnut',
-                      data: {
-                          labels: gradeData.map(d => `Grade ${d.grade}`),
-                          datasets: [{
-                              data: gradeData.map(d => d.count),
-                              backgroundColor: [
-                                  '#667eea', '#764ba2', '#10b981', '#f59e0b',
-                                  '#ef4444', '#3b82f6', '#8b5cf6', '#06b6d4'
-                              ],
-                              borderWidth: 3,
-                              borderColor: '#ffffff',
-                              hoverBorderWidth: 4,
-                              hoverOffset: 8
-                          }]
-                      },
-                      options: {
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: {
-                              legend: {
-                                  position: 'bottom',
-                                  labels: {
-                                      padding: 15,
-                                      usePointStyle: true,
-                                      font: { size: 12 },
-                                      color: '#374151'
-                                  }
-                              },
-                              tooltip: {
-                                  callbacks: {
-                                      label: function(context) {
-                                          const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                          const percentage = ((context.parsed * 100) / total).toFixed(1);
-                                          return `${context.label}: ${context.parsed} students (${percentage}%)`;
-                                      }
-                                  }
-                              }
-                          },
-                          animation: {
-                              animateRotate: true,
-                              duration: 1000
-                          }
-                      }
-                  });
-                  fetch('/headteacher/debug-log', {
-                      method: 'POST',
-                      headers: {'Content-Type': 'application/json'},
-                      body: JSON.stringify({message: '🎯 Grade chart created successfully'})
-                  }).catch(() => {});
-              } catch (error) {
-                  fetch('/headteacher/debug-log', {
-                      method: 'POST',
-                      headers: {'Content-Type': 'application/json'},
-                      body: JSON.stringify({
-                          message: '❌ Error creating grade chart',
-                          error: error.message
-                      })
-                  }).catch(() => {});
-              }
-          } else {
-              fetch('/headteacher/debug-log', {
-                  method: 'POST',
-                  headers: {'Content-Type': 'application/json'},
-                  body: JSON.stringify({message: '❌ Grade chart canvas not found'})
-              }).catch(() => {});
-          }
-
-          // Promotion Actions Chart
-          const actionCtx = document.getElementById('actionChart');
-          if (actionCtx) {
-              fetch('/headteacher/debug-log', {
-                  method: 'POST',
-                  headers: {'Content-Type': 'application/json'},
-                  body: JSON.stringify({message: '🎯 Found action chart canvas'})
-              }).catch(() => {});
-
-              try {
-                  const actionData = calculatePromotionActions();
-                  fetch('/headteacher/debug-log', {
-                      method: 'POST',
-                      headers: {'Content-Type': 'application/json'},
-                      body: JSON.stringify({
-                          message: '🎯 Action data calculated',
-                          data: actionData
-                      })
-                  }).catch(() => {});
-
-                  // Update action statistics
-                  updateActionStats(actionData);
-
-              charts.actionChart = new Chart(actionCtx, {
+                charts.actionChart = new Chart(actionCtx, {
                   type: 'doughnut',
                   data: {
                       labels: ['Promote', 'Repeat', 'Transfer', 'Graduate'],
@@ -1961,7 +1396,7 @@
                   headers: {'Content-Type': 'application/json'},
                   body: JSON.stringify({message: '🎯 Action chart created successfully'})
               }).catch(() => {});
-              } catch (error) {
+                } catch (error) {
                   fetch('/headteacher/debug-log', {
                       method: 'POST',
                       headers: {'Content-Type': 'application/json'},
@@ -1970,364 +1405,392 @@
                           error: error.message
                       })
                   }).catch(() => {});
-              }
-          } else {
-              fetch('/headteacher/debug-log', {
-                  method: 'POST',
-                  headers: {'Content-Type': 'application/json'},
-                  body: JSON.stringify({message: '❌ Action chart canvas not found'})
-              }).catch(() => {});
+                }
+            } else {
+                fetch('/headteacher/debug-log', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: '❌ Action chart canvas not found'})
+                }).catch(() => {});
+            }
+
+            // Performance Trends Chart - Placeholder (implemented later)
+            // This will be implemented in a future update with historical data analysis
+        }
+
+        // Batch Processing Functions
+        function selectAllEligible() {
+            document.querySelectorAll('.student-select').forEach(checkbox => {
+                const studentRow = checkbox.closest('tr');
+                const statusBadge = studentRow.querySelector('.status-badge');
+                if (statusBadge && (statusBadge.classList.contains('status-eligible') || statusBadge.classList.contains('status-final'))) {
+                    checkbox.checked = true;
+                    updateStudentSelection(parseInt(checkbox.dataset.studentId));
+                }
+            });
+            updateStatistics();
+        }
+
+        function promoteSelected() {
+            selectedStudents.forEach((studentData, studentId) => {
+                const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+                if (actionSelect && !studentData.is_final_grade) {
+                    actionSelect.value = 'promote';
+                    updatePromotionAction(studentId);
+                }
+            });
+            updateStatistics();
+        }
+
+        function repeatSelected() {
+            selectedStudents.forEach((studentData, studentId) => {
+                const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+                if (actionSelect) {
+                    actionSelect.value = 'repeat';
+                    updatePromotionAction(studentId);
+                }
+            });
+            updateStatistics();
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.student-select').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.querySelectorAll('.grade-select-all').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectedStudents.clear();
+            updateStatistics();
+        }
+
+        function previewPromotions() {
+            if (selectedStudents.size === 0) {
+                alert('Please select at least one student to preview promotions.');
+                return;
+            }
+
+            let previewText = 'PROMOTION PREVIEW\\n\\n';
+            let promoteCount = 0, repeatCount = 0, transferCount = 0, graduateCount = 0;
+
+            selectedStudents.forEach((studentData, studentId) => {
+                const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+                const action = actionSelect ? actionSelect.value : 'promote';
+
+                previewText += `${studentData.name} (${studentData.admission_number}) - ${action.toUpperCase()}\\n`;
+
+                switch(action) {
+                    case 'promote': promoteCount++; break;
+                    case 'repeat': repeatCount++; break;
+                    case 'transfer': transferCount++; break;
+                    case 'graduate': graduateCount++; break;
+                }
+            });
+
+            previewText += `\\nSUMMARY:\\nPromote: ${promoteCount}\\nRepeat: ${repeatCount}\\nTransfer: ${transferCount}\\nGraduate: ${graduateCount}`;
+
+            alert(previewText);
+        }
+
+        function exportPromotionReport() {
+            const reportData = {
+                timestamp: new Date().toISOString(),
+                academic_year: promotionData.academic_year,
+                total_students: promotionData.promotion_summary.total_students,
+                selected_students: Array.from(selectedStudents.entries()).map(([id, data]) => ({
+                    id: id,
+                    name: data.name,
+                    admission_number: data.admission_number,
+                    current_grade: data.grade_name,
+                    action: document.querySelector(`.promotion-select[data-student-id="${id}"]`)?.value || 'promote'
+                }))
+            };
+
+            const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `promotion_report_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function updateStatistics() {
+            const selectedCount = selectedStudents.size;
+            let promoteCount = 0, repeatCount = 0, transferCount = 0, graduateCount = 0;
+            let promotionReady = 0, reviewRequired = 0;
+
+            selectedStudents.forEach((studentData, studentId) => {
+                const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+                const action = actionSelect ? actionSelect.value : 'promote';
+
+                switch(action) {
+                    case 'promote':
+                        promoteCount++;
+                        if (studentData.can_be_promoted) promotionReady++;
+                        else reviewRequired++;
+                        break;
+                    case 'repeat': repeatCount++; reviewRequired++; break;
+                    case 'transfer': transferCount++; reviewRequired++; break;
+                    case 'graduate': graduateCount++; promotionReady++; break;
+                }
+            });
+
+            // Update UI counters
+            document.getElementById('selected-count').textContent = selectedCount;
+            document.getElementById('promotion-ready').textContent = promotionReady;
+            document.getElementById('review-required').textContent = reviewRequired;
+            document.getElementById('repeat-count').textContent = repeatCount;
+            document.getElementById('transfer-count').textContent = transferCount;
+
+            // Update charts
+            if (charts.actionChart) {
+                charts.actionChart.data.datasets[0].data = [promoteCount, repeatCount, transferCount, graduateCount];
+                charts.actionChart.update();
+            }
+        }
+
+        function initializeStreamSelectors() {
+            // Populate stream selectors based on target grades
+            document.querySelectorAll('.stream-select').forEach(select => {
+                const studentId = select.dataset.studentId;
+                const targetGradeSpan = document.querySelector(`.target-grade[data-student-id="${studentId}"]`);
+                const targetGrade = targetGradeSpan ? targetGradeSpan.textContent.trim() : '';
+
+                if (targetGrade && availableStreams[targetGrade]) {
+                    select.innerHTML = '<option value="">Select Stream</option>';
+                    availableStreams[targetGrade].forEach(stream => {
+                        const option = document.createElement('option');
+                        option.value = stream.id;
+                        option.textContent = stream.name;
+                        select.appendChild(option);
+                    });
+                }
+            });
+        }
+
+        function initializeSelectedStudents() {
+            // Initialize selected students map with eligible students
+            document.querySelectorAll('.student-select:checked').forEach(checkbox => {
+                const studentId = parseInt(checkbox.dataset.studentId);
+                const grade = checkbox.dataset.grade;
+
+                // Find student data
+                const studentData = findStudentData(studentId, grade);
+                if (studentData) {
+                    selectedStudents.set(studentId, {
+                        ...studentData,
+                        action: studentData.is_final_grade ? 'graduate' : 'promote',
+                        notes: ''
+                    });
+                }
+            });
+        }
+
+        function findStudentData(studentId, grade) {
+            if (promotionData.students_by_grade && promotionData.students_by_grade[grade]) {
+                return promotionData.students_by_grade[grade].students.find(s => s.id === studentId);
+            }
+            return null;
+        }
+
+        function toggleGradeSelection(grade) {
+            const gradeCheckbox = document.querySelector(`.grade-select-all[data-grade="${grade}"]`);
+            const studentCheckboxes = document.querySelectorAll(`.student-select[data-grade="${grade}"]`);
+
+            studentCheckboxes.forEach(checkbox => {
+                checkbox.checked = gradeCheckbox.checked;
+                updateStudentSelection(parseInt(checkbox.dataset.studentId));
+            });
+        }
+
+        function updateStudentSelection(studentId) {
+            const checkbox = document.querySelector(`.student-select[data-student-id="${studentId}"]`);
+            const grade = checkbox.dataset.grade;
+
+            if (checkbox.checked) {
+                const studentData = findStudentData(studentId, grade);
+                if (studentData) {
+                    selectedStudents.set(studentId, {
+                        ...studentData,
+                        action: studentData.is_final_grade ? 'graduate' : 'promote',
+                        notes: ''
+                    });
+                }
+            } else {
+                selectedStudents.delete(studentId);
+            }
+            updateStatistics();
+        }
+
+        function updatePromotionAction(studentId) {
+            const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+            const streamSelect = document.querySelector(`.stream-select[data-student-id="${studentId}"]`);
+            const targetGradeSpan = document.querySelector(`.target-grade[data-student-id="${studentId}"]`);
+
+            const action = actionSelect.value;
+
+            // Update selected student data
+            if (selectedStudents.has(studentId)) {
+                selectedStudents.get(studentId).action = action;
+            }
+
+            // Show/hide stream selector based on action
+            if (action === 'promote') {
+                streamSelect.style.display = 'block';
+                targetGradeSpan.style.display = 'inline';
+            } else {
+                streamSelect.style.display = 'none';
+                if (action === 'repeat') {
+                    targetGradeSpan.textContent = 'Same Grade';
+                } else if (action === 'transfer' || action === 'graduate') {
+                    targetGradeSpan.textContent = 'N/A';
+                }
+            }
+            updateStatistics();
+        }
+
+
+
+        function processPromotions() {
+            if (selectedStudents.size === 0) {
+                alert('Please select at least one student for promotion.');
+                return;
+            }
+
+            // Collect promotion data
+            const academicYearTo = document.getElementById('academic-year').value;
+            const studentsData = [];
+
+            selectedStudents.forEach((studentData, studentId) => {
+                const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
+                const streamSelect = document.querySelector(`.stream-select[data-student-id="${studentId}"]`);
+                const notesInput = document.querySelector(`.notes-input[data-student-id="${studentId}"]`);
+
+                const action = actionSelect.value;
+                let promotionRecord = {
+                    student_id: studentId,
+                    action: action,
+                    notes: notesInput.value.trim()
+                };
+
+                // Add target grade and stream for promotions
+                if (action === 'promote') {
+                    const nextGrade = studentData.next_grade;
+                    if (nextGrade) {
+                        // Find grade ID by name
+                        const gradeId = findGradeIdByName(nextGrade);
+                        if (gradeId) {
+                            promotionRecord.to_grade_id = gradeId;
+                            if (streamSelect.value) {
+                                promotionRecord.to_stream_id = parseInt(streamSelect.value);
+                            }
+                        }
+                    }
+                }
+
+                studentsData.push(promotionRecord);
+            });
+
+            const promotionPayload = {
+                academic_year_to: academicYearTo,
+                students: studentsData
+            };
+
+            // Show loading overlay
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            // Send promotion request
+            fetch('{{ url_for("admin.process_promotion") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(promotionPayload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                if (data.success) {
+                    alert(`Promotion completed successfully!\n\nProcessed: ${data.processed_count} students\nPromoted: ${data.promoted_count}\nRepeated: ${data.repeated_count}\nTransferred: ${data.transferred_count}\nGraduated: ${data.graduated_count}`);
+                    location.reload(); // Refresh the page to show updated data
+                } else {
+                    alert(`Promotion failed: ${data.error}`);
+                    if (data.errors && data.errors.length > 0) {
+                        console.error('Promotion errors:', data.errors);
+                    }
+                }
+            })
+            .catch(error => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                alert(`Error processing promotions: ${error.message}`);
+                console.error('Error:', error);
+            });
+        }
+
+        function findGradeIdByName(gradeName) {
+            // This would need to be populated with actual grade data
+            // For now, return a placeholder - this should be enhanced with real data
+            const gradeMap = {
+                'Grade 1': 1, 'Grade 2': 2, 'Grade 3': 3, 'Grade 4': 4,
+                'Grade 5': 5, 'Grade 6': 6, 'Grade 7': 7, 'Grade 8': 8, 'Grade 9': 9
+            };
+            return gradeMap[gradeName] || null;
+        }
+
+        // Update notes for selected students
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('notes-input')) {
+                const studentId = parseInt(e.target.dataset.studentId);
+                if (selectedStudents.has(studentId)) {
+                    selectedStudents.get(studentId).notes = e.target.value.trim();
+                }
+            }
+        });
+
+        // Update stream selection for selected students
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('stream-select')) {
+                const studentId = parseInt(e.target.dataset.studentId);
+                if (selectedStudents.has(studentId)) {
+                    selectedStudents.get(studentId).to_stream_id = parseInt(e.target.value) || null;
+                }
+            }
+        });
+
+        // Delegated change handlers to replace inline onchange
+        document.body.addEventListener('change', function(e) {
+          if (e.target.classList.contains('student-select')) {
+            const id = parseInt(e.target.dataset.studentId);
+            updateStudentSelection(id);
           }
-
-          // Performance Trends Chart - Placeholder (implemented later)
-          // This will be implemented in a future update with historical data analysis
-      }
-
-      // Batch Processing Functions
-      function selectAllEligible() {
-          document.querySelectorAll('.student-select').forEach(checkbox => {
-              const studentRow = checkbox.closest('tr');
-              const statusBadge = studentRow.querySelector('.status-badge');
-              if (statusBadge && (statusBadge.classList.contains('status-eligible') || statusBadge.classList.contains('status-final'))) {
-                  checkbox.checked = true;
-                  updateStudentSelection(parseInt(checkbox.dataset.studentId));
-              }
-          });
-          updateStatistics();
-      }
-
-      function promoteSelected() {
-          selectedStudents.forEach((studentData, studentId) => {
-              const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
-              if (actionSelect && !studentData.is_final_grade) {
-                  actionSelect.value = 'promote';
-                  updatePromotionAction(studentId);
-              }
-          });
-          updateStatistics();
-      }
-
-      function repeatSelected() {
-          selectedStudents.forEach((studentData, studentId) => {
-              const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
-              if (actionSelect) {
-                  actionSelect.value = 'repeat';
-                  updatePromotionAction(studentId);
-              }
-          });
-          updateStatistics();
-      }
-
-      function clearSelection() {
-          document.querySelectorAll('.student-select').forEach(checkbox => {
-              checkbox.checked = false;
-          });
-          document.querySelectorAll('.grade-select-all').forEach(checkbox => {
-              checkbox.checked = false;
-          });
-          selectedStudents.clear();
-          updateStatistics();
-      }
-
-      function previewPromotions() {
-          if (selectedStudents.size === 0) {
-              alert('Please select at least one student to preview promotions.');
-              return;
+          if (e.target.classList.contains('grade-select-all')) {
+            const grade = e.target.dataset.grade;
+            toggleGradeSelection(grade);
           }
-
-          let previewText = 'PROMOTION PREVIEW\\n\\n';
-          let promoteCount = 0, repeatCount = 0, transferCount = 0, graduateCount = 0;
-
-          selectedStudents.forEach((studentData, studentId) => {
-              const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
-              const action = actionSelect ? actionSelect.value : 'promote';
-
-              previewText += `${studentData.name} (${studentData.admission_number}) - ${action.toUpperCase()}\\n`;
-
-              switch(action) {
-                  case 'promote': promoteCount++; break;
-                  case 'repeat': repeatCount++; break;
-                  case 'transfer': transferCount++; break;
-                  case 'graduate': graduateCount++; break;
-              }
-          });
-
-          previewText += `\\nSUMMARY:\\nPromote: ${promoteCount}\\nRepeat: ${repeatCount}\\nTransfer: ${transferCount}\\nGraduate: ${graduateCount}`;
-
-          alert(previewText);
-      }
-
-      function exportPromotionReport() {
-          const reportData = {
-              timestamp: new Date().toISOString(),
-              academic_year: promotionData.academic_year,
-              total_students: promotionData.promotion_summary.total_students,
-              selected_students: Array.from(selectedStudents.entries()).map(([id, data]) => ({
-                  id: id,
-                  name: data.name,
-                  admission_number: data.admission_number,
-                  current_grade: data.grade_name,
-                  action: document.querySelector(`.promotion-select[data-student-id="${id}"]`)?.value || 'promote'
-              }))
-          };
-
-          const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `promotion_report_${new Date().toISOString().split('T')[0]}.json`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-      }
-
-      function updateStatistics() {
-          const selectedCount = selectedStudents.size;
-          let promoteCount = 0, repeatCount = 0, transferCount = 0, graduateCount = 0;
-          let promotionReady = 0, reviewRequired = 0;
-
-          selectedStudents.forEach((studentData, studentId) => {
-              const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
-              const action = actionSelect ? actionSelect.value : 'promote';
-
-              switch(action) {
-                  case 'promote':
-                      promoteCount++;
-                      if (studentData.can_be_promoted) promotionReady++;
-                      else reviewRequired++;
-                      break;
-                  case 'repeat': repeatCount++; reviewRequired++; break;
-                  case 'transfer': transferCount++; reviewRequired++; break;
-                  case 'graduate': graduateCount++; promotionReady++; break;
-              }
-          });
-
-          // Update UI counters
-          document.getElementById('selected-count').textContent = selectedCount;
-          document.getElementById('promotion-ready').textContent = promotionReady;
-          document.getElementById('review-required').textContent = reviewRequired;
-          document.getElementById('repeat-count').textContent = repeatCount;
-          document.getElementById('transfer-count').textContent = transferCount;
-
-          // Update charts
-          if (charts.actionChart) {
-              charts.actionChart.data.datasets[0].data = [promoteCount, repeatCount, transferCount, graduateCount];
-              charts.actionChart.update();
+          if (e.target.classList.contains('promotion-select')) {
+            const id = parseInt(e.target.dataset.studentId);
+            updatePromotionAction(id);
           }
-      }
-
-      function initializeStreamSelectors() {
-          // Populate stream selectors based on target grades
-          document.querySelectorAll('.stream-select').forEach(select => {
-              const studentId = select.dataset.studentId;
-              const targetGradeSpan = document.querySelector(`.target-grade[data-student-id="${studentId}"]`);
-              const targetGrade = targetGradeSpan ? targetGradeSpan.textContent.trim() : '';
-
-              if (targetGrade && availableStreams[targetGrade]) {
-                  select.innerHTML = '<option value="">Select Stream</option>';
-                  availableStreams[targetGrade].forEach(stream => {
-                      const option = document.createElement('option');
-                      option.value = stream.id;
-                      option.textContent = stream.name;
-                      select.appendChild(option);
-                  });
-              }
-          });
-      }
-
-      function initializeSelectedStudents() {
-          // Initialize selected students map with eligible students
-          document.querySelectorAll('.student-select:checked').forEach(checkbox => {
-              const studentId = parseInt(checkbox.dataset.studentId);
-              const grade = checkbox.dataset.grade;
-
-              // Find student data
-              const studentData = findStudentData(studentId, grade);
-              if (studentData) {
-                  selectedStudents.set(studentId, {
-                      ...studentData,
-                      action: studentData.is_final_grade ? 'graduate' : 'promote',
-                      notes: ''
-                  });
-              }
-          });
-      }
-
-      function findStudentData(studentId, grade) {
-          if (promotionData.students_by_grade && promotionData.students_by_grade[grade]) {
-              return promotionData.students_by_grade[grade].students.find(s => s.id === studentId);
+          if (e.target.id === 'per_page') {
+            const form = e.target.closest('form'); if (form) form.submit();
           }
-          return null;
-      }
+        });
 
-      function toggleGradeSelection(grade) {
-          const gradeCheckbox = document.querySelector(`.grade-select-all[data-grade="${grade}"]`);
-          const studentCheckboxes = document.querySelectorAll(`.student-select[data-grade="${grade}"]`);
-
-          studentCheckboxes.forEach(checkbox => {
-              checkbox.checked = gradeCheckbox.checked;
-              updateStudentSelection(parseInt(checkbox.dataset.studentId));
-          });
-      }
-
-      function updateStudentSelection(studentId) {
-          const checkbox = document.querySelector(`.student-select[data-student-id="${studentId}"]`);
-          const grade = checkbox.dataset.grade;
-
-          if (checkbox.checked) {
-              const studentData = findStudentData(studentId, grade);
-              if (studentData) {
-                  selectedStudents.set(studentId, {
-                      ...studentData,
-                      action: studentData.is_final_grade ? 'graduate' : 'promote',
-                      notes: ''
-                  });
-              }
-          } else {
-              selectedStudents.delete(studentId);
+        // Delegated click handlers for batch and control buttons
+        document.body.addEventListener('click', function(e) {
+          const btn = e.target.closest('[data-action]');
+          if (btn && btn.dataset.action === 'create-sample-data') {
+            if (!confirm('This will create sample students for testing. Continue?')) {
+              e.preventDefault();
+            }
           }
-          updateStatistics();
+        });
       }
-
-      function updatePromotionAction(studentId) {
-          const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
-          const streamSelect = document.querySelector(`.stream-select[data-student-id="${studentId}"]`);
-          const targetGradeSpan = document.querySelector(`.target-grade[data-student-id="${studentId}"]`);
-
-          const action = actionSelect.value;
-
-          // Update selected student data
-          if (selectedStudents.has(studentId)) {
-              selectedStudents.get(studentId).action = action;
-          }
-
-          // Show/hide stream selector based on action
-          if (action === 'promote') {
-              streamSelect.style.display = 'block';
-              targetGradeSpan.style.display = 'inline';
-          } else {
-              streamSelect.style.display = 'none';
-              if (action === 'repeat') {
-                  targetGradeSpan.textContent = 'Same Grade';
-              } else if (action === 'transfer' || action === 'graduate') {
-                  targetGradeSpan.textContent = 'N/A';
-              }
-          }
-          updateStatistics();
-      }
-
-
-
-      function processPromotions() {
-          if (selectedStudents.size === 0) {
-              alert('Please select at least one student for promotion.');
-              return;
-          }
-
-          // Collect promotion data
-          const academicYearTo = document.getElementById('academic-year').value;
-          const studentsData = [];
-
-          selectedStudents.forEach((studentData, studentId) => {
-              const actionSelect = document.querySelector(`.promotion-select[data-student-id="${studentId}"]`);
-              const streamSelect = document.querySelector(`.stream-select[data-student-id="${studentId}"]`);
-              const notesInput = document.querySelector(`.notes-input[data-student-id="${studentId}"]`);
-
-              const action = actionSelect.value;
-              let promotionRecord = {
-                  student_id: studentId,
-                  action: action,
-                  notes: notesInput.value.trim()
-              };
-
-              // Add target grade and stream for promotions
-              if (action === 'promote') {
-                  const nextGrade = studentData.next_grade;
-                  if (nextGrade) {
-                      // Find grade ID by name
-                      const gradeId = findGradeIdByName(nextGrade);
-                      if (gradeId) {
-                          promotionRecord.to_grade_id = gradeId;
-                          if (streamSelect.value) {
-                              promotionRecord.to_stream_id = parseInt(streamSelect.value);
-                          }
-                      }
-                  }
-              }
-
-              studentsData.push(promotionRecord);
-          });
-
-          const promotionPayload = {
-              academic_year_to: academicYearTo,
-              students: studentsData
-          };
-
-          // Show loading overlay
-          document.getElementById('loadingOverlay').style.display = 'flex';
-
-          // Send promotion request
-          fetch('{{ url_for("admin.process_promotion") }}', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-              },
-              body: JSON.stringify(promotionPayload)
-          })
-          .then(response => response.json())
-          .then(data => {
-              document.getElementById('loadingOverlay').style.display = 'none';
-
-              if (data.success) {
-                  alert(`Promotion completed successfully!\n\nProcessed: ${data.processed_count} students\nPromoted: ${data.promoted_count}\nRepeated: ${data.repeated_count}\nTransferred: ${data.transferred_count}\nGraduated: ${data.graduated_count}`);
-                  location.reload(); // Refresh the page to show updated data
-              } else {
-                  alert(`Promotion failed: ${data.error}`);
-                  if (data.errors && data.errors.length > 0) {
-                      console.error('Promotion errors:', data.errors);
-                  }
-              }
-          })
-          .catch(error => {
-              document.getElementById('loadingOverlay').style.display = 'none';
-              alert(`Error processing promotions: ${error.message}`);
-              console.error('Error:', error);
-          });
-      }
-
-      function findGradeIdByName(gradeName) {
-          // This would need to be populated with actual grade data
-          // For now, return a placeholder - this should be enhanced with real data
-          const gradeMap = {
-              'Grade 1': 1, 'Grade 2': 2, 'Grade 3': 3, 'Grade 4': 4,
-              'Grade 5': 5, 'Grade 6': 6, 'Grade 7': 7, 'Grade 8': 8, 'Grade 9': 9
-          };
-          return gradeMap[gradeName] || null;
-      }
-
-      // Update notes for selected students
-      document.addEventListener('input', function(e) {
-          if (e.target.classList.contains('notes-input')) {
-              const studentId = parseInt(e.target.dataset.studentId);
-              if (selectedStudents.has(studentId)) {
-                  selectedStudents.get(studentId).notes = e.target.value.trim();
-              }
-          }
-      });
-
-      // Update stream selection for selected students
-      document.addEventListener('change', function(e) {
-          if (e.target.classList.contains('stream-select')) {
-              const studentId = parseInt(e.target.dataset.studentId);
-              if (selectedStudents.has(studentId)) {
-                  selectedStudents.get(studentId).to_stream_id = parseInt(e.target.value) || null;
-              }
-          }
-      });
-
-      } // End of student promotion page check
     </script>
   </body>
 </html>
