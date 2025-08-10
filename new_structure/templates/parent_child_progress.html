@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {{ child.name }}'s Progress - {{ school_info.school_name or 'Hillview
+      School' }}
+    </title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --solar-primary: #b58900;
+        --solar-secondary: #cb4b16;
+        --solar-accent: #2aa198;
+        --solar-bg: #fdf6e3;
+        --solar-surface: #eee8d5;
+        --solar-text: #657b83;
+        --solar-text-dark: #073642;
+        --solar-shadow: rgba(181, 137, 0, 0.1);
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--solar-bg) 0%,
+          var(--solar-surface) 100%
+        );
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--solar-text);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px var(--solar-shadow);
+        padding: 30px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 3px solid var(--solar-primary);
+      }
+
+      .header h1 {
+        color: var(--solar-text-dark);
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+
+      .child-info {
+        background: linear-gradient(
+          135deg,
+          var(--solar-primary),
+          var(--solar-secondary)
+        );
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .progress-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .progress-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 25px var(--solar-shadow);
+        text-align: center;
+        border-top: 4px solid var(--solar-accent);
+      }
+
+      .progress-icon {
+        font-size: 3rem;
+        color: var(--solar-primary);
+        margin-bottom: 15px;
+      }
+
+      .progress-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--solar-text-dark);
+        margin-bottom: 10px;
+      }
+
+      .progress-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--solar-primary);
+      }
+
+      .progress-details {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px var(--solar-shadow);
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--solar-text-dark);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--solar-surface);
+      }
+
+      .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 20px;
+      }
+
+      .subjects-progress {
+        display: grid;
+        gap: 15px;
+      }
+
+      .subject-progress {
+        background: var(--solar-surface);
+        border-radius: 10px;
+        padding: 20px;
+        border-left: 4px solid var(--solar-primary);
+      }
+
+      .subject-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .subject-name {
+        font-weight: 600;
+        color: var(--solar-text-dark);
+      }
+
+      .subject-score {
+        font-weight: 700;
+        color: var(--solar-primary);
+      }
+
+      .progress-bar {
+        background: #e0e0e0;
+        border-radius: 10px;
+        height: 10px;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          var(--solar-accent),
+          var(--solar-primary)
+        );
+        border-radius: 10px;
+        transition: width 0.5s ease;
+      }
+
+      .trend-indicator {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.9rem;
+      }
+
+      .trend-up {
+        color: #28a745;
+      }
+      .trend-down {
+        color: #dc3545;
+      }
+      .trend-stable {
+        color: var(--solar-text);
+      }
+
+      .attendance-section {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 25px var(--solar-shadow);
+        margin-bottom: 30px;
+      }
+
+      .attendance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+      }
+
+      .attendance-card {
+        background: var(--solar-surface);
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .attendance-percentage {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--solar-primary);
+        margin-bottom: 10px;
+      }
+
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--solar-primary);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+      }
+
+      .back-btn:hover {
+        background: var(--solar-secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px var(--solar-shadow);
+      }
+
+      .recommendations {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 15px;
+        padding: 25px;
+        border-left: 5px solid var(--solar-accent);
+      }
+
+      .recommendation-item {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          margin: 10px;
+          padding: 20px;
+        }
+
+        .progress-overview {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="{{ url_for('parent.dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        Back to Dashboard
+      </a>
+
+      <div class="header">
+        <h1><i class="fas fa-chart-line"></i> Academic Progress</h1>
+      </div>
+
+      <div class="child-info">
+        <h2>{{ child.name }}</h2>
+        <p>Admission Number: {{ child.admission_number }}</p>
+        <p>Current Grade: {{ child.grade }} {{ child.stream }}</p>
+      </div>
+
+      <!-- Progress Overview -->
+      <div class="progress-overview">
+        <div class="progress-card">
+          <div class="progress-icon">
+            <i class="fas fa-trophy"></i>
+          </div>
+          <div class="progress-title">Overall Average</div>
+          <div class="progress-value">{{ overall_average or 'N/A' }}%</div>
+        </div>
+
+        <div class="progress-card">
+          <div class="progress-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="progress-title">Class Ranking</div>
+          <div class="progress-value">{{ class_rank or 'N/A' }}</div>
+        </div>
+
+        <div class="progress-card">
+          <div class="progress-icon">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <div class="progress-title">Attendance</div>
+          <div class="progress-value">{{ attendance_rate or 'N/A' }}%</div>
+        </div>
+
+        <div class="progress-card">
+          <div class="progress-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <div class="progress-title">Subjects</div>
+          <div class="progress-value">{{ total_subjects or 0 }}</div>
+        </div>
+      </div>
+
+      <!-- Subject Progress -->
+      <div class="progress-details">
+        <h2 class="section-title">
+          <i class="fas fa-chart-bar"></i>
+          Subject Performance
+        </h2>
+
+        {% if subjects_progress %}
+        <div class="subjects-progress">
+          {% for subject in subjects_progress %}
+          <div class="subject-progress">
+            <div class="subject-header">
+              <span class="subject-name">{{ subject.name }}</span>
+              <span class="subject-score">{{ subject.current_score }}%</span>
+            </div>
+
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                style="width: {{ subject.current_score }}%"
+              ></div>
+            </div>
+
+            <div class="trend-indicator trend-{{ subject.trend }}">
+              <i
+                class="fas fa-arrow-{{ 'up' if subject.trend == 'up' else 'down' if subject.trend == 'down' else 'right' }}"
+              ></i>
+              <span>{{ subject.trend_text }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div
+          style="text-align: center; padding: 40px; color: var(--solar-text)"
+        >
+          <i
+            class="fas fa-info-circle"
+            style="font-size: 2rem; margin-bottom: 10px"
+          ></i>
+          <p>No progress data available yet.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Attendance Details -->
+      <div class="attendance-section">
+        <h2 class="section-title">
+          <i class="fas fa-calendar-alt"></i>
+          Attendance Overview
+        </h2>
+
+        <div class="attendance-grid">
+          <div class="attendance-card">
+            <div class="attendance-percentage">
+              {{ total_attendance or 'N/A' }}%
+            </div>
+            <div>Total Attendance</div>
+          </div>
+
+          <div class="attendance-card">
+            <div class="attendance-percentage">{{ days_present or 0 }}</div>
+            <div>Days Present</div>
+          </div>
+
+          <div class="attendance-card">
+            <div class="attendance-percentage">{{ days_absent or 0 }}</div>
+            <div>Days Absent</div>
+          </div>
+
+          <div class="attendance-card">
+            <div class="attendance-percentage">{{ school_days or 0 }}</div>
+            <div>Total School Days</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      {% if recommendations %}
+      <div class="recommendations">
+        <h2 class="section-title">
+          <i class="fas fa-lightbulb"></i>
+          Recommendations for Improvement
+        </h2>
+
+        {% for recommendation in recommendations %}
+        <div class="recommendation-item">
+          <strong>{{ recommendation.area }}:</strong> {{
+          recommendation.suggestion }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Comments from Teachers -->
+      {% if teacher_comments %}
+      <div class="progress-details">
+        <h2 class="section-title">
+          <i class="fas fa-comments"></i>
+          Teacher Comments
+        </h2>
+
+        {% for comment in teacher_comments %}
+        <div class="recommendation-item">
+          <strong>{{ comment.subject }} - {{ comment.teacher }}:</strong>
+          <p style="margin: 10px 0 0 0">{{ comment.comment }}</p>
+          <small style="color: var(--solar-text)">{{ comment.date }}</small>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <script>
+      // Add smooth animations when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        const progressBars = document.querySelectorAll(".progress-fill");
+        progressBars.forEach((bar) => {
+          const width = bar.style.width;
+          bar.style.width = "0%";
+          setTimeout(() => {
+            bar.style.width = width;
+          }, 500);
+        });
+      });
+    </script>
+  </body>
+</html>

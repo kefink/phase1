@@ -194,7 +194,7 @@ def dashboard():
         else:
             recent_emails = []
         
-        return render_template('parent_dashboard.html',
+        return render_template('parent_management_dashboard_enhanced.html',
                              parent=parent,
                              children=children,
                              recent_emails=recent_emails)
@@ -281,6 +281,446 @@ def logout():
     session.clear()
     flash('You have been logged out successfully.', 'success')
     return redirect(url_for('parent.login'))
+
+@parent_simple_bp.route('/child/<int:child_id>/grades')
+@parent_required
+def child_grades(child_id):
+    """View child's grades and academic performance."""
+    try:
+        parent = Parent.query.get(session['parent_id'])
+        
+        # Verify this child belongs to this parent
+        child_link = ParentStudent.query.filter_by(
+            parent_id=parent.id, 
+            student_id=child_id
+        ).first()
+        
+        if not child_link:
+            flash('You do not have access to this child\'s records.', 'error')
+            return redirect(url_for('parent.dashboard'))
+        
+        # Get child information
+        child_query = db.session.query(Student, Grade, Stream)\
+            .join(Grade, Student.grade_id == Grade.id)\
+            .join(Stream, Student.stream_id == Stream.id)\
+            .filter(Student.id == child_id).first()
+        
+        if not child_query:
+            flash('Child not found.', 'error')
+            return redirect(url_for('parent.dashboard'))
+        
+        child, grade, stream = child_query
+        
+        # For now, return mock data since we don't have marks table integration yet
+        # TODO: Integrate with actual marks/assessment tables when available
+        grades_data = [
+            {
+                'term': 'term_1',
+                'average': 85.5,
+                'subjects': [
+                    {'name': 'Mathematics', 'entrance': 88, 'mid_term': 85, 'end_term': 87, 'average': 86.7, 'remarks': 'Excellent work'},
+                    {'name': 'English', 'entrance': 82, 'mid_term': 84, 'end_term': 86, 'average': 84.0, 'remarks': 'Good progress'},
+                    {'name': 'Science', 'entrance': 90, 'mid_term': 88, 'end_term': 89, 'average': 89.0, 'remarks': 'Outstanding performance'},
+                ]
+            }
+        ]
+        
+        child_info = {
+            'id': child.id,
+            'name': child.name,
+            'admission_number': child.admission_number,
+            'grade': grade.name,
+            'stream': stream.name
+        }
+        
+        return render_template('parent_child_grades.html',
+                             child=child_info,
+                             grades_data=grades_data,
+                             parent=parent)
+    
+    except Exception as e:
+        flash(f'Error loading grades: {str(e)}', 'error')
+        return redirect(url_for('parent.dashboard'))
+
+@parent_simple_bp.route('/child/<int:child_id>/progress')
+@parent_required
+def child_progress(child_id):
+    """View child's academic progress and trends."""
+    try:
+        parent = Parent.query.get(session['parent_id'])
+        
+        # Verify this child belongs to this parent
+        child_link = ParentStudent.query.filter_by(
+            parent_id=parent.id, 
+            student_id=child_id
+        ).first()
+        
+        if not child_link:
+            flash('You do not have access to this child\'s records.', 'error')
+            return redirect(url_for('parent.dashboard'))
+        
+        # Get child information
+        child_query = db.session.query(Student, Grade, Stream)\
+            .join(Grade, Student.grade_id == Grade.id)\
+            .join(Stream, Student.stream_id == Stream.id)\
+            .filter(Student.id == child_id).first()
+        
+        if not child_query:
+            flash('Child not found.', 'error')
+            return redirect(url_for('parent.dashboard'))
+        
+        child, grade, stream = child_query
+        
+        # Mock progress data - TODO: Replace with real data from marks tables
+        progress_data = {
+            'overall_average': 85.5,
+            'class_rank': 5,
+            'attendance_rate': 95.2,
+            'total_subjects': 8,
+            'subjects_progress': [
+                {'name': 'Mathematics', 'current_score': 87, 'trend': 'up', 'trend_text': '+3% from last term'},
+                {'name': 'English', 'current_score': 84, 'trend': 'stable', 'trend_text': 'No change'},
+                {'name': 'Science', 'current_score': 89, 'trend': 'up', 'trend_text': '+5% from last term'},
+            ],
+            'total_attendance': 95.2,
+            'days_present': 190,
+            'days_absent': 10,
+            'school_days': 200,
+            'recommendations': [
+                {'area': 'Mathematics', 'suggestion': 'Focus on algebra concepts and practice more word problems'},
+                {'area': 'Study Habits', 'suggestion': 'Maintain consistent daily study schedule'}
+            ],
+            'teacher_comments': [
+                {'subject': 'Mathematics', 'teacher': 'Mr. Smith', 'comment': 'Shows great improvement in problem-solving', 'date': '2025-01-15'},
+                {'subject': 'English', 'teacher': 'Ms. Johnson', 'comment': 'Excellent reading comprehension skills', 'date': '2025-01-14'}
+            ]
+        }
+        
+        child_info = {
+            'id': child.id,
+            'name': child.name,
+            'admission_number': child.admission_number,
+            'grade': grade.name,
+            'stream': stream.name
+        }
+        
+        return render_template('parent_child_progress.html',
+                             child=child_info,
+                             parent=parent,
+                             **progress_data)
+    
+    except Exception as e:
+        flash(f'Error loading progress: {str(e)}', 'error')
+        return redirect(url_for('parent.dashboard'))
+
+@parent_simple_bp.route('/child/<int:child_id>/reports')
+@parent_required
+def child_reports(child_id):
+    """View all reports for a specific child."""
+    try:
+        parent = Parent.query.get(session['parent_id'])
+        
+        # Verify this child belongs to this parent
+        child_link = ParentStudent.query.filter_by(
+            parent_id=parent.id, 
+            student_id=child_id
+        ).first()
+        
+        if not child_link:
+            flash('You do not have access to this child\'s records.', 'error')
+            return redirect(url_for('parent.dashboard'))
+        
+        # Get child information
+        child_query = db.session.query(Student, Grade, Stream)\
+            .join(Grade, Student.grade_id == Grade.id)\
+            .join(Stream, Student.stream_id == Stream.id)\
+            .filter(Student.id == child_id).first()
+        
+        if not child_query:
+            flash('Child not found.', 'error')
+            return redirect(url_for('parent.dashboard'))
+        
+        child, grade, stream = child_query
+        
+        # Get filter parameters
+        selected_year = request.args.get('year', '')
+        selected_term = request.args.get('term', '')
+        selected_assessment = request.args.get('assessment', '')
+        
+        # Mock reports data - TODO: Replace with real report data
+        available_years = ['2024', '2025']
+        reports = [
+            {
+                'id': 1,
+                'title': 'Term 1 Mid-Term Report',
+                'term': 'term_1',
+                'assessment_type': 'mid_term',
+                'status': 'available',
+                'generated_date': datetime(2025, 1, 15),
+                'overall_average': 85.5,
+                'class_rank': 5
+            },
+            {
+                'id': 2,
+                'title': 'Term 1 End-Term Report',
+                'term': 'term_1',
+                'assessment_type': 'end_term',
+                'status': 'processing',
+                'generated_date': None,
+                'overall_average': None,
+                'class_rank': None
+            }
+        ]
+        
+        child_info = {
+            'id': child.id,
+            'name': child.name,
+            'admission_number': child.admission_number,
+            'grade': grade.name,
+            'stream': stream.name
+        }
+        
+        return render_template('parent_child_reports.html',
+                             child=child_info,
+                             reports=reports,
+                             available_years=available_years,
+                             selected_year=selected_year,
+                             selected_term=selected_term,
+                             selected_assessment=selected_assessment,
+                             parent=parent)
+    
+    except Exception as e:
+        flash(f'Error loading reports: {str(e)}', 'error')
+        return redirect(url_for('parent.dashboard'))
+
+@parent_simple_bp.route('/student/<int:student_id>/report/<int:report_id>')
+@parent_required
+def view_individual_report(student_id, report_id):
+    """View individual student report."""
+    try:
+        parent = Parent.query.get(session['parent_id'])
+        
+        # Verify this child belongs to this parent
+        child_link = ParentStudent.query.filter_by(
+            parent_id=parent.id, 
+            student_id=student_id
+        ).first()
+        
+        if not child_link:
+            flash('You do not have access to this student\'s records.', 'error')
+            return redirect(url_for('parent.dashboard'))
+        
+        # Get student information
+        student_query = db.session.query(Student, Grade, Stream)\
+            .join(Grade, Student.grade_id == Grade.id)\
+            .join(Stream, Student.stream_id == Stream.id)\
+            .filter(Student.id == student_id).first()
+        
+        if not student_query:
+            flash('Student not found.', 'error')
+            return redirect(url_for('parent.dashboard'))
+        
+        student, grade, stream = student_query
+        
+        # Mock report data - TODO: Replace with real report data from marks tables
+        report_data = {
+            'student_name': student.name,
+            'admission_no': student.admission_number,
+            'grade': grade.name,
+            'stream': stream.name,
+            'term': 'term_1',
+            'assessment_type': 'mid_term',
+            'academic_year': '2025',
+            'avg_percentage': 85.5,
+            'total': 683,
+            'total_possible_marks': 800,
+            'mean_points': 7.2,
+            'table_data': [
+                {
+                    'subject': 'Mathematics',
+                    'entrance': 88, 'mid_term': 85, 'end_term': 87, 'avg': 87,
+                    'current_assessment': 85,
+                    'grade': 'ME1',
+                    'remarks': 'Good performance'
+                },
+                {
+                    'subject': 'English',
+                    'entrance': 82, 'mid_term': 84, 'end_term': 86, 'avg': 84,
+                    'current_assessment': 84,
+                    'grade': 'ME1',
+                    'remarks': 'Steady progress'
+                },
+                {
+                    'subject': 'Science',
+                    'entrance': 90, 'mid_term': 88, 'end_term': 89, 'avg': 89,
+                    'current_assessment': 88,
+                    'grade': 'EE2',
+                    'remarks': 'Excellent work'
+                }
+            ],
+            'subject_teachers': {
+                'Mathematics': {'full_name': 'Mr. John Smith', 'username': 'j.smith'},
+                'English': {'full_name': 'Ms. Jane Johnson', 'username': 'j.johnson'},
+                'Science': {'full_name': 'Dr. Mary Wilson', 'username': 'm.wilson'}
+            },
+            'class_teacher_comment': 'Shows consistent effort and improvement across all subjects.',
+            'headteacher_comment': 'Keep up the excellent work!',
+            'general_remarks': 'A dedicated student with great potential.',
+            'term_info': {'next_term_opening_date': '2025-02-15'},
+            'school_info': {
+                'school_name': 'Hillview School',
+                'address': '123 Education Street',
+                'phone': '+254-123-456789',
+                'email': 'info@hillviewschool.ac.ke',
+                'logo': None
+            }
+        }
+        
+        return render_template('parent_individual_report.html',
+                             student_id=student_id,
+                             report_id=report_id,
+                             **report_data)
+    
+    except Exception as e:
+        flash(f'Error loading report: {str(e)}', 'error')
+        return redirect(url_for('parent.dashboard'))
+
+@parent_simple_bp.route('/reports/archive')
+@parent_required
+def reports_archive():
+    """View all reports archive for all children."""
+    try:
+        parent = Parent.query.get(session['parent_id'])
+        
+        # Get all children for this parent
+        children_query = db.session.query(Student, Grade, Stream)\
+            .join(ParentStudent, Student.id == ParentStudent.student_id)\
+            .join(Grade, Student.grade_id == Grade.id)\
+            .join(Stream, Student.stream_id == Stream.id)\
+            .filter(ParentStudent.parent_id == parent.id)\
+            .order_by(Grade.name, Stream.name, Student.name)
+        
+        children = children_query.all()
+        
+        # Get filter parameters
+        selected_year = request.args.get('year', '')
+        selected_term = request.args.get('term', '')
+        selected_assessment = request.args.get('assessment', '')
+        selected_child = request.args.get('child', '')
+        search_query = request.args.get('search', '')
+        
+        # Mock archive data - TODO: Replace with real data
+        available_years = ['2023', '2024', '2025']
+        
+        # Group reports by year
+        reports_by_year = {
+            '2025': [
+                {
+                    'id': 1,
+                    'child_name': children[0][0].name if children else 'John Doe',
+                    'student_id': children[0][0].id if children else 1,
+                    'grade': 'Grade 5',
+                    'stream': 'A',
+                    'term': 'term_1',
+                    'assessment_type': 'mid_term',
+                    'generated_date': datetime(2025, 1, 15),
+                    'overall_average': 85.5,
+                    'performance_level': 'excellent'
+                }
+            ] if children else [],
+            '2024': [
+                {
+                    'id': 2,
+                    'child_name': children[0][0].name if children else 'John Doe',
+                    'student_id': children[0][0].id if children else 1,
+                    'grade': 'Grade 4',
+                    'stream': 'A',
+                    'term': 'term_3',
+                    'assessment_type': 'end_term',
+                    'generated_date': datetime(2024, 11, 30),
+                    'overall_average': 82.0,
+                    'performance_level': 'good'
+                }
+            ] if children else []
+        }
+        
+        archive_stats = {
+            'total_reports': sum(len(reports) for reports in reports_by_year.values()),
+            'total_children': len(children),
+            'academic_years_count': len(available_years),
+            'total_downloads': 45  # Mock data
+        }
+        
+        children_info = []
+        for student, grade, stream in children:
+            children_info.append({
+                'id': student.id,
+                'name': student.name,
+                'admission_number': student.admission_number,
+                'grade': grade.name,
+                'stream': stream.name
+            })
+        
+        return render_template('parent_reports_archive.html',
+                             children=children_info,
+                             reports_by_year=reports_by_year,
+                             available_years=available_years,
+                             selected_year=selected_year,
+                             selected_term=selected_term,
+                             selected_assessment=selected_assessment,
+                             selected_child=selected_child,
+                             search_query=search_query,
+                             **archive_stats)
+    
+    except Exception as e:
+        flash(f'Error loading reports archive: {str(e)}', 'error')
+        return redirect(url_for('parent.dashboard'))
+
+@parent_simple_bp.route('/download/report/<int:student_id>/<int:report_id>')
+@parent_required
+def download_report(student_id, report_id):
+    """Download individual report as PDF."""
+    try:
+        parent = Parent.query.get(session['parent_id'])
+        
+        # Verify this child belongs to this parent
+        child_link = ParentStudent.query.filter_by(
+            parent_id=parent.id, 
+            student_id=student_id
+        ).first()
+        
+        if not child_link:
+            flash('You do not have access to this student\'s records.', 'error')
+            return redirect(url_for('parent.dashboard'))
+        
+        # TODO: Implement actual PDF generation and download
+        flash('PDF download feature will be implemented soon.', 'info')
+        return redirect(url_for('parent.view_individual_report', 
+                              student_id=student_id, 
+                              report_id=report_id))
+    
+    except Exception as e:
+        flash(f'Error downloading report: {str(e)}', 'error')
+        return redirect(url_for('parent.dashboard'))
+
+@parent_simple_bp.route('/download/multiple', methods=['POST'])
+@parent_required
+def download_multiple_reports():
+    """Download multiple reports as ZIP file."""
+    try:
+        report_ids = request.form.getlist('report_ids[]')
+        
+        if not report_ids:
+            flash('No reports selected for download.', 'error')
+            return redirect(url_for('parent.reports_archive'))
+        
+        # TODO: Implement bulk download functionality
+        flash(f'Bulk download of {len(report_ids)} reports will be implemented soon.', 'info')
+        return redirect(url_for('parent.reports_archive'))
+    
+    except Exception as e:
+        flash(f'Error downloading reports: {str(e)}', 'error')
+        return redirect(url_for('parent.reports_archive'))
 
 @parent_simple_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():

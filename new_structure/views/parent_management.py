@@ -231,6 +231,96 @@ def dashboard():
         flash(f'Error loading parent management dashboard: {str(e)}', 'error')
         return redirect(url_for('admin.dashboard'))
 
+@parent_management_bp.route('/dashboard_enhanced')
+@headteacher_required
+def dashboard_enhanced():
+    """Enhanced parent management dashboard with advanced features."""
+    try:
+        # Get search and filter parameters
+        search_query = request.args.get('search', '')
+        status_filter = request.args.get('status', '')
+        verified_filter = request.args.get('verified', '')
+        
+        # Get statistics
+        total_parents = Parent.query.count()
+        active_parents = Parent.query.filter_by(is_active=True).count()
+        verified_parents = Parent.query.filter_by(is_verified=True).count()
+        total_links = ParentStudent.query.count()
+        
+        # Build query for recent parents with filters
+        recent_parents_query = Parent.query
+        
+        # Apply search filter
+        if search_query:
+            recent_parents_query = recent_parents_query.filter(
+                db.or_(
+                    Parent.first_name.ilike(f'%{search_query}%'),
+                    Parent.last_name.ilike(f'%{search_query}%'),
+                    Parent.email.ilike(f'%{search_query}%')
+                )
+            )
+        
+        # Apply status filter
+        if status_filter == 'active':
+            recent_parents_query = recent_parents_query.filter_by(is_active=True)
+        elif status_filter == 'inactive':
+            recent_parents_query = recent_parents_query.filter_by(is_active=False)
+        
+        # Apply verification filter
+        if verified_filter == '1':
+            recent_parents_query = recent_parents_query.filter_by(is_verified=True)
+        elif verified_filter == '0':
+            recent_parents_query = recent_parents_query.filter_by(is_verified=False)
+        
+        # Get recent parents with applied filters
+        recent_parents = recent_parents_query.order_by(Parent.created_at.desc()).limit(20).all()
+        
+        # Get parents without children linked
+        parents_without_children = db.session.query(Parent)\
+            .outerjoin(ParentStudent)\
+            .filter(ParentStudent.parent_id.is_(None))\
+            .order_by(Parent.created_at.desc())\
+            .all()
+        
+        # Get students without parents linked
+        students_without_parents = db.session.query(Student, Grade, Stream)\
+            .join(Grade, Student.grade_id == Grade.id)\
+            .join(Stream, Student.stream_id == Stream.id)\
+            .outerjoin(ParentStudent, Student.id == ParentStudent.student_id)\
+            .filter(ParentStudent.student_id.is_(None))\
+            .order_by(Grade.name, Stream.name, Student.name)\
+            .all()
+        
+        return render_template('parent_management_dashboard_enhanced.html',
+                             total_parents=total_parents,
+                             active_parents=active_parents,
+                             verified_parents=verified_parents,
+                             total_links=total_links,
+                             recent_parents=recent_parents,
+                             parents_without_children=parents_without_children,
+                             students_without_parents=[item[0] for item in students_without_parents])
+    
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error loading enhanced parent management dashboard: {str(e)}', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+@parent_management_bp.route('/stats')
+@headteacher_required
+def get_stats():
+    """API endpoint to get updated statistics for the enhanced dashboard."""
+    try:
+        stats = {
+            'success': True,
+            'total_parents': Parent.query.count(),
+            'active_parents': Parent.query.filter_by(is_active=True).count(),
+            'verified_parents': Parent.query.filter_by(is_verified=True).count(),
+            'total_links': ParentStudent.query.count()
+        }
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 @parent_management_bp.route('/add_parent', methods=['GET', 'POST'])
 @headteacher_required
 def add_parent():

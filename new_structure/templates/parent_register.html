@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0"
+    />
+    <meta
+      name="description"
+      content="Parent Registration - Hillview School Management System"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#b58900" />
+
+    <title>Parent Registration - Hillview School</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* Solar Theme Variables */
+      :root {
+        --solar-primary: #b58900;
+        --solar-secondary: #839496;
+        --solar-success: #2aa198;
+        --solar-info: #268bd2;
+        --solar-warning: #cb4b16;
+        --solar-danger: #d33682;
+        --solar-light: #fdf6e3;
+        --solar-dark: #073642;
+        --solar-body-bg: #002b36;
+        --solar-body-color: #839496;
+        --solar-card-bg: rgba(7, 54, 66, 0.95);
+        --solar-glass: rgba(7, 54, 66, 0.85);
+        --solar-glass-border: rgba(131, 148, 150, 0.3);
+        --solar-hover: rgba(181, 137, 0, 0.1);
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --border-radius: 0.5rem;
+        --border-radius-lg: 1rem;
+        --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Base Styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: var(--solar-body-bg);
+        color: var(--solar-body-color);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-4);
+      }
+
+      /* Container */
+      .container {
+        width: 100%;
+        max-width: 500px;
+      }
+
+      /* Registration Card */
+      .register-card {
+        background: var(--solar-glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--solar-glass-border);
+        border-radius: var(--border-radius-lg);
+        padding: var(--space-6);
+        box-shadow: var(--box-shadow-lg);
+      }
+
+      /* Header */
+      .header {
+        text-align: center;
+        margin-bottom: var(--space-6);
+      }
+
+      .header h1 {
+        color: var(--solar-primary);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: var(--space-2);
+      }
+
+      .header p {
+        color: var(--solar-secondary);
+        font-size: 1rem;
+      }
+
+      /* Form */
+      .form-group {
+        margin-bottom: var(--space-4);
+      }
+
+      .form-label {
+        display: block;
+        color: var(--solar-secondary);
+        font-weight: 500;
+        margin-bottom: var(--space-2);
+      }
+
+      .form-label.required::after {
+        content: " *";
+        color: var(--solar-danger);
+      }
+
+      .form-input {
+        width: 100%;
+        padding: var(--space-3) var(--space-4);
+        background: rgba(131, 148, 150, 0.05);
+        border: 1px solid var(--solar-glass-border);
+        border-radius: var(--border-radius);
+        color: var(--solar-body-color);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: var(--solar-primary);
+        box-shadow: 0 0 0 3px rgba(181, 137, 0, 0.1);
+      }
+
+      .form-input::placeholder {
+        color: var(--solar-secondary);
+      }
+
+      /* Submit Button */
+      .submit-btn {
+        width: 100%;
+        padding: var(--space-4);
+        background: var(--solar-primary);
+        color: var(--solar-dark);
+        border: none;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: var(--space-4);
+      }
+
+      .submit-btn:hover {
+        background: #d49600;
+        transform: translateY(-1px);
+      }
+
+      .submit-btn:active {
+        transform: translateY(0);
+      }
+
+      /* Links */
+      .form-links {
+        text-align: center;
+        margin-top: var(--space-4);
+      }
+
+      .form-link {
+        color: var(--solar-primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      .form-link:hover {
+        color: #d49600;
+      }
+
+      /* Flash Messages */
+      .flash-messages {
+        margin-bottom: var(--space-4);
+      }
+
+      .flash-message {
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--border-radius);
+        margin-bottom: var(--space-2);
+        font-weight: 500;
+      }
+
+      .flash-success {
+        background: rgba(42, 161, 152, 0.1);
+        border: 1px solid var(--solar-success);
+        color: var(--solar-success);
+      }
+
+      .flash-error {
+        background: rgba(211, 54, 130, 0.1);
+        border: 1px solid var(--solar-danger);
+        color: var(--solar-danger);
+      }
+
+      .flash-warning {
+        background: rgba(203, 75, 22, 0.1);
+        border: 1px solid var(--solar-warning);
+        color: var(--solar-warning);
+      }
+
+      .flash-info {
+        background: rgba(38, 139, 210, 0.1);
+        border: 1px solid var(--solar-info);
+        color: var(--solar-info);
+      }
+
+      /* Password Requirements */
+      .password-requirements {
+        background: rgba(131, 148, 150, 0.05);
+        border-radius: var(--border-radius);
+        padding: var(--space-3);
+        margin-top: var(--space-2);
+        font-size: 0.9rem;
+      }
+
+      .password-requirements h4 {
+        color: var(--solar-secondary);
+        margin-bottom: var(--space-2);
+        font-size: 0.9rem;
+      }
+
+      .password-requirements ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .password-requirements li {
+        color: var(--solar-secondary);
+        margin-bottom: var(--space-1);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .password-requirements li::before {
+        content: "•";
+        color: var(--solar-primary);
+        font-weight: bold;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 480px) {
+        body {
+          padding: var(--space-2);
+        }
+
+        .register-card {
+          padding: var(--space-4);
+        }
+
+        .header h1 {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="register-card">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %} {% endwith %}
+
+        <!-- Header -->
+        <div class="header">
+          <h1>Parent Registration</h1>
+          <p>
+            Create your parent account to access your children's academic
+            information
+          </p>
+        </div>
+
+        <!-- Registration Form -->
+        <form method="POST" action="{{ url_for('parent.register') }}">
+          <div class="form-group">
+            <label for="first_name" class="form-label required"
+              >First Name</label
+            >
+            <input
+              type="text"
+              id="first_name"
+              name="first_name"
+              class="form-input"
+              placeholder="Enter your first name"
+              required
+              value="{{ request.form.first_name if request.form.first_name else '' }}"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="last_name" class="form-label required">Last Name</label>
+            <input
+              type="text"
+              id="last_name"
+              name="last_name"
+              class="form-input"
+              placeholder="Enter your last name"
+              required
+              value="{{ request.form.last_name if request.form.last_name else '' }}"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label required">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input"
+              placeholder="Enter your email address"
+              required
+              value="{{ request.form.email if request.form.email else '' }}"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              class="form-input"
+              placeholder="Enter your phone number (optional)"
+              value="{{ request.form.phone if request.form.phone else '' }}"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label required">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="Create a strong password"
+              required
+            />
+            <div class="password-requirements">
+              <h4>Password Requirements:</h4>
+              <ul>
+                <li>At least 6 characters long</li>
+                <li>Use a combination of letters and numbers</li>
+                <li>Avoid using personal information</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirm_password" class="form-label required"
+              >Confirm Password</label
+            >
+            <input
+              type="password"
+              id="confirm_password"
+              name="confirm_password"
+              class="form-input"
+              placeholder="Confirm your password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="submit-btn">Create Account</button>
+
+          <div class="form-links">
+            <p>
+              Already have an account?
+              <a href="{{ url_for('parent.login') }}" class="form-link"
+                >Sign in here</a
+              >
+            </p>
+          </div>
+        </form>
+
+        <!-- Additional Information -->
+        <div
+          style="
+            margin-top: var(--space-6);
+            padding-top: var(--space-4);
+            border-top: 1px solid var(--solar-glass-border);
+            text-align: center;
+          "
+        >
+          <p style="color: var(--solar-secondary); font-size: 0.9rem">
+            After registration, you'll need to contact the school administration
+            to link your children to your account.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Password confirmation validation
+      document
+        .getElementById("confirm_password")
+        .addEventListener("input", function () {
+          const password = document.getElementById("password").value;
+          const confirmPassword = this.value;
+
+          if (password !== confirmPassword && confirmPassword.length > 0) {
+            this.style.borderColor = "var(--solar-danger)";
+          } else {
+            this.style.borderColor = "var(--solar-glass-border)";
+          }
+        });
+
+      // Form submission validation
+      document.querySelector("form").addEventListener("submit", function (e) {
+        const password = document.getElementById("password").value;
+        const confirmPassword =
+          document.getElementById("confirm_password").value;
+
+        if (password !== confirmPassword) {
+          e.preventDefault();
+          alert("Passwords do not match. Please check and try again.");
+          return false;
+        }
+
+        if (password.length < 6) {
+          e.preventDefault();
+          alert("Password must be at least 6 characters long.");
+          return false;
+        }
+      });
+    </script>
+  </body>
+</html>
