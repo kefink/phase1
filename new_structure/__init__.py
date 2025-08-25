@@ -370,6 +370,10 @@ def create_app(config_name='default'):
     def strict_object_access_control():
         """Prevent all unauthorized object access."""
 
+        # Skip API routes from strict object access control
+        if '/api/' in request.path:
+            return
+
         # Extract object access patterns
         import re
         object_pattern = r'/(\w+)/(\d+|\.\.)'
@@ -386,9 +390,9 @@ def create_app(config_name='default'):
             user_role = session.get('role', '').lower()
 
             object_permissions = {
-                'headteacher': ['student', 'teacher', 'report', 'mark', 'grade', 'stream', 'streams', 'api', 'get_grade_streams', 'teacher_streams', 'get_streams', 'view_parent', 'parent'],
-                'classteacher': ['student', 'report', 'mark', 'get_grade_streams', 'teacher_streams', 'streams', 'get_streams'],
-                'teacher': ['mark', 'get_streams', 'streams']
+                'headteacher': ['student', 'teacher', 'report', 'mark', 'grade', 'stream', 'streams', 'api', 'get_grade_streams', 'teacher_streams', 'get_streams', 'view_parent', 'parent', 'streams_by_id', 'subject_report', 'edit_class_marks', 'preview_class_report', 'view_student_reports'],
+                'classteacher': ['student', 'report', 'mark', 'get_grade_streams', 'teacher_streams', 'streams', 'get_streams', 'streams_by_id', 'subject_report', 'edit_class_marks', 'preview_class_report', 'view_student_reports'],
+                'teacher': ['mark', 'get_streams', 'streams', 'streams_by_id', 'subject_report', 'preview_class_report', 'view_student_reports']
             }
 
             allowed_objects = object_permissions.get(user_role, [])

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <title>
+      Class Teacher Dashboard - {{ school_info.school_name|default('Hillview
+      School') }}
+    </title>
+
+    <!-- Essential CSS only -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-color: #2563eb;
+        --success-color: #16a34a;
+        --warning-color: #d97706;
+        --danger-color: #dc2626;
+        --bg-color: #f8fafc;
+        --card-bg: #ffffff;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --border-color: #e2e8f0;
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        --radius: 0.5rem;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-primary);
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .header {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+      }
+
+      .header h1 {
+        font-size: 1.875rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .header p {
+        color: var(--text-secondary);
+      }
+
+      .alert {
+        padding: 1rem;
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+        border-left: 4px solid;
+      }
+
+      .alert-success {
+        background: #f0fdf4;
+        color: #166534;
+        border-color: var(--success-color);
+      }
+
+      .alert-info {
+        background: #f0f9ff;
+        color: #0c4a6e;
+        border-color: var(--primary-color);
+      }
+
+      .alert-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: var(--danger-color);
+      }
+
+      .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .action-card {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: all 0.2s ease;
+        border: 1px solid var(--border-color);
+      }
+
+      .action-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.15);
+      }
+
+      .action-card.primary {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .action-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        display: block;
+      }
+
+      .action-card h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .action-card p {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+      }
+
+      .action-card.primary p {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .stat-card {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+      }
+
+      .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+
+        .actions-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .action-card {
+          padding: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- Alerts -->
+      {% if error_message %}
+      <div class="alert alert-danger">
+        <strong><i class="fas fa-exclamation-triangle"></i> Error:</strong> {{
+        error_message|safe }}
+      </div>
+      {% endif %} {% if confirmation_message %}
+      <div class="alert alert-success">
+        <strong><i class="fas fa-check-circle"></i> Success:</strong> {{
+        confirmation_message|safe }}
+      </div>
+      {% endif %}
+
+      <!-- Assignment Status -->
+      {% if not has_assignments %}
+      <div class="alert alert-info">
+        <strong><i class="fas fa-info-circle"></i> Note:</strong> You are not
+        currently assigned to any class stream.
+      </div>
+      {% elif stream %}
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <strong>Assigned Class:</strong> Grade {{ grade }} {{ stream }}
+      </div>
+      {% endif %}
+
+      <!-- Header -->
+      <div class="header">
+        <h1>Class Teacher Dashboard</h1>
+        <p>Welcome back! Choose an action to get started.</p>
+      </div>
+
+      <!-- Quick Stats -->
+      {% if assignment_summary and assignment_summary.teacher %}
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">
+            {{ assignment_summary.teacher.total_students|default(0) }}
+          </div>
+          <div class="stat-label">Total Students</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">
+            {{ assignment_summary.teacher.subjects_count|default(0) }}
+          </div>
+          <div class="stat-label">Subjects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">
+            {{ assignment_summary.teacher.recent_reports|default(0) }}
+          </div>
+          <div class="stat-label">Recent Reports</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Main Actions -->
+      <div class="actions-grid">
+        <a
+          href="{{ url_for('classteacher.upload_marks') }}"
+          class="action-card primary"
+        >
+          <i class="fas fa-upload action-icon"></i>
+          <h3>Upload Marks</h3>
+          <p>Add student marks for tests and assignments</p>
+        </a>
+
+        <a
+          href="{{ url_for('classteacher.view_reports') }}"
+          class="action-card"
+        >
+          <i class="fas fa-chart-line action-icon"></i>
+          <h3>View Reports</h3>
+          <p>Browse existing reports and performance data</p>
+        </a>
+
+        <a
+          href="{{ url_for('classteacher.generate_reports') }}"
+          class="action-card"
+        >
+          <i class="fas fa-file-pdf action-icon"></i>
+          <h3>Generate Reports</h3>
+          <p>Create marksheets and performance reports</p>
+        </a>
+
+        <a
+          href="{{ url_for('classteacher.manage_students') }}"
+          class="action-card"
+        >
+          <i class="fas fa-users action-icon"></i>
+          <h3>Manage Students</h3>
+          <p>View and manage student information</p>
+        </a>
+
+        <a href="{{ url_for('classteacher.analytics') }}" class="action-card">
+          <i class="fas fa-analytics action-icon"></i>
+          <h3>Analytics</h3>
+          <p>View detailed performance analytics</p>
+        </a>
+
+        <a href="{{ url_for('classteacher.settings') }}" class="action-card">
+          <i class="fas fa-cogs action-icon"></i>
+          <h3>Settings</h3>
+          <p>Configure grades, subjects, and preferences</p>
+        </a>
+      </div>
+    </div>
+  </body>
+</html>

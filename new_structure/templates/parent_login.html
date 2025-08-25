@@ -450,11 +450,13 @@
     <div class="login-container">
       <div class="login-header">
         <div class="login-icon">
-          {% if school_info.logo_url and school_info.logo_url !=
-          '/static/images/default_logo.png' %}
+          {% set logo_url = url_for('static', filename=school_info.logo_path) if
+          school_info.logo_path and school_info.logo_path != 'hv.jpg' else
+          url_for('static',
+          filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') %}
           <img
-            src="{{ school_info.logo_url }}"
-            alt="School Logo"
+            src="{{ logo_url }}"
+            alt="{{ school_info.school_name or 'Hillview School' }} Logo"
             style="
               width: 58px;
               height: 58px;
@@ -462,9 +464,6 @@
               object-fit: cover;
             "
           />
-          {% else %}
-          <i class="fas fa-user-friends"></i>
-          {% endif %}
         </div>
         <h1 class="login-title">Parent Portal</h1>
         <p class="login-subtitle">Access your children's academic progress</p>

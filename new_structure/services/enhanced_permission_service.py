@@ -28,30 +28,76 @@ class EnhancedPermissionService:
             Boolean indicating if access is allowed
         """
         try:
+            print(f"🔍 Enhanced Permission Service Debug:")
+            print(f"  Function: {function_name}")
+            print(f"  Teacher ID: {teacher_id}")
+            
             # Check if function is allowed by default
-            if DefaultFunctionPermissions.is_default_allowed(function_name):
+            print(f"  Checking if {function_name} is in default allowed functions...")
+            
+            try:
+                is_default_allowed = DefaultFunctionPermissions.is_default_allowed(function_name)
+                print(f"  Is default allowed: {is_default_allowed}")
+            except Exception as e:
+                print(f"  🚨 Error checking default allowed: {e}")
+                import traceback
+                traceback.print_exc()
+                is_default_allowed = False
+            
+            if is_default_allowed:
+                print(f"  ✅ Allowing access (default allowed)")
                 return True
 
             # Check if function requires explicit permission
-            if DefaultFunctionPermissions.is_restricted(function_name):
-                return FunctionPermission.has_function_permission(
-                    teacher_id, function_name, grade_id, stream_id
-                )
+            print(f"  Checking if {function_name} is restricted...")
+            try:
+                is_restricted = DefaultFunctionPermissions.is_restricted(function_name)
+                print(f"  Is restricted: {is_restricted}")
+            except Exception as e:
+                print(f"  🚨 Error checking restricted: {e}")
+                import traceback
+                traceback.print_exc()
+                is_restricted = False
+            
+            if is_restricted:
+                print(f"  Checking explicit permission...")
+                try:
+                    has_explicit = FunctionPermission.has_function_permission(
+                        teacher_id, function_name, grade_id, stream_id
+                    )
+                    print(f"  Has explicit permission: {has_explicit}")
+                    return has_explicit
+                except Exception as e:
+                    print(f"  🚨 Error checking explicit permission: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    return False
 
             # Unknown function - deny by default
+            print(f"  ❌ Unknown function - denying by default")
             return False
 
         except Exception as e:
             # Fallback: If there's any database error, handle gracefully
-            print(f"Permission check error for {function_name}: {e}")
+            print(f"🚨 Permission check error for {function_name}: {e}")
+            import traceback
+            traceback.print_exc()
 
             # For safety, allow default functions and deny restricted ones
-            if DefaultFunctionPermissions.is_default_allowed(function_name):
-                return True
-            else:
-                # Deny access to restricted functions if there's a permission system error
-                print(f"Denying access to {function_name} due to permission system error")
-                return False  # Proper security: deny access when in doubt
+            try:
+                print(f"  Attempting fallback permission check...")
+                if DefaultFunctionPermissions.is_default_allowed(function_name):
+                    print(f"  ✅ Fallback: Allowing default function")
+                    return True
+                else:
+                    # Deny access to restricted functions if there's a permission system error
+                    print(f"  ❌ Fallback: Denying access to {function_name} due to permission system error")
+                    return False  # Proper security: deny access when in doubt
+            except Exception as fallback_error:
+                print(f"🚨 Fallback permission check also failed: {fallback_error}")
+                import traceback
+                traceback.print_exc()
+                return False
     
     @staticmethod
     def grant_function_permission(teacher_id, function_name, granted_by_id, 

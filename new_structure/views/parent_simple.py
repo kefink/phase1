@@ -44,12 +44,18 @@ def login():
     
     def get_context():
         """Get template context variables."""
-        return {
-            'school_info': {
-                'school_name': 'Hillview School',
-                'logo_url': '/static/images/default_logo.png'
+        try:
+            from ..services.school_config_service import SchoolConfigService
+            school_info = SchoolConfigService.get_school_info_dict()
+            return {'school_info': school_info}
+        except:
+            # Fallback to hardcoded values if service fails
+            return {
+                'school_info': {
+                    'school_name': 'Hillview School',
+                    'logo_url': '/static/uploads/logos/optimized_school_logo_1750595986_hvs.jpg'
+                }
             }
-        }
     
     if request.method == 'POST':
         try:
@@ -281,6 +287,30 @@ def logout():
     session.clear()
     flash('You have been logged out successfully.', 'success')
     return redirect(url_for('parent.login'))
+
+@parent_simple_bp.route('/resend-verification')
+@parent_required
+def resend_verification():
+    """Resend email verification."""
+    try:
+        parent = Parent.query.get(session['parent_id'])
+        
+        if parent.is_verified:
+            flash('Your email is already verified.', 'info')
+            return redirect(url_for('parent.profile'))
+        
+        # Send verification email
+        success, message = ParentEmailService.send_verification_email(parent)
+        if success:
+            flash('Verification email sent! Please check your inbox.', 'success')
+        else:
+            flash('Failed to send verification email. Please try again.', 'error')
+        
+        return redirect(url_for('parent.profile'))
+        
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('parent.profile'))
 
 @parent_simple_bp.route('/child/<int:child_id>/grades')
 @parent_required

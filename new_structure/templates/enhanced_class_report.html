@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Report - {{ grade }} {{ stream }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .report-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .school-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .report-title {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .report-details {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .report-content {
+            padding: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .marks-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+        
+        .marks-table th,
+        .marks-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .marks-table th {
+            background-color: #667eea;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        
+        .composite-main-header {
+            background-color: #4a90e2 !important;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .component-header {
+            background-color: #e8f4fd !important;
+            color: #2c5aa0;
+            font-size: 11px;
+            font-weight: normal;
+        }
+        
+        .total-header {
+            background-color: #d4edda !important;
+            color: #155724;
+            font-weight: bold;
+        }
+        
+        .student-row:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .student-row:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .student-name {
+            text-align: left;
+            font-weight: 500;
+            padding-left: 12px;
+        }
+        
+        .grade-a { color: #28a745; font-weight: bold; }
+        .grade-b { color: #17a2b8; font-weight: bold; }
+        .grade-c { color: #ffc107; font-weight: bold; }
+        .grade-d { color: #fd7e14; font-weight: bold; }
+        .grade-e { color: #dc3545; font-weight: bold; }
+        
+        .rank-1 { background-color: #ffd700; color: #333; font-weight: bold; }
+        .rank-2 { background-color: #c0c0c0; color: #333; font-weight: bold; }
+        .rank-3 { background-color: #cd7f32; color: white; font-weight: bold; }
+        
+        @media print {
+            body { background: white; }
+            .report-container { box-shadow: none; }
+            .marks-table { font-size: 10px; }
+        }
+        
+        @media (max-width: 768px) {
+            .report-content { padding: 15px; }
+            .marks-table { font-size: 10px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <!-- Report Header -->
+        <div class="report-header">
+            <div class="school-name">{{ school_info.school_name or 'Hillview School' }}</div>
+            <div class="report-title">Class Performance Report</div>
+            <div class="report-details">
+                {{ grade }} {{ stream }} - {{ term }} {{ assessment_type }}<br>
+                Generated on {{ current_date }}
+            </div>
+        </div>
+        
+        <!-- Report Content -->
+        <div class="report-content">
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{{ class_data|length }}</div>
+                    <div class="stat-label">Total Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ "%.1f"|format(stats.class_average) }}%</div>
+                    <div class="stat-label">Class Average</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ "%.1f"|format(stats.highest_average) }}%</div>
+                    <div class="stat-label">Highest Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ "%.1f"|format(stats.lowest_average) }}%</div>
+                    <div class="stat-label">Lowest Score</div>
+                </div>
+            </div>
+            
+            <!-- Marks Table -->
+            <div style="overflow-x: auto;">
+                <table class="marks-table">
+                    <thead>
+                        <!-- Main header row -->
+                        <tr>
+                            <th rowspan="2">S/N</th>
+                            <th rowspan="2">STUDENT NAME</th>
+                            
+                            <!-- Regular subjects -->
+                            {% for subject in report_structure.regular_subjects %}
+                            <th rowspan="2">{{ subject[:4].upper() }}</th>
+                            {% endfor %}
+                            
+                            <!-- Composite subjects -->
+                            {% for composite_name in report_structure.composite_subjects %}
+                            {% set config = report_structure.composite_configs[composite_name] %}
+                            <th class="composite-main-header" colspan="{{ config.short_names|length + 1 }}">
+                                {{ composite_name.upper() }}
+                            </th>
+                            {% endfor %}
+                            
+                            <th rowspan="2">TOTAL</th>
+                            <th rowspan="2">AVG %</th>
+                            <th rowspan="2">GRD</th>
+                            <th rowspan="2">RANK</th>
+                        </tr>
+                        
+                        <!-- Component header row -->
+                        <tr>
+                            <!-- Empty cells for regular subjects (handled by rowspan) -->
+                            
+                            <!-- Component headers for composite subjects -->
+                            {% for composite_name in report_structure.composite_subjects %}
+                            {% set config = report_structure.composite_configs[composite_name] %}
+                            {% for short_name in config.short_names %}
+                            <th class="component-header">{{ short_name[:4].upper() }}</th>
+                            {% endfor %}
+                            <th class="component-header total-header">TOTAL</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    
+                    <tbody>
+                        {% for student_data in class_data %}
+                        <tr class="student-row">
+                            <td>{{ student_data.index }}</td>
+                            <td class="student-name">{{ student_data.student.upper() }}</td>
+                            
+                            <!-- Regular subject marks -->
+                            {% for subject in report_structure.regular_subjects %}
+                            <td>{{ student_data.subjects.get(subject, 0)|int }}</td>
+                            {% endfor %}
+                            
+                            <!-- Composite subject marks -->
+                            {% for composite_name in report_structure.composite_subjects %}
+                            {% set composite_data = enhanced_composite_data.get(student_data.student_id, {}).get(composite_name, {}) %}
+                            {% set config = report_structure.composite_configs[composite_name] %}
+                            
+                            <!-- Component marks -->
+                            {% for short_name in config.short_names %}
+                            <td>{{ composite_data.get('components', {}).get(short_name, {}).get('mark', 0)|int }}</td>
+                            {% endfor %}
+                            
+                            <!-- Composite total -->
+                            <td class="total-header">
+                                {% if composite_data.get('has_marks', False) %}
+                                {{ composite_data.get('total', 0)|int }}
+                                {% else %}
+                                0
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                            
+                            <td><strong>{{ student_data.total_marks|int }}</strong></td>
+                            <td><strong>{{ "%.1f"|format(student_data.average) }}%</strong></td>
+                            <td class="grade-{{ student_data.grade.lower() }}">{{ student_data.grade }}</td>
+                            <td class="rank-{{ student_data.rank if student_data.rank <= 3 else '' }}">{{ student_data.rank }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Subject Averages -->
+            <div style="margin-top: 30px;">
+                <h3>Subject Performance Summary</h3>
+                <div class="stats-grid">
+                    {% for subject in report_structure.regular_subjects %}
+                    <div class="stat-card">
+                        <div class="stat-value">{{ "%.1f"|format(subject_averages.get(subject, 0)) }}%</div>
+                        <div class="stat-label">{{ subject }} Average</div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% for composite_name in report_structure.composite_subjects %}
+                    <div class="stat-card">
+                        <div class="stat-value">{{ "%.1f"|format(composite_averages.get(composite_name, 0)) }}%</div>
+                        <div class="stat-label">{{ composite_name }} Average</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

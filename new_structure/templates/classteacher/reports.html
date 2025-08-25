@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>View Reports - {{ school_info.school_name|default('Hillview School') }}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --radius: 0.5rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .breadcrumb {
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .filters {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .reports-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .report-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .report-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .report-meta {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--bg-color);
+            border-radius: var(--radius);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .report-header {
+                flex-direction: column;
+            }
+            
+            .report-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="{{ url_for('classteacher.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a> 
+            > View Reports
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>View Reports</h1>
+            <p>Browse and manage student reports and performance data</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <form method="GET">
+                <div class="filters-grid">
+                    <div class="form-group">
+                        <label for="grade">Grade</label>
+                        <select name="grade" id="grade" class="form-control">
+                            <option value="">All Grades</option>
+                            {% for grade in grades %}
+                            <option value="{{ grade }}" {% if grade == selected_grade %}selected{% endif %}>
+                                Grade {{ grade }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stream">Stream</label>
+                        <select name="stream" id="stream" class="form-control">
+                            <option value="">All Streams</option>
+                            {% for stream in streams %}
+                            <option value="{{ stream }}" {% if stream == selected_stream %}selected{% endif %}>
+                                Stream {{ stream }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <select name="subject" id="subject" class="form-control">
+                            <option value="">All Subjects</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.id }}" {% if subject.id == selected_subject %}selected{% endif %}>
+                                {{ subject.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="term">Term</label>
+                        <select name="term" id="term" class="form-control">
+                            <option value="">All Terms</option>
+                            <option value="1" {% if '1' == selected_term %}selected{% endif %}>Term 1</option>
+                            <option value="2" {% if '2' == selected_term %}selected{% endif %}>Term 2</option>
+                            <option value="3" {% if '3' == selected_term %}selected{% endif %}>Term 3</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+            </form>
+        </div>
+
+        <!-- Reports List -->
+        <div class="reports-grid">
+            {% if reports %}
+                {% for report in reports %}
+                <div class="report-card">
+                    <div class="report-header">
+                        <div>
+                            <div class="report-title">
+                                {{ report.title or (report.subject_name + " - Grade " + report.grade|string + report.stream) }}
+                            </div>
+                            <div class="report-meta">
+                                <i class="fas fa-calendar"></i> {{ report.created_date.strftime('%B %d, %Y') if report.created_date else 'No date' }}
+                                <span style="margin-left: 1rem;">
+                                    <i class="fas fa-user"></i> {{ report.teacher_name or 'Unknown' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if report.stats %}
+                    <div class="report-stats">
+                        <div class="stat">
+                            <div class="stat-value">{{ report.stats.total_students or 0 }}</div>
+                            <div class="stat-label">Students</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">{{ "%.1f"|format(report.stats.average_score or 0) }}%</div>
+                            <div class="stat-label">Average</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">{{ report.stats.highest_score or 0 }}</div>
+                            <div class="stat-label">Highest</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">{{ report.stats.lowest_score or 0 }}</div>
+                            <div class="stat-label">Lowest</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="report-actions">
+                        <a href="{{ url_for('classteacher.view_report_details', report_id=report.id) }}" 
+                           class="btn btn-primary btn-small">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        
+                        <a href="{{ url_for('classteacher.download_report', report_id=report.id) }}" 
+                           class="btn btn-small" style="background: var(--success-color); color: white;">
+                            <i class="fas fa-download"></i> Download PDF
+                        </a>
+                        
+                        {% if report.can_edit %}
+                        <a href="{{ url_for('classteacher.edit_report', report_id=report.id) }}" 
+                           class="btn btn-small" style="background: #6b7280; color: white;">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        {% endif %}
+                        
+                        {% if report.can_delete %}
+                        <button onclick="deleteReport({{ report.id }})" 
+                                class="btn btn-small" style="background: var(--danger-color); color: white;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>No Reports Found</h3>
+                    <p>No reports match your current filters. Try adjusting your search criteria or 
+                       <a href="{{ url_for('classteacher.upload_marks') }}">upload some marks</a> to generate reports.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function deleteReport(reportId) {
+            if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+                fetch(`/classteacher/delete_report/${reportId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error deleting report. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    alert('Error deleting report. Please try again.');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

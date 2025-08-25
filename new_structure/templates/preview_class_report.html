@@ -1723,6 +1723,21 @@
         </div>
       </div>
 
+      <!-- Composite Layout Indicator -->
+      <div
+        style="
+          background-color: #e8f5e8;
+          padding: 8px;
+          margin-bottom: 10px;
+          border-radius: 4px;
+          font-size: 12px;
+          color: #2d5016;
+        "
+      >
+        📊 <strong>Composite Layout:</strong> Individual subjects grouped under
+        main subjects (English Grammar + English Composition under ENGLISH)
+      </div>
+
       <!-- Table wrapper for horizontal scroll on very small screens -->
       <div style="overflow-x: auto; -webkit-overflow-scrolling: touch">
         <table>
@@ -1730,17 +1745,22 @@
             <tr>
               <th>S/N</th>
               <th>STUDENT NAME</th>
-              {% for subject_name in subject_names %} {% set subject_obj =
-              filtered_subjects | selectattr('name', 'equalto', subject_name) |
-              first %} {% if subject_obj and subject_obj.is_composite %}
-              <!-- Main composite subject header -->
-              <th
-                class="subject-header composite-main-header"
-                colspan="{{ subject_components.get(subject_name, [])|length }}"
-              >
-                {{ subject_name.upper() }}
+              {% for subject_name in subject_names %} {% if subject_name ==
+              "English Grammar" %}
+              <!-- English composite subject header -->
+              <th class="subject-header composite-main-header" colspan="3">
+                ENGLISH
               </th>
+              {% elif subject_name == "Kiswahili Lugha" %}
+              <!-- Kiswahili composite subject header -->
+              <th class="subject-header composite-main-header" colspan="3">
+                KISWAHILI
+              </th>
+              {% elif subject_name in ["English Composition", "Kiswahili Insha"]
+              %}
+              <!-- Skip these as they're already included in composite headers -->
               {% else %}
+              <!-- Regular subject header -->
               <th class="subject-header">
                 {{ abbreviated_subjects[loop.index0] }}
               </th>
@@ -1756,15 +1776,33 @@
               <!-- Empty for S/N -->
               <th></th>
               <!-- Empty for STUDENT NAME -->
-              {% for subject_name in subject_names %} {% set subject_obj =
-              filtered_subjects | selectattr('name', 'equalto', subject_name) |
-              first %} {% if subject_obj and subject_obj.is_composite %} {% set
-              components = subject_components.get(subject_name, []) %} {% for
-              component in components %}
-              <th class="component-header">{{ component.name[:4].upper() }}</th>
-              {% endfor %} {% else %}
-              <th></th>
+              {% for subject_name in subject_names %} {% if subject_name ==
+              "English Grammar" %}
+              <!-- English component headers -->
+              <th class="component-header">GRAM</th>
+              <th class="component-header">COMP</th>
+              <th
+                class="component-header total-header"
+                style="background-color: #e8f4fd; font-weight: bold"
+              >
+                TOTAL
+              </th>
+              {% elif subject_name == "Kiswahili Lugha" %}
+              <!-- Kiswahili component headers -->
+              <th class="component-header">LUGHA</th>
+              <th class="component-header">INSHA</th>
+              <th
+                class="component-header total-header"
+                style="background-color: #e8f4fd; font-weight: bold"
+              >
+                TOTAL
+              </th>
+              {% elif subject_name in ["English Composition", "Kiswahili Insha"]
+              %}
+              <!-- Skip these as they're already included in composite headers -->
+              {% else %}
               <!-- Empty for regular subjects -->
+              <th></th>
               {% endif %} {% endfor %}
               <th></th>
               <!-- Empty for TOTAL -->
@@ -1781,21 +1819,42 @@
             <tr class="student-row">
               <td>{{ student_data.index }}</td>
               <td>{{ student_data.student.upper() }}</td>
-              {% for subject_name in subject_names %} {% set subject_obj =
-              filtered_subjects | selectattr('name', 'equalto', subject_name) |
-              first %} {% if subject_obj and subject_obj.is_composite %} {% set
-              components = subject_components.get(subject_name, []) %} {% set
-              student_id = student_data.get('student_id', 0) %} {% for component
-              in components %}
+              {% for subject_name in subject_names %} {% if subject_name ==
+              "English Grammar" %}
+              <!-- English component marks -->
               <td style="font-size: 12px">
-                {{ component_marks_data.get(student_id, {}).get(subject_name,
-                {}).get(component.name, 0) | int }}
+                {{ student_data.filtered_marks.get('English Grammar', 0) | int
+                }}
               </td>
-              {% endfor %}
+              <td style="font-size: 12px">
+                {{ student_data.filtered_marks.get('English Composition', 0) |
+                int }}
+              </td>
               <td style="background-color: #f0f8ff; font-weight: bold">
-                {{ student_data.filtered_marks.get(subject_name, 0) | int }}
+                {{ ((student_data.filtered_marks.get('English Grammar', 0) +
+                student_data.filtered_marks.get('English Composition', 0)) / 2)
+                | round(0) | int }}
               </td>
+              {% elif subject_name == "Kiswahili Lugha" %}
+              <!-- Kiswahili component marks -->
+              <td style="font-size: 12px">
+                {{ student_data.filtered_marks.get('Kiswahili Lugha', 0) | int
+                }}
+              </td>
+              <td style="font-size: 12px">
+                {{ student_data.filtered_marks.get('Kiswahili Insha', 0) | int
+                }}
+              </td>
+              <td style="background-color: #f0f8ff; font-weight: bold">
+                {{ ((student_data.filtered_marks.get('Kiswahili Lugha', 0) +
+                student_data.filtered_marks.get('Kiswahili Insha', 0)) / 2) |
+                round(0) | int }}
+              </td>
+              {% elif subject_name in ["English Composition", "Kiswahili Insha"]
+              %}
+              <!-- Skip these as they're already included in composite display -->
               {% else %}
+              <!-- Regular subject mark -->
               <td>
                 {{ student_data.filtered_marks.get(subject_name, 0) | int }}
               </td>
@@ -1817,49 +1876,88 @@
             <!-- Subject Averages Row -->
             <tr class="averages-row">
               <td colspan="2" class="average-label">SUBJECT AVERAGES</td>
-              {% for subject_name in subject_names %} {% set subject_obj =
-              filtered_subjects | selectattr('name', 'equalto', subject_name) |
-              first %} {% if subject_obj and subject_obj.is_composite %} {% set
-              components = subject_components.get(subject_name, []) %} {% for
-              component in components %}
+              {% for subject_name in subject_names %} {% if subject_name ==
+              "English Grammar" %}
+              <!-- English component averages -->
               <td class="subject-average" style="font-size: 11px">
-                {{ component_averages.get(subject_name, {}).get(component.name,
-                0) }}
+                {{ subject_averages.get('English Grammar', 0) | round(2) }}
               </td>
-              {% endfor %}
+              <td class="subject-average" style="font-size: 11px">
+                {{ subject_averages.get('English Composition', 0) | round(2) }}
+              </td>
               <td class="subject-average" style="background-color: #d6eaf8">
-                {{ subject_averages.get(subject_name, 0) | round(2) }}
+                {{ [100, ((subject_averages.get('English Grammar', 0) +
+                subject_averages.get('English Composition', 0)) / 2)] | min |
+                round(2) }}
               </td>
+              {% elif subject_name == "Kiswahili Lugha" %}
+              <!-- Kiswahili component averages -->
+              <td class="subject-average" style="font-size: 11px">
+                {{ subject_averages.get('Kiswahili Lugha', 0) | round(2) }}
+              </td>
+              <td class="subject-average" style="font-size: 11px">
+                {{ subject_averages.get('Kiswahili Insha', 0) | round(2) }}
+              </td>
+              <td class="subject-average" style="background-color: #d6eaf8">
+                {{ [100, ((subject_averages.get('Kiswahili Lugha', 0) +
+                subject_averages.get('Kiswahili Insha', 0)) / 2)] | min |
+                round(2) }}
+              </td>
+              {% elif subject_name in ["English Composition", "Kiswahili Insha"]
+              %}
+              <!-- Skip these as they're already included in composite display -->
               {% else %}
+              <!-- Regular subject average -->
               <td class="subject-average">
                 {{ subject_averages.get(subject_name, 0) | round(2) }}
               </td>
               {% endif %} {% endfor %}
-              <td colspan="4" class="empty-cell"></td>
+
+              <!-- Empty cells to align with student totals -->
+              <td class="total-cell">{{ class_total | round(0) | int }}</td>
+              <td class="empty-cell"></td>
+              <td class="empty-cell"></td>
+              <td class="empty-cell"></td>
             </tr>
 
-            <!-- Class Average Row -->
-            <tr class="averages-row class-average-row">
-              <td colspan="2" class="average-label">CLASS AVERAGE</td>
-              <td colspan="{{ subject_names|length }}" class="empty-cell"></td>
-
-              <!-- Class Average Total -->
-              <td class="total-average">{{ class_average | round(2) }}</td>
-
-              <!-- Class Average Percentage -->
-              {% set avg_percentage_total = 0 %} {% set avg_student_count = 0 %}
-              {% for student_data in class_data %} {% if
-              student_data.filtered_average > 0 %} {% set avg_percentage_total =
-              avg_percentage_total + student_data.filtered_average %} {% set
-              avg_student_count = avg_student_count + 1 %} {% endif %} {% endfor
+            <!-- Class Mean Score Row -->
+            <tr class="averages-row">
+              <td colspan="2" class="average-label">CLASS MEAN SCORE</td>
+              {% for subject_name in subject_names %} {% if subject_name ==
+              "English Grammar" %}
+              <!-- English empty cells -->
+              <td class="empty-cell"></td>
+              <td class="empty-cell"></td>
+              <td class="empty-cell"></td>
+              {% elif subject_name == "Kiswahili Lugha" %}
+              <!-- Kiswahili empty cells -->
+              <td class="empty-cell"></td>
+              <td class="empty-cell"></td>
+              <td class="empty-cell"></td>
+              {% elif subject_name in ["English Composition", "Kiswahili Insha"]
               %}
-              <td class="avg-cell">
-                {% if avg_student_count > 0 %} {{ (avg_percentage_total /
-                avg_student_count) | round(2) }} {% else %} 0 {% endif %}
-              </td>
+              <!-- Skip these as they're already included in composite display -->
+              {% else %}
+              <!-- Regular subject empty cell -->
+              <td class="empty-cell"></td>
+              {% endif %} {% endfor %}
 
-              <td colspan="2" class="empty-cell"></td>
+              <!-- Mean score in TOTAL column -->
+              <td class="total-cell">{{ class_average | round(2) }}</td>
+              <td class="empty-cell"></td>
+              <td class="empty-cell"></td>
+              <td class="empty-cell"></td>
             </tr>
+
+            <!-- Calculate proper colspan for subject columns -->
+            {% set total_subject_columns = 0 %} {% for subject_name in
+            subject_names %} {% set subject_obj = filtered_subjects |
+            selectattr('name', 'equalto', subject_name) | first %} {% if
+            subject_obj and subject_obj.is_composite %} {% set components =
+            subject_components.get(subject_name, []) %} {% set
+            total_subject_columns = total_subject_columns + components|length +
+            1 %} {% else %} {% set total_subject_columns = total_subject_columns
+            + 1 %} {% endif %} {% endfor %}
           </tbody>
         </table>
       </div>

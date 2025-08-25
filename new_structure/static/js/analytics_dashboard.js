@@ -209,20 +209,20 @@ async function loadAnalyticsData() {
   try {
     showLoadingState();
 
-    // Build query parameters
+    // Build query parameters - use names instead of IDs for classteacher analytics
     const params = new URLSearchParams();
     if (analyticsFilters.termId)
-      params.append("term_id", analyticsFilters.termId);
+      params.append("term", analyticsFilters.termId);
     if (analyticsFilters.assessmentTypeId)
-      params.append("assessment_type_id", analyticsFilters.assessmentTypeId);
+      params.append("assessment_type", analyticsFilters.assessmentTypeId);
     if (analyticsFilters.gradeId)
-      params.append("grade_id", analyticsFilters.gradeId);
+      params.append("grade", analyticsFilters.gradeId);
     if (analyticsFilters.streamId)
-      params.append("stream_id", analyticsFilters.streamId);
+      params.append("stream", analyticsFilters.streamId);
 
-    // Load analytics data
+    // Load analytics data - use report-based analytics for classteacher
     const response = await fetch(
-      `/api/analytics/comprehensive?${params.toString()}`,
+      `/api/analytics/report_based?${params.toString()}`,
       {
         credentials: "same-origin",
       }
@@ -233,10 +233,29 @@ async function loadAnalyticsData() {
     }
 
     const data = await response.json();
+    console.log("📊 Raw analytics response:", data);
 
     if (data.success) {
-      analyticsData = data.analytics;
+      // Handle both comprehensive and report-based analytics formats
+      if (data.analytics) {
+        analyticsData = data.analytics;
+      } else {
+        // Transform report-based data to expected format
+        analyticsData = {
+          summary: {
+            total_students_analyzed: data.total_students || 0,
+            total_subjects_analyzed: data.total_subjects || 0,
+            has_sufficient_data: (data.total_students || 0) > 0
+          },
+          topPerformers: data.top_performers || [],
+          subject_analytics: data.subject_performance || [],
+          topSubject: data.top_subject || null,
+          leastPerformingSubject: data.least_performing_subject || null
+        };
+      }
+
       analyticsData.lastUpdated = new Date();
+      console.log("✅ Processed analytics data:", analyticsData);
 
       // Update the dashboard
       updateAnalyticsDashboard();
@@ -292,25 +311,27 @@ function updateAnalyticsDashboard() {
 }
 
 function updateSummaryCards() {
-  // Update summary statistics
+  console.log("📊 Updating summary cards with data:", analyticsData);
+
+  // Update summary statistics - match template IDs
   const elements = {
-    "total-students-analyzed":
-      analyticsData.summary.total_students_analyzed || 0,
-    "total-subjects-analyzed":
-      analyticsData.summary.total_subjects_analyzed || 0,
+    "students-analyzed": analyticsData.summary?.total_students_analyzed || 0,
+    "subjects-analyzed": analyticsData.summary?.total_subjects_analyzed || 0,
     "top-subject-performance": analyticsData.topSubject
-      ? `${analyticsData.topSubject.average_percentage}%`
-      : "-",
-    "top-student-performance":
-      analyticsData.topPerformers.length > 0
-        ? `${analyticsData.topPerformers[0].average_percentage}%`
-        : "-",
+      ? `${Math.round(analyticsData.topSubject.average_percentage)}%`
+      : `${analyticsData.summary?.best_subject_average || 0}%`,
+    "top-student-performance": analyticsData.topPerformers?.length > 0
+      ? `${Math.round(analyticsData.topPerformers[0].average_percentage)}%`
+      : `${analyticsData.summary?.top_student_average || 0}%`,
   };
 
   Object.entries(elements).forEach(([id, value]) => {
     const element = document.getElementById(id);
     if (element) {
       element.textContent = value;
+      console.log(`✅ Updated ${id} with value: ${value}`);
+    } else {
+      console.warn(`⚠️ Element not found: ${id}`);
     }
   });
 }
@@ -492,15 +513,27 @@ function getPerformanceClass(category) {
 }
 
 function showLoadingState() {
-  // Only show loading for subject performance, not top performers
-  // Top performers will handle its own loading state
-  const containers = ["subject-performance-container"];
+  console.log("🔄 Showing loading state for all analytics sections");
+
+  // Show loading for all main analytics containers
+  const containers = [
+    "top-performers-container",
+    "subject-performance-container",
+    "detailed-performance-container"
+  ];
+
   containers.forEach((containerId) => {
     const container = document.getElementById(containerId);
     if (container) {
       container.innerHTML =
         '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading analytics...</div>';
     }
+  });
+
+  // Also show loading in summary cards
+  const summaryCards = document.querySelectorAll(".insight-value");
+  summaryCards.forEach((card) => {
+    card.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
   });
 }
 
@@ -531,15 +564,85 @@ function hideNoDataState() {
 }
 
 function showAnalyticsError(message) {
-  // Only show error for subject performance, not top performers
-  // Top performers will handle its own error state
-  const containers = ["subject-performance-container"];
+  console.error("❌ Analytics error:", message);
+
+  // Show error in all main containers
+  const containers = [
+    "top-performers-container",
+    "subject-performance-container",
+    "detailed-performance-container"
+  ];
+
   containers.forEach((containerId) => {
     const container = document.getElementById(containerId);
     if (container) {
-      container.innerHTML = `<div class="error-state"><i class="fas fa-exclamation-triangle"></i> ${message}</div>`;
+      container.innerHTML = `
+        <div class="error-state" style="text-align: center; padding: 40px; color: #dc3545;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 2em; margin-bottom: 10px;"></i>
+          <h3>Error Loading Analytics</h3>
+          <p>${message}</p>
+          <button onclick="refreshAnalyticsData()" class="modern-btn btn-primary btn-sm">
+            <i class="fas fa-retry"></i> Try Again
+          </button>
+        </div>
+      `;
     }
   });
+
+  // Show error in summary cards
+  const summaryCards = document.querySelectorAll(".insight-value");
+  summaryCards.forEach((card) => {
+    card.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>';
+  });
+
+  // Show user-friendly notification
+  showNotification(`Analytics Error: ${message}`, "error");
+}
+
+// Simple notification function
+function showNotification(message, type = "info") {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideIn 0.3s ease-out;
+  `;
+
+  // Set background color based on type
+  const colors = {
+    success: '#28a745',
+    error: '#dc3545',
+    warning: '#ffc107',
+    info: '#17a2b8'
+  };
+  notification.style.backgroundColor = colors[type] || colors.info;
+
+  notification.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+      <span>${message}</span>
+      <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer; margin-left: auto;">&times;</button>
+    </div>
+  `;
+
+  document.body.appendChild(notification);
+
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.remove();
+    }
+  }, 5000);
 }
 
 // ============================================================================
@@ -547,6 +650,8 @@ function showAnalyticsError(message) {
 // ============================================================================
 
 function updateAnalytics() {
+  console.log("🔄 Updating analytics with new filters");
+
   // Update filters from form
   analyticsFilters.termId =
     document.getElementById("analytics-term-filter")?.value || null;
@@ -556,6 +661,11 @@ function updateAnalytics() {
     document.getElementById("analytics-grade-filter")?.value || null;
   analyticsFilters.streamId =
     document.getElementById("analytics-stream-filter")?.value || null;
+
+  console.log("📊 New filter values:", analyticsFilters);
+
+  // Show user feedback
+  showNotification("Updating analytics...", "info");
 
   // Reload analytics data
   loadAnalyticsData();
@@ -596,35 +706,16 @@ function refreshAnalytics(component) {
 }
 
 async function refreshAnalyticsData() {
-  // Silent refresh without loading indicators
+  console.log("🔄 Refreshing analytics data");
+  showNotification("Refreshing analytics data...", "info");
+
   try {
-    const params = new URLSearchParams();
-    if (analyticsFilters.termId)
-      params.append("term_id", analyticsFilters.termId);
-    if (analyticsFilters.assessmentTypeId)
-      params.append("assessment_type_id", analyticsFilters.assessmentTypeId);
-    if (analyticsFilters.gradeId)
-      params.append("grade_id", analyticsFilters.gradeId);
-    if (analyticsFilters.streamId)
-      params.append("stream_id", analyticsFilters.streamId);
-
-    const response = await fetch(
-      `/api/analytics/comprehensive?${params.toString()}`,
-      {
-        credentials: "same-origin",
-      }
-    );
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        analyticsData = data.analytics;
-        analyticsData.lastUpdated = new Date();
-        updateAnalyticsDashboard();
-      }
-    }
+    // Use the same logic as loadAnalyticsData but with user feedback
+    await loadAnalyticsData();
+    showNotification("Analytics data refreshed successfully!", "success");
   } catch (error) {
     console.error("Error refreshing analytics data:", error);
+    showNotification("Failed to refresh analytics data", "error");
   }
 }
 

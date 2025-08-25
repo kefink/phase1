@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <title>
+      Upload Marks - {{ school_info.school_name|default('Hillview School') }}
+    </title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        /* Solar Theme Colors */
+        --bg-color: #002b36;
+        --card-bg: #073642;
+        --text-primary: #839496;
+        --text-secondary: #586e75;
+        --text-emphasis: #93a1a1;
+        --primary-color: #268bd2;
+        --success-color: #859900;
+        --warning-color: #b58900;
+        --error-color: #dc322f;
+        --cyan: #2aa198;
+        --border-color: rgba(147, 161, 161, 0.2);
+        --glass-border: rgba(147, 161, 161, 0.1);
+        --shadow: 0 4px 6px rgba(0, 43, 54, 0.3);
+        --radius: 8px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-primary);
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .breadcrumb {
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: rgba(147, 161, 161, 0.03);
+        border-radius: var(--radius);
+        border: 1px solid var(--glass-border);
+      }
+
+      .breadcrumb a {
+        color: var(--cyan);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      .breadcrumb a:hover {
+        color: var(--primary-color);
+      }
+
+      .header {
+        background: linear-gradient(
+          135deg,
+          var(--card-bg),
+          rgba(38, 139, 210, 0.05)
+        );
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+        border: 1px solid var(--glass-border);
+      }
+
+      .header h1 {
+        color: var(--text-emphasis);
+        margin-bottom: 0.5rem;
+        font-size: 1.875rem;
+        font-weight: 600;
+      }
+
+      .header p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+      }
+
+      .upload-form {
+        background: linear-gradient(
+          135deg,
+          var(--card-bg),
+          rgba(38, 139, 210, 0.03)
+        );
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--glass-border);
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-emphasis);
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        font-size: 1rem;
+        background: rgba(147, 161, 161, 0.05);
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.1);
+        background: rgba(147, 161, 161, 0.08);
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--cyan));
+        color: white;
+        box-shadow: 0 4px 6px rgba(38, 139, 210, 0.3);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(38, 139, 210, 0.4);
+        background: linear-gradient(135deg, #1e7bb8, #238a94);
+      }
+
+      .btn-secondary {
+        background: var(--text-secondary);
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: var(--text-emphasis);
+      }
+
+      .method-tabs {
+        display: flex;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid var(--glass-border);
+        background: rgba(147, 161, 161, 0.02);
+        border-radius: var(--radius) var(--radius) 0 0;
+      }
+
+      .tab-button {
+        padding: 1rem 2rem;
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        color: var(--text-secondary);
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .tab-button.active {
+        border-bottom-color: var(--primary-color);
+        color: var(--primary-color);
+        background: rgba(38, 139, 210, 0.05);
+      }
+
+      .tab-button:hover {
+        color: var(--text-emphasis);
+        background: rgba(147, 161, 161, 0.05);
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .students-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+      }
+
+      .students-grid.header {
+        background: var(--bg-color);
+        font-weight: 600;
+      }
+
+      .mark-input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        transition: border-color 0.3s ease;
+      }
+
+      .mark-input:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(38, 139, 210, 0.2);
+      }
+
+      .mark-input.has-value {
+        border-color: #28a745;
+        background: rgba(40, 167, 69, 0.05);
+      }
+
+      .mark-input.mark-updated {
+        animation: markUpdate 0.5s ease;
+      }
+
+      @keyframes markUpdate {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); background: rgba(38, 139, 210, 0.1); }
+        100% { transform: scale(1); }
+      }
+
+      .percentage-display {
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius);
+        display: inline-block;
+        min-width: 60px;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      /* Performance color indicators */
+      .percentage-display.excellent {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+      }
+
+      .percentage-display.good {
+        background: rgba(23, 162, 184, 0.1);
+        color: #17a2b8;
+        border: 1px solid rgba(23, 162, 184, 0.3);
+      }
+
+      .percentage-display.average {
+        background: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+      }
+
+      .percentage-display.below-average {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+
+        .method-tabs {
+          flex-direction: column;
+        }
+
+        .students-grid {
+          grid-template-columns: 1fr;
+          gap: 0.5rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a href="{{ url_for('classteacher.dashboard') }}"
+          ><i class="fas fa-home"></i> Dashboard</a
+        >
+        > Upload Marks
+      </div>
+
+      <!-- Header -->
+      <div class="header">
+        <h1>Upload Marks</h1>
+        <p>Add or update student marks for assessments</p>
+      </div>
+
+      <!-- Upload Methods -->
+      <div class="upload-form">
+        <div class="method-tabs">
+          <button class="tab-button active" onclick="switchTab('manual')">
+            <i class="fas fa-keyboard"></i> Manual Entry
+          </button>
+          <button class="tab-button" onclick="switchTab('bulk')">
+            <i class="fas fa-file-upload"></i> Bulk Upload
+          </button>
+        </div>
+
+        <!-- Manual Entry Tab -->
+        <div id="manual-tab" class="tab-content active">
+          <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <div class="form-group">
+              <label for="grade">Grade</label>
+              <select
+                name="grade"
+                id="grade"
+                class="form-control"
+                required
+                onchange="updateStreams()"
+              >
+                <option value="">Select Grade</option>
+                {% for grade in grades %}
+                <option value="{{ grade.id }}">{{ grade.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="stream">Stream</label>
+              <select name="stream" id="stream" class="form-control" required>
+                <option value="">Select Stream</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="subject">Subject</label>
+              <select name="subject" id="subject" class="form-control" required>
+                <option value="">Select Subject</option>
+                {% for subject in subjects %}
+                <option value="{{ subject.id }}">{{ subject.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="assessment_type">Assessment Type</label>
+              <select
+                name="assessment_type"
+                id="assessment_type"
+                class="form-control"
+                required
+              >
+                <option value="">Select Assessment</option>
+                {% for assessment in assessment_types %}
+                <option value="{{ assessment.id }}" {% if selected_assessment == assessment.id|string %}selected{% endif %}>
+                  {{ assessment.name }}{% if assessment.weight %} ({{ assessment.weight }}%){% endif %}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="max_marks">Maximum Marks</label>
+              <input
+                type="number"
+                name="max_marks"
+                id="max_marks"
+                class="form-control"
+                required
+                min="1"
+                max="100"
+              />
+            </div>
+
+            <button type="submit" name="load_students" class="btn btn-primary">
+              <i class="fas fa-users"></i> Load Students
+            </button>
+          </form>
+
+          <!-- Student Marks Entry (shown after loading students) -->
+          {% if students %}
+          <div style="margin-top: 2rem">
+            <h3>Enter Marks for {{ students|length }} Students</h3>
+
+            <form method="POST">
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
+              <input type="hidden" name="grade" value="{{ selected_grade }}" />
+              <input
+                type="hidden"
+                name="stream"
+                value="{{ selected_stream }}"
+              />
+              <input
+                type="hidden"
+                name="subject"
+                value="{{ selected_subject }}"
+              />
+              <input
+                type="hidden"
+                name="assessment_type"
+                value="{{ selected_assessment }}"
+              />
+              <input type="hidden" name="max_marks" value="{{ max_marks }}" />
+
+              <div class="students-grid header">
+                <div>Student Name</div>
+                <div>Marks (out of {{ max_marks }})</div>
+                <div>Percentage</div>
+                <div>Status</div>
+              </div>
+
+              {% for student in students %}
+              <div class="students-grid">
+                <div>{{ student.name }}</div>
+                <div>
+                  <input
+                    type="number"
+                    name="marks_{{ student.id }}"
+                    class="mark-input"
+                    min="0"
+                    max="{{ max_marks }}"
+                    step="0.5"
+                    value="{{ student.existing_mark or '' }}"
+                    data-student="{{ student.id }}"
+                    data-max-marks="{{ max_marks }}"
+                    oninput="updatePercentage(this)"
+                  />
+                </div>
+                <div>
+                  <span id="percentage_{{ student.id }}" class="percentage-display">
+                    {% if student.existing_mark and max_marks %}
+                      {{ "%.1f"|format((student.existing_mark / max_marks|float) * 100) }}%
+                    {% else %}
+                      0.0%
+                    {% endif %}
+                  </span>
+                </div>
+                <div>
+                  {% if student.existing_mark %}
+                  <span style="color: var(--success-color)"
+                    >Previously entered</span
+                  >
+                  {% else %}
+                  <span style="color: var(--text-secondary)">New entry</span>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+
+              <button
+                type="submit"
+                name="save_marks"
+                class="btn btn-primary"
+                style="margin-top: 1rem"
+              >
+                <i class="fas fa-save"></i> Save All Marks
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Bulk Upload Tab -->
+        <div id="bulk-tab" class="tab-content">
+          <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <div class="form-group">
+              <label for="bulk_file">Upload CSV File</label>
+              <input
+                type="file"
+                name="bulk_file"
+                id="bulk_file"
+                class="form-control"
+                accept=".csv"
+                required
+              />
+              <small style="color: var(--text-secondary)">
+                Download template:
+                <a href="{{ url_for('classteacher.download_template') }}"
+                  >marks_template.csv</a
+                >
+              </small>
+            </div>
+
+            <button type="submit" name="bulk_upload" class="btn btn-primary">
+              <i class="fas fa-cloud-upload-alt"></i> Upload File
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll(".tab-content").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Remove active from all buttons
+        document.querySelectorAll(".tab-button").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+
+        // Show selected tab
+        document.getElementById(tabName + "-tab").classList.add("active");
+        event.target.classList.add("active");
+      }
+
+      function updateStreams() {
+        const gradeSelect = document.getElementById("grade");
+        const streamSelect = document.getElementById("stream");
+        const gradeId = gradeSelect.value;
+
+        // Clear existing options
+        streamSelect.innerHTML = '<option value="">Select Stream</option>';
+
+        if (gradeId) {
+          // Fetch streams from API using grade ID
+          fetch(`/classteacher/api/streams_by_id/${gradeId}`)
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.streams && data.streams.length > 0) {
+                data.streams.forEach((stream) => {
+                  const option = document.createElement("option");
+                  option.value = stream.id; // Use stream ID as value
+                  option.textContent = stream.display_name; // Use display name like "Stream A"
+                  streamSelect.appendChild(option);
+                });
+              } else {
+                // If no streams found, add a default message
+                const option = document.createElement("option");
+                option.value = "";
+                option.textContent = "No streams available for this grade";
+                option.disabled = true;
+                streamSelect.appendChild(option);
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching streams:", error);
+              // Add error message option
+              const option = document.createElement("option");
+              option.value = "";
+              option.textContent = "Error loading streams";
+              option.disabled = true;
+              streamSelect.appendChild(option);
+            });
+        }
+      }
+
+      // Real-time percentage calculation function
+      function updatePercentage(inputElement) {
+        const studentId = inputElement.dataset.student;
+        const maxMarks = parseFloat(inputElement.dataset.maxMarks) || 100;
+        const rawMark = parseFloat(inputElement.value) || 0;
+
+        // Validate mark doesn't exceed maximum
+        if (rawMark > maxMarks) {
+          inputElement.value = maxMarks;
+          rawMark = maxMarks;
+        }
+
+        // Calculate percentage
+        const percentage = maxMarks > 0 ? (rawMark / maxMarks) * 100 : 0;
+
+        // Update percentage display
+        const percentageElement = document.getElementById(`percentage_${studentId}`);
+        if (percentageElement) {
+          percentageElement.textContent = `${percentage.toFixed(1)}%`;
+          
+          // Update performance indicator classes
+          updatePerformanceIndicator(percentageElement, percentage);
+        }
+
+        // Visual feedback on input
+        inputElement.classList.toggle('has-value', rawMark > 0);
+        if (rawMark > 0) {
+          inputElement.classList.add('mark-updated');
+          setTimeout(() => inputElement.classList.remove('mark-updated'), 500);
+        }
+      }
+
+      // Update performance indicator based on percentage
+      function updatePerformanceIndicator(element, percentage) {
+        // Remove existing performance classes
+        element.classList.remove('excellent', 'good', 'average', 'below-average');
+
+        // Add appropriate class based on percentage
+        if (percentage >= 80) {
+          element.classList.add('excellent');
+        } else if (percentage >= 60) {
+          element.classList.add('good');
+        } else if (percentage >= 40) {
+          element.classList.add('average');
+        } else if (percentage > 0) {
+          element.classList.add('below-average');
+        }
+      }
+
+      // Initialize percentage displays on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        const markInputs = document.querySelectorAll('.mark-input');
+        markInputs.forEach(input => {
+          if (input.value) {
+            updatePercentage(input);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

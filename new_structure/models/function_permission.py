@@ -305,9 +305,17 @@ class DefaultFunctionPermissions:
     @classmethod
     def is_default_allowed(cls, function_name):
         """Check if a function is allowed by default for classteachers."""
+        print(f"    🔍 Checking if '{function_name}' is in default allowed functions...")
+        print(f"    Available categories: {list(cls.DEFAULT_ALLOWED_FUNCTIONS.keys())}")
+        
         for category, functions in cls.DEFAULT_ALLOWED_FUNCTIONS.items():
+            print(f"    Checking category '{category}' with {len(functions)} functions...")
             if function_name in functions:
+                print(f"    ✅ Found '{function_name}' in category '{category}'")
                 return True
+        
+        print(f"    ❌ '{function_name}' not found in any default allowed functions")
+        print(f"    Functions in marks_management: {cls.DEFAULT_ALLOWED_FUNCTIONS.get('marks_management', [])}")
         return False
     
     @classmethod

@@ -15,6 +15,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from flask import render_template_string
+from .enhanced_composite_service import EnhancedCompositeService
 
 def get_class_report_data(grade, stream, term, assessment_type, selected_subject_ids=None):
     """
@@ -71,19 +72,25 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
     else:
         education_level = ""
 
-    # Get subjects for this education level
+    # Import the composite subject service for new architecture
+    from .composite_subject_service import CompositeSubjectService
+
+    # Get subjects for this education level using the new architecture
     if education_level:
-        subjects_query = Subject.query.filter_by(education_level=education_level)
+        # Get subjects for upload (excludes old composite subjects, includes components)
+        all_subjects = CompositeSubjectService.get_subjects_for_upload(education_level)
+
+        # Filter by selected subject IDs if provided
+        if selected_subject_ids and len(selected_subject_ids) > 0:
+            subjects = [s for s in all_subjects if s.id in selected_subject_ids]
+        else:
+            subjects = all_subjects
     else:
         # Fallback to all subjects if education level can't be determined
         subjects_query = Subject.query
-
-    # Filter by selected subject IDs if provided
-    if selected_subject_ids and len(selected_subject_ids) > 0:
-        subjects_query = subjects_query.filter(Subject.id.in_(selected_subject_ids))
-
-    # Get the subjects
-    subjects = subjects_query.all()
+        if selected_subject_ids and len(selected_subject_ids) > 0:
+            subjects_query = subjects_query.filter(Subject.id.in_(selected_subject_ids))
+        subjects = subjects_query.all()
 
     # Prepare class data
     class_data = []
@@ -95,7 +102,25 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
         subject_count = 0
         student_standardized_total = 0
 
+        # Import the composite subject service for new architecture
+        from .composite_subject_service import CompositeSubjectService
+
+        # Get all composite subjects for this education level
+        composite_subjects = CompositeSubjectService.get_all_composite_subjects(education_level)
+
+        # Process subjects: handle both regular subjects and composite subjects
+        processed_subjects = {}
+
         for subject in subjects:
+            # Skip component subjects - they'll be handled as part of composite subjects
+            if hasattr(subject, 'is_component') and subject.is_component:
+                continue
+
+            # Skip old composite subjects - they're replaced by the new architecture
+            if hasattr(subject, 'is_composite') and subject.is_composite:
+                continue
+
+            # Handle regular subjects
             mark = Mark.query.filter_by(
                 student_id=student.id,
                 subject_id=subject.id,
@@ -104,82 +129,39 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
             ).first()
 
             if mark:
-                # Check if this is a composite subject
-                if hasattr(subject, 'is_composite') and subject.is_composite:
-                    # For composite subjects, we need to calculate from components
-                    from ..models.academic import ComponentMark
-                    component_marks = ComponentMark.query.filter_by(mark_id=mark.id).all()
+                processed_subjects[subject.name] = mark.percentage
 
-                    if component_marks:
-                        # Get the components for this subject
-                        components = subject.get_components() if hasattr(subject, 'get_components') else []
+        # Handle composite subjects using the new architecture
+        student_component_marks = {}
+        for composite_name in composite_subjects:
+            composite_data = CompositeSubjectService.get_composite_subject_mark(
+                student.id, composite_name, term_obj.id, assessment_type_obj.id, education_level
+            )
 
-                        # Calculate weighted percentage
-                        total_weighted_percentage = 0
-                        total_weight = 0
+            if composite_data:
+                processed_subjects[composite_name] = composite_data['combined_percentage']
 
-                        for component in components:
-                            # Find the component mark
-                            cm = next((cm for cm in component_marks if cm.component_id == component.id), None)
-                            if cm:
-                                total_weighted_percentage += cm.percentage * component.weight
-                                total_weight += component.weight
+                # Store component marks for template
+                student_component_marks[composite_name] = {}
+                for component_name, component_data in composite_data['components'].items():
+                    student_component_marks[composite_name][component_name] = component_data['percentage']
 
-                        if total_weight > 0:
-                            standardized_mark = total_weighted_percentage / total_weight
+        # Calculate totals and averages from processed subjects
+        for subject_name, percentage in processed_subjects.items():
+            # Ensure percentage doesn't exceed 100%
+            standardized_mark = min(percentage, 100.0) if percentage > 0 else 0
 
-                            # Update the mark's percentage in the database
-                            mark.percentage = standardized_mark
-                            mark.raw_mark = (standardized_mark / 100) * (mark.max_raw_mark or 100)
-                            mark.mark = mark.raw_mark  # Update old field name too
-                            try:
-                                db.session.commit()
-                                print(f"Updated composite mark for {subject.name}, student {student.name}: {standardized_mark}%")
-                            except Exception as e:
-                                db.session.rollback()
-                                print(f"Error updating mark: {e}")
-                        else:
-                            # Fallback to the mark's percentage or calculate it
-                            standardized_mark = mark.percentage if hasattr(mark, 'percentage') and mark.percentage is not None else 0
-                    else:
-                        # If no component marks, check if percentage is available
-                        if hasattr(mark, 'percentage') and mark.percentage is not None:
-                            standardized_mark = mark.percentage
-                        else:
-                            # Calculate from raw mark as fallback
-                            total_marks = mark.max_raw_mark if hasattr(mark, 'max_raw_mark') and mark.max_raw_mark is not None else (mark.total_marks if mark.total_marks > 0 else default_total_marks)
-                            raw_mark_value = mark.raw_mark if hasattr(mark, 'raw_mark') and mark.raw_mark is not None else mark.mark
-                            standardized_mark = (raw_mark_value / total_marks) * 100
-                else:
-                    # For regular subjects
-                    # Store the raw mark
-                    raw_mark_value = mark.raw_mark if hasattr(mark, 'raw_mark') and mark.raw_mark is not None else mark.mark
-                    student_raw_marks[subject.name] = raw_mark_value
+            # Store the standardized mark
+            student_marks[subject_name] = standardized_mark
+            student_raw_marks[subject_name] = standardized_mark  # For compatibility
 
-                    # Use the percentage value directly if available
-                    if hasattr(mark, 'percentage') and mark.percentage is not None:
-                        standardized_mark = mark.percentage
-                    else:
-                        # Calculate standardized mark (out of 100)
-                        total_marks = mark.max_raw_mark if hasattr(mark, 'max_raw_mark') and mark.max_raw_mark is not None else (mark.total_marks if mark.total_marks > 0 else default_total_marks)
-                        standardized_mark = (raw_mark_value / total_marks) * 100
-
-                # Ensure standardized mark doesn't exceed 100%
-                if standardized_mark > 100:
-                    standardized_mark = 100.0
-
-                # Store the standardized mark
-                student_marks[subject.name] = standardized_mark
-
-                # Add to standardized total for average calculation
+            # Add to standardized total for average calculation
+            if standardized_mark > 0:
                 student_standardized_total += standardized_mark
                 subject_count += 1
-            else:
-                student_marks[subject.name] = 0
-                student_raw_marks[subject.name] = 0
 
-        # Calculate total possible marks based on number of subjects
-        total_possible_marks = len(subjects) * 100  # Always 100 per subject for standardized marks
+        # Calculate total possible marks based on processed subjects (includes composite subjects)
+        total_possible_marks = len(processed_subjects) * 100  # Always 100 per subject for standardized marks
 
         # Calculate average only for subjects that have marks
         if subject_count > 0:
@@ -189,8 +171,10 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
 
         class_data.append({
             'student': student.name,
+            'student_id': student.id,  # Add student ID for component marks lookup
             'marks': student_marks,
             'raw_marks': student_raw_marks,
+            'component_marks': student_component_marks,  # Add component marks
             'total_marks': student_standardized_total,
             'total_possible_marks': total_possible_marks,
             'average_percentage': avg_percentage,
@@ -217,10 +201,48 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
         else:
             stats['below'] += 1
 
+    # Build the final subjects list including composite subjects
+    final_subjects = []
+
+    # Add regular subjects (non-component, non-composite)
+    for subject in subjects:
+        if not (hasattr(subject, 'is_component') and subject.is_component) and not (hasattr(subject, 'is_composite') and subject.is_composite):
+            final_subjects.append(subject.name)
+
+    # Add composite subjects
+    composite_subjects = CompositeSubjectService.get_all_composite_subjects(education_level)
+    final_subjects.extend(composite_subjects)
+
+    # Sort the final subjects list
+    final_subjects.sort()
+
+    # Prepare component structure data for template
+    subject_components = {}
+    component_marks_data = {}
+
+    for composite_name in composite_subjects:
+        # Get component subjects for this composite
+        component_subjects = Subject.query.filter_by(
+            composite_parent=composite_name,
+            education_level=education_level,
+            is_component=True
+        ).all()
+
+        if component_subjects:
+            subject_components[composite_name] = component_subjects
+
+            # Prepare component marks data structure expected by template
+            component_marks_data = {}
+            for student_data in class_data:
+                student_id = student_data['student_id']
+                component_marks_data[student_id] = student_data.get('component_marks', {})
+
     return {
         "class_data": class_data,
         "stats": stats,
-        "subjects": [subject.name for subject in subjects],
+        "subjects": final_subjects,
+        "subject_components": subject_components,  # Add component structure
+        "component_marks_data": component_marks_data,  # Add component marks data
         "total_marks": default_total_marks,  # Using default total marks
         "error": None,
         "education_level": education_level

@@ -33,6 +33,10 @@ function updateProportionalWeights(subjectId) {
 
 // Function to select a class for marks upload
 function selectClassForUpload(gradeName, streamName, educationLevel) {
+  console.log(
+    `Selecting class: ${gradeName}, ${streamName}, ${educationLevel}`
+  );
+
   // Set the values in the form
   document.getElementById("education_level").value = educationLevel;
 
@@ -56,6 +60,41 @@ function selectClassForUpload(gradeName, streamName, educationLevel) {
       // This will trigger any stream-dependent logic
       const streamEvent = new Event("change", { bubbles: true });
       document.getElementById("stream").dispatchEvent(streamEvent);
+
+      // Set default values for term, assessment, and total marks if not already set
+      const termField = document.getElementById("term");
+      const assessmentField = document.getElementById("assessment_type");
+      const totalMarksField = document.getElementById("total_marks");
+
+      if (termField && !termField.value) {
+        // Set to first available term option
+        const termOptions = termField.querySelectorAll("option[value!='']");
+        if (termOptions.length > 0) {
+          termField.value = termOptions[0].value;
+        }
+      }
+
+      if (assessmentField && !assessmentField.value) {
+        // Set to first available assessment option
+        const assessmentOptions =
+          assessmentField.querySelectorAll("option[value!='']");
+        if (assessmentOptions.length > 0) {
+          assessmentField.value = assessmentOptions[0].value;
+        }
+      }
+
+      if (totalMarksField && !totalMarksField.value) {
+        totalMarksField.value = "100"; // Default total marks
+      }
+
+      console.log("Form fields set:", {
+        education_level: document.getElementById("education_level").value,
+        grade: document.getElementById("grade").value,
+        stream: document.getElementById("stream").value,
+        term: termField ? termField.value : "N/A",
+        assessment_type: assessmentField ? assessmentField.value : "N/A",
+        total_marks: totalMarksField ? totalMarksField.value : "N/A",
+      });
 
       // Scroll to the upload form
       const uploadForm = document.getElementById("upload-marks-form");

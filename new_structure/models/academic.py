@@ -83,6 +83,10 @@ class Subject(db.Model):
     name = db.Column(db.String(100), nullable=False)
     education_level = db.Column(db.String(50), nullable=False)
     is_composite = db.Column(db.Boolean, default=False)  # Whether this subject has components
+    # New fields for component-as-independent-subject architecture
+    is_component = db.Column(db.Boolean, default=False)  # Whether this is a component of a composite subject
+    composite_parent = db.Column(db.String(100))  # Parent subject name (e.g., 'English' for 'English Grammar')
+    component_weight = db.Column(db.Float, default=1.0)  # Weight of this component in the parent subject
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     marks = db.relationship('Mark', backref='subject', lazy=True)
     teachers = db.relationship('Teacher', secondary=teacher_subjects, back_populates='subjects')
@@ -93,6 +97,29 @@ class Subject(db.Model):
         if not self.is_composite:
             return []
         return SubjectComponent.query.filter_by(subject_id=self.id).all()
+
+    def get_component_subjects(self):
+        """Get component subjects for this composite subject (new architecture)."""
+        if not self.is_composite:
+            return []
+        return Subject.query.filter_by(
+            composite_parent=self.name,
+            education_level=self.education_level
+        ).all()
+
+    def get_parent_subject(self):
+        """Get the parent composite subject if this is a component."""
+        if not self.is_component or not self.composite_parent:
+            return None
+        return Subject.query.filter_by(
+            name=self.composite_parent,
+            education_level=self.education_level,
+            is_composite=True
+        ).first()
+
+    def is_component_of(self, parent_name):
+        """Check if this subject is a component of the specified parent."""
+        return self.is_component and self.composite_parent == parent_name
 
 class Grade(db.Model):
     """Grade model representing grade levels in the school."""

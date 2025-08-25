@@ -2,483 +2,686 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Reports - {{ school_info.school_name|default('Hillview School') }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* Solar Theme Tokens + Heroicon classes */
+        /* Solar Theme Variables */
         :root {
-            --solar-bg-1: #fdf6e3;
-            --solar-bg-2: #eee8d5;
-            --solar-bg-3: #d6d2c4;
-            --solar-primary: #b58900;    /* yellow */
-            --solar-secondary: #268bd2;  /* blue */
-            --solar-green: #859900;      /* green */
-            --solar-red: #dc322f;        /* red */
-            --solar-text-primary: #002b36;
-            --solar-text-secondary: #073642;
-            --border-color: rgba(238, 232, 213, 0.6);
-            --shadow-md: 0 10px 30px rgba(0, 43, 54, 0.08);
-            --radius-md: 12px;
+            --solar-base03: #002b36;
+            --solar-base02: #073642;
+            --solar-base01: #586e75;
+            --solar-base00: #657b83;
+            --solar-base0: #839496;
+            --solar-base1: #93a1a1;
+            --solar-base2: #eee8d5;
+            --solar-base3: #fdf6e3;
+            
+            --solar-yellow: #b58900;
+            --solar-orange: #cb4b16;
+            --solar-red: #dc322f;
+            --solar-magenta: #d33682;
+            --solar-violet: #6c71c4;
+            --solar-blue: #268bd2;
+            --solar-cyan: #2aa198;
+            --solar-green: #859900;
+            
+            /* Component Colors */
+            --bg-primary: var(--solar-base3);
+            --bg-secondary: var(--solar-base2);
+            --text-primary: var(--solar-base02);
+            --text-secondary: var(--solar-base01);
+            --border-color: rgba(147, 161, 161, 0.2);
+            --shadow: 0 4px 12px rgba(0, 43, 54, 0.15);
+            --shadow-lg: 0 8px 25px rgba(0, 43, 54, 0.2);
+            --radius: 12px;
+            --radius-lg: 16px;
         }
-        body { 
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; 
-            color: var(--solar-text-primary);
-            background: linear-gradient(135deg, var(--solar-bg-1) 0%, var(--solar-bg-2) 60%, var(--solar-bg-3) 100%);
-        }
-        .heroicon { display: inline-block; width: 1.05rem; height: 1.05rem; fill: currentColor; vertical-align: middle; }
-        .heroicon-lg { width: 1.5rem; height: 1.5rem; }
-        .heroicon-solar-blue { color: var(--solar-secondary); }
-        .heroicon-solar-green { color: var(--solar-green); }
-        .heroicon-solar-yellow { color: var(--solar-primary); }
-        .heroicon-solar-red { color: var(--solar-red); }
 
-        /* Solarize top nav and container */
-        .navbar { 
-            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(253, 246, 227, 0.95);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border-color);
-            box-shadow: 0 12px 30px rgba(0, 43, 54, 0.08);
-            border-radius: 16px; 
-            margin: 16px auto; 
-            max-width: 95%; 
-            padding: 10px 16px;
+            box-shadow: var(--shadow);
+            border-radius: var(--radius-lg);
+            margin: 20px;
+            padding: 16px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
-        .navbar .navbar-brand { 
-            font-weight: 800; 
-            color: var(--solar-text-primary) !important; 
-            text-decoration: none; 
-            letter-spacing: .3px;
-        }
-        .navbar-nav { 
-            list-style: none; 
-            display: flex !important; 
-            gap: 12px !important; 
-            margin: 0 !important; 
-            padding-left: 0 !important; 
-        }
-        .navbar-nav .nav-item { margin: 0 !important; }
-        .navbar-nav .nav-link, .navbar-nav .logout-btn {
-            text-decoration: none !important;
-            color: var(--solar-text-secondary) !important;
-            background: rgba(253, 246, 227, 0.55) !important;
-            border: 1px solid var(--border-color) !important;
-            border-radius: 999px !important;
-            padding: 8px 14px !important;
-            display: inline-flex; align-items: center; gap: 6px;
-            transition: transform .2s ease, box-shadow .2s ease;
-        }
-        .navbar-nav .nav-link:hover, .navbar-nav .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--solar-blue);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* Make filter controls clearly Solar */
-        .filter-bar {
-            /* ...existing code... */
-            box-shadow: 0 8px 22px rgba(0, 43, 54, 0.06);
-        }
-        .filter-select { 
-            border: 1px solid var(--border-color) !important; 
-            background: #fff !important; 
-            border-radius: 10px !important;
-            padding: 8px 12px !important;
-        }
-        .filter-button { 
-            background: var(--solar-secondary) !important; 
-            color:#fff !important; 
-            border: 1px solid rgba(38,139,210,0.3) !important; 
-            border-radius: 10px !important;
-            box-shadow: 0 6px 14px rgba(38,139,210,0.18) !important;
-        }
-        .filter-button:hover { filter: brightness(0.95); }
-
-        /* Card and header polish */
-        .report-card { 
-            /* ...existing code... */
-            overflow: hidden; 
-        }
-        .report-header { 
-            /* ...existing code... */
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 16px 20px; 
-        }
-        .report-title { 
-            /* ...existing code... */
-            margin: 0; font-weight: 800; letter-spacing: .2px; 
-        }
-        .report-date { 
-            /* ...existing code... */
-            font-weight: 600; 
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            list-style: none;
         }
 
-        /* Action buttons vivid Solar styles */
-        .report-actions .action-btn, .action-btn { 
-            border-radius: 12px !important; 
-            padding: 10px 14px !important;
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .edit-btn { 
-            background: #fdf0c7 !important; 
-            color: var(--solar-text-primary) !important; 
-            border: 1px solid rgba(245,199,0,0.35) !important; 
+
+        .nav-link:hover {
+            background: rgba(38, 139, 210, 0.1);
+            color: var(--solar-blue);
         }
-        .view-btn { background: var(--solar-secondary) !important; color: #fff !important; }
-        .print-btn { background: var(--solar-green) !important; color: #fff !important; }
-        .delete-btn { background: #fbe3e5 !important; color: var(--solar-red) !important; border: 1px solid rgba(220,50,47,0.25) !important; }
 
-        /* Pagination contrast */
-        .page-link { border: 1px solid var(--border-color) !important; color: var(--solar-secondary) !important; }
-        .page-link.active { background-color: var(--solar-secondary) !important; border-color: var(--solar-secondary) !important; color:#fff !important; }
-        .page-link:hover { background: rgba(38, 139, 210, 0.1) !important; }
-
-        /* Empty state polish */
-        .empty-state { 
-            /* ...existing code... */
-            padding: 28px; border-radius: 16px; text-align: center; 
+        .nav-link.active {
+            background: var(--solar-blue);
+            color: white;
         }
-        .empty-title { color: var(--solar-text-primary) !important; }
-        .empty-message { color: var(--solar-text-secondary) !important; }
 
-        /* Stronger navbar reset to remove bullets/underlines everywhere */
-        nav.navbar ul, nav.navbar .navbar-nav, nav.navbar .navbar-nav li { list-style: none !important; }
-        nav.navbar .navbar-nav { display: flex !important; gap: 12px !important; padding-left: 0 !important; margin: 0 !important; }
-        nav.navbar .nav-item { margin: 0 !important; }
-        nav.navbar .nav-link, nav.navbar .logout-btn { text-decoration: none !important; }
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-        /* Glassy page header like other Solar pages */
+        /* Page Header */
         .page-header {
-            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%) !important;
-            backdrop-filter: blur(12px);
-            padding: 24px !important;
-            border-radius: 20px !important;
-            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.12) !important;
-            border: 1px solid rgba(238, 232, 213, 0.6) !important;
-            margin: 8px 0 18px 0 !important;
+            background: rgba(253, 246, 227, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: var(--shadow);
         }
-        .page-header h1 { display: flex; align-items: center; gap: 10px; margin: 0; color: var(--solar-text-primary); font-weight: 800; letter-spacing: .2px; }
-        .container { max-width: 92%; margin-top: 28px !important; }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--solar-blue);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: rgba(253, 246, 227, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-select {
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--solar-blue);
+            box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.1);
+        }
+
+        .reset-btn {
+            background: var(--solar-cyan);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .reset-btn:hover {
+            background: var(--solar-blue);
+            transform: translateY(-1px);
+        }
+
+        /* Reports Grid */
+        .reports-section {
+            margin: 30px 0;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .report-card {
+            background: rgba(253, 246, 227, 0.8);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--solar-blue);
+        }
+
+        .action-btn {
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .subject-btn:hover {
+            background: #2563eb !important;
+        }
+
+        .class-btn:hover {
+            background: #059669 !important;
+        }
+
+        .report-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--solar-blue);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .report-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .report-stats {
+            display: flex;
+            gap: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--solar-green);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .report-date {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--solar-yellow);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            color: var(--solar-cyan);
+        }
+
+        /* Heroicons */
+        .heroicon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .heroicon-sm {
+            width: 16px;
+            height: 16px;
+        }
+
+        .heroicon-lg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                margin: 10px;
+                padding: 12px 16px;
+            }
+
+            .navbar-nav {
+                gap: 12px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .report-meta {
+                grid-template-columns: 1fr;
+            }
+
+            .report-stats {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Navigation -->
     <nav class="navbar">
-        <a href="#" class="navbar-brand">{{ school_info.school_name|default('Hillview School') }}</a>
+        <a href="{{ url_for('classteacher.dashboard') }}" class="navbar-brand">
+            <svg class="heroicon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            {{ school_info.school_name|default('Hillview School') }}
+        </a>
+        
         <ul class="navbar-nav">
-            <li class="nav-item"><a href="{{ url_for('classteacher.dashboard') }}" class="nav-link">
-                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13.5A1.5 1.5 0 014.5 12h15a1.5 1.5 0 010 3h-15A1.5 1.5 0 013 13.5zM3 7.5A1.5 1.5 0 014.5 6h15a1.5 1.5 0 010 3h-15A1.5 1.5 0 013 7.5zM3 19.5A1.5 1.5 0 014.5 18h9a1.5 1.5 0 010 3h-9A1.5 1.5 0 013 19.5z"/></svg>
-                <span>Dashboard</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link">
-                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 18H6A2.25 2.25 0 013.75 15.75V6z"/></svg>
-                <span>Reports</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link">
-                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5zM12 7.5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3A.75.75 0 0112 7.5zm0 7.5a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z"/></svg>
-                <span>Help</span></a></li>
-            <li class="nav-item"><a href="{{ url_for('auth.logout_route') }}" class="logout-btn nav-link">
-                <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3.75 5.25A2.25 2.25 0 016 3h6a2.25 2.25 0 012.25 2.25v2.378a.75.75 0 01-1.5 0V5.25a.75.75 0 00-.75-.75H6a.75.75 0 00-.75.75v13.5c0 .414.336.75.75.75h6a.75.75 0 00.75-.75v-2.378a.75.75 0 011.5 0v2.378A2.25 2.25 0 0112 21H6a2.25 2.25 0 01-2.25-2.25V5.25z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M14.47 15.28a.75.75 0 001.06 0l3-3a.75.75 0 000-1.06l-3-3a.75.75 0 10-1.06 1.06l1.72 1.72H9a.75.75 0 000 1.5h7.19l-1.72 1.72a.75.75 0 000 1.06z" clip-rule="evenodd"/></svg>
-                <span>Logout</span></a></li>
+            <li><a href="{{ url_for('classteacher.dashboard') }}" class="nav-link">
+                <svg class="heroicon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v10H8V5z"></path>
+                </svg>
+                Dashboard
+            </a></li>
+            <li><a href="{{ url_for('classteacher.all_reports') }}" class="nav-link active">
+                <svg class="heroicon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Reports
+            </a></li>
+            <li><a href="#" class="nav-link">
+                <svg class="heroicon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Help
+            </a></li>
+            <li><a href="{{ url_for('auth.logout_route') }}" class="nav-link">
+                <svg class="heroicon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                Logout
+            </a></li>
         </ul>
     </nav>
 
-    <div class="container" style="max-width: 90%; margin-top: 80px;">
-        <header class="page-header">
-            <h1>
-                <svg class="heroicon heroicon-lg heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 18H6A2.25 2.25 0 013.75 15.75V6z"/><path d="M9.75 9.75h6.75M9.75 12.75h6.75M9.75 15.75h6.75M6.75 9.75h.75M6.75 12.75h.75M6.75 15.75h.75"/></svg>
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <svg class="heroicon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
                 All Reports
             </h1>
-        </header>
-
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-            <div class="filter-group">
-                <label class="filter-label">Sort by:</label>
-                <select id="sort-select" class="filter-select" onchange="applyFilters()">
-                    <option value="date" {% if sort_by == 'date' %}selected{% endif %}>Date (newest first)</option>
-                    <option value="grade" {% if sort_by == 'grade' %}selected{% endif %}>Grade</option>
-                    <option value="term" {% if sort_by == 'term' %}selected{% endif %}>Term</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label class="filter-label">Education Level:</label>
-                <select id="education-level-select" class="filter-select" onchange="updateGradeOptions()">
-                    <option value="">All Levels</option>
-                    <option value="lower_primary" {% if filter_education_level == 'lower_primary' %}selected{% endif %}>Lower Primary</option>
-                    <option value="upper_primary" {% if filter_education_level == 'upper_primary' %}selected{% endif %}>Upper Primary</option>
-                    <option value="junior_secondary" {% if filter_education_level == 'junior_secondary' %}selected{% endif %}>Junior Secondary</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label class="filter-label">Grade:</label>
-                <select id="grade-select" class="filter-select" onchange="applyFilters()">
-                    <option value="">All Grades</option>
-                    {% for grade_option in grades %}
-                    <option value="{{ grade_option }}" {% if filter_grade == grade_option %}selected{% endif %} data-level="{{ grade_option|get_education_level }}">{{ grade_option }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label class="filter-label">Term:</label>
-                <select id="term-select" class="filter-select" onchange="applyFilters()">
-                    <option value="">All Terms</option>
-                    {% for term_option in terms %}
-                    <option value="{{ term_option }}" {% if filter_term == term_option %}selected{% endif %}>{{ term_option }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label class="filter-label">Assessment:</label>
-                <select id="assessment-select" class="filter-select" onchange="applyFilters()">
-                    <option value="">All Assessments</option>
-                    {% for assessment_option in assessment_types %}
-                    <option value="{{ assessment_option }}" {% if filter_assessment == assessment_option %}selected{% endif %}>{{ assessment_option }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <button class="filter-button" onclick="resetFilters()">Reset Filters</button>
+            <p class="page-subtitle">Browse existing reports and performance data</p>
         </div>
 
-        <!-- Reports List -->
-        {% if reports %}
-            {% for report in reports %}
-            <div class="report-card">
-                <div class="report-header">
-                    <h2 class="report-title">{{ report.grade }} {{ report.stream }}</h2>
-                    <span class="report-date">{{ report.date }}</span>
-                </div>
-                <div class="report-body">
-                    <div class="report-info">
-                        <div class="info-item">
-                            <span class="info-label">Term</span>
-                            <span class="info-value">{{ report.term }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Assessment</span>
-                            <span class="info-value">{{ report.assessment_type }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Class Average</span>
-                            <span class="info-value">
-                                <span class="badge badge-success">{{ report.class_average }}%</span>
-                            </span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Total Marks</span>
-                            <span class="info-value">
-                                <span class="badge badge-info">{{ report.mark_count }} marks</span>
-                            </span>
-                        </div>
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <form method="GET" action="{{ url_for('classteacher.all_reports') }}">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <svg class="heroicon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+                            </svg>
+                            Sort by:
+                        </label>
+                        <select name="sort" class="filter-select">
+                            <option value="date" {{ 'selected' if sort_by == 'date' else '' }}>Date (newest first)</option>
+                            <option value="grade" {{ 'selected' if sort_by == 'grade' else '' }}>Grade</option>
+                            <option value="term" {{ 'selected' if sort_by == 'term' else '' }}>Term</option>
+                        </select>
                     </div>
-                    <div class="report-actions">
-                        <a href="{{ url_for('classteacher.edit_class_marks', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn edit-btn" title="Edit marks for this report">
-                            <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712z"/><path d="M3 16.5v3.75h3.75L18.188 8.812l-3.712-3.712L3 16.5z"/></svg>
-                            <span>Edit</span>
-                        </a>
-                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn view-btn" title="View report preview">
-                            <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5.25c-7.5 0-10.5 6.75-10.5 6.75S4.5 18.75 12 18.75 22.5 12 22.5 12 19.5 5.25 12 5.25z"/><path d="M12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/></svg>
-                            <span>View</span>
-                        </a>
-                        <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="action-btn print-btn" title="Print this report">
-                            <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M6.75 3A1.75 1.75 0 005 4.75V7.5h14V4.75A1.75 1.75 0 0017.25 3h-10.5z"/><path d="M19 8.25H5A2.75 2.75 0 002.25 11v3.25A2.75 2.75 0 005 17h1.5v3.25a.75.75 0 00.75.75h9.5a.75.75 0 00.75-.75V17H19a2.75 2.75 0 002.75-2.75V11A2.75 2.75 0 0019 8.25zM7.25 17h9.5v3h-9.5v-3z"/></svg>
-                            <span>Print</span>
-                        </a>
-                        <button onclick="confirmDeleteReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')" class="action-btn delete-btn" title="Delete this report permanently">
-                            <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 3.75A1.75 1.75 0 0110.75 2h2.5A1.75 1.75 0 0115 3.75V5h4.25a.75.75 0 010 1.5H4.75a.75.75 0 010-1.5H9V3.75z"/><path d="M6.75 7.5h10.5l-.7 12.04a1.75 1.75 0 01-1.74 1.71H9.19a1.75 1.75 0 01-1.74-1.71L6.75 7.5z"/></svg>
-                            <span>Delete</span>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <svg class="heroicon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            Grade:
+                        </label>
+                        <select name="filter_grade" class="filter-select">
+                            <option value="">All Grades</option>
+                            {% for grade in grades %}
+                            <option value="{{ grade }}" {{ 'selected' if filter_grade == grade else '' }}>{{ grade }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <svg class="heroicon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h3z"></path>
+                            </svg>
+                            Term:
+                        </label>
+                        <select name="filter_term" class="filter-select">
+                            <option value="">All Terms</option>
+                            {% for term in terms %}
+                            <option value="{{ term }}" {{ 'selected' if filter_term == term else '' }}>{{ term }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <svg class="heroicon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                            Assessment:
+                        </label>
+                        <select name="filter_assessment" class="filter-select">
+                            <option value="">All Assessments</option>
+                            {% for assessment in assessment_types %}
+                            <option value="{{ assessment }}" {{ 'selected' if filter_assessment == assessment else '' }}>{{ assessment }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <button type="submit" class="reset-btn" style="margin-top: 24px;">
+                            <svg class="heroicon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            Apply Filters
                         </button>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
+            </form>
+            
+            <a href="{{ url_for('classteacher.all_reports') }}" class="reset-btn" style="background: var(--solar-orange);">
+                <svg class="heroicon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Reset Filters
+            </a>
+        </div>
 
-            <!-- Pagination with improved navigation -->
-            {% if pagination.pages > 1 %}
-            <div class="pagination">
-                {% if pagination.has_prev %}
-                <a href="{{ url_for('classteacher.view_all_reports', page=pagination.prev_num, sort_by=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">Previous</a>
-                {% else %}
-                <span class="page-link disabled">Previous</span>
-                {% endif %}
+        <!-- Reports Section -->
+        <div class="reports-section">
+            <h2 class="section-title">
+                <svg class="heroicon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Generated Reports ({{ reports|length }})
+            </h2>
 
-                <!-- Show page numbers with ellipsis for large page counts -->
-                {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
-                    {% if page_num %}
-                        {% if page_num == pagination.page %}
-                        <span class="page-link active">{{ page_num }}</span>
-                        {% else %}
-                        <a href="{{ url_for('classteacher.view_all_reports', page=page_num, sort_by=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">{{ page_num }}</a>
+            {% if reports %}
+            <div class="reports-grid">
+                {% for report in reports %}
+                <div class="report-card" data-download-url="{{ report.download_url }}" onclick="viewReport(this)" style="cursor: pointer;">
+                    <div class="report-date">{{ report.date }}</div>
+                    
+                    <h3 class="report-title">
+                        <svg class="heroicon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        {{ report.grade }} {{ report.stream }}
+                    </h3>
+
+                    <div class="report-meta">
+                        <div class="meta-item">
+                            <svg class="heroicon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h3z"></path>
+                            </svg>
+                            {{ report.term }}
+                        </div>
+                        <div class="meta-item">
+                            <svg class="heroicon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                            {{ report.assessment_type }}
+                        </div>
+                    </div>
+
+                    <div class="report-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ report.mark_count }}</div>
+                            <div class="stat-label">Records</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ report.id }}</div>
+                            <div class="stat-label">Report ID</div>
+                        </div>
+                    </div>
+
+                    <!-- Report Action Buttons -->
+                    <div class="report-actions" style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        {% if report.subject_id %}
+                        <button onclick="event.stopPropagation(); window.location.href='{{ url_for('classteacher.subject_report', grade_id=report.grade_id, stream_id=report.stream_id, subject_id=report.subject_id, term_id=report.term_id, assessment_type_id=report.assessment_type_id) }}'"
+                                class="action-btn subject-btn" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                            📚 Subject Report
+                        </button>
                         {% endif %}
-                    {% else %}
-                        <span class="page-ellipsis">...</span>
-                    {% endif %}
+                        <button onclick="event.stopPropagation(); window.location.href='{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}'"
+                                class="action-btn class-btn" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                            📊 Class Report
+                        </button>
+                        <button onclick="event.stopPropagation(); deleteReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')"
+                                class="action-btn delete-btn" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
                 {% endfor %}
-
-                {% if pagination.has_next %}
-                <a href="{{ url_for('classteacher.view_all_reports', page=pagination.next_num, sort_by=sort_by, filter_grade=filter_grade, filter_term=filter_term, filter_assessment=filter_assessment) }}" class="page-link">Next</a>
-                {% else %}
-                <span class="page-link disabled">Next</span>
-                {% endif %}
-
-                <!-- Page info -->
-                <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }} ({{ pagination.total }} reports)</span>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3>No Reports Found</h3>
+                <p>No reports match your current filters. Try adjusting the filters or <a href="{{ url_for('classteacher.upload_marks') }}" style="color: var(--solar-blue);">upload some marks</a> to generate reports.</p>
             </div>
             {% endif %}
-        {% else %}
-            <div class="empty-state">
-                <div class="empty-icon" style="margin-bottom:16px;">
-                    <svg class="heroicon heroicon-lg heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4.5A1.5 1.5 0 014.5 3h15A1.5 1.5 0 0121 4.5V9a.75.75 0 01-1.5 0V4.5h-15V19.5h8.25a.75.75 0 010 1.5H4.5A1.5 1.5 0 013 19.5V4.5z"/><path d="M8.25 7.5A.75.75 0 019 6.75h8.69a.75.75 0 01.53.22l2.81 2.81a.75.75 0 010 1.06l-8.72 8.72a.75.75 0 01-1.06 0l-2.81-2.81a.75.75 0 01-.22-.53V7.5z"/></svg>
-                </div>
-                <h2 class="empty-title">No Reports Found</h2>
-                <p class="empty-message">There are no reports matching your filter criteria. Try adjusting your filters or upload marks to generate new reports.</p>
-                <a href="{{ url_for('classteacher.dashboard') }}" class="btn mt-3" style="display: inline-block; margin-top: 20px;">Return to Dashboard</a>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteReportModal" class="modal">
-        <div class="modal-content">
-            <h3>Confirm Deletion</h3>
-            <p id="deleteReportMessage">Are you sure you want to delete this report? This action cannot be undone.</p>
-            <div class="modal-buttons">
-                <form id="deleteReportForm" method="POST" action="">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <button type="button" onclick="closeDeleteReportModal()" class="cancel-btn">Cancel</button>
-                    <button type="submit" class="confirm-delete-btn">Delete</button>
-                </form>
-            </div>
         </div>
     </div>
 
-    <footer>
-        <p>© 2025 {{ school_info.school_name|default('Hillview School') }} - All Rights Reserved</p>
-    </footer>
-
     <script>
-        // Define the mapping between education levels and grades
-        const educationLevelGradeMapping = {
-            'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
-            'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
-            'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
-        };
+        // Function to view report details
+        function viewReport(element) {
+            const downloadUrl = element.dataset.downloadUrl;
 
-        // Function to update grade options based on selected education level
-        function updateGradeOptions() {
-            const educationLevel = document.getElementById('education-level-select').value;
-            const gradeSelect = document.getElementById('grade-select');
-
-            // Store all original options if we haven't already
-            if (!window.allGradeOptions) {
-                window.allGradeOptions = Array.from(gradeSelect.options);
-            }
-
-            // Clear all options except the first one (All Grades)
-            while (gradeSelect.options.length > 1) {
-                gradeSelect.remove(1);
-            }
-
-            if (educationLevel) {
-                // Add only the grades for the selected education level
-                const gradesForLevel = educationLevelGradeMapping[educationLevel] || [];
-
-                window.allGradeOptions.forEach(option => {
-                    if (option.value === '' || gradesForLevel.includes(option.value)) {
-                        gradeSelect.add(option.cloneNode(true));
-                    }
-                });
+            if (downloadUrl && downloadUrl !== '#' && downloadUrl !== '') {
+                window.location.href = downloadUrl;
             } else {
-                // If no education level is selected, add all grades back
-                window.allGradeOptions.forEach(option => {
-                    gradeSelect.add(option.cloneNode(true));
-                });
-            }
+                // Fallback: construct URL manually from report data
+                const reportTitle = element.querySelector('.report-title').textContent.trim();
+                const metaItems = element.querySelectorAll('.report-meta .meta-item');
 
-            // Apply filters after updating grade options
-            applyFilters();
-        }
+                if (metaItems.length >= 2) {
+                    const term = metaItems[0].textContent.trim();
+                    const assessmentType = metaItems[1].textContent.trim();
 
-        function applyFilters() {
-            const sortBy = document.getElementById('sort-select').value;
-            const educationLevel = document.getElementById('education-level-select').value;
-            const gradeFilter = document.getElementById('grade-select').value;
-            const termFilter = document.getElementById('term-select').value;
-            const assessmentFilter = document.getElementById('assessment-select').value;
+                    // Extract grade and stream from title (e.g., "Grade 9 Stream B")
+                    const titleParts = reportTitle.split(' ');
+                    if (titleParts.length >= 4) {
+                        const grade = titleParts[0] + ' ' + titleParts[1]; // "Grade 9"
+                        const stream = titleParts[2] + ' ' + titleParts[3]; // "Stream B"
 
-            let url = '{{ url_for("classteacher.view_all_reports") }}?';
-
-            if (sortBy) {
-                url += `sort=${sortBy}&`;
-            }
-
-            if (educationLevel) {
-                url += `filter_education_level=${educationLevel}&`;
-            }
-
-            if (gradeFilter) {
-                url += `filter_grade=${gradeFilter}&`;
-            }
-
-            if (termFilter) {
-                url += `filter_term=${termFilter}&`;
-            }
-
-            if (assessmentFilter) {
-                url += `filter_assessment=${assessmentFilter}&`;
-            }
-
-            // Remove trailing & if present
-            if (url.endsWith('&')) {
-                url = url.slice(0, -1);
-            }
-
-            window.location.href = url;
-        }
-
-        function resetFilters() {
-            window.location.href = '{{ url_for("classteacher.view_all_reports") }}';
-        }
-
-        function confirmDeleteReport(grade, stream, term, assessmentType) {
-            // Set up the delete form action
-            const deleteForm = document.getElementById('deleteReportForm');
-            deleteForm.action = `/classteacher/delete_report/${grade}/${stream}/${term}/${assessmentType}`;
-
-            // Update the confirmation message
-            const deleteMessage = document.getElementById('deleteReportMessage');
-            deleteMessage.textContent = `Are you sure you want to delete the report for ${grade} ${stream} in ${term} ${assessmentType}? This action cannot be undone.`;
-
-            // Show the modal
-            document.getElementById('deleteReportModal').style.display = 'flex';
-        }
-
-        function closeDeleteReportModal() {
-            document.getElementById('deleteReportModal').style.display = 'none';
-        }
-
-        // Close the modal if the user clicks outside of it
-        window.onclick = function(event) {
-            const modal = document.getElementById('deleteReportModal');
-            if (event.target == modal) {
-                modal.style.display = 'none';
+                        const fallbackUrl = `/classteacher/preview_class_report/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
+                        window.location.href = fallbackUrl;
+                    } else {
+                        alert('Unable to determine report details. Please try refreshing the page.');
+                    }
+                } else {
+                    alert('Report URL not available. Please try refreshing the page.');
+                }
             }
         }
 
-        // Initialize the page when it loads
+        // Function to delete report
+        function deleteReport(grade, stream, term, assessmentType) {
+            if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+                // Build the URL with parameters
+                const deleteUrl = `/classteacher/delete_report/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
+
+                // Create form to submit delete request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = deleteUrl;
+
+                // Add CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = 'csrf_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Auto-submit form when filters change
+        document.querySelectorAll('.filter-select').forEach(select => {
+            select.addEventListener('change', function() {
+                this.form.submit();
+            });
+        });
+
+        // Smooth animations
         document.addEventListener('DOMContentLoaded', function() {
-            // Store all grade options for later use
-            const gradeSelect = document.getElementById('grade-select');
-            window.allGradeOptions = Array.from(gradeSelect.options);
-
-            // If an education level is already selected, filter the grades
-            const educationLevel = document.getElementById('education-level-select').value;
-            if (educationLevel) {
-                updateGradeOptions();
-            }
+            const cards = document.querySelectorAll('.report-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
         });
     </script>
 </body>

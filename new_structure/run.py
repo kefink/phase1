@@ -7,9 +7,11 @@ This script creates and runs the Flask application.
 import os
 import sys
 
-# Add the parent directory to the Python path so we can import new_structure as a package
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Add the current directory to the Python path so we can import new_structure as a package
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
+sys.path.insert(0, current_dir)
 
 try:
     # Define the port

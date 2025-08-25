@@ -21,18 +21,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Add form validation on page load
 function initializeFormValidation() {
+  console.log("Initializing form validation...");
   const uploadBtn = document.getElementById("upload-btn");
   const bulkUploadBtn = document.getElementById("bulk-upload-btn");
+
+  console.log("Upload button found:", uploadBtn ? "Yes" : "No");
+  console.log("Bulk upload button found:", bulkUploadBtn ? "Yes" : "No");
 
   // Add click handlers with validation
   if (uploadBtn) {
     uploadBtn.addEventListener("click", function (e) {
+      console.log("Upload button clicked - running validation...");
       if (!validateFormConfiguration()) {
+        console.log("Validation failed - preventing form submission");
         e.preventDefault();
         showToast(
           "Please complete all required configuration fields",
           "warning"
         );
+      } else {
+        console.log("Validation passed - allowing form submission");
       }
     });
   }
@@ -87,10 +95,28 @@ function validateFormConfiguration() {
     "stream",
   ];
   let isValid = true;
+  let missingFields = [];
 
   requiredFields.forEach((fieldName) => {
     const field = document.getElementById(fieldName);
-    if (!field || !field.value.trim()) {
+    if (!field) {
+      console.error(`Field with ID '${fieldName}' not found`);
+      missingFields.push(`${fieldName} (element not found)`);
+      isValid = false;
+      return;
+    }
+
+    if (
+      !field.value ||
+      field.value.trim() === "" ||
+      field.value.toLowerCase().includes("select")
+    ) {
+      console.log(
+        `Field '${fieldName}' is empty or has placeholder value: '${field.value}'`
+      );
+      missingFields.push(
+        fieldName.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())
+      );
       isValid = false;
 
       // Visual feedback for missing fields
@@ -103,8 +129,22 @@ function validateFormConfiguration() {
           field.style.boxShadow = "";
         }, 3000);
       }
+    } else {
+      console.log(`Field '${fieldName}' has valid value: '${field.value}'`);
     }
   });
+
+  if (!isValid) {
+    console.error(
+      `Form validation failed. Missing fields: ${missingFields.join(", ")}`
+    );
+    showToast(
+      `Please fill in the following fields: ${missingFields.join(", ")}`,
+      "warning"
+    );
+  } else {
+    console.log("Form validation passed - all required fields have values");
+  }
 
   return isValid;
 }
