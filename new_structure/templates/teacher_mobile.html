@@ -759,6 +759,16 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
     <div class="stat-card">
         <div class="stat-number">{{ assignment_summary.total_subjects_taught if assignment_summary else 0 }}</div>
         <div class="stat-label">Subjects Taught</div>
+        {% if assignment_summary and assignment_summary.subject_assignments %}
+        <div class="subject-list-mobile" style="margin-top: 0.5rem; font-size: 0.7rem; color: #666; max-height: 80px; overflow-y: auto;">
+          {% for assignment in assignment_summary.subject_assignments %}
+            <div style="padding: 1px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">
+              {{ assignment.subject_name }}
+              <span style="font-size: 0.6rem; opacity: 0.7; float: right;">{{ assignment.grade_level }}</span>
+            </div>
+          {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </div>
 
