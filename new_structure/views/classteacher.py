@@ -2429,26 +2429,36 @@ def dashboard():
         # Get students from all assigned classes
         for assignment in class_teacher_assignments:
             if assignment.get('stream_id'):
-                class_students = Student.query.filter_by(stream_id=assignment['stream_id']).order_by(Student.first_name, Student.last_name).all()
+                class_students = Student.query.filter_by(stream_id=assignment['stream_id']).order_by(Student.name).all()
                 for student in class_students:
+                    # Split name into first and last name for display
+                    name_parts = student.name.split(' ', 1)
+                    first_name = name_parts[0] if name_parts else student.name
+                    last_name = name_parts[1] if len(name_parts) > 1 else ""
+                    
                     my_students.append({
                         'id': student.id,
-                        'first_name': student.first_name,
-                        'last_name': student.last_name,
-                        'full_name': f"{student.first_name} {student.last_name}",
+                        'first_name': first_name,
+                        'last_name': last_name,
+                        'full_name': student.name,
                         'admission_number': student.admission_number,
                         'grade_level': assignment.get('grade_level', ''),
                         'stream_name': assignment.get('stream_name', '')
                     })
     elif teacher.stream_id:
         # Direct stream assignment
-        class_students = Student.query.filter_by(stream_id=teacher.stream_id).order_by(Student.first_name, Student.last_name).all()
+        class_students = Student.query.filter_by(stream_id=teacher.stream_id).order_by(Student.name).all()
         for student in class_students:
+            # Split name into first and last name for display
+            name_parts = student.name.split(' ', 1)
+            first_name = name_parts[0] if name_parts else student.name
+            last_name = name_parts[1] if len(name_parts) > 1 else ""
+            
             my_students.append({
                 'id': student.id,
-                'first_name': student.first_name,
-                'last_name': student.last_name,
-                'full_name': f"{student.first_name} {student.last_name}",
+                'first_name': first_name,
+                'last_name': last_name,
+                'full_name': student.name,
                 'admission_number': student.admission_number,
                 'grade_level': grade_level,
                 'stream_name': stream_name
