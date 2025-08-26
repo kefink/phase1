@@ -188,6 +188,78 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         opacity: 0.9;
     }
     
+    /* Enhanced Mobile Subjects Styling */
+    .mobile-subjects-container {
+        margin-top: 0.75rem;
+        max-height: 100px;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .mobile-subjects-container.expanded {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .mobile-subjects-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mobile-subject-chip {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        padding: 0.3rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 60px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+        transition: all 0.2s ease;
+    }
+    
+    .mobile-subject-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.4);
+    }
+    
+    .chip-subject {
+        line-height: 1.1;
+        margin-bottom: 0.1rem;
+    }
+    
+    .chip-grade {
+        font-size: 0.55rem;
+        opacity: 0.9;
+        background: rgba(255,255,255,0.2);
+        padding: 1px 4px;
+        border-radius: 6px;
+    }
+    
+    .mobile-toggle-btn {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 0.3rem 0.6rem;
+        border-radius: 15px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 0.3rem;
+        transition: all 0.2s ease;
+    }
+    
+    .mobile-toggle-btn:hover {
+        transform: scale(1.02);
+        box-shadow: 0 2px 6px rgba(40,167,69,0.4);
+    }
+    
     /* Mobile table styles */
     .mobile-table-container {
         overflow-x: auto !important;
@@ -756,17 +828,24 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         <div class="stat-number">{{ terms|length if terms else 0 }}</div>
         <div class="stat-label">Active Terms</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card subjects-mobile">
         <div class="stat-number">{{ assignment_summary.total_subjects_taught if assignment_summary else 0 }}</div>
         <div class="stat-label">Subjects Taught</div>
         {% if assignment_summary and assignment_summary.subject_assignments %}
-        <div class="subject-list-mobile" style="margin-top: 0.5rem; font-size: 0.7rem; color: #666; max-height: 80px; overflow-y: auto;">
-          {% for assignment in assignment_summary.subject_assignments %}
-            <div style="padding: 1px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">
-              {{ assignment.subject_name }}
-              <span style="font-size: 0.6rem; opacity: 0.7; float: right;">{{ assignment.grade_level }}</span>
-            </div>
-          {% endfor %}
+        <div class="mobile-subjects-container">
+          <div class="mobile-subjects-grid">
+            {% for assignment in assignment_summary.subject_assignments %}
+              <div class="mobile-subject-chip">
+                <span class="chip-subject">{{ assignment.subject_name }}</span>
+                <span class="chip-grade">{{ assignment.grade_level }}</span>
+              </div>
+            {% endfor %}
+          </div>
+          {% if assignment_summary.subject_assignments|length > 4 %}
+          <button class="mobile-toggle-btn" onclick="toggleMobileSubjects(this)">
+            <span class="mobile-toggle-text">View All</span>
+          </button>
+          {% endif %}
         </div>
         {% endif %}
     </div>
@@ -1364,6 +1443,20 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
 
 {% block extra_js %}
 <script>
+    // Mobile subjects toggle function
+    function toggleMobileSubjects(button) {
+        const container = button.closest('.mobile-subjects-container');
+        const toggleText = button.querySelector('.mobile-toggle-text');
+        
+        if (container.classList.contains('expanded')) {
+            container.classList.remove('expanded');
+            toggleText.textContent = 'View All';
+        } else {
+            container.classList.add('expanded');
+            toggleText.textContent = 'Show Less';
+        }
+    }
+
     // Section navigation
     function showSection(sectionId) {
         // Hide all sections

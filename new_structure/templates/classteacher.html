@@ -287,31 +287,197 @@
         letter-spacing: 0.5px;
       }
 
-      .subject-list {
-        max-height: 120px;
+      /* Enhanced Subjects Container */
+      .subjects-stat {
+        position: relative;
+        overflow: visible;
+      }
+
+      .subjects-container {
+        margin-top: 0.75rem;
+        max-height: 200px;
+        position: relative;
+      }
+
+      .subjects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.5rem;
+        max-height: 140px;
         overflow-y: auto;
-        border-top: 1px solid rgba(147, 161, 161, 0.2);
-        padding-top: 0.5rem;
+        padding-right: 4px;
+        transition: max-height 0.3s ease;
       }
 
-      .subject-item {
-        padding: 3px 0;
-        border-bottom: 1px solid rgba(147, 161, 161, 0.1);
+      .subjects-grid.expanded {
+        max-height: 300px;
+      }
+
+      /* Custom Scrollbar */
+      .subjects-grid::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .subjects-grid::-webkit-scrollbar-track {
+        background: rgba(147, 161, 161, 0.1);
+        border-radius: 3px;
+      }
+
+      .subjects-grid::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--primary-color), var(--cyan));
+        border-radius: 3px;
+        transition: background 0.3s ease;
+      }
+
+      .subjects-grid::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, var(--cyan), var(--primary-color));
+      }
+
+      /* Subject Tags */
+      .subject-tag {
+        background: linear-gradient(135deg, 
+          rgba(38, 139, 210, 0.1), 
+          rgba(42, 161, 152, 0.1));
+        border: 1px solid rgba(38, 139, 210, 0.2);
+        border-radius: 8px;
+        padding: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        min-height: 50px;
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .subject-tag::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+          transparent, 
+          rgba(38, 139, 210, 0.1), 
+          transparent);
+        transition: left 0.5s ease;
+      }
+
+      .subject-tag:hover::before {
+        left: 100%;
+      }
+
+      .subject-tag:hover {
+        transform: translateY(-2px);
+        border-color: var(--primary-color);
+        background: linear-gradient(135deg, 
+          rgba(38, 139, 210, 0.15), 
+          rgba(42, 161, 152, 0.15));
+        box-shadow: 0 4px 12px rgba(38, 139, 210, 0.2);
+      }
+
+      .subject-name {
         font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .subject-grade {
+        font-size: 0.65rem;
         color: var(--text-secondary);
+        opacity: 0.8;
+        font-weight: 500;
       }
 
-      .subject-item:last-child {
-        border-bottom: none;
+      .stream {
+        background: var(--primary-color);
+        color: white;
+        padding: 1px 4px;
+        border-radius: 4px;
+        margin-left: 0.25rem;
+        font-size: 0.6rem;
+        font-weight: 600;
       }
 
-      .subject-item:hover {
-        background: rgba(38, 139, 210, 0.1);
-        padding-left: 0.25rem;
-        transition: all 0.2s ease;
+      /* Toggle Button */
+      .subjects-toggle {
+        text-align: center;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(147, 161, 161, 0.2);
+      }
+
+      .toggle-btn {
+        background: linear-gradient(135deg, var(--primary-color), var(--cyan));
+        color: white;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin: 0 auto;
+        min-width: 80px;
+        justify-content: center;
+      }
+
+      .toggle-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(38, 139, 210, 0.3);
+      }
+
+      .toggle-icon {
+        transition: transform 0.3s ease;
+        font-size: 0.6rem;
+      }
+
+      .toggle-btn.expanded .toggle-icon {
+        transform: rotate(180deg);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .subjects-grid {
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          gap: 0.4rem;
+          max-height: 120px;
+        }
+
+        .subject-tag {
+          padding: 0.4rem;
+          min-height: 45px;
+        }
+
+        .subject-name {
+          font-size: 0.7rem;
+        }
+
+        .subject-grade {
+          font-size: 0.6rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .subjects-grid {
+          grid-template-columns: 1fr 1fr;
+          gap: 0.3rem;
+        }
+
+        .subject-tag {
+          padding: 0.3rem;
+          min-height: 40px;
+        }
       }
 
       .notice {
@@ -425,7 +591,7 @@
             </div>
             <div class="stat-label">My Students</div>
           </div>
-          <div class="stat-item">
+          <div class="stat-item subjects-stat">
             <div class="stat-icon">📚</div>
             <div class="stat-value">
               {% if subject_assignments %} {{ subject_assignments|length }} {%
@@ -434,26 +600,23 @@
             </div>
             <div class="stat-label">Subjects Taught</div>
             {% if subject_assignments %}
-            <div
-              class="subject-list"
-              style="margin-top: 0.5rem; font-size: 0.8rem; color: #666"
-            >
-              {% for assignment in subject_assignments %}
-              <div
-                class="subject-item"
-                style="
-                  padding: 2px 0;
-                  display: flex;
-                  justify-content: space-between;
-                "
-              >
-                <span>{{ assignment.subject_name }}</span>
-                <span style="font-size: 0.7rem; opacity: 0.7"
-                  >{{ assignment.grade_level }}{% if assignment.stream_name %}
-                  {{ assignment.stream_name }}{% endif %}</span
-                >
+            <div class="subjects-container">
+              <div class="subjects-grid" data-total="{{ subject_assignments|length }}">
+                {% for assignment in subject_assignments %}
+                  <div class="subject-tag" title="{{ assignment.subject_name }} - {{ assignment.grade_level }}{% if assignment.stream_name %} {{ assignment.stream_name }}{% endif %}">
+                    <div class="subject-name">{{ assignment.subject_name }}</div>
+                    <div class="subject-grade">{{ assignment.grade_level }}{% if assignment.stream_name %}<span class="stream">{{ assignment.stream_name }}</span>{% endif %}</div>
+                  </div>
+                {% endfor %}
               </div>
-              {% endfor %}
+              {% if subject_assignments|length > 6 %}
+              <div class="subjects-toggle">
+                <button class="toggle-btn" onclick="toggleSubjects(this)">
+                  <span class="toggle-text">Show All</span>
+                  <span class="toggle-icon">▼</span>
+                </button>
+              </div>
+              {% endif %}
             </div>
             {% endif %}
           </div>
@@ -757,6 +920,28 @@
 
     <!-- Enhanced JavaScript -->
     <script>
+      // Toggle subjects display function
+      function toggleSubjects(button) {
+        const container = button.closest('.subjects-container');
+        const grid = container.querySelector('.subjects-grid');
+        const toggleText = button.querySelector('.toggle-text');
+        const toggleIcon = button.querySelector('.toggle-icon');
+        
+        if (button.classList.contains('expanded')) {
+          // Collapse
+          grid.classList.remove('expanded');
+          button.classList.remove('expanded');
+          toggleText.textContent = 'Show All';
+          toggleIcon.style.transform = 'rotate(0deg)';
+        } else {
+          // Expand
+          grid.classList.add('expanded');
+          button.classList.add('expanded');
+          toggleText.textContent = 'Show Less';
+          toggleIcon.style.transform = 'rotate(180deg)';
+        }
+      }
+
       document.addEventListener("DOMContentLoaded", function () {
         console.log("Simplified Class Teacher Dashboard loaded");
 
