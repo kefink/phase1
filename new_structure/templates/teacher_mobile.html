@@ -260,6 +260,98 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         box-shadow: 0 2px 6px rgba(40,167,69,0.4);
     }
     
+    /* Enhanced Mobile Students Styling */
+    .mobile-students-container {
+        margin-top: 0.5rem;
+        max-width: 100%;
+        padding: 0.3rem;
+        border-top: 1px solid rgba(0,0,0,0.1);
+        background: rgba(248,249,250,0.5);
+        border-radius: 8px;
+    }
+
+    .mobile-students-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.3rem;
+        max-height: 160px;
+        overflow-y: auto;
+        padding: 0.3rem;
+    }
+
+    .mobile-student-card {
+        background: linear-gradient(135deg, rgba(0,123,255,0.1), rgba(40,167,69,0.1));
+        border: 1px solid rgba(0,123,255,0.2);
+        border-radius: 6px;
+        padding: 0.4rem;
+        transition: all 0.2s ease;
+        font-size: 0.65rem;
+    }
+
+    .mobile-student-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0,123,255,0.3);
+        border-color: #007bff;
+    }
+
+    .mobile-student-card .student-name {
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 0.2rem;
+        line-height: 1.1;
+        font-size: 0.65rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mobile-student-card .student-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.55rem;
+        gap: 0.2rem;
+    }
+
+    .mobile-student-card .student-admission {
+        background: rgba(40,167,69,0.2);
+        padding: 1px 3px;
+        border-radius: 3px;
+        font-weight: 500;
+        font-family: monospace;
+    }
+
+    .mobile-student-card .student-class {
+        background: rgba(0,123,255,0.2);
+        padding: 1px 3px;
+        border-radius: 3px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .mobile-students-toggle {
+        background: linear-gradient(135deg, #17a2b8, #28a745);
+        color: white;
+        border: none;
+        padding: 0.3rem 0.6rem;
+        border-radius: 15px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 0.3rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+    }
+
+    .mobile-students-toggle:hover {
+        transform: scale(1.02);
+        box-shadow: 0 2px 6px rgba(23,162,184,0.4);
+    }
+    
     /* Mobile table styles */
     .mobile-table-container {
         overflow-x: auto !important;
@@ -820,9 +912,41 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         <div class="stat-number">{{ assignment_summary.total_classes_managed if assignment_summary else 0 }}</div>
         <div class="stat-label">Classes Assigned</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ students|length if students else 0 }}</div>
-        <div class="stat-label">Total Students</div>
+    <div class="stat-card students-mobile">
+        <div class="stat-number">{{ my_students|length if my_students else 0 }}</div>
+        <div class="stat-label">My Students</div>
+        {% if my_students %}
+        <div class="mobile-students-container">
+          <div class="mobile-students-grid" id="mobile-students-grid">
+            {% for student in my_students[:8] %}
+            <div class="mobile-student-card">
+              <div class="student-name">{{ student.first_name }} {{ student.last_name }}</div>
+              <div class="student-details">
+                <span class="student-admission">{{ student.admission_number }}</span>
+                <span class="student-class">{{ student.grade_level }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% if my_students|length > 8 %}
+          <div class="mobile-students-toggle" onclick="toggleMobileStudents()">
+            <span id="mobile-students-toggle-text">Show {{ my_students|length - 8 }} More</span>
+            <span class="toggle-icon" id="mobile-students-toggle-icon">▼</span>
+          </div>
+          <div class="mobile-students-grid hidden" id="mobile-students-grid-more">
+            {% for student in my_students[8:] %}
+            <div class="mobile-student-card">
+              <div class="student-name">{{ student.first_name }} {{ student.last_name }}</div>
+              <div class="student-details">
+                <span class="student-admission">{{ student.admission_number }}</span>
+                <span class="student-class">{{ student.grade_level }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
     </div>
     <div class="stat-card">
         <div class="stat-number">{{ terms|length if terms else 0 }}</div>
@@ -1454,6 +1578,27 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         } else {
             container.classList.add('expanded');
             toggleText.textContent = 'Show Less';
+        }
+    }
+
+    // Mobile students toggle function
+    function toggleMobileStudents() {
+        const moreGrid = document.getElementById('mobile-students-grid-more');
+        const toggleText = document.getElementById('mobile-students-toggle-text');
+        const toggleIcon = document.getElementById('mobile-students-toggle-icon');
+        
+        if (moreGrid.classList.contains('hidden')) {
+            // Show more students
+            moreGrid.classList.remove('hidden');
+            toggleText.textContent = 'Show Less';
+            toggleIcon.style.transform = 'rotate(180deg)';
+        } else {
+            // Hide extra students
+            moreGrid.classList.add('hidden');
+            const totalStudents = {{ my_students|length if my_students else 0 }};
+            const extraCount = totalStudents - 8;
+            toggleText.textContent = `Show ${extraCount} More`;
+            toggleIcon.style.transform = 'rotate(0deg)';
         }
     }
 

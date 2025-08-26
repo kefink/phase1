@@ -446,6 +446,128 @@
         transform: rotate(180deg);
       }
 
+      /* Students Styling */
+      .students-stat {
+        overflow: visible;
+      }
+
+      .students-container {
+        margin-top: 0.75rem;
+        max-width: 100%;
+      }
+
+      .students-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.4rem;
+        max-height: 240px;
+        overflow-y: auto;
+        padding: 0.5rem;
+        border-top: 1px solid rgba(147, 161, 161, 0.2);
+        background: rgba(0, 43, 54, 0.02);
+        border-radius: 8px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(38, 139, 210, 0.3) transparent;
+      }
+
+      .students-grid::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .students-grid::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .students-grid::-webkit-scrollbar-thumb {
+        background: rgba(38, 139, 210, 0.3);
+        border-radius: 3px;
+      }
+
+      .students-grid::-webkit-scrollbar-thumb:hover {
+        background: rgba(38, 139, 210, 0.5);
+      }
+
+      .student-card {
+        background: linear-gradient(135deg, 
+          rgba(238, 232, 213, 0.1), 
+          rgba(147, 161, 161, 0.05));
+        border: 1px solid rgba(147, 161, 161, 0.2);
+        border-radius: 6px;
+        padding: 0.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .student-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--green);
+        background: linear-gradient(135deg, 
+          rgba(133, 153, 0, 0.1), 
+          rgba(181, 137, 0, 0.1));
+        box-shadow: 0 4px 12px rgba(133, 153, 0, 0.2);
+      }
+
+      .student-name {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .student-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.6rem;
+        color: var(--text-secondary);
+        gap: 0.25rem;
+      }
+
+      .student-admission {
+        font-family: 'Courier New', monospace;
+        background: rgba(42, 161, 152, 0.1);
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-weight: 500;
+      }
+
+      .student-class {
+        background: rgba(38, 139, 210, 0.1);
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      .students-toggle {
+        background: linear-gradient(135deg, var(--green), var(--yellow));
+        color: var(--base03);
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin: 0.5rem auto 0;
+        min-width: 100px;
+        justify-content: center;
+      }
+
+      .students-toggle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(133, 153, 0, 0.3);
+      }
+
       /* Responsive Design */
       @media (max-width: 768px) {
         .subjects-grid {
@@ -579,10 +701,10 @@
           📊 Quick Overview
         </h3>
         <div class="stats-grid">
-          <div class="stat-item">
+          <div class="stat-item students-stat">
             <div class="stat-icon">👥</div>
             <div class="stat-value">
-              {% if students %} {{ students|length }} {% elif
+              {% if my_students %} {{ my_students|length }} {% elif
               class_teacher_assignments %} {% set student_count = 0 %} {% for
               assignment in class_teacher_assignments %} {% set student_count =
               student_count + (assignment.estimated_students or 25) %} {% endfor
@@ -590,6 +712,38 @@
               endif %}
             </div>
             <div class="stat-label">My Students</div>
+            {% if my_students %}
+            <div class="students-container">
+              <div class="students-grid" id="students-grid">
+                {% for student in my_students[:12] %}
+                <div class="student-card">
+                  <div class="student-name">{{ student.first_name }} {{ student.last_name }}</div>
+                  <div class="student-details">
+                    <span class="student-admission">{{ student.admission_number }}</span>
+                    <span class="student-class">{{ student.grade_level }}{{ ' ' + student.stream_name if student.stream_name }}</span>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% if my_students|length > 12 %}
+              <div class="students-toggle" onclick="toggleStudents()">
+                <span id="students-toggle-text">Show {{ my_students|length - 12 }} More Students</span>
+                <span class="toggle-icon" id="students-toggle-icon">▼</span>
+              </div>
+              <div class="students-grid hidden" id="students-grid-more">
+                {% for student in my_students[12:] %}
+                <div class="student-card">
+                  <div class="student-name">{{ student.first_name }} {{ student.last_name }}</div>
+                  <div class="student-details">
+                    <span class="student-admission">{{ student.admission_number }}</span>
+                    <span class="student-class">{{ student.grade_level }}{{ ' ' + student.stream_name if student.stream_name }}</span>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            {% endif %}
           </div>
           <div class="stat-item subjects-stat">
             <div class="stat-icon">📚</div>
@@ -939,6 +1093,27 @@
           button.classList.add('expanded');
           toggleText.textContent = 'Show Less';
           toggleIcon.style.transform = 'rotate(180deg)';
+        }
+      }
+
+      // Toggle students display function
+      function toggleStudents() {
+        const moreGrid = document.getElementById('students-grid-more');
+        const toggleText = document.getElementById('students-toggle-text');
+        const toggleIcon = document.getElementById('students-toggle-icon');
+        
+        if (moreGrid.classList.contains('hidden')) {
+          // Show more students
+          moreGrid.classList.remove('hidden');
+          toggleText.textContent = 'Show Less';
+          toggleIcon.style.transform = 'rotate(180deg)';
+        } else {
+          // Hide extra students
+          moreGrid.classList.add('hidden');
+          const totalStudents = {{ my_students|length if my_students else 0 }};
+          const extraCount = totalStudents - 12;
+          toggleText.textContent = `Show ${extraCount} More Students`;
+          toggleIcon.style.transform = 'rotate(0deg)';
         }
       }
 

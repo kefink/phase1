@@ -2423,6 +2423,37 @@ def dashboard():
     total_subjects = Subject.query.count()
     total_grades = Grade.query.count()
 
+    # Fetch students for the teacher's assigned class
+    my_students = []
+    if class_teacher_assignments:
+        # Get students from all assigned classes
+        for assignment in class_teacher_assignments:
+            if assignment.get('stream_id'):
+                class_students = Student.query.filter_by(stream_id=assignment['stream_id']).order_by(Student.first_name, Student.last_name).all()
+                for student in class_students:
+                    my_students.append({
+                        'id': student.id,
+                        'first_name': student.first_name,
+                        'last_name': student.last_name,
+                        'full_name': f"{student.first_name} {student.last_name}",
+                        'admission_number': student.admission_number,
+                        'grade_level': assignment.get('grade_level', ''),
+                        'stream_name': assignment.get('stream_name', '')
+                    })
+    elif teacher.stream_id:
+        # Direct stream assignment
+        class_students = Student.query.filter_by(stream_id=teacher.stream_id).order_by(Student.first_name, Student.last_name).all()
+        for student in class_students:
+            my_students.append({
+                'id': student.id,
+                'first_name': student.first_name,
+                'last_name': student.last_name,
+                'full_name': f"{student.first_name} {student.last_name}",
+                'admission_number': student.admission_number,
+                'grade_level': grade_level,
+                'stream_name': stream_name
+            })
+
     # Get school information
     from ..services.school_config_service import SchoolConfigService
     school_info = SchoolConfigService.get_school_info_dict()
@@ -2478,7 +2509,8 @@ def dashboard():
         streams_involved=assignment_summary.get('streams_involved', []) if assignment_summary else [],
         subjects_involved=assignment_summary.get('subjects_involved', []) if assignment_summary else [],
         has_assignments=has_assignments,  # Pass assignment status to template
-        portal_summary=portal_summary if portal_summary and isinstance(portal_summary, dict) else {}  # Pass portal summary for multi-class interface
+        portal_summary=portal_summary if portal_summary and isinstance(portal_summary, dict) else {},  # Pass portal summary for multi-class interface
+        my_students=my_students  # Pass the students for the teacher's assigned class
     )
 
 @classteacher_bp.route('/all_reports', methods=['GET'])
