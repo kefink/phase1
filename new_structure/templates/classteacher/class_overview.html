@@ -82,9 +82,6 @@
       }
 
       .classes-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 25px;
         margin-bottom: 30px;
       }
 
@@ -356,9 +353,10 @@
       </div>
 
       {% if classes_data %}
-      <div class="classes-grid">
+      <div class="classes-grid row g-3 g-md-4">
         {% for class_info in classes_data %}
-        <div class="class-card">
+        <div class="col-12 col-md-6 col-xl-4">
+        <div class="class-card h-100">
           <div class="class-header">
             <div>
               <div class="class-title">
@@ -420,7 +418,6 @@
           class_info.subjects | selectattr('is_uploaded', 'equalto', False) |
           list %} {% if pending_subjects and pending_subjects | length > 0 %}
           <div class="pending-section">
-        <div class="pending-section">
           <div class="pending-title"><span class="dot"></span> Pending Subjects</div>
           {% set target_id = 'pending-' ~ class_info.grade_id ~ '-' ~ class_info.stream_id ~ '-' ~ class_info.term_id ~ '-' ~ class_info.assessment_type_id %}
           <div id="{{ target_id }}" class="chip-list" data-collapsed="true">
@@ -445,14 +442,14 @@
         </div>
           {% endif %}
 
-          <div class="action-buttons">
+      <div class="action-buttons d-flex flex-column flex-md-row gap-2">
             <a
               href="{{ url_for('classteacher.class_marks_status', 
                                       grade_id=class_info.grade_id, 
                                       stream_id=class_info.stream_id,
                                       term_id=class_info.term_id,
                                       assessment_type_id=class_info.assessment_type_id) }}"
-              class="btn btn-primary"
+        class="btn btn-primary w-100 w-md-auto mb-2 mb-md-0"
             >
               <i class="fas fa-list"></i> View Details
             </a>
@@ -464,13 +461,13 @@
                                       stream='Stream ' + class_info.stream,
                                       term=class_info.term_name,
                                       assessment_type=class_info.assessment_name) }}"
-              class="btn btn-success"
+        class="btn btn-success w-100 w-md-auto mb-2 mb-md-0"
             >
               <i class="fas fa-file-pdf"></i> Generate Report
             </a>
             {% else %}
             <span
-              class="btn btn-secondary"
+        class="btn btn-secondary w-100 w-md-auto mb-2 mb-md-0"
               title="Complete all subjects to generate report"
             >
               <i class="fas fa-lock"></i> Report Locked
@@ -479,12 +476,13 @@
 
             <a
               href="{{ url_for('classteacher.upload_marks') }}"
-              class="btn btn-warning"
+        class="btn btn-warning w-100 w-md-auto"
             >
               <i class="fas fa-upload"></i> Upload Marks
             </a>
           </div>
-        </div>
+    </div>
+    </div>
         {% endfor %}
       </div>
       {% else %}
