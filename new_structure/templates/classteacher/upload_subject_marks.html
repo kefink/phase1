@@ -9,6 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
+    <!-- Brandi Bootstrap (mobile-first utilities) -->
+    <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}" rel="stylesheet" />
+    
     <!-- Solar Theme CSS -->
     <style>
         :root {
@@ -85,6 +90,8 @@
             font-size: 1.5rem;
             color: var(--text-emphasis);
             margin-bottom: 1rem;
+            overflow-wrap: anywhere;
+            line-height: 1.25;
         }
 
         .subject-info p {
@@ -310,6 +317,26 @@
                 flex-direction: column;
             }
         }
+
+        /* Make table horizontally scrollable on very small screens */
+        .table-responsive-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+        }
+
+        @media (max-width: 576px) {
+            .breadcrumb { margin-bottom: 1rem; }
+            .header { padding: 1rem; margin-bottom: 1rem; }
+            .help-text { padding: 1rem; margin-bottom: 1rem; }
+            .progress-indicator { padding: 0.75rem; margin-bottom: 1rem; }
+            .form-section { padding: 1rem; }
+            .form-title { font-size: 1.1rem; }
+            .total-marks-input { justify-content: space-between; }
+            .mark-input, .total-marks-input input { width: 100%; max-width: 110px; }
+            .action-buttons .btn { width: 100%; }
+        }
     </style>
 </head>
 
@@ -375,6 +402,7 @@
                     </div>
                 </div>
 
+                <div class="table-responsive-wrapper">
                 <table class="students-table">
                     <thead>
                         <tr>
@@ -417,8 +445,9 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
 
-                <div class="action-buttons">
+                <div class="action-buttons d-flex flex-column flex-sm-row gap-2">
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-save"></i> Save Marks
                     </button>

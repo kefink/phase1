@@ -9,6 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
+    <!-- Brandi Bootstrap (mobile-first utilities) -->
+    <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}" rel="stylesheet" />
+    
     <!-- Solar Theme CSS -->
     <style>
         :root {
@@ -116,6 +121,8 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            overflow-wrap: anywhere;
+            line-height: 1.25;
         }
 
         .selection-card .description {
@@ -241,6 +248,15 @@
             .header h1 {
                 font-size: 1.5rem;
             }
+        }
+
+        @media (max-width: 576px) {
+            .breadcrumb { margin-bottom: 1rem; }
+            .header { padding: 1rem; margin-bottom: 1rem; }
+            .header h1 { font-size: 1.25rem; }
+            .selection-grid { gap: 1rem; }
+            .selection-card { padding: 1rem; }
+            .btn { width: 100%; }
         }
     </style>
 </head>

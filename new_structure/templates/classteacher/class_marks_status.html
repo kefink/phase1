@@ -141,14 +141,19 @@
       .subject-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
       }
 
       .subject-name {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-emphasis);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-emphasis);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.25;
       }
 
       /* Component subject styling */
@@ -323,6 +328,51 @@
         margin-top: 2rem;
       }
 
+      /* Report banners */
+      .report-banner {
+        padding: 25px;
+        border-radius: 15px;
+        margin: 30px 0;
+        text-align: center;
+        border-width: 2px;
+        border-style: solid;
+      }
+
+      .report-banner.success {
+        background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+        border-color: #48bb78;
+      }
+
+      .report-banner.success h3,
+      .report-banner.success p {
+        color: #22543d;
+      }
+
+      .report-banner.warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-color: #ffc107;
+      }
+
+      .report-banner.warning h3,
+      .report-banner.warning p {
+        color: #856404;
+      }
+
+      .report-banner .btn {
+        font-size: 1.05rem;
+        padding: 12px 24px;
+      }
+
+      .btn-report-green {
+        background: #48bb78;
+        color: #ffffff;
+      }
+
+      .btn-report-blue {
+        background: #4299e1;
+        color: #ffffff;
+      }
+
       @media (max-width: 768px) {
         .container {
           padding: 1rem;
@@ -339,6 +389,21 @@
         .action-buttons {
           flex-direction: column;
         }
+      }
+
+      @media (max-width: 576px) {
+        .breadcrumb { margin-bottom: 1rem; }
+        .header { padding: 1rem; margin-bottom: 1rem; }
+        .header h1 { font-size: 1.25rem; }
+        .summary-stats { padding: 1rem; margin-bottom: 1rem; }
+        .subjects-grid { gap: 0.75rem; }
+        .subject-card { padding: 1rem; }
+        .status-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
+        .report-banner { padding: 16px; border-radius: 12px; margin: 16px 0; }
+        .report-banner h3 { font-size: 1.1rem; margin-bottom: 8px; }
+        .report-banner p { font-size: 0.95rem; margin-bottom: 12px; }
+        .report-banner .btn { width: 100%; font-size: 1rem; padding: 10px 14px; }
+        .back-button .btn { width: 100%; margin-bottom: 8px; }
       }
     </style>
   </head>
@@ -485,11 +550,11 @@
       <!-- Report Generation Section -->
       {% set all_complete = subjects_status|selectattr('is_complete')|list|length == subjects_status|length %}
       {% if all_complete and subjects_status|length > 0 %}
-      <div style="background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%); padding: 25px; border-radius: 15px; margin: 30px 0; text-align: center; border: 2px solid #48bb78;">
-        <h3 style="color: #22543d; margin-bottom: 15px;">
+      <div class="report-banner success">
+        <h3>
           <i class="fas fa-check-circle"></i> All Subjects Complete!
         </h3>
-        <p style="color: #22543d; margin-bottom: 20px;">
+        <p>
           All subjects have marks uploaded. You can now generate the class report and individual student reports.
         </p>
         <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
@@ -498,7 +563,7 @@
                             stream='Stream ' + stream,
                             term=term,
                             assessment_type=assessment_type) }}"
-             class="btn" style="background: #48bb78; color: white; font-size: 1.1rem; padding: 15px 30px;">
+             class="btn btn-report-green">
             <i class="fas fa-file-pdf"></i> Generate Class Report
           </a>
           <a href="{{ url_for('classteacher.view_student_reports',
@@ -506,20 +571,20 @@
                             stream='Stream ' + stream,
                             term=term,
                             assessment_type=assessment_type) }}"
-             class="btn" style="background: #4299e1; color: white; font-size: 1.1rem; padding: 15px 30px;">
+             class="btn btn-report-blue">
             <i class="fas fa-users"></i> Individual Reports
           </a>
         </div>
       </div>
       {% elif subjects_status|length > 0 %}
-      <div style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); padding: 25px; border-radius: 15px; margin: 30px 0; text-align: center; border: 2px solid #ffc107;">
-        <h3 style="color: #856404; margin-bottom: 15px;">
+      <div class="report-banner warning">
+        <h3>
           <i class="fas fa-clock"></i> Marks Upload in Progress
         </h3>
-        <p style="color: #856404; margin-bottom: 10px;">
+        <p>
           {{ subjects_status|selectattr('is_complete', 'equalto', false)|list|length }} subject(s) still need marks to be uploaded.
         </p>
-        <p style="color: #856404;">
+        <p>
           Complete all subjects to generate reports.
         </p>
       </div>
