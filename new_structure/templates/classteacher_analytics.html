@@ -18,7 +18,21 @@
 {% block body_class %}analytics-premium{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/solar_analytics_premium.css') }}">
+<style>
+  /* Lightweight mobile tweaks, scoped to analytics page */
+  @media (max-width: 576px) {
+    .filters-actions { display: flex; flex-direction: column; gap: 8px; }
+    .filters-actions .btn { width: 100%; }
+    .section-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .section-actions .btn { width: 100%; }
+  }
+  /* Cyan value color for quick insights data */
+  .insight-value { color: #00bcd4; }
+</style>
 {% endblock %}
 
 {# Remove the entire base header on this page #}

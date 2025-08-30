@@ -15,6 +15,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <!-- Brandi Bootstrap CSS (page-scoped, before custom styles) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}">
 
     <!-- Professional Solar Theme Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -334,6 +338,13 @@
                 min-width: 100%;
                 margin-bottom: 15px;
             }
+            /* Stack action buttons on small screens */
+            .filter-buttons { flex-direction: column; align-items: stretch; }
+            .filter-buttons .filter-btn, .filter-buttons .reset-btn { width: 100%; }
+            .download-grid { grid-template-columns: 1fr; }
+            .download-btn { width: 100%; }
+            .manage-btn, .clear-search-btn, .add-btn, .upload-btn, .update-btn { width: 100%; justify-content: center; }
+            .nav-links { flex-direction: column; gap: 10px; }
         }
 
         .checkbox-column {
@@ -1025,13 +1036,13 @@
                         <!-- Delete Buttons -->
                         <div class="bulk-action-group">
                             <h4>Delete Actions</h4>
-                            <button type="button" class="delete-all-btn" onclick="deleteAllStudents()">
+                            <button type="button" class="delete-all-btn" id="btn-delete-all">
                                 <svg class="heroicon-solar-red" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 00-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z"/>
                                 </svg>
                                 Delete All Learners
                             </button>
-                            <button type="button" class="delete-selected-btn" onclick="deleteSelectedStudents()">
+                            <button type="button" class="delete-selected-btn" id="btn-delete-selected">
                                 <svg class="heroicon-solar-red" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M8.586 2.586A2 2 0 0010 2h4a2 2 0 011.414.586L17 4.5a.5.5 0 01-.5.5h-9a.5.5 0 01-.5-.5L8.586 2.586zM16 6v12a3 3 0 01-3 3H11a3 3 0 01-3-3V6h8zm-1.5 3a.5.5 0 00-1 0v6a.5.5 0 001 0V9zm-3 0a.5.5 0 00-1 0v6a.5.5 0 001 0V9z"/>
                                 </svg>
@@ -1088,7 +1099,7 @@
                                         </div>
                                     </div>
 
-                                    <button type="button" class="update-btn" onclick="bulkEditStudents()">
+                                    <button type="button" class="update-btn" id="btn-bulk-apply">
                                         <svg class="heroicon-solar-green" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path fill-rule="evenodd" clip-rule="evenodd" d="M20.25 12c0 4.556-3.694 8.25-8.25 8.25S3.75 16.556 3.75 12 7.444 3.75 12 3.75s8.25 3.694 8.25 8.25zm-11.03-2.47a.75.75 0 010 1.06l2.25 2.25a.75.75 0 001.06 0l4.5-4.5a.75.75 0 00-1.06-1.06L12 11.25l-1.72-1.72a.75.75 0 00-1.06 0z"/>
                                         </svg>
@@ -1127,7 +1138,7 @@
                                 <!-- Will be populated by JavaScript -->
                             </select>
                         </div>
-                        <button type="button" class="download-btn" onclick="downloadSelectedClass()">
+                        <button type="button" class="download-btn" id="btn-download-class">
                             <svg class="heroicon-solar-blue" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.25c.621 0 1.125.504 1.125 1.125v8.689l2.97-2.97a1.125 1.125 0 011.59 1.591l-4.875 4.875a1.123 1.123 0 01-1.59 0L6.345 10.685a1.125 1.125 0 111.59-1.591l2.97 2.97V3.375c0-.621.504-1.125 1.125-1.125zm-8.25 12.75a1.125 1.125 0 011.125-1.125h12.25a1.125 1.125 0 010 2.25H4.875a1.125 1.125 0 01-1.125-1.125z"/>
                             </svg>
@@ -1147,7 +1158,7 @@
                                 <thead>
                                     <tr>
                                         <th class="checkbox-column">
-                                            <input type="checkbox" id="select-all" onclick="toggleSelectAll()">
+                                            <input type="checkbox" id="select-all">
                                         </th>
                                         <th>ID</th>
                                         <th>Name</th>
@@ -1240,6 +1251,22 @@
         const educationalLevelMapping = {{ (educational_level_mapping or {}) | tojson }};
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Wire up action buttons and select-all
+            const selectAll = document.getElementById('select-all');
+            if (selectAll) selectAll.addEventListener('change', toggleSelectAll);
+
+            const btnDeleteAll = document.getElementById('btn-delete-all');
+            if (btnDeleteAll) btnDeleteAll.addEventListener('click', deleteAllStudents);
+
+            const btnDeleteSelected = document.getElementById('btn-delete-selected');
+            if (btnDeleteSelected) btnDeleteSelected.addEventListener('click', deleteSelectedStudents);
+
+            const btnBulkApply = document.getElementById('btn-bulk-apply');
+            if (btnBulkApply) btnBulkApply.addEventListener('click', bulkEditStudents);
+
+            const btnDownloadClass = document.getElementById('btn-download-class');
+            if (btnDownloadClass) btnDownloadClass.addEventListener('click', downloadSelectedClass);
+
             const successMessage = "{{ success_message|safe if success_message else '' }}";
             const errorMessage = "{{ error_message|safe if error_message else '' }}";
 

@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ subject }} Subject Report - {{ grade }} {{ stream }}</title>
+  <!-- Brandi Bootstrap CSS (page-scoped) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}">
     <style>
       * {
         margin: 0;
@@ -72,12 +76,14 @@
         font-weight: 700;
         margin: 15px 0 5px 0;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        overflow-wrap: anywhere;
       }
 
-      .report-subtitle {
+      .report-subtitle, .report_subtitle {
         font-size: 1.1rem;
         opacity: 0.9;
         font-weight: 300;
+        overflow-wrap: anywhere;
       }
 
       .stats-grid {
@@ -364,7 +370,7 @@
         {% endif %}
 
         <h1 class="report-title">{{ report_title }}</h1>
-        <p class="report_subtitle">{{ report_subtitle }}</p>
+  <p class="report-subtitle">{{ report_subtitle }}</p>
       </div>
 
       <!-- Statistics Overview -->
@@ -508,9 +514,9 @@
       </div>
 
       <!-- Students Table -->
-      <div class="students-table">
+      <div class="students-table table-responsive">
         <h3><i class="fas fa-users"></i> Student Performance</h3>
-        <table>
+        <table class="table">
           <thead>
             <tr>
               <th>Rank</th>
@@ -581,13 +587,13 @@
         >
           <i class="fas fa-home"></i> Back to Dashboard
         </a>
-        <button onclick="window.print()" class="btn btn-success">
+        <button id="btn-print-report" class="btn btn-success">
           <i class="fas fa-print"></i> Print Report
         </button>
-        <a href="#" onclick="exportToCSV()" class="btn btn-warning">
+        <a href="#" id="btn-export-csv" class="btn btn-warning">
           <i class="fas fa-download"></i> Export CSV
         </a>
-        <button onclick="deleteSubjectReport()" class="btn btn-danger">
+        <button id="btn-delete-report" class="btn btn-danger">
           <i class="fas fa-trash"></i> Delete Report
         </button>
       </div>
@@ -596,6 +602,34 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
+      // Attach delegated event listeners instead of inline handlers
+      document.addEventListener('DOMContentLoaded', function() {
+        const printBtn = document.getElementById('btn-print-report');
+        const exportBtn = document.getElementById('btn-export-csv');
+        const deleteBtn = document.getElementById('btn-delete-report');
+
+        if (printBtn) {
+          printBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.print();
+          });
+        }
+
+        if (exportBtn) {
+          exportBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            exportToCSV();
+          });
+        }
+
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            deleteSubjectReport();
+          });
+        }
+      });
+
       function exportToCSV() {
         // Create CSV content
         let csv = 'Rank,Student Name,Admission Number,Raw Mark,Percentage,Grade\n';
