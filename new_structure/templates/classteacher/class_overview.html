@@ -1,381 +1,524 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Overview - {{ school_info.school_name|default('School Management System') }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Class Overview - {{ school_info.school_name|default('School Management
+      System') }}
+    </title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  <link href="{{ url_for('static', filename='css/solar_analytics_premium.css') }}" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+      }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
 
-        .header {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
+      .header {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
 
-        .header h1 {
-            color: #2d3748;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
+      .header h1 {
+        color: #2d3748;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
 
-        .header p {
-            color: #718096;
-            font-size: 1.1rem;
-        }
+      .header p {
+        color: #718096;
+        font-size: 1.1rem;
+      }
 
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
+      .back-button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
 
-        .back-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
+      .back-button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
 
+      .classes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      .class-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border-left: 5px solid #4299e1;
+      }
+
+      .class-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .class-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .class-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+      }
+
+      .class-meta {
+        color: #718096;
+        font-size: 0.9rem;
+      }
+
+      .completion-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+
+      .completion-complete {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+
+      .completion-partial {
+        background: #fef5e7;
+        color: #c05621;
+      }
+
+      .completion-empty {
+        background: #fed7d7;
+        color: #c53030;
+      }
+
+      .progress-section {
+        margin-bottom: 20px;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4299e1, #3182ce);
+        transition: width 0.3s ease;
+      }
+
+      .progress-text {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: #4a5568;
+      }
+
+      .subjects-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .summary-item {
+        text-align: center;
+        padding: 15px;
+        background: #f7fafc;
+        border-radius: 10px;
+      }
+
+      .summary-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2d3748;
+      }
+
+      .summary-label {
+        font-size: 0.8rem;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+      }
+
+      .btn-primary {
+        background: #4299e1;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #3182ce;
+        transform: translateY(-2px);
+      }
+
+      .btn-success {
+        background: #48bb78;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #38a169;
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: #e2e8f0;
+        color: #4a5568;
+      }
+
+      .btn-secondary:hover {
+        background: #cbd5e0;
+      }
+
+      .btn-warning {
+        background: #ed8936;
+        color: white;
+      }
+
+      .btn-warning:hover {
+        background: #dd6b20;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e0;
+        margin-bottom: 20px;
+      }
+
+      .empty-state h3 {
+        color: #4a5568;
+        margin-bottom: 10px;
+      }
+
+      .empty-state p {
+        color: #718096;
+      }
+
+      /* Pending subjects chips */
+      .pending-section {
+        margin-bottom: 16px;
+      }
+      .pending-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pending-title .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #f56565;
+        display: inline-block;
+      }
+      .chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .chip {
+        background: #fff5f5;
+        color: #c53030;
+        border: 1px solid #fed7d7;
+        padding: 6px 10px;
+        border-radius: 16px;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+    .chip.hidden {
+      display: none;
+    }
+    .chip-toggle {
+      cursor: pointer;
+      user-select: none;
+    }
+      .chip .pct {
+        color: #a0aec0;
+        font-weight: 600;
+      }
+
+      @media (max-width: 768px) {
         .classes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .class-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            border-left: 5px solid #4299e1;
-        }
-
-        .class-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .class-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .class-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #2d3748;
-        }
-
-        .class-meta {
-            color: #718096;
-            font-size: 0.9rem;
-        }
-
-        .completion-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .completion-complete {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-
-        .completion-partial {
-            background: #fef5e7;
-            color: #c05621;
-        }
-
-        .completion-empty {
-            background: #fed7d7;
-            color: #c53030;
-        }
-
-        .progress-section {
-            margin-bottom: 20px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #4299e1, #3182ce);
-            transition: width 0.3s ease;
-        }
-
-        .progress-text {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            color: #4a5568;
+          grid-template-columns: 1fr;
         }
 
         .subjects-summary {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .summary-item {
-            text-align: center;
-            padding: 15px;
-            background: #f7fafc;
-            border-radius: 10px;
-        }
-
-        .summary-number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #2d3748;
-        }
-
-        .summary-label {
-            font-size: 0.8rem;
-            color: #718096;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+          grid-template-columns: 1fr;
         }
 
         .action-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+          flex-direction: column;
         }
 
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
+        .header h1 {
+          font-size: 2rem;
         }
-
-        .btn-primary {
-            background: #4299e1;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #3182ce;
-            transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background: #48bb78;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #38a169;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-
-        .btn-secondary:hover {
-            background: #cbd5e0;
-        }
-
-        .btn-warning {
-            background: #ed8936;
-            color: white;
-        }
-
-        .btn-warning:hover {
-            background: #dd6b20;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .empty-state i {
-            font-size: 4rem;
-            color: #cbd5e0;
-            margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            color: #4a5568;
-            margin-bottom: 10px;
-        }
-
-        .empty-state p {
-            color: #718096;
-        }
-
-        @media (max-width: 768px) {
-            .classes-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .subjects-summary {
-                grid-template-columns: 1fr;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body class="analytics-premium class-overview-solar">
     <a href="{{ url_for('classteacher.dashboard') }}" class="back-button">
-        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
     </a>
 
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-chalkboard-teacher"></i> Class Overview</h1>
-            <p>Manage marks upload and generate reports for your assigned classes</p>
+      <div class="header">
+        <h1><i class="fas fa-chalkboard-teacher"></i> Class Overview</h1>
+        <p>
+          Manage marks upload and generate reports for your assigned classes
+        </p>
+      </div>
+
+      {% if classes_data %}
+      <div class="classes-grid">
+        {% for class_info in classes_data %}
+        <div class="class-card">
+          <div class="class-header">
+            <div>
+              <div class="class-title">
+                {{ class_info.grade }} - Stream {{ class_info.stream }}
+              </div>
+              <div class="class-meta">
+                {{ class_info.term_name }} • {{ class_info.assessment_name }}
+              </div>
+            </div>
+            <div
+              class="completion-badge {% if class_info.completion_percentage == 100 %}completion-complete{% elif class_info.completion_percentage > 0 %}completion-partial{% else %}completion-empty{% endif %}"
+            >
+              {% if class_info.completion_percentage == 100 %}
+              <i class="fas fa-check-circle"></i> Complete {% elif
+              class_info.completion_percentage > 0 %}
+              <i class="fas fa-clock"></i> In Progress {% else %}
+              <i class="fas fa-exclamation-circle"></i> Not Started {% endif %}
+            </div>
+          </div>
+
+          <div class="progress-section">
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                style="width: {{ '%.0f'|format(class_info.completion_percentage) }}%;"
+              ></div>
+            </div>
+            <div class="progress-text">
+              <span
+                >{{ class_info.completed_subjects }}/{{
+                class_info.total_subjects }} subjects uploaded</span
+              >
+              <span
+                >{{ "%.0f"|format(class_info.completion_percentage) }}%</span
+              >
+            </div>
+          </div>
+
+          <div class="subjects-summary">
+            <div class="summary-item">
+              <div class="summary-number">{{ class_info.total_subjects }}</div>
+              <div class="summary-label">Total Subjects</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number">
+                {{ class_info.completed_subjects }}
+              </div>
+              <div class="summary-label">Completed</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number">
+                {{ class_info.total_subjects - class_info.completed_subjects }}
+              </div>
+              <div class="summary-label">Pending</div>
+            </div>
+          </div>
+
+          {# Pending subjects list (chips) #} {% set pending_subjects =
+          class_info.subjects | selectattr('is_uploaded', 'equalto', False) |
+          list %} {% if pending_subjects and pending_subjects | length > 0 %}
+          <div class="pending-section">
+        <div class="pending-section">
+          <div class="pending-title"><span class="dot"></span> Pending Subjects</div>
+          {% set target_id = 'pending-' ~ class_info.grade_id ~ '-' ~ class_info.stream_id ~ '-' ~ class_info.term_id ~ '-' ~ class_info.assessment_type_id %}
+          <div id="{{ target_id }}" class="chip-list" data-collapsed="true">
+            {% for subj in pending_subjects %}
+            <span class="chip{% if loop.index > 6 %} hidden{% endif %}">
+              {{ subj.name }}
+              {% if subj.completion_percentage is defined %}
+              <span class="pct">{{ ('%.0f'|format(subj.completion_percentage)) }}%</span>
+              {% endif %}
+            </span>
+            {% endfor %}
+            {% if pending_subjects|length > 6 %}
+            <button type="button"
+                class="chip chip-toggle"
+                data-target="{{ target_id }}"
+                data-more-text="+{{ pending_subjects|length - 6 }} more"
+                data-less-text="Show less">
+              +{{ pending_subjects|length - 6 }} more
+            </button>
+            {% endif %}
+          </div>
         </div>
+          {% endif %}
 
-        {% if classes_data %}
-        <div class="classes-grid">
-            {% for class_info in classes_data %}
-            <div class="class-card">
-                <div class="class-header">
-                    <div>
-                        <div class="class-title">{{ class_info.grade }} - Stream {{ class_info.stream }}</div>
-                        <div class="class-meta">{{ class_info.term_name }} • {{ class_info.assessment_name }}</div>
-                    </div>
-                    <div class="completion-badge {% if class_info.completion_percentage == 100 %}completion-complete{% elif class_info.completion_percentage > 0 %}completion-partial{% else %}completion-empty{% endif %}">
-                        {% if class_info.completion_percentage == 100 %}
-                            <i class="fas fa-check-circle"></i> Complete
-                        {% elif class_info.completion_percentage > 0 %}
-                            <i class="fas fa-clock"></i> In Progress
-                        {% else %}
-                            <i class="fas fa-exclamation-circle"></i> Not Started
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="progress-section">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: {{ class_info.completion_percentage }}%"></div>
-                    </div>
-                    <div class="progress-text">
-                        <span>{{ class_info.completed_subjects }}/{{ class_info.total_subjects }} subjects uploaded</span>
-                        <span>{{ "%.0f"|format(class_info.completion_percentage) }}%</span>
-                    </div>
-                </div>
-
-                <div class="subjects-summary">
-                    <div class="summary-item">
-                        <div class="summary-number">{{ class_info.total_subjects }}</div>
-                        <div class="summary-label">Total Subjects</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-number">{{ class_info.completed_subjects }}</div>
-                        <div class="summary-label">Completed</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-number">{{ class_info.total_subjects - class_info.completed_subjects }}</div>
-                        <div class="summary-label">Pending</div>
-                    </div>
-                </div>
-
-                <div class="action-buttons">
-                    <a href="{{ url_for('classteacher.class_marks_status', 
+          <div class="action-buttons">
+            <a
+              href="{{ url_for('classteacher.class_marks_status', 
                                       grade_id=class_info.grade_id, 
                                       stream_id=class_info.stream_id,
                                       term_id=class_info.term_id,
-                                      assessment_type_id=class_info.assessment_type_id) }}" 
-                       class="btn btn-primary">
-                        <i class="fas fa-list"></i> View Details
-                    </a>
-                    
-                    {% if class_info.can_generate_report %}
-                    <a href="{{ url_for('classteacher.preview_class_report', 
+                                      assessment_type_id=class_info.assessment_type_id) }}"
+              class="btn btn-primary"
+            >
+              <i class="fas fa-list"></i> View Details
+            </a>
+
+            {% if class_info.can_generate_report %}
+            <a
+              href="{{ url_for('classteacher.preview_class_report', 
                                       grade=class_info.grade, 
                                       stream='Stream ' + class_info.stream,
                                       term=class_info.term_name,
-                                      assessment_type=class_info.assessment_name) }}" 
-                       class="btn btn-success">
-                        <i class="fas fa-file-pdf"></i> Generate Report
-                    </a>
-                    {% else %}
-                    <span class="btn btn-secondary" title="Complete all subjects to generate report">
-                        <i class="fas fa-lock"></i> Report Locked
-                    </span>
-                    {% endif %}
-                    
-                    <a href="{{ url_for('classteacher.upload_marks') }}" 
-                       class="btn btn-warning">
-                        <i class="fas fa-upload"></i> Upload Marks
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
+                                      assessment_type=class_info.assessment_name) }}"
+              class="btn btn-success"
+            >
+              <i class="fas fa-file-pdf"></i> Generate Report
+            </a>
+            {% else %}
+            <span
+              class="btn btn-secondary"
+              title="Complete all subjects to generate report"
+            >
+              <i class="fas fa-lock"></i> Report Locked
+            </span>
+            {% endif %}
+
+            <a
+              href="{{ url_for('classteacher.upload_marks') }}"
+              class="btn btn-warning"
+            >
+              <i class="fas fa-upload"></i> Upload Marks
+            </a>
+          </div>
         </div>
-        {% else %}
-        <div class="empty-state">
-            <i class="fas fa-chalkboard"></i>
-            <h3>No Classes Assigned</h3>
-            <p>You are not currently assigned as a class teacher to any classes.</p>
-            <p>Contact your administrator if you believe this is an error.</p>
-        </div>
-        {% endif %}
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-chalkboard"></i>
+        <h3>No Classes Assigned</h3>
+        <p>You are not currently assigned as a class teacher to any classes.</p>
+        <p>Contact your administrator if you believe this is an error.</p>
+      </div>
+      {% endif %}
     </div>
-</body>
+  </body>
+  <script>
+    // Expand/collapse pending chips per card
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('.chip-toggle');
+      if (!btn) return;
+      const targetId = btn.getAttribute('data-target');
+      const container = document.getElementById(targetId);
+      if (!container) return;
+
+      const collapsed = container.getAttribute('data-collapsed') !== 'false';
+      const chips = container.querySelectorAll('.chip.hidden');
+      if (collapsed) {
+        chips.forEach(c => c.classList.remove('hidden'));
+        container.setAttribute('data-collapsed', 'false');
+        btn.textContent = btn.getAttribute('data-less-text') || 'Show less';
+      } else {
+        // hide chips beyond the first 6
+        const all = container.querySelectorAll('.chip');
+        let count = 0;
+        all.forEach(c => {
+          if (c.classList.contains('chip-toggle')) return; // skip the button
+          count++;
+          if (count > 6) c.classList.add('hidden'); else c.classList.remove('hidden');
+        });
+        container.setAttribute('data-collapsed', 'true');
+        btn.textContent = btn.getAttribute('data-more-text') || 'Show more';
+      }
+    }, false);
+  </script>
 </html>

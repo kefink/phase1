@@ -335,9 +335,11 @@
 
       /* Subject Tags */
       .subject-tag {
-        background: linear-gradient(135deg, 
-          rgba(38, 139, 210, 0.1), 
-          rgba(42, 161, 152, 0.1));
+        background: linear-gradient(
+          135deg,
+          rgba(38, 139, 210, 0.1),
+          rgba(42, 161, 152, 0.1)
+        );
         border: 1px solid rgba(38, 139, 210, 0.2);
         border-radius: 8px;
         padding: 0.5rem;
@@ -352,16 +354,18 @@
       }
 
       .subject-tag::before {
-        content: '';
+        content: "";
         position: absolute;
         top: 0;
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, 
-          transparent, 
-          rgba(38, 139, 210, 0.1), 
-          transparent);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(38, 139, 210, 0.1),
+          transparent
+        );
         transition: left 0.5s ease;
       }
 
@@ -372,9 +376,11 @@
       .subject-tag:hover {
         transform: translateY(-2px);
         border-color: var(--primary-color);
-        background: linear-gradient(135deg, 
-          rgba(38, 139, 210, 0.15), 
-          rgba(42, 161, 152, 0.15));
+        background: linear-gradient(
+          135deg,
+          rgba(38, 139, 210, 0.15),
+          rgba(42, 161, 152, 0.15)
+        );
         box-shadow: 0 4px 12px rgba(38, 139, 210, 0.2);
       }
 
@@ -533,9 +539,11 @@
       }
 
       .student-card {
-        background: linear-gradient(135deg, 
-          rgba(238, 232, 213, 0.1), 
-          rgba(147, 161, 161, 0.05));
+        background: linear-gradient(
+          135deg,
+          rgba(238, 232, 213, 0.1),
+          rgba(147, 161, 161, 0.05)
+        );
         border: 1px solid rgba(147, 161, 161, 0.2);
         border-radius: 6px;
         padding: 0.4rem;
@@ -554,9 +562,11 @@
       .student-card:hover {
         transform: translateY(-2px);
         border-color: var(--green);
-        background: linear-gradient(135deg, 
-          rgba(133, 153, 0, 0.1), 
-          rgba(181, 137, 0, 0.1));
+        background: linear-gradient(
+          135deg,
+          rgba(133, 153, 0, 0.1),
+          rgba(181, 137, 0, 0.1)
+        );
         box-shadow: 0 4px 12px rgba(133, 153, 0, 0.2);
       }
 
@@ -581,7 +591,7 @@
       }
 
       .student-admission {
-        font-family: 'Courier New', monospace;
+        font-family: "Courier New", monospace;
         background: rgba(42, 161, 152, 0.1);
         padding: 1px 4px;
         border-radius: 3px;
@@ -765,29 +775,48 @@
             <div class="stat-label">My Students</div>
             {% if my_students %}
             <div class="students-container">
-              <div class="students-grid {% if my_students|length <= 6 %}compact{% endif %}" id="students-grid">
+              <div
+                class="students-grid {% if my_students|length <= 6 %}compact{% endif %}"
+                id="students-grid"
+              >
                 {% for student in my_students[:12] %}
                 <div class="student-card">
-                  <div class="student-name">{{ student.first_name }} {{ student.last_name }}</div>
+                  <div class="student-name">
+                    {{ student.first_name }} {{ student.last_name }}
+                  </div>
                   <div class="student-details">
-                    <span class="student-admission">{{ student.admission_number }}</span>
-                    <span class="student-class">{{ student.grade_level }}{{ ' ' + student.stream_name if student.stream_name }}</span>
+                    <span class="student-admission"
+                      >{{ student.admission_number }}</span
+                    >
+                    <span class="student-class"
+                      >{{ student.grade_level }}{{ ' ' + student.stream_name if
+                      student.stream_name }}</span
+                    >
                   </div>
                 </div>
                 {% endfor %}
               </div>
               {% if my_students|length > 12 %}
               <div class="students-toggle" onclick="toggleStudents()">
-                <span id="students-toggle-text">Show {{ my_students|length - 12 }} More Students</span>
+                <span id="students-toggle-text"
+                  >Show {{ my_students|length - 12 }} More Students</span
+                >
                 <span class="toggle-icon" id="students-toggle-icon">▼</span>
               </div>
               <div class="students-grid hidden" id="students-grid-more">
                 {% for student in my_students[12:] %}
                 <div class="student-card">
-                  <div class="student-name">{{ student.first_name }} {{ student.last_name }}</div>
+                  <div class="student-name">
+                    {{ student.first_name }} {{ student.last_name }}
+                  </div>
                   <div class="student-details">
-                    <span class="student-admission">{{ student.admission_number }}</span>
-                    <span class="student-class">{{ student.grade_level }}{{ ' ' + student.stream_name if student.stream_name }}</span>
+                    <span class="student-admission"
+                      >{{ student.admission_number }}</span
+                    >
+                    <span class="student-class"
+                      >{{ student.grade_level }}{{ ' ' + student.stream_name if
+                      student.stream_name }}</span
+                    >
                   </div>
                 </div>
                 {% endfor %}
@@ -806,12 +835,22 @@
             <div class="stat-label">Subjects Taught</div>
             {% if subject_assignments %}
             <div class="subjects-container">
-              <div class="subjects-grid" data-total="{{ subject_assignments|length }}">
+              <div
+                class="subjects-grid"
+                data-total="{{ subject_assignments|length }}"
+              >
                 {% for assignment in subject_assignments %}
-                  <div class="subject-tag" title="{{ assignment.subject_name }} - {{ assignment.grade_level }}{% if assignment.stream_name %} {{ assignment.stream_name }}{% endif %}">
-                    <div class="subject-name">{{ assignment.subject_name }}</div>
-                    <div class="subject-grade">{{ assignment.grade_level }}{% if assignment.stream_name %}<span class="stream">{{ assignment.stream_name }}</span>{% endif %}</div>
+                <div
+                  class="subject-tag"
+                  title="{{ assignment.subject_name }} - {{ assignment.grade_level }}{% if assignment.stream_name %} {{ assignment.stream_name }}{% endif %}"
+                >
+                  <div class="subject-name">{{ assignment.subject_name }}</div>
+                  <div class="subject-grade">
+                    {{ assignment.grade_level }}{% if assignment.stream_name
+                    %}<span class="stream">{{ assignment.stream_name }}</span>{%
+                    endif %}
                   </div>
+                </div>
                 {% endfor %}
               </div>
               {% if subject_assignments|length > 6 %}
@@ -902,7 +941,7 @@
           class="action-card"
         >
           <i class="fas fa-analytics action-icon"></i>
-          <h3>Analytics</h3>
+          <h3>Analytics (Enhanced)</h3>
           <p>View detailed performance analytics</p>
         </a>
 
@@ -1131,7 +1170,7 @@
         const grid = container.querySelector('.subjects-grid');
         const toggleText = button.querySelector('.toggle-text');
         const toggleIcon = button.querySelector('.toggle-icon');
-        
+
         if (button.classList.contains('expanded')) {
           // Collapse
           grid.classList.remove('expanded');
@@ -1152,7 +1191,7 @@
         const moreGrid = document.getElementById('students-grid-more');
         const toggleText = document.getElementById('students-toggle-text');
         const toggleIcon = document.getElementById('students-toggle-icon');
-        
+
         if (moreGrid.classList.contains('hidden')) {
           // Show more students
           moreGrid.classList.remove('hidden');

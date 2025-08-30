@@ -503,7 +503,7 @@ class SubjectMarksStatus(db.Model):
                 db.session.add(status)
 
             # Count students and marks
-            from ..models.user import Student
+            # Use the Student model defined in this module (not models.user)
             total_students = Student.query.filter_by(stream_id=stream_id).count()
 
             students_with_marks = Mark.query.join(Student).filter(

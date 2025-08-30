@@ -98,7 +98,15 @@
     <!-- Modern CSS Framework -->
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
+      href="{{ url_for('static', filename='css/classteacher-base.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/classteacher-forms.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/classteacher-buttons.css') }}"
     />
 
     <!-- Page-specific CSS -->
@@ -312,7 +320,7 @@
       }
     </style>
   </head>
-  <body>
+  <body class="{% block body_class %}{% endblock %}">
     <div class="page-container">
       <div class="content-wrapper">
         <!-- Breadcrumb Navigation -->
@@ -327,8 +335,7 @@
           </span>
           <span class="current">{% block page_title %}Page{% endblock %}</span>
         </nav>
-        {% endblock %}
-
+        {% endblock %} {% block base_header %}
         <!-- Page Header -->
         <header class="page-header fade-in">
           <div class="header-content">
@@ -354,6 +361,7 @@
             </div>
           </div>
         </header>
+        {% endblock %}
 
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %} {% if

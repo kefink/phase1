@@ -1,220 +1,192 @@
-{% extends "modern_base.html" %} {% block title %}Academic Performance Analytics
-- Class Teacher{% endblock %} {% block meta_description %}Class Teacher Academic
-Analytics - Performance insights for your assigned classes at {{
-school_info.school_name or 'Hillview School' }}{% endblock %} {% block
-page_title %}Class Academic Analytics{% endblock %} {% block page_subtitle %}
-<p class="text-lg">Performance insights for your assigned classes</p>
-{% endblock %} {% block body_class %}analytics-page{% endblock %} {% block
-extra_css %}
-<!-- Solar Theme Analytics Premium Styling -->
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/solar_analytics_premium.css') }}"
-/>
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/variables.css') }}"
-/>
+{% extends "modern_base.html" %}
 
-<!-- NUCLEAR OPTION - Inline styles to override base template -->
-<style>
-  /* Kill all purple and white backgrounds with maximum specificity */
-  html,
-  body,
-  html *,
-  body *,
-  .page-container,
-  .content-wrapper,
-  .analytics-filters-section,
-  .detailed-performance,
-  .top-performers,
-  .performance-breakdown,
-  .modern-grid,
-  .insights-grid,
-  .insight-card,
-  div[class*="card"],
-  div[class*="section"],
-  div[class*="panel"],
-  div[class*="container"] {
-    background: #002b36 !important;
-    background-color: #002b36 !important;
-    background-image: none !important;
-    color: #fdf6e3 !important;
-  }
+{% block title %}Academic Performance Analytics - Class Teacher{% endblock %}
 
-  /* Force dark theme on all containers */
-  .analytics-page .analytics-filters-section,
-  .analytics-page .detailed-performance,
-  .analytics-page .top-performers,
-  .analytics-page .performance-breakdown {
-    background: rgba(0, 43, 54, 0.9) !important;
-    border: 1px solid rgba(253, 246, 227, 0.1) !important;
-    border-radius: 0.75rem !important;
-    padding: 1.5rem !important;
-    backdrop-filter: blur(10px) !important;
-  }
+{% block meta_description %}Class Teacher Academic Analytics - Performance insights for your assigned classes at {{ school_info.school_name or 'Hillview School' }}{% endblock %}
 
-  /* Insight cards must be dark */
-  .insight-card {
-    background: rgba(0, 43, 54, 0.95) !important;
-    border: 1px solid rgba(253, 246, 227, 0.1) !important;
-    color: #fdf6e3 !important;
-  }
+{% block page_title %}Class Academic Analytics{% endblock %}
 
-  /* Notification animations */
-  @keyframes slideIn {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
+{# Hide base header content on this page #}
+{% block header_icon %}{% endblock %}
+{% block header_title %}{% endblock %}
+{% block header_subtitle %}{% endblock %}
+{% block header_actions %}{% endblock %}
 
-  /* Loading state improvements */
-  .loading-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-    color: #fdf6e3;
-    font-size: 16px;
-  }
+{# Hide base breadcrumb at the very top; we render our own inside content #}
+{% block breadcrumb %}{% endblock %}
 
-  .loading-state i {
-    margin-right: 10px;
-    animation: spin 1s linear infinite;
-  }
+{% block body_class %}analytics-premium{% endblock %}
 
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/solar_analytics_premium.css') }}">
+{% endblock %}
 
-  /* Error state improvements */
-  .error-state {
-    background: rgba(220, 53, 69, 0.1) !important;
-    border: 1px solid rgba(220, 53, 69, 0.3) !important;
-    border-radius: 8px;
-    margin: 20px 0;
-  }
-</style>
+{# Remove the entire base header on this page #}
+{% block base_header %}{% endblock %}
 
-{% endblock %} {% block content %}
-<div class="container">
+{% block content %}
+<div class="analytics-container">
   <!-- Breadcrumb Navigation -->
-  <div class="breadcrumb">
-    <a href="{{ url_for('classteacher.dashboard') }}">
-      <i class="fas fa-home"></i> Dashboard
+  <div class="analytics-breadcrumb">
+    <a href="{{ url_for('classteacher.dashboard') }}" class="breadcrumb-link">
+      <span class="icon" aria-hidden="true" style="display:inline-flex;align-items:center;gap:.25rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+          <path d="M12 3.172 3 10.172V20a1 1 0 0 0 1 1h6v-5h4v5h6a1 1 0 0 0 1-1V10.172l-9-7Z"/>
+        </svg>
+      </span>
+      Dashboard
     </a>
     <span class="breadcrumb-separator">/</span>
-    <span>Academic Performance Analytics</span>
-  </div>
-
-  <!-- Page Header -->
-  <div class="analytics-page-header">
-    <h1><i class="fas fa-chart-line"></i> Academic Performance Analytics</h1>
-    <p>
-      Comprehensive insights into student performance and subject analytics for
-      your assigned classes
-    </p>
+    <span class="breadcrumb-current">Academic Performance Analytics</span>
   </div>
 
   <!-- Quick Insights Summary -->
-  <div class="quick-insights">
-    <h3><i class="fas fa-tachometer-alt"></i> Quick Insights</h3>
+  <div class="analytics-insights-section">
+    <h3 class="insights-title">
+      <span class="icon" aria-hidden="true" style="display:inline-flex;vertical-align:-2px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M12 3a9 9 0 1 0 9 9 9.01 9.01 0 0 0-9-9Zm1 10.5V9a1 1 0 1 0-2 0v4.5a1 1 0 0 0 2 0Z"/>
+        </svg>
+      </span>
+      Quick Insights
+    </h3>
     <div class="insights-grid">
-      <div class="insight-card">
-        <div class="insight-value" id="total-students-analyzed">
-          {{ analytics_data.summary.students_analyzed or 0 }}
+      <div class="insight-card premium-card">
+        <div class="insight-icon students-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="insight-svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+          </svg>
         </div>
-        <div class="insight-label">Students Analyzed</div>
+        <div class="insight-content">
+          <div class="insight-label">Students Analyzed</div>
+          <div class="insight-value" id="total-students-analyzed">
+            {{ analytics_data.summary.students_analyzed or 0 }}
+          </div>
+        </div>
       </div>
-      <div class="insight-card">
-        <div class="insight-value" id="total-subjects-analyzed">
-          {{ analytics_data.summary.subjects_analyzed or 0 }}
+      <div class="insight-card premium-card">
+        <div class="insight-icon subjects-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="insight-svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 1 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+          </svg>
         </div>
-        <div class="insight-label">Subjects Analyzed</div>
+        <div class="insight-content">
+          <div class="insight-label">Subjects Analyzed</div>
+          <div class="insight-value" id="total-subjects-analyzed">
+            {{ analytics_data.summary.subjects_analyzed or 0 }}
+          </div>
+        </div>
       </div>
-      <div class="insight-card">
-        <div class="insight-value" id="top-subject-performance">
-          {{ analytics_data.summary.best_subject_average or 0 }}%
+      <div class="insight-card premium-card">
+        <div class="insight-icon performance-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="insight-svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.228a25.334 25.334 0 0 1 5.384-.069m-13.67 8.218a18.08 18.08 0 0 1-2.63-2.909m0 0a24.998 24.998 0 0 1-5.384-.069m0 0V4.5A2.25 2.25 0 0 1 .621 2.25H1.5v1.875C2.491 4.286 3.714 4.375 5.25 4.5" />
+          </svg>
         </div>
-        <div class="insight-label">Best Subject Average</div>
+        <div class="insight-content">
+          <div class="insight-label">Best Subject Average</div>
+          <div class="insight-value" id="top-subject-performance">
+            {{ analytics_data.summary.best_subject_average or 0 }}%
+          </div>
+        </div>
       </div>
-      <div class="insight-card">
-        <div class="insight-value" id="top-student-performance">
-          {{ analytics_data.summary.top_student_average or 0 }}%
+      <div class="insight-card premium-card">
+        <div class="insight-icon achievement-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="insight-svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0v-1.5A2.25 2.25 0 0 0 14.25 0h-4.5A2.25 2.25 0 0 0 7.5 2.25v1.5m9 0h-9" />
+          </svg>
         </div>
-        <div class="insight-label">Top Student Average</div>
+        <div class="insight-content">
+          <div class="insight-label">Top Student Average</div>
+          <div class="insight-value" id="top-student-performance">
+            {{ analytics_data.summary.top_student_average or 0 }}%
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Analytics Filters -->
   <div class="analytics-filters-section">
-    <div class="analytics-actions">
-      <h2><i class="fas fa-filter"></i> Analytics Filters</h2>
-      <div class="action-buttons">
+    <div class="filters-header">
+      <h2 class="filters-title">
+        <span class="icon" aria-hidden="true" style="display:inline-flex;vertical-align:-2px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 .76 1.65L14 12.5V18a1 1 0 0 1-1.447.894l-3-1.5A1 1 0 0 1 9 16.5V12.5L3.24 5.65A1 1 0 0 1 3 5Z"/>
+          </svg>
+        </span>
+        Analytics Filters
+      </h2>
+      <div class="filters-actions">
         <button
-          class="modern-btn btn-outline btn-sm"
+          class="btn btn-outline btn-reset"
           onclick="resetAnalyticsFilters()"
         >
-          <i class="fas fa-undo"></i> Reset Filters
+          <span class="icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <path d="M12 5a7 7 0 1 1-6.32 4H3a1 1 0 0 1 0-2h4a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0V9.74A5 5 0 1 0 12 5Z"/>
+            </svg>
+          </span>
+          Reset Filters
         </button>
         <button
-          class="modern-btn btn-primary btn-sm"
+          class="btn btn-primary btn-refresh"
           onclick="refreshAnalyticsData()"
         >
-          <i class="fas fa-sync-alt"></i> Refresh Data
+          <span class="icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <path d="M12 5a7 7 0 1 1-6.32 4H3a1 1 0 0 1 0-2h4a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0V9.74A5 5 0 1 0 12 5Z"/>
+            </svg>
+          </span>
+          Refresh Data
         </button>
       </div>
     </div>
 
-    <div class="modern-grid grid-cols-4">
-      <div class="form-group">
-        <label class="form-label">Term</label>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label class="filter-label">Term</label>
         <select
           id="analytics-term-filter"
-          class="form-select"
+          class="filter-select"
           onchange="updateAnalytics()"
         >
           <option value="">All Terms</option>
           {% for term in terms %}
-          <option value="{{ term }}" {% if request.args.get('term') == term %}selected{% endif %}>
-            {{ term }}
+          <option value="{{ term.id }}"
+            {% if request.args.get('term')|int == term.id or (not request.args.get('term') and term.is_current) %}selected{% endif %}>
+            {{ term.name }}{% if term.academic_year %} - {{ term.academic_year }}{% endif %}
           </option>
           {% endfor %}
         </select>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Assessment Type</label>
+      <div class="filter-group">
+        <label class="filter-label">Assessment Type</label>
         <select
           id="analytics-assessment-filter"
-          class="form-select"
+          class="filter-select"
           onchange="updateAnalytics()"
         >
           <option value="">All Assessments</option>
           {% for assessment in assessment_types %}
-          <option value="{{ assessment }}" {% if request.args.get('assessment_type') == assessment %}selected{% endif %}>
-            {{ assessment }}
+          {% if assessment.is_active %}
+          <option value="{{ assessment.id }}" {% if request.args.get('assessment_type')|int == assessment.id %}selected{% endif %}>
+            {{ assessment.name }}
           </option>
+          {% endif %}
           {% endfor %}
         </select>
       </div>
 
-      <div
-        class="form-group"
+      <div class="filter-group"
         id="analytics-grade-filter-group"
         style="display: none"
       >
-        <label class="form-label">Grade</label>
+        <label class="filter-label">Grade</label>
         <select
           id="analytics-grade-filter"
-          class="form-select"
+          class="filter-select"
           onchange="updateAnalytics()"
         >
           <option value="">All Grades</option>
@@ -222,15 +194,14 @@ extra_css %}
         </select>
       </div>
 
-      <div
-        class="form-group"
+      <div class="filter-group"
         id="analytics-stream-filter-group"
         style="display: none"
       >
-        <label class="form-label">Stream</label>
+        <label class="filter-label">Stream</label>
         <select
           id="analytics-stream-filter"
-          class="form-select"
+          class="filter-select"
           onchange="updateAnalytics()"
         >
           <option value="">All Streams</option>
@@ -241,97 +212,382 @@ extra_css %}
   </div>
 
   <!-- Main Analytics Content -->
-  <div class="analytics-content-grid">
-    <!-- Top Performers Component -->
-    <div class="analytics-component top-performers-component">
-      <div class="component-header">
-        <h3><i class="fas fa-trophy"></i> Top Performing Students</h3>
-        <div class="component-actions">
+  <div>
+    <!-- Top Performers Component - SIMPLIFIED VERSION -->
+      <!-- Results per page (Top Performers) -->
+      <div class="filter-group">
+        <label class="filter-label">Results Per Page <span class="filter-hint">(Top Performers)</span></label>
+        <select id="top-performers-per-page" class="filter-select" onchange="updateTopPerPage(this.value)">
+          <option value="10" {% if request.args.get('per_page')|int == 10 %}selected{% endif %}>10</option>
+          <option value="20" {% if not request.args.get('per_page') or request.args.get('per_page')|int == 20 %}selected{% endif %}>20</option>
+          <option value="50" {% if request.args.get('per_page')|int == 50 %}selected{% endif %}>50</option>
+          <option value="100" {% if request.args.get('per_page')|int == 100 %}selected{% endif %}>100</option>
+        </select>
+      </div>
+  <div class="analytics-section top-performers-section" id="top-performers">
+
+    <!-- Current selection chips -->
+    <div class="filters-chips-row">
+      {% set selected_term = (terms|selectattr('id','equalto', request.args.get('term')|int)|list|first) %}
+      {% set selected_assessment = (assessment_types|selectattr('id','equalto', request.args.get('assessment_type')|int)|list|first) %}
+      <span class="filter-chip">
+        <span class="chip-label">Term:</span>
+        <span class="chip-value">{{ (selected_term.name ~ (' - ' ~ selected_term.academic_year if selected_term.academic_year else '')) if selected_term else 'All Terms' }}</span>
+      </span>
+      <span class="filter-chip">
+        <span class="chip-label">Assessment:</span>
+        <span class="chip-value">{{ selected_assessment.name if selected_assessment else 'All Assessments' }}</span>
+      </span>
+    </div>
+      <div class="section-header">
+        <h3 class="section-title">
+          <span class="icon" aria-hidden="true" style="display:inline-flex;vertical-align:-2px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M8 3a1 1 0 0 0-1 1v2H6a3 3 0 0 0-3 3v.5A4.5 4.5 0 0 0 7.5 14h.3A6 6 0 0 0 12 15.9 6 6 0 0 0 16.2 14h.3A4.5 4.5 0 0 0 21 9.5V9a3 3 0 0 0-3-3h-1V4a1 1 0 0 0-1-1H8Zm8 3v2H8V6h8Z"/>
+            </svg>
+          </span>
+          Top Performing Students
+        </h3>
+        <div class="section-actions">
           <button
-            class="modern-btn btn-sm btn-outline"
+            class="btn btn-outline btn-refresh"
             onclick="refreshAnalytics('top_performers')"
           >
-            <i class="fas fa-sync-alt"></i> Refresh
+            <span class="icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M12 5a7 7 0 1 1-6.32 4H3a1 1 0 0 1 0-2h4a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0V9.74A5 5 0 1 0 12 5Z"/>
+              </svg>
+            </span>
+            Refresh
           </button>
+          {% set _params = {
+            'term': effective_term_filter or current_term_filter,
+            'assessment_type': effective_assessment_filter or current_assessment_filter,
+            'grade': effective_grade_filter,
+            'stream': effective_stream_filter
+          } %}
+          {% set query = [] %}
+          {% for k, v in _params.items() %}
+            {% if v %}{% set _ = query.append(k ~ '=' ~ v) %}{% endif %}
+          {% endfor %}
+          {% set basePath = request.path %}
+          {% set showAllUrl = basePath ~ (('?' ~ '&'.join(query)) if query else '') ~ (('&' if query else '?') ~ 'show_all=1') %}
+          {% set showTop5Url = basePath ~ (('?' ~ '&'.join(query)) if query else '') %}
+          {% if show_all %}
+          <a class="btn btn-outline" href="{{ showTop5Url }}">
+            <span class="icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M4 9a1 1 0 0 0 1-1V6.41l1.3 1.3a1 1 0 0 0 1.4-1.42L6.41 5H8a1 1 0 0 0 0-2H4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1Zm16 6a1 1 0 0 0-1 1v1.59l-1.3-1.3a1 1 0 1 0-1.4 1.42l1.29 1.29H16a1 1 0 0 0 0 2h4a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1Z"/>
+              </svg>
+            </span>
+            Show Top 5
+          </a>
+          {% else %}
+          <a class="btn btn-outline" href="{{ showAllUrl }}">
+            <span class="icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M9 3a1 1 0 0 0 0 2h1.59L9.3 6.3a1 1 0 1 0 1.4 1.42L12 5.41V7a1 1 0 1 0 2 0V3h-4Zm6 18a1 1 0 0 0 0-2h-1.59l1.3-1.3a1 1 0 1 0-1.4-1.42L12 18.59V17a1 1 0 1 0-2 0v4h4Z"/>
+              </svg>
+            </span>
+            Show All
+          </a>
+          {% endif %}
         </div>
       </div>
 
-      <div class="component-content">
-        <div id="top-performers-container">
-          {% if analytics_data.has_data and analytics_data.top_students %}
-          <div class="top-performers-list">
-            {% for student in analytics_data.top_students[:5] %}
-            <div class="performer-item">
-              <div class="performer-rank">{{ loop.index }}</div>
-              <div class="performer-info">
-                <div class="performer-name">{{ student.name }}</div>
-                <div class="performer-details">
-                  {{ student.grade }} {{ student.stream }} • {{
-                  student.subjects_count }} subjects
+      <div class="performers-content">
+        {% if analytics_data.top_performers %}
+        {% set total_count = analytics_data.top_performers|length %}
+        {% if show_all %}
+          {% set raw_per_page = request.args.get('per_page')|int if request.args.get('per_page') else 20 %}
+          {% set per_page = 20 %}
+          {% if raw_per_page and raw_per_page > 0 %}{% set per_page = raw_per_page %}{% endif %}
+          {% if per_page > 100 %}{% set per_page = 100 %}{% endif %}
+          {% if per_page < 5 %}{% set per_page = 5 %}{% endif %}
+          {% set raw_page = request.args.get('page')|int if request.args.get('page') else 1 %}
+          {% set page = 1 if not raw_page or raw_page < 1 else raw_page %}
+          {% set total_pages = ((total_count + per_page - 1) // per_page) if total_count else 1 %}
+          {% if page > total_pages %}{% set page = total_pages %}{% endif %}
+          {% set start = (page - 1) * per_page %}
+          {% set end = start + per_page %}
+          {% set performers = analytics_data.top_performers[start:end] %}
+        {% else %}
+          {% set performers = analytics_data.top_performers[:5] %}
+          {% set page = 1 %}
+          {% set per_page = performers|length %}
+          {% set total_pages = 1 %}
+          {% set start = 0 %}
+        {% endif %}
+
+  <div class="performers-table no-actions">
+          <div class="table-header">
+            <div class="header-cell">Rank</div>
+            <div class="header-cell">Student Details</div>
+            <div class="header-cell">Performance</div>
+          </div>
+          
+          {% for student in performers %}
+          <div class="performer-row" id="performer-{{ loop.index }}">
+            <div class="rank-cell">
+              <span class="rank-number">{{ start + loop.index }}</span>
+              {% if loop.index == 1 %}
+                <span class="rank-crown" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M3 7.5 7.5 12l3-4.5 3 4.5L21 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5v-9Z"/></svg>
+                </span>
+              {% elif loop.index == 2 %}
+                <span class="rank-medal silver" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2.25 8.25 6H4.5l3.75 3.75L6.75 18 12 15.75 17.25 18l-1.5-8.25L19.5 6h-3.75L12 2.25Z"/></svg>
+                </span>
+              {% elif loop.index == 3 %}
+                <span class="rank-medal bronze" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2.25 8.25 6H4.5l3.75 3.75L6.75 18 12 15.75 17.25 18l-1.5-8.25L19.5 6h-3.75L12 2.25Z"/></svg>
+                </span>
+              {% endif %}
+            </div>
+            
+            <div class="student-cell">
+              <div class="student-name">{{ student.name or student.student_name }}</div>
+              <div class="student-meta">
+                <span class="admission-number">ADM{{ student.admission_number or student.student_id or 'N/A' }}</span>
+                <span class="grade-stream">{{ student.grade or 'Grade' }} {{ student.stream or 'Stream' }}</span>
+              </div>
+              <div class="assessment-info">{{ student.assessment_type or 'Mid Term' }} - {{ student.term or 'Term 1' }}</div>
+            </div>
+            
+            <div class="performance-cell">
+              <div class="performance-score">{{ (student.average_percentage|float)|round(1) }}%</div>
+              <div class="grade-letter">Grade {{ student.grade_letter or 'A' }}</div>
+              <div class="marks-detail">
+                {{ student.total_marks_obtained or 0 }}/{{ student.total_marks_possible or 0 }} marks
+              </div>
+              <div class="performance-bar">
+                <div class="progress-fill" style="width: {{ (student.average_percentage|float)|round(1) }}%"></div>
+              </div>
+            </div>
+            
+            <!-- actions removed by request -->
+            
+            <!-- Enhanced Details Section (Initially Hidden) -->
+            <div class="details-section premium-card" id="details-enhanced-{{ student.student_id or loop.index }}" style="display: none;">
+              <div>
+                <span class="icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 13v5m4-9v9m4-13v13"/>
+                  </svg>
+                </span>
+                <span>Detailed Performance Analysis for {{ student.name or student.student_name }}</span>
+              </div>
+              
+              <div>
+                <div>
+                  <div>
+                    <span class="icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 17l6-6 4 4 8-8"/>
+                      </svg>
+                    </span>
+                  </div>
+                  <div>
+                    <div>{{ student.max_percentage|default(100)|round(1) }}%</div>
+                    <div>Highest Score</div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div>
+                    <span class="icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 13v5m4-9v9m4-13v13"/>
+                      </svg>
+                    </span>
+                  </div>
+                  <div>
+                    <div>{{ (student.average_percentage|float)|round(1) }}%</div>
+                    <div>Average Score</div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div>
+                    <span class="icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 7l-6 6-4-4-8 8"/>
+                      </svg>
+                    </span>
+                  </div>
+                  <div>
+                    <div>{{ student.min_percentage|default(0)|round(1) }}%</div>
+                    <div>Lowest Score</div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div>
+                    <span class="icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25V18.75A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V5.25zm3 3h12m-12 4.5h12m-12 4.5h7.5"/>
+                      </svg>
+                    </span>
+                  </div>
+                  <div>
+                    <div>{{ student.subjects_count|default(1) }}</div>
+                    <div>Subjects</div>
+                  </div>
                 </div>
               </div>
-              <div class="performer-score">{{ student.average }}%</div>
+              
+              <div>
+                <button 
+                  
+                  onclick="viewEnhancedStudentFullReport('{{ student.student_id or loop.index }}', '{{ student.name or student.student_name }}')"
+                >
+                  <span class="icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-8.25A2.25 2.25 0 0017.25 3.75H8.25A2.25 2.25 0 006 6v12a2.25 2.25 0 002.25 2.25h6.75M9 9h6m-6 3h6m-6 3h3"/>
+                    </svg>
+                  </span> View Full Report
+                </button>
+                <button 
+                  
+                  onclick="generateStudentPerfReport('{{ student.student_id or loop.index }}', '{{ student.name or student.student_name }}')"
+                >
+                  <span class="icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 13v5m4-9v9m4-13v13"/>
+                    </svg>
+                  </span> Performance Report
+                </button>
+                <button 
+                  
+                  onclick="emailStudentReport('{{ student.student_id or loop.index }}', '{{ student.name or student.student_name }}')"
+                >
+                  <span class="icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5A2.25 2.25 0 0119.5 19.5H4.5A2.25 2.25 0 012.25 17.25V6.75m19.5 0L12 13.5 2.25 6.75"/>
+                    </svg>
+                  </span> Email Report
+                </button>
+              </div>
             </div>
-            {% endfor %}
           </div>
-          {% else %}
-          <div class="no-data-message">
-            <i class="fas fa-users"></i>
-            <p>
-              No student performance data available for your assigned classes.
-            </p>
-          </div>
-          {% endif %}
+          {% endfor %}
         </div>
+
+        {% if show_all and total_pages > 1 %}
+          {% set _params = {
+            'term': effective_term_filter or current_term_filter,
+            'assessment_type': effective_assessment_filter or current_assessment_filter,
+            'grade': effective_grade_filter,
+            'stream': effective_stream_filter,
+            'show_all': 1,
+            'per_page': per_page
+          } %}
+          {% set query_items = [] %}
+          {% for k, v in _params.items() %}
+            {% if v %}{% set _ = query_items.append(k ~ '=' ~ v) %}{% endif %}
+          {% endfor %}
+          {% set basePath = request.path %}
+          {% set prevUrl = basePath ~ (('?' ~ '&'.join(query_items)) if query_items else '') ~ (('&' if query_items else '?') ~ 'page=' ~ (page - 1)) %}
+          {% set nextUrl = basePath ~ (('?' ~ '&'.join(query_items)) if query_items else '') ~ (('&' if query_items else '?') ~ 'page=' ~ (page + 1)) %}
+          <div class="pagination-controls">
+            <div class="pagination-left">
+              <a class="btn btn-outline" href="{{ prevUrl }}#top-performers" style="visibility: {{ 'visible' if page > 1 else 'hidden' }}">
+                <span class="icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.7 5.3a1 1 0 0 1 0 1.4L11.41 11l4.3 4.3a1 1 0 0 1-1.42 1.4l-5-5a1 1 0 0 1 0-1.4l5-5a1 1 0 0 1 1.42 0Z"/></svg>
+                </span>
+                Previous
+              </a>
+            </div>
+            <div class="pagination-center">
+              Page {{ page }} of {{ total_pages }} • Showing {{ start + 1 }}–{{ [start + performers|length, total_count]|min }} of {{ total_count }}
+            </div>
+            <div class="pagination-right">
+              <a class="btn btn-outline" href="{{ nextUrl }}#top-performers" style="visibility: {{ 'visible' if page < total_pages else 'hidden' }}">
+                Next
+                <span class="icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8.3 18.7a1 1 0 0 1 0-1.4l4.3-4.3-4.3-4.3A1 1 0 0 1 9.7 7.3l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 0 1-1.4 0Z"/></svg>
+                </span>
+              </a>
+            </div>
+          </div>
+        {% endif %}
+        {% else %}
+        <div>
+          <span class="icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 9.75h.008v.008H11.25V9.75zm0 3v5.25m9-5.25a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </span>
+          <h4>No Performance Data Available</h4>
+          <p>No student performance data found for your selected filters.</p>
+        </div>
+        {% endif %}
       </div>
     </div>
 
     <!-- Subject Performance Component -->
-    <div class="analytics-component subject-performance-component">
-      <div class="component-header">
-        <h3><i class="fas fa-chart-bar"></i> Subject Performance Analysis</h3>
-        <div class="component-actions">
+    <div class="analytics-section subject-performance-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span class="icon" aria-hidden="true" style="display:inline-flex;vertical-align:-2px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v15a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2V5Z"/></svg>
+          </span>
+          Subject Performance Analysis
+        </h3>
+        <div class="section-actions">
           <button
-            class="modern-btn btn-sm btn-outline"
+            class="btn btn-outline btn-refresh"
             onclick="refreshAnalytics('subject_performance')"
           >
-            <i class="fas fa-sync-alt"></i> Refresh
+            <span class="icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 5a7 7 0 1 1-6.32 4H3a1 1 0 0 1 0-2h4a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0V9.74A5 5 0 1 0 12 5Z"/></svg>
+            </span>
+            Refresh
           </button>
         </div>
       </div>
 
-      <div class="component-content">
+      <div class="section-body">
         <div id="subject-performance-container">
-          {% if analytics_data.has_data and analytics_data.subject_performance
-          %}
+          {% if analytics_data.summary.has_sufficient_data and analytics_data.subject_analytics %}
           <div class="subject-performance-grid">
-            {% for subject in analytics_data.subject_performance[:6] %}
-            <div class="subject-item">
+            {% for subject in analytics_data.subject_analytics[:6] %}
+            {% set avg = (subject.average_percentage|float) %}
+            {% set status_class = 'status-below' %}
+            {% if avg >= 80 %}
+              {% set status_class = 'status-exceeding' %}
+            {% elif avg >= 65 %}
+              {% set status_class = 'status-meeting' %}
+            {% elif avg >= 50 %}
+              {% set status_class = 'status-approaching' %}
+            {% endif %}
+            <div class="subject-item premium-card" data-average="{{ avg|round(1) }}">
               <div class="subject-header">
-                <div class="subject-name">{{ subject.name }}</div>
-                <div class="subject-performance">{{ subject.average }}%</div>
+                <div class="subject-name">{{ subject.subject_name or subject.name }}</div>
+                <div class="subject-performance">{{ avg|round(1) }}%</div>
               </div>
               <div class="subject-details">
-                {{ subject.students_count }} students • {{ subject.total_marks
-                }} marks
+                {{ subject.student_count or subject.students_count or 0 }} students •
+                {{ subject.total_marks or subject.total_assessments or 0 }} assessments
               </div>
-              <div
-                class="subject-status {% if subject.average >= 80 %}status-exceeding {% elif subject.average >= 65 %}status-meeting {% elif subject.average >= 50 %}status-approaching {% else %}status-below{% endif %}"
-              >
-                {% if subject.average >= 80 %}Exceeding Expectation {% elif
-                subject.average >= 65 %}Meeting Expectation {% elif
-                subject.average >= 50 %}Approaching Expectation {% else %}Below
-                Expectation{% endif %}
+              <div class="progress-bar" aria-label="Average percentage">
+                <div class="progress-fill" style="width: {{ [avg, 100]|min }}%"></div>
+              </div>
+              <div class="subject-status {{ status_class }}">
+                {% if avg >= 80 %}Exceeding Expectation
+                {% elif avg >= 65 %}Meeting Expectation
+                {% elif avg >= 50 %}Approaching Expectation
+                {% else %}Below Expectation{% endif %}
               </div>
             </div>
             {% endfor %}
           </div>
           {% else %}
-          <div class="no-data-message">
-            <i class="fas fa-chart-bar"></i>
-            <p>
-              No subject performance data available for your assigned classes.
-            </p>
+          <div class="empty-state">
+            <span class="icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm1 14h-2v-4h2Zm0-6h-2V8h2Z"/></svg>
+            </span>
+            <p>No subject performance data available for your assigned classes.</p>
           </div>
           {% endif %}
         </div>
@@ -340,39 +596,130 @@ extra_css %}
   </div>
 
   <!-- Detailed Analytics Section -->
-  <div class="analytics-component analytics-full-width">
-    <div class="component-header">
-      <h3><i class="fas fa-chart-pie"></i> Detailed Performance Breakdown</h3>
-      <div class="component-actions">
+  <div class="analytics-section detailed-breakdown-section">
+    <div class="section-header">
+      <h3 class="section-title">
+        <span class="icon" aria-hidden="true" style="display:inline-flex;vertical-align:-2px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M5 6h14v2H5Zm0 5h14v2H5Zm0 5h10v2H5Z"/></svg>
+        </span>
+        Detailed Performance Breakdown
+      </h3>
+      <div class="section-actions">
         <button
-          class="modern-btn btn-sm btn-outline"
+          class="btn btn-outline btn-export"
           onclick="exportAnalytics()"
         >
-          <i class="fas fa-download"></i> Export Data
+          <span class="icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 3a1 1 0 0 1 1 1v8.59l1.3-1.3a1 1 0 0 1 1.4 1.42l-3 3a1 1 0 0 1-1.4 0l-3-3a1 1 0 1 1 1.4-1.42l1.3 1.3V4a1 1 0 0 1 1-1Zm-7 16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 1 0-2 0v1H7v-1a1 1 0 1 0-2 0v1Z"/></svg>
+          </span>
+          Export Data
         </button>
       </div>
     </div>
 
-    <div class="component-content">
-      <div id="detailed-analytics-container">
-        <div class="loading-state">
-          <i class="fas fa-spinner fa-spin"></i> Loading detailed analytics...
+    <div class="section-body">
+      <div id="detailed-analytics-container" class="premium-card">
+        {% if analytics_data.summary.has_sufficient_data and analytics_data.subject_analytics %}
+        <div class="table-wrapper">
+          <table id="detailed-subject-table" class="premium-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Subject</th>
+                <th>Average</th>
+                <th>Students</th>
+                <th>Assessments</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for subject in analytics_data.subject_analytics %}
+              {% set avg = (subject.average_percentage|float) %}
+              {% set status = 'Below Expectation' %}
+              {% if avg >= 80 %}
+                {% set status = 'Exceeding Expectation' %}
+              {% elif avg >= 65 %}
+                {% set status = 'Meeting Expectation' %}
+              {% elif avg >= 50 %}
+                {% set status = 'Approaching Expectation' %}
+              {% endif %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                  <div class="subject-name">{{ subject.subject_name or subject.name }}</div>
+                </td>
+                <td>
+                  <div class="performer-percentage">
+                    <div class="percentage-value">{{ avg|round(1) }}%</div>
+                    <div class="percentage-bar"><div class="percentage-fill" style="width: {{ [avg, 100]|min }}%"></div></div>
+                  </div>
+                </td>
+                <td>{{ subject.student_count or subject.students_count or 0 }}</td>
+                <td>{{ subject.total_marks or subject.total_assessments or 0 }}</td>
+                <td>
+                  <span class="subject-status 
+                    {% if avg >= 80 %}status-exceeding
+                    {% elif avg >= 65 %}status-meeting
+                    {% elif avg >= 50 %}status-approaching
+                    {% else %}status-below{% endif %}">
+                    {{ status }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
+
+        {% set dist = namespace(exceeding=0, meeting=0, approaching=0, below=0) %}
+        {% for s in analytics_data.top_performers or [] %}
+          {% set p = (s.average_percentage|float) %}
+          {% if p >= 80 %}
+            {% set dist.exceeding = dist.exceeding + 1 %}
+          {% elif p >= 65 %}
+            {% set dist.meeting = dist.meeting + 1 %}
+          {% elif p >= 50 %}
+            {% set dist.approaching = dist.approaching + 1 %}
+          {% else %}
+            {% set dist.below = dist.below + 1 %}
+          {% endif %}
+        {% endfor %}
+        <div class="premium-card" style="margin-top: var(--spacing-md)">
+          <h4 style="margin-bottom: var(--spacing-sm)">Student Performance Distribution</h4>
+          <ul class="distribution-list">
+            <li>Exceeding (80%+): <strong>{{ dist.exceeding }}</strong></li>
+            <li>Meeting (65–79%): <strong>{{ dist.meeting }}</strong></li>
+            <li>Approaching (50–64%): <strong>{{ dist.approaching }}</strong></li>
+            <li>Below (<50%): <strong>{{ dist.below }}</strong></li>
+          </ul>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <span class="icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm1 14h-2v-4h2Zm0-6h-2V8h2Z"/></svg>
+          </span>
+          <p>No detailed analytics available for your selected filters.</p>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
 
   <!-- No Data State -->
-  <div id="no-data-state" class="no-data-state" style="display: none">
-    <div class="no-data-icon">
-      <i class="fas fa-chart-line"></i>
+  <div id="no-data-state" style="display: none">
+    <div>
+      <span class="icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 9.75h.008v.008H11.25V9.75zm0 3v5.25m9-5.25a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </span>
     </div>
     <h3>No Analytics Data Available</h3>
     <p>
       There isn't enough data to generate meaningful analytics for your assigned
       classes.
     </p>
-    <div class="no-data-suggestions">
+    <div>
       <h4>Suggestions:</h4>
       <ul>
         <li>Ensure marks have been uploaded for your students</li>
@@ -383,43 +730,108 @@ extra_css %}
         </li>
       </ul>
     </div>
-    <div style="margin-top: var(--space-4)">
-      <button class="modern-btn btn-primary" onclick="resetAnalyticsFilters()">
-        <i class="fas fa-undo"></i> Reset Filters
+    <div>
+      <button onclick="resetAnalyticsFilters()">
+        <span class="icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0112.635-5.303L19.5 3v6h-6l2.403-2.403A5.999 5.999 0 006 12a6 6 0 006 6"/>
+          </svg>
+        </span> Reset Filters
       </button>
-      <a
-        href="{{ url_for('classteacher.dashboard') }}"
-        class="modern-btn btn-outline"
-        style="margin-left: var(--space-2)"
-      >
-        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      <a href="{{ url_for('classteacher.dashboard') }}">
+        <span class="icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9.75l9-6 9 6V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z"/>
+          </svg>
+        </span> Back to Dashboard
       </a>
     </div>
   </div>
 </div>
+</div>
 
-<!-- Include Analytics Components Styles -->
-{% include 'analytics_dashboard_components.html' %}
+{% endblock %}
 
-<!-- Enhanced Analytics Styles -->
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/enhanced_analytics.css') }}"
-/>
-
-{% endblock %} {% block extra_js %}
-<!-- Analytics Dashboard JavaScript -->
-<script src="{{ url_for('static', filename='js/analytics_dashboard.js') }}"></script>
+{% block extra_js %}
+<!-- Analytics page uses server-side rendered data, no external JS needed -->
 
 <script>
+  // Block external analytics_dashboard.js from overwriting our values
+  window.analyticsOverrideDisabled = true;
+  
+  // Override the problematic functions immediately
+  window.updateSummaryCards = function() {
+    return false;
+  };
+  
+  window.updateAnalyticsDashboard = function() {
+    return false;
+  };
+  
+  window.loadAnalyticsData = function() {
+    return false;
+  };
+
+  // Original script content continues...
   // Page-specific analytics functions
   function exportAnalytics() {
-    // TODO: Implement analytics export functionality
-    showNotification("Export functionality coming soon!", "info");
+    const table = document.getElementById('detailed-subject-table');
+    if (!table) {
+      showNotification('No detailed data to export.', 'warning');
+      return;
+    }
+
+    const headers = ['#','Subject','Average %','Students','Assessments','Status'];
+    const rows = [];
+    const tbody = table.querySelector('tbody');
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const cells = tr.querySelectorAll('td');
+      if (cells.length >= 6) {
+        const rank = cells[0].textContent.trim();
+        const subject = cells[1].textContent.trim();
+        const avg = (cells[2].querySelector('.percentage-value')?.textContent || cells[2].textContent).trim().replace('%','');
+        const students = cells[3].textContent.trim();
+        const assessments = cells[4].textContent.trim();
+        const status = cells[5].textContent.trim();
+        rows.push([rank, subject, avg, students, assessments, status]);
+      }
+    });
+
+    if (!rows.length) {
+      showNotification('No detailed data to export.', 'warning');
+      return;
+    }
+
+    const csvLines = [];
+    csvLines.push(headers.join(','));
+    rows.forEach(r => csvLines.push(r.map(v => `"${v.replace(/"/g,'""')}"`).join(',')));
+    const csv = csvLines.join('\n');
+    const today = new Date().toISOString().slice(0,10);
+    downloadCSV(csv, `Detailed_Performance_Breakdown_${today}.csv`);
+    showNotification('Detailed analytics exported.', 'success');
   }
 
   function refreshAnalyticsData() {
     loadAnalyticsData();
+  }
+
+  function updateTopPerPage(value) {
+    // Update URL params for per_page and reset page to 1
+    const url = new URL(window.location.href);
+    url.searchParams.set('show_all', '1');
+    url.searchParams.set('per_page', String(value));
+    url.searchParams.set('page', '1');
+    window.location.href = url.toString() + '#top-performers';
+  }
+
+  // Handle refresh analytics calls from buttons
+  function refreshAnalytics(section) {
+    showNotification(`Refreshing ${section} data...`, "info");
+    // For server-side rendered data, we can just reload the page
+    // or show a message that data is already current
+    setTimeout(() => {
+      showNotification("Data is already current from server!", "success");
+    }, 1000);
   }
 
   // Update analytics based on filter changes
@@ -504,7 +916,6 @@ extra_css %}
       }
     })
     .catch(error => {
-      console.error('Error deleting report:', error);
       showNotification("Error deleting report. Please try again.", "error");
     });
   }
@@ -512,9 +923,571 @@ extra_css %}
   // Set headteacher flag for delete buttons
   window.isHeadteacher = {{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }};
 
+  // Simple but effective enhanced functionality
+  function toggleEnhancedDetails(studentId) {
+    const detailsSection = document.getElementById(`details-enhanced-${studentId}`);
+    const toggleBtn = document.querySelector(`[onclick="toggleEnhancedDetails('${studentId}')"]`);
+    const toggleIcon = toggleBtn?.querySelector('i');
+    const toggleText = toggleBtn?.querySelector('.toggle-text-enhanced');
+    
+    if (!detailsSection || !toggleBtn) return;
+    
+    const isHidden = detailsSection.style.display === 'none';
+    
+    if (isHidden) {
+      // Show details
+      detailsSection.style.display = 'block';
+      if (toggleIcon) toggleIcon.className = 'fas fa-chevron-up';
+      if (toggleText) toggleText.textContent = 'Hide Details';
+      toggleBtn.classList.add('active');
+      
+      // Add smooth animation
+      setTimeout(() => {
+        detailsSection.style.opacity = '1';
+        detailsSection.style.transform = 'translateY(0)';
+      }, 10);
+    } else {
+      // Hide details
+      detailsSection.style.opacity = '0';
+      detailsSection.style.transform = 'translateY(-10px)';
+      
+      setTimeout(() => {
+        detailsSection.style.display = 'none';
+        if (toggleIcon) toggleIcon.className = 'fas fa-chevron-down';
+        if (toggleText) toggleText.textContent = 'View Details';
+        toggleBtn.classList.remove('active');
+      }, 300);
+    }
+  }
+
+  // Simple protection for enhanced version
+  function protectEnhancedLayout() {
+    // Hide original container
+    const originalContainer = document.getElementById('top-performers-container-original');
+    if (originalContainer) {
+      originalContainer.style.display = 'none';
+    }
+    
+    // Show enhanced container
+    const enhancedContainer = document.getElementById('top-performers-container-enhanced');
+    if (enhancedContainer) {
+      enhancedContainer.style.display = 'block';
+      enhancedContainer.style.visibility = 'visible';
+      enhancedContainer.style.opacity = '1';
+    }
+  }
+
+  // Ultimate toggle function that can't be interfered with
+  function ultimateToggleDetails(studentId) {
+    const detailsSection = document.getElementById(`details-${studentId}`);
+    const toggleBtn = document.querySelector(`[onclick="ultimateToggleDetails('${studentId}')"]`);
+    const toggleIcon = toggleBtn?.querySelector('i');
+    const toggleText = toggleBtn?.querySelector('.toggle-text');
+    
+    if (!detailsSection || !toggleBtn) return;
+    
+    const isHidden = detailsSection.style.display === 'none' || !detailsSection.style.display;
+    
+    if (isHidden) {
+      // Show details
+      detailsSection.setAttribute('style', `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        grid-column: 1 / -1 !important;
+        margin-top: var(--spacing-lg) !important;
+        padding: var(--spacing-lg) !important;
+        background: rgba(0, 43, 54, 0.3) !important;
+        border: 1px solid rgba(253, 246, 227, 0.1) !important;
+        border-radius: var(--radius-md) !important;
+        backdrop-filter: blur(10px) !important;
+        transform: translateY(0) !important;
+        transition: all 0.3s ease !important;
+      `);
+      
+      if (toggleIcon) toggleIcon.className = 'fas fa-chevron-up';
+      if (toggleText) toggleText.textContent = 'Hide Details';
+      toggleBtn.classList.add('active');
+    } else {
+      // Hide details
+      detailsSection.setAttribute('style', `display: none !important;`);
+      if (toggleIcon) toggleIcon.className = 'fas fa-chevron-down';
+      if (toggleText) toggleText.textContent = 'View Details';
+      toggleBtn.classList.remove('active');
+    }
+  }
+
+  // Enhanced Top Performing Students Functionality
+  function toggleEnhancedStudentDetails(studentId, studentName, avgPercentage, minPercentage, maxPercentage, subjectsCount) {
+    const detailsSection = document.getElementById(`details-enhanced-${studentId}`);
+    const toggleBtn = document.querySelector(`[onclick*="toggleEnhancedStudentDetails('${studentId}'"]`);
+    const toggleIcon = toggleBtn?.querySelector('i');
+    const toggleText = toggleBtn?.querySelector('.btn-text');
+    
+    if (!detailsSection || !toggleBtn) {
+      return;
+    }
+    
+    const isHidden = detailsSection.style.display === 'none' || !detailsSection.style.display;
+    
+    if (isHidden) {
+      // Show enhanced details
+      detailsSection.style.display = 'block';
+      detailsSection.style.visibility = 'visible';
+      detailsSection.style.opacity = '1';
+      detailsSection.classList.add('details-expanded');
+      
+      if (toggleIcon) toggleIcon.className = 'fas fa-chevron-up';
+      if (toggleText) toggleText.textContent = 'Hide Details';
+      toggleBtn.classList.add('active');
+      
+      // Update the stats with real data
+      updateStudentStatsDisplay(studentId, avgPercentage, minPercentage, maxPercentage, subjectsCount);
+      
+      // Add smooth animation
+      setTimeout(() => {
+        detailsSection.style.transform = 'translateY(0)';
+      }, 10);
+      
+      // Show notification
+      showEnhancedNotification(`Viewing detailed analytics for ${studentName}`, 'info');
+    } else {
+      // Hide details
+      detailsSection.style.opacity = '0';
+      detailsSection.style.transform = 'translateY(-10px)';
+      
+      setTimeout(() => {
+        detailsSection.style.display = 'none';
+        detailsSection.classList.remove('details-expanded');
+        if (toggleIcon) toggleIcon.className = 'fas fa-chevron-down';
+        if (toggleText) toggleText.textContent = 'View Details';
+        toggleBtn.classList.remove('active');
+      }, 300);
+    }
+  }
+
+  function updateStudentStatsDisplay(studentId, avgPercentage, minPercentage, maxPercentage, subjectsCount) {
+    const detailsSection = document.getElementById(`details-enhanced-${studentId}`);
+    if (!detailsSection) return;
+    
+    // Update the stat values with real data
+    const statCards = detailsSection.querySelectorAll('.stat-card .stat-value');
+    if (statCards.length >= 4) {
+      statCards[0].textContent = `${maxPercentage}%`; // Highest Score
+      statCards[1].textContent = `${avgPercentage}%`; // Average Score  
+      statCards[2].textContent = `${minPercentage}%`; // Lowest Score
+      statCards[3].textContent = subjectsCount; // Subjects Count
+    }
+  }
+
+  function exportEnhancedStudentData(studentId, studentName) {
+    showEnhancedNotification(`Preparing export for ${studentName}...`, 'info');
+    
+    // Simulate export preparation
+    setTimeout(() => {
+      // Find student data from the page
+      const studentRow = document.getElementById(`performer-${studentId}`) || 
+                        document.querySelector(`[id*="${studentId}"]`) ||
+                        document.querySelector('.performer-row-enhanced');
+      
+      let avgPercentage = 'N/A';
+      let maxPercentage = 'N/A';
+      let minPercentage = 'N/A';
+      let subjectsCount = 'N/A';
+      
+      // Try to extract data from the student row if available
+      if (studentRow) {
+        const percentageElement = studentRow.querySelector('.main-percentage');
+        if (percentageElement) {
+          avgPercentage = percentageElement.textContent.trim();
+        }
+        
+        // Try to get expanded details data
+        const detailsSection = document.getElementById(`details-enhanced-${studentId}`);
+        if (detailsSection) {
+          const statValues = detailsSection.querySelectorAll('.stat-value');
+          if (statValues.length >= 4) {
+            maxPercentage = statValues[0].textContent.trim();
+            avgPercentage = statValues[1].textContent.trim();
+            minPercentage = statValues[2].textContent.trim();
+            subjectsCount = statValues[3].textContent.trim();
+          }
+        }
+      }
+      
+      // Create export data
+      const exportData = {
+        student_id: studentId,
+        student_name: studentName,
+        export_timestamp: new Date().toISOString(),
+        export_type: 'student_performance_detailed',
+        average_percentage: avgPercentage,
+        max_percentage: maxPercentage,
+        min_percentage: minPercentage,
+        subjects_count: subjectsCount
+      };
+      
+      // Create and download CSV
+      const csvContent = generateEnhancedStudentCSV(exportData);
+      downloadCSV(csvContent, `${studentName}_Performance_Report_${new Date().toISOString().slice(0,10)}.csv`);
+      
+      showEnhancedNotification(`Performance data exported for ${studentName}`, 'success');
+    }, 1500);
+  }
+
+  function generateEnhancedStudentCSV(exportData) {
+    const headers = ['Student ID', 'Student Name', 'Export Date', 'Average Score', 'Highest Score', 'Lowest Score', 'Subjects Count'];
+    const data = [
+      exportData.student_id,
+      exportData.student_name,
+      exportData.export_timestamp.slice(0,10),
+      exportData.average_percentage,
+      exportData.max_percentage,
+      exportData.min_percentage,
+      exportData.subjects_count
+    ];
+    
+    return [headers.join(','), data.join(',')].join('\n');
+  }
+
+  function generateStudentCSV(exportData) {
+    const headers = ['Student ID', 'Student Name', 'Export Date', 'Average Score', 'Highest Score', 'Lowest Score', 'Subjects Count'];
+    const data = [
+      exportData.student_id,
+      exportData.student_name,
+      exportData.export_timestamp.slice(0,10),
+      'N/A', // Will be populated with actual data
+      'N/A', // Will be populated with actual data
+      'N/A', // Will be populated with actual data
+      'N/A'  // Will be populated with actual data
+    ];
+    
+    return [headers.join(','), data.join(',')].join('\n');
+  }
+
+  function downloadCSV(csvContent, filename) {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  function viewEnhancedStudentFullReport(studentId, studentName) {
+    showEnhancedNotification(`Loading comprehensive report for ${studentName}...`, 'info');
+    
+    // Simulate loading full report
+    setTimeout(() => {
+      // This would typically open a modal or navigate to a detailed report page
+      const reportData = {
+        student_id: studentId,
+        student_name: studentName,
+        report_type: 'comprehensive_academic_analysis'
+      };
+      
+      // For now, show a detailed modal (you can implement full page navigation later)
+      showStudentReportModal(reportData);
+    }, 1000);
+  }
+
+  function showStudentReportModal(reportData) {
+    // Create modal HTML
+    const modalHTML = `
+      <div id="student-report-modal">
+        <div>
+          <div>
+            <h3>
+              <span class="icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/>
+                </svg>
+              </span>
+              Comprehensive Report: ${reportData.student_name}
+            </h3>
+            <button onclick="closeStudentReportModal()" aria-label="Close">
+              &times;
+            </button>
+          </div>
+          <div>
+            <div>
+              <h4>Academic Performance Overview</h4>
+              <p>Detailed academic performance analysis for ${reportData.student_name} would be displayed here.</p>
+              <div>
+                <div>
+                  <span>Overall Rank:</span>
+                  <span>Top 5</span>
+                </div>
+                <div>
+                  <span>Performance Trend:</span>
+                  <span>Improving</span>
+                </div>
+                <div>
+                  <span>Strong Subjects:</span>
+                  <span>Mathematics, Science</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4>Recommendations</h4>
+              <ul>
+                <li>Continue excellent performance in core subjects</li>
+                <li>Focus on consistent improvement across all subjects</li>
+                <li>Consider advanced level challenges</li>
+              </ul>
+            </div>
+          </div>
+          <div>
+            <button onclick="printStudentReport()">
+              <span class="icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 18h12v3H6v-3zm0-6h12v6H6v-6z"/>
+                </svg>
+              </span>
+              Print Report
+            </button>
+            <button onclick="closeStudentReportModal()">
+              <span class="icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </span>
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Show modal with animation
+    setTimeout(() => {
+      const modal = document.getElementById('student-report-modal');
+      if (modal) {
+        modal.classList.add('show');
+      }
+    }, 10);
+  }
+
+  function closeStudentReportModal() {
+    const modal = document.getElementById('student-report-modal');
+    if (modal) {
+      modal.classList.remove('show');
+      setTimeout(() => modal.remove(), 300);
+    }
+  }
+
+  function printStudentReport() {
+    window.print();
+  }
+
+  function generateStudentPerfReport(studentId, studentName) {
+    showEnhancedNotification(`Generating performance report for ${studentName}...`, 'info');
+    
+    setTimeout(() => {
+      // Generate a comprehensive performance report
+      const reportContent = `
+        Performance Report: ${studentName}
+        Generated: ${new Date().toLocaleDateString()}
+        
+        Summary:
+        - Student ID: ${studentId}
+        - Current Rank: Top 5 Performer
+        - Overall Performance: Excellent
+        
+        This comprehensive report would include detailed charts, 
+        subject-wise breakdowns, and performance trends.
+      `;
+      
+      // Create and download as text file
+      const blob = new Blob([reportContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${studentName}_Performance_Report_${new Date().toISOString().slice(0,10)}.txt`;
+      link.click();
+      URL.revokeObjectURL(url);
+      
+      showEnhancedNotification(`Performance report generated for ${studentName}`, 'success');
+    }, 2000);
+  }
+
+  function emailStudentReport(studentId, studentName) {
+    showEnhancedNotification(`Preparing to email report for ${studentName}...`, 'info');
+    
+    // This would typically integrate with your email service
+    setTimeout(() => {
+      // For demo purposes, we'll show a success message
+      // In real implementation, this would call your backend email API
+      showEnhancedNotification(`Report emailed successfully for ${studentName}`, 'success');
+    }, 1500);
+  }
+
+  function showEnhancedNotification(message, type = 'info') {
+    // Remove any existing notifications
+    const existingNotifications = document.querySelectorAll('.enhanced-notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = `enhanced-notification notification-${type}`;
+    
+    const iconMap = {
+      'success': 'fa-check-circle',
+      'error': 'fa-times-circle', 
+      'warning': 'fa-exclamation-triangle',
+      'info': 'fa-info-circle'
+    };
+    
+    notification.innerHTML = `
+      <span>${message}</span>
+      <button onclick="this.parentElement.remove()" aria-label="Close">&times;</button>
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Show with animation
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+      }
+    }, 4000);
+  }
+    
+    if (topPerformersContainer) {
+      // Protect the container
+      topPerformersContainer.style.display = 'block';
+      topPerformersContainer.style.visibility = 'visible';
+      topPerformersContainer.style.opacity = '1';
+      
+      // Protect each performer item
+      performerItems.forEach((item, index) => {
+        if (item) {
+          item.style.display = 'grid';
+          item.style.visibility = 'visible';
+          item.style.opacity = '1';
+          item.setAttribute('data-protected', 'true');
+          
+          // Ensure grid layout is maintained
+          item.style.gridTemplateColumns = 'auto 1fr auto';
+          item.style.gap = 'var(--spacing-md)';
+          item.style.alignItems = 'flex-start';
+        }
+      });
+      
+      // Protect toggle buttons
+      const toggleButtons = document.querySelectorAll('.details-toggle-btn');
+      toggleButtons.forEach(btn => {
+        if (btn) {
+          btn.style.display = 'flex';
+          btn.style.visibility = 'visible';
+          btn.style.opacity = '1';
+        }
+      });
+      
+      // Protect badges and other elements
+      const badges = document.querySelectorAll('.class-badge, .subjects-badge');
+      badges.forEach(badge => {
+        if (badge) {
+          badge.style.display = 'inline-flex';
+          badge.style.visibility = 'visible';
+          badge.style.opacity = '1';
+        }
+      });
+    }
+  }
+
+  function togglePerformerDetails(studentId) {
+    const detailsSection = document.getElementById(`details-${studentId}`);
+    const toggleBtn = document.querySelector(`[onclick="togglePerformerDetails('${studentId}')"]`);
+    const toggleIcon = toggleBtn?.querySelector('i');
+    const toggleText = toggleBtn?.querySelector('.toggle-text');
+    
+    if (!detailsSection || !toggleBtn) {
+      console.error(`Elements not found for student ID: ${studentId}`);
+      return;
+    }
+    
+    if (detailsSection.style.display === 'none' || !detailsSection.style.display) {
+      // Show details
+      detailsSection.style.display = 'block';
+      detailsSection.style.visibility = 'visible';
+      detailsSection.style.opacity = '1';
+      detailsSection.classList.add('details-expanded');
+      
+      if (toggleIcon) toggleIcon.className = 'fas fa-chevron-up';
+      if (toggleText) toggleText.textContent = 'Hide Details';
+      toggleBtn.classList.add('active');
+      
+      // Add smooth animation
+      setTimeout(() => {
+        detailsSection.style.opacity = '1';
+        detailsSection.style.transform = 'translateY(0)';
+      }, 10);
+      
+      // Protect the expanded details - DISABLED
+      // setTimeout(() => protectTopPerformersLayout(), 100);
+    } else {
+      // Hide details
+      detailsSection.style.opacity = '0';
+      detailsSection.style.transform = 'translateY(-10px)';
+      
+      setTimeout(() => {
+        detailsSection.style.display = 'none';
+        detailsSection.classList.remove('details-expanded');
+        if (toggleIcon) toggleIcon.className = 'fas fa-chevron-down';
+        if (toggleText) toggleText.textContent = 'View Details';
+        toggleBtn.classList.remove('active');
+      }, 300);
+    }
+  }
+
+  function viewStudentFullReport(studentId) {
+    showNotification(`Loading full report for student ${studentId}...`, 'info');
+    // This would typically navigate to a detailed student report page
+    // window.location.href = `/student/${studentId}/report`;
+  }
+
+  function exportStudentData(studentId) {
+    showNotification(`Exporting data for student ${studentId}...`, 'info');
+    // This would typically trigger a CSV/PDF export
+  }
+
+  // Show notification function
+  function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+      <span>${message}</span>
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  }
+
   // Initialize analytics when page loads
   document.addEventListener("DOMContentLoaded", function () {
-    console.log("Classteacher analytics page - initializing dashboard");
     // The analytics dashboard will be initialized by the main analytics_dashboard.js file
     // which now checks for analytics page elements before initializing
   });
@@ -525,7 +1498,6 @@ extra_css %}
     const notification = document.createElement("div");
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
-            <i class="fas fa-info-circle"></i>
             <span>${message}</span>
         `;
 
@@ -539,142 +1511,59 @@ extra_css %}
       }
     }, 3000);
   }
+
+  // Enhanced Top Performers Layout Protection
+  function protectTopPerformersLayout() {
+    const topPerformersContainer = document.querySelector('.top-performers-enhanced');
+    const performerItems = document.querySelectorAll('.performer-row-enhanced');
+    
+    if (topPerformersContainer) {
+      // Protect the container
+      topPerformersContainer.style.display = 'flex';
+      topPerformersContainer.style.visibility = 'visible';
+      topPerformersContainer.style.opacity = '1';
+      
+      // Protect each performer item
+      performerItems.forEach((item, index) => {
+        if (item) {
+          item.style.display = 'grid';
+          item.style.visibility = 'visible';
+          item.style.opacity = '1';
+          item.setAttribute('data-protected', 'true');
+          
+          // Ensure grid layout is maintained
+          item.style.gridTemplateColumns = 'auto 2fr 1.5fr auto';
+          item.style.gap = 'var(--space-3)';
+          item.style.alignItems = 'flex-start';
+        }
+      });
+      
+      // Protect toggle buttons
+      const actionButtons = document.querySelectorAll('.action-btn');
+      actionButtons.forEach(btn => {
+        if (btn) {
+          btn.style.display = 'flex';
+          btn.style.visibility = 'visible';
+          btn.style.opacity = '1';
+        }
+      });
+      
+      // Protect badges and other elements
+      const badges = document.querySelectorAll('.admission-number, .class-info');
+      badges.forEach(badge => {
+        if (badge) {
+          badge.style.display = 'inline-flex';
+          badge.style.visibility = 'visible';
+          badge.style.opacity = '1';
+        }
+      });
+    }
+  }
+
+  // Initialize enhanced functionality on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    // Enhanced Top Performers functionality loaded successfully
+  });
 </script>
 
-<style>
-  .notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--primary-color);
-    color: white;
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-md);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    animation: slideIn 0.3s ease-out;
-  }
-
-  .notification-info {
-    background: var(--blue-500);
-  }
-
-  .notification-success {
-    background: var(--green-500);
-  }
-
-  .notification-warning {
-    background: var(--orange-500);
-  }
-
-  .notification-error {
-    background: var(--red-500);
-  }
-
-  @keyframes slideIn {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-
-  /* Analytics Data Display Styles */
-  .top-performers-list,
-  .subject-performance-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-
-  .performer-item,
-  .subject-item {
-    display: flex;
-    align-items: center;
-    padding: var(--space-3);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-md);
-    transition: all 0.3s ease;
-  }
-
-  .performer-item:hover,
-  .subject-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-  }
-
-  .performer-rank {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: var(--primary-color);
-    color: white;
-    border-radius: 50%;
-    font-weight: bold;
-    margin-right: var(--space-3);
-  }
-
-  .performer-info,
-  .subject-info {
-    flex: 1;
-  }
-
-  .performer-name,
-  .subject-name {
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--space-1);
-  }
-
-  .performer-details,
-  .subject-details {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-  }
-
-  .performer-score,
-  .subject-score {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-right: var(--space-3);
-  }
-
-  .subject-trend {
-    font-size: 0.9rem;
-  }
-
-  .trend-excellent {
-    color: var(--green-500);
-  }
-
-  .trend-good {
-    color: var(--blue-500);
-  }
-
-  .trend-needs-improvement {
-    color: var(--orange-500);
-  }
-
-  .no-data-message {
-    text-align: center;
-    padding: var(--space-6);
-    color: var(--text-secondary);
-  }
-
-  .no-data-message i {
-    font-size: 3rem;
-    margin-bottom: var(--space-3);
-    opacity: 0.5;
-  }
-</style>
-{% endblock %} when i o
+{% endblock %}

@@ -21,13 +21,13 @@ def validate_file_path(file_path):
     
     # Check for suspicious patterns
     suspicious_patterns = [
-        r'\.\.\//',
-        r'\.\.\\\',
+        r'\.\./',        # ../
+        r'\.\.\\',     # ..\
         r'/etc/',
         r'/proc/',
         r'/sys/',
-        r'C:\\',
-        r'\\\\\\\\',
+        r'C:\\',         # Windows drive root
+        r'\\\\',       # multiple backslashes
         r'file://',
         r'ftp://',
         r'http://',
@@ -40,20 +40,39 @@ def validate_file_path(file_path):
     
     return True
 
-@app.before_request
-def check_path_traversal():
-    """Check all requests for path traversal attempts."""
-    # Check URL path
-    if not validate_file_path(request.path):
-        abort(403, "Access denied: Invalid path")
-    
-    # Check query parameters
-    for key, value in request.args.items():
-        if not validate_file_path(value):
-            abort(403, "Access denied: Invalid parameter")
-    
-    # Check form data
-    if request.form:
-        for key, value in request.form.items():
+def init_path_protection(app):
+    """Register a before_request hook to block path traversal attempts."""
+    @app.before_request
+    def check_path_traversal():
+        # Check URL path
+        if not validate_file_path(request.path):
+            abort(403, "Access denied: Invalid path")
+        
+        # Check query parameters
+        for _, value in request.args.items():
             if not validate_file_path(value):
-                abort(403, "Access denied: Invalid form data")
+                abort(403, "Access denied: Invalid parameter")
+        
+        # Check form data
+        if request.form:
+            for _, value in request.form.items():
+                if not validate_file_path(value):
+                    abort(403, "Access denied: Invalid form data")
+def init_path_protection(app):
+    """Register a before_request hook to block path traversal attempts."""
+    @app.before_request
+    def check_path_traversal():
+        # Check URL path
+        if not validate_file_path(request.path):
+            abort(403, "Access denied: Invalid path")
+        
+        # Check query parameters
+        for _, value in request.args.items():
+            if not validate_file_path(value):
+                abort(403, "Access denied: Invalid parameter")
+        
+        # Check form data
+        if request.form:
+            for _, value in request.form.items():
+                if not validate_file_path(value):
+                    abort(403, "Access denied: Invalid form data")

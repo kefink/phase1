@@ -3,7 +3,7 @@ Academic Performance Analytics Service for Hillview School Management System.
 Provides comprehensive analytics for student performance and subject metrics.
 """
 
-from sqlalchemy import func, desc, asc, and_, or_
+from sqlalchemy import func, desc, asc, and_, or_, case
 from ..models import Student, Mark, Subject, Grade, Stream, Term, AssessmentType, TeacherSubjectAssignment
 from ..extensions import db
 from ..services.cache_service import cache_analytics, get_cached_analytics, invalidate_analytics_cache
@@ -37,7 +37,8 @@ class AcademicAnalyticsService:
         """
         try:
             # Generate cache key
-            cache_key = f"top_performers_{grade_id}_{stream_id}_{term_id}_{assessment_type_id}_{limit}_{view_type}"
+            # Bump cache version to v4 to invalidate prior raw-based totals
+            cache_key = f"top_performers_v4_{grade_id}_{stream_id}_{term_id}_{assessment_type_id}_{limit}_{view_type}"
             
             # Check cache first
             if use_cache:
@@ -45,20 +46,30 @@ class AcademicAnalyticsService:
                 if cached_result:
                     return cached_result
             
-            # Build base query for student averages
+            # Build base query for student averages (include grade/stream context)
             query = db.session.query(
                 Student.id,
                 Student.name,
                 Student.admission_number,
                 func.avg(Mark.percentage).label('average_percentage'),
-                func.count(Mark.id).label('total_marks'),
+                func.count(Mark.id).label('total_assessments'),
                 func.min(Mark.percentage).label('min_percentage'),
-                func.max(Mark.percentage).label('max_percentage')
-            ).join(Mark, Student.id == Mark.student_id)
+                func.max(Mark.percentage).label('max_percentage'),
+                # Robust total fields using COALESCE to handle legacy columns
+                func.sum(func.coalesce(Mark.raw_mark, func.coalesce(Mark.mark, 0))).label('total_raw_marks'),
+                func.sum(func.coalesce(Mark.raw_total_marks, func.coalesce(Mark.total_marks, 0))).label('total_max_marks'),
+                func.count(func.distinct(Mark.subject_id)).label('subjects_count'),
+                Grade.name.label('grade_name'),
+                Stream.name.label('stream_name')
+            )
+            query = query.join(Mark, Student.id == Mark.student_id)
+            query = query.outerjoin(Stream, Student.stream_id == Stream.id)
+            query = query.outerjoin(Grade, Stream.grade_id == Grade.id)
             
             # Apply filters
             if grade_id:
-                query = query.join(Stream, Student.stream_id == Stream.id).filter(Stream.grade_id == grade_id)
+                # Filter by grade via student's stream
+                query = query.filter(Stream.grade_id == grade_id)
             
             if stream_id:
                 query = query.filter(Student.stream_id == stream_id)
@@ -70,30 +81,137 @@ class AcademicAnalyticsService:
                 query = query.filter(Mark.assessment_type_id == assessment_type_id)
             
             # Group by student and order by average
-            query = query.group_by(Student.id, Student.name, Student.admission_number)
-            query = query.having(func.count(Mark.id) >= 3)  # Minimum 3 marks for ranking
+            query = query.group_by(
+                Student.id,
+                Student.name,
+                Student.admission_number,
+                Grade.name,
+                Stream.name
+            )
+
+            # Determine minimum required assessments: relax when filtered by term/assessment
+            min_required_assessments = 1 if (term_id or assessment_type_id) else 3
+            query = query.having(func.count(Mark.id) >= min_required_assessments)
             query = query.order_by(desc('average_percentage'))
             query = query.limit(limit)
             
             # Execute query
             results = query.all()
+            print(f"DEBUG get_top_performers: primary query returned {len(results)} rows")
             
-            # Format results
+            # If no results, retry with a minimal query (no grade/stream columns, relaxed grouping)
+            if not results:
+                fallback_q = db.session.query(
+                    Student.id,
+                    Student.name,
+                    Student.admission_number,
+                    func.avg(Mark.percentage).label('average_percentage'),
+                    func.count(Mark.id).label('total_assessments'),
+                    func.min(Mark.percentage).label('min_percentage'),
+                    func.max(Mark.percentage).label('max_percentage'),
+                    func.sum(func.coalesce(Mark.raw_mark, func.coalesce(Mark.mark, 0))).label('total_raw_marks'),
+                    func.sum(func.coalesce(Mark.raw_total_marks, func.coalesce(Mark.total_marks, 0))).label('total_max_marks'),
+                    func.count(func.distinct(Mark.subject_id)).label('subjects_count')
+                ).join(Mark, Student.id == Mark.student_id)
+
+                if grade_id:
+                    fallback_q = fallback_q.join(Stream, Student.stream_id == Stream.id).filter(Stream.grade_id == grade_id)
+                if stream_id:
+                    fallback_q = fallback_q.filter(Student.stream_id == stream_id)
+                if term_id:
+                    fallback_q = fallback_q.filter(Mark.term_id == term_id)
+                if assessment_type_id:
+                    fallback_q = fallback_q.filter(Mark.assessment_type_id == assessment_type_id)
+
+                fallback_q = fallback_q.group_by(Student.id, Student.name, Student.admission_number)
+                min_required_assessments = 1 if (term_id or assessment_type_id) else 1
+                fallback_q = fallback_q.having(func.count(Mark.id) >= min_required_assessments)
+                fallback_q = fallback_q.order_by(desc('average_percentage')).limit(limit)
+                results = fallback_q.all()
+                print(f"DEBUG get_top_performers: fallback query returned {len(results)} rows")
+
+            # Format results with enhanced data
             top_performers = []
             for i, result in enumerate(results, 1):
-                performer = {
-                    'rank': i,
-                    'student_id': result.id,
-                    'name': result.name,
-                    'admission_number': result.admission_number,
-                    'average_percentage': round(result.average_percentage, 2),
-                    'total_marks': result.total_marks,
-                    'min_percentage': round(result.min_percentage, 2),
-                    'max_percentage': round(result.max_percentage, 2),
-                    'performance_category': cls._get_performance_category(result.average_percentage),
-                    'grade_letter': cls._get_grade_letter(result.average_percentage)
-                }
-                top_performers.append(performer)
+                try:
+                    # Get the most recent marks for this student to determine exam type and term
+                    recent_marks = db.session.query(Mark)\
+                        .filter(Mark.student_id == result.id)\
+                        .join(AssessmentType, Mark.assessment_type_id == AssessmentType.id, isouter=True)\
+                        .join(Term, Mark.term_id == Term.id, isouter=True)\
+                        .order_by(desc(Mark.created_at))\
+                        .first()
+                    
+                    # Get assessment type and term from the most recent mark
+                    assessment_type_name = "Assessment"
+                    term_name = "Current Term" 
+                    
+                    if recent_marks:
+                        if recent_marks.assessment_type:
+                            assessment_type_name = recent_marks.assessment_type.name
+                        if recent_marks.term:
+                            term_name = recent_marks.term.name
+                        
+                        print(f"Student {result.name}: Assessment={assessment_type_name}, Term={term_name}")
+                    
+                    # Compute standardized totals using composite grouping like class report
+                    sum_raw, sum_max, subjects_cnt = cls._compute_standardized_totals(
+                        student_id=result.id,
+                        term_id=term_id,
+                        assessment_type_id=assessment_type_id
+                    )
+
+                    performer = {
+                        'rank': i,
+                        'student_id': result.id,
+                        'name': result.name,
+                        'admission_number': result.admission_number,
+                        'average_percentage': round(result.average_percentage, 2),
+                        'total_assessments': result.total_assessments,
+                        'total_marks_obtained': sum_raw,
+                        'total_marks_possible': sum_max,
+                        'min_percentage': round(result.min_percentage, 2),
+                        'max_percentage': round(result.max_percentage, 2),
+                        'assessment_type': assessment_type_name,
+                        'term': term_name,
+                        'grade': (f"Grade {result.grade_name}" if result.grade_name else None),
+                        'stream': (f"Stream {result.stream_name}" if result.stream_name else None),
+                        'subjects_count': subjects_cnt,
+                        'performance_category': cls._get_performance_category(result.average_percentage),
+                        'grade_letter': cls._get_grade_letter(result.average_percentage)
+                    }
+                    top_performers.append(performer)
+                    
+                except Exception as e:
+                    print(f"Error processing student {result.name}: {str(e)}")
+                    # Add basic performer data if there's an error
+                    # On error, fallback to standardized computation helper
+                    safe_raw, safe_max, _ = cls._compute_standardized_totals(
+                        student_id=result.id,
+                        term_id=term_id,
+                        assessment_type_id=assessment_type_id
+                    )
+
+                    performer = {
+                        'rank': i,
+                        'student_id': result.id,
+                        'name': result.name,
+                        'admission_number': result.admission_number,
+                        'average_percentage': round(result.average_percentage, 2),
+                        'total_assessments': result.total_assessments,
+                        'total_marks_obtained': int(safe_raw or getattr(result, 'total_raw_marks', 0) or 0),
+                        'total_marks_possible': int(safe_max or getattr(result, 'total_max_marks', 0) or 0),
+                        'min_percentage': round(result.min_percentage, 2),
+                        'max_percentage': round(result.max_percentage, 2),
+                        'assessment_type': "Assessment",
+                        'term': "Current Term",
+                        'grade': (f"Grade {result.grade_name}" if hasattr(result, 'grade_name') and result.grade_name else None),
+                        'stream': (f"Stream {result.stream_name}" if hasattr(result, 'stream_name') and result.stream_name else None),
+                        'subjects_count': int(getattr(result, 'subjects_count', 0) or 0),
+                        'performance_category': cls._get_performance_category(result.average_percentage),
+                        'grade_letter': cls._get_grade_letter(result.average_percentage)
+                    }
+                    top_performers.append(performer)
             
             # Get context information
             context = cls._get_context_info(grade_id, stream_id, term_id, assessment_type_id)
@@ -504,6 +622,108 @@ class AcademicAnalyticsService:
             top_performers = top_performers_data.get('top_performers', [])
             subject_analytics = subject_analytics_data.get('subject_analytics', [])
 
+            # Calculate best subject average
+            best_subject_average = 0
+            if subject_analytics:
+                best_subject_average = max([float(s.get('average_percentage', 0)) for s in subject_analytics])
+
+            # Calculate top student average with fallback if no ranked performers
+            top_student_average = 0.0
+            if top_performers:
+                top_student_average = float(top_performers[0].get('average_percentage', 0))
+            else:
+                # Fallback: compute max of per-student average within current filters
+                try:
+                    base = db.session.query(func.avg(Mark.percentage).label('avg')) \
+                        .join(Student, Mark.student_id == Student.id) \
+                        .outerjoin(Stream, Student.stream_id == Stream.id) \
+                        .outerjoin(Grade, Stream.grade_id == Grade.id)
+
+                    if grade_id:
+                        base = base.filter(Stream.grade_id == grade_id)
+                    if stream_id:
+                        base = base.filter(Student.stream_id == stream_id)
+                    if term_id:
+                        base = base.filter(Mark.term_id == term_id)
+                    if assessment_type_id:
+                        base = base.filter(Mark.assessment_type_id == assessment_type_id)
+
+                    top_row = base.group_by(Mark.student_id).order_by(desc('avg')).first()
+                    if top_row and top_row.avg is not None:
+                        top_student_average = float(round(top_row.avg, 1))
+                except Exception as _:
+                    top_student_average = 0.0
+
+            # Fallback for students analyzed: count distinct students with marks under current filters
+            try:
+                student_count_q = db.session.query(func.count(func.distinct(Mark.student_id))) \
+                    .join(Student, Mark.student_id == Student.id) \
+                    .outerjoin(Stream, Student.stream_id == Stream.id)
+                if grade_id:
+                    student_count_q = student_count_q.filter(Stream.grade_id == grade_id)
+                if stream_id:
+                    student_count_q = student_count_q.filter(Student.stream_id == stream_id)
+                if term_id:
+                    student_count_q = student_count_q.filter(Mark.term_id == term_id)
+                if assessment_type_id:
+                    student_count_q = student_count_q.filter(Mark.assessment_type_id == assessment_type_id)
+                students_analyzed_fallback = int(student_count_q.scalar() or 0)
+            except Exception as _:
+                students_analyzed_fallback = 0
+
+            # Last-resort: if no top performers but we have students, compute a simple list now
+            if (not top_performers) and (locals().get('students_analyzed_fallback', 0) > 0):
+                try:
+                    simple_q = db.session.query(
+                        Student.id,
+                        Student.name,
+                        Student.admission_number,
+                        func.avg(Mark.percentage).label('avg'),
+                        func.count(Mark.id).label('cnt'),
+                        func.min(Mark.percentage).label('minp'),
+                        func.max(Mark.percentage).label('maxp')
+                    ).join(Mark, Student.id == Mark.student_id)
+                    if grade_id or stream_id:
+                        simple_q = simple_q.join(Stream, Student.stream_id == Stream.id)
+                        if grade_id:
+                            simple_q = simple_q.filter(Stream.grade_id == grade_id)
+                        if stream_id:
+                            simple_q = simple_q.filter(Student.stream_id == stream_id)
+                    if term_id:
+                        simple_q = simple_q.filter(Mark.term_id == term_id)
+                    if assessment_type_id:
+                        simple_q = simple_q.filter(Mark.assessment_type_id == assessment_type_id)
+                    simple_q = simple_q.group_by(Student.id, Student.name, Student.admission_number)
+                    simple_q = simple_q.having(func.count(Mark.id) >= 1)
+                    simple_q = simple_q.order_by(desc('avg')).limit(top_performers_limit)
+                    rows = simple_q.all()
+                    built = []
+                    for i, r in enumerate(rows, 1):
+                        built.append({
+                            'rank': i,
+                            'student_id': r.id,
+                            'name': r.name,
+                            'admission_number': r.admission_number,
+                            'average_percentage': round(float(r.avg or 0), 2),
+                            'total_assessments': int(r.cnt or 0),
+                            'total_marks_obtained': 0,
+                            'total_marks_possible': 0,
+                            'min_percentage': round(float(r.minp or 0), 2),
+                            'max_percentage': round(float(r.maxp or 0), 2),
+                            'assessment_type': (
+                                AssessmentType.query.get(assessment_type_id).name if assessment_type_id else 'All Assessments'
+                            ),
+                            'term': (
+                                Term.query.get(term_id).name if term_id else 'All Terms'
+                            ),
+                            'performance_category': cls._get_performance_category(float(r.avg or 0)),
+                            'grade_letter': cls._get_grade_letter(float(r.avg or 0))
+                        })
+                    if built:
+                        top_performers = built
+                except Exception as _:
+                    pass
+
             comprehensive_data = {
                 'top_performers': top_performers,
                 'topPerformers': top_performers,  # Alias for JavaScript compatibility
@@ -515,10 +735,14 @@ class AcademicAnalyticsService:
                 'leastPerformingSubject': subject_analytics_data.get('least_performing_subject'),  # Alias for JavaScript compatibility
                 'context': top_performers_data.get('context', {}),
                 'summary': {
-                    'total_students_analyzed': top_performers_data.get('total_students_analyzed', 0),
+                    'total_students_analyzed': max(top_performers_data.get('total_students_analyzed', 0), students_analyzed_fallback),
                     'total_subjects_analyzed': subject_analytics_data.get('total_subjects_analyzed', 0),
+                    'students_analyzed': max(top_performers_data.get('total_students_analyzed', 0), students_analyzed_fallback),
+                    'subjects_analyzed': subject_analytics_data.get('total_subjects_analyzed', 0),
+                    'best_subject_average': round(best_subject_average, 1),
+                    'top_student_average': round(top_student_average, 1),
                     'has_sufficient_data': (
-                        top_performers_data.get('total_students_analyzed', 0) >= 1 and
+                        max(top_performers_data.get('total_students_analyzed', 0), students_analyzed_fallback) >= 1 and
                         subject_analytics_data.get('total_subjects_analyzed', 0) >= 1
                     )
                 },
@@ -542,10 +766,118 @@ class AcademicAnalyticsService:
                 'summary': {
                     'total_students_analyzed': 0,
                     'total_subjects_analyzed': 0,
+                    'students_analyzed': 0,  # Template field
+                    'subjects_analyzed': 0,  # Template field
+                    'best_subject_average': 0,  # Template field
+                    'top_student_average': 0,  # Template field
                     'has_sufficient_data': False
                 },
                 'error': str(e)
             }
+
+    @staticmethod
+    def _compute_standardized_totals(student_id: int, term_id: Optional[int], assessment_type_id: Optional[int]) -> Tuple[int, int, int]:
+        """Compute totals like the class report (100 per subject, composite aggregation).
+
+        - For component subjects, use CompositeSubjectService to compute combined percentage for the parent once.
+        - For regular subjects, use Mark.percentage directly; if missing, derive from raw.
+        - Include only subjects where we have any mark/percentage.
+
+        Returns (obtained_total, possible_total, subjects_count)
+        """
+        try:
+            from .composite_subject_service import CompositeSubjectService
+            # Determine education level via student's grade -> stream
+            student = Student.query.get(student_id)
+            if not student:
+                return 0, 0, 0
+            stream = Stream.query.get(student.stream_id) if student.stream_id else None
+            grade = Grade.query.get(stream.grade_id) if stream else None
+
+            # Heuristic: infer education level from grade name like 'Grade 9'
+            education_level = ''
+            try:
+                grade_num = int(grade.name.split()[1]) if grade and grade.name else None
+                if grade_num is not None:
+                    if 1 <= grade_num <= 3:
+                        education_level = 'lower_primary'
+                    elif 4 <= grade_num <= 6:
+                        education_level = 'upper_primary'
+                    elif 7 <= grade_num <= 9:
+                        education_level = 'junior_secondary'
+            except Exception:
+                education_level = ''
+
+            # Gather marks for this student under filters
+            marks_q = db.session.query(Mark, Subject).join(Subject, Mark.subject_id == Subject.id) \
+                .filter(Mark.student_id == student_id)
+            if term_id:
+                marks_q = marks_q.filter(Mark.term_id == term_id)
+            if assessment_type_id:
+                marks_q = marks_q.filter(Mark.assessment_type_id == assessment_type_id)
+            rows = marks_q.all()
+
+            # Group components under composite parents, and treat regular subjects individually
+            composite_map = {}
+            regular_subjects = {}
+            for m, subj in rows:
+                # Compute percentage for this mark
+                perc_from_raw = ((m.raw_mark or 0) / (m.raw_total_marks or m.total_marks or 100) * 100.0) if (m.raw_mark and (m.raw_total_marks or m.total_marks)) else None
+                perc = m.percentage if m.percentage is not None else perc_from_raw
+                if perc is None:
+                    continue
+                perc = min(float(perc), 100.0)
+
+                if getattr(subj, 'is_component', False) and getattr(subj, 'composite_parent', None):
+                    parent = subj.composite_parent
+                    if parent not in composite_map:
+                        composite_map[parent] = []
+                    composite_map[parent].append({'percentage': perc, 'weight': getattr(subj, 'component_weight', 1.0) or 1.0})
+                elif not getattr(subj, 'is_composite', False):
+                    # Regular subject (ignore legacy old composite subjects)
+                    regular_subjects[subj.id] = perc
+
+            obtained = 0.0
+            subjects_count = 0
+
+            # Regular subjects contribute their percentage
+            for _sid, perc in regular_subjects.items():
+                obtained += perc
+                subjects_count += 1
+
+            # Composite parents: compute weighted combined percentage
+            for parent, comps in composite_map.items():
+                if not comps:
+                    continue
+                total_w = sum(c['weight'] for c in comps)
+                if total_w <= 0:
+                    continue
+                combined = sum(c['percentage'] * c['weight'] for c in comps) / total_w
+                combined = min(max(combined, 0.0), 100.0)
+                obtained += combined
+                subjects_count += 1
+
+            possible = subjects_count * 100
+            return int(round(obtained)), int(possible), int(subjects_count)
+        except Exception:
+            # Fallback: count distinct subjects with percentage/raw and sum capped percentages (no composite collapsing)
+            has_mark = or_(Mark.percentage.isnot(None), Mark.raw_mark.isnot(None))
+            perc_from_raw = (
+                (Mark.raw_mark / func.nullif(func.coalesce(Mark.raw_total_marks, func.coalesce(Mark.total_marks, 100)), 0)) * 100.0
+            )
+            perc_expr = func.least(100.0, func.coalesce(Mark.percentage, perc_from_raw))
+            q = db.session.query(
+                func.sum(case((has_mark, perc_expr), else_=0)),
+                func.count(func.distinct(case((has_mark, Mark.subject_id), else_=None)))
+            ).filter(Mark.student_id == student_id)
+            if term_id:
+                q = q.filter(Mark.term_id == term_id)
+            if assessment_type_id:
+                q = q.filter(Mark.assessment_type_id == assessment_type_id)
+            p, c = q.first() or (0, 0)
+            p = int(round(float(p or 0)))
+            c = int(c or 0)
+            return p, c * 100, c
     
     @staticmethod
     def _get_performance_category(percentage: float) -> str:

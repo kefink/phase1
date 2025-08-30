@@ -39,14 +39,26 @@ class CollaborativeMarksService:
                 is_class_teacher = any(assignment.is_class_teacher for assignment in teacher_assignments)
 
                 if is_class_teacher:
-                    subjects = Subject.query.filter_by(education_level=grade.education_level).all()
+                    # Include only uploadable subjects: regular subjects and component subjects
+                    subjects = Subject.query.filter(
+                        Subject.education_level == grade.education_level,
+                        (Subject.is_composite == False)  # excludes composite parents
+                    ).all()
                 else:
                     # Only show subjects assigned to this teacher
                     subject_ids = [assignment.subject_id for assignment in teacher_assignments]
-                    subjects = Subject.query.filter(Subject.id.in_(subject_ids)).all() if subject_ids else []
+                    subjects = (
+                        Subject.query.filter(
+                            Subject.id.in_(subject_ids),
+                            (Subject.is_composite == False)
+                        ).all() if subject_ids else []
+                    )
             else:
-                # Get all subjects for the grade's education level (for admin/headteacher view)
-                subjects = Subject.query.filter_by(education_level=grade.education_level).all()
+                # Get subjects for the grade's education level (admin/headteacher view) excluding composite parents
+                subjects = Subject.query.filter(
+                    Subject.education_level == grade.education_level,
+                    (Subject.is_composite == False)
+                ).all()
 
             status_data = {
                 'grade': grade.name,
@@ -105,6 +117,10 @@ class CollaborativeMarksService:
             if status_data['total_subjects'] > 0:
                 status_data['overall_completion'] = (status_data['completed_subjects'] / status_data['total_subjects']) * 100
                 status_data['can_generate_report'] = status_data['completed_subjects'] == status_data['total_subjects']
+            else:
+                # No uploadable subjects – treat as 0% and locked (avoid false positive report readiness)
+                status_data['overall_completion'] = 0
+                status_data['can_generate_report'] = False
 
             return status_data
 

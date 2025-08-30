@@ -255,7 +255,7 @@ def class_overview():
             flash("Please log in to access this page.", "error")
             return redirect(url_for('auth.classteacher_login'))
 
-        # Get all classes assigned to this teacher (as class teacher)
+        # Find all classes where this teacher is marked as class teacher
         class_assignments = TeacherSubjectAssignment.query.filter_by(
             teacher_id=teacher_id,
             is_class_teacher=True
@@ -265,49 +265,65 @@ def class_overview():
             flash("You are not assigned as a class teacher to any classes.", "warning")
             return redirect(url_for('classteacher.dashboard'))
 
-        # Get class overview data
         classes_data = []
         for assignment in class_assignments:
             grade = assignment.grade
             stream = assignment.stream
 
-            # Get latest term and assessment type
-            latest_term = Term.query.order_by(Term.id.desc()).first()
-            latest_assessment = AssessmentType.query.order_by(AssessmentType.id.desc()).first()
+            # Prefer the most recent mark's period for this stream
+            latest_mark = (
+                Mark.query
+                .join(Student, Mark.student_id == Student.id)
+                .filter(Student.stream_id == stream.id)
+                .order_by(Mark.created_at.desc(), Mark.id.desc())
+                .first()
+            )
 
-            if latest_term and latest_assessment:
-                # Get class marks status
-                status_data = CollaborativeMarksService.get_class_marks_status(
-                    grade.id, stream.id, latest_term.id, latest_assessment.id, teacher_id
-                )
+            selected_term = latest_mark.term if latest_mark and latest_mark.term_id else None
+            selected_assessment = latest_mark.assessment_type if latest_mark and latest_mark.assessment_type_id else None
 
-                class_info = {
-                    'grade': grade.name,
-                    'stream': stream.name,
-                    'grade_id': grade.id,
-                    'stream_id': stream.id,
-                    'term_id': latest_term.id,
-                    'assessment_type_id': latest_assessment.id,
-                    'term_name': latest_term.name,
-                    'assessment_name': latest_assessment.name,
-                    'total_subjects': status_data.get('total_subjects', 0),
-                    'completed_subjects': status_data.get('completed_subjects', 0),
-                    'completion_percentage': status_data.get('overall_completion', 0),
-                    'can_generate_report': status_data.get('can_generate_report', False),
-                    'subjects': status_data.get('subjects', [])
-                }
-                classes_data.append(class_info)
+            # Fallbacks: current term by config, then newest by id
+            if not selected_term or not selected_assessment:
+                from ..services.school_config_service import SchoolConfigService
+                current_term_name = SchoolConfigService.get_current_term()
+                if not selected_term and current_term_name:
+                    selected_term = Term.query.filter_by(name=current_term_name).first()
+                if not selected_assessment:
+                    selected_assessment = (
+                        AssessmentType.query.filter_by(is_active=True).order_by(AssessmentType.id.desc()).first()
+                        or AssessmentType.query.order_by(AssessmentType.id.desc()).first()
+                    )
 
-        # Get school information
+            latest_term = selected_term or Term.query.order_by(Term.id.desc()).first()
+            latest_assessment = selected_assessment or AssessmentType.query.order_by(AssessmentType.id.desc()).first()
+
+            if not (latest_term and latest_assessment):
+                # Skip class if we cannot determine period
+                continue
+
+            status_data = CollaborativeMarksService.get_class_marks_status(
+                grade.id, stream.id, latest_term.id, latest_assessment.id, teacher_id
+            )
+
+            classes_data.append({
+                'grade': grade.name,
+                'stream': stream.name,
+                'grade_id': grade.id,
+                'stream_id': stream.id,
+                'term_id': latest_term.id,
+                'assessment_type_id': latest_assessment.id,
+                'term_name': latest_term.name,
+                'assessment_name': latest_assessment.name,
+                'total_subjects': status_data.get('total_subjects', 0),
+                'completed_subjects': status_data.get('completed_subjects', 0),
+                'completion_percentage': status_data.get('overall_completion', 0),
+                'can_generate_report': status_data.get('can_generate_report', False),
+                'subjects': status_data.get('subjects', [])
+            })
+
         from ..services.school_config_service import SchoolConfigService
         school_info = SchoolConfigService.get_school_info_dict()
-
-        return render_template(
-            'classteacher/class_overview.html',
-            classes_data=classes_data,
-            school_info=school_info
-        )
-
+        return render_template('classteacher/class_overview.html', classes_data=classes_data, school_info=school_info)
     except Exception as e:
         print(f"Error in class overview: {str(e)}")
         flash("Error loading class overview.", "error")
@@ -1422,9 +1438,23 @@ def analytics_dashboard():
                 return 'Below Expectation'
 
         # Get teacher's class assignments for analytics
-        from ..services.role_based_data_service import RoleBasedDataService
-        from ..services.academic_analytics_service import AcademicAnalyticsService
+        print("🔍 About to import services...")
+        
+        try:
+            from ..services.role_based_data_service import RoleBasedDataService
+            print("🔍 RoleBasedDataService imported successfully")
+        except Exception as e:
+            print(f"🚨 Error importing RoleBasedDataService: {e}")
+            raise e
+            
+        try:
+            from ..services.academic_analytics_service import AcademicAnalyticsService
+            print("🔍 AcademicAnalyticsService imported successfully")
+        except Exception as e:
+            print(f"🚨 Error importing AcademicAnalyticsService: {e}")
+            raise e
 
+        print("🔍 Getting teacher assignments summary...")
         assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
         print(f"🔍 Assignment summary: {assignment_summary}")
 
@@ -1454,16 +1484,48 @@ def analytics_dashboard():
 
                 print(f"🔍 Getting analytics for grade_id: {grade_id}, stream_id: {stream_id}")
 
-                # Get comprehensive analytics for the teacher's class
+                # Read filters from query string
+                selected_term_id = request.args.get('term', type=int)
+                selected_assessment_type_id = request.args.get('assessment_type', type=int)
+                selected_grade_id = request.args.get('grade', type=int) or grade_id
+                selected_stream_id = request.args.get('stream', type=int) or stream_id
+
+                # Default missing filters to the latest generated class report (most recent mark)
+                if not selected_term_id or not selected_assessment_type_id:
+                    try:
+                        latest_mark_query = Mark.query.join(Student, Mark.student_id == Student.id) \
+                            .join(Stream, Student.stream_id == Stream.id) \
+                            .filter(Stream.grade_id == selected_grade_id)
+                        if selected_stream_id:
+                            latest_mark_query = latest_mark_query.filter(Student.stream_id == selected_stream_id)
+                        latest_mark = latest_mark_query.order_by(Mark.created_at.desc(), Mark.id.desc()).first()
+                        if latest_mark:
+                            if not selected_term_id and latest_mark.term_id:
+                                selected_term_id = latest_mark.term_id
+                            if not selected_assessment_type_id and latest_mark.assessment_type_id:
+                                selected_assessment_type_id = latest_mark.assessment_type_id
+                            print(f"🔍 Defaulted filters to latest report -> term_id: {selected_term_id}, assessment_type_id: {selected_assessment_type_id}")
+                    except Exception as e:
+                        print(f"⚠️ Could not default to latest report: {e}")
+
+                # Determine top performers limit (support show-all toggle)
+                show_all = request.args.get('show_all', type=int) == 1
+                requested_limit = request.args.get('limit', type=int)
+                top_limit = requested_limit if requested_limit else (999 if show_all else 5)
+
+                print(f"🔍 Filters -> term_id: {selected_term_id}, assessment_type_id: {selected_assessment_type_id}, grade_id: {selected_grade_id}, stream_id: {selected_stream_id}")
+
+                # Get comprehensive analytics for the teacher's class with filters
                 comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics(
-                    grade_id=grade_id,
-                    stream_id=stream_id,
-                    term_id=None,  # Current term
-                    assessment_type_id=None,  # All assessments
-                    top_performers_limit=5
+                    grade_id=selected_grade_id,
+                    stream_id=selected_stream_id,
+                    term_id=selected_term_id,  # None = current/all depending on service
+                    assessment_type_id=selected_assessment_type_id,  # None = all assessments
+                    top_performers_limit=top_limit
                 )
 
                 print(f"🔍 Comprehensive analytics result: {comprehensive_analytics}")
+                print(f"🔍 Analytics keys: {list(comprehensive_analytics.keys()) if comprehensive_analytics else 'None'}")
 
                 # Transform data for template compatibility
                 if comprehensive_analytics and not comprehensive_analytics.get('error'):
@@ -1471,45 +1533,71 @@ def analytics_dashboard():
                     subject_analytics = comprehensive_analytics.get('subject_analytics', [])
                     summary = comprehensive_analytics.get('summary', {})
 
-                    # Format top students for template
-                    analytics_data['top_students'] = [
-                        {
-                            'name': performer.get('student_name', 'Unknown'),
-                            'average': round(performer.get('average_percentage', 0), 1),
-                            'grade': f"Grade {performer.get('grade_name', 'Unknown')}"
-                        }
-                        for performer in top_performers[:3]  # Top 3 for summary
-                    ]
+                    print(f"🔍 Top performers count: {len(top_performers)}")
+                    print(f"🔍 Subject analytics count: {len(subject_analytics)}")
+                    print(f"🔍 Summary data: {summary}")
+                    
+                    # Debug: Print first top performer data
+                    if top_performers:
+                        print(f"🔍 First top performer: {top_performers[0]}")
+                        print(f"🔍 Assessment type: {top_performers[0].get('assessment_type', 'None')}")
+                        print(f"🔍 Term: {top_performers[0].get('term', 'None')}")
 
-                    # Format subject performance for template
-                    analytics_data['subject_performance'] = [
-                        {
-                            'subject': subject.get('subject_name', 'Unknown'),
-                            'average': round(subject.get('average_percentage', 0), 1),
-                            'status': get_performance_status(subject.get('average_percentage', 0)),
-                            'students': subject.get('total_students', 0),
-                            'marks': subject.get('total_marks', 0)
-                        }
-                        for subject in subject_analytics
-                    ]
+                    # Use the comprehensive analytics data directly
+                    analytics_data = comprehensive_analytics
+                    analytics_data['has_data'] = summary.get('has_sufficient_data', False)
 
-                    # Update summary
-                    analytics_data['summary'] = {
-                        'students_analyzed': summary.get('total_students_analyzed', 0),
-                        'subjects_analyzed': summary.get('total_subjects_analyzed', 0),
-                        'best_subject_average': round(max([s.get('average_percentage', 0) for s in subject_analytics] + [0]), 1),
-                        'top_student_average': round(top_performers[0].get('average_percentage', 0), 1) if top_performers else 0
-                    }
+                    # Ensure backward compatibility by adding legacy field names
+                    analytics_data['top_students'] = top_performers  # Legacy field name
 
-                    analytics_data['has_data'] = len(top_performers) > 0 or len(subject_analytics) > 0
-
-                    print(f"🔍 Formatted analytics data: {analytics_data}")
+                    print(f"🔍 Final analytics_data keys: {list(analytics_data.keys())}")
+                    print(f"🔍 Has data: {analytics_data.get('has_data', False)}")
+                    print(f"🔍 Summary has_sufficient_data: {analytics_data.get('summary', {}).get('has_sufficient_data', False)}")
                 else:
                     print(f"🚨 No analytics data or error: {comprehensive_analytics.get('error', 'Unknown error')}")
+                    analytics_data = {
+                        'top_performers': [],
+                        'top_students': [],
+                        'subject_analytics': [],
+                        'summary': {
+                            'students_analyzed': 0,
+                            'subjects_analyzed': 0,
+                            'best_subject_average': 0,
+                            'top_student_average': 0,
+                            'has_sufficient_data': False
+                        },
+                        'has_data': False
+                    }
             else:
                 print("🚨 No assigned classes found for teacher")
+                analytics_data = {
+                    'top_performers': [],
+                    'top_students': [],
+                    'subject_analytics': [],
+                    'summary': {
+                        'students_analyzed': 0,
+                        'subjects_analyzed': 0,
+                        'best_subject_average': 0,
+                        'top_student_average': 0,
+                        'has_sufficient_data': False
+                    },
+                    'has_data': False
+                }
         else:
-            print(f"🚨 Error in assignment summary: {assignment_summary['error']}")
+            print(f"� Error in assignment summary: {assignment_summary['error']}")
+            analytics_data = {
+                'top_performers': [],
+                'top_students': [],
+                'subject_analytics': [],
+                'summary': {
+                    'students_analyzed': 0,
+                    'subjects_analyzed': 0,
+                    'best_subject_average': 0,
+                    'top_student_average': 0,
+                    'has_sufficient_data': False
+                },
+                'has_data': False
+            }
 
         print(f"🔍 Final analytics data: {analytics_data}")
 
@@ -1520,16 +1608,25 @@ def analytics_dashboard():
 
         print(f"🔍 Filter options - Terms: {len(terms)}, Assessments: {len(assessment_types)}, Grades: {len(grades)}")
 
-        return render_template('classteacher_analytics.html',
-                             teacher=teacher,
-                             analytics_data=analytics_data,
-                             terms=terms,
-                             assessment_types=assessment_types,
-                             grades=grades,
-                             current_term_filter=None,
-                             current_assessment_filter=None,
-                             current_grade_filter=None,
-                             page_title="Academic Performance Analytics")
+        return render_template(
+            'classteacher_analytics.html',
+            teacher=teacher,
+            analytics_data=analytics_data,
+            terms=terms,
+            assessment_types=assessment_types,
+            grades=grades,
+            # Effective filters reflect defaults when none selected
+            effective_term_filter=selected_term_id if 'selected_term_id' in locals() else request.args.get('term', type=int),
+            effective_assessment_filter=selected_assessment_type_id if 'selected_assessment_type_id' in locals() else request.args.get('assessment_type', type=int),
+            effective_grade_filter=selected_grade_id if 'selected_grade_id' in locals() else request.args.get('grade', type=int),
+            effective_stream_filter=selected_stream_id if 'selected_stream_id' in locals() else request.args.get('stream', type=int),
+            current_term_filter=request.args.get('term', type=int),
+            current_assessment_filter=request.args.get('assessment_type', type=int),
+            current_grade_filter=request.args.get('grade', type=int),
+            show_all=show_all if 'show_all' in locals() else False,
+            current_limit=(requested_limit if 'requested_limit' in locals() else None),
+            page_title="Academic Performance Analytics",
+        )
 
     except Exception as e:
         print(f"🚨 Error in analytics route: {e}")
@@ -11415,3 +11512,138 @@ def get_letter_grade(percentage):
     elif percentage >= 50: return 'D'
     elif percentage >= 40: return 'E'
     else: return 'F'
+
+
+# TEST ROUTE - Remove this after testing
+@classteacher_bp.route('/test-analytics')
+def test_analytics_dashboard():
+    """Test analytics page without authentication for debugging."""
+    print("🔍 TEST ANALYTICS ROUTE HIT!")
+    
+    try:
+        # Create a mock teacher for testing
+        class MockTeacher:
+            def __init__(self):
+                self.first_name = "Test"
+                self.last_name = "Teacher"
+                self.id = 1
+                
+        teacher = MockTeacher()
+
+        # Create test analytics data
+        analytics_data = {
+            'summary': {
+                'students_analyzed': 5,
+                'subjects_analyzed': 3,
+                'best_subject_average': 85.5,
+                'top_student_average': 92.0,
+                'has_sufficient_data': True
+            },
+            'top_performers': [
+                {
+                    'name': 'John Doe',
+                    'student_id': '001',
+                    'admission_number': '001',
+                    'grade': 'Grade 8',
+                    'stream': 'A',
+                    'assessment_type': 'Mid Term',
+                    'term': 'Term 1',
+                    'average_percentage': 92.0,
+                    'total_marks_obtained': 460,
+                    'total_marks_possible': 500,
+                    'grade_letter': 'A',
+                    'min_percentage': 85.0,
+                    'max_percentage': 98.0,
+                    'subjects_count': 5
+                },
+                {
+                    'name': 'Jane Smith',
+                    'student_id': '002',
+                    'admission_number': '002',
+                    'grade': 'Grade 8',
+                    'stream': 'A',
+                    'assessment_type': 'Mid Term',
+                    'term': 'Term 1',
+                    'average_percentage': 89.5,
+                    'total_marks_obtained': 447,
+                    'total_marks_possible': 500,
+                    'grade_letter': 'A',
+                    'min_percentage': 82.0,
+                    'max_percentage': 95.0,
+                    'subjects_count': 5
+                },
+                {
+                    'name': 'Bob Johnson',
+                    'student_id': '003',
+                    'admission_number': '003',
+                    'grade': 'Grade 8',
+                    'stream': 'A',
+                    'assessment_type': 'Mid Term',
+                    'term': 'Term 1',
+                    'average_percentage': 87.2,
+                    'total_marks_obtained': 436,
+                    'total_marks_possible': 500,
+                    'grade_letter': 'B',
+                    'min_percentage': 78.0,
+                    'max_percentage': 93.0,
+                    'subjects_count': 5
+                }
+            ],
+            'subject_analytics': [
+                {
+                    'subject_name': 'Mathematics',
+                    'average_percentage': 85.5,
+                    'student_count': 25,
+                    'total_marks': 100
+                },
+                {
+                    'subject_name': 'English',
+                    'average_percentage': 82.3,
+                    'student_count': 25,
+                    'total_marks': 100
+                },
+                {
+                    'subject_name': 'Science',
+                    'average_percentage': 78.9,
+                    'student_count': 25,
+                    'total_marks': 100
+                }
+            ],
+            'has_data': True
+        }
+
+        # Create mock filter options
+        class MockTerm:
+            def __init__(self, name):
+                self.name = name
+                
+        class MockAssessmentType:
+            def __init__(self, name):
+                self.name = name
+                
+        class MockGrade:
+            def __init__(self, name):
+                self.name = name
+
+        terms = [MockTerm("Term 1"), MockTerm("Term 2"), MockTerm("Term 3")]
+        assessment_types = [MockAssessmentType("Mid Term"), MockAssessmentType("End Term"), MockAssessmentType("CAT")]
+        grades = [MockGrade("Grade 7"), MockGrade("Grade 8"), MockGrade("Grade 9")]
+
+        print(f"🔍 Rendering test template with mock data")
+
+        return render_template('classteacher_analytics_fixed.html',
+                             teacher=teacher,
+                             analytics_data=analytics_data,
+                             terms=terms,
+                             assessment_types=assessment_types,
+                             grades=grades,
+                             current_term_filter=None,
+                             current_assessment_filter=None,
+                             current_grade_filter=None,
+                             page_title="Academic Performance Analytics - TEST")
+
+    except Exception as e:
+        print(f"🚨 Error in test analytics route: {e}")
+        import traceback
+        traceback.print_exc()
+        return f"<h1>Error in Test Analytics</h1><pre>{str(e)}</pre><pre>{traceback.format_exc()}</pre>"
