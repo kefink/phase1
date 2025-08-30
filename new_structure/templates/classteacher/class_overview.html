@@ -15,6 +15,11 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       rel="stylesheet"
     />
+  <!-- Brandi Bootstrap (mobile-first utilities) -->
+  <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}" rel="stylesheet">
+  <!-- Solar theme overrides (kept after bootstrap so it wins) -->
   <link href="{{ url_for('static', filename='css/solar_analytics_premium.css') }}" rel="stylesheet">
     <style>
       * {
