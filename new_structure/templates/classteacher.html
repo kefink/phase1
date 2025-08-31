@@ -692,7 +692,8 @@
     </style>
   </head>
 
-  <body>
+  <body data-ct-auto-open="true">
+    {% include 'classteacher/_hamburger_nav.html' %}
     <div class="container">
       <!-- Error Messages -->
       {% if error_message %}
@@ -940,7 +941,7 @@
           href="{{ url_for('classteacher.analytics_dashboard') }}"
           class="action-card"
         >
-          <i class="fas fa-analytics action-icon"></i>
+          <i class="fas fa-chart-line action-icon"></i>
           <h3>Analytics (Enhanced)</h3>
           <p>View detailed performance analytics</p>
         </a>

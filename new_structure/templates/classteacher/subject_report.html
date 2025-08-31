@@ -6,6 +6,10 @@
     <title>{{ subject }} Subject Report - {{ grade }} {{ stream }}</title>
     <!-- Brandi Bootstrap CSS (page-scoped) -->
     <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
       rel="stylesheet"
       href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}"
     />
@@ -71,6 +75,12 @@
       .back-button:hover {
         background: rgba(255, 255, 255, 0.3);
         transform: translateY(-1px);
+      }
+      @media (max-width: 576px) {
+        .back-button {
+          left: 64px;
+          top: 16px;
+        }
       }
 
       .school-logo {
@@ -394,9 +404,28 @@
         }
       }
     </style>
+    <style>
+      @media (max-width: 576px) {
+        .report-container {
+          margin: 10px;
+          padding: 12px;
+        }
+        .report-title {
+          font-size: 1.6rem;
+        }
+        .stats-grid {
+          gap: 12px;
+        }
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
   </head>
 
   <body>
+    {% include 'classteacher/_hamburger_nav.html' %}
     <div class="report-container">
       <div class="report-header">
         <a href="{{ url_for('classteacher.dashboard') }}" class="back-button">
@@ -757,5 +786,6 @@
         });
       });
     </script>
+    <script src="{{ url_for('static', filename='js/auto_wrap_tables.js') }}"></script>
   </body>
 </html>

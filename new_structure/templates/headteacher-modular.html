@@ -79,6 +79,58 @@
       href="{{ url_for('static', filename='css/mobile_responsive_dashboard.css') }}"
     />
 
+    <!-- Lightweight a11y mobile nav toggle styles -->
+    <style>
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .nav-toggle {
+        display: none;
+        background: transparent;
+        border: 1px solid rgba(181, 137, 0, 0.45);
+        color: #fdf6e3;
+        border-radius: 10px;
+        padding: 0.45rem 0.6rem;
+        line-height: 1;
+      }
+      .nav-toggle:focus-visible {
+        outline: 2px solid #b58900;
+        outline-offset: 2px;
+      }
+      @media (max-width: 992px) {
+        .nav-toggle {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .navbar-container {
+          gap: 0.5rem;
+        }
+        .navbar-nav {
+          display: none;
+          flex-direction: column;
+          width: 100%;
+          gap: 0.25rem;
+          margin-top: 0.25rem;
+        }
+        .navbar-nav.is-open {
+          display: flex;
+        }
+      }
+      /* Optional helper to hide when clicking outside */
+      .hide-on-click-outside:not(.is-open) {
+        display: none !important;
+      }
+    </style>
+
     <!-- JavaScript -->
     <script src="{{ url_for('static', filename='js/headteacher-main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/headteacher-charts.js') }}"></script>
@@ -93,7 +145,23 @@
           <i class="fas fa-graduation-cap"></i>
           Academic Performance
         </a>
-        <ul class="navbar-nav">
+        <!-- Accessible mobile menu toggle -->
+        <button
+          class="nav-toggle"
+          id="navToggle"
+          aria-controls="primary-navigation"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <i class="fas fa-bars" aria-hidden="true"></i>
+          <span class="sr-only">Menu</span>
+        </button>
+        <ul
+          class="navbar-nav hide-on-click-outside"
+          id="primary-navigation"
+          role="menubar"
+          aria-hidden="true"
+        >
           <li>
             <a class="nav-link" href="{{ url_for('main.dashboard') }}"
               ><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a
@@ -1261,6 +1329,39 @@
                   });
               }
           });
+      });
+    </script>
+    <!-- Accessible mobile nav toggle behavior -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("navToggle");
+        const nav = document.getElementById("primary-navigation");
+        if (!btn || !nav) return;
+
+        const setExpanded = (expanded) => {
+          btn.setAttribute("aria-expanded", expanded ? "true" : "false");
+          nav.classList.toggle("is-open", !!expanded);
+          nav.setAttribute("aria-hidden", expanded ? "false" : "true");
+        };
+
+        // Initialize closed
+        setExpanded(false);
+
+        btn.addEventListener("click", () => {
+          const next = btn.getAttribute("aria-expanded") !== "true";
+          setExpanded(next);
+        });
+
+        // Click outside to close
+        document.addEventListener("click", (e) => {
+          if (btn.contains(e.target) || nav.contains(e.target)) return;
+          setExpanded(false);
+        });
+
+        // Escape to close
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") setExpanded(false);
+        });
       });
     </script>
   </body>

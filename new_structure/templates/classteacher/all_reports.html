@@ -7,6 +7,7 @@
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
         /* Solar Theme Variables */
@@ -53,7 +54,12 @@
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
+            /* Prevent horizontal scroll on narrow viewports */
+            overflow-x: hidden;
         }
+
+        /* Also guard the root element against accidental overflow */
+        html { overflow-x: hidden; }
 
         /* Navigation */
         .navbar {
@@ -67,6 +73,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
         }
 
         .navbar-brand {
@@ -84,6 +91,7 @@
             align-items: center;
             gap: 24px;
             list-style: none;
+            flex-wrap: wrap;
         }
 
         .nav-link {
@@ -238,6 +246,8 @@
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
             cursor: pointer;
+            /* Ensure absolutely positioned children (like date badge) are contained */
+            position: relative;
         }
 
         .report-card:hover {
@@ -342,14 +352,17 @@
         }
 
         /* Responsive */
-        @media (max-width: 768px) {
+    @media (max-width: 768px) {
             .navbar {
-                margin: 10px;
-                padding: 12px 16px;
+        margin: 10px;
+        padding: 12px 16px;
+        gap: 8px;
             }
 
             .navbar-nav {
-                gap: 12px;
+        gap: 12px;
+        width: 100%;
+        justify-content: space-between;
             }
 
             .page-title {
@@ -364,6 +377,11 @@
                 grid-template-columns: 1fr;
             }
 
+            /* Override inline grid template to avoid min-width overflow on small screens */
+            .report-types-grid {
+                grid-template-columns: 1fr !important;
+            }
+
             .report-meta {
                 grid-template-columns: 1fr;
             }
@@ -373,9 +391,21 @@
                 gap: 8px;
             }
         }
+        @media (max-width: 576px) {
+            .page-header { padding: 20px; margin: 12px 0; }
+            .filters-section { padding: 16px; margin: 12px; }
+            .reports-grid { gap: 12px; }
+            .report-card { padding: 16px; }
+            .navbar { margin: 8px; padding: 10px 12px; }
+            /* Hide wide inline nav on phones; use the hamburger drawer instead */
+            .navbar-nav { display: none; }
+            /* Keep brand tidy */
+            .navbar-brand { font-size: 1.25rem; }
+        }
     </style>
 </head>
 <body>
+    {% include 'classteacher/_hamburger_nav.html' %}
     <!-- Navigation -->
     <nav class="navbar">
         <a href="{{ url_for('classteacher.dashboard') }}" class="navbar-brand">
@@ -726,6 +756,7 @@
         </div>
     </div>
 
+    <script src="{{ url_for('static', filename='js/auto_wrap_tables.js') }}"></script>
     <script>
         // Auto-submit form when filters change
         document.querySelectorAll('.filter-select').forEach(select => {

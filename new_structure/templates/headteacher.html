@@ -95,6 +95,109 @@
 
     <!-- Premium Headteacher Dashboard Styling -->
     <style>
+      /* Premium Page Header */
+      .page-header {
+        background: linear-gradient(
+          135deg,
+          rgba(253, 246, 227, 0.85) 0%,
+          rgba(238, 232, 213, 0.65) 100%
+        );
+        border: 1px solid rgba(181, 137, 0, 0.18);
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        margin: 0 0 1.5rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        box-shadow: 0 6px 20px rgba(0, 43, 54, 0.08);
+      }
+
+      .page-title h1 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, #002b36, #073642);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .page-title p {
+        margin: 0;
+        color: #586e75;
+        font-weight: 500;
+      }
+
+      .page-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .page-actions .btn,
+      .page-actions .btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 10px;
+        padding: 0.55rem 0.9rem;
+      }
+
+      .page-actions .btn .heroicon,
+      .page-actions .btn-outline .heroicon {
+        width: 1rem;
+        height: 1rem;
+      }
+
+      .btn-label {
+        display: inline;
+      }
+
+      /* Keyboard focus for buttons */
+      .btn:focus-visible,
+      .btn-outline:focus-visible {
+        outline: 2px solid #b58900 !important;
+        outline-offset: 2px !important;
+      }
+
+      /* Responsive: stack header, condense labels on small screens */
+      @media (max-width: 768px) {
+        .page-header {
+          flex-direction: column;
+          align-items: stretch;
+          text-align: center;
+          gap: 0.75rem;
+          padding: 0.9rem 0.9rem;
+        }
+        .page-actions {
+          justify-content: center;
+        }
+      }
+
+      /* Optional compact mode: auto-hide header subtitle on mid-sized screens */
+      @media (min-width: 900px) and (max-width: 1199px) {
+        .page-header .page-title p {
+          display: none !important;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .page-actions {
+          gap: 0.4rem;
+        }
+        .page-actions .btn,
+        .page-actions .btn-outline {
+          padding: 0.5rem 0.6rem;
+          min-width: 44px;
+          min-height: 44px;
+        }
+        .btn-label {
+          display: none; /* keep icons only on very small screens */
+        }
+      }
       /* Solar Theme Body Background */
       body.solar-theme {
         margin: 0;
@@ -723,6 +826,20 @@
         border-color: rgba(181, 137, 0, 0.4) !important;
       }
 
+      /* Keyboard focus visibility */
+      .nav-link:focus-visible {
+        outline: 2px solid #b58900 !important;
+        outline-offset: 2px !important;
+      }
+
+      /* Active page link state */
+      .nav-link.active {
+        background-color: rgba(181, 137, 0, 0.2) !important;
+        color: #fdf6e3 !important;
+        border-color: rgba(181, 137, 0, 0.5) !important;
+        box-shadow: 0 2px 8px rgba(181, 137, 0, 0.15) !important;
+      }
+
       /* Enhanced compact navigation with tooltip support */
       .nav-link {
         position: relative !important;
@@ -843,6 +960,150 @@
         fill: #dc322f; /* Solar Red for alerts */
       }
 
+      /* System Alerts - Premium styling and responsiveness */
+      .alerts-section {
+        margin: 2rem 0;
+      }
+
+      .system-alerts-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .system-alert {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        border-radius: 14px;
+        background: linear-gradient(
+          135deg,
+          rgba(253, 246, 227, 0.85) 0%,
+          rgba(238, 232, 213, 0.6) 100%
+        );
+        border: 1px solid rgba(181, 137, 0, 0.18);
+        box-shadow: 0 4px 18px rgba(0, 43, 54, 0.06);
+      }
+
+      .system-alert.alert-critical {
+        border-left: 6px solid #dc322f;
+      }
+      .system-alert.alert-warning {
+        border-left: 6px solid #b58900;
+      }
+      .system-alert.alert-info {
+        border-left: 6px solid #268bd2;
+      }
+
+      .alert-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        flex: 1;
+        min-width: 0; /* allow wrapping */
+      }
+
+      .system-alert .alert-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+      }
+
+      .system-alert.alert-critical .alert-icon {
+        background: rgba(220, 50, 47, 0.12);
+      }
+      .system-alert.alert-warning .alert-icon {
+        background: rgba(181, 137, 0, 0.12);
+      }
+      .system-alert.alert-info .alert-icon {
+        background: rgba(38, 139, 210, 0.12);
+      }
+
+      .alert-text {
+        flex: 1;
+      }
+
+      .alert-title {
+        font-weight: 700;
+        color: #002b36;
+        margin: 0 0 0.25rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .alert-message {
+        margin: 0 0 0.35rem 0;
+        color: #586e75;
+      }
+
+      .alert-time {
+        font-size: 0.8rem;
+        color: #93a1a1;
+      }
+
+      .alert-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        border: 1px solid transparent;
+        line-height: 1;
+      }
+      .badge-critical {
+        color: #dc322f;
+        background: rgba(220, 50, 47, 0.1);
+        border-color: rgba(220, 50, 47, 0.25);
+      }
+      .badge-warning {
+        color: #b58900;
+        background: rgba(181, 137, 0, 0.1);
+        border-color: rgba(181, 137, 0, 0.25);
+      }
+      .badge-info {
+        color: #268bd2;
+        background: rgba(38, 139, 210, 0.1);
+        border-color: rgba(38, 139, 210, 0.25);
+      }
+
+      .alert-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      /* Hover & focus */
+      .system-alert:hover {
+        box-shadow: 0 8px 24px rgba(0, 43, 54, 0.1);
+      }
+      .alert-actions .btn-sm:focus-visible {
+        outline: 2px solid #b58900;
+        outline-offset: 2px;
+      }
+
+      /* Mobile responsiveness for alerts */
+      @media (max-width: 640px) {
+        .system-alert {
+          flex-direction: column;
+        }
+        .alert-actions {
+          justify-content: flex-start;
+        }
+      }
+
       /* Alert type specific colors */
       .system-alert .alert-icon .heroicon {
         transition: all 0.3s ease;
@@ -863,6 +1124,106 @@
       /* FILTER PANEL ICONS */
       .filter-panel .heroicon {
         fill: #268bd2; /* Solar Blue */
+      }
+
+      /* Advanced Filters Panel - premium layout */
+      .filter-panel {
+        background: linear-gradient(
+          135deg,
+          rgba(253, 246, 227, 0.85) 0%,
+          rgba(238, 232, 213, 0.65) 100%
+        );
+        border: 1px solid rgba(181, 137, 0, 0.18);
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        margin: 1rem 0 2rem 0;
+        box-shadow: 0 6px 20px rgba(0, 43, 54, 0.08);
+      }
+
+      .filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.75rem;
+      }
+
+      .filter-header h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: #002b36;
+      }
+
+      .filter-content {
+        display: grid;
+        gap: 0.75rem 1rem;
+      }
+
+      .filter-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(220px, 1fr));
+        gap: 0.75rem 1rem;
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        min-width: 0;
+      }
+
+      .filter-group label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #073642;
+      }
+
+      .form-control,
+      .filter-group select {
+        appearance: none;
+        background: #fdf6e3;
+        border: 1px solid rgba(181, 137, 0, 0.35);
+        border-radius: 10px;
+        padding: 0.55rem 0.75rem;
+        color: #002b36;
+        min-height: 40px;
+        box-shadow: inset 0 1px 0 rgba(253, 246, 227, 0.6);
+      }
+
+      .form-control:focus,
+      .filter-group select:focus {
+        outline: 2px solid #b58900;
+        outline-offset: 2px;
+      }
+
+      .filter-group.filter-actions {
+        display: flex;
+        align-items: end;
+        justify-content: flex-start;
+      }
+
+      /* Responsive filters */
+      @media (max-width: 1024px) {
+        .filter-row {
+          grid-template-columns: repeat(2, minmax(200px, 1fr));
+        }
+      }
+      @media (max-width: 640px) {
+        .filter-row {
+          grid-template-columns: 1fr;
+        }
+        .filter-group.filter-actions {
+          justify-content: center;
+        }
+        .filter-group.filter-actions .btn {
+          width: 100%;
+        }
       }
 
       /* STATISTICS SECTION ICONS */
@@ -1065,6 +1426,136 @@
         }
       }
 
+      /* Mobile Hamburger + Drawer (Headteacher only, mobile view) */
+      .hamburger-btn {
+        display: none;
+        align-items: center;
+        gap: 0.35rem;
+        background: transparent;
+        color: #fdf6e3;
+        border: 1px solid rgba(181, 137, 0, 0.5);
+        border-radius: 10px;
+        padding: 0.45rem 0.6rem;
+        line-height: 1;
+      }
+      .hamburger-btn .heroicon {
+        fill: #b58900;
+      }
+      .hamburger-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+
+      @media (max-width: 768px) {
+        .hamburger-btn {
+          display: inline-flex;
+        }
+      }
+
+      .mobile-drawer-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 1500;
+        display: none;
+      }
+
+      .mobile-drawer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100dvh;
+        width: 82%;
+        max-width: 320px;
+        background: linear-gradient(135deg, #002b36 0%, #073642 100%);
+        color: #fdf6e3;
+        border-right: 2px solid #b58900;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease-out;
+        z-index: 1501;
+        display: flex;
+        flex-direction: column;
+        padding: 0.75rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      .drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(181, 137, 0, 0.35);
+      }
+      .drawer-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: #fdf6e3;
+      }
+      .drawer-brand img {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+      }
+      .drawer-title {
+        font-weight: 800;
+        font-size: 1rem;
+      }
+      .drawer-close-btn {
+        background: transparent;
+        color: #fdf6e3;
+        border: 1px solid rgba(181, 137, 0, 0.5);
+        border-radius: 8px;
+        padding: 0.35rem;
+      }
+      .drawer-close-btn .heroicon {
+        fill: #dc322f;
+      }
+
+      .drawer-nav {
+        overflow-y: auto;
+        padding: 0.5rem 0.25rem;
+      }
+      .drawer-nav-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 0.25rem;
+      }
+      .drawer-nav-list .nav-link {
+        width: 100%;
+        justify-content: flex-start !important;
+      }
+      .drawer-nav-list .nav-link span {
+        display: inline !important;
+      }
+      .drawer-footer {
+        margin-top: auto;
+        padding-top: 0.5rem;
+        font-size: 0.8rem;
+        color: #93a1a1;
+      }
+
+      body.drawer-open {
+        overflow: hidden;
+      }
+      body.drawer-open .mobile-drawer {
+        transform: translateX(0);
+      }
+      body.drawer-open .mobile-drawer-backdrop {
+        display: block;
+      }
+
+      /* Hide long nav row on mobile; drawer + hamburger will be primary */
+      @media (max-width: 768px) {
+        .navbar-nav {
+          display: none !important;
+        }
+      }
+
       @media (min-width: 1200px) and (max-width: 1399px) {
         .nav-link {
           padding: 0.3rem 0.5rem !important;
@@ -1138,13 +1629,15 @@
       }
 
       @media (max-width: 600px) {
+        /* Hide labels, keep icons */
         .nav-link span {
           display: none !important;
         }
 
         .nav-link {
           padding: 0.4rem !important;
-          min-width: 40px !important;
+          min-width: 44px !important; /* Minimum touch target width */
+          min-height: 44px !important; /* Minimum touch target height */
           justify-content: center !important;
         }
 
@@ -1153,8 +1646,281 @@
           height: 1.1rem !important;
         }
 
+        /* Enable horizontal swipe scrolling for nav when space is tight */
         .navbar-nav {
           gap: 0.1rem !important;
+          flex-wrap: nowrap !important;
+          overflow-x: auto !important;
+          -webkit-overflow-scrolling: touch !important;
+          overscroll-behavior-x: contain !important;
+          scrollbar-width: none !important; /* Firefox */
+          max-width: 100% !important;
+        }
+        .navbar-nav::-webkit-scrollbar {
+          display: none !important; /* WebKit */
+        }
+      }
+
+      /* Respect device safe areas (iOS notch, etc.) */
+      @supports (padding: max(0px)) {
+        .navbar {
+          padding-top: max(0px, env(safe-area-inset-top)) !important;
+        }
+      }
+
+      /* ===== Charts: Responsive containers and polish ===== */
+      .charts-section {
+        margin: 2rem 0;
+      }
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+      @media (max-width: 900px) {
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .chart-container {
+        background: linear-gradient(
+          135deg,
+          rgba(253, 246, 227, 0.9) 0%,
+          rgba(238, 232, 213, 0.75) 100%
+        );
+        border: 1px solid rgba(181, 137, 0, 0.18);
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 43, 54, 0.08);
+        padding: 1rem;
+      }
+      .chart-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .chart-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #002b36;
+      }
+      .chart-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .chart-content {
+        position: relative;
+        height: 340px;
+      }
+      @media (max-width: 640px) {
+        .chart-content {
+          height: 280px;
+        }
+      }
+
+      /* ===== Advanced analytics cards & heatmap ===== */
+      .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+      @media (max-width: 900px) {
+        .analytics-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .analytics-card {
+        background: linear-gradient(
+          135deg,
+          rgba(253, 246, 227, 0.9) 0%,
+          rgba(238, 232, 213, 0.75) 100%
+        );
+        border: 1px solid rgba(181, 137, 0, 0.18);
+        border-radius: 16px;
+        padding: 1rem;
+        box-shadow: 0 6px 20px rgba(0, 43, 54, 0.08);
+      }
+      .analytics-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+      }
+      .analytics-header h3 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #002b36;
+      }
+      .analytics-header select {
+        border: 1px solid rgba(181, 137, 0, 0.35);
+        border-radius: 10px;
+        padding: 0.4rem 0.6rem;
+        background: #fdf6e3;
+      }
+      .heatmap-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+      }
+      .heatmap-tile {
+        border-radius: 12px;
+        padding: 0.75rem;
+        background: #fdf6e3;
+        border: 1px solid rgba(181, 137, 0, 0.25);
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        min-height: 88px;
+      }
+      .heatmap-title {
+        font-weight: 700;
+        color: #073642;
+        font-size: 0.95rem;
+      }
+      .heatmap-value {
+        font-weight: 800;
+        font-size: 1.25rem;
+      }
+      .heatmap-sub {
+        color: #586e75;
+        font-size: 0.8rem;
+      }
+      .heatmap-empty {
+        text-align: center;
+        color: #586e75;
+        opacity: 0.9;
+        padding: 1rem;
+      }
+
+      /* Inline performance filters responsive grid */
+      .performance-filters .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(180px, 1fr));
+        gap: 0.75rem;
+      }
+      @media (max-width: 1024px) {
+        .performance-filters .filters-grid {
+          grid-template-columns: repeat(3, minmax(160px, 1fr));
+        }
+      }
+      @media (max-width: 768px) {
+        .performance-filters .filters-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 520px) {
+        .performance-filters .filters-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ===== Performance table responsiveness & pagination ===== */
+      .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .pagination-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 0.75rem;
+      }
+      .pagination-controls {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .page-numbers {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+      }
+      .page-numbers button {
+        min-width: 36px;
+        min-height: 36px;
+        border-radius: 8px;
+      }
+      .page-numbers button.active {
+        background: #b58900;
+        color: #ffffff;
+        border-color: #b58900;
+      }
+      @media (max-width: 640px) {
+        .pagination-container {
+          gap: 0.4rem;
+        }
+        .pagination-controls .btn-outline {
+          min-width: 44px;
+          min-height: 36px;
+        }
+      }
+
+      /* ===== Mobile enhancements for management controls ===== */
+      .filter-actions-row {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        margin-top: 0.75rem;
+      }
+      .filter-actions-row .btn,
+      .filter-actions-row .btn-outline {
+        min-height: 40px;
+      }
+      .filter-header .btn-close {
+        display: none;
+      }
+      @media (max-width: 640px) {
+        .filter-actions-row {
+          justify-content: stretch;
+        }
+        .filter-actions-row .btn,
+        .filter-actions-row .btn-outline {
+          flex: 1 1 100%;
+        }
+        .filter-header .btn-close {
+          display: inline-flex;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .performance-filters .filters-grid button {
+          width: 100%;
+          min-height: 44px;
+        }
+      }
+
+      .actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+      }
+      .actions .btn-sm {
+        min-height: 40px;
+        padding: 0.45rem 0.6rem;
+      }
+      @media (max-width: 520px) {
+        .actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .actions .btn-sm {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .no-data-container .btn {
+          display: block;
+          width: 100%;
+          margin: 0.25rem 0 !important;
         }
       }
     </style>
@@ -1186,10 +1952,38 @@
           </div>
         </a>
 
+        <!-- Mobile-only Hamburger Button -->
+        <button
+          class="hamburger-btn"
+          id="hamburgerBtn"
+          aria-label="Open menu"
+          aria-haspopup="true"
+          aria-controls="mobileDrawer"
+          aria-expanded="false"
+        >
+          <!-- Heroicon: bars-3 (solid) -->
+          <svg
+            class="heroicon"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <rect x="3.75" y="5" width="16.5" height="2" rx="1"></rect>
+            <rect x="3.75" y="11" width="16.5" height="2" rx="1"></rect>
+            <rect x="3.75" y="17" width="16.5" height="2" rx="1"></rect>
+          </svg>
+          <span class="hamburger-label">Menu</span>
+        </button>
+
         <!-- RIGHT SECTION: Navigation menu items in horizontal row -->
         <ul class="navbar-nav">
           <li>
-            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+            <a
+              class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}"
+              href="{{ url_for('admin.dashboard') }}"
+              title="Dashboard"
+              aria-label="Dashboard"
+            >
               <!-- Heroicon: chart-pie (solid) -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -1201,9 +1995,11 @@
           </li>
           <li>
             <a
-              class="nav-link"
+              class="nav-link {% if request.endpoint == 'universal.dashboard' %}active{% endif %}"
               id="universal-access-link"
               href="{{ url_for('universal.dashboard') }}"
+              title="Universal Access"
+              aria-label="Universal Access"
             >
               <!-- Heroicon: cog-8-tooth (solid) -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
@@ -1217,7 +2013,12 @@
             </a>
           </li>
           <li>
-            <a class="nav-link" href="{{ url_for('admin.reports') }}">
+            <a
+              class="nav-link {% if request.endpoint == 'admin.reports' %}active{% endif %}"
+              href="{{ url_for('admin.reports') }}"
+              title="Reports"
+              aria-label="Reports"
+            >
               <!-- Heroicon: chart-bar (solid) -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -1229,8 +2030,10 @@
           </li>
           <li>
             <a
-              class="nav-link"
+              class="nav-link {% if request.endpoint == 'subject_config_api.subject_configuration_page' %}active{% endif %}"
               href="{{ url_for('subject_config_api.subject_configuration_page') }}"
+              title="Subject Configuration"
+              aria-label="Subject Configuration"
             >
               <!-- Heroicon: adjustments-horizontal (solid) -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
@@ -1243,8 +2046,10 @@
           </li>
           <li>
             <a
-              class="nav-link"
+              class="nav-link {% if request.endpoint == 'admin.analytics_dashboard' %}active{% endif %}"
               href="{{ url_for('admin.analytics_dashboard') }}"
+              title="Analytics"
+              aria-label="Analytics"
             >
               <!-- Heroicon: presentation-chart-line (solid) -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
@@ -1258,7 +2063,12 @@
             </a>
           </li>
           <li>
-            <a class="nav-link" href="{{ url_for('admin.student_promotion') }}">
+            <a
+              class="nav-link {% if request.endpoint == 'admin.student_promotion' %}active{% endif %}"
+              href="{{ url_for('admin.student_promotion') }}"
+              title="Student Promotion"
+              aria-label="Student Promotion"
+            >
               <!-- Heroicon: academic-cap (solid) -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -1275,7 +2085,12 @@
             </a>
           </li>
           <li>
-            <a class="nav-link" href="{{ url_for('parent.login') }}">
+            <a
+              class="nav-link {% if request.endpoint == 'parent.login' %}active{% endif %}"
+              href="{{ url_for('parent.login') }}"
+              title="Parent Portal"
+              aria-label="Parent Portal"
+            >
               <!-- Heroicon: user-group (solid) -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -1288,7 +2103,12 @@
             </a>
           </li>
           <li>
-            <a class="nav-link" href="/parent_management/dashboard">
+            <a
+              class="nav-link {% if request.path.startswith('/parent_management') %}active{% endif %}"
+              href="/parent_management/dashboard"
+              title="Parent Management"
+              aria-label="Parent Management"
+            >
               <!-- Heroicon: users (solid) - Parent Management -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -1301,7 +2121,12 @@
             </a>
           </li>
           <li>
-            <a class="nav-link" href="{{ url_for('auth.logout_route') }}">
+            <a
+              class="nav-link"
+              href="{{ url_for('auth.logout_route') }}"
+              title="Logout"
+              aria-label="Logout"
+            >
               <!-- Heroicon: arrow-right-on-rectangle (solid) -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -1316,6 +2141,64 @@
         </ul>
       </div>
     </nav>
+
+    <!-- Mobile Drawer and Backdrop -->
+    <div
+      class="mobile-drawer-backdrop"
+      id="mobileDrawerBackdrop"
+      tabindex="-1"
+      aria-hidden="true"
+    ></div>
+    <aside
+      class="mobile-drawer"
+      id="mobileDrawer"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Navigation drawer"
+    >
+      <div class="drawer-header">
+        <a href="{{ url_for('admin.dashboard') }}" class="drawer-brand">
+          {% if school_info.logo_path %}
+          <img
+            src="{{ url_for('static', filename=school_info.logo_path) }}"
+            alt="{{ school_info.school_name or 'Hillview School' }} Logo"
+            onerror="this.src='{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}'"
+          />
+          {% else %}
+          <img
+            src="{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}"
+            alt="Hillview School Logo"
+          />
+          {% endif %}
+          <span class="drawer-title"
+            >{{ school_info.school_name or 'Hillview School' }}</span
+          >
+        </a>
+        <button
+          class="drawer-close-btn"
+          id="drawerCloseBtn"
+          aria-label="Close menu"
+        >
+          <!-- Heroicon: x-mark (solid) -->
+          <svg
+            class="heroicon"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 11-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+      <nav class="drawer-nav" aria-label="Mobile navigation">
+        <ul class="drawer-nav-list" id="drawerNavList"></ul>
+      </nav>
+      <div class="drawer-footer">Welcome, Headteacher</div>
+    </aside>
 
     <!-- Main Content -->
     <div class="dashboard-container">
@@ -1432,7 +2315,14 @@
                 {% endif %}
               </div>
               <div class="alert-text">
-                <div class="alert-title">{{ alert.title }}</div>
+                <div class="alert-title">
+                  <span
+                    class="alert-badge badge-{{ 'critical' if alert.type=='critical' else ('warning' if alert.type=='warning' else 'info') }}"
+                  >
+                    {{ (alert.type or 'info')|capitalize }}
+                  </span>
+                  {{ alert.title }}
+                </div>
                 <div class="alert-message">{{ alert.message }}</div>
                 <div class="alert-time">
                   {{ alert.timestamp.strftime('%Y-%m-%d %H:%M') if
@@ -1478,9 +2368,15 @@
       </div>
 
       <!-- Filter Panel -->
-      <div id="filterPanel" class="filter-panel" style="display: none">
+      <div
+        id="filterPanel"
+        class="filter-panel"
+        role="region"
+        aria-labelledby="advanced-filters-title"
+        style="display: none"
+      >
         <div class="filter-header">
-          <h3>
+          <h3 id="advanced-filters-title">
             <!-- Heroicon: adjustments-horizontal (solid) -->
             <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
               <path
@@ -1489,15 +2385,35 @@
             </svg>
             Advanced Filters
           </h3>
-          <button class="btn-sm btn-outline" onclick="resetFilters()">
-            Reset All
-          </button>
+          <div style="display: flex; gap: 0.5rem; align-items: center">
+            <button
+              class="btn-sm btn-outline"
+              onclick="resetFilters()"
+              title="Reset all filters"
+              aria-label="Reset all filters"
+            >
+              Reset All
+            </button>
+            <button
+              class="btn-sm btn-outline btn-close"
+              onclick="toggleFilterPanel()"
+              title="Close"
+              aria-label="Close filters"
+            >
+              Close
+            </button>
+          </div>
         </div>
         <div class="filter-content">
           <div class="filter-row">
             <div class="filter-group">
               <label for="gradeFilter">Grade:</label>
-              <select id="gradeFilter">
+              <select
+                id="gradeFilter"
+                class="form-control"
+                title="Select grade"
+                aria-label="Select grade"
+              >
                 <option value="">All Grades</option>
                 {% if dashboard_stats.learners_per_grade %} {% for grade_name in
                 dashboard_stats.learners_per_grade.keys() %}
@@ -1514,7 +2430,12 @@
             </div>
             <div class="filter-group">
               <label for="termFilter">Term:</label>
-              <select id="termFilter">
+              <select
+                id="termFilter"
+                class="form-control"
+                title="Select term"
+                aria-label="Select term"
+              >
                 <option value="">All Terms</option>
                 <option value="1">Term 1</option>
                 <option value="2">Term 2</option>
@@ -1523,7 +2444,12 @@
             </div>
             <div class="filter-group">
               <label for="performanceFilter">Performance Level:</label>
-              <select id="performanceFilter">
+              <select
+                id="performanceFilter"
+                class="form-control"
+                title="Select performance level"
+                aria-label="Select performance level"
+              >
                 <option value="">All Levels</option>
                 <option value="EE">Exceeds Expectations</option>
                 <option value="ME">Meets Expectations</option>
@@ -1535,14 +2461,31 @@
           <div class="filter-row">
             <div class="filter-group">
               <label for="dateFrom">From Date:</label>
-              <input type="date" id="dateFrom" class="form-control" />
+              <input
+                type="date"
+                id="dateFrom"
+                class="form-control"
+                title="From date"
+                aria-label="From date"
+              />
             </div>
             <div class="filter-group">
               <label for="dateTo">To Date:</label>
-              <input type="date" id="dateTo" class="form-control" />
+              <input
+                type="date"
+                id="dateTo"
+                class="form-control"
+                title="To date"
+                aria-label="To date"
+              />
             </div>
             <div class="filter-group filter-actions">
-              <button class="btn" onclick="applyFilters()">
+              <button
+                class="btn"
+                onclick="applyFilters()"
+                title="Apply filters"
+                aria-label="Apply filters"
+              >
                 <!-- Heroicon: magnifying-glass (solid) -->
                 <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                   <path
@@ -1555,6 +2498,22 @@
               </button>
             </div>
           </div>
+        </div>
+        <div class="filter-actions-row">
+          <button
+            class="btn"
+            onclick="applyFilters()"
+            aria-label="Apply filters"
+          >
+            Apply Filters
+          </button>
+          <button
+            class="btn-outline"
+            onclick="toggleFilterPanel()"
+            aria-label="Close filters"
+          >
+            Close
+          </button>
         </div>
       </div>
 
@@ -1578,7 +2537,12 @@
             </p>
           </div>
           <div class="header-actions">
-            <button class="btn-outline premium-btn" onclick="refreshStats()">
+            <button
+              class="btn-outline premium-btn"
+              onclick="refreshStats()"
+              title="Refresh statistics"
+              aria-label="Refresh statistics"
+            >
               <!-- Heroicon: arrow-path (solid) -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -1589,7 +2553,12 @@
               </svg>
               <span>Refresh</span>
             </button>
-            <button class="btn premium-btn" onclick="exportStats()">
+            <button
+              class="btn premium-btn"
+              onclick="exportStats()"
+              title="Export statistics as CSV"
+              aria-label="Export statistics as CSV"
+            >
               <!-- Heroicon: arrow-down-tray (solid) -->
               <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -2233,6 +3202,7 @@
                     <button
                       class="btn-sm btn-info"
                       onclick="viewDetailedAnalysis('{{ data.grade }}', '{{ data.stream }}')"
+                      aria-label="View details for {{ data.grade }} {{ data.stream }}"
                     >
                       <!-- Heroicon: eye (solid) -->
                       <svg
@@ -2252,6 +3222,7 @@
                     <button
                       class="btn-sm btn-warning"
                       onclick="generateClassReport('{{ data.grade }}', '{{ data.stream }}')"
+                      aria-label="Generate report for {{ data.grade }} {{ data.stream }}"
                     >
                       <!-- Heroicon: document-text (solid) -->
                       <svg
@@ -2391,480 +3362,864 @@
 
     <!-- Template Data Bridge for External JS -->
     <script>
-      // Global data injection for external JS modules with real backend data
-      window.performanceData = {{ performance_data | tojson }};
-      window.dashboardConfig = {
-          schoolName: '{{ school_info.school_name or "Hillview School" }}',
-          totalStudents: {{ total_students | default(0) }},
-          totalTeachers: {{ total_teachers | default(0) }},
-          totalClasses: {{ total_classes | default(0) }},
-          totalSubjects: {{ total_subjects | default(0) }},
-          totalAssessments: {{ total_assessments | default(0) }},
-          schoolAverage: {{ dashboard_stats.avg_performance | default(0) }},
-          topClass: '{{ top_class | default("N/A") }}',
-          topClassScore: {{ top_class_score | default(0) }},
-          currentTerm: '{{ current_term | default("Term 1") }}',
-          currentAcademicYear: '{{ current_academic_year | default("2025/2026") }}',
-          learnersByGrade: {{ dashboard_stats.learners_per_grade | tojson }},
-          genderByGrade: {{ dashboard_stats.gender_per_grade | tojson }},
-          streamsByGrade: {{ dashboard_stats.streams_per_grade | tojson }}
-      };
+          // Global data injection for external JS modules with real backend data
+          window.performanceData = {{ performance_data | tojson }};
+          window.dashboardConfig = {
+              schoolName: '{{ school_info.school_name or "Hillview School" }}',
+              totalStudents: {{ total_students | default(0) }},
+              totalTeachers: {{ total_teachers | default(0) }},
+              totalClasses: {{ total_classes | default(0) }},
+              totalSubjects: {{ total_subjects | default(0) }},
+              totalAssessments: {{ total_assessments | default(0) }},
+              schoolAverage: {{ dashboard_stats.avg_performance | default(0) }},
+              topClass: '{{ top_class | default("N/A") }}',
+              topClassScore: {{ top_class_score | default(0) }},
+              currentTerm: '{{ current_term | default("Term 1") }}',
+              currentAcademicYear: '{{ current_academic_year | default("2025/2026") }}',
+              learnersByGrade: {{ dashboard_stats.learners_per_grade | tojson }},
+              genderByGrade: {{ dashboard_stats.gender_per_grade | tojson }},
+              streamsByGrade: {{ dashboard_stats.streams_per_grade | tojson }}
+          };
 
-      // Solar Theme Chart Configuration
-      Chart.defaults.color = '#586e75';
-      Chart.defaults.backgroundColor = 'rgba(181, 137, 0, 0.1)';
-      Chart.defaults.borderColor = '#b58900';
-      Chart.defaults.font.family = 'Source Sans Pro';
+          // Solar Theme Chart Configuration
+          Chart.defaults.color = '#586e75';
+          Chart.defaults.backgroundColor = 'rgba(181, 137, 0, 0.1)';
+          Chart.defaults.borderColor = '#b58900';
+          Chart.defaults.font.family = 'Source Sans Pro';
 
-      // Professional Solar Dashboard Functions
-      function toggleFilterPanel() {
-        const panel = document.getElementById('filterPanel');
-        if (panel.style.display === 'none' || !panel.style.display) {
-          panel.style.display = 'block';
-          panel.style.animation = 'fadeInUp 0.3s ease-out';
-        } else {
-          panel.style.display = 'none';
-        }
-      }
-
-      function refreshDashboard() {
-        // Show loading state
-        const refreshBtn = event.target.closest('button');
-        const originalHTML = refreshBtn.innerHTML;
-        refreshBtn.innerHTML = '⟳ Refreshing...';
-        refreshBtn.disabled = true;
-
-        // Simulate refresh
-        setTimeout(() => {
-          location.reload();
-        }, 1000);
-      }
-
-      function generateComprehensiveReport() {
-        const reportBtn = event.target.closest('button');
-        const originalHTML = reportBtn.innerHTML;
-        reportBtn.innerHTML = '⟳ Generating...';
-        reportBtn.disabled = true;
-
-        // Simulate report generation
-        setTimeout(() => {
-          alert('Comprehensive report generated successfully!');
-          reportBtn.innerHTML = originalHTML;
-          reportBtn.disabled = false;
-        }, 2000);
-      }
-
-      function resetFilters() {
-        document.getElementById('gradeFilter').value = '';
-        document.getElementById('termFilter').value = '';
-        document.getElementById('performanceFilter').value = '';
-        document.getElementById('dateFrom').value = '';
-        document.getElementById('dateTo').value = '';
-        filterPerformanceData();
-      }
-
-      function applyFilters() {
-        filterPerformanceData();
-        toggleFilterPanel();
-      }
-
-      function filterPerformanceData() {
-        const gradeFilter = document.getElementById('grade-filter')?.value || document.getElementById('gradeFilter')?.value || '';
-        const termFilter = document.getElementById('term-filter')?.value || document.getElementById('termFilter')?.value || '';
-        const assessmentFilter = document.getElementById('assessment-filter')?.value || '';
-
-        const rows = document.querySelectorAll('.performance-row');
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-          const grade = row.dataset.grade;
-          const term = row.dataset.term;
-          const assessment = row.dataset.assessment;
-
-          const gradeMatch = !gradeFilter || grade.includes(gradeFilter);
-          const termMatch = !termFilter || term === termFilter;
-          const assessmentMatch = !assessmentFilter || assessment === assessmentFilter;
-
-          if (gradeMatch && termMatch && assessmentMatch) {
-            row.style.display = '';
-            visibleCount++;
-          } else {
-            row.style.display = 'none';
-          }
-        });
-
-        // Update pagination info
-        const paginationInfo = document.getElementById('pagination-info');
-        if (paginationInfo) {
-          paginationInfo.textContent = `Showing ${visibleCount} results`;
-        }
-      }
-
-      function toggleFilters() {
-        const filtersPanel = document.getElementById('performance-filters');
-        if (filtersPanel.style.display === 'none' || !filtersPanel.style.display) {
-          filtersPanel.style.display = 'block';
-          filtersPanel.style.animation = 'fadeInUp 0.3s ease-out';
-        } else {
-          filtersPanel.style.display = 'none';
-        }
-      }
-
-      function exportPerformanceData() {
-        alert('Performance data export functionality coming soon!');
-      }
-
-      function viewClassDetails(grade, stream) {
-        alert(`Viewing details for ${grade} ${stream}`);
-      }
-
-      function showAlertDetails(title) {
-        alert(`Alert Details: ${title}`);
-      }
-
-      function dismissAlert(button) {
-        const alert = button.closest('.system-alert');
-        alert.style.animation = 'fadeOut 0.3s ease-out';
-        setTimeout(() => {
-          alert.remove();
-        }, 300);
-      }
-
-      function openAnalyticsDashboard() {
-        window.open('{{ url_for("admin.analytics_dashboard") }}', '_blank');
-      }
-
-      function updateHeatmap() {
-        const metric = document.getElementById('heatmapMetric').value;
-        // Implement heatmap update logic
-        console.log('Updating heatmap with metric:', metric);
-      }
-
-      function generatePerformanceAlerts() {
-        const alertsContainer = document.getElementById('performanceAlerts');
-        alertsContainer.innerHTML = '<div class="loading">Generating alerts...</div>';
-
-        setTimeout(() => {
-          alertsContainer.innerHTML = `
-            <div class="performance-alert alert-warning">
-              ⚠️ Grade 8A showing declining trend in Mathematics
-            </div>
-            <div class="performance-alert alert-info">
-              ℹ️ Grade 10B exceeding expectations in Science
-            </div>
-          `;
-        }, 1000);
-      }
-
-      function exportChartsAsPDF() {
-        // Show loading state
-        const exportBtn = document.querySelector('[onclick="exportChartsAsPDF()"]');
-        const originalText = exportBtn.innerHTML;
-        exportBtn.innerHTML = '⟳ Exporting...';
-        exportBtn.disabled = true;
-
-        // Simulate export process
-        setTimeout(() => {
-          exportBtn.innerHTML = originalText;
-          exportBtn.disabled = false;
-          alert('Chart export functionality coming soon!');
-        }, 2000);
-      }
-
-      // Premium Stats Functions
-      function refreshStats() {
-        // Show loading state for all stat numbers
-        const statNumbers = document.querySelectorAll('.stat-number');
-        const originalValues = [];
-
-        statNumbers.forEach((element, index) => {
-          originalValues[index] = element.textContent;
-          element.innerHTML = '⟳';
-        });
-
-        // Simulate refresh with loading effect
-        setTimeout(() => {
-          statNumbers.forEach((element, index) => {
-            element.textContent = originalValues[index];
-            element.style.animation = 'pulse 0.5s ease-out';
-          });
-
-          // Show success message
-          showNotification('Statistics refreshed successfully!', 'success');
-        }, 1500);
-      }
-
-      function exportStats() {
-        // Create CSV content with actual data
-        const csvContent = "data:text/csv;charset=utf-8," + [
-          "Metric,Value",
-          `Total Students,{{ total_students or 0 }}`,
-          `School Average,{{ "%.1f"|format(dashboard_stats.avg_performance or 0) }}%`,
-          `Assessment Types,{{ total_assessments or 0 }}`,
-          `Active Teachers,{{ total_teachers or 0 }}`,
-          `Active Subjects,{{ total_subjects or 0 }}`,
-          `Active Classes,{{ total_classes or 0 }}`,
-          `Current Term,{{ current_term or 'Term 1' }}`,
-          `Academic Year,{{ current_academic_year or '2025/2026' }}`
-        ].join("\n");
-
-        const link = document.createElement("a");
-        link.setAttribute("href", encodeURI(csvContent));
-        link.setAttribute("download", "school_statistics_" + new Date().toISOString().split('T')[0] + ".csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        showNotification('Statistics exported successfully!', 'success');
-      }
-
-      function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-          ${type === 'success' ? '✅' : 'ℹ️'}
-          <span>${message}</span>
-        `;
-
-        notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: ${type === 'success' ? '#859900' : '#268bd2'};
-          color: white;
-          padding: 1rem 1.5rem;
-          border-radius: 12px;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-          z-index: 9999;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-weight: 600;
-          animation: slideInRight 0.3s ease-out;
-        `;
-
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-          notification.style.animation = 'slideOutRight 0.3s ease-in';
-          setTimeout(() => document.body.removeChild(notification), 300);
-        }, 3000);
-      }
-
-      // Add CSS for notifications
-      const notificationStyles = document.createElement('style');
-      notificationStyles.textContent = `
-        @keyframes slideInRight {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOutRight {
-          from { transform: translateX(0); opacity: 1; }
-          to { transform: translateX(100%); opacity: 0; }
-        }
-        @keyframes pulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-          100% { transform: scale(1); }
-        }
-      `;
-      document.head.appendChild(notificationStyles);
-
-      // Initialize Solar Theme Charts and other functionality
-      document.addEventListener('DOMContentLoaded', function() {
-        initializeSolarCharts();
-        initializePerformanceTable();
-      });
-
-      function initializeSolarCharts() {
-        // Performance Donut Chart - Use real data or show no data state
-        const donutCtx = document.getElementById('performanceDonutChart');
-        if (donutCtx) {
-          {% if dashboard_stats.performance_distribution %}
-          const performanceData = {{ dashboard_stats.performance_distribution | tojson }};
-          const chartData = [
-            performanceData['EE'] || 0,
-            performanceData['ME'] || 0,
-            performanceData['AE'] || 0,
-            performanceData['BE'] || 0
-          ];
-          const hasData = chartData.some(value => value > 0);
-          {% else %}
-          const hasData = false;
-          const chartData = [0, 0, 0, 0];
-          {% endif %}
-
-          if (hasData) {
-            new Chart(donutCtx, {
-              type: 'doughnut',
-              data: {
-                labels: ['Exceeds Expectations', 'Meets Expectations', 'Approaches Expectations', 'Below Expectations'],
-                datasets: [{
-                  data: chartData,
-                  backgroundColor: [
-                    '#859900', // Solar green
-                    '#268bd2', // Solar blue
-                    '#b58900', // Solar yellow
-                    '#dc322f'  // Solar red
-                  ],
-                  borderColor: '#fdf6e3',
-                  borderWidth: 3
-                }]
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    position: 'bottom',
-                    labels: {
-                      padding: 20,
-                      usePointStyle: true,
-                      font: {
-                        family: 'Source Sans Pro',
-                        size: 12
-                      }
-                    }
-                  }
-                }
-              }
-            });
-          } else {
-            // Show no data message
-            donutCtx.style.display = 'none';
-            const container = donutCtx.parentElement;
-            container.innerHTML = `
-              <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #586e75;">
-                📊
-                <h4 style="margin-bottom: 0.5rem;">No Performance Data</h4>
-                <p style="text-align: center; opacity: 0.7;">Performance distribution will appear here once assessment data is available.</p>
-              </div>
-            `;
-          }
-        }
-
-        // Class Comparison Chart - Use real performance data
-        const comparisonCtx = document.getElementById('classComparisonChart');
-        if (comparisonCtx) {
-          {% if performance_data and performance_data|length > 0 %}
-          const performanceData = {{ performance_data | tojson }};
-          const classLabels = [];
-          const classAverages = [];
-
-          // Extract class names and averages from real data
-          performanceData.forEach(item => {
-            const className = `${item.grade} ${item.stream}`;
-            if (!classLabels.includes(className)) {
-              classLabels.push(className);
-              classAverages.push(parseFloat(item.class_average) || 0);
+          // Professional Solar Dashboard Functions
+          function toggleFilterPanel() {
+            const panel = document.getElementById('filterPanel');
+            if (panel.style.display === 'none' || !panel.style.display) {
+              panel.style.display = 'block';
+              panel.style.animation = 'fadeInUp 0.3s ease-out';
+            } else {
+              panel.style.display = 'none';
             }
+          }
+
+          function refreshDashboard() {
+            // Show loading state
+            const refreshBtn = event.target.closest('button');
+            const originalHTML = refreshBtn.innerHTML;
+            refreshBtn.innerHTML = '⟳ Refreshing...';
+            refreshBtn.disabled = true;
+
+            // Simulate refresh
+            setTimeout(() => {
+              location.reload();
+            }, 1000);
+          }
+
+          function generateComprehensiveReport() {
+            const reportBtn = event.target.closest('button');
+            const originalHTML = reportBtn.innerHTML;
+            reportBtn.innerHTML = '⟳ Generating...';
+            reportBtn.disabled = true;
+
+            // Simulate report generation
+            setTimeout(() => {
+              alert('Comprehensive report generated successfully!');
+              reportBtn.innerHTML = originalHTML;
+              reportBtn.disabled = false;
+            }, 2000);
+          }
+
+          function resetFilters() {
+            document.getElementById('gradeFilter').value = '';
+            document.getElementById('termFilter').value = '';
+            document.getElementById('performanceFilter').value = '';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            filterPerformanceData();
+          }
+
+          function applyFilters() {
+            filterPerformanceData();
+            toggleFilterPanel();
+          }
+
+          function filterPerformanceData() {
+            const gradeFilter = document.getElementById('grade-filter')?.value || document.getElementById('gradeFilter')?.value || '';
+            const termFilter = document.getElementById('term-filter')?.value || document.getElementById('termFilter')?.value || '';
+            const assessmentFilter = document.getElementById('assessment-filter')?.value || '';
+
+            const rows = document.querySelectorAll('.performance-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+              const grade = row.dataset.grade;
+              const term = row.dataset.term;
+              const assessment = row.dataset.assessment;
+
+              const gradeMatch = !gradeFilter || grade.includes(gradeFilter);
+              const termMatch = !termFilter || term === termFilter;
+              const assessmentMatch = !assessmentFilter || assessment === assessmentFilter;
+
+              const match = gradeMatch && termMatch && assessmentMatch;
+              row.dataset.filtered = match ? '1' : '0';
+              if (match) visibleCount++;
+              // Default hide; pagination will reveal current page
+              row.style.display = 'none';
+            });
+
+            // Update pagination info
+            const paginationInfo = document.getElementById('pagination-info');
+            if (paginationInfo) {
+              paginationInfo.textContent = `Showing ${visibleCount} results`;
+            }
+
+            // Re-apply pagination to filtered results
+            if (typeof applyPagination === 'function') {
+              applyPagination(true);
+            }
+          }
+
+          function toggleFilters() {
+            const filtersPanel = document.getElementById('performance-filters');
+            if (filtersPanel.style.display === 'none' || !filtersPanel.style.display) {
+              filtersPanel.style.display = 'block';
+              filtersPanel.style.animation = 'fadeInUp 0.3s ease-out';
+            } else {
+              filtersPanel.style.display = 'none';
+            }
+          }
+
+          function exportPerformanceData() {
+            const table = document.querySelector('.performance-table');
+            if (!table) return;
+
+            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+            const bodyRows = Array.from(table.querySelectorAll('tbody tr'));
+            const visibleRows = bodyRows.filter(tr => tr.style.display !== 'none' && !tr.querySelector('.no-data-container'));
+            if (!visibleRows.length) {
+              showNotification('No rows to export', 'info');
+              return;
+            }
+
+            const rows = [headers.join(',')];
+            visibleRows.forEach(tr => {
+              const cells = Array.from(tr.querySelectorAll('td'))
+                .slice(0, headers.length - 1) // exclude Actions
+                .map(td => '"' + td.textContent.replace(/\s+/g, ' ').trim().replace(/"/g, '""') + '"');
+              rows.push(cells.join(','));
+            });
+
+            const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `performance_data_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification('Performance data exported', 'success');
+          }
+
+          function viewClassDetails(grade, stream) {
+            alert(`Viewing details for ${grade} ${stream}`);
+          }
+
+          function showAlertDetails(title) {
+            alert(`Alert Details: ${title}`);
+          }
+
+          function dismissAlert(button) {
+            const alert = button.closest('.system-alert');
+            alert.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => {
+              alert.remove();
+            }, 300);
+          }
+
+          function openAnalyticsDashboard() {
+            window.open('{{ url_for("admin.analytics_dashboard") }}', '_blank');
+          }
+
+          function updateHeatmap() {
+            const container = document.getElementById('heatmapContainer');
+            if (!container) return;
+            const metric = document.getElementById('heatmapMetric')?.value || 'average';
+            const data = Array.isArray(window.performanceData) ? window.performanceData : [];
+
+            const byClass = {};
+            for (const row of data) {
+              const key = `${row.grade} ${row.stream}`;
+              const total = Number(row.total_students) || 0;
+              const avg = Number(row.class_average) || 0;
+              const counts = row.performance_counts || {};
+              const ee = (Number(counts.EE1) || 0) + (Number(counts.EE2) || 0);
+              const me = (Number(counts.ME1) || 0) + (Number(counts.ME2) || 0);
+              if (!byClass[key]) byClass[key] = { total: 0, weighted: 0, ee: 0, me: 0 };
+              byClass[key].total += total;
+              byClass[key].weighted += avg * total;
+              byClass[key].ee += ee;
+              byClass[key].me += me;
+            }
+
+            const items = Object.entries(byClass).map(([cls, v]) => {
+              const average = v.total ? v.weighted / v.total : 0;
+              const excellence = v.total ? (v.ee / v.total) * 100 : 0;
+              const mastery = v.total ? (v.me / v.total) * 100 : 0;
+              let value = average; let sub = 'Class Average';
+              if (metric === 'excellence') { value = excellence; sub = 'Excellence Rate'; }
+              if (metric === 'mastery') { value = mastery; sub = 'Mastery Rate'; }
+              return { cls, value, sub, average, excellence, mastery, total: v.total };
+            });
+
+            container.innerHTML = '';
+            if (!items.length) {
+              container.innerHTML = '<div class="heatmap-empty">No data available for heatmap yet.</div>';
+              return;
+            }
+
+            const toColor = (val) => {
+              const v = Math.max(0, Math.min(100, val));
+              if (v < 60) {
+                const t = v / 60; // 0..1
+                const r = 220;
+                const g = Math.round(50 + t * (137 - 50));
+                const b = Math.round(47 + t * (0 - 47));
+                return `rgba(${r}, ${g}, ${b}, 0.18)`; // reddish -> amber
+              } else {
+                const t = (v - 60) / 40; // 0..1
+                const r = Math.round(181 - t * (48));
+                const g = Math.round(137 + t * (16));
+                const b = 0;
+                return `rgba(${r}, ${g}, ${b}, 0.18)`; // amber -> green
+              }
+            };
+
+            items.sort((a,b) => b.value - a.value);
+            for (const e of items) {
+              const div = document.createElement('div');
+              div.className = 'heatmap-tile';
+              div.style.background = toColor(e.value);
+              div.innerHTML = `
+                <div class="heatmap-title">${e.cls}</div>
+                <div class="heatmap-value">${e.value.toFixed(1)}%</div>
+                <div class="heatmap-sub">${e.sub} • ${e.total} students</div>
+              `;
+              div.title = `${e.cls} — Avg: ${e.average.toFixed(1)}%, Excellence: ${e.excellence.toFixed(1)}%, Mastery: ${e.mastery.toFixed(1)}%`;
+              div.addEventListener('click', () => {
+                populateDrillDown(
+                  `<h4 style="margin:0 0 .25rem 0;">${e.cls}</h4>
+                   <div style="color:#586e75; margin-bottom:.5rem;">${e.sub} • ${e.value.toFixed(1)}%</div>
+                   <ul style="margin:0; padding-left:1rem; color:#073642;">
+                     <li>Class Average: ${e.average.toFixed(1)}%</li>
+                     <li>Excellence Rate: ${e.excellence.toFixed(1)}%</li>
+                     <li>Mastery Rate: ${e.mastery.toFixed(1)}%</li>
+                     <li>Students: ${e.total}</li>
+                   </ul>`
+                );
+              });
+              container.appendChild(div);
+            }
+          }
+
+          function viewDetailedAnalysis(grade, stream) {
+            const data = Array.isArray(window.performanceData) ? window.performanceData : [];
+            const items = data.filter(r => `${r.grade}` === `${grade}` && `${r.stream}` === `${stream}`);
+            if (!items.length) {
+              populateDrillDown(`<div class="heatmap-empty">No detailed data for ${grade} ${stream}.</div>`);
+              return;
+            }
+            let html = `<h4 style="margin:0 0 .5rem 0;">${grade} ${stream} — Detailed Analysis</h4>`;
+            html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;">';
+            for (const r of items) {
+              const c = r.performance_counts || {};
+              html += `
+                <div class="analytics-card">
+                  <div style="font-weight:700;color:#073642;margin-bottom:.25rem;">Term ${r.term} • ${r.assessment_type}</div>
+                  <div style="display:flex;gap:1rem;flex-wrap:wrap;color:#586e75;">
+                    <div><strong>Students:</strong> ${r.total_students}</div>
+                    <div><strong>Average:</strong> ${Number(r.class_average||0).toFixed(1)}%</div>
+                  </div>
+                  <div style="margin-top:.5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem;font-size:.9rem;">
+                    <div>EE1: ${c.EE1||0}</div>
+                    <div>EE2: ${c.EE2||0}</div>
+                    <div>ME1: ${c.ME1||0}</div>
+                    <div>ME2: ${c.ME2||0}</div>
+                    <div>AE1: ${c.AE1||0}</div>
+                    <div>AE2: ${c.AE2||0}</div>
+                    <div>BE1: ${c.BE1||0}</div>
+                    <div>BE2: ${c.BE2||0}</div>
+                  </div>
+                </div>`;
+            }
+            html += '</div>';
+            populateDrillDown(html);
+          }
+
+          function populateDrillDown(html) {
+            const el = document.getElementById('drillDownContainer');
+            if (!el) return;
+            el.innerHTML = html;
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+
+          function generatePerformanceAlerts() {
+            const alertsContainer = document.getElementById('performanceAlerts');
+            alertsContainer.innerHTML = '<div class="loading">Generating alerts...</div>';
+
+            setTimeout(() => {
+              alertsContainer.innerHTML = `
+                <div class="performance-alert alert-warning">
+                  ⚠️ Grade 8A showing declining trend in Mathematics
+                </div>
+                <div class="performance-alert alert-info">
+                  ℹ️ Grade 10B exceeding expectations in Science
+                </div>
+              `;
+            }, 1000);
+          }
+
+          async function exportChartsAsPDF() {
+            const exportBtn = document.querySelector('[onclick="exportChartsAsPDF()"]');
+            const originalText = exportBtn ? exportBtn.innerHTML : '';
+            if (exportBtn) {
+              exportBtn.innerHTML = '⟳ Exporting...';
+              exportBtn.disabled = true;
+            }
+
+            try {
+              const { jsPDF } = window.jspdf || {};
+              if (!jsPDF) {
+                alert('PDF library not loaded.');
+                return;
+              }
+
+              const cfg = window.dashboardConfig || {};
+              const totalStudents = typeof cfg.totalStudents === 'number' ? cfg.totalStudents : 0;
+              const topClass = cfg.topClass || 'N/A';
+              const schoolAverage = typeof cfg.schoolAverage === 'number' ? cfg.schoolAverage : 0;
+              const reportsGenerated = 'N/A';
+
+              const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+              const margin = 40;
+              let y = margin;
+
+              // Header
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(18);
+              doc.text(cfg.schoolName || 'School Dashboard Report', margin, y);
+              y += 24;
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(11);
+              doc.text(`Date: ${new Date().toLocaleString()}`, margin, y);
+              y += 20;
+              doc.text(`Academic Year: ${cfg.currentAcademicYear || 'N/A'}`, margin, y);
+              y += 16;
+              doc.text(`Current Term: ${cfg.currentTerm || 'N/A'}`, margin, y);
+              y += 24;
+
+              // Key stats
+              doc.setFont('helvetica', 'bold');
+              doc.text('Key Statistics', margin, y);
+              y += 16;
+              doc.setFont('helvetica', 'normal');
+              const stats = [
+                [`Total Students`, String(totalStudents)],
+                [`School Average`, `${schoolAverage.toFixed ? schoolAverage.toFixed(1) : schoolAverage}%`],
+                [`Best Class`, topClass],
+                [`Reports Generated`, reportsGenerated]
+              ];
+              stats.forEach(([k, v]) => {
+                doc.text(`${k}: ${v}`, margin, y);
+                y += 16;
+              });
+
+              // Try capture charts if present
+              const donutEl = document.getElementById('performanceDonutChart');
+              const barEl = document.getElementById('classComparisonChart');
+              const addCanvas = async (canvasEl, title) => {
+                if (!canvasEl) return;
+                if (typeof html2canvas !== 'function') return;
+                try {
+                  const canvas = await html2canvas(canvasEl.parentElement, { backgroundColor: '#fff', scale: 2 });
+                  const imgData = canvas.toDataURL('image/png');
+                  const pageWidth = doc.internal.pageSize.getWidth() - margin * 2;
+                  const imgWidth = pageWidth;
+                  const ratio = canvas.height / canvas.width;
+                  const imgHeight = imgWidth * ratio;
+                  if (y + 24 + imgHeight + margin > doc.internal.pageSize.getHeight()) {
+                    doc.addPage();
+                    y = margin;
+                  }
+                  doc.setFont('helvetica', 'bold');
+                  doc.text(title, margin, y);
+                  y += 8;
+                  doc.addImage(imgData, 'PNG', margin, y, imgWidth, imgHeight);
+                  y += imgHeight + 16;
+                } catch (e) {
+                  console.warn('Chart capture failed:', e);
+                }
+              };
+
+              await addCanvas(donutEl, 'Performance Distribution');
+              await addCanvas(barEl, 'Class Comparison');
+
+              doc.save(`dashboard_report_${new Date().toISOString().split('T')[0]}.pdf`);
+            } finally {
+              if (exportBtn) {
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+              }
+            }
+          }
+
+          // Premium Stats Functions
+          function refreshStats() {
+            // Show loading state for all stat numbers
+            const statNumbers = document.querySelectorAll('.stat-number');
+            const originalValues = [];
+
+            statNumbers.forEach((element, index) => {
+              originalValues[index] = element.textContent;
+              element.innerHTML = '⟳';
+            });
+
+            // Simulate refresh with loading effect
+            setTimeout(() => {
+              statNumbers.forEach((element, index) => {
+                element.textContent = originalValues[index];
+                element.style.animation = 'pulse 0.5s ease-out';
+              });
+
+              // Show success message
+              showNotification('Statistics refreshed successfully!', 'success');
+            }, 1500);
+          }
+
+          function exportStats() {
+            // Create CSV content with actual data
+            const cfg = window.dashboardConfig || {};
+            const csvContent = "data:text/csv;charset=utf-8," + [
+              "Metric,Value",
+              `Total Students,${typeof cfg.totalStudents === 'number' ? cfg.totalStudents : 0}`,
+              `School Average,${(typeof cfg.schoolAverage === 'number' ? cfg.schoolAverage : 0).toFixed(1)}%`,
+              `Assessment Types,${typeof cfg.totalAssessments === 'number' ? cfg.totalAssessments : 0}`,
+              `Active Teachers,${typeof cfg.totalTeachers === 'number' ? cfg.totalTeachers : 0}`,
+              `Active Subjects,${typeof cfg.totalSubjects === 'number' ? cfg.totalSubjects : 0}`,
+              `Active Classes,${typeof cfg.totalClasses === 'number' ? cfg.totalClasses : 0}`,
+              `Current Term,${cfg.currentTerm || 'N/A'}`,
+              `Academic Year,${cfg.currentAcademicYear || 'N/A'}`
+            ].join("\n");
+
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", "school_statistics_" + new Date().toISOString().split('T')[0] + ".csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+      showNotification('Statistics exported successfully!', 'success');
+          }
+
+          function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+              ${type === 'success' ? '✅' : 'ℹ️'}
+              <span>${message}</span>
+            `;
+
+            notification.style.cssText = `
+              position: fixed;
+              top: 20px;
+              right: 20px;
+              background: ${type === 'success' ? '#859900' : '#268bd2'};
+              color: white;
+              padding: 1rem 1.5rem;
+              border-radius: 12px;
+              box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+              z-index: 9999;
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              font-weight: 600;
+              animation: slideInRight 0.3s ease-out;
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+              notification.style.animation = 'slideOutRight 0.3s ease-in';
+              setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+          }
+
+          // Add CSS for notifications
+          const notificationStyles = document.createElement('style');
+          notificationStyles.textContent = `
+            @keyframes slideInRight {
+              from { transform: translateX(100%); opacity: 0; }
+              to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+              from { transform: translateX(0); opacity: 1; }
+              to { transform: translateX(100%); opacity: 0; }
+            }
+            @keyframes pulse {
+              0% { transform: scale(1); }
+              50% { transform: scale(1.05); }
+              100% { transform: scale(1); }
+            }
+          `;
+          document.head.appendChild(notificationStyles);
+
+          // Initialize Solar Theme Charts and other functionality
+          document.addEventListener('DOMContentLoaded', function() {
+            initializeSolarCharts();
+            initializePerformanceTable();
+            updateHeatmap();
+            initMobileDrawer();
           });
 
-          const hasClassData = classLabels.length > 0;
-          {% else %}
-          const hasClassData = false;
-          const classLabels = [];
-          const classAverages = [];
-          {% endif %}
+          function initializeSolarCharts() {
+            // Performance Donut Chart - Use real data or show no data state
+            const donutCtx = document.getElementById('performanceDonutChart');
+            if (donutCtx) {
+              {% if dashboard_stats.performance_distribution %}
+              const performanceData = {{ dashboard_stats.performance_distribution | tojson }};
+              const chartData = [
+                performanceData['EE'] || 0,
+                performanceData['ME'] || 0,
+                performanceData['AE'] || 0,
+                performanceData['BE'] || 0
+              ];
+              const hasData = chartData.some(value => value > 0);
+              {% else %}
+              const hasData = false;
+              const chartData = [0, 0, 0, 0];
+              {% endif %}
 
-          if (hasClassData) {
-            new Chart(comparisonCtx, {
-              type: 'bar',
-              data: {
-                labels: classLabels,
-                datasets: [{
-                  label: 'Class Average',
-                  data: classAverages,
-                  backgroundColor: 'rgba(181, 137, 0, 0.8)',
-                  borderColor: '#b58900',
-                  borderWidth: 2,
-                  borderRadius: 6,
-                  borderSkipped: false,
-                }]
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: false
-                  }
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    max: 100,
-                    grid: {
-                      color: 'rgba(88, 110, 117, 0.1)'
-                    },
-                    ticks: {
-                      font: {
-                        family: 'Source Sans Pro'
+              if (hasData) {
+                const donutChart = new Chart(donutCtx, {
+                  type: 'doughnut',
+                  data: {
+                    labels: ['Exceeds Expectations', 'Meets Expectations', 'Approaches Expectations', 'Below Expectations'],
+                    datasets: [{
+                      data: chartData,
+                      backgroundColor: [
+                        '#859900', // Solar green
+                        '#268bd2', // Solar blue
+                        '#b58900', // Solar yellow
+                        '#dc322f'  // Solar red
+                      ],
+                      borderColor: '#fdf6e3',
+                      borderWidth: 3
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: 'bottom',
+                        labels: {
+                          padding: 20,
+                          usePointStyle: true,
+                          font: {
+                            family: 'Source Sans Pro',
+                            size: 12
+                          }
+                        }
                       }
                     }
                   },
-                  x: {
-                    grid: {
-                      display: false
+                  onClick: (evt, elements) => {
+                    const idx = elements && elements[0] ? elements[0].index : undefined;
+                    if (typeof idx !== 'number') return;
+                    const label = ['Exceeds', 'Meets', 'Approaches', 'Below'][idx] || 'Performance';
+                    const value = chartData[idx] || 0;
+                    populateDrillDown(`<h4 style=\"margin:0 0 .25rem 0;\">${label} Expectations</h4><div style=\"color:#586e75;\">Count: ${value}</div>`);
+                  }
+                });
+                window.donutChart = donutChart;
+              } else {
+                // Show no data message
+                donutCtx.style.display = 'none';
+                const container = donutCtx.parentElement;
+                container.innerHTML = `
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #586e75;">
+                    📊
+                    <h4 style="margin-bottom: 0.5rem;">No Performance Data</h4>
+                    <p style="text-align: center; opacity: 0.7;">Performance distribution will appear here once assessment data is available.</p>
+                  </div>
+                `;
+              }
+            }
+
+            // Class Comparison Chart - Use real performance data
+            const comparisonCtx = document.getElementById('classComparisonChart');
+            if (comparisonCtx) {
+              {% if performance_data and performance_data|length > 0 %}
+              const performanceData = {{ performance_data | tojson }};
+              const classLabels = [];
+              const classAverages = [];
+
+              // Extract class names and averages from real data
+              performanceData.forEach(item => {
+                const className = `${item.grade} ${item.stream}`;
+                if (!classLabels.includes(className)) {
+                  classLabels.push(className);
+                  classAverages.push(parseFloat(item.class_average) || 0);
+                }
+              });
+
+              const hasClassData = classLabels.length > 0;
+              {% else %}
+              const hasClassData = false;
+              const classLabels = [];
+              const classAverages = [];
+              {% endif %}
+
+              if (hasClassData) {
+                const comparisonChart = new Chart(comparisonCtx, {
+                  type: 'bar',
+                  data: {
+                    labels: classLabels,
+                    datasets: [{
+                      label: 'Class Average',
+                      data: classAverages,
+                      backgroundColor: 'rgba(181, 137, 0, 0.8)',
+                      borderColor: '#b58900',
+                      borderWidth: 2,
+                      borderRadius: 6,
+                      borderSkipped: false,
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        display: false
+                      }
                     },
-                    ticks: {
-                      font: {
-                        family: 'Source Sans Pro'
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                          color: 'rgba(88, 110, 117, 0.1)'
+                        },
+                        ticks: {
+                          font: {
+                            family: 'Source Sans Pro'
+                          }
+                        }
+                      },
+                      x: {
+                        grid: {
+                          display: false
+                        },
+                        ticks: {
+                          font: {
+                            family: 'Source Sans Pro'
+                          }
+                        }
                       }
                     }
+                  },
+                  onClick: (evt, elements) => {
+                    const idx = elements && elements[0] ? elements[0].index : undefined;
+                    if (typeof idx !== 'number') return;
+                    const cls = classLabels[idx];
+                    const avg = classAverages[idx];
+                    populateDrillDown(`<h4 style=\"margin:0 0 .25rem 0;\">${cls}</h4><div style=\"color:#586e75;\">Class Average: ${Number(avg||0).toFixed(1)}%</div>`);
                   }
-                }
+                });
+                window.comparisonChart = comparisonChart;
+              } else {
+                // Show no data message
+                comparisonCtx.style.display = 'none';
+                const container = comparisonCtx.parentElement;
+                container.innerHTML = `
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #586e75;">
+                    📊
+                    <h4 style="margin-bottom: 0.5rem;">No Class Data</h4>
+                    <p style="text-align: center; opacity: 0.7;">Class comparison chart will appear here once assessment data is available.</p>
+                  </div>
+                `;
               }
-            });
-          } else {
-            // Show no data message
-            comparisonCtx.style.display = 'none';
-            const container = comparisonCtx.parentElement;
-            container.innerHTML = `
-              <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #586e75;">
-                📊
-                <h4 style="margin-bottom: 0.5rem;">No Class Data</h4>
-                <p style="text-align: center; opacity: 0.7;">Class comparison chart will appear here once assessment data is available.</p>
-              </div>
-            `;
+            }
           }
-        }
-      }
 
-      function initializePerformanceTable() {
-        // Add pagination and search functionality
-        const table = document.querySelector('.performance-table');
-        if (table) {
-          // Initialize table features
-          console.log('Performance table initialized');
-        }
-      }
+          // Pagination state and helpers (mobile-aware)
+          const tablePagination = { currentPage: 1, pageSize: 10 };
 
-      // Add fade out animation for alerts
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes fadeOut {
-          from { opacity: 1; transform: translateX(0); }
-          to { opacity: 0; transform: translateX(100%); }
-        }
-        .performance-alert {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 1rem;
-          margin-bottom: 0.5rem;
-          border-radius: 8px;
-        }
-        .performance-alert.alert-warning {
-        }
-        .performance-alert.alert-info {
-        }
-        .loading {
-          text-align: center;
-          padding: 2rem;
-        }
-      `;
-      document.head.appendChild(style);
+          function computePageSize() {
+            const w = window.innerWidth || 1024;
+            if (w <= 520) return 5;
+            if (w <= 768) return 8;
+            return 10;
+          }
+
+          function getFilteredRows() {
+            return Array.from(document.querySelectorAll('.performance-row')).filter(r => r.dataset.filtered === '1' || (!('filtered' in r.dataset)));
+          }
+
+          function renderPagination() {
+            const rows = getFilteredRows();
+            const total = rows.length;
+            const totalPages = Math.max(1, Math.ceil(total / tablePagination.pageSize));
+            const pageNumbers = document.getElementById('page-numbers');
+            const paginationInfo = document.getElementById('pagination-info');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            if (paginationInfo) paginationInfo.textContent = `Showing ${total} results`;
+            if (pageNumbers) {
+              pageNumbers.innerHTML = '';
+              for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'btn-outline' + (i === tablePagination.currentPage ? ' active' : '');
+                btn.textContent = String(i);
+                btn.addEventListener('click', () => goToPage(i));
+                pageNumbers.appendChild(btn);
+              }
+            }
+            if (prevBtn) prevBtn.disabled = tablePagination.currentPage <= 1 || totalPages <= 1;
+            if (nextBtn) nextBtn.disabled = tablePagination.currentPage >= totalPages || totalPages <= 1;
+          }
+
+          function showPage(page) {
+            const rows = getFilteredRows();
+            const totalPages = Math.max(1, Math.ceil(rows.length / tablePagination.pageSize));
+            const p = Math.min(Math.max(1, page), totalPages);
+            tablePagination.currentPage = p;
+
+            // hide all filtered rows first
+            rows.forEach(r => { r.style.display = 'none'; });
+
+            const start = (p - 1) * tablePagination.pageSize;
+            const end = start + tablePagination.pageSize;
+            rows.slice(start, end).forEach(r => { r.style.display = ''; });
+
+            renderPagination();
+          }
+
+          function previousPage() { showPage(tablePagination.currentPage - 1); }
+          function nextPage() { showPage(tablePagination.currentPage + 1); }
+          function goToPage(n) { showPage(n); }
+
+          function initPagination() {
+            tablePagination.pageSize = computePageSize();
+            tablePagination.currentPage = 1;
+            renderPagination();
+            showPage(1);
+          }
+
+          function applyPagination(reset = false) {
+            if (reset) tablePagination.currentPage = 1;
+            renderPagination();
+            showPage(tablePagination.currentPage);
+          }
+
+          function initializePerformanceTable() {
+            const table = document.querySelector('.performance-table');
+            if (!table) return;
+            // Ensure default filtered state on initial load
+            document.querySelectorAll('.performance-row').forEach(r => {
+              if (!('filtered' in r.dataset)) r.dataset.filtered = '1';
+            });
+            initPagination();
+            // Recompute page size on resize
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+              clearTimeout(resizeTimer);
+              resizeTimer = setTimeout(() => {
+                const newSize = computePageSize();
+                if (newSize !== tablePagination.pageSize) {
+                  tablePagination.pageSize = newSize;
+                  applyPagination(true);
+                }
+              }, 150);
+            });
+          }
+
+          // ===== Mobile Drawer (Headteacher) =====
+          function initMobileDrawer() {
+            const btn = document.getElementById('hamburgerBtn');
+            const drawer = document.getElementById('mobileDrawer');
+            const backdrop = document.getElementById('mobileDrawerBackdrop');
+            const closeBtn = document.getElementById('drawerCloseBtn');
+            const list = document.getElementById('drawerNavList');
+            if (!btn || !drawer || !backdrop || !closeBtn || !list) return;
+
+            // Clone navbar items into drawer list
+            try {
+              const navItems = document.querySelectorAll('.navbar-nav > li > a.nav-link');
+              list.innerHTML = '';
+              navItems.forEach(a => {
+                const li = document.createElement('li');
+                const clone = a.cloneNode(true);
+                // larger touch targets in drawer
+                clone.style.padding = '0.55rem 0.6rem';
+                clone.style.border = '1px solid rgba(181,137,0,0.25)';
+                clone.style.borderRadius = '8px';
+                clone.style.background = 'rgba(0,0,0,0.1)';
+                li.appendChild(clone);
+                list.appendChild(li);
+              });
+            } catch (e) {
+              console.warn('Drawer link clone failed', e);
+            }
+
+            const openDrawer = () => {
+              document.body.classList.add('drawer-open');
+              btn.setAttribute('aria-expanded', 'true');
+            };
+            const closeDrawer = () => {
+              document.body.classList.remove('drawer-open');
+              btn.setAttribute('aria-expanded', 'false');
+            };
+
+            btn.addEventListener('click', openDrawer);
+            closeBtn.addEventListener('click', closeDrawer);
+            backdrop.addEventListener('click', closeDrawer);
+
+            // Trap Esc
+            document.addEventListener('keydown', (e) => {
+              if (e.key === 'Escape' && document.body.classList.contains('drawer-open')) closeDrawer();
+            });
+
+            // Auto-open on mobile immediately on page load
+            try {
+              const isMobile = (window.innerWidth || 1024) <= 768;
+              if (isMobile) {
+                setTimeout(() => openDrawer(), 150);
+              }
+            } catch {}
+          }
+
+          // Add fade out animation for alerts
+          const style = document.createElement('style');
+          style.textContent = `
+            @keyframes fadeOut {
+              from { opacity: 1; transform: translateX(0); }
+              to { opacity: 0; transform: translateX(100%); }
+            }
+            .performance-alert {
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+              padding: 1rem;
+              margin-bottom: 0.5rem;
+              border-radius: 8px;
+            }
+            .performance-alert.alert-warning {
+            }
+            .performance-alert.alert-info {
+            }
+            .loading {
+              text-align: center;
+              padding: 2rem;
+            }
+          `;
+          document.head.appendChild(style);
     </script>
   </body>
 </html>

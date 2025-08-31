@@ -161,10 +161,34 @@ def dashboard():
     print(f"🔍 DEBUG - Assignment summary teacher: {assignment_summary.get('teacher')}")
     print(f"🔍 DEBUG - Subject assignments count: {len(assignment_summary.get('subject_assignments', []))}")
 
-    # Get recent reports for this teacher
-    from ..services.teacher_assignment_service import get_teacher_recent_reports
-    recent_reports = get_teacher_recent_reports(teacher_id, limit=10)
-    print(f"🔍 DEBUG: Found {len(recent_reports)} recent reports for teacher")
+    # Get recent subject reports for this teacher (persisted history)
+    try:
+        from ..services.report_history_service import list_subject_reports, build_view_url
+        history_entries = list_subject_reports(teacher_id)
+        # Map newest 10 entries into a simplified structure for the template
+        recent_reports = []
+        for e in history_entries[:10]:
+            # Normalize stream display as "Stream X" when available
+            stream_display = e.get('stream') or ''
+            if stream_display and not str(stream_display).lower().startswith('stream '):
+                stream_display = f"Stream {stream_display}"
+
+            recent_reports.append({
+                'grade': e.get('grade', ''),
+                'stream': stream_display,
+                'term': e.get('term', ''),
+                'assessment_type': e.get('assessment_type', ''),
+                'class_average': e.get('class_average'),
+                'date': (e.get('generated_at') or '')[:10],
+                'view_url': build_view_url(e)
+            })
+        print(f"🔍 DEBUG: Recent reports (history-backed): {len(recent_reports)} items")
+    except Exception as e:
+        print(f"⚠️ DEBUG: Failed to load recent reports from history: {e}")
+        # Fallback to DB-based recent marks summary
+        from ..services.teacher_assignment_service import get_teacher_recent_reports
+        recent_reports = get_teacher_recent_reports(teacher_id, limit=10)
+        print(f"🔍 DEBUG: Fallback recent reports count: {len(recent_reports)}")
 
     if 'error' in assignment_summary:
         print(f"❌ DEBUG - Error in assignment summary: {assignment_summary['error']}")
@@ -212,9 +236,8 @@ def dashboard():
     show_download_button = False
     show_subject_report = False
 
-    # Get recent reports
-    recent_reports = []
-    pagination_info = None  # Placeholder
+    # Pagination placeholder (used only for student lists)
+    pagination_info = None
 
     # Handle form submission
     if request.method == "POST":
@@ -1009,7 +1032,7 @@ def generate_subject_report():
                 'logo_url': '/static/uploads/logos/optimized_school_logo_1750595986_hvs.jpg'
             }
 
-        # Prepare report data
+    # Prepare report data
         print(f"🔍 Preparing report data...")
         report_data = {
             'subject': subject,
@@ -1056,6 +1079,30 @@ def generate_subject_report():
                 print(f"✅ DEBUG: Report cached successfully for recent reports")
             except Exception as cache_error:
                 print(f"⚠️ DEBUG: Report caching failed: {cache_error}")
+
+            # Record in report history (file-based, no migration)
+            try:
+                from ..services.report_history_service import record_subject_report
+                avg = report_data['statistics']['average_percentage'] if report_data.get('statistics') else 0
+                record_subject_report(
+                    teacher_id=teacher_id or 0,
+                    subject_id=subject_obj.id,
+                    subject_name=subject_obj.name,
+                    grade_id=grade_obj.id,
+                    grade_name=grade_obj.name,
+                    stream_id=stream_obj.id if stream_obj else None,
+                    stream_name=stream_obj.name if stream_obj else '',
+                    term_id=term_obj.id,
+                    term_name=term_obj.name,
+                    assessment_type_id=assessment_type_obj.id,
+                    assessment_type_name=assessment_type_obj.name,
+                    total_students=total_students,
+                    students_with_marks=students_with_marks,
+                    class_average=avg,
+                )
+                print("✅ DEBUG: Report history recorded")
+            except Exception as history_error:
+                print(f"⚠️ DEBUG: Failed to record report history: {history_error}")
 
             return render_template('subject_report.html', **report_data)
         except Exception as template_error:
@@ -1320,3 +1367,70 @@ def update_marks():
         print(f"❌ Error updating marks: {e}")
         flash(f"Error updating marks: {str(e)}", "error")
         return redirect(url_for('teacher.dashboard'))
+
+
+@teacher_bp.route('/api/report-history')
+@teacher_required
+def api_report_history():
+    """Return report history for the logged-in teacher with optional filters."""
+    try:
+        teacher_id = session.get('teacher_id')
+        if not teacher_id:
+            return jsonify({'success': False, 'message': 'Not authenticated'}), 401
+
+        # Map filter params (accept both ids and names where possible)
+        subject = request.args.get('subject')
+        subject_id = None
+        if subject:
+            subj_obj = Subject.query.filter_by(name=subject).first()
+            subject_id = subj_obj.id if subj_obj else None
+
+        grade = request.args.get('grade')
+        grade_id = None
+        if grade:
+            grade_id = int(grade) if grade.isdigit() else (Grade.query.filter_by(name=grade).first().id if Grade.query.filter_by(name=grade).first() else None)
+
+        stream = request.args.get('stream')
+        stream_id = None
+        if stream:
+            if stream.isdigit():
+                stream_id = int(stream)
+            else:
+                # accept formats like 'A' or 'Stream A'
+                stream_letter = stream.replace('Stream ', '').strip()
+                stream_obj = Stream.query.filter_by(name=stream_letter).first()
+                stream_id = stream_obj.id if stream_obj else None
+
+        term = request.args.get('term')
+        term_id = None
+        if term:
+            term_obj = Term.query.filter_by(name=term).first()
+            term_id = term_obj.id if term_obj else None
+
+        assessment_type = request.args.get('assessment_type')
+        assessment_type_id = None
+        if assessment_type:
+            at_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+            assessment_type_id = at_obj.id if at_obj else None
+
+        from ..services.report_history_service import list_subject_reports, build_view_url
+
+        entries = list_subject_reports(
+            teacher_id,
+            subject_id=subject_id,
+            grade_id=grade_id,
+            stream_id=stream_id,
+            term_id=term_id,
+            assessment_type_id=assessment_type_id,
+        )
+
+        # Add view_url for convenience
+        for e in entries:
+            try:
+                e['view_url'] = build_view_url(e)
+            except Exception:
+                e['view_url'] = None
+
+        return jsonify({'success': True, 'count': len(entries), 'items': entries})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500

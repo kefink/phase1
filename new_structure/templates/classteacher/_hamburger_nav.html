@@ -1,0 +1,517 @@
+<!-- Mobile Hamburger Menu (ClassTeacher) -->
+<style>
+  /* Theme variables (available to whole page) */
+  :root {
+    --primary-color: #16a34a;
+    --card-bg: #0f172a;
+    --text-primary: #e5e7eb;
+    --text-secondary: #cbd5e1;
+    --border-color: #1f2937;
+  }
+  html[data-theme="dark"],
+  body[data-theme="dark"] {
+    --primary-color: #16a34a;
+    --card-bg: #0f172a;
+    --text-primary: #e5e7eb;
+    --text-secondary: #cbd5e1;
+    --border-color: #1f2937;
+  }
+  html[data-theme="light"],
+  body[data-theme="light"] {
+    --primary-color: #16a34a;
+    --card-bg: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --border-color: #e2e8f0;
+  }
+
+  /* Apply theme to page */
+  body {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+  }
+
+  /* Premium drawer styles (glassmorphism, better contrast) */
+  .ct-menu-btn {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    left: calc(14px + env(safe-area-inset-left, 0px));
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(17, 24, 39, 0.45);
+    color: #e2e8f0;
+    -webkit-backdrop-filter: saturate(1.4) blur(8px);
+    backdrop-filter: saturate(1.4) blur(8px);
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1001;
+    transition: transform 180ms ease, background-color 180ms ease,
+      border-color 180ms ease;
+  }
+  .ct-menu-btn:active {
+    transform: scale(0.98);
+  }
+  .ct-menu-btn .fa-bars {
+    font-size: 1.125rem;
+  }
+  .ct-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+    z-index: 1000;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+  .ct-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .ct-drawer {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      rgba(13, 19, 33, 0.92),
+      rgba(6, 10, 20, 0.88)
+    );
+    color: #e5e7eb;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 12px 0 40px rgba(2, 6, 23, 0.55);
+    transition: left 250ms ease;
+    z-index: 1002;
+    display: flex;
+    flex-direction: column;
+    -webkit-backdrop-filter: saturate(1.2) blur(14px);
+    backdrop-filter: saturate(1.2) blur(14px);
+  }
+  .ct-drawer.open {
+    left: 0;
+  }
+  .ct-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .ct-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .ct-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(2, 6, 23, 0.35);
+  }
+  .ct-titles {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .ct-drawer-title {
+    font-weight: 700;
+    font-size: 0.96rem;
+    letter-spacing: 0.2px;
+    color: #f8fafc;
+  }
+  .ct-subtitle {
+    font-size: 0.76rem;
+    color: #cbd5e1;
+    opacity: 0.9;
+  }
+  .ct-close-btn,
+  .ct-theme-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    color: #e2e8f0;
+    cursor: pointer;
+    transition: background-color 160ms ease, border-color 160ms ease,
+      transform 160ms ease;
+  }
+  .ct-close-btn:active {
+    transform: scale(0.98);
+  }
+  .ct-theme-btn:active {
+    transform: scale(0.98);
+  }
+  .ct-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ct-nav {
+    padding: 10px 6px 24px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+  .ct-nav a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 6px 6px;
+    padding: 13px 14px;
+    color: #e5e7eb;
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.02)
+    );
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
+      0 10px 20px rgba(2, 6, 23, 0.18);
+    transition: background-color 180ms ease, border-color 180ms ease,
+      transform 180ms ease;
+  }
+  .ct-nav a:active {
+    transform: translateY(1px);
+  }
+  .ct-nav a:hover {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.03)
+    );
+  }
+  .ct-nav i {
+    width: 18px;
+    text-align: center;
+    color: var(--primary-color, #22c55e);
+  }
+  .ct-nav a.active {
+    border-color: rgba(34, 197, 94, 0.55);
+    background: linear-gradient(
+      180deg,
+      rgba(34, 197, 94, 0.14),
+      rgba(34, 197, 94, 0.06)
+    );
+  }
+  .ct-nav a.active::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--primary-color, #22c55e);
+  }
+  /* Visually-hidden utility for screen-reader text */
+  .ct-menu-btn .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  /* Auto-open on mobile when body has data-ct-auto-open="true" (prevents flash) */
+  @media (max-width: 768px) {
+    body[data-ct-auto-open="true"] #ctOverlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    body[data-ct-auto-open="true"] #ctDrawer {
+      left: 0;
+    }
+  }
+  /* Show only on mobile/tablet */
+  @media (min-width: 769px) {
+    .ct-menu-btn {
+      display: none;
+    }
+  }
+
+  /* Light theme adjustments (applies when OS prefers light and no explicit dark theme is set) */
+  @media (prefers-color-scheme: light) {
+    body:not([data-theme="dark"]) .ct-menu-btn {
+      border: 1px solid rgba(2, 6, 23, 0.08);
+      background: rgba(255, 255, 255, 0.7);
+      color: #0f172a;
+      -webkit-backdrop-filter: saturate(1.2) blur(8px);
+      backdrop-filter: saturate(1.2) blur(8px);
+      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+    body:not([data-theme="dark"]) #ctOverlay {
+      background: rgba(15, 23, 42, 0.35);
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
+    }
+    body:not([data-theme="dark"]) #ctDrawer {
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.86),
+        rgba(255, 255, 255, 0.92)
+      );
+      color: #0f172a;
+      border-right: 1px solid rgba(2, 6, 23, 0.06);
+      box-shadow: 12px 0 40px rgba(2, 6, 23, 0.1);
+    }
+    body:not([data-theme="dark"]) .ct-drawer-title {
+      color: #0b1220;
+    }
+    body:not([data-theme="dark"]) .ct-subtitle {
+      color: #334155;
+      opacity: 0.9;
+    }
+    body:not([data-theme="dark"]) .ct-close-btn {
+      color: #0f172a;
+      border-color: rgba(2, 6, 23, 0.12);
+    }
+    body:not([data-theme="dark"]) .ct-nav a {
+      color: #0f172a;
+      border-color: rgba(2, 6, 23, 0.08);
+      background: linear-gradient(
+        180deg,
+        rgba(2, 6, 23, 0.03),
+        rgba(2, 6, 23, 0.015)
+      );
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset,
+        0 8px 18px rgba(2, 6, 23, 0.06);
+    }
+    body:not([data-theme="dark"]) .ct-nav a:hover {
+      border-color: rgba(2, 6, 23, 0.18);
+      background: linear-gradient(
+        180deg,
+        rgba(2, 6, 23, 0.06),
+        rgba(2, 6, 23, 0.03)
+      );
+    }
+    body:not([data-theme="dark"]) .ct-nav i {
+      color: var(--primary-color, #16a34a);
+    }
+    body:not([data-theme="dark"]) .ct-nav a.active {
+      border-color: rgba(22, 163, 74, 0.35);
+      background: linear-gradient(
+        180deg,
+        rgba(22, 163, 74, 0.14),
+        rgba(22, 163, 74, 0.06)
+      );
+    }
+  }
+</style>
+
+<button
+  class="ct-menu-btn"
+  id="ctMenuBtn"
+  aria-label="Open menu"
+  aria-controls="ctDrawer"
+  aria-expanded="false"
+>
+  <i class="fas fa-bars" aria-hidden="true"></i>
+  <span class="sr-only">Menu</span>
+  <!-- Screen-reader only text (kept minimal, no external CSS needed) -->
+</button>
+<div class="ct-overlay" id="ctOverlay" aria-hidden="true"></div>
+<nav class="ct-drawer" id="ctDrawer" aria-hidden="true">
+  <div class="ct-drawer-header">
+    <div class="ct-brand">
+      {% if school_info and school_info.logo_url %}
+      <img
+        class="ct-logo"
+        src="{{ school_info.logo_url }}"
+        alt="{{ school_info.school_name or 'School' }} logo"
+        loading="lazy"
+      />
+      {% endif %}
+      <div class="ct-titles">
+        <div class="ct-drawer-title">
+          {{ school_info.school_name if school_info and school_info.school_name
+          else 'Class Teacher' }}
+        </div>
+        {% if grade and stream %}
+        <div class="ct-subtitle">Grade {{ grade }} {{ stream }}</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="ct-header-actions">
+      <button
+        class="ct-theme-btn"
+        id="ctThemeToggleBtn"
+        aria-label="Toggle theme"
+        title="Toggle theme"
+      >
+        <i class="fas fa-moon"></i>
+      </button>
+      <button class="ct-close-btn" id="ctCloseBtn" aria-label="Close menu">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+  {% set current = request.endpoint %}
+  <div class="ct-nav">
+    <a
+      href="{{ url_for('classteacher.dashboard') if url_for else '#' }}"
+      class="{{ 'active' if current == 'classteacher.dashboard' else '' }}"
+      aria-current="{{ 'page' if current == 'classteacher.dashboard' else 'false' }}"
+      ><i class="fas fa-home"></i> Dashboard</a
+    >
+    <a
+      href="{{ url_for('classteacher.upload_marks') if url_for else '#' }}"
+      class="{{ 'active' if current == 'classteacher.upload_marks' else '' }}"
+      aria-current="{{ 'page' if current == 'classteacher.upload_marks' else 'false' }}"
+      ><i class="fas fa-upload"></i> Upload Marks</a
+    >
+    <a
+      href="{{ url_for('classteacher.view_all_reports') if url_for else '#' }}"
+      class="{{ 'active' if current == 'classteacher.view_all_reports' else '' }}"
+      aria-current="{{ 'page' if current == 'classteacher.view_all_reports' else 'false' }}"
+      ><i class="fas fa-chart-line"></i> View Reports</a
+    >
+    <a
+      href="{{ url_for('classteacher.grade_reports_dashboard') if url_for else '#' }}"
+      class="{{ 'active' if current == 'classteacher.grade_reports_dashboard' else '' }}"
+      aria-current="{{ 'page' if current == 'classteacher.grade_reports_dashboard' else 'false' }}"
+      ><i class="fas fa-file-pdf"></i> Generate Reports</a
+    >
+    <a
+      href="{{ url_for('classteacher.manage_students') if url_for else '#' }}"
+      class="{{ 'active' if current == 'classteacher.manage_students' else '' }}"
+      aria-current="{{ 'page' if current == 'classteacher.manage_students' else 'false' }}"
+      ><i class="fas fa-users"></i> Manage Students</a
+    >
+    <a href="{{ url_for('auth.logout_route') if url_for else '#' }}"
+      ><i class="fas fa-sign-out-alt"></i> Logout</a
+    >
+  </div>
+  <!-- Optional footer or version could go here -->
+</nav>
+
+<script>
+  (function () {
+    const btn = document.getElementById("ctMenuBtn");
+    const drawer = document.getElementById("ctDrawer");
+    const overlay = document.getElementById("ctOverlay");
+    const closeBtn = document.getElementById("ctCloseBtn");
+    const themeBtn = document.getElementById("ctThemeToggleBtn");
+
+    function openDrawer() {
+      drawer.classList.add("open");
+      overlay.classList.add("active");
+      btn.setAttribute("aria-expanded", "true");
+      drawer.setAttribute("aria-hidden", "false");
+      overlay.setAttribute("aria-hidden", "false");
+      // Prevent body scroll while open
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    }
+    function closeDrawer() {
+      drawer.classList.remove("open");
+      overlay.classList.remove("active");
+      btn.setAttribute("aria-expanded", "false");
+      drawer.setAttribute("aria-hidden", "true");
+      overlay.setAttribute("aria-hidden", "true");
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+    function toggle() {
+      if (drawer.classList.contains("open")) closeDrawer();
+      else openDrawer();
+    }
+
+    if (btn) {
+      btn.addEventListener("click", toggle);
+    }
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeDrawer);
+    }
+    if (overlay) {
+      overlay.addEventListener("click", closeDrawer);
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeDrawer();
+    });
+    // Theme toggle
+    const THEME_KEY = "ctTheme";
+    const mql =
+      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+    const systemTheme = () => (mql && mql.matches ? "dark" : "light");
+    const setThemeAttr = (val) => {
+      if (!val) return;
+      document.documentElement.setAttribute("data-theme", val);
+      if (document.body) document.body.setAttribute("data-theme", val);
+    };
+    const setThemeIcon = (val) => {
+      if (!themeBtn) return;
+      const icon = themeBtn.querySelector("i");
+      if (!icon) return;
+      icon.className = "fas " + (val === "dark" ? "fa-sun" : "fa-moon");
+      themeBtn.title =
+        "Switch to " + (val === "dark" ? "light" : "dark") + " theme";
+      themeBtn.setAttribute("aria-pressed", val === "dark");
+    };
+    const applyTheme = (val) => {
+      setThemeAttr(val);
+      setThemeIcon(val);
+    };
+    const initTheme = () => {
+      try {
+        const saved = localStorage.getItem(THEME_KEY);
+        applyTheme(saved || systemTheme());
+      } catch (e) {
+        applyTheme(systemTheme());
+      }
+    };
+    const toggleTheme = () => {
+      const current =
+        document.documentElement.getAttribute("data-theme") || systemTheme();
+      const next = current === "dark" ? "light" : "dark";
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch (e) {}
+      applyTheme(next);
+    };
+    if (themeBtn) themeBtn.addEventListener("click", toggleTheme);
+    try {
+      if (mql && mql.addEventListener) {
+        mql.addEventListener("change", (ev) => {
+          const saved = localStorage.getItem(THEME_KEY);
+          if (!saved) applyTheme(ev.matches ? "dark" : "light");
+        });
+      }
+    } catch (e) {}
+
+    // Ensure ARIA state matches when auto-open is desired on mobile
+    if (
+      document.body &&
+      document.body.getAttribute("data-ct-auto-open") === "true" &&
+      window.innerWidth < 769
+    ) {
+      openDrawer();
+    }
+
+    // Initialize theme last to ensure icon state matches
+    initTheme();
+  })();
+</script>

@@ -309,6 +309,7 @@
   </head>
 
   <body>
+    {% include 'classteacher/_hamburger_nav.html' %}
     <div class="container">
       <!-- Breadcrumb -->
       <div class="breadcrumb">
@@ -644,4 +645,5 @@
       });
     </script>
   </body>
+  <script src="{{ url_for('static', filename='js/auto_wrap_tables.js') }}"></script>
 </html>

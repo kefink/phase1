@@ -40,12 +40,13 @@
         box-sizing: border-box;
       }
 
-      body {
+  body {
         font-family: "Inter", sans-serif;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         color: #333;
       }
+
 
       .container {
         max-width: 1400px;
@@ -91,6 +92,11 @@
       .back-button:hover {
         background: rgba(255, 255, 255, 0.3);
         transform: translateY(-2px);
+      }
+
+      /* Prevent overlap with hamburger on small screens */
+      @media (max-width: 576px) {
+        .back-button { left: 64px; top: 16px; }
       }
 
       .classes-grid {
@@ -349,9 +355,22 @@
           font-size: 2rem;
         }
       }
-    </style>
-  </head>
-  <body class="analytics-premium class-overview-solar">
+        @media (max-width: 576px) {
+          .header { padding: 20px; }
+          .class-card { padding: 20px; }
+          .subjects-summary { gap: 10px; }
+          .btn { width: 100%; }
+        }
+        @media (max-width: 576px) {
+          .header { padding: 20px; }
+          .class-card { padding: 20px; }
+          .subjects-summary { gap: 10px; }
+          .btn { width: 100%; }
+        }
+      </style>
+    </head>
+    <body class="analytics-premium class-overview-solar">
+      <script src="{{ url_for('static', filename='js/auto_wrap_tables.js') }}"></script>
     <a href="{{ url_for('classteacher.dashboard') }}" class="back-button">
       <i class="fas fa-arrow-left"></i> Back to Dashboard
     </a>
@@ -516,7 +535,8 @@
       </div>
       {% endif %}
     </div>
-  </body>
+  <body>
+    {% include 'classteacher/_hamburger_nav.html' %}
   <script>
     // Expand/collapse pending chips per card
     document.addEventListener(

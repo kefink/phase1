@@ -218,10 +218,25 @@
           grid-template-columns: 1fr;
         }
       }
+      @media (max-width: 576px) {
+        .header {
+          padding: 1rem;
+        }
+        .option-card {
+          padding: 1.25rem;
+        }
+        .form-card {
+          padding: 1.25rem;
+        }
+        .btn {
+          width: 100%;
+        }
+      }
     </style>
   </head>
 
   <body>
+    {% include 'classteacher/_hamburger_nav.html' %}
     <div class="container">
       <!-- Breadcrumb -->
       <div class="breadcrumb">
@@ -473,7 +488,7 @@
           </div>
 
           <button type="submit" class="btn btn-primary">
-            <i class="fas fa-analytics"></i> Generate Subject Analysis
+            <i class="fas fa-chart-line"></i> Generate Subject Analysis
           </button>
         </form>
       </div>
@@ -560,6 +575,7 @@
       </div>
     </div>
 
+    <script src="{{ url_for('static', filename='js/auto_wrap_tables.js') }}"></script>
     <script>
       function selectOption(type) {
         // Remove selected class from all cards

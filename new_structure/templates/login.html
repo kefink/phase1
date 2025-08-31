@@ -33,14 +33,7 @@
       rel="stylesheet"
     />
 
-    <!-- Icons -->
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
+    <!-- Icons: Inline SVGs are used to avoid external font dependencies -->
 
     <style>
       /* Solar Theme CSS Variables */
@@ -57,6 +50,12 @@
         --solar-body-bg: #002b36;
         --solar-body-color: #839496;
         --white: #fdf6e3;
+        /* Neutral palette used by this page */
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
         --space-2: 0.5rem;
         --space-3: 0.75rem;
         --space-4: 1rem;
@@ -208,8 +207,12 @@
       }
 
       .school-logo i {
-        font-size: 2rem; /* Smaller icon */
-        color: white;
+        display: none;
+      }
+      .school-logo svg {
+        width: 36px;
+        height: 36px;
+        color: #fff;
       }
 
       .school-name {
@@ -228,6 +231,9 @@
         color: var(--gray-600);
         font-weight: 500;
         margin-bottom: 1.5rem; /* Reduced margin */
+        overflow-wrap: anywhere;
+        word-break: normal;
+        hyphens: auto;
       }
 
       .login-options {
@@ -297,12 +303,20 @@
         font-size: 1.25rem; /* Smaller icon */
         box-shadow: var(--shadow-md);
       }
+      .login-icon svg {
+        width: 22px;
+        height: 22px;
+        color: #fff;
+      }
 
       .login-title {
         font-size: 1.1rem; /* Smaller title */
         font-weight: 700;
         color: var(--gray-800);
         margin: 0;
+        overflow-wrap: anywhere;
+        word-break: normal;
+        hyphens: auto;
       }
 
       .login-description {
@@ -310,6 +324,9 @@
         font-size: 0.8rem; /* Smaller description */
         line-height: 1.4;
         margin: 0.25rem 0 0 0; /* Small top margin */
+        overflow-wrap: anywhere;
+        word-break: normal;
+        hyphens: auto;
       }
 
       .login-arrow {
@@ -317,6 +334,11 @@
         color: var(--gray-400);
         font-size: 1.2rem;
         transition: all 0.3s ease;
+      }
+      .login-arrow svg {
+        width: 20px;
+        height: 20px;
+        color: currentColor;
       }
 
       .login-card:hover .login-arrow {
@@ -493,7 +515,18 @@
             "
           />
           {% else %}
-          <i class="fas fa-graduation-cap"></i>
+          <!-- Academic Cap Icon (Heroicons) -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            role="img"
+          >
+            <path
+              d="M11.7 1.551a.75.75 0 0 1 .6 0l9 4a.75.75 0 0 1 0 1.367l-3.115 1.384a.75.75 0 0 0-.435.682v3.389a4.5 4.5 0 0 1-3.75 4.43v2.447l2.426.606a.75.75 0 1 1-.362 1.456l-2.75-.687a.75.75 0 0 1-.564-.73v-3.092a4.493 4.493 0 0 1-1.2 0v3.092a.75.75 0 0 1-.564.73l-2.75.687a.75.75 0 1 1-.362-1.456l2.426-.606v-2.447a4.5 4.5 0 0 1-3.75-4.43V8.984a.75.75 0 0 0-.435-.682L2.7 6.918a.75.75 0 0 1 0-1.367l9-4Z"
+            />
+          </svg>
           {% endif %}
         </div>
         <h1 class="school-name">
@@ -514,7 +547,20 @@
         >
           <div class="login-card-header">
             <div class="login-icon">
-              <i class="fas fa-user-shield"></i>
+              <!-- Shield Check Icon -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                role="img"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M11.48 2.024a.75.75 0 0 1 .54 0l7.5 3a.75.75 0 0 1 .48.698V11a10.5 10.5 0 0 1-5.633 9.333l-1.867.98a.75.75 0 0 1-.7 0l-1.867-.98A10.5 10.5 0 0 1 3 11V5.722a.75.75 0 0 1 .48-.698l7.5-3Zm3.53 6.97a.75.75 0 1 0-1.06-1.06l-3.97 3.97-1.47-1.47a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l4.5-4.5Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
             </div>
             <div>
               <h3 class="login-title">Admin Portal</h3>
@@ -523,7 +569,20 @@
               </p>
             </div>
             <div class="login-arrow">
-              <i class="fas fa-arrow-right"></i>
+              <!-- Chevron Right Icon -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                role="img"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.47 4.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06L13.94 12 8.47 6.53a.75.75 0 0 1 0-1.06Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
             </div>
           </div>
         </a>
@@ -532,7 +591,21 @@
         <a href="{{ url_for('auth.classteacher_login') }}" class="login-card">
           <div class="login-card-header">
             <div class="login-icon">
-              <i class="fas fa-chalkboard-teacher"></i>
+              <!-- Presentation Chart Bar Icon for Class Teacher -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                role="img"
+              >
+                <path
+                  d="M3 4.5A1.5 1.5 0 0 1 4.5 3h15A1.5 1.5 0 0 1 21 4.5V9a.75.75 0 0 1-1.5 0V4.5h-6.75v9.563l2.908 2.908a.75.75 0 1 1-1.06 1.06L12 15.06l-2.598 2.97a.75.75 0 0 1-1.156-.952l2.904-3.32V4.5H4.5V9A.75.75 0 0 1 3 9V4.5Z"
+                />
+                <path
+                  d="M3.75 20.25a.75.75 0 0 1 0-1.5h16.5a.75.75 0 0 1 0 1.5H3.75Z"
+                />
+              </svg>
             </div>
             <div>
               <h3 class="login-title">Class Teacher</h3>
@@ -541,7 +614,19 @@
               </p>
             </div>
             <div class="login-arrow">
-              <i class="fas fa-arrow-right"></i>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                role="img"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.47 4.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06L13.94 12 8.47 6.53a.75.75 0 0 1 0-1.06Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
             </div>
           </div>
         </a>
@@ -553,7 +638,18 @@
         >
           <div class="login-card-header">
             <div class="login-icon">
-              <i class="fas fa-user-graduate"></i>
+              <!-- Academic Cap Icon for Subject Teacher -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                role="img"
+              >
+                <path
+                  d="M11.7 1.551a.75.75 0 0 1 .6 0l9 4a.75.75 0 0 1 0 1.367l-3.115 1.384a.75.75 0 0 0-.435.682v3.389a4.5 4.5 0 0 1-3.75 4.43v2.447l2.426.606a.75.75 0 1 1-.362 1.456l-2.75-.687a.75.75 0 0 1-.564-.73v-3.092a4.493 4.493 0 0 1-1.2 0v3.092a.75.75 0 0 1-.564.73l-2.75.687a.75.75 0 1 1-.362-1.456l2.426-.606v-2.447a4.5 4.5 0 0 1-3.75-4.43V8.984a.75.75 0 0 0-.435-.682L2.7 6.918a.75.75 0 0 1 0-1.367l9-4Z"
+                />
+              </svg>
             </div>
             <div>
               <h3 class="login-title">Subject Teacher</h3>
@@ -562,7 +658,19 @@
               </p>
             </div>
             <div class="login-arrow">
-              <i class="fas fa-arrow-right"></i>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                role="img"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.47 4.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06L13.94 12 8.47 6.53a.75.75 0 0 1 0-1.06Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
             </div>
           </div>
         </a>

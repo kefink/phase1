@@ -26,7 +26,6 @@ class RCEProtection:
         return False
 from functools import wraps
 import os
-import pandas as pd
 import re
 from datetime import datetime
 
@@ -257,11 +256,13 @@ def dashboard():
         except Exception as e:
             print(f"Error calculating grade/stream data: {e}")
 
-        # Calculate performance data (simplified) with error handling
+        # Calculate performance data (real aggregates) with error handling
         performance_data = []
         avg_performance = 0
         top_class = 'N/A'
         top_class_score = 0
+        # Initialize performance distribution buckets (EE/ME/AE/BE)
+        performance_distribution = {"EE": 0, "ME": 0, "AE": 0, "BE": 0}
 
         try:
             # Get recent marks to calculate performance
@@ -287,6 +288,41 @@ def dashboard():
                         if class_avg > top_class_score:
                             top_class_score = class_avg
                             top_class = class_name
+
+            # Compute real performance distribution from Mark.percentage
+            base_query = Mark.query.filter(
+                Mark.percentage.isnot(None)
+            )
+
+            # Optionally filter to current term if set
+            current_term_obj = Term.query.filter_by(is_current=True).first()
+            if current_term_obj:
+                base_query = base_query.filter(Mark.term_id == current_term_obj.id)
+
+            # Optional: filter by assessment type if provided as query param (?assessment_type=ID)
+            assessment_type_id = request.args.get('assessment_type', type=int)
+            if assessment_type_id:
+                base_query = base_query.filter(Mark.assessment_type_id == assessment_type_id)
+
+            # Buckets based on established thresholds (aggregate EE1/EE2, ME1/ME2, AE1/AE2, BE1/BE2)
+            ee_count = base_query.filter(Mark.percentage >= 75).count()
+            me_count = base_query.filter(Mark.percentage >= 41, Mark.percentage < 75).count()
+            ae_count = base_query.filter(Mark.percentage >= 21, Mark.percentage < 41).count()
+            be_count = base_query.filter(Mark.percentage < 21).count()
+
+            performance_distribution = {
+                "EE": int(ee_count),
+                "ME": int(me_count),
+                "AE": int(ae_count),
+                "BE": int(be_count)
+            }
+
+            # Build performance_data for class comparison/table using comprehensive aggregation
+            try:
+                performance_data = generate_performance_assessment_data()
+            except Exception as inner_e:
+                # Don't break the dashboard if aggregation fails
+                print(f"Error generating performance_data: {inner_e}")
         except Exception as e:
             print(f"Error calculating performance data: {e}")
 
@@ -310,7 +346,8 @@ def dashboard():
             'streams_per_grade': streams_per_grade,
             'subject_performance': {},  # TODO: Calculate
             'performance_alerts': [],  # TODO: Generate alerts
-            'performance_distribution': {'E.E': 0, 'M.E': 0, 'A.E': 0, 'B.E': 0},
+            # Use aligned keys and computed counts for donut chart
+            'performance_distribution': performance_distribution,
             'performance_data': performance_data,
             'current_term': 'Term 1',
             'upcoming_assessments': [],
@@ -388,21 +425,6 @@ def dashboard():
         <p><a href='/'>🏠 Back to Home</a></p>
         """
 
-
-# Helper functions for the dashboard (simplified versions)
-def get_upcoming_assessments():
-    """Get upcoming assessments - simplified version."""
-    return []
-
-def generate_system_alerts():
-    """Generate system alerts - simplified version."""
-    return []
-
-
-# Helper function for performance data (simplified)
-def generate_performance_assessment_data():
-    """Generate performance assessment data - simplified version."""
-    return {}
 
 @admin_bp.route('/manage_teachers', methods=['GET', 'POST'])
 @admin_required
@@ -1551,15 +1573,13 @@ def generate_performance_assessment_data():
         total_raw_marks = sum([student.total_raw_marks for student in students_with_marks])
         total_possible_marks = sum([student.total_max_marks for student in students_with_marks])
 
-        # Calculate mean percentage for performance category (this is the class average)
+        # Calculate mean percentage per student and use it as class_average for charts (0-100 scale)
         mean_percentage = round(sum(student_percentages) / len(student_percentages), 2) if student_percentages else 0
-
-        # Calculate class average as it appears in class teacher reports
-        # This should be the average of total raw marks per student (like 649.4), not percentage
-        class_average = round(total_raw_marks / len(students_with_marks), 2) if students_with_marks else 0
+        # Preserve raw-marks average separately for any future needs
+        class_average_raw = round(total_raw_marks / len(students_with_marks), 2) if students_with_marks else 0
 
         print(f"DEBUG: {combo.grade} {combo.stream} {combo.term} {combo.assessment_type}: {len(students_with_marks)} students")
-        print(f"DEBUG: Class average: {class_average}, Raw marks: {int(round(total_raw_marks, 0))}/{int(round(total_possible_marks, 0))}")
+        print(f"DEBUG: Class mean%: {mean_percentage}, Avg raw: {int(round(class_average_raw, 0))}, Raw total: {int(round(total_raw_marks, 0))}/{int(round(total_possible_marks, 0))}")
 
         # Calculate detailed performance counts using the established grading system
         # Count students, not individual subject marks
@@ -1603,9 +1623,10 @@ def generate_performance_assessment_data():
             'term': combo.term,
             'assessment_type': combo.assessment_type,
             'mean_percentage': mean_percentage,
-            'class_average': class_average,  # Use class average percentage instead of raw marks
+            'class_average': mean_percentage,  # Bar/table expect percentage (0-100)
             'total_raw_marks': int(round(total_raw_marks, 0)),  # Show as whole numbers
             'total_possible_marks': int(round(total_possible_marks, 0)),  # Show as whole numbers
+            'class_average_raw': int(round(class_average_raw, 0)),
             'performance_category': performance_category,
             'performance_counts': performance_counts,
             'total_students': len(students_with_marks)  # Count unique students only

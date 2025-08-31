@@ -32,12 +32,6 @@
     </a>
 </li>
 <li class="mobile-nav-item">
-    <a href="#analytics-section" class="mobile-nav-link" onclick="showSection('analytics-section')">
-        <i class="fas fa-analytics"></i>
-        Analytics
-    </a>
-</li>
-<li class="mobile-nav-item">
     <a href="{{ url_for('auth.logout_route') }}" class="mobile-nav-link">
         <i class="fas fa-sign-out-alt"></i>
         Logout
@@ -56,6 +50,36 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
 
 {% block extra_css %}
 <style>
+    /* Prevent horizontal scroll and dropdown overflow on small screens */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
+    /* Ensure form sections don't clip native select dropdowns */
+    .mobile-container,
+    .dashboard-section,
+    .mobile-form-group {
+        overflow: visible;
+    }
+
+    /* Make selects render predictably on iOS/Android */
+    select.mobile-form-control,
+    .mobile-form-control.mobile-form-select {
+        max-width: 100%;
+        width: 100%;
+        position: relative;
+        z-index: 1; /* keep above decorative layers */
+        font-size: 16px; /* avoid iOS zoom */
+    }
+
+    /* General control font-size for mobile to avoid zoom */
+    .mobile-form-control,
+    .mobile-btn,
+    label.mobile-form-label {
+        font-size: 16px;
+    }
+
     /* Mobile-first teacher dashboard styles */
     .dashboard-section {
         background: var(--bs-light);
@@ -115,6 +139,60 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         border-color: var(--bs-primary);
         box-shadow: 0 0 0 0.2rem rgba(181, 137, 0, 0.25);
         outline: none;
+    }
+
+    /* Mobile sheet picker styles */
+    .mobile-sheet-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        z-index: 9999;
+        display: none;
+    }
+    .mobile-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #fff;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        box-shadow: 0 -8px 24px rgba(0,0,0,0.25);
+        z-index: 10000;
+        transform: translateY(100%);
+        transition: transform .25s ease;
+        max-height: 70vh;
+        overflow: auto;
+        padding: 1rem 1rem 0.75rem 1rem;
+    }
+    .mobile-sheet.open { transform: translateY(0); }
+    .mobile-sheet-header { font-weight: 700; margin-bottom: .5rem; }
+    .mobile-sheet-options { display: grid; gap: .5rem; }
+    .mobile-sheet-option { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; border: 1px solid var(--bs-border-color); border-radius: .5rem; background: #f8f9fa; font-weight: 600; }
+    .mobile-sheet-close { display: inline-flex; margin-top: .5rem; }
+    .mobile-sheet-grabber { width: 44px; height: 4px; background: #cfd8dc; border-radius: 2px; margin: 0 auto 8px auto; }
+
+    /* Generic picker search */
+    .mobile-sheet-search { margin: .5rem 0 0.75rem 0; }
+    .mobile-sheet-search input { width: 100%; padding: .5rem .75rem; border: 1px solid var(--bs-border-color); border-radius: .375rem; font-size: 1rem; }
+
+    /* Group header & option icon */
+    .mobile-sheet-group-header { font-weight: 700; color: var(--bs-secondary); margin: .75rem 0 .25rem 0; text-transform: uppercase; font-size: .8rem; }
+    .mobile-sheet-option .option-left { display:flex; align-items:center; gap:.5rem; }
+    .mobile-sheet-option .option-icon { font-size: 1.1rem; }
+    .mobile-sheet-alpha { position: sticky; top: 0; background: #fff; padding: 2px .5rem; font-size: .75rem; font-weight: 700; color: var(--bs-secondary); border-top: 1px solid #eee; border-bottom: 1px solid #eee; z-index: 2; }
+
+    /* Trigger button (shown on small screens instead of native select) */
+    .education-picker-trigger { display: none; position: relative; z-index: 3; pointer-events: auto; cursor: pointer; }
+    .picker-trigger { display: none; position: relative; z-index: 3; pointer-events: auto; cursor: pointer; }
+    @media (max-width: 480px) {
+        #education_level { display: none !important; }
+        .education-picker-trigger { display: inline-flex; width: 100%; }
+        /* Hide sheetified native selects on small screens */
+        select.mobile-form-select.sheetified { display: none !important; }
+        .picker-trigger { display: inline-flex; width: 100%; }
     }
     
     /* Mobile-optimized buttons */
@@ -1101,6 +1179,9 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>📚 Upper Primary (Grades 4-6)</option>
                 <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>🏫 Junior Secondary (Grades 7-9)</option>
             </select>
+            <button type="button" id="education-picker-button" class="mobile-btn mobile-btn-primary mobile-btn-block education-picker-trigger" aria-haspopup="dialog" aria-controls="education-picker" aria-expanded="false" onclick="(window.openEducationPicker ? window.openEducationPicker() : (function(){ var b=document.getElementById('education-picker-backdrop'); var s=document.getElementById('education-picker'); if(b&&s){ b.style.display='block'; s.classList.add('open'); this.setAttribute('aria-expanded','true'); } }).call(this))">
+                Select Education Level
+            </button>
         </div>
 
         <!-- Enhanced Subject Selection (filtered by education level) -->
@@ -1109,10 +1190,13 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 <i class="fas fa-book"></i>
                 Subject
             </label>
-            <select id="subject" name="subject" class="mobile-form-control mobile-form-select" required onchange="handleSubjectSelection()">
+            <select id="subject" name="subject" class="mobile-form-control mobile-form-select sheetified" required onchange="handleSubjectSelection()">
                 <option value="">📖 Select Subject</option>
                 <!-- Subjects will be populated based on education level -->
             </select>
+            <button type="button" id="subject-picker-button" class="mobile-btn mobile-btn-primary mobile-btn-block picker-trigger" aria-haspopup="dialog" aria-controls="generic-picker" aria-expanded="false" data-target-select="subject" data-title="Select Subject" onclick="window.openPickerFor ? window.openPickerFor('subject') : null">
+                Select Subject
+            </button>
             <div id="subject-info" class="mobile-subject-info" style="display: none;">
                 <small id="subject-details"></small>
             </div>
@@ -1125,7 +1209,7 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 <i class="fas fa-layer-group"></i>
                 Grade
             </label>
-            <select name="grade" id="grade" class="mobile-form-control mobile-form-select" required>
+            <select name="grade" id="grade" class="mobile-form-control mobile-form-select sheetified" required>
                 <option value="">Select Grade</option>
                 {% for grade_obj in grades %}
                 <option value="{{ grade_obj.id }}" {% if grade == grade_obj.id|string %}selected{% endif %}>
@@ -1133,6 +1217,9 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 </option>
                 {% endfor %}
             </select>
+            <button type="button" id="grade-picker-button" class="mobile-btn mobile-btn-primary mobile-btn-block picker-trigger" aria-haspopup="dialog" aria-controls="generic-picker" aria-expanded="false" data-target-select="grade" data-title="Select Grade" onclick="window.openPickerFor ? window.openPickerFor('grade') : null">
+                Select Grade
+            </button>
         </div>
 
         <div class="mobile-form-group">
@@ -1140,12 +1227,15 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 <i class="fas fa-calendar-alt"></i>
                 Term
             </label>
-            <select name="term" id="term" class="mobile-form-control mobile-form-select" required>
+            <select name="term" id="term" class="mobile-form-control mobile-form-select sheetified" required>
                 <option value="">📅 Select Term</option>
                 {% for term_option in terms %}
                 <option value="{{ term_option }}" {% if term == term_option %}selected{% endif %}>📆 {{ term_option }}</option>
                 {% endfor %}
             </select>
+            <button type="button" id="term-picker-button" class="mobile-btn mobile-btn-primary mobile-btn-block picker-trigger" aria-haspopup="dialog" aria-controls="generic-picker" aria-expanded="false" data-target-select="term" data-title="Select Term" onclick="window.openPickerFor ? window.openPickerFor('term') : null">
+                Select Term
+            </button>
         </div>
 
         <div class="mobile-form-group">
@@ -1153,12 +1243,15 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 <i class="fas fa-clipboard-check"></i>
                 Assessment Type
             </label>
-            <select name="assessment_type" id="assessment_type" class="mobile-form-control mobile-form-select" required>
+            <select name="assessment_type" id="assessment_type" class="mobile-form-control mobile-form-select sheetified" required>
                 <option value="">📝 Select Assessment Type</option>
                 {% for assessment_option in assessment_types %}
                 <option value="{{ assessment_option }}" {% if assessment_type == assessment_option %}selected{% endif %}>📊 {{ assessment_option }}</option>
                 {% endfor %}
             </select>
+            <button type="button" id="assessment-picker-button" class="mobile-btn mobile-btn-primary mobile-btn-block picker-trigger" aria-haspopup="dialog" aria-controls="generic-picker" aria-expanded="false" data-target-select="assessment_type" data-title="Select Assessment Type" onclick="window.openPickerFor ? window.openPickerFor('assessment') : null">
+                Select Assessment Type
+            </button>
         </div>
 
         <div class="mobile-form-group">
@@ -1166,10 +1259,13 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 <i class="fas fa-users"></i>
                 Stream
             </label>
-            <select name="stream" id="stream" class="mobile-form-control mobile-form-select" required>
+            <select name="stream" id="stream" class="mobile-form-control mobile-form-select sheetified" required>
                 <option value="">🏛️ Select Stream</option>
                 <!-- Streams will be populated dynamically via JavaScript -->
             </select>
+            <button type="button" id="stream-picker-button" class="mobile-btn mobile-btn-primary mobile-btn-block picker-trigger" aria-haspopup="dialog" aria-controls="generic-picker" aria-expanded="false" data-target-select="stream" data-title="Select Stream" onclick="window.openPickerFor ? window.openPickerFor('stream') : null">
+                Select Stream
+            </button>
         </div>
 
         <div class="mobile-form-group" id="total-marks-group">
@@ -1353,7 +1449,12 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
 <div id="reports-section" class="dashboard-section">
     <div class="section-header">
         <i class="fas fa-chart-bar"></i>
-        <h2>Recent Reports</h2>
+        <h2 style="display:flex; align-items:center; gap:0.5rem; width:100%; justify-content:space-between;">
+            <span>Recent Reports</span>
+            <a href="#subject-report-history-mobile" class="mobile-btn mobile-btn-secondary" style="padding:0.25rem 0.5rem; font-size:0.8rem;">
+                View All
+            </a>
+        </h2>
     </div>
 
     {% if recent_reports %}
@@ -1382,6 +1483,10 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                         Average
                     </th>
                     <th>
+                        <i class="fas fa-clock"></i>
+                        Date
+                    </th>
+                    <th>
                         <i class="fas fa-cog"></i>
                         Action
                     </th>
@@ -1389,11 +1494,16 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
             </thead>
             <tbody>
                 {% for report in recent_reports %}
-                <tr>
+                <tr class="js-report-row" {% if report.view_url %}data-url="{{ report.view_url }}" role="button" tabindex="0" style="cursor:pointer;"{% endif %}>
                     <td>
                         <span class="mobile-badge mobile-badge-primary">
                             {{ report.grade }}
                         </span>
+                        {% if report.view_url %}
+                        <div style="margin-top:0.35rem;">
+                            <a href="{{ report.view_url }}" class="mobile-btn mobile-btn-sm mobile-btn-primary" style="padding:0.25rem 0.5rem; font-size:0.75rem;">View</a>
+                        </div>
+                        {% endif %}
                     </td>
                     <td>
                         <span class="mobile-badge mobile-badge-info">
@@ -1411,15 +1521,21 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                         </span>
                     </td>
                     <td>
-                        <span class="mobile-badge mobile-badge-success">
-                            {{ report.class_average }}%
-                        </span>
+                        {% if report.class_average is defined and report.class_average is not none %}
+                            <span class="mobile-badge mobile-badge-success">{{ report.class_average }}%</span>
+                        {% else %}
+                            <span class="mobile-badge mobile-badge-secondary">—</span>
+                        {% endif %}
                     </td>
                     <td>
-                        <button class="mobile-btn mobile-btn-sm mobile-btn-outline-primary" onclick="viewReport('{{ report.id }}')">
-                            <i class="fas fa-eye"></i>
-                            View
-                        </button>
+                        <span class="mobile-badge mobile-badge-secondary">{{ report.date }}</span>
+                    </td>
+                    <td>
+                        {% if report.view_url %}
+                            <a href="{{ report.view_url }}" class="mobile-btn mobile-btn-sm mobile-btn-primary"><i class="fas fa-eye"></i> View</a>
+                        {% else %}
+                            <span class="mobile-badge mobile-badge-secondary">N/A</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -1473,10 +1589,68 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         </div>
     </div>
     {% endif %}
+
+    <!-- Subject Report History (Filterable) -->
+    <div id="subject-report-history-mobile" class="dashboard-section" style="margin-top: 1rem;">
+        <div class="section-header">
+            <i class="fas fa-history"></i>
+            <h2>Subject Report History</h2>
+        </div>
+
+        <div class="mobile-input-group" style="gap: 0.5rem;">
+            <div class="mobile-input-group-horizontal">
+                <select id="m-filter-subject" class="mobile-form-control mobile-form-select" aria-label="Filter by subject">
+                    <option value="">All Subjects</option>
+                    {% if accessible_subjects %}
+                        {% for s in accessible_subjects %}
+                            <option value="{{ s.name }}">{{ s.name }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+                <select id="m-filter-grade" class="mobile-form-control mobile-form-select" aria-label="Filter by grade">
+                    <option value="">All Grades</option>
+                    {% if grades %}
+                        {% for g in grades %}
+                            <option value="{{ g.id }}">{{ g.name }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+            <div class="mobile-input-group-horizontal">
+                <select id="m-filter-stream" class="mobile-form-control mobile-form-select" aria-label="Filter by stream">
+                    <option value="">All Streams</option>
+                    {% if accessible_streams %}
+                        {% for st in accessible_streams %}
+                            <option value="{{ st.id }}">{{ st.name }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+                <select id="m-filter-term" class="mobile-form-control mobile-form-select" aria-label="Filter by term">
+                    <option value="">All Terms</option>
+                    {% if terms %}
+                        {% for t in terms %}
+                            <option value="{{ t }}">{{ t }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+                <select id="m-filter-assessment" class="mobile-form-control mobile-form-select" aria-label="Filter by assessment type">
+                    <option value="">All Assessments</option>
+                    {% if assessment_types %}
+                        {% for at in assessment_types %}
+                            <option value="{{ at }}">{{ at }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+                <button id="m-filters-clear" type="button" class="mobile-btn mobile-btn-secondary" style="min-height: var(--touch-target);">Clear</button>
+            </div>
+        </div>
+
+        <div class="mobile-table-container mobile-table-swipe" id="mobile-report-history" aria-live="polite"></div>
+    </div>
 </div>
 
-<!-- Reports Section -->
-<div id="reports-section" class="dashboard-section">
+<!-- Class Reports Section (unique id to avoid clashes with Subject Report History section) -->
+<div id="class-reports-section" class="dashboard-section">
     <div class="section-header">
         <i class="fas fa-chart-bar"></i>
         <h2>Class Reports</h2>
@@ -1493,100 +1667,38 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
     </div>
 </div>
 
-<!-- Analytics Section -->
-<div id="analytics-section" class="dashboard-section">
-    <div class="section-header">
-        <i class="fas fa-analytics"></i>
-        <h2>Performance Analytics</h2>
-    </div>
-    
-    <div class="row">
-        <div class="col-12">
-            <p>View detailed analytics and insights about student performance.</p>
-            <button class="mobile-btn mobile-btn-primary mobile-btn-block">
-                <i class="fas fa-chart-line"></i>
-                View Analytics
-            </button>
-        </div>
-    </div>
-</div>
+<!-- Analytics removed for parity with desktop; to be reintroduced when implemented across views -->
 
-<!-- Analytics Section -->
-<div id="analytics-section" class="dashboard-section">
-    <div class="section-header">
-        <i class="fas fa-analytics"></i>
-        <h2>Analytics & Insights</h2>
+<!-- Mobile Education Level Picker (bottom-sheet) IN-CONTENT so it renders -->
+<div id="education-picker-backdrop" class="mobile-sheet-backdrop"></div>
+<div id="education-picker" class="mobile-sheet" role="dialog" aria-modal="true" aria-labelledby="education-picker-title">
+    <div class="mobile-sheet-grabber" role="presentation"></div>
+    <div class="mobile-sheet-header" id="education-picker-title">Select Education Level</div>
+    <div class="mobile-sheet-options">
+        <button type="button" class="mobile-sheet-option" data-education-value="lower_primary" data-education-label="Lower Primary (Grades 1-3)">🎓 Lower Primary (Grades 1-3)</button>
+        <button type="button" class="mobile-sheet-option" data-education-value="upper_primary" data-education-label="Upper Primary (Grades 4-6)">📚 Upper Primary (Grades 4-6)</button>
+        <button type="button" class="mobile-sheet-option" data-education-value="junior_secondary" data-education-label="Junior Secondary (Grades 7-9)">🏫 Junior Secondary (Grades 7-9)</button>
+    </div>
+        <div style="display:flex; gap:.5rem; justify-content:flex-end; margin-top:.5rem;">
+            <button type="button" class="mobile-btn mobile-btn-secondary mobile-sheet-close" id="education-picker-cancel">Cancel</button>
+            <button type="button" class="mobile-btn mobile-btn-primary" id="education-picker-done">Done</button>
+        </div>
+    <div style="height: env(safe-area-inset-bottom, 12px);"></div>
     </div>
 
-    <div class="mobile-analytics-grid">
-        <div class="mobile-analytics-card">
-            <div class="mobile-analytics-icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="mobile-analytics-content">
-                <h4>Total Students</h4>
-                <div class="mobile-analytics-value">{{ students|length if students else 0 }}</div>
-                <div class="mobile-analytics-change">Across all classes</div>
-            </div>
+<!-- Generic Picker for Subject/Grade/Term (mobile) -->
+<div id="generic-picker-backdrop" class="mobile-sheet-backdrop"></div>
+<div id="generic-picker" class="mobile-sheet" role="dialog" aria-modal="true" aria-labelledby="generic-picker-title">
+        <div class="mobile-sheet-grabber" role="presentation"></div>
+        <div class="mobile-sheet-header" id="generic-picker-title">Select</div>
+    <div class="mobile-sheet-search"><input id="generic-picker-search" type="search" placeholder="Search..." autocomplete="off" /></div>
+    <div class="mobile-sheet-options" id="generic-picker-options"></div>
+        <div style="display:flex; gap:.5rem; justify-content:flex-end; margin-top:.5rem;">
+            <button type="button" class="mobile-btn mobile-btn-secondary mobile-sheet-close" id="generic-picker-cancel">Cancel</button>
+            <button type="button" class="mobile-btn mobile-btn-primary" id="generic-picker-done">Done</button>
         </div>
-
-        <div class="mobile-analytics-card">
-            <div class="mobile-analytics-icon">
-                <i class="fas fa-book"></i>
-            </div>
-            <div class="mobile-analytics-content">
-                <h4>Subjects Taught</h4>
-                <div class="mobile-analytics-value">{{ assignment_summary.total_subjects_taught if assignment_summary else 0 }}</div>
-                <div class="mobile-analytics-change">Active assignments</div>
-            </div>
-        </div>
-
-        <div class="mobile-analytics-card">
-            <div class="mobile-analytics-icon">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="mobile-analytics-content">
-                <h4>Recent Reports</h4>
-                <div class="mobile-analytics-value">{{ recent_reports|length if recent_reports else 0 }}</div>
-                <div class="mobile-analytics-change">This term</div>
-            </div>
-        </div>
-
-        <div class="mobile-analytics-card">
-            <div class="mobile-analytics-icon">
-                <i class="fas fa-graduation-cap"></i>
-            </div>
-            <div class="mobile-analytics-content">
-                <h4>Classes Managed</h4>
-                <div class="mobile-analytics-value">{{ assignment_summary.total_classes_managed if assignment_summary else 0 }}</div>
-                <div class="mobile-analytics-change">As class teacher</div>
-            </div>
-        </div>
+    <div style="height: env(safe-area-inset-bottom, 12px);"></div>
     </div>
-
-    <!-- Quick Actions -->
-    <div class="mobile-quick-actions">
-        <h3>Quick Actions</h3>
-        <div class="mobile-action-grid">
-            <button class="mobile-action-btn" onclick="showSection('marks-section')">
-                <i class="fas fa-edit"></i>
-                <span>Enter Marks</span>
-            </button>
-            <button class="mobile-action-btn" onclick="showSection('reports-section')">
-                <i class="fas fa-chart-bar"></i>
-                <span>View Reports</span>
-            </button>
-            <button class="mobile-action-btn" onclick="showSection('assignments-section')">
-                <i class="fas fa-chalkboard-teacher"></i>
-                <span>My Subjects</span>
-            </button>
-            <a href="{{ url_for('classteacher.teacher_management_hub') }}" class="mobile-action-btn">
-                <i class="fas fa-cogs"></i>
-                <span>Teacher Hub</span>
-            </a>
-        </div>
-    </div>
-</div>
 
 {% endblock %}
 
@@ -1641,6 +1753,13 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         document.querySelectorAll('.mobile-nav-link').forEach(link => {
             link.classList.remove('active');
         });
+        const targetLink = document.querySelector(`.mobile-nav-link[href="#${sectionId}"]`);
+        if (targetLink) targetLink.classList.add('active');
+
+        // If Reports tab is opened, ensure history is loaded/refreshed
+        if (sectionId === 'reports-section') {
+            try { initMobileReportHistory(); } catch (e) { /* no-op */ }
+        }
         
         // Close mobile menu
         if (window.innerWidth <= 768) {
@@ -1667,6 +1786,12 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
             });
         }
 
+    // Reset subject/grade trigger labels on level change
+    var subjBtn0 = document.getElementById('subject-picker-button');
+    if (subjBtn0) subjBtn0.textContent = 'Select Subject';
+    var gradeBtn0 = document.getElementById('grade-picker-button');
+    if (gradeBtn0) gradeBtn0.textContent = 'Select Grade';
+
         // Update grades
         updateGradesByEducationLevel();
     });
@@ -1690,6 +1815,10 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 subjectSelect.appendChild(option);
             });
         }
+
+    // Reset subject trigger label after repopulating
+    var subjBtn = document.getElementById('subject-picker-button');
+    if (subjBtn) subjBtn.textContent = 'Select Subject';
     }
 
     function updateGradesByEducationLevel() {
@@ -1744,6 +1873,9 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         // Clear streams when grades change
         const streamSelect = document.getElementById('stream');
         streamSelect.innerHTML = '<option value="">🏛️ Select Stream</option>';
+    // Reset stream trigger label (if present)
+    var streamBtn = document.getElementById('stream-picker-button');
+    if (streamBtn) streamBtn.textContent = 'Select Stream';
     }
 
     function handleSubjectSelection() {
@@ -1796,6 +1928,8 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         if (selectedGradeId) {
             // Show loading state
             streamSelect.innerHTML = '<option value="">Loading streams...</option>';
+            var streamBtnLoading = document.getElementById('stream-picker-button');
+            if (streamBtnLoading) streamBtnLoading.textContent = 'Loading streams…';
 
             // Fetch streams from API
             fetch(`/teacher/get_streams/${selectedGradeId}`)
@@ -1810,13 +1944,19 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                             option.textContent = stream.name;
                             streamSelect.appendChild(option);
                         });
+                        var streamBtnReady = document.getElementById('stream-picker-button');
+                        if (streamBtnReady) streamBtnReady.textContent = 'Select Stream';
                     } else {
                         streamSelect.innerHTML = '<option value="">No streams available</option>';
+                        var streamBtnNone = document.getElementById('stream-picker-button');
+                        if (streamBtnNone) streamBtnNone.textContent = 'No streams available';
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching streams:', error);
                     streamSelect.innerHTML = '<option value="">Error loading streams</option>';
+                    var streamBtnErr = document.getElementById('stream-picker-button');
+                    if (streamBtnErr) streamBtnErr.textContent = 'Error loading streams';
                 });
         }
     }
@@ -1886,6 +2026,23 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
             if (studentId && input.value) {
                 updateMobilePercentage(studentId);
             }
+        });
+
+    // Initialize mobile report history
+    try { initMobileReportHistory(); } catch (e) { console.warn('History init failed', e); }
+    });
+
+    // Make Recent Reports rows clickable & keyboard accessible
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.js-report-row[data-url]').forEach(row => {
+            const url = row.getAttribute('data-url');
+            row.addEventListener('click', () => { if (url) window.location.href = url; });
+            row.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (url) window.location.href = url;
+                }
+            });
         });
     });
 
@@ -2043,6 +2200,280 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
         }
     });
 
+    // Open section based on URL hash on load (e.g., #reports-section)
+    document.addEventListener('DOMContentLoaded', function() {
+    const hash = (window.location && window.location.hash) ? window.location.hash.replace('#', '') : '';
+        if (hash) {
+            const target = document.getElementById(hash);
+            if (target && target.classList.contains('dashboard-section')) {
+                showSection(hash);
+            }
+        }
+    });
+
+    // Mobile Education Level bottom-sheet picker (init after DOM ready)
+    (function initEducationPickerWhenReady() {
+        function init() {
+            const btn = document.getElementById('education-picker-button');
+            const select = document.getElementById('education_level');
+            const backdrop = document.getElementById('education-picker-backdrop');
+            const sheet = document.getElementById('education-picker');
+            if (!btn || !select || !backdrop || !sheet) return; // Elements may not exist in all views
+
+            // Haptic utility
+            window.hapticTap = function() { try { if (navigator.vibrate) navigator.vibrate(10); } catch(_) {} };
+
+            const open = () => {
+                backdrop.style.display = 'block';
+                sheet.classList.add('open');
+                btn.setAttribute('aria-expanded', 'true');
+            };
+            const close = () => {
+                sheet.classList.remove('open');
+                backdrop.style.display = 'none';
+                btn.setAttribute('aria-expanded', 'false');
+            };
+
+            // Expose globals for fallback onclick
+            window.openEducationPicker = open;
+            window.closeEducationPicker = close;
+            btn.addEventListener('click', open);
+            backdrop.addEventListener('click', close);
+            var cancelBtn = document.getElementById('education-picker-cancel');
+            if (cancelBtn) cancelBtn.addEventListener('click', close);
+            var doneBtn = document.getElementById('education-picker-done');
+            if (doneBtn) doneBtn.addEventListener('click', function(){ window.hapticTap && window.hapticTap(); close(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+        var optionEls = document.querySelectorAll('[data-education-value]');
+            (optionEls && optionEls.forEach ? optionEls : Array.prototype.slice.call(optionEls)).forEach(el => {
+                el.addEventListener('click', () => {
+                    const value = el.getAttribute('data-education-value');
+                    const label = el.getAttribute('data-education-label');
+                    select.value = value;
+                    // Trigger change for dependent updates
+                    const evt = new Event('change', { bubbles: true });
+                    select.dispatchEvent(evt);
+            // Update trigger label (strip leading emoji/symbols to keep button concise)
+            btn.textContent = (label || 'Select Education Level').replace(/^[^A-Za-z0-9]*\s*/, '');
+            window.hapticTap && window.hapticTap();
+                    close();
+                });
+            });
+
+            // Sync initial button label with current selection if any
+            const selected = select.options[select.selectedIndex];
+            if (selected && selected.value) {
+                btn.textContent = selected.textContent.replace(/^[^A-Za-z0-9]*\s*/, '');
+            }
+
+            // Swipe/drag to close
+            (function(){
+                let startY = 0, currentY = 0, dragging = false;
+                const threshold = 80;
+                sheet.addEventListener('touchstart', function(e){
+                    if (!sheet.classList.contains('open')) return;
+                    dragging = true; startY = e.touches[0].clientY; currentY = startY; sheet.style.transition = 'none';
+                }, {passive:true});
+                sheet.addEventListener('touchmove', function(e){
+                    if (!dragging) return; currentY = e.touches[0].clientY; const dy = Math.max(0, currentY - startY); sheet.style.transform = 'translateY(' + dy + 'px)';
+                }, {passive:true});
+                sheet.addEventListener('touchend', function(){
+                    if (!dragging) return; const dy = Math.max(0, currentY - startY); sheet.style.transition = ''; sheet.style.transform = '';
+                    dragging = false; if (dy > threshold) { window.hapticTap && window.hapticTap(); close(); }
+                });
+            })();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+
+    // Generic bottom-sheet picker for Subject/Grade/Term
+    (function initGenericPickerWhenReady() {
+        function initGeneric() {
+            const backdrop = document.getElementById('generic-picker-backdrop');
+            const sheet = document.getElementById('generic-picker');
+            const optionsBox = document.getElementById('generic-picker-options');
+            const titleEl = document.getElementById('generic-picker-title');
+            const searchEl = document.getElementById('generic-picker-search');
+            const cancelBtn = document.getElementById('generic-picker-cancel');
+            if (!backdrop || !sheet || !optionsBox || !titleEl) return;
+
+            let currentTargetSelect = null;
+            let currentButton = null;
+            let currentType = null; // 'subject' | 'grade' | 'term' | 'assessment' | 'stream'
+
+            function close() {
+                sheet.classList.remove('open');
+                backdrop.style.display = 'none';
+                document.querySelectorAll('.picker-trigger[aria-expanded="true"]').forEach(b=>b.setAttribute('aria-expanded','false'));
+                currentTargetSelect = null;
+                currentButton = null;
+                currentType = null;
+                if (searchEl) searchEl.value = '';
+            }
+            function buildOptions(filterValue) {
+                if (!currentTargetSelect) return;
+                const q = (filterValue || '').toLowerCase();
+                optionsBox.innerHTML = '';
+                const opts = Array.prototype.slice.call(currentTargetSelect.options).filter(o => o.value !== '');
+                const filtered = q ? opts.filter(o => o.textContent.toLowerCase().indexOf(q) !== -1) : opts;
+                // Determine header label and icon based on type
+                let headerText = '';
+                if (currentType === 'subject') {
+                    const lvlSel = document.getElementById('education_level');
+                    const lvlOpt = lvlSel ? lvlSel.options[lvlSel.selectedIndex] : null;
+                    headerText = lvlOpt && lvlOpt.value ? lvlOpt.textContent.replace(/^[^A-Za-z0-9]*\s*/, '') : 'Subjects';
+                } else if (currentType === 'stream') {
+                    const gradeSel = document.getElementById('grade');
+                    const gradeOpt = gradeSel ? gradeSel.options[gradeSel.selectedIndex] : null;
+                    headerText = gradeOpt && gradeOpt.value ? ('Streams • ' + gradeOpt.textContent.replace(/^[^A-Za-z0-9]*\s*/, '')) : 'Streams';
+                } else if (currentType === 'grade') { headerText = 'Grades'; }
+                else if (currentType === 'term') { headerText = 'Terms'; }
+                else if (currentType === 'assessment') { headerText = 'Assessment Types'; }
+
+                if (headerText) {
+                    const hdr = document.createElement('div');
+                    hdr.className = 'mobile-sheet-group-header';
+                    hdr.textContent = headerText;
+                    optionsBox.appendChild(hdr);
+                }
+                // For subjects, insert sticky alphabetical headers
+                let prevAlpha = '';
+                if (filtered.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.textContent = 'No matches';
+                    empty.style.padding = '.5rem 0';
+                    optionsBox.appendChild(empty);
+                    return;
+                }
+                filtered.forEach(o => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'mobile-sheet-option';
+                    const icon = (function(){
+                        switch(currentType){
+                            case 'subject': return '📖';
+                            case 'grade': return '🎓';
+                            case 'term': return '📅';
+                            case 'assessment': return '📝';
+                            case 'stream': return '👥';
+                            default: return '•';
+                        }
+                    })();
+                    const label = o.textContent.replace(/^[^A-Za-z0-9]*\s*/, '');
+                    if (currentType === 'subject') {
+                        const m = label.match(/[A-Za-z]/);
+                        const alpha = m ? m[0].toUpperCase() : '#';
+                        if (alpha !== prevAlpha) {
+                            const a = document.createElement('div');
+                            a.className = 'mobile-sheet-alpha';
+                            a.textContent = alpha;
+                            optionsBox.appendChild(a);
+                            prevAlpha = alpha;
+                        }
+                    }
+                    b.innerHTML = '<span class="option-left"><span class="option-icon">'+icon+'</span><span>'+label+'</span></span>';
+                    b.addEventListener('click', function(){
+                        currentTargetSelect.value = o.value;
+                        const evt = new Event('change', { bubbles: true });
+                        currentTargetSelect.dispatchEvent(evt);
+                        if (currentButton) currentButton.textContent = label;
+                        window.hapticTap && window.hapticTap();
+                        close();
+                    });
+                    optionsBox.appendChild(b);
+                });
+            }
+
+            function open(btn, targetSelect, title, type) {
+                titleEl.textContent = title || 'Select';
+                currentTargetSelect = targetSelect;
+                currentButton = btn;
+                currentType = type || null;
+                buildOptions('');
+                backdrop.style.display = 'block';
+                sheet.classList.add('open');
+                btn.setAttribute('aria-expanded','true');
+                if (searchEl) setTimeout(() => searchEl.focus(), 50);
+            }
+
+            backdrop.addEventListener('click', close);
+            if (cancelBtn) cancelBtn.addEventListener('click', close);
+            const doneBtn = document.getElementById('generic-picker-done');
+            if (doneBtn) doneBtn.addEventListener('click', function(){ window.hapticTap && window.hapticTap(); close(); });
+            document.addEventListener('keydown', function(e){ if(e.key==='Escape') close(); });
+            if (searchEl) {
+                searchEl.addEventListener('input', function(){ buildOptions(searchEl.value || ''); });
+            }
+
+            // Swipe/drag to close gesture
+            (function(){
+                let startY = 0, currentY = 0, dragging = false;
+                const threshold = 80;
+                sheet.addEventListener('touchstart', function(e){
+                    if (!sheet.classList.contains('open')) return;
+                    dragging = true; startY = e.touches[0].clientY; currentY = startY; sheet.style.transition = 'none';
+                }, {passive:true});
+                sheet.addEventListener('touchmove', function(e){
+                    if (!dragging) return; currentY = e.touches[0].clientY; const dy = Math.max(0, currentY - startY); sheet.style.transform = 'translateY(' + dy + 'px)';
+                }, {passive:true});
+                sheet.addEventListener('touchend', function(){
+                    if (!dragging) return; const dy = Math.max(0, currentY - startY); sheet.style.transition = ''; sheet.style.transform = '';
+                    dragging = false; if (dy > threshold) { window.hapticTap && window.hapticTap(); close(); }
+                });
+            })();
+
+            function syncLabel(selectEl, btnEl, placeholder) {
+                if (!selectEl || !btnEl) return;
+                var opt = selectEl.options[selectEl.selectedIndex];
+                if (opt && opt.value) {
+                    btnEl.textContent = opt.textContent.replace(/^[^A-Za-z0-9]*\s*/, '');
+                } else {
+                    btnEl.textContent = placeholder;
+                }
+            }
+
+            function wire(btnId, selectId, title, type) {
+                const btn = document.getElementById(btnId);
+                const sel = document.getElementById(selectId);
+                if (!btn || !sel) return;
+                btn.addEventListener('click', function(){ open(btn, sel, title, type); });
+                // Expose global openPickerFor
+                window.openPickerFor = function(which){
+                    var map = {
+                        subject: ['subject-picker-button','subject','Select Subject','subject'],
+                        grade: ['grade-picker-button','grade','Select Grade','grade'],
+                        term: ['term-picker-button','term','Select Term','term'],
+                        assessment: ['assessment-picker-button','assessment_type','Select Assessment Type','assessment'],
+                        stream: ['stream-picker-button','stream','Select Stream','stream']
+                    };
+                    var conf = map[which];
+                    if (!conf) return;
+                    var b = document.getElementById(conf[0]);
+                    var s = document.getElementById(conf[1]);
+                    if (b && s) open(b, s, conf[2], conf[3]);
+                };
+                // Sync initial label and on change
+                syncLabel(sel, btn, title);
+                sel.addEventListener('change', function(){ syncLabel(sel, btn, title); });
+            }
+
+            wire('subject-picker-button','subject','Select Subject','subject');
+            wire('grade-picker-button','grade','Select Grade','grade');
+            wire('term-picker-button','term','Select Term','term');
+            wire('assessment-picker-button','assessment_type','Select Assessment Type','assessment');
+            wire('stream-picker-button','stream','Select Stream','stream');
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initGeneric);
+        } else { initGeneric(); }
+    })();
+
     // Mobile-specific functions
     function saveStudentMark(studentId) {
         const input = document.querySelector(`input[data-student="${studentId}"]`);
@@ -2079,6 +2510,96 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
                 button.disabled = false;
             }, 2000);
         }, 1000);
+    }
+
+    // Subject Report History (mobile)
+    async function initMobileReportHistory() {
+        const container = document.getElementById('mobile-report-history');
+        if (!container) return;
+
+        const filters = {
+            subject: document.getElementById('m-filter-subject'),
+            grade: document.getElementById('m-filter-grade'),
+            stream: document.getElementById('m-filter-stream'),
+            term: document.getElementById('m-filter-term'),
+            assessment_type: document.getElementById('m-filter-assessment')
+        };
+
+        const reload = async () => {
+            const params = new URLSearchParams();
+            for (const [k, el] of Object.entries(filters)) {
+                if (el && el.value) params.set(k, el.value);
+            }
+            container.setAttribute('aria-busy', 'true');
+            container.innerHTML = '<div style="padding:0.75rem;">Loading...</div>';
+            try {
+                const res = await fetch(`/teacher/api/report-history?${params.toString()}`);
+                const data = await res.json();
+                renderMobileHistory(container, data);
+            } catch (e) {
+                container.innerHTML = '<div class="mobile-empty-state"><div class="mobile-empty-icon"><i class="fas fa-exclamation-triangle"></i></div><h3>Error</h3><p>Could not load history.</p></div>';
+            } finally {
+                container.removeAttribute('aria-busy');
+            }
+        };
+
+        for (const el of Object.values(filters)) {
+            if (el) el.addEventListener('change', reload);
+        }
+
+        // Clear filters button
+        const clearBtn = document.getElementById('m-filters-clear');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                Object.values(filters).forEach(el => { if (el) el.value = ''; });
+                reload();
+            });
+        }
+
+        await reload();
+    }
+
+    function renderMobileHistory(container, data) {
+        if (!data || !data.success) {
+            container.innerHTML = '<div class="mobile-empty-state"><div class="mobile-empty-icon"><i class="fas fa-history"></i></div><h3>No History</h3><p>Generate a subject report to see it here.</p></div>';
+            return;
+        }
+
+        if (!data.items || data.items.length === 0) {
+            container.innerHTML = '<div class="mobile-empty-state"><div class="mobile-empty-icon"><i class="fas fa-filter"></i></div><h3>No Matches</h3><p>Try changing the filters.</p></div>';
+            return;
+        }
+
+        const header = `
+            <table class="mobile-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Grade</th>
+                        <th>Stream</th>
+                        <th>Term</th>
+                        <th>Assess.</th>
+                        <th>Avg</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        const rows = data.items.map(e => `
+            <tr>
+                <td><strong>${e.subject}</strong></td>
+                <td><span class="mobile-badge mobile-badge-primary">${e.grade}</span></td>
+                <td><span class="mobile-badge mobile-badge-info">${e.stream || '-'}</span></td>
+                <td><span class="mobile-badge mobile-badge-secondary">${e.term}</span></td>
+                <td><span class="mobile-badge mobile-badge-warning">${e.assessment_type}</span></td>
+                <td><span class="mobile-badge mobile-badge-success">${(e.class_average ?? 0)}%</span></td>
+                <td>
+                    <a href="${e.view_url || '#'}" target="_blank" class="mobile-btn mobile-btn-sm mobile-btn-primary">Open</a>
+                </td>
+            </tr>`).join('');
+
+        const footer = '</tbody></table>';
+        container.innerHTML = header + rows + footer;
     }
 
     function viewStudentHistory(studentId) {

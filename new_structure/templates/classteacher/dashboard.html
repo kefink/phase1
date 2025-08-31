@@ -185,10 +185,23 @@
           padding: 1.5rem;
         }
       }
+      @media (max-width: 576px) {
+        .header {
+          padding: 1rem;
+        }
+        .action-card {
+          padding: 1.25rem;
+        }
+        .stats-grid {
+          gap: 0.75rem;
+        }
+      }
     </style>
   </head>
 
-  <body>
+  <body data-ct-auto-open="true">
+    {% include 'classteacher/_hamburger_nav.html' %}
+    <script src="{{ url_for('static', filename='js/auto_wrap_tables.js') }}"></script>
     <div class="container">
       <!-- Alerts -->
       {% if error_message %}
@@ -285,7 +298,7 @@
         </a>
 
         <a href="{{ url_for('classteacher.analytics') }}" class="action-card">
-          <i class="fas fa-analytics action-icon"></i>
+          <i class="fas fa-chart-line action-icon"></i>
           <h3>Analytics</h3>
           <p>View detailed performance analytics</p>
         </a>

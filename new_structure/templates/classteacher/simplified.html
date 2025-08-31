@@ -19,7 +19,6 @@
       rel="stylesheet"
     />
 
-    <!-- Simplified CSS -->
     <style>
       :root {
         --primary-color: #2563eb;
@@ -207,10 +206,25 @@
           font-size: 1.5rem;
         }
       }
+      @media (max-width: 576px) {
+        .header {
+          padding: 1rem;
+        }
+        .action-card {
+          padding: 1.25rem;
+        }
+        .stats-grid {
+          gap: 0.75rem;
+        }
+        .btn {
+          width: 100%;
+        }
+      }
     </style>
   </head>
 
-  <body>
+  <body data-ct-auto-open="true">
+    {% include 'classteacher/_hamburger_nav.html' %}
     <div class="container">
       <!-- Error Messages -->
       {% if error_message %}
@@ -328,7 +342,7 @@
           href="{{ url_for('classteacher.analytics') if url_for else '#' }}"
           class="action-card"
         >
-          <i class="fas fa-analytics action-icon"></i>
+          <i class="fas fa-chart-line action-icon"></i>
           <h3>Analytics</h3>
           <p>View detailed performance analytics</p>
         </a>
@@ -378,5 +392,6 @@
         });
       });
     </script>
+    <script src="{{ url_for('static', filename='js/auto_wrap_tables.js') }}"></script>
   </body>
 </html>

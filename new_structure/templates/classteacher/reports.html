@@ -223,6 +223,7 @@
 </head>
 
 <body>
+    {% include 'classteacher/_hamburger_nav.html' %}
     <div class="container">
         <!-- Breadcrumb -->
         <div class="breadcrumb">
@@ -401,5 +402,6 @@
             if (reportId) deleteReport(reportId);
         });
     </script>
+    <script src="{{ url_for('static', filename='js/auto_wrap_tables.js') }}"></script>
 </body>
 </html>

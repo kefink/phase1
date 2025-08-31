@@ -109,6 +109,7 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
+    html { scroll-behavior: smooth; }
 
         /* Animated Background */
         body::before {
@@ -155,12 +156,13 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: var(--spacing-sm) var(--spacing-lg);
+            padding: 10px 16px; /* tighter, premium feel */
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin: 0;
-            min-height: 60px;
+            min-height: 64px;
+            gap: 12px;
         }
 
         .navbar-brand {
@@ -177,7 +179,7 @@
             z-index: 2;
             flex: 1;
             min-width: 0; /* Allow text to shrink */
-            max-width: 65%; /* Prevent taking too much space */
+            max-width: 60%; /* Prevent taking too much space */
         }
 
         .navbar-brand-text {
@@ -237,51 +239,68 @@
 
 
 
+        /* Premium grouped actions on the right */
         .navbar-nav {
             display: flex;
             list-style: none;
-            gap: var(--spacing-md);
             align-items: center;
+            gap: 8px;
+            padding: 6px;
+            margin: 0;
+            background: rgba(7, 54, 66, 0.5);
+            border: 1px solid rgba(131, 148, 150, 0.25);
+            border-radius: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            backdrop-filter: blur(6px);
         }
 
         .nav-link {
             color: #fdf6e3;
             text-decoration: none;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            height: 38px;
+            border-radius: 10px;
             transition: var(--transition-fast);
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: var(--spacing-xs);
-            font-weight: 500;
+            gap: 8px;
+            font-weight: 600;
             font-size: 0.9rem;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(131, 148, 150, 0.3);
-            background: rgba(7, 54, 66, 0.6);
+            line-height: 1;
+            border: 1px solid rgba(131, 148, 150, 0.35);
+            background: linear-gradient(180deg, rgba(7, 54, 66, 0.8), rgba(7, 54, 66, 0.6));
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .nav-link:hover {
-            background: rgba(181, 137, 0, 0.8);
+            background: rgba(181, 137, 0, 0.75);
             color: #fdf6e3;
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
-            border-color: rgba(181, 137, 0, 0.6);
+            border-color: rgba(181, 137, 0, 0.55);
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
         }
 
+        .nav-link:focus-visible,
+        .logout-btn:focus-visible {
+            outline: 2px solid rgba(181, 137, 0, 0.9);
+            outline-offset: 2px;
+        }
+
         .logout-btn {
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.95);
             text-decoration: none;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-            display: flex;
+            font-weight: 600;
+            padding: 8px 14px;
+            height: 38px;
+            border-radius: 12px;
+            transition: all 0.25s ease;
+            display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            background: rgba(220, 53, 69, 0.2);
-            border: 1px solid rgba(220, 53, 69, 0.3);
+            gap: 8px;
+            background: var(--gradient-danger);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
         }
 
         .logout-btn:hover {
@@ -290,29 +309,16 @@
             border-color: rgba(220, 53, 69, 0.5);
         }
 
-        .logout-btn {
-            background: var(--gradient-danger);
-            color: var(--text-white);
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--radius-md);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition-fast);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-            box-shadow: var(--shadow-md);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(4px);
-        }
-
         .logout-btn:hover {
-            background: var(--gradient-danger);
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
             color: var(--text-white);
-            border-color: rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.35);
         }
+
+        .navbar .fas { opacity: 0.95; }
+        .navbar .nav-link .fas { font-size: 0.95rem; }
+        .navbar .logout-btn .fas { font-size: 1rem; }
 
         /* Premium Container */
         .container {
@@ -657,21 +663,6 @@
             transform: translateY(-1px);
             box-shadow: var(--shadow-md);
         }
-            padding: var(--spacing-xs) var(--spacing-md);
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--spacing-xs);
-            text-decoration: none;
-            box-shadow: var(--shadow-sm);
-            min-height: 32px;
-        }
 
         .btn:hover {
             background: linear-gradient(135deg, var(--secondary-color) 0%, #0d5d56 100%);
@@ -856,8 +847,8 @@
             font-weight: bold;
         }
 
-        /* Mobile-First Responsive Enhancements for Subject Teacher Dashboard */
-        @media (max-width: 480px) {
+    /* BEGIN: Legacy mobile block (disabled in Phase 1 cleanup)
+    @media (max-width: 480px) {
             /* Mobile Navigation */
             .navbar {
                 position: relative;
@@ -889,13 +880,17 @@
                 flex-direction: column;
                 width: 100%;
                 gap: var(--spacing-xs);
+                border-radius: 12px;
+                padding: 6px;
             }
 
             .nav-link {
                 padding: var(--spacing-sm);
                 text-align: center;
                 width: 100%;
-                border-radius: var(--radius-sm);
+                border-radius: 10px;
+                height: 40px;
+                justify-content: center;
             }
 
             .logout-btn {
@@ -1060,60 +1055,185 @@
             .assignments-table {
                 min-width: 500px !important;
             }
-                white-space: nowrap;
-            }
-        }
+    }
+    */
 
         /* Small Mobile Devices */
-        @media (max-width: 360px) {
-            .container {
-                padding: var(--spacing-xs);
+        /* Phase 1: Unified responsive foundation (mobile-first overrides only) */
+        /* Fluid typography overrides (keeps desktop max sizes) */
+        .page-title { font-size: clamp(1.25rem, 1rem + 2.5vw, 2.5rem); }
+        .page-subtitle { font-size: clamp(0.9rem, 0.8rem + 1.2vw, 1.1rem); }
+        .nav-link { font-size: clamp(0.85rem, 0.8rem + 0.5vw, 0.95rem); }
+        .btn { font-size: clamp(0.9rem, 0.85rem + 0.4vw, 1rem); }
+
+        /* Reduced motion for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+        }
+
+        /* Reusable responsive grid for cards (opt-in) */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        /* Consolidated breakpoints */
+        /* XS: up to 576px */
+        @media (max-width: 576px) {
+            .navbar { align-items: center; }
+            .navbar-brand { max-width: 60%; }
+            .container { padding: var(--spacing-sm); padding-top: calc(60px + var(--spacing-sm)); max-width: 100%; }
+            .login-form { grid-template-columns: 1fr; gap: var(--spacing-sm); padding: var(--spacing-sm); }
+            .btn, .btn-outline { width: 100%; margin-bottom: var(--spacing-xs); }
+
+            /* Phase 3: Lighter card visuals for small screens */
+            .page-header,
+            .dashboard-card {
+                box-shadow: var(--shadow-sm);
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                border: 1px solid rgba(131, 148, 150, 0.2);
+            }
+            .page-header { padding: var(--spacing-lg); }
+            .dashboard-card { padding: var(--spacing-lg); margin-bottom: var(--spacing-md); }
+            .card-header { margin: calc(-1 * var(--spacing-lg)) calc(-1 * var(--spacing-lg)) var(--spacing-md) calc(-1 * var(--spacing-lg)); }
+
+            /* Phase 3: Mobile table UX (sticky header/first column + edge fades) */
+            .table-responsive { position: relative; }
+            .table-responsive.is-scrollable::before,
+            .table-responsive.is-scrollable::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 16px;
+                pointer-events: none;
+                z-index: 1;
+            }
+            .table-responsive.is-scrollable::before { left: 0; background: linear-gradient(90deg, rgba(0,43,54,0.95), rgba(0,43,54,0)); }
+            .table-responsive.is-scrollable::after { right: 0; background: linear-gradient(270deg, rgba(0,43,54,0.95), rgba(0,43,54,0)); }
+            .table-responsive.at-left::before { opacity: 0; }
+            .table-responsive.at-right::after { opacity: 0; }
+
+            /* Sticky header */
+            .table-responsive table thead th {
+                position: sticky;
+                top: 0;
+                z-index: 2;
+                background: rgba(7, 54, 66, 0.95);
+                color: #fdf6e3;
+            }
+            /* Sticky first column */
+            .table-responsive table th:first-child,
+            .table-responsive table td:first-child {
+                position: sticky;
+                left: 0;
+                z-index: 1;
+                background: rgba(7, 54, 66, 0.9);
+            }
+            .table-responsive table thead th:first-child { z-index: 3; }
+        }
+
+        /* Phase 5: XS stacked-card tables for extra narrow screens */
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        @media (max-width: 420px) {
+            /* Hide table headers visually but keep for screen readers */
+            .stackable-table thead,
+            .stackable-table tfoot {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0 0 0 0);
+                white-space: nowrap;
+                border: 0;
             }
 
-            .navbar {
-                padding: var(--spacing-xs);
+            .stackable-table {
+                border-collapse: separate;
+                border-spacing: 0;
             }
 
-            .navbar-brand {
-                font-size: 1rem;
-                max-width: 75%;
+            .stackable-table tbody tr {
+                display: block;
+                background: rgba(7, 54, 66, 0.75);
+                border: 1px solid rgba(131, 148, 150, 0.25);
+                border-radius: 12px;
+                margin-bottom: 10px;
+                box-shadow: var(--shadow-sm);
+                overflow: hidden;
             }
 
-            .navbar-brand img {
-                width: 32px !important;
-                height: 32px !important;
+            .stackable-table tbody tr:hover {
+                background: rgba(181, 137, 0, 0.15);
             }
 
-            .navbar-brand-title {
-                font-size: 0.9rem;
+            .stackable-table tbody td,
+            .stackable-table tbody th[scope="row"] {
+                display: grid;
+                grid-template-columns: 42% 58%;
+                gap: 8px;
+                align-items: center;
+                padding: 10px 12px;
+                border-bottom: 1px solid rgba(131, 148, 150, 0.15);
+                text-align: left;
             }
 
-            .navbar-brand-subtitle {
-                font-size: 0.75rem;
+            .stackable-table tbody td:last-child {
+                border-bottom: 0;
             }
 
-            .page-title {
-                font-size: 1rem;
+            .stackable-table tbody td::before,
+            .stackable-table tbody th[scope="row"]::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: #fdf6e3;
+                opacity: 0.9;
             }
 
-            .card-header span {
-                font-size: 0.8rem;
-            }
-
-            .btn {
-                padding: var(--spacing-xs) var(--spacing-sm);
-                font-size: 0.8rem;
-            }
-
-            .component-mark {
-                font-size: 12px;
-            }
-
-            .percentage-cell {
-                font-size: 0.7rem;
-                padding: 2px 4px;
+            .stackable-table .stack-actions {
+                text-align: right;
             }
         }
+
+        /* SM: 577px–768px */
+        @media (min-width: 577px) and (max-width: 768px) {
+            .container { padding: var(--spacing-md); }
+            .login-form { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* MD: 769px–1024px (tablet landscape) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container { padding: var(--spacing-lg); }
+            .login-form { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* Legacy orphaned block removed in Phase 5 (now covered by consolidated breakpoints)
+            .navbar { padding: var(--spacing-xs); }
+            .navbar-brand { font-size: 1rem; max-width: 75%; }
+            .navbar-brand img { width: 32px !important; height: 32px !important; }
+            .navbar-brand-title { font-size: 0.9rem; }
+            .navbar-brand-subtitle { font-size: 0.75rem; }
+            .page-title { font-size: 1rem; }
+            .card-header span { font-size: 0.8rem; }
+            .btn { padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.8rem; }
+            .component-mark { font-size: 12px; }
+            .percentage-cell { font-size: 0.7rem; padding: 2px 4px; }
+        */
 
         /* Tablet Portrait */
         @media (max-width: 768px) and (min-width: 481px) {
@@ -1169,8 +1289,7 @@
             .composite-components-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
-        }
-        }
+    }
 
         /* Mobile-First Responsive Enhancements for Subject Teacher Dashboard */
         @media (max-width: 480px) {
@@ -1322,8 +1441,8 @@
             }
         }
 
-        /* Small Mobile Devices */
-        @media (max-width: 360px) {
+    /* BEGIN: Legacy small-mobile block (disabled)
+    @media (max-width: 360px) {
             .container {
                 padding: var(--spacing-xs);
             }
@@ -1361,10 +1480,11 @@
             .component-mark {
                 font-size: 12px;
             }
-        }
+    }
+    */
 
-        /* Tablet Portrait */
-        @media (max-width: 768px) and (min-width: 481px) {
+    /* BEGIN: Legacy tablet-portrait block (disabled)
+    @media (max-width: 768px) and (min-width: 481px) {
             .navbar {
                 flex-direction: row;
                 padding: var(--spacing-md);
@@ -1410,10 +1530,11 @@
                 width: auto;
                 margin-bottom: 0;
             }
-        }
+    }
+    */
 
-        /* Tablet Landscape */
-        @media (max-width: 1024px) and (min-width: 769px) {
+    /* BEGIN: Legacy tablet-landscape block (disabled)
+    @media (max-width: 1024px) and (min-width: 769px) {
             .container {
                 padding: var(--spacing-lg);
                 max-width: 900px;
@@ -1428,7 +1549,11 @@
                 grid-template-columns: repeat(3, 1fr);
                 gap: var(--spacing-lg);
             }
-        }
+    }
+    */
+
+        /* Fix: previously orphaned declarations belong to .total-indicator */
+    .total-indicator {
             background: var(--color-glass-mint);
             padding: 8px 12px;
             border-radius: var(--radius-sm);
@@ -1451,111 +1576,7 @@
             border: var(--glass-border-gold);
         }
 
-        /* Ocean Marble Composite Configuration Section Styles */
-        .composite-config-section {
-            background: var(--color-glass-teal);
-            backdrop-filter: var(--glass-blur-strong);
-            -webkit-backdrop-filter: var(--glass-blur-strong);
-            border: var(--glass-border-gold);
-            border-radius: var(--radius-lg);
-            padding: var(--space-xl);
-            margin: var(--space-xl) 0;
-            box-shadow: var(--glass-shadow-strong);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .composite-config-section::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, var(--color-glass-cream) 0%, var(--color-glass-sage) 100%);
-            opacity: 0.2;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .composite-config-header {
-            text-align: center;
-            margin-bottom: var(--space-lg);
-        }
-
-        .composite-config-header h4 {
-            color: var(--color-text-accent);
-            margin: 0 0 var(--space-sm) 0;
-            font-size: 18px;
-            text-shadow: 0 2px 4px rgba(8, 27, 27, 0.5);
-        }
-
-        .composite-config-header p {
-            color: var(--color-text-secondary);
-            margin: 0;
-            font-size: 14px;
-        }
-
-        .component-config-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            align-items: end;
-        }
-
-        .component-config-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .component-config-item label {
-            font-weight: bold;
-            color: var(--color-text-accent);
-            margin-bottom: var(--space-sm);
-            font-size: 14px;
-            text-shadow: 0 1px 2px rgba(8, 27, 27, 0.3);
-        }
-
-        .component-config-item input {
-            padding: var(--space-sm) var(--space-md);
-            border: var(--glass-border-gold);
-            border-radius: var(--radius-sm);
-            font-size: 16px;
-            text-align: center;
-            background: var(--color-glass-sage);
-            backdrop-filter: var(--glass-blur);
-            -webkit-backdrop-filter: var(--glass-blur);
-            color: var(--color-text-primary);
-            transition: all var(--transition-fast);
-        }
-
-        .component-config-item input:focus {
-            border-color: var(--color-gold);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(193, 141, 82, 0.3);
-            background: var(--color-glass-mint);
-            transform: translateY(-2px);
-        }
-
-        .component-config-item.total-display {
-            text-align: center;
-        }
-
-        .total-marks-display {
-            background: linear-gradient(135deg, var(--color-gold), var(--color-sage-green));
-            color: var(--color-cream);
-            padding: var(--space-md);
-            border-radius: var(--radius-sm);
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            min-height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: var(--glass-border-gold);
-            box-shadow: var(--glass-shadow);
-        }
+    /* Removed composite per-component config UI styles (English/Kiswahili turned independent). */
 
         .simplified-mark-entry {
             display: flex;
@@ -3119,6 +3140,52 @@
                 justify-content: center;
             }
         }
+        /* Keep navbar links horizontal at all sizes */
+        .navbar { flex-direction: row !important; flex-wrap: nowrap; }
+        .navbar-nav { flex-direction: row !important; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .navbar-nav > li { flex: 0 0 auto; }
+        .nav-link, .logout-btn { width: auto !important; }
+        .nav-link svg, .logout-btn svg { display: inline-block; width: 18px; height: 18px; opacity: 0.95; }
+        
+        /* Phase 2: Navbar mobile polish (keeps desktop unchanged) */
+        /* Base scroll enhancements (safe for desktop too) */
+        .navbar-nav {
+            scroll-snap-type: x mandatory;
+            scroll-padding-left: 12px;
+            overscroll-behavior-x: contain;
+        }
+        .navbar-nav > li { scroll-snap-align: start; }
+
+        /* Edge fade indicators for overflow (small screens only) */
+        @media (max-width: 576px) {
+            .navbar { align-items: center; }
+            .navbar-brand { max-width: 60%; }
+            .navbar-nav { position: relative; }
+            .navbar-nav.is-scrollable::before,
+            .navbar-nav.is-scrollable::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 24px;
+                pointer-events: none;
+                z-index: 1;
+                opacity: 0.9;
+                transition: opacity .2s ease;
+            }
+            .navbar-nav.is-scrollable::before {
+                left: 0;
+                background: linear-gradient(90deg, rgba(0,43,54,0.95), rgba(0,43,54,0));
+            }
+            .navbar-nav.is-scrollable::after {
+                right: 0;
+                background: linear-gradient(270deg, rgba(0,43,54,0.95), rgba(0,43,54,0));
+            }
+            .navbar-nav.at-left::before { opacity: 0; }
+            .navbar-nav.at-right::after { opacity: 0; }
+            /* Increase tap targets */
+            .nav-link, .logout-btn { min-height: 44px; padding: 10px 14px; }
+        }
     </style>
 </head>
 <body>
@@ -3129,7 +3196,7 @@
     </div>
     {% endif %}
 
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Subject Teacher navigation">
         <a href="#" class="navbar-brand">
             <!-- Hillview School Logo with Premium Styling -->
             {% if school_info.logo_path %}
@@ -3163,20 +3230,41 @@
                 </div>
             </div>
         </a>
-        <ul class="navbar-nav">
-            <li>
-                <a href="{{ url_for('teacher.dashboard') }}" class="nav-link">
-                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+    <ul class="navbar-nav" role="menubar">
+            <li role="none">
+                <a href="{{ url_for('teacher.dashboard') }}" class="nav-link" role="menuitem" aria-label="Dashboard">
+                    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                        <path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 20v-9.5z"></path>
+                        <path d="M9 21v-6h6v6"></path>
+                    </svg>
+                    <span>Dashboard</span>
                 </a>
             </li>
-            <li>
-                <a href="{{ url_for('classteacher.teacher_management_hub') }}" class="nav-link">
-                    <i class="fas fa-cogs"></i> <span>Teacher Hub</span>
+            <li role="none">
+                <a href="{{ url_for('classteacher.teacher_management_hub') }}" class="nav-link" role="menuitem" aria-label="Teacher Hub">
+                    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                        <path d="M12 3v3m0 12v3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M3 12h3m12 0h3M4.9 19.1l2.1-2.1m10-10 2.1-2.1"></path>
+                        <circle cx="12" cy="12" r="3.5"></circle>
+                    </svg>
+                    <span>Teacher Hub</span>
                 </a>
             </li>
-            <li>
-                <a href="{{ url_for('auth.logout_route') }}" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            <li role="none">
+                <a href="#subject-report-history" class="nav-link" role="menuitem" aria-label="Report History">
+                    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <path d="M12 7v5l3 3"></path>
+                    </svg>
+                    <span>Report History</span>
+                </a>
+            </li>
+            <li role="none">
+                <a href="{{ url_for('auth.logout_route') }}" class="logout-btn" role="menuitem" aria-label="Logout">
+                    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                        <path d="M15.75 9V7.5A2.25 2.25 0 0 0 13.5 5.25h-6A2.25 2.25 0 0 0 5.25 7.5v9A2.25 2.25 0 0 0 7.5 18.75h6A2.25 2.25 0 0 0 15.75 16.5V15"></path>
+                        <path d="M9 12h10.5M16.5 9l3 3-3 3"></path>
+                    </svg>
+                    <span>Logout</span>
                 </a>
             </li>
         </ul>
@@ -3391,53 +3479,7 @@
                     <input type="number" id="total_marks" name="total_marks" min="1" value="{{ total_marks if total_marks else '' }}" required>
                 </div>
 
-                <!-- Composite Subject Configuration (shown only for English/Kiswahili) -->
-                <div id="composite-config" class="composite-config-section" style="display: none;">
-                    <div class="composite-config-header">
-                        <h4>📚 Composite Subject Configuration</h4>
-                        <p>Set maximum marks for each component:</p>
-                    </div>
-
-                    <div id="english-config" class="component-config" style="display: none;">
-                        <div class="component-config-grid">
-                            <div class="component-config-item">
-                                <label for="grammar_max">Grammar (Max Marks)</label>
-                                <input type="number" id="grammar_max" name="grammar_max" value="{{ grammar_max_marks }}" min="1" max="1000"
-                                       oninput="updateComponentMaxMarks()">
-                            </div>
-                            <div class="component-config-item">
-                                <label for="composition_max">Composition (Max Marks)</label>
-                                <input type="number" id="composition_max" name="composition_max" value="{{ composition_max_marks }}" min="1" max="1000"
-                                       oninput="updateComponentMaxMarks()">
-                            </div>
-                            <div class="component-config-item total-display">
-                                <label>Total Max Marks</label>
-                                <div id="english_total_display" class="total-marks-display">{{ grammar_max_marks|int + composition_max_marks|int }}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="kiswahili-config" class="component-config" style="display: none;">
-                        <div class="component-config-grid">
-                            <div class="component-config-item">
-                                <label for="lugha_max">Lugha (Max Marks)</label>
-                                <input type="number" id="lugha_max" name="lugha_max" value="{{ lugha_max_marks }}" min="1" max="1000"
-                                       oninput="updateComponentMaxMarks()">
-                            </div>
-                            <div class="component-config-item">
-                                <label for="insha_max">Insha (Max Marks)</label>
-                                <input type="number" id="insha_max" name="insha_max" value="{{ insha_max_marks }}" min="1" max="1000"
-                                       oninput="updateComponentMaxMarks()">
-                            </div>
-                            <div class="component-config-item total-display">
-                                <label>Total Max Marks</label>
-                                <div id="kiswahili_total_display" class="total-marks-display">{{ lugha_max_marks|int + insha_max_marks|int }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
+                <!-- Composite subject per-component configuration UI removed (English/Kiswahili now independent). -->
 
                 <div class="form-group">
                     <label for="grade">
@@ -3499,10 +3541,7 @@
                     <input type="hidden" name="term" value="{{ term }}">
                     <input type="hidden" name="assessment_type" value="{{ assessment_type }}">
                     <input type="hidden" name="total_marks" value="{{ total_marks }}">
-                    <input type="hidden" name="grammar_max_marks" value="{{ grammar_max_marks }}">
-                    <input type="hidden" name="composition_max_marks" value="{{ composition_max_marks }}">
-                    <input type="hidden" name="lugha_max_marks" value="{{ lugha_max_marks }}">
-                    <input type="hidden" name="insha_max_marks" value="{{ insha_max_marks }}">
+                    <!-- Removed hidden composite max fields (English/Kiswahili now independent). -->
 
                     <!-- BRAND NEW STUDENT MARKS GRID -->
                     <div class="marks-grid-container">
@@ -3537,60 +3576,7 @@
                                     </div>
                                 </div>
                                 <div class="marks-input-column">
-                                    {% if subject in ['ENGLISH', 'KISWAHILI'] %}
-                                    <!-- COMPOSITE SUBJECT INPUTS -->
-                                    <div class="composite-inputs-wrapper">
-                                        {% if subject == 'ENGLISH' %}
-                                        <div class="component-input-group">
-                                            <label class="component-label">Grammar</label>
-                                                   min="0"
-                                                   max="{{ grammar_max_marks }}"
-                                                   placeholder="Grammar"
-                                                   data-student="{{ student.name.replace(' ', '_') }}"
-                                                   data-component="grammar">
-                                        </div>
-                                        <div class="component-input-group">
-                                            <label class="component-label">Composition</label>
-                                            <input type="number"
-                                                   name="component_{{ student.name.replace(' ', '_') }}_2"
-                                                   class="new-mark-input component-input"
-                                                   min="0"
-                                                   max="{{ composition_max_marks }}"
-                                                   placeholder="Composition"
-                                                   data-student="{{ student.name.replace(' ', '_') }}"
-                                                   data-component="composition">
-                                        </div>
-                                        {% elif subject == 'KISWAHILI' %}
-                                        <div class="component-input-group">
-                                            <label class="component-label">Lugha</label>
-                                            <input type="number"
-                                                   name="component_{{ student.name.replace(' ', '_') }}_1"
-                                                   class="new-mark-input component-input"
-                                                   min="0"
-                                                   max="{{ lugha_max_marks }}"
-                                                   placeholder="Lugha"
-                                                   data-student="{{ student.name.replace(' ', '_') }}"
-                                                   data-component="lugha">
-                                        </div>
-                                        <div class="component-input-group">
-                                            <label class="component-label">Insha</label>
-                                            <input type="number"
-                                                   name="component_{{ student.name.replace(' ', '_') }}_2"
-                                                   class="new-mark-input component-input"
-                                                   min="0"
-                                                   max="{{ insha_max_marks }}"
-                                                   placeholder="Insha"
-                                                   data-student="{{ student.name.replace(' ', '_') }}"
-                                                   data-component="insha">
-                                        </div>
-                                        {% endif %}
-                                        <div class="total-indicator">
-                                            <span class="total-text">Total: </span>
-                                            <span class="total-number" id="total_{{ student.name.replace(' ', '_') }}">0</span>
-                                            <span class="total-percent" id="percentage_{{ student.name.replace(' ', '_') }}">0%</span>
-                                        </div>
-                                    </div>
-                                    {% else %}
+                                    {% if true %}
                                     <!-- REGULAR SUBJECT INPUT -->
                                     <div class="regular-input-wrapper">
                                         <input type="number"
@@ -3698,7 +3684,7 @@
         <div class="dashboard-card mt-4">
             <div class="card-header">
                 <span>Recent Reports</span>
-                <a href="#" class="btn-outline">View All</a>
+                <a href="#subject-report-history" class="btn-outline">View All</a>
             </div>
             <div class="card-content">
             <div class="table-responsive">
@@ -3723,18 +3709,21 @@
                             <td>{{ report.term }}</td>
                             <td>{{ report.assessment_type }}</td>
                             <td>
-                                <span class="badge" style="background-color: #28a745; color: white; padding: 4px 8px; border-radius: 4px;">
-                                    {{ report.class_average }}%
-                                </span>
+                                {% if report.class_average is defined and report.class_average is not none %}
+                                    <span class="badge" style="background-color: #28a745; color: white; padding: 4px 8px; border-radius: 4px;">
+                                        {{ report.class_average }}%
+                                    </span>
+                                {% else %}
+                                    <span class="badge" style="background-color: #6c757d; color: white; padding: 4px 8px; border-radius: 4px;">—</span>
+                                {% endif %}
                             </td>
                             <td>{{ report.date }}</td>
                             <td>
-                                <a href="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #007BFF;">
-                                    Preview
-                                </a>
-                                <a href="{{ url_for('classteacher.download_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" class="btn" style="background-color: #28A745; margin-left: 5px;">
-                                    Download
-                                </a>
+                                {% if report.view_url %}
+                                    <a href="{{ report.view_url }}" class="btn" style="background-color: #007BFF;">View</a>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -3746,6 +3735,63 @@
                     </tbody>
                 </table>
             </div>
+            </div>
+        </div>
+
+    <!-- Subject Report History -->
+    <div id="subject-report-history" class="dashboard-card mt-4" style="scroll-margin-top: 84px;">
+            <div class="card-header" style="align-items: start;">
+                <div>
+                    <span>Subject Report History</span>
+                    <br>
+                    <small>Filter and open previously generated subject reports</small>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="report-filters" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 12px; align-items: end;">
+                    <select id="filter-subject" aria-label="Filter by subject">
+                        <option value="">All Subjects</option>
+                        {% if accessible_subjects %}
+                            {% for s in accessible_subjects %}
+                                <option value="{{ s.name }}">{{ s.name }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                    <select id="filter-grade" aria-label="Filter by grade">
+                        <option value="">All Grades</option>
+                        {% if grades %}
+                            {% for g in grades %}
+                                <option value="{{ g.id }}">{{ g.name }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                    <select id="filter-stream" aria-label="Filter by stream">
+                        <option value="">All Streams</option>
+                        {% if accessible_streams %}
+                            {% for st in accessible_streams %}
+                                <option value="{{ st.id }}">{{ st.name }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                    <select id="filter-term" aria-label="Filter by term">
+                        <option value="">All Terms</option>
+                        {% if terms %}
+                            {% for t in terms %}
+                                <option value="{{ t }}">{{ t }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                    <select id="filter-assessment" aria-label="Filter by assessment type">
+                        <option value="">All Assessments</option>
+                        {% if assessment_types %}
+                            {% for at in assessment_types %}
+                                <option value="{{ at }}">{{ at }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                    <button id="filters-clear" type="button" class="btn btn-outline" aria-label="Clear all filters" style="min-height:44px;">Clear Filters</button>
+                </div>
+                <div id="report-history-container" class="table-responsive" aria-live="polite"></div>
             </div>
         </div>
 
@@ -3822,21 +3868,6 @@
         function debugFormSubmission() {
             debugLog('🚀 Upload Marks button clicked');
 
-            // Ensure configuration values are updated before submission
-            if (document.getElementById('subject').value === 'ENGLISH') {
-                const grammarMax = document.getElementById('grammar_max').value;
-                const compositionMax = document.getElementById('composition_max').value;
-                document.getElementById('hidden_grammar_max').value = grammarMax;
-                document.getElementById('hidden_composition_max').value = compositionMax;
-                debugLog(`📝 Synced English config: Grammar=${grammarMax}, Composition=${compositionMax}`);
-            } else if (document.getElementById('subject').value === 'KISWAHILI') {
-                const lughaMax = document.getElementById('lugha_max').value;
-                const inshaMax = document.getElementById('insha_max').value;
-                document.getElementById('hidden_lugha_max').value = lughaMax;
-                document.getElementById('hidden_insha_max').value = inshaMax;
-                debugLog(`📝 Synced Kiswahili config: Lugha=${lughaMax}, Insha=${inshaMax}`);
-            }
-
             // Get all form values
             const educationLevel = document.getElementById('education_level').value;
             const subject = document.getElementById('subject').value;
@@ -3854,13 +3885,6 @@
             debugLog('  Term: ' + term);
             debugLog('  Assessment Type: ' + assessmentType);
             debugLog('  Total Marks: ' + totalMarks);
-
-            // Debug hidden configuration values
-            debugLog('🔧 Hidden configuration values:');
-            debugLog('  Grammar Max: ' + document.getElementById('hidden_grammar_max').value);
-            debugLog('  Composition Max: ' + document.getElementById('hidden_composition_max').value);
-            debugLog('  Lugha Max: ' + document.getElementById('hidden_lugha_max').value);
-            debugLog('  Insha Max: ' + document.getElementById('hidden_insha_max').value);
 
             // Check for missing values
             const missingFields = [];
@@ -4010,19 +4034,24 @@
         // Function to show/hide composite configuration and total marks field
         async function showCompositeConfig(subject) {
             const compositeConfig = document.getElementById('composite-config');
-            const englishConfig = document.getElementById('english-config');
-            const kiswahiliConfig = document.getElementById('kiswahili-config');
             const totalMarksGroup = document.getElementById('total-marks-group');
             const totalMarksInput = document.getElementById('total_marks');
             const educationLevel = document.getElementById('education_level').value;
 
             console.log(`🎯 showCompositeConfig called for subject: ${subject}, education level: ${educationLevel}`);
 
+            // Force independent upload for English and Kiswahili
+            const subjectUpper = (subject || '').toString().toUpperCase();
+            if (subjectUpper === 'ENGLISH' || subjectUpper === 'KISWAHILI') {
+                if (compositeConfig) compositeConfig.style.display = 'none';
+                totalMarksGroup.style.display = 'block';
+                totalMarksInput.setAttribute('required', 'required');
+                return;
+            }
+
             if (!educationLevel) {
                 console.log('⚠️ No education level selected, hiding composite config');
-                compositeConfig.style.display = 'none';
-                englishConfig.style.display = 'none';
-                kiswahiliConfig.style.display = 'none';
+                if (compositeConfig) compositeConfig.style.display = 'none';
                 totalMarksGroup.style.display = 'block';
                 totalMarksInput.setAttribute('required', 'required');
                 return;
@@ -4038,60 +4067,15 @@
                 const data = await response.json();
 
                 if (data.success && data.is_composite) {
-                    console.log('🎯 Subject is composite - showing composite interface');
-
-                    // Show composite config
-                    compositeConfig.style.display = 'block';
+                    console.log('🎯 Subject is composite - handled in marks grid');
+                    if (compositeConfig) compositeConfig.style.display = 'none';
                     totalMarksGroup.style.display = 'none';
                     totalMarksInput.removeAttribute('required');
-
-                    if (data.subject_type === 'english') {
-                        englishConfig.style.display = 'block';
-                        kiswahiliConfig.style.display = 'none';
-
-                        // Set values from configuration
-                        const grammarComponent = data.components.find(c => c.name === 'Grammar');
-                        const compositionComponent = data.components.find(c => c.name === 'Composition');
-
-                        const grammarMax = grammarComponent ? (grammarComponent.weight * 100) : 60;
-                        const compositionMax = compositionComponent ? (compositionComponent.weight * 100) : 40;
-
-                        document.getElementById('grammar_max').value = grammarMax;
-                        document.getElementById('composition_max').value = compositionMax;
-                        document.getElementById('hidden_grammar_max').value = grammarMax;
-                        document.getElementById('hidden_composition_max').value = compositionMax;
-
-                        debugLog('📚 Showing English composite configuration from database');
-
-                    } else if (data.subject_type === 'kiswahili') {
-                        englishConfig.style.display = 'none';
-                        kiswahiliConfig.style.display = 'block';
-
-                        // Set values from configuration
-                        const lughaComponent = data.components.find(c => c.name === 'Lugha');
-                        const inshaComponent = data.components.find(c => c.name === 'Insha');
-
-                        const lughaMax = lughaComponent ? (lughaComponent.weight * 100) : 50;
-                        const inshaMax = inshaComponent ? (inshaComponent.weight * 100) : 50;
-
-                        document.getElementById('lugha_max').value = lughaMax;
-                        document.getElementById('insha_max').value = inshaMax;
-                        document.getElementById('hidden_lugha_max').value = lughaMax;
-                        document.getElementById('hidden_insha_max').value = inshaMax;
-
-                        debugLog('📚 Showing Kiswahili composite configuration from database');
-                    }
-
-                    // Update component max marks
-                    updateComponentMaxMarks();
-
                 } else {
                     console.log('🎯 Subject is not composite - showing regular interface');
 
                     // Hide composite config for regular subjects
-                    compositeConfig.style.display = 'none';
-                    englishConfig.style.display = 'none';
-                    kiswahiliConfig.style.display = 'none';
+                    if (compositeConfig) compositeConfig.style.display = 'none';
 
                     // Show total marks field and add required attribute
                     totalMarksGroup.style.display = 'block';
@@ -4105,90 +4089,10 @@
                 console.error('❌ Error checking if subject is composite:', error);
 
                 // Fallback to regular subject interface
-                compositeConfig.style.display = 'none';
-                englishConfig.style.display = 'none';
-                kiswahiliConfig.style.display = 'none';
+                if (compositeConfig) compositeConfig.style.display = 'none';
                 totalMarksGroup.style.display = 'block';
                 totalMarksInput.setAttribute('required', 'required');
                 totalMarksInput.value = '';
-            }
-        }
-
-        // Function to update component max marks and total
-        function updateComponentMaxMarks() {
-            const subject = document.getElementById('subject').value;
-            const subjectUpper = subject.toUpperCase();
-
-            if (subjectUpper.includes('ENGLISH')) {
-                const grammarMax = parseInt(document.getElementById('grammar_max').value) || 0;
-                const compositionMax = parseInt(document.getElementById('composition_max').value) || 0;
-                const total = grammarMax + compositionMax;
-
-                document.getElementById('english_total_display').textContent = total;
-                document.getElementById('total_marks').value = total;
-
-                // Update hidden fields for server submission
-                document.getElementById('hidden_grammar_max').value = grammarMax;
-                document.getElementById('hidden_composition_max').value = compositionMax;
-
-                // Update all grammar input fields
-                document.querySelectorAll('.grammar-input').forEach(input => {
-                    input.max = grammarMax;
-                    input.placeholder = `0-${grammarMax}`;
-                    input.setAttribute('data-max-mark', grammarMax);
-                });
-
-                // Update all composition input fields
-                document.querySelectorAll('.composition-input').forEach(input => {
-                    input.max = compositionMax;
-                    input.placeholder = `0-${compositionMax}`;
-                    input.setAttribute('data-max-mark', compositionMax);
-                });
-
-                // Update max mark displays in labels
-                document.querySelectorAll('.grammar-max-display').forEach(span => {
-                    span.textContent = grammarMax;
-                });
-                document.querySelectorAll('.composition-max-display').forEach(span => {
-                    span.textContent = compositionMax;
-                });
-
-                debugLog(`📊 English totals: Grammar ${grammarMax} + Composition ${compositionMax} = ${total}`);
-            } else if (subjectUpper.includes('KISWAHILI')) {
-                const lughaMax = parseInt(document.getElementById('lugha_max').value) || 0;
-                const inshaMax = parseInt(document.getElementById('insha_max').value) || 0;
-                const total = lughaMax + inshaMax;
-
-                document.getElementById('kiswahili_total_display').textContent = total;
-                document.getElementById('total_marks').value = total;
-
-                // Update hidden fields for server submission
-                document.getElementById('hidden_lugha_max').value = lughaMax;
-                document.getElementById('hidden_insha_max').value = inshaMax;
-
-                // Update all lugha input fields
-                document.querySelectorAll('.lugha-input').forEach(input => {
-                    input.max = lughaMax;
-                    input.placeholder = `0-${lughaMax}`;
-                    input.setAttribute('data-max-mark', lughaMax);
-                });
-
-                // Update all insha input fields
-                document.querySelectorAll('.insha-input').forEach(input => {
-                    input.max = inshaMax;
-                    input.placeholder = `0-${inshaMax}`;
-                    input.setAttribute('data-max-mark', inshaMax);
-                });
-
-                // Update max mark displays in labels
-                document.querySelectorAll('.lugha-max-display').forEach(span => {
-                    span.textContent = lughaMax;
-                });
-                document.querySelectorAll('.insha-max-display').forEach(span => {
-                    span.textContent = inshaMax;
-                });
-
-                debugLog(`📊 Kiswahili totals: Lugha ${lughaMax} + Insha ${inshaMax} = ${total}`);
             }
         }
 
@@ -4352,7 +4256,10 @@
                         currentSubjectInfo = data.subject;
                         debugLog('📚 Updated currentSubjectInfo: ' + JSON.stringify(currentSubjectInfo));
 
-                        if (data.is_composite) {
+                        // Force regular mode for English/Kiswahili
+                        const subj = (document.getElementById('subject').value || '').toUpperCase();
+                        const forceRegular = subj === 'ENGLISH' || subj === 'KISWAHILI';
+                        if (data.is_composite && !forceRegular) {
                             debugLog('🎯 Setting up composite subject marks entry');
                             setupCompositeMarksEntry(marksCells, data);
                         } else {
@@ -5028,40 +4935,7 @@
             // Load grade mapping
             loadGradeMapping();
 
-            // Add event listeners for composite configuration inputs
-            const grammarMaxInput = document.getElementById('grammar_max');
-            const compositionMaxInput = document.getElementById('composition_max');
-            const lughaMaxInput = document.getElementById('lugha_max');
-            const inshaMaxInput = document.getElementById('insha_max');
-
-            if (grammarMaxInput) {
-                grammarMaxInput.addEventListener('input', function() {
-                    updateComponentMaxMarks();
-                    document.getElementById('hidden_grammar_max').value = this.value;
-                    debugLog(`📝 Updated hidden grammar max to: ${this.value}`);
-                });
-            }
-            if (compositionMaxInput) {
-                compositionMaxInput.addEventListener('input', function() {
-                    updateComponentMaxMarks();
-                    document.getElementById('hidden_composition_max').value = this.value;
-                    debugLog(`📝 Updated hidden composition max to: ${this.value}`);
-                });
-            }
-            if (lughaMaxInput) {
-                lughaMaxInput.addEventListener('input', function() {
-                    updateComponentMaxMarks();
-                    document.getElementById('hidden_lugha_max').value = this.value;
-                    debugLog(`📝 Updated hidden lugha max to: ${this.value}`);
-                });
-            }
-            if (inshaMaxInput) {
-                inshaMaxInput.addEventListener('input', function() {
-                    updateComponentMaxMarks();
-                    document.getElementById('hidden_insha_max').value = this.value;
-                    debugLog(`📝 Updated hidden insha max to: ${this.value}`);
-                });
-            }
+            // Removed composite configuration input listeners (English/Kiswahili now independent; other composites use API-provided weights only).
 
             // Initialize education level if set
             const educationLevel = document.getElementById('education_level').value;
@@ -5091,71 +4965,7 @@
             }
         });
 
-        // Helper functions for flexible subject system
-        function handleCompositeSubject(subjectType, subjectConfig) {
-            const compositeConfig = document.getElementById('composite-config');
-            const englishConfig = document.getElementById('english-config');
-            const kiswahiliConfig = document.getElementById('kiswahili-config');
-            const totalMarksGroup = document.getElementById('total-marks-group');
-            const totalMarksInput = document.getElementById('total_marks');
-
-            // Show composite config
-            compositeConfig.style.display = 'block';
-            totalMarksGroup.style.display = 'none';
-            totalMarksInput.removeAttribute('required');
-
-            if (subjectType === 'english') {
-                englishConfig.style.display = 'block';
-                kiswahiliConfig.style.display = 'none';
-
-                // Set component values from configuration
-                const grammarWeight = subjectConfig.components.find(c => c.name === 'Grammar')?.weight || 60;
-                const compositionWeight = subjectConfig.components.find(c => c.name === 'Composition')?.weight || 40;
-
-                document.getElementById('grammar_max').value = grammarWeight;
-                document.getElementById('composition_max').value = compositionWeight;
-                document.getElementById('hidden_grammar_max').value = grammarWeight;
-                document.getElementById('hidden_composition_max').value = compositionWeight;
-
-                updateComponentMaxMarks();
-                debugLog('📚 Showing English composite configuration');
-            } else if (subjectType === 'kiswahili') {
-                englishConfig.style.display = 'none';
-                kiswahiliConfig.style.display = 'block';
-
-                // Set component values from configuration
-                const lughaWeight = subjectConfig.components.find(c => c.name === 'Lugha')?.weight || 50;
-                const inshaWeight = subjectConfig.components.find(c => c.name === 'Insha')?.weight || 50;
-
-                document.getElementById('lugha_max').value = lughaWeight;
-                document.getElementById('insha_max').value = inshaWeight;
-                document.getElementById('hidden_lugha_max').value = lughaWeight;
-                document.getElementById('hidden_insha_max').value = inshaWeight;
-
-                updateComponentMaxMarks();
-                debugLog('📚 Showing Kiswahili composite configuration');
-            }
-        }
-
-        function handleNonCompositeSubject() {
-            const compositeConfig = document.getElementById('composite-config');
-            const englishConfig = document.getElementById('english-config');
-            const kiswahiliConfig = document.getElementById('kiswahili-config');
-            const totalMarksGroup = document.getElementById('total-marks-group');
-            const totalMarksInput = document.getElementById('total_marks');
-
-            // Hide composite config
-            compositeConfig.style.display = 'none';
-            englishConfig.style.display = 'none';
-            kiswahiliConfig.style.display = 'none';
-
-            // Show total marks field
-            totalMarksGroup.style.display = 'block';
-            totalMarksInput.setAttribute('required', 'required');
-            totalMarksInput.value = '';
-
-            debugLog('📚 Showing non-composite subject configuration');
-        }
+    // Removed composite config helper functions (UI no longer used for English/Kiswahili).
 
 
 
@@ -5256,7 +5066,178 @@
                     debugFormSubmission();
                 });
             }
+
+            // Initialize report history (filterable)
+            try { initReportHistory(); } catch (e) { console.warn('Report history init failed', e); }
+
+            // Phase 2: Initialize navbar overflow indicators for small screens
+            try { initNavbarOverflowIndicators(); } catch (e) { console.warn('Navbar indicators init failed', e); }
+
+            // Phase 3: Initialize scrollable table containers (edge fades, sticky header support)
+            try { initScrollableContainers(); } catch (e) { console.warn('Scrollable containers init failed', e); }
         });
+
+        function initNavbarOverflowIndicators() {
+            const nav = document.querySelector('.navbar-nav');
+            if (!nav) return;
+
+            const applyScrollable = () => {
+                const scrollable = nav.scrollWidth > nav.clientWidth + 2; // small tolerance
+                nav.classList.toggle('is-scrollable', scrollable);
+                updateEdgeFades();
+            };
+
+            const updateEdgeFades = () => {
+                const atLeft = nav.scrollLeft <= 2;
+                const atRight = nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 2;
+                nav.classList.toggle('at-left', atLeft);
+                nav.classList.toggle('at-right', atRight);
+            };
+
+            // Initial checks
+            applyScrollable();
+            updateEdgeFades();
+
+            // Listeners
+            nav.addEventListener('scroll', updateEdgeFades, { passive: true });
+            window.addEventListener('resize', applyScrollable);
+
+            // In case fonts/assets change widths after load
+            setTimeout(applyScrollable, 300);
+        }
+
+        // Subject report history (desktop)
+        async function initReportHistory() {
+            const container = document.getElementById('report-history-container');
+            if (!container) return;
+
+            // a11y live region for updates
+            container.setAttribute('role', 'region');
+            container.setAttribute('aria-live', 'polite');
+
+            const filters = {
+                subject: document.getElementById('filter-subject'),
+                grade: document.getElementById('filter-grade'),
+                stream: document.getElementById('filter-stream'),
+                term: document.getElementById('filter-term'),
+                assessment_type: document.getElementById('filter-assessment'),
+            };
+
+            const reload = async () => {
+                const params = new URLSearchParams();
+                for (const [k, el] of Object.entries(filters)) {
+                    if (el && el.value) params.set(k, el.value);
+                }
+                container.innerHTML = '<div style="padding:12px;">Loading...</div>';
+                container.setAttribute('aria-busy', 'true');
+                const res = await fetch(`/teacher/api/report-history?${params.toString()}`);
+                const data = await res.json();
+                renderHistory(container, data);
+                // Enhance stacked tables on tiny screens
+                try { enhanceStackableTables(); } catch (e) { /* no-op */ }
+                container.setAttribute('aria-busy', 'false');
+            };
+
+            for (const el of Object.values(filters)) {
+                if (el) el.addEventListener('change', reload);
+            }
+
+            // Clear Filters control
+            const clearBtn = document.getElementById('filters-clear');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', async () => {
+                    for (const el of Object.values(filters)) {
+                        if (el) el.value = '';
+                    }
+                    await reload();
+                    clearBtn.blur();
+                });
+            }
+
+            await reload();
+        }
+
+        function renderHistory(container, data) {
+            if (!data || !data.success) {
+                container.innerHTML = `<div class="history-empty">No history available</div>`;
+                return;
+            }
+
+            if (!data.items || data.items.length === 0) {
+                container.innerHTML = `<div class="history-empty">No reports match these filters</div>`;
+                return;
+            }
+
+            const rows = data.items.map((e) => `
+                <tr>
+                    <td data-label="Subject">${e.subject}</td>
+                    <td data-label="Grade">${e.grade}</td>
+                    <td data-label="Stream">${e.stream || '-'}</td>
+                    <td data-label="Term">${e.term}</td>
+                    <td data-label="Assessment">${e.assessment_type}</td>
+                    <td data-label="Average">${e.class_average ?? 0}%</td>
+                    <td data-label="Action" class="stack-actions"><a class="nav-link" style="display:inline-flex;height:auto;padding:4px 8px;" target="_blank" href="${e.view_url || '#'}">View</a></td>
+                </tr>`).join('');
+
+            container.innerHTML = `
+                <div class="table-wrapper">
+                  <table class="history-table stackable-table stackable-auto">
+                    <thead>
+                      <tr>
+                        <th>Subject</th>
+                        <th>Grade</th>
+                        <th>Stream</th>
+                        <th>Term</th>
+                        <th>Assessment</th>
+                        <th>Average</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                  </table>
+                </div>`;
+        }
+
+        // Phase 5: Enhance stackable tables by auto-applying data-labels from headers
+        function enhanceStackableTables(root = document) {
+            const tables = Array.from(root.querySelectorAll('table.stackable-auto'));
+            if (!tables.length) return;
+
+            tables.forEach((table) => {
+                if (table.dataset.stackEnhanced === '1') return;
+                const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+                const rows = Array.from(table.tBodies[0]?.rows || []);
+                rows.forEach((tr) => {
+                    Array.from(tr.cells).forEach((td, i) => {
+                        if (!td.getAttribute('data-label') && headers[i]) {
+                            td.setAttribute('data-label', headers[i]);
+                        }
+                    });
+                });
+                table.dataset.stackEnhanced = '1';
+            });
+        }
+
+        function initScrollableContainers() {
+            const containers = Array.from(document.querySelectorAll('.table-responsive'));
+            if (!containers.length) return;
+
+            const updateContainer = (el) => {
+                const scrollable = el.scrollWidth > el.clientWidth + 2; // tolerance
+                el.classList.toggle('is-scrollable', scrollable);
+                const atLeft = el.scrollLeft <= 2;
+                const atRight = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+                el.classList.toggle('at-left', atLeft);
+                el.classList.toggle('at-right', atRight);
+            };
+
+            containers.forEach((el) => {
+                updateContainer(el);
+                el.addEventListener('scroll', () => updateContainer(el), { passive: true });
+            });
+            window.addEventListener('resize', () => containers.forEach(updateContainer));
+            setTimeout(() => containers.forEach(updateContainer), 300);
+        }
     </script>
 
 
