@@ -35,7 +35,8 @@ try:
         print("🌐 Ready to accept connections...")
         print("")
 
-    app.run(debug=True, host='127.0.0.1', port=PORT, threaded=True, use_reloader=True)
+    # Disable the auto-reloader to avoid detaching from terminal on Windows bash
+    app.run(debug=True, host='127.0.0.1', port=PORT, threaded=True, use_reloader=False)
 
 except Exception as e:
     print(f"❌ Error starting application: {e}")

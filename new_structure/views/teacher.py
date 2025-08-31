@@ -8,6 +8,14 @@ from ..services import is_authenticated, get_role, RoleBasedDataService
 from ..extensions import db
 from ..utils import get_performance_category, get_performance_summary
 from functools import wraps
+# Security utilities: role/resource checks without changing existing behavior
+try:
+    from ..security.access_control import AccessControlProtection
+except Exception:
+    try:
+        from security.access_control import AccessControlProtection
+    except Exception:
+        AccessControlProtection = None  # Fallback if security module unavailable
 
 # Create a blueprint for teacher routes
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/teacher')
@@ -47,6 +55,17 @@ def get_grade_mapping():
 def get_subject_info(subject_name):
     """API endpoint to get subject information including composite status."""
     try:
+        # Ensure the requested subject is among teacher's accessible subjects
+        try:
+            teacher_id = session.get('teacher_id')
+            role = session.get('role', 'teacher')
+            accessible_subjects = RoleBasedDataService.get_accessible_subjects(teacher_id, role)
+            accessible_subject_names = {s.name for s in accessible_subjects}
+            if subject_name not in accessible_subject_names:
+                return jsonify({'success': False, 'message': 'Unauthorized subject access'}), 403
+        except Exception:
+            # If access check fails for any reason, continue without breaking existing flow
+            pass
         subject = Subject.query.filter_by(name=subject_name).first()
         if not subject:
             return jsonify({'success': False, 'message': 'Subject not found'})
@@ -78,6 +97,18 @@ def get_subject_info(subject_name):
 def get_streams(grade_id):
     """API endpoint to get streams for a specific grade."""
     try:
+        # Verify teacher has access to this grade (and optionally stream) before listing
+        try:
+            if AccessControlProtection and not AccessControlProtection.check_class_access(
+                user_id=session.get('teacher_id'),
+                user_role=session.get('role', 'teacher'),
+                grade_id=grade_id,
+                stream_id=None,
+            ):
+                return jsonify({'success': False, 'message': 'Unauthorized class access'}), 403
+        except Exception:
+            # Do not break if security module raises unexpectedly
+            pass
         streams = Stream.query.filter_by(grade_id=grade_id).all()
         stream_data = [{'id': stream.id, 'name': stream.name} for stream in streams]
         return jsonify({'success': True, 'streams': stream_data})
@@ -339,6 +370,27 @@ def dashboard():
                 if stream_obj:
                     print(f"✅ DEBUG: Stream object found, getting students for stream_id: {stream_obj.id}")
 
+                    # SECURITY: Verify access to selected class/stream before listing students
+                    try:
+                        grade_obj_for_access = None
+                        if grade.isdigit():
+                            grade_obj_for_access = Grade.query.get(int(grade))
+                        else:
+                            grade_obj_for_access = Grade.query.filter_by(name=grade).first()
+
+                        if AccessControlProtection and grade_obj_for_access:
+                            allowed = AccessControlProtection.check_class_access(
+                                user_id=session.get('teacher_id'),
+                                user_role=session.get('role', 'teacher'),
+                                grade_id=grade_obj_for_access.id,
+                                stream_id=stream_obj.id,
+                            )
+                            if not allowed:
+                                error_message = "You do not have permission to access this class/stream."
+                                stream_obj = None
+                    except Exception as sec_err:
+                        print(f"⚠️ SECURITY: Class access check failed: {sec_err}")
+
                     # Get pagination parameters
                     page = request.form.get('page', 1, type=int)
                     per_page = 20  # Students per page
@@ -439,6 +491,21 @@ def dashboard():
                 assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
                 print(f"🔍 DEBUG: Submit - Database objects - Subject: {subject_obj}, Term: {term_obj}, Assessment: {assessment_type_obj}")
+
+                # SECURITY: Verify access to selected class/stream before saving marks
+                try:
+                    if stream_obj and AccessControlProtection:
+                        allowed = AccessControlProtection.check_class_access(
+                            user_id=session.get('teacher_id'),
+                            user_role=session.get('role', 'teacher'),
+                            grade_id=stream_obj.grade_id,
+                            stream_id=stream_obj.id,
+                        )
+                        if not allowed:
+                            error_message = "You do not have permission to submit marks for this class/stream."
+                            stream_obj = None
+                except Exception as sec_err:
+                    print(f"⚠️ SECURITY: Submit access check failed: {sec_err}")
 
                 if not (stream_obj and subject_obj and term_obj and assessment_type_obj):
                     error_message = "Invalid selection for grade, stream, subject, term, or assessment type"
@@ -792,6 +859,20 @@ def generate_subject_report():
         flash("Missing required parameters for report generation", "error")
         return redirect(url_for('teacher.dashboard'))
 
+    # SECURITY: Ensure the requested subject is accessible to the current teacher
+    try:
+        teacher_id = session.get('teacher_id')
+        role = session.get('role', 'teacher')
+        accessible_subjects = RoleBasedDataService.get_accessible_subjects(teacher_id, role)
+        accessible_subject_names = {s.name for s in accessible_subjects}
+        if subject not in accessible_subject_names:
+            print(f"🚫 SECURITY: Unauthorized subject access attempt - teacher {teacher_id} subject '{subject}'")
+            flash("You do not have permission to generate a report for this subject.", "error")
+            return redirect(url_for('teacher.dashboard'))
+    except Exception as sec_err:
+        # Do not break flow if security helper raises unexpectedly
+        print(f"⚠️ SECURITY: Subject access check failed: {sec_err}")
+
     try:
         # Get database objects with comprehensive error handling
 
@@ -906,6 +987,22 @@ def generate_subject_report():
 
         print(f"✅ All database objects found successfully!")
         print(f"Proceeding with report generation...")
+
+        # SECURITY: Verify access to selected class/stream before generating report
+        try:
+            if AccessControlProtection and grade_obj and stream_obj:
+                allowed = AccessControlProtection.check_class_access(
+                    user_id=session.get('teacher_id'),
+                    user_role=session.get('role', 'teacher'),
+                    grade_id=grade_obj.id,
+                    stream_id=stream_obj.id,
+                )
+                if not allowed:
+                    print("🚫 SECURITY: Unauthorized class/stream access for report generation")
+                    flash("You do not have permission to generate a report for this class/stream.", "error")
+                    return redirect(url_for('teacher.dashboard'))
+        except Exception as sec_err:
+            print(f"⚠️ SECURITY: Class access check failed during report generation: {sec_err}")
 
         # Get students and their marks for this subject
         print(f"🔍 Looking for students in stream_id: {stream_obj.id}")
