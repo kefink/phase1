@@ -15,10 +15,19 @@
       rel="stylesheet"
     />
 
-  <!-- Brandi Bootstrap (mobile-first utilities) -->
-  <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}" rel="stylesheet" />
-  <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}" rel="stylesheet" />
-  <link href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}" rel="stylesheet" />
+    <!-- Brandi Bootstrap (mobile-first utilities) -->
+    <link
+      href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}"
+      rel="stylesheet"
+    />
 
     <!-- Solar Theme CSS -->
     <style>
@@ -141,19 +150,19 @@
       .subject-header {
         display: flex;
         justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.75rem;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem 0.75rem;
       }
 
       .subject-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  line-height: 1.25;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-emphasis);
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        line-height: 1.25;
       }
 
       /* Component subject styling */
@@ -392,18 +401,52 @@
       }
 
       @media (max-width: 576px) {
-        .breadcrumb { margin-bottom: 1rem; }
-        .header { padding: 1rem; margin-bottom: 1rem; }
-        .header h1 { font-size: 1.25rem; }
-        .summary-stats { padding: 1rem; margin-bottom: 1rem; }
-        .subjects-grid { gap: 0.75rem; }
-        .subject-card { padding: 1rem; }
-        .status-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
-        .report-banner { padding: 16px; border-radius: 12px; margin: 16px 0; }
-        .report-banner h3 { font-size: 1.1rem; margin-bottom: 8px; }
-        .report-banner p { font-size: 0.95rem; margin-bottom: 12px; }
-        .report-banner .btn { width: 100%; font-size: 1rem; padding: 10px 14px; }
-        .back-button .btn { width: 100%; margin-bottom: 8px; }
+        .breadcrumb {
+          margin-bottom: 1rem;
+        }
+        .header {
+          padding: 1rem;
+          margin-bottom: 1rem;
+        }
+        .header h1 {
+          font-size: 1.25rem;
+        }
+        .summary-stats {
+          padding: 1rem;
+          margin-bottom: 1rem;
+        }
+        .subjects-grid {
+          gap: 0.75rem;
+        }
+        .subject-card {
+          padding: 1rem;
+        }
+        .status-badge {
+          font-size: 0.7rem;
+          padding: 0.2rem 0.5rem;
+        }
+        .report-banner {
+          padding: 16px;
+          border-radius: 12px;
+          margin: 16px 0;
+        }
+        .report-banner h3 {
+          font-size: 1.1rem;
+          margin-bottom: 8px;
+        }
+        .report-banner p {
+          font-size: 0.95rem;
+          margin-bottom: 12px;
+        }
+        .report-banner .btn {
+          width: 100%;
+          font-size: 1rem;
+          padding: 10px 14px;
+        }
+        .back-button .btn {
+          width: 100%;
+          margin-bottom: 8px;
+        }
       }
     </style>
   </head>
@@ -485,108 +528,121 @@
       <div class="subjects-grid row g-3 g-md-4">
         {% for subject_info in subjects_status %}
         <div class="col-12 col-md-6">
-        <div class="subject-card h-100 {% if subject_info.subject.is_component %}component-subject{% endif %}">
-          <div class="subject-header">
-            {% if subject_info.subject.is_component %}
-            <div class="parent-subject-label">{{ subject_info.subject.composite_parent }}</div>
-            {% endif %}
-            <div class="subject-name">
-              {{ subject_info.subject.name }}
+          <div
+            class="subject-card h-100 {% if subject_info.subject.is_component %}component-subject{% endif %}"
+          >
+            <div class="subject-header">
               {% if subject_info.subject.is_component %}
-              <span class="component-indicator">Component</span>
+              <div class="parent-subject-label">
+                {{ subject_info.subject.composite_parent }}
+              </div>
               {% endif %}
+              <div class="subject-name">
+                {{ subject_info.subject.name }} {% if
+                subject_info.subject.is_component %}
+                <span class="component-indicator">Component</span>
+                {% endif %}
+              </div>
+              <div
+                class="status-badge {% if subject_info.is_complete %}status-complete{% elif subject_info.marks_count > 0 %}status-partial{% else %}status-empty{% endif %}"
+              >
+                {% if subject_info.is_complete %}Complete{% elif
+                subject_info.marks_count > 0 %}Partial{% else %}Empty{% endif %}
+              </div>
             </div>
-            <div
-              class="status-badge {% if subject_info.is_complete %}status-complete{% elif subject_info.marks_count > 0 %}status-partial{% else %}status-empty{% endif %}"
-            >
-              {% if subject_info.is_complete %}Complete{% elif
-              subject_info.marks_count > 0 %}Partial{% else %}Empty{% endif %}
+
+            <div class="progress-text">
+              Progress: {{ subject_info.marks_count }}/{{
+              subject_info.total_students }} students ({{
+              "%.0f"|format(subject_info.completion_percentage) }}%)
             </div>
-          </div>
 
-          <div class="progress-text">
-            Progress: {{ subject_info.marks_count }}/{{
-            subject_info.total_students }} students ({{
-            "%.0f"|format(subject_info.completion_percentage) }}%)
-          </div>
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                style="width: {{ '%.0f'|format(subject_info.completion_percentage) }}%;"
+              ></div>
+            </div>
 
-          <div class="progress-bar">
-            <div
-              class="progress-fill"
-              style="width: {{ '%.0f'|format(subject_info.completion_percentage) }}%;"
-            ></div>
-          </div>
-
-          <div class="action-buttons d-flex flex-column flex-sm-row gap-2">
-            {% if subject_info.can_upload %}
-            <a
-              href="{{ url_for('classteacher.upload_single_subject_marks', 
+            <div class="action-buttons d-flex flex-column flex-sm-row gap-2">
+              {% if subject_info.can_upload %}
+              <a
+                href="{{ url_for('classteacher.upload_single_subject_marks', 
                                       grade_id=grade_id, 
                                       stream_id=stream_id,
                                       subject_id=subject_info.subject.id,
                                       term_id=term_id,
                                       assessment_type_id=assessment_type_id) }}"
-              class="btn {% if subject_info.is_complete %}btn-success{% else %}btn-primary{% endif %} w-100 w-sm-auto"
-            >
-              {% if subject_info.is_complete %}
-              <i class="fas fa-edit"></i> Edit Marks {% else %}
-              <i class="fas fa-upload"></i> Upload Marks {% endif %}
-            </a>
-            {% else %}
-            <span class="btn btn-disabled">
-              <i class="fas fa-lock"></i> No Permission
-            </span>
-            {% endif %} {% if subject_info.is_complete %}
-      <a href="#" class="btn btn-secondary w-100 w-sm-auto">
-              <i class="fas fa-eye"></i> View Marks
-            </a>
-            {% endif %}
+                class="btn {% if subject_info.is_complete %}btn-success{% else %}btn-primary{% endif %} w-100 w-sm-auto"
+              >
+                {% if subject_info.is_complete %}
+                <i class="fas fa-edit"></i> Edit Marks {% else %}
+                <i class="fas fa-upload"></i> Upload Marks {% endif %}
+              </a>
+              {% else %}
+              <span class="btn btn-disabled">
+                <i class="fas fa-lock"></i> No Permission
+              </span>
+              {% endif %} {% if subject_info.is_complete %}
+              <a href="#" class="btn btn-secondary w-100 w-sm-auto">
+                <i class="fas fa-eye"></i> View Marks
+              </a>
+              {% endif %}
+            </div>
           </div>
-    </div>
-    </div>
+        </div>
         {% endfor %}
       </div>
 
       <!-- Report Generation Section -->
-      {% set all_complete = subjects_status|selectattr('is_complete')|list|length == subjects_status|length %}
-      {% if all_complete and subjects_status|length > 0 %}
+      {% set all_complete =
+      subjects_status|selectattr('is_complete')|list|length ==
+      subjects_status|length %} {% if all_complete and subjects_status|length >
+      0 %}
       <div class="report-banner success">
-        <h3>
-          <i class="fas fa-check-circle"></i> All Subjects Complete!
-        </h3>
+        <h3><i class="fas fa-check-circle"></i> All Subjects Complete!</h3>
         <p>
-          All subjects have marks uploaded. You can now generate the class report and individual student reports.
+          All subjects have marks uploaded. You can now generate the class
+          report and individual student reports.
         </p>
-        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-          <a href="{{ url_for('classteacher.preview_class_report',
+        <div
+          style="
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+          "
+        >
+          <a
+            href="{{ url_for('classteacher.preview_class_report',
                             grade=grade,
                             stream='Stream ' + stream,
                             term=term,
                             assessment_type=assessment_type) }}"
-             class="btn btn-report-green">
+            class="btn btn-report-green"
+          >
             <i class="fas fa-file-pdf"></i> Generate Class Report
           </a>
-          <a href="{{ url_for('classteacher.view_student_reports',
+          <a
+            href="{{ url_for('classteacher.view_student_reports',
                             grade=grade,
                             stream='Stream ' + stream,
                             term=term,
                             assessment_type=assessment_type) }}"
-             class="btn btn-report-blue">
+            class="btn btn-report-blue"
+          >
             <i class="fas fa-users"></i> Individual Reports
           </a>
         </div>
       </div>
       {% elif subjects_status|length > 0 %}
       <div class="report-banner warning">
-        <h3>
-          <i class="fas fa-clock"></i> Marks Upload in Progress
-        </h3>
+        <h3><i class="fas fa-clock"></i> Marks Upload in Progress</h3>
         <p>
-          {{ subjects_status|selectattr('is_complete', 'equalto', false)|list|length }} subject(s) still need marks to be uploaded.
+          {{ subjects_status|selectattr('is_complete', 'equalto',
+          false)|list|length }} subject(s) still need marks to be uploaded.
         </p>
-        <p>
-          Complete all subjects to generate reports.
-        </p>
+        <p>Complete all subjects to generate reports.</p>
       </div>
       {% endif %}
 

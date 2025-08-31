@@ -2,6 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0"
+    />
+    <meta name="theme-color" content="#166534" />
     <title>
       Edit Class Marks - {{ school_info.school_name|default('Hillview School')
       }}
@@ -13,6 +18,24 @@
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <!-- Brandi Bootstrap (page-scoped) -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}"
+    />
+    <!-- Solar Theme Overrides -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar_analytics_premium.css') }}"
     />
     <style>
       body {
@@ -33,13 +56,13 @@
       .header {
         text-align: center;
         margin-bottom: 30px;
-        border-bottom: 2px solid #2c3e50;
+        border-bottom: 2px solid #166534;
         padding-bottom: 15px;
       }
       .header h1 {
         margin: 0;
         font-size: 28px;
-        color: #2c3e50;
+        color: #166534;
         font-weight: bold;
       }
       .header p {
@@ -65,16 +88,16 @@
         cursor: pointer;
       }
       .back-btn {
-        background-color: #3498db;
+        background-color: #14532d;
       }
       .back-btn:hover {
-        background-color: #2980b9;
+        background-color: #0f3f24;
       }
       .save-btn {
-        background-color: #27ae60;
+        background-color: #166534;
       }
       .save-btn:hover {
-        background-color: #219653;
+        background-color: #115e33;
       }
       /* ENHANCED TABLE WRAPPER FOR HORIZONTAL SCROLLING */
       .table-wrapper {
@@ -110,7 +133,7 @@
         position: absolute;
         top: 10px;
         right: 20px;
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        background: linear-gradient(135deg, #166534 0%, #0e7a0d 100%);
         color: white;
         padding: 6px 12px;
         border-radius: 15px;
@@ -118,7 +141,7 @@
         font-weight: 600;
         z-index: 10;
         animation: slideInOut 3s infinite;
-        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        box-shadow: 0 2px 8px rgba(22, 101, 52, 0.3);
       }
 
       @keyframes slideInOut {
@@ -144,13 +167,13 @@
       }
 
       .table-wrapper::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        background: linear-gradient(135deg, #166534 0%, #0e7a0d 100%);
         border-radius: 6px;
         border: 2px solid #f8f9fa;
       }
 
       .table-wrapper::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+        background: linear-gradient(135deg, #14532d 0%, #0b3320 100%);
       }
 
       table {
@@ -199,7 +222,7 @@
       }
 
       th {
-        background-color: #3498db;
+        background-color: #166534;
         color: white;
         font-weight: bold;
         font-size: 14px;
@@ -219,7 +242,7 @@
       }
 
       th:first-child {
-        background-color: #3498db;
+        background-color: #166534;
         color: white;
         z-index: 15;
       }
@@ -230,10 +253,10 @@
       }
 
       tr:nth-child(even) {
-        background-color: #f2f7ff;
+        background-color: #eef7f1;
       }
       tr:hover {
-        background-color: #e8f4fc;
+        background-color: #e6f4ea;
       }
       .student-name {
         text-align: left;
@@ -313,6 +336,7 @@
         text-align: center !important;
         box-sizing: border-box !important;
         transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+        appearance: none !important;
         -webkit-appearance: none !important;
         -moz-appearance: textfield !important;
       }
@@ -343,6 +367,7 @@
         text-align: center !important;
         box-sizing: border-box !important;
         transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+        appearance: none !important;
         -webkit-appearance: none !important;
         -moz-appearance: textfield !important;
       }
@@ -364,9 +389,9 @@
       td:last-child .student-mark:focus,
       td:nth-last-child(2) .student-mark:focus,
       td:nth-last-child(3) .student-mark:focus {
-        border-color: #3498db !important;
+        border-color: #166534 !important;
         outline: none !important;
-        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1) !important;
+        box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.12) !important;
         background-color: #ffffff !important;
         z-index: auto !important;
         transform: none !important;
@@ -490,14 +515,14 @@
       }
 
       .mark-input-container input:focus {
-        border-color: #3498db;
+        border-color: #166534;
         outline: none;
-        box-shadow: 0 0 3px rgba(52, 152, 219, 0.3); /* Reduced shadow */
+        box-shadow: 0 0 3px rgba(22, 101, 52, 0.3); /* Reduced shadow */
       }
 
       .subject-info {
         font-size: 11px;
-        color: #666;
+        color: #245c3e;
         display: block;
         text-align: center;
       }
@@ -528,7 +553,7 @@
 
       .percentage-fill {
         height: 100%;
-        background-color: #6c757d;
+        background-color: #16a34a;
         transition: width 0.3s ease;
       }
 
@@ -708,8 +733,8 @@
 
         th,
         td {
-          padding: 4px;
-          font-size: 11px;
+          padding: 5px;
+          font-size: 12px;
         }
 
         input[type="number"],
@@ -718,7 +743,7 @@
         .student-mark {
           width: 50px !important;
           height: 26px !important;
-          font-size: 11px !important;
+          font-size: 12px !important;
         }
       }
 
@@ -735,6 +760,174 @@
         width: 80px !important;
         max-width: 80px !important;
         min-width: 80px !important;
+      }
+
+      /* --- Match analytics solar theme colors & contrast --- */
+      /* Table text readability */
+      table td,
+      table th,
+      .student-name {
+        color: #002b36 !important;
+      }
+      .student-name {
+        font-weight: 600 !important;
+      }
+
+      /* Inputs: solar borders and focus */
+      .mark-input-container input,
+      input[type="number"],
+      .student-mark {
+        color: #002b36 !important;
+        background-color: #fff !important;
+        border: 1px solid rgba(88, 110, 117, 0.3) !important; /* solar base01 */
+      }
+      .mark-input-container input:focus,
+      input[type="number"]:focus,
+      .student-mark:focus {
+        border-color: #166534 !important;
+        box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.12) !important;
+      }
+
+      /* Percentages use dark green like analytics variant */
+      .percentage-value {
+        color: #166534 !important;
+        font-weight: 700 !important;
+      }
+      .percentage-bar {
+        background: rgba(88, 110, 117, 0.25) !important;
+      }
+      .percentage-fill {
+        background: #16a34a !important;
+      }
+
+      /* Header gradient and sticky column backgrounds already set;
+         ensure sticky cells stay opaque on solar background */
+      th:first-child,
+      td:first-child {
+        background: #ffffff !important;
+      }
+      /* Also ensure the student name column stays crisp on solar backdrop */
+      td:nth-child(2) {
+        background: #ffffff !important;
+        color: #002b36 !important;
+      }
+      .student-name {
+        font-weight: 700 !important;
+        letter-spacing: 0.2px;
+      }
+
+      /* Sharper borders for readability like analytics */
+      table,
+      th,
+      td {
+        border-color: rgba(88, 110, 117, 0.25) !important;
+      }
+
+      /* Improve scroll indicator so it doesn't obscure header */
+      .scroll-indicator {
+        top: 6px !important;
+        right: 14px !important;
+        pointer-events: none !important;
+        background: linear-gradient(
+          135deg,
+          #166534 0%,
+          #059669 100%
+        ) !important;
+      }
+
+      /* Slightly reduce table cell background tint for better contrast */
+      tr:nth-child(even) {
+        background: rgba(238, 232, 213, 0.22) !important;
+      }
+
+      /* --- Solar theme overrides (scoped to this page) --- */
+      html,
+      body {
+        background: linear-gradient(
+          135deg,
+          #fdf6e3 0%,
+          #eee8d5 50%,
+          #d6d2c4 100%
+        ) !important;
+        min-height: 100vh !important;
+        background-attachment: fixed !important;
+      }
+      .container {
+        background: linear-gradient(
+          145deg,
+          rgba(253, 246, 227, 0.95) 0%,
+          rgba(238, 232, 213, 0.9) 100%
+        ) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15) !important;
+        border: 2px solid rgba(181, 137, 0, 0.2) !important;
+      }
+      .header {
+        border-bottom: 3px solid rgba(22, 101, 52, 0.35) !important;
+      }
+      .header h1 {
+        background: linear-gradient(135deg, #166534, #10b981);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .header p {
+        color: #166534 !important;
+        opacity: 0.9;
+      }
+
+      .back-btn {
+        background: linear-gradient(135deg, #166534, #0f3f24) !important;
+      }
+      .back-btn:hover {
+        background: linear-gradient(135deg, #14532d, #0b3320) !important;
+      }
+      .save-btn {
+        background: linear-gradient(135deg, #166534, #059669) !important;
+      }
+      .save-btn:hover {
+        background: linear-gradient(135deg, #14532d, #047857) !important;
+      }
+
+      th {
+        background: linear-gradient(135deg, #166534, #059669) !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+      }
+      th:first-child {
+        background: linear-gradient(135deg, #166534, #059669) !important;
+      }
+      tr:nth-child(even) {
+        background: rgba(16, 185, 129, 0.12) !important;
+      }
+      tr:hover {
+        background: rgba(22, 101, 52, 0.08) !important;
+        transform: translateY(-1px);
+        transition: all 0.2s ease;
+      }
+
+      table {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-radius: 12px !important;
+      }
+
+      /* Mobile tweaks (non-destructive to desktop) */
+      @media (max-width: 576px) {
+        .action-buttons {
+          flex-direction: column;
+        }
+        .back-btn,
+        .save-btn {
+          width: 100%;
+          text-align: center;
+        }
+        .container {
+          padding: 16px !important;
+          border-radius: 16px !important;
+        }
+        .table-wrapper {
+          -webkit-overflow-scrolling: touch;
+        }
       }
     </style>
   </head>
@@ -801,20 +994,20 @@
         <!-- Helpful instruction for users -->
         <div
           style="
-            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            background: linear-gradient(135deg, #ecfdf5 0%, #dcfce7 100%);
             padding: 12px 20px;
             border-radius: 8px;
             margin: 15px 0;
-            border-left: 4px solid #007bff;
+            border-left: 4px solid #16a34a;
           "
         >
           <div style="display: flex; align-items: center; gap: 10px">
             <span style="font-size: 18px">📋</span>
             <div>
-              <strong style="color: #1976d2">Multiple Subjects Table</strong>
-              <p style="margin: 5px 0 0 0; color: #666; font-size: 13px">
+              <strong style="color: #166534">Multiple Subjects Table</strong>
+              <p style="margin: 5px 0 0 0; color: #245c3e; font-size: 13px">
                 This table contains {{ subject_names|length }} subjects. Use
-                horizontal scroll or the blue indicator to navigate between all
+                horizontal scroll or the green indicator to navigate between all
                 subjects.
               </p>
             </div>
@@ -856,99 +1049,6 @@
                 <td class="student-name">{{ student_data.student.upper() }}</td>
                 {% for subject in subject_names %}
                 <td>
-                  {% set subject_obj = subject_objects[loop.index0] %} {% if
-                  subject_obj.is_composite %}
-                  <div class="composite-subject-entry-container">
-                    <div class="composite-header">
-                      <span class="composite-title">{{ subject }}</span>
-                      <span
-                        class="composite-percentage"
-                        id="percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
-                      >
-                        {{ student_data.filtered_marks.get(subject, 0) | int }}%
-                      </span>
-                    </div>
-
-                    <!-- Get components for this subject -->
-                    {% set components = subject_obj.get_components() %} {% for
-                    component in components %}
-                    <div class="composite-subject-entry">
-                      <div class="component-header">
-                        <span class="component-title"
-                          >{{ component.name }}</span
-                        >
-                        <span class="component-weight"
-                          >({{ (component.weight * 100) | int }}%)</span
-                        >
-                      </div>
-                      <div class="component-inputs">
-                        <div class="mark-input-container">
-                          {% set component_mark =
-                          get_component_mark(student_data.student_id,
-                          component.id) %}
-                          <input
-                            type="number"
-                            name="component_mark_{{ student_data.student_id }}_{{ component.id }}"
-                            value="{{ component_mark.raw_mark|int if component_mark else 0 }}"
-                            min="0"
-                            max="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
-                            data-max-mark="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
-                            data-weight="{{ component.weight }}"
-                            data-component-id="{{ component.id }}"
-                            data-subject-id="{{ subject_obj.id }}"
-                            class="component-mark-input"
-                            oninput="updateComponentPercentage('{{ student_data.student_id }}', '{{ component.id }}', '{{ subject_obj.id }}')"
-                          />
-                          <span class="mark-separator">/</span>
-                          <input
-                            type="number"
-                            name="component_max_{{ student_data.student_id }}_{{ component.id }}"
-                            value="{{ component_mark.max_raw_mark|int if component_mark else component.max_raw_mark }}"
-                            min="1"
-                            max="1000"
-                            class="component-max-input"
-                            oninput="updateComponentPercentage('{{ student_data.student_id }}', '{{ component.id }}', '{{ subject_obj.id }}')"
-                          />
-                        </div>
-                        <div class="percentage-display">
-                          <span
-                            id="component_percentage_{{ student_data.student_id }}_{{ component.id }}"
-                            class="percentage-value {% if component_mark and component_mark.percentage >= 75 %}performance-ee{% elif component_mark and component_mark.percentage >= 50 %}performance-me{% elif component_mark and component_mark.percentage >= 30 %}performance-ae{% elif component_mark %}performance-be{% endif %}"
-                          >
-                            {{ component_mark.percentage|round(1) if
-                            component_mark else 0 }}%
-                          </span>
-                          <div class="percentage-bar">
-                            <div
-                              class="percentage-fill"
-                              style="width: {{ component_mark.percentage if component_mark else 0 }}%"
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {% endfor %}
-
-                    <div class="composite-total">
-                      <span class="composite-total-label">Combined:</span>
-                      <div class="percentage-display">
-                        <span
-                          id="percentage_{{ student_data.student_id }}_{{ subject_ids[loop.index0] }}"
-                          class="percentage-value"
-                        >
-                          {{ student_data.filtered_marks.get(subject, 0) | int
-                          }}%
-                        </span>
-                        <div class="percentage-bar">
-                          <div
-                            class="percentage-fill"
-                            style="width: {{ student_data.filtered_marks.get(subject, 0) }}%"
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {% else %}
                   <div class="simplified-mark-entry">
                     <div class="mark-input-container">
                       <input
@@ -977,7 +1077,6 @@
                       </div>
                     </div>
                   </div>
-                  {% endif %}
                 </td>
                 {% endfor %}
               </tr>

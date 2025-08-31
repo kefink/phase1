@@ -4,10 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ subject }} Subject Report - {{ grade }} {{ stream }}</title>
-  <!-- Brandi Bootstrap CSS (page-scoped) -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}">
+    <!-- Brandi Bootstrap CSS (page-scoped) -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}"
+    />
     <style>
       * {
         margin: 0;
@@ -79,7 +88,8 @@
         overflow-wrap: anywhere;
       }
 
-      .report-subtitle, .report_subtitle {
+      .report-subtitle,
+      .report_subtitle {
         font-size: 1.1rem;
         opacity: 0.9;
         font-weight: 300;
@@ -169,20 +179,52 @@
       }
 
       /* CBC Grade Colors */
-      .bar-ee1 { background: linear-gradient(to top, #10b981, #34d399); } /* Exceeds Expectations 1 - Green */
-      .bar-ee2 { background: linear-gradient(to top, #059669, #10b981); } /* Exceeds Expectations 2 - Dark Green */
-      .bar-me1 { background: linear-gradient(to top, #3b82f6, #60a5fa); } /* Meets Expectations 1 - Blue */
-      .bar-me2 { background: linear-gradient(to top, #1d4ed8, #3b82f6); } /* Meets Expectations 2 - Dark Blue */
-      .bar-ae1 { background: linear-gradient(to top, #f59e0b, #fbbf24); } /* Approaches Expectations 1 - Orange */
-      .bar-ae2 { background: linear-gradient(to top, #d97706, #f59e0b); } /* Approaches Expectations 2 - Dark Orange */
-      .bar-be1 { background: linear-gradient(to top, #ef4444, #f87171); } /* Below Expectations 1 - Red */
-      .bar-be2 { background: linear-gradient(to top, #dc2626, #ef4444); } /* Below Expectations 2 - Dark Red */
+      .bar-ee1 {
+        background: linear-gradient(to top, #10b981, #34d399);
+      } /* Exceeds Expectations 1 - Green */
+      .bar-ee2 {
+        background: linear-gradient(to top, #059669, #10b981);
+      } /* Exceeds Expectations 2 - Dark Green */
+      .bar-me1 {
+        background: linear-gradient(to top, #3b82f6, #60a5fa);
+      } /* Meets Expectations 1 - Blue */
+      .bar-me2 {
+        background: linear-gradient(to top, #1d4ed8, #3b82f6);
+      } /* Meets Expectations 2 - Dark Blue */
+      .bar-ae1 {
+        background: linear-gradient(to top, #f59e0b, #fbbf24);
+      } /* Approaches Expectations 1 - Orange */
+      .bar-ae2 {
+        background: linear-gradient(to top, #d97706, #f59e0b);
+      } /* Approaches Expectations 2 - Dark Orange */
+      .bar-be1 {
+        background: linear-gradient(to top, #ef4444, #f87171);
+      } /* Below Expectations 1 - Red */
+      .bar-be2 {
+        background: linear-gradient(to top, #dc2626, #ef4444);
+      } /* Below Expectations 2 - Dark Red */
 
       /* Grade Letter Colors */
-      .grade-ee1, .grade-ee2 { color: #10b981; font-weight: bold; }
-      .grade-me1, .grade-me2 { color: #3b82f6; font-weight: bold; }
-      .grade-ae1, .grade-ae2 { color: #f59e0b; font-weight: bold; }
-      .grade-be1, .grade-be2 { color: #ef4444; font-weight: bold; }
+      .grade-ee1,
+      .grade-ee2 {
+        color: #10b981;
+        font-weight: bold;
+      }
+      .grade-me1,
+      .grade-me2 {
+        color: #3b82f6;
+        font-weight: bold;
+      }
+      .grade-ae1,
+      .grade-ae2 {
+        color: #f59e0b;
+        font-weight: bold;
+      }
+      .grade-be1,
+      .grade-be2 {
+        color: #ef4444;
+        font-weight: bold;
+      }
 
       .grade-label {
         font-size: 0.8rem;
@@ -370,7 +412,7 @@
         {% endif %}
 
         <h1 class="report-title">{{ report_title }}</h1>
-  <p class="report-subtitle">{{ report_subtitle }}</p>
+        <p class="report-subtitle">{{ report_subtitle }}</p>
       </div>
 
       <!-- Statistics Overview -->
@@ -405,7 +447,9 @@
 
       <!-- Grade Distribution -->
       <div class="grade-distribution">
-        <h3><i class="fas fa-chart-bar"></i> Grade Distribution (CBC System)</h3>
+        <h3>
+          <i class="fas fa-chart-bar"></i> Grade Distribution (CBC System)
+        </h3>
         <div class="grade-bars">
           <!-- EE1: Exceeds Expectations 1 (90-100%) -->
           <div class="grade-bar">

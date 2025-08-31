@@ -653,6 +653,8 @@
             box-shadow: 0 8px 32px rgba(181, 137, 0, 0.15) !important;
             padding: 20px !important;
             margin: var(--spacing-lg) 0 !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
         }
 
         table {
@@ -759,6 +761,45 @@
             color: var(--primary-color);
             margin-bottom: var(--spacing-lg);
             font-size: 2.5rem;
+        }
+
+        /* Accessibility & mobile usability tweaks */
+        /* Allow long student names to wrap gracefully */
+        td.name-cell {
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            max-width: 360px; /* keeps rows tidy on wider screens */
+        }
+
+        /* Slightly increase checkbox targets by default */
+        .checkbox-column input[type="checkbox"],
+        #select-all {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 768px) {
+            /* Wider column to comfortably tap checkboxes on phones */
+            .checkbox-column { width: 64px; }
+
+            /* Larger touch targets for mobile */
+            .checkbox-column input[type="checkbox"],
+            #select-all {
+                width: 26px;
+                height: 26px;
+            }
+
+            /* Constrain name column a bit more on small screens to encourage wrapping */
+            td.name-cell { max-width: 220px; }
+
+            /* Reduce table density and allow horizontal scroll width */
+            th, td { padding: 10px 12px !important; font-size: 13px !important; }
+            table { min-width: 720px !important; }
+
+            /* Hide the ID column to save space on small devices */
+            #students-table th:nth-child(2),
+            #students-table td:nth-child(2) { display: none; }
         }
     </style>
 </head>
@@ -1176,7 +1217,7 @@
                                                 <input type="checkbox" name="student_ids" value="{{ student.id }}" class="student-checkbox">
                                             </td>
                                             <td>{{ student.id }}</td>
-                                            <td>{{ student.name }}</td>
+                                            <td class="name-cell">{{ student.name }}</td>
                                             <td>{{ student.admission_number }}</td>
                                             <td>{{ student.stream.grade.name if student.stream else 'N/A' }}</td>
                                             <td>{{ student.stream.name if student.stream else 'No Stream' }}</td>

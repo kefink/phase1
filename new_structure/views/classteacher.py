@@ -3929,7 +3929,7 @@ def edit_class_marks(grade, stream, term, assessment_type):
     # Get subjects for this grade based on education level
     grade_obj = Grade.query.filter_by(name=grade).first()
     if grade_obj:
-        # Filter subjects by education level
+        # Filter subjects by education level, then EXCLUDE composite subjects
         if education_level == "lower primary":
             filtered_subjects = Subject.query.filter_by(education_level="lower_primary").all()
         elif education_level == "upper primary":
@@ -3939,29 +3939,30 @@ def edit_class_marks(grade, stream, term, assessment_type):
         else:
             filtered_subjects = Subject.query.all()
 
+        # Exclude composite subjects from edit marks UI
+        filtered_subjects = [s for s in filtered_subjects if not getattr(s, 'is_composite', False)]
+
         # Get subject names, IDs, and objects
         subject_names = [subject.name for subject in filtered_subjects]
         subject_ids = [subject.id for subject in filtered_subjects]
         subject_objects = filtered_subjects  # Pass the actual subject objects
 
         # Debug: Print subject IDs and composite status
-        print("\n=== SUBJECTS BEING PASSED TO TEMPLATE ===")
+        print("\n=== SUBJECTS BEING PASSED TO TEMPLATE (COMPOSITES EXCLUDED) ===")
         for subject in filtered_subjects:
-            print(f"Subject: {subject.name}, ID: {subject.id}, Is Composite: {subject.is_composite}")
-            if subject.is_composite:
-                components = subject.get_components()
-                print(f"  Components: {[comp.name for comp in components]}")
-        print("=========================================")
+            print(f"Subject: {subject.name}, ID: {subject.id}, Is Composite: {getattr(subject, 'is_composite', False)}")
+        print("================================================================")
     else:
         # Use subjects from report data if grade not found
-        subject_names = report_data.get("subjects", [])
+        # Then exclude composite subjects
+        report_subject_names = report_data.get("subjects", [])
+        subject_names = []
         subject_ids = []
-        for subject_name in subject_names:
+        for subject_name in report_subject_names:
             subject = Subject.query.filter_by(name=subject_name).first()
-            if subject:
+            if subject and not getattr(subject, 'is_composite', False):
+                subject_names.append(subject.name)
                 subject_ids.append(subject.id)
-            else:
-                subject_ids.append(0)
 
     # Get subject total marks from the database
     subject_total_marks = {}
@@ -4088,7 +4089,7 @@ def update_class_marks(grade, stream, term, assessment_type):
     elif 7 <= grade_num <= 9:
         education_level = "junior secondary"
 
-    # Get subjects for this grade based on education level
+    # Get subjects for this grade based on education level and EXCLUDE composite subjects
     if education_level == "lower primary":
         filtered_subjects = Subject.query.filter_by(education_level="lower_primary").all()
     elif education_level == "upper primary":
@@ -4097,6 +4098,9 @@ def update_class_marks(grade, stream, term, assessment_type):
         filtered_subjects = Subject.query.filter_by(education_level="junior_secondary").all()
     else:
         filtered_subjects = Subject.query.all()
+
+    # Exclude composite subjects; edit marks page should only use independent subjects now
+    filtered_subjects = [s for s in filtered_subjects if not getattr(s, 'is_composite', False)]
 
     # Get students in this stream
     students = Student.query.filter_by(stream_id=stream_obj.id).all()
@@ -4107,127 +4111,7 @@ def update_class_marks(grade, stream, term, assessment_type):
 
     for student in students:
         for subject in filtered_subjects:
-            # Check if this is a composite subject
-            if subject.is_composite:
-                # Get the components for this subject
-                components = subject.get_components()
-
-                # Process each component
-                component_marks = []
-                for component in components:
-                    component_mark_key = f"component_mark_{student.id}_{component.id}"
-                    component_max_key = f"component_max_{student.id}_{component.id}"
-
-                    if component_mark_key in request.form and component_max_key in request.form:
-                        try:
-                            # Get the raw mark and max raw mark from the form
-                            raw_mark = int(request.form[component_mark_key])
-                            max_raw_mark = int(request.form[component_max_key])
-
-                            # Sanitize the values
-                            raw_mark, max_raw_mark = MarkConversionService.sanitize_raw_mark(raw_mark, max_raw_mark)
-
-                            # Calculate percentage
-                            percentage = MarkConversionService.calculate_percentage(raw_mark, max_raw_mark)
-
-                            # Store the component mark data
-                            component_marks.append({
-                                'component_id': component.id,
-                                'raw_mark': raw_mark,
-                                'max_raw_mark': max_raw_mark,
-                                'percentage': percentage,
-                                'weight': component.weight
-                            })
-                        except ValueError:
-                            # Skip invalid values
-                            pass
-
-                # If we have component marks, calculate the overall mark
-                if component_marks:
-                    # Calculate weighted percentage
-                    total_weighted_percentage = 0
-                    total_weight = 0
-
-                    for cm in component_marks:
-                        # Calculate percentage from raw mark and max raw mark
-                        component_percentage = (cm['raw_mark'] / cm['max_raw_mark']) * 100 if cm['max_raw_mark'] > 0 else 0
-                        # Cap at 100%
-                        component_percentage = min(component_percentage, 100)
-                        total_weighted_percentage += component_percentage * cm['weight']
-                        total_weight += cm['weight']
-
-                    if total_weight > 0:
-                        overall_percentage = total_weighted_percentage / total_weight
-                    else:
-                        overall_percentage = 0
-
-                    # Find existing mark or create new one
-                    mark = Mark.query.filter_by(
-                        student_id=student.id,
-                        subject_id=subject.id,
-                        term_id=term_obj.id,
-                        assessment_type_id=assessment_type_obj.id
-                    ).first()
-
-                    if mark:
-                        # Update existing mark
-                        mark.percentage = overall_percentage
-
-                        # Calculate raw mark based on percentage (for backward compatibility)
-                        # Use 100 as the default max_raw_mark for the overall mark
-                        mark.raw_mark = (overall_percentage / 100) * 100
-                        mark.max_raw_mark = 100
-                        mark.mark = mark.raw_mark  # Old field name
-                        mark.total_marks = mark.max_raw_mark  # Old field name
-                    else:
-                        # Create new mark
-                        mark = Mark(
-                            student_id=student.id,
-                            subject_id=subject.id,
-                            term_id=term_obj.id,
-                            assessment_type_id=assessment_type_obj.id,
-                            grade_id=stream_obj.grade_id,  # Use grade from stream_obj (from URL)
-                            stream_id=stream_obj.id,  # Use stream from stream_obj (from URL)
-                            percentage=overall_percentage,
-                            raw_mark=(overall_percentage / 100) * 100,
-                            raw_total_marks=100,  # Use correct field name
-                            mark=(overall_percentage / 100) * 100,  # Old field name
-                            total_marks=100  # Old field name
-                        )
-                        db.session.add(mark)
-
-                    # Save the mark to get its ID
-                    db.session.flush()
-
-                    # Now save the component marks
-                    for cm in component_marks:
-                        # Find existing component mark or create new one
-                        from ..models.academic import ComponentMark
-                        component_mark = ComponentMark.query.filter_by(
-                            mark_id=mark.id,
-                            component_id=cm['component_id']
-                        ).first()
-
-                        if component_mark:
-                            # Update existing component mark
-                            component_mark.raw_mark = cm['raw_mark']
-                            component_mark.max_raw_mark = cm['max_raw_mark']
-                            component_mark.percentage = cm['percentage']
-                        else:
-                            # Create new component mark
-                            component_mark = ComponentMark(
-                                mark_id=mark.id,
-                                component_id=cm['component_id'],
-                                raw_mark=cm['raw_mark'],
-                                max_raw_mark=cm['max_raw_mark'],
-                                percentage=cm['percentage']
-                            )
-                            db.session.add(component_mark)
-
-                        component_marks_updated += 1
-
-                    marks_updated += 1
-            else:
+            # Only regular subjects (composites already excluded)
                 # Regular subject (not composite)
                 mark_key = f"mark_{student.id}_{subject.id}"
                 total_marks_key = f"total_marks_{subject.id}"
@@ -4597,6 +4481,44 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
 
     # Get subject teachers mapping for the teacher column
     subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream_letter)
+    # Also map composite (logical) subjects to teachers by aggregating component subject teachers
+    try:
+        from ..models import Grade as GradeModel, TeacherSubjectAssignment
+        from ..models.academic import Subject
+        # Build once
+        grade_obj = GradeModel.query.filter_by(name=grade).first()
+        if grade_obj and stream_obj:
+            # Determine candidate subject names that might be composites (appear in report subjects but not real Subject rows)
+            candidate_names = subjects  # list of subject strings from report
+            for cname in candidate_names:
+                if cname in subject_teachers:
+                    continue
+                # If no exact Subject exists, treat as composite name
+                subj_obj = Subject.query.filter_by(name=cname).first()
+                if subj_obj is None:
+                    # Find component subjects bound to this composite name
+                    component_subjects = Subject.query.filter_by(composite_parent=cname, is_component=True).all()
+                    if component_subjects:
+                        # Collect teacher names assigned to these components for this grade/stream
+                        names = []
+                        for cs in component_subjects:
+                            assignments = TeacherSubjectAssignment.query.filter_by(
+                                grade_id=grade_obj.id,
+                                stream_id=stream_obj.id,
+                                subject_id=cs.id
+                            ).all()
+                            for a in assignments:
+                                if a.teacher:
+                                    tname = getattr(a.teacher, 'full_name', None) or getattr(a.teacher, 'username', None) or ''
+                                    if tname and tname not in names:
+                                        names.append(tname)
+                        if names:
+                            label = ", ".join(names)
+                            # Insert a dict compatible with template attribute access
+                            subject_teachers[cname] = { 'full_name': label, 'username': label }
+    except Exception as _e:
+        # Non-fatal: continue without composite teacher aggregation
+        pass
 
     # Initialize composite_data as empty dict (will be populated if needed)
     composite_data = {}
@@ -4741,15 +4663,19 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
     from ..models.academic import Subject, ComponentMark
 
     for subject_name in ordered_subject_names:
-        # Get the subject object
+        # Try to get the Subject model (may not exist for new-arch composite names)
         subject = Subject.query.filter_by(name=subject_name).first()
-        if not subject:
-            continue
-        mark = student_data.get("marks", {}).get(subject.name, 0)
 
-        # Skip subjects with no marks (0 or None)
-        if not mark or mark == 0:
-            continue
+        # Get mark using both the provided name and the DB name (if available)
+        marks_dict = student_data.get("marks", {})
+        mark = marks_dict.get(subject_name)
+        if mark is None and subject is not None:
+            mark = marks_dict.get(subject.name, 0)
+        if mark is None:
+            mark = 0
+
+    # Include subjects even when marks are 0 so the table always lists all subjects
+    # This improves transparency and ensures subject teacher/remarks columns display consistently
 
         # Clean up decimal precision and show whole numbers
         if isinstance(mark, float):
@@ -4757,13 +4683,11 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
         else:
             mark = int(mark)
 
-        # Check if this is a composite subject
-        if hasattr(subject, 'is_composite') and subject.is_composite:
-            # Get component marks for this student
+        # Attempt to gather composite component data only when we have a real Subject and it's composite
+        if subject is not None and hasattr(subject, 'is_composite') and subject.is_composite:
             components = subject.get_components()
             component_marks = {}
 
-            # Get the mark record for this subject
             mark_record = Mark.query.filter_by(
                 student_id=student.id,
                 subject_id=subject.id,
@@ -4772,26 +4696,19 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
             ).first()
 
             if mark_record:
-                # Get component marks
                 for component in components:
                     component_mark = ComponentMark.query.filter_by(
                         component_id=component.id,
                         mark_id=mark_record.id
                     ).first()
 
+                    clean_component_name = component.name
+                    if clean_component_name.startswith("L "):
+                        clean_component_name = clean_component_name[2:]
+
                     if component_mark:
-                        # Clean component name (remove any prefixes like "L ")
-                        clean_component_name = component.name
-                        if clean_component_name.startswith("L "):
-                            clean_component_name = clean_component_name[2:]
-
-                        # Get the component's maximum mark from the component_mark record or component definition
                         component_max_mark = component_mark.max_raw_mark if component_mark.max_raw_mark else (component.max_raw_mark if hasattr(component, 'max_raw_mark') and component.max_raw_mark else 100)
-
-                        # Convert component mark to percentage for proper grading
-                        component_percentage = (component_mark.raw_mark / component_max_mark) * 100
-
-                        # Show whole numbers for component marks
+                        component_percentage = (component_mark.raw_mark / component_max_mark) * 100 if component_max_mark > 0 else 0
                         component_raw_mark = component_mark.raw_mark
                         if isinstance(component_raw_mark, float):
                             component_raw_mark = int(round(component_raw_mark)) if component_raw_mark == int(component_raw_mark) else round(component_raw_mark, 1)
@@ -4805,14 +4722,7 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
                             'remarks': get_performance_remarks(component_percentage, 100)
                         }
                     else:
-                        # Clean component name (remove any prefixes like "L ")
-                        clean_component_name = component.name
-                        if clean_component_name.startswith("L "):
-                            clean_component_name = clean_component_name[2:]
-
-                        # Get the component's maximum mark from component definition (default to 100 if not set)
                         component_max_mark = component.max_raw_mark if hasattr(component, 'max_raw_mark') and component.max_raw_mark else 100
-
                         component_marks[clean_component_name] = {
                             'mark': 0,
                             'max_mark': component_max_mark,
@@ -4820,46 +4730,41 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
                             'remarks': get_performance_remarks(0, 100)
                         }
 
-            # Store composite data for template
             composite_data[subject.name] = {
                 'components': component_marks,
                 'total': mark
             }
 
-        # Add to table data
         # Initialize marks for all assessment types
         entrance_mark = 0
         mid_term_mark = 0
         end_term_mark = 0
 
-        # If this is an end-term report, fetch marks from all assessment types for comparison
         if assessment_type.lower() in ['end_term', 'endterm']:
-            # Get all assessment types for this term
-            all_assessment_types = AssessmentType.query.all()
-
-            # Fetch marks for each assessment type
-            for at in all_assessment_types:
-                mark_record = Mark.query.filter_by(
-                    student_id=student.id,
-                    subject_id=subject.id,
-                    term_id=term_obj.id,
-                    assessment_type_id=at.id
-                ).first()
-
-                if mark_record:
-                    mark_value = mark_record.percentage or 0
-
-                    # Map to appropriate assessment type
-                    if at.name.lower() in ['entrance', 'opener']:
-                        entrance_mark = mark_value
-                    elif at.name.lower() in ['mid_term', 'midterm']:
-                        mid_term_mark = mark_value
-                    elif at.name.lower() in ['end_term', 'endterm']:
-                        end_term_mark = mark_value
-
-            # Calculate average of available marks
-            available_marks = [m for m in [entrance_mark, mid_term_mark, end_term_mark] if m > 0]
-            avg_mark = sum(available_marks) / len(available_marks) if available_marks else 0
+            if subject is not None:
+                # Fetch marks for known Subject across assessments
+                all_assessment_types = AssessmentType.query.all()
+                for at in all_assessment_types:
+                    mark_record = Mark.query.filter_by(
+                        student_id=student.id,
+                        subject_id=subject.id,
+                        term_id=term_obj.id,
+                        assessment_type_id=at.id
+                    ).first()
+                    if mark_record:
+                        mark_value = mark_record.percentage or 0
+                        if at.name.lower() in ['entrance', 'opener']:
+                            entrance_mark = mark_value
+                        elif at.name.lower() in ['mid_term', 'midterm']:
+                            mid_term_mark = mark_value
+                        elif at.name.lower() in ['end_term', 'endterm']:
+                            end_term_mark = mark_value
+                available_marks = [m for m in [entrance_mark, mid_term_mark, end_term_mark] if m > 0]
+                avg_mark = sum(available_marks) / len(available_marks) if available_marks else 0
+            else:
+                # Fallback: we only know the current mark
+                end_term_mark = mark
+                avg_mark = mark
         else:
             # For single assessment types, show only current assessment
             if assessment_type.lower() in ['entrance', 'opener']:
@@ -4868,15 +4773,15 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
                 mid_term_mark = mark
             elif assessment_type.lower() in ['end_term', 'endterm']:
                 end_term_mark = mark
-
+            # For other single assessment types (e.g., Assignment), use current
             avg_mark = mark
 
         table_data.append({
-            "subject": subject.name,
+            "subject": subject.name if subject is not None else subject_name,
             "entrance": entrance_mark,
             "mid_term": mid_term_mark,
             "end_term": end_term_mark,
-            "current_assessment": mark,  # Always show the current assessment mark
+            "current_assessment": mark,
             "avg": avg_mark,
             "remarks": get_performance_remarks(avg_mark if assessment_type.lower() in ['end_term', 'endterm'] else mark, class_data_result.get("total_marks", 100))
         })
@@ -4912,6 +4817,44 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
 
     # Get subject teachers mapping for the teacher column
     subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream_letter)
+    # Also map composite (logical) subjects to teachers by aggregating component subject teachers
+    try:
+        from ..models import Grade as GradeModel, TeacherSubjectAssignment
+        from ..models.academic import Subject
+        # Build once
+        grade_obj = GradeModel.query.filter_by(name=grade).first()
+        if grade_obj and stream_obj:
+            # Determine candidate subject names that might be composites (appear in report subjects but not real Subject rows)
+            candidate_names = subjects_with_marks  # list of subject strings from report
+            for cname in candidate_names:
+                if cname in subject_teachers:
+                    continue
+                # If no exact Subject exists, treat as composite name
+                subj_obj = Subject.query.filter_by(name=cname).first()
+                if subj_obj is None:
+                    # Find component subjects bound to this composite name
+                    component_subjects = Subject.query.filter_by(composite_parent=cname, is_component=True).all()
+                    if component_subjects:
+                        # Collect teacher names assigned to these components for this grade/stream
+                        names = []
+                        for cs in component_subjects:
+                            assignments = TeacherSubjectAssignment.query.filter_by(
+                                grade_id=grade_obj.id,
+                                stream_id=stream_obj.id,
+                                subject_id=cs.id
+                            ).all()
+                            for a in assignments:
+                                if a.teacher:
+                                    tname = getattr(a.teacher, 'full_name', None) or getattr(a.teacher, 'username', None) or ''
+                                    if tname and tname not in names:
+                                        names.append(tname)
+                        if names:
+                            label = ", ".join(names)
+                            # Insert a dict compatible with template attribute access
+                            subject_teachers[cname] = { 'full_name': label, 'username': label }
+    except Exception as _e:
+        # Non-fatal: continue without composite teacher aggregation
+        pass
 
     # Get term information from report configuration
     from ..services.report_config_service import ReportConfigService
