@@ -138,58 +138,8 @@ def permission_denied():
 
 @classteacher_bp.route('/test_components')
 @classteacher_required
-def test_components():
-    """Test route to display components."""
-    from ..models.academic import Subject
-
-    # Get all subjects
-    subjects = Subject.query.all()
-
-    return render_template('test_components.html', subjects=subjects)
-
-@classteacher_bp.route('/test_edit_marks', methods=['GET', 'POST'])
-@classteacher_required
-def test_edit_marks():
-    """Test route to display edit marks page."""
-    from ..models.academic import Subject
-
-    # Get all subjects
-    subject_objects = Subject.query.all()
-
-    # Handle form submission
-    if request.method == 'POST':
-        # Process the form data
-        flash("Form submitted successfully! This is just a test page.", "success")
-        return redirect(url_for('classteacher.test_edit_marks'))
-
-    return render_template('test_edit_marks.html',
-                          grade="Grade 7",
-                          stream="Stream Y",
-                          term="Term 1",
-                          assessment_type="Mid Term",
-                          subject_objects=subject_objects)
-
-
-@classteacher_bp.route('/simplified')
-@classteacher_required
-def simplified_dashboard():
-    """Simplified class teacher dashboard with clean UX."""
-    teacher_id = session.get('teacher_id')
-    
-    # Get comprehensive teacher portal summary
-    portal_summary = FlexibleMarksService.get_teacher_portal_summary(teacher_id)
-    
-    if 'error' in portal_summary:
-        flash(f"Error loading teacher information: {portal_summary['error']}", "error")
-        portal_summary = {}
-    
-    # Get role-based assignment summary
-    assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, session.get('role', 'classteacher'))
-    
-    if 'error' in assignment_summary:
-        assignment_summary = {'total_subjects_taught': 0, 'grades_involved': []}
-    
-    # Get recent reports
+    return ("<h2>🛑 Disabled</h2><p>This legacy maintenance operation was retired. "
+            "Use migrations & admin workflows for subject structure.</p>")
     marks_query = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType).order_by(Mark.created_at.desc())
     marks = marks_query.limit(50).all()
     
@@ -1187,62 +1137,8 @@ def fixed_class_report(grade, stream, term, assessment_type):
 @classteacher_bp.route('/create_test_marks')
 @classteacher_required
 def create_test_marks():
-    """Create some test marks for English Grammar and Composition to demonstrate the system."""
-    try:
-        results = []
-        results.append("🧪 Creating Test Marks for Composite Subjects")
-        results.append("=" * 60)
-
-        # Get Grade 1 Stream A students
-        stream_obj = Stream.query.join(Grade).filter(Grade.name == 'Grade 1', Stream.name == 'A').first()
-        term_obj = Term.query.filter_by(name='Term 1').first()
-        assessment_type_obj = AssessmentType.query.filter_by(name='Mid Term').first()
-
-        if not (stream_obj and term_obj and assessment_type_obj):
-            results.append("❌ Could not find Grade 1 Stream A, Term 1, or Mid Term")
-            return f"<pre>{'<br>'.join(results)}</pre>"
-
-        students = Student.query.filter_by(stream_id=stream_obj.id).all()
-        results.append(f"📚 Found {len(students)} students in Grade 1 Stream A")
-
-        # Get English Grammar and Composition subjects
-        english_grammar = Subject.query.filter_by(
-            name="English Grammar",
-            education_level="lower_primary",
-            is_component=True
-        ).first()
-
-        english_composition = Subject.query.filter_by(
-            name="English Composition",
-            education_level="lower_primary",
-            is_component=True
-        ).first()
-
-        if not english_grammar:
-            results.append("❌ English Grammar subject not found")
-            return f"<pre>{'<br>'.join(results)}</pre>"
-
-        if not english_composition:
-            results.append("❌ English Composition subject not found")
-            return f"<pre>{'<br>'.join(results)}</pre>"
-
-        results.append(f"✅ Found English Grammar (ID: {english_grammar.id})")
-        results.append(f"✅ Found English Composition (ID: {english_composition.id})")
-
-        # Create test marks
-        import random
-        marks_created = 0
-
-        for i, student in enumerate(students):
-            # Create English Grammar mark (typically higher - 80-95)
-            grammar_percentage = random.randint(80, 95)
-            grammar_raw = int(grammar_percentage)  # Assuming out of 100
-
-            # Check if mark already exists
-            existing_grammar = Mark.query.filter_by(
-                student_id=student.id,
-                subject_id=english_grammar.id,
-                term_id=term_obj.id,
+    return ("<h2>🛑 Disabled</h2><p>Composite subject manual fix removed. "
+            "Any structural adjustments must go through Alembic migrations.</p>")
                 assessment_type_id=assessment_type_obj.id
             ).first()
 
