@@ -13,7 +13,7 @@ import json
 import threading
 from queue import Queue, Empty
 from concurrent.futures import ThreadPoolExecutor
-import sqlite3
+# Removed unused sqlite3 import; tasks are backend-agnostic now
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

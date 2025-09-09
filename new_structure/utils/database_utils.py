@@ -2,12 +2,15 @@
 Database utility functions for the Hillview School Management System.
 Enhanced with connection pooling and scalability features.
 """
-import sqlite3
 import os
 from typing import Optional, Dict, Any, List
 from sqlalchemy import text
 from ..extensions import db
-from .db_pool import initialize_pool, get_db_connection, get_pool_stats, close_pool
+# Legacy db_pool (SQLite) imports removed; SQLAlchemy handles pooling for MySQL
+try:  # keep optional import if referenced elsewhere
+    from .db_pool import initialize_pool, get_db_connection, get_pool_stats, close_pool  # type: ignore
+except Exception:  # pragma: no cover
+    initialize_pool = get_db_connection = get_pool_stats = close_pool = lambda *a, **k: None
 
 def check_table_exists(table_name):
     """
@@ -20,12 +23,16 @@ def check_table_exists(table_name):
         bool: True if table exists, False otherwise
     """
     try:
-        # Use SQLAlchemy to check if table exists
-        result = db.session.execute(
-            text("SELECT name FROM sqlite_master WHERE type='table' AND name=:table_name"),
-            {"table_name": table_name}
-        )
-        return result.fetchone() is not None
+        # Portable existence check using information schema for MySQL
+        engine_name = db.engine.name
+        if engine_name.startswith('mysql'):
+            result = db.session.execute(text(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :t"
+            ), {"t": table_name}).scalar()
+            return result > 0
+        # Fallback generic attempt
+        db.session.execute(text(f"SELECT 1 FROM `{table_name}` LIMIT 1"))
+        return True
     except Exception as e:
         print(f"Error checking table existence: {e}")
         return False

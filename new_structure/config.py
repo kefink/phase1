@@ -164,7 +164,7 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    """Configuration for production environment."""
+    """Configuration for production environment (consolidated)."""
     DEBUG = False
     SESSION_COOKIE_SECURE = True
 
@@ -177,6 +177,15 @@ class ProductionConfig(Config):
     WTF_CSRF_TIME_LIMIT = 7200  # 2 hours
     PERMANENT_SESSION_LIFETIME = 7200  # 2 hours
 
+    # Security headers previously duplicated in second ProductionConfig
+    SECURITY_HEADERS = {
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
+        'Referrer-Policy': 'strict-origin-when-cross-origin'
+    }
+
     # Production database with enhanced connection pooling
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 20,
@@ -188,7 +197,7 @@ class ProductionConfig(Config):
 
     @classmethod
     def init_app(cls, app):
-        """Initialize production app"""
+        """Initialize production app (logging + security headers)."""
         super().init_app(app)
 
         # Configure production logging
@@ -204,8 +213,12 @@ class ProductionConfig(Config):
             app.logger.addHandler(file_handler)
             app.logger.setLevel(logging.INFO)
 
+        # Apply security headers if defined
+        if hasattr(cls, 'SECURITY_HEADERS'):
+            app.config['SECURITY_HEADERS'] = cls.SECURITY_HEADERS
 
-# Configuration dictionary
+
+# Configuration dictionary (after ProductionConfig consolidation)
 config = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,
@@ -241,27 +254,4 @@ def is_testing() -> bool:
     return os.environ.get('FLASK_ENV') == 'testing'
 
 # PRODUCTION SECURITY CONFIGURATION
-class ProductionConfig(Config):
-    """Production configuration with maximum security."""
-    
-    # Force HTTPS
-    FORCE_HTTPS = True
-    
-    # Ultra-secure session settings
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Strict'
-    PERMANENT_SESSION_LIFETIME = 1800  # 30 minutes
-    
-    # Strict security enforcement
-    STRICT_ROLE_ENFORCEMENT = True
-    SESSION_PROTECTION = 'strong'
-    
-    # Security headers
-    SECURITY_HEADERS = {
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-        'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
-        'X-XSS-Protection': '1; mode=block',
-        'Referrer-Policy': 'strict-origin-when-cross-origin'
-    }
+## NOTE: Removed duplicated ProductionConfig definition (consolidated above)
