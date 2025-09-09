@@ -1,384 +1,216 @@
-"""
-Database Initialization for Hillview School Management System
-Comprehensive solution to create all required tables and initial data
+"""MySQL-first database initialization utilities.
+
+Replaces legacy SQLite-specific logic with pure SQLAlchemy-based
+initialization so the project operates cleanly against MySQL.
 """
 
-import os
-import sqlite3
+from __future__ import annotations
+
 import logging
-from datetime import datetime, date
-from flask import current_app
 from ..extensions import db
 
 logger = logging.getLogger(__name__)
 
-def create_all_tables():
-    """
-    Create all database tables using SQLAlchemy models
-    """
+
+def create_all_tables() -> bool:
+    """Create all tables via model metadata (idempotent)."""
     try:
-        # Import all models to ensure they're registered
-        from ..models.user import Teacher
-        from ..models.academic import (
-            SchoolConfiguration, Subject, Grade, Stream, Term,
-            AssessmentType, Student, Mark
-        )
-        from ..models.assignment import TeacherSubjectAssignment
-        # Note: Import permission models to register them with SQLAlchemy
+        # Import models to register metadata
+        from ..models import user  # noqa: F401
+        from ..models import academic  # noqa: F401
+        from ..models import assignment  # noqa: F401
         try:
-            from ..models.permission import ClassTeacherPermission, PermissionRequest
-        except ImportError:
-            pass  # Permission models are optional
+            from ..models import permission  # noqa: F401
+        except Exception:
+            pass
         try:
-            from ..models.function_permission import FunctionPermission
-        except ImportError:
-            pass  # Function permission models are optional
-        from ..models.parent import Parent, ParentStudent
-        from ..models.report_config import ReportConfiguration
-        from ..models.school_setup import SchoolSetup
-        
-        # Create all tables
+            from ..models import function_permission  # noqa: F401
+        except Exception:
+            pass
+        from ..models import parent  # noqa: F401
+        from ..models import report_config  # noqa: F401
+        from ..models import school_setup  # noqa: F401
+
         db.create_all()
-        logger.info("All database tables created successfully")
+        logger.info("✅ Tables ensured (SQLAlchemy metadata create_all)")
         return True
-        
-    except Exception as e:
-        logger.error(f"Error creating tables: {e}")
+    except Exception as e:  # pragma: no cover
+        logger.error("Error creating tables: %s", e)
         return False
 
-def initialize_default_data():
-    """
-    Initialize the database with default data
-    """
+
+def initialize_default_data() -> bool:
+    """Seed baseline data only if empty."""
     try:
-        # Check if data already exists
         from ..models.user import Teacher
         if Teacher.query.first():
-            logger.info("Database already has data, skipping initialization")
+            logger.info("Database already seeded; skipping defaults")
             return True
-        
-        # Create default users
-        create_default_users()
-        
-        # Create default academic structure
-        create_default_academic_structure()
-        
-        # Create default subjects
-        create_default_subjects()
-        
-        # Create default school configuration
-        create_default_school_config()
-        
+
+        _create_default_users()
+        _create_default_academic_structure()
+        _create_default_subjects()
+        _create_default_school_config()
         db.session.commit()
-        logger.info("Default data initialized successfully")
+        logger.info("🎉 Default data seeded successfully")
         return True
-        
-    except Exception as e:
-        logger.error(f"Error initializing default data: {e}")
+    except Exception as e:  # pragma: no cover
+        logger.error("Error seeding defaults: %s", e)
         db.session.rollback()
         return False
 
-def create_default_users():
-    """Create default users for the system"""
+
+def _create_default_users() -> None:
     from ..models.user import Teacher
-    
+
     default_users = [
-        {
-            'username': 'headteacher',
-            'password': 'admin123',
-            'role': 'headteacher',
-            'first_name': 'Head',
-            'last_name': 'Teacher',
-            'email': 'headteacher@school.com',
-            'employee_id': 'HT001',
-            'qualification': 'DEGREE',
-            'is_active': True
-        },
-        {
-            'username': 'classteacher1',
-            'password': 'class123',
-            'role': 'classteacher',
-            'first_name': 'Class',
-            'last_name': 'Teacher One',
-            'email': 'classteacher1@school.com',
-            'employee_id': 'CT001',
-            'qualification': 'DIPLOMA',
-            'is_active': True
-        },
-        {
-            'username': 'kevin',
-            'password': 'kev123',
-            'role': 'classteacher',
-            'first_name': 'Kevin',
-            'last_name': 'Teacher',
-            'email': 'kevin@school.com',
-            'employee_id': 'CT002',
-            'qualification': 'DEGREE',
-            'is_active': True
-        },
-        {
-            'username': 'telvo',
-            'password': 'telvo123',
-            'role': 'teacher',
-            'first_name': 'Telvo',
-            'last_name': 'Subject Teacher',
-            'email': 'telvo@school.com',
-            'employee_id': 'ST001',
-            'qualification': 'DIPLOMA',
-            'is_active': True
-        }
+        {"username": "headteacher", "password": "admin123", "role": "headteacher", "first_name": "Head", "last_name": "Teacher", "employee_id": "HT001"},
+        {"username": "classteacher1", "password": "class123", "role": "classteacher", "first_name": "Class", "last_name": "Teacher One", "employee_id": "CT001"},
+        {"username": "kevin", "password": "kev123", "role": "classteacher", "first_name": "Kevin", "last_name": "Teacher", "employee_id": "CT002"},
+        {"username": "telvo", "password": "telvo123", "role": "teacher", "first_name": "Telvo", "last_name": "Subject Teacher", "employee_id": "ST001"},
     ]
-    
-    for user_data in default_users:
-        # Extract password before creating teacher
-        password = user_data.pop('password')
-        teacher = Teacher(**user_data)
-        # Use the new password hashing method
-        teacher.set_password(password)
-        db.session.add(teacher)
-    
-    logger.info("Default users created")
+    for data in default_users:
+        pwd = data.pop("password")
+        t = Teacher(**data)
+        t.set_password(pwd)
+        db.session.add(t)
+    logger.info("👥 Default users added")
 
-def create_default_academic_structure():
-    """Create default grades, streams, terms, and assessment types"""
+
+def _create_default_academic_structure() -> None:
     from ..models.academic import Grade, Stream, Term, AssessmentType
-    
-    # Create grades
-    grades = ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9']
-    for grade_name in grades:
-        grade = Grade(name=grade_name)
-        db.session.add(grade)
-    
-    # Create streams
-    streams = ['A', 'B', 'C']
-    for stream_name in streams:
-        stream = Stream(name=stream_name)
-        db.session.add(stream)
-    
-    # Create terms
+
+    grade_level_map = [
+        ("Grade 1", "lower_primary"),
+        ("Grade 2", "lower_primary"),
+        ("Grade 3", "lower_primary"),
+        ("Grade 4", "upper_primary"),
+        ("Grade 5", "upper_primary"),
+        ("Grade 6", "upper_primary"),
+        ("Grade 7", "junior_secondary"),
+        ("Grade 8", "junior_secondary"),
+        ("Grade 9", "junior_secondary"),
+    ]
+
+    grades = []
+    for name, level in grade_level_map:
+        g = Grade(name=name, education_level=level)
+        db.session.add(g)
+        grades.append(g)
+
+    # Streams (A,B) per grade
+    db.session.flush()  # ensure IDs
+    for g in grades:
+        for stream_name in ("A", "B"):
+            db.session.add(Stream(name=stream_name, grade_id=g.id))
+
     terms = [
-        {'name': 'Term 1', 'academic_year': '2024', 'is_current': True},
-        {'name': 'Term 2', 'academic_year': '2024', 'is_current': False},
-        {'name': 'Term 3', 'academic_year': '2024', 'is_current': False}
+        {"name": "Term 1", "academic_year": "2024", "is_current": True},
+        {"name": "Term 2", "academic_year": "2024", "is_current": False},
+        {"name": "Term 3", "academic_year": "2024", "is_current": False},
     ]
-    for term_data in terms:
-        term = Term(**term_data)
-        db.session.add(term)
-    
-    # Create assessment types
+    for t in terms:
+        db.session.add(Term(**t))
+
     assessments = [
-        {'name': 'CAT 1', 'description': 'Continuous Assessment Test 1'},
-        {'name': 'CAT 2', 'description': 'Continuous Assessment Test 2'},
-        {'name': 'End Term Exam', 'description': 'End of Term Examination'},
-        {'name': 'Assignment', 'description': 'Class Assignment'},
-        {'name': 'Project', 'description': 'Project Work'}
+        {"name": "CAT 1"},
+        {"name": "CAT 2"},
+        {"name": "End Term Exam"},
+        {"name": "Assignment"},
+        {"name": "Project"},
     ]
-    for assessment_data in assessments:
-        assessment = AssessmentType(**assessment_data)
-        db.session.add(assessment)
-    
-    logger.info("Default academic structure created")
+    for a in assessments:
+        db.session.add(AssessmentType(**a))
 
-def create_default_subjects():
-    """Create default subjects for all education levels"""
+    logger.info("🏗️ Academic structure seeded")
+
+
+def _create_default_subjects() -> None:
     from ..models.academic import Subject
-    
-    subjects_data = [
-        # Lower Primary (Grades 1-3)
-        {'name': 'English', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': True},
-        {'name': 'Kiswahili', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': True},
-        {'name': 'Mathematics', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Environmental Activities', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Creative Arts', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Physical Education', 'education_level': 'lower_primary', 'is_standard': True, 'is_composite': False},
-        
-        # Upper Primary (Grades 4-6)
-        {'name': 'English', 'education_level': 'upper_primary', 'is_standard': True, 'is_composite': True},
-        {'name': 'Kiswahili', 'education_level': 'upper_primary', 'is_standard': True, 'is_composite': True},
-        {'name': 'Mathematics', 'education_level': 'upper_primary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Science & Technology', 'education_level': 'upper_primary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Social Studies', 'education_level': 'upper_primary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Creative Arts & Sports', 'education_level': 'upper_primary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Religious Education', 'education_level': 'upper_primary', 'is_standard': True, 'is_composite': False},
-        
-        # Junior Secondary (Grades 7-9)
-        {'name': 'English', 'education_level': 'junior_secondary', 'is_standard': True, 'is_composite': True},
-        {'name': 'Kiswahili', 'education_level': 'junior_secondary', 'is_standard': True, 'is_composite': True},
-        {'name': 'Mathematics', 'education_level': 'junior_secondary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Integrated Science', 'education_level': 'junior_secondary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Social Studies', 'education_level': 'junior_secondary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Creative Arts & Sports', 'education_level': 'junior_secondary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Religious Education', 'education_level': 'junior_secondary', 'is_standard': True, 'is_composite': False},
-        {'name': 'Pre-Technical Studies', 'education_level': 'junior_secondary', 'is_standard': True, 'is_composite': False}
+
+    subjects = [
+        # Lower Primary
+        ("English", "lower_primary", True),
+        ("Kiswahili", "lower_primary", True),
+        ("Mathematics", "lower_primary", False),
+        ("Environmental Activities", "lower_primary", False),
+        # Upper Primary
+        ("English", "upper_primary", True),
+        ("Kiswahili", "upper_primary", True),
+        ("Mathematics", "upper_primary", False),
+        ("Science & Technology", "upper_primary", False),
+        # Junior Secondary
+        ("English", "junior_secondary", True),
+        ("Kiswahili", "junior_secondary", True),
+        ("Mathematics", "junior_secondary", False),
+        ("Integrated Science", "junior_secondary", False),
     ]
-    
-    for subject_data in subjects_data:
-        subject = Subject(**subject_data)
-        db.session.add(subject)
-    
-    logger.info("Default subjects created")
+    for name, level, composite in subjects:
+        db.session.add(Subject(name=name, education_level=level, is_composite=composite))
+    logger.info("📚 Subjects seeded")
 
-def create_default_school_config():
-    """Create default school configuration"""
+
+def _create_default_school_config() -> None:
     from ..models.academic import SchoolConfiguration
-    from ..models.school_setup import SchoolSetup
-    
-    # Create SchoolConfiguration
-    school_config = SchoolConfiguration(
-        school_name='Hillview School',
-        school_address='123 Education Street, Learning City',
-        school_phone='+254-700-000-000',
-        school_email='info@hillviewschool.ac.ke',
-        school_motto='Excellence in Education',
-        current_term='Term 1',
-        current_year=2024
+    cfg = SchoolConfiguration(
+        school_name="Hillview School",
+        school_motto="Excellence in Education",
+        current_academic_year="2024",
+        current_term="Term 1",
+        headteacher_name="Head Teacher",
     )
-    db.session.add(school_config)
-    
-    # Create SchoolSetup
-    school_setup = SchoolSetup(
-        school_name='Hillview School',
-        school_address='123 Education Street, Learning City',
-        school_email='info@hillviewschool.ac.ke',
-        school_phone='+254-700-000-000',
-        school_motto='Excellence in Education',
-        school_logo_path=None,
-        is_configured=True
-    )
-    db.session.add(school_setup)
-    
-    logger.info("✅ Default school configuration created")
+    db.session.add(cfg)
+    logger.info("🏫 School configuration created")
 
-def check_database_integrity():
-    """
-    Check database integrity and return status
-    """
+
+def check_database_integrity() -> dict:
+    """Return lightweight integrity snapshot."""
     try:
         from ..models.user import Teacher
         from ..models.academic import Subject, Grade, Stream
-        
-        # Check if essential tables exist and have data
         teacher_count = Teacher.query.count()
         subject_count = Subject.query.count()
         grade_count = Grade.query.count()
         stream_count = Stream.query.count()
-        
-        status = {
-            'tables_exist': True,
-            'has_data': teacher_count > 0 and subject_count > 0,
-            'teacher_count': teacher_count,
-            'subject_count': subject_count,
-            'grade_count': grade_count,
-            'stream_count': stream_count,
-            'status': 'healthy' if teacher_count > 0 and subject_count > 0 else 'needs_initialization'
-        }
-        
-        return status
-        
-    except Exception as e:
         return {
-            'tables_exist': False,
-            'has_data': False,
-            'error': str(e),
-            'status': 'error'
+            "tables_exist": True,
+            "has_data": teacher_count > 0 and subject_count > 0,
+            "teacher_count": teacher_count,
+            "subject_count": subject_count,
+            "grade_count": grade_count,
+            "stream_count": stream_count,
+            "status": "healthy" if teacher_count and subject_count else "needs_initialization",
         }
+    except Exception as e:  # pragma: no cover
+        return {"tables_exist": False, "has_data": False, "error": str(e), "status": "error"}
 
-def initialize_database_completely():
-    """
-    Complete database initialization - creates tables and populates with default data
-    """
-    logger.info("Starting complete database initialization...")
 
-    try:
-        # Step 1: Create all tables
-        logger.info("Creating database tables...")
-        if not create_all_tables():
-            return {'success': False, 'error': 'Failed to create tables'}
-        
-        # Step 2: Initialize default data
-        logger.info("Initializing default data...")
-        if not initialize_default_data():
-            return {'success': False, 'error': 'Failed to initialize default data'}
-        
-        # Step 3: Check integrity
-        logger.info("Checking database integrity...")
-        status = check_database_integrity()
-        
-        if status['status'] == 'healthy':
-            logger.info("Database initialization completed successfully!")
-            return {
-                'success': True,
-                'message': 'Database initialized successfully',
-                'status': status
-            }
-        else:
-            return {
-                'success': False,
-                'error': 'Database initialization completed but integrity check failed',
-                'status': status
-            }
-            
-    except Exception as e:
-        logger.error(f"Database initialization failed: {e}")
-        return {
-            'success': False,
-            'error': str(e)
-        }
-
-def repair_database():
-    """
-    Repair database by recreating missing tables and data
-    """
-    logger.info("🔧 Starting database repair...")
-    
-    try:
-        # Check current status
-        status = check_database_integrity()
-        
-        if not status['tables_exist']:
-            logger.info("📋 Tables missing, creating all tables...")
-            create_all_tables()
-        
-        if not status['has_data']:
-            logger.info("📝 Data missing, initializing default data...")
-            initialize_default_data()
-        
-        # Verify repair
-        new_status = check_database_integrity()
-        
-        if new_status['status'] == 'healthy':
-            logger.info("✅ Database repair completed successfully!")
-            return {
-                'success': True,
-                'message': 'Database repaired successfully',
-                'before': status,
-                'after': new_status
-            }
-        else:
-            return {
-                'success': False,
-                'error': 'Database repair failed',
-                'status': new_status
-            }
-            
-    except Exception as e:
-        logger.error(f"❌ Database repair failed: {e}")
-        return {
-            'success': False,
-            'error': str(e)
-        }
-
-if __name__ == "__main__":
-    # Test database initialization
-    print("Testing database initialization...")
-    
-    # Check current status
+def initialize_database_completely() -> dict:
+    logger.info("🚀 Starting database initialization (MySQL mode)")
+    if not create_all_tables():
+        return {"success": False, "error": "Failed to create tables"}
+    if not initialize_default_data():
+        return {"success": False, "error": "Failed to seed default data"}
     status = check_database_integrity()
-    print(f"Current status: {status}")
-    
-    if status['status'] != 'healthy':
-        print("Initializing database...")
-        result = initialize_database_completely()
-        print(f"Initialization result: {result}")
+    if status.get("status") == "healthy":
+        return {"success": True, "status": status}
+    return {"success": False, "status": status, "error": "Integrity check failed"}
+
+
+def repair_database() -> dict:
+    logger.info("🔧 Repair requested")
+    before = check_database_integrity()
+    if before.get("status") != "healthy":
+        create_all_tables()
+        initialize_default_data()
+    after = check_database_integrity()
+    return {"success": after.get("status") == "healthy", "before": before, "after": after}
+
+
+if __name__ == "__main__":  # Manual diagnostic
+    snap = check_database_integrity()
+    print("Integrity:", snap)
+    if snap.get("status") != "healthy":
+        print(initialize_database_completely())
     else:
-        print("Database is already healthy!")
+        print("Already healthy")

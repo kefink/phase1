@@ -36,7 +36,9 @@ try:
         print("")
 
     # Disable the auto-reloader to avoid detaching from terminal on Windows bash
-    app.run(debug=True, host='127.0.0.1', port=PORT, threaded=True, use_reloader=False)
+    # Allow overriding host with environment variable; default to bind to all interfaces
+    HOST = os.environ.get('APP_HOST', '0.0.0.0')
+    app.run(debug=True, host=HOST, port=PORT, threaded=True, use_reloader=False)
 
 except Exception as e:
     print(f"❌ Error starting application: {e}")

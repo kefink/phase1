@@ -62,7 +62,6 @@ def polished_login():
     return render_template('login_polished.html', school_info=school_info)
 
 @auth_bp.route('/admin_login', methods=['GET', 'POST'])
-@csrf.exempt
 @auth_rate_limit
 @sql_injection_protection
 def admin_login():
@@ -92,55 +91,30 @@ def admin_login():
         client_ip = request.environ.get('REMOTE_ADDR', 'unknown')
         print(f"🔍 Admin login attempt from IP: {client_ip}")
 
-        # TODO: Replace with proper authentication service once buffer overflow is fixed
-        # TEMPORARY FIX: Load credentials from environment variables for security
-        valid_credentials = {
-            os.getenv('ADMIN_USERNAME', 'headteacher'): {
-                'password': os.getenv('ADMIN_PASSWORD', 'admin123'),
-                'teacher_id': int(os.getenv('ADMIN_TEACHER_ID', '2')),
-                'role': 'headteacher'
-            },
-            os.getenv('TEACHER_USERNAME', 'kevin'): {
-                'password': os.getenv('TEACHER_PASSWORD', 'kev123'),
-                'teacher_id': int(os.getenv('TEACHER_TEACHER_ID', '4')),
-                'role': 'headteacher'
-            }
-        }
+        try:
+            teacher = authenticate_teacher(username, password, 'headteacher')
+            print(f"🔍 Authentication result: {teacher}")
 
-        if username in valid_credentials and password == valid_credentials[username]['password']:
-            print(f"🔍 Authentication successful via bypass mechanism from IP: {client_ip}")
-            session['teacher_id'] = valid_credentials[username]['teacher_id']
-            session['username'] = username
-            session['role'] = valid_credentials[username]['role']
-            session.permanent = True
-            print(f"🔍 Session set, redirecting to proper headteacher dashboard...")
-            return redirect(url_for('admin.dashboard'))
-
-        print(f"🔍 Authentication failed from IP: {client_ip}")
-
-        # Original complex authentication (commented out to prevent crashes)
-        # try:
-        #     teacher = authenticate_teacher(username, password, 'headteacher')
-        #     print(f"🔍 Authentication result: {teacher}")
-        #
-        #     if teacher:
-        #         print(f"🔍 Setting session for teacher ID: {teacher.id}")
-        #         session['teacher_id'] = teacher.id
-        #         session['role'] = 'headteacher'
-        #         session.permanent = True
-        #         print(f"🔍 Redirecting to admin dashboard...")
-        #         return redirect(url_for('admin.dashboard'))
-        #     else:
-        #         print(f"🔍 Authentication failed for: {username}")
-        # except Exception as e:
-        #     print(f"🚨 Authentication error: {str(e)}")
-        #     return render_template('admin_login.html', error=f'Authentication error: {str(e)}')
-        return render_template('admin_login.html', error='Invalid credentials')
+            if teacher:
+                print(f"🔍 Setting session for teacher ID: {teacher.id}")
+                session['teacher_id'] = teacher.id
+                session['username'] = username
+                session['role'] = 'headteacher'
+                session.permanent = True
+                print(f"🔍 Redirecting to admin dashboard...")
+                return redirect(url_for('admin.dashboard'))
+            else:
+                print(f"🔍 Authentication failed for: {username}")
+                flash('Invalid credentials', 'error')
+                return render_template('admin_login.html', error='Invalid credentials')
+        except Exception as e:
+            print(f"🚨 Authentication error: {str(e)}")
+            flash('An error occurred during authentication. Please try again.', 'error')
+            return render_template('admin_login.html', error=f'Authentication error: {str(e)}')
 
     return render_template('admin_login.html')
 
 @auth_bp.route('/teacher_login', methods=['GET', 'POST'])
-@csrf.exempt
 @auth_rate_limit
 @sql_injection_protection
 def teacher_login():
@@ -173,54 +147,32 @@ def teacher_login():
         # Command injection protection
         if (RCEProtection.detect_code_injection(username) or
             RCEProtection.detect_code_injection(password)):
-            return render_template('teacher_login.html', error='Invalid credentials')
+            return render_template('teacher_.html', error='Invalid credentials')
 
         # Secure logging - don't expose usernames
         client_ip = request.environ.get('REMOTE_ADDR', 'unknown')
         print(f"🔍 Subject teacher login attempt from IP: {client_ip}")
 
-        # TODO: Replace with proper authentication service once buffer overflow is fixed
-        # TEMPORARY FIX: Load credentials from environment variables for security
-        # FIXED: Use correct teacher IDs from database
-        valid_teacher_credentials = {
-            os.getenv('SUBJECT_TEACHER_USERNAME', 'carol'): {
-                'password': os.getenv('SUBJECT_TEACHER_PASSWORD', 'carol123'),
-                'teacher_id': int(os.getenv('SUBJECT_TEACHER_ID', '6')),  # Carol's actual ID is 6
-                'role': 'teacher'
-            },
-            os.getenv('SUBJECT_TEACHER2_USERNAME', 'telvo'): {
-                'password': os.getenv('SUBJECT_TEACHER2_PASSWORD', 'telvo123'),
-                'teacher_id': int(os.getenv('SUBJECT_TEACHER2_ID', '7')),  # Use ID 7 for telvo (will create if needed)
-                'role': 'teacher'
-            }
-        }
+        try:
+            teacher = authenticate_teacher(username, password, 'teacher')
 
-        if username in valid_teacher_credentials and password == valid_teacher_credentials[username]['password']:
-            print(f"🔍 Subject teacher authentication successful via bypass mechanism from IP: {client_ip}")
-            session['teacher_id'] = valid_teacher_credentials[username]['teacher_id']
-            session['username'] = username
-            session['role'] = valid_teacher_credentials[username]['role']
-            session.permanent = True
-            print(f"🔍 Session set, redirecting to subject teacher dashboard...")
-            return redirect(url_for('teacher.dashboard'))
-
-        print(f"🔍 Subject teacher authentication failed from IP: {client_ip}")
-
-        # Original complex authentication (commented out to prevent crashes)
-        # teacher = authenticate_teacher(username, password, 'teacher')
-        #
-        # if teacher:
-        #     session['teacher_id'] = teacher.id
-        #     session['role'] = 'teacher'
-        #     session.permanent = True
-        #     return redirect(url_for('teacher.dashboard'))
-
-        return render_template('teacher_login.html', error='Invalid credentials')
+            if teacher:
+                session['teacher_id'] = teacher.id
+                session['username'] = username
+                session['role'] = 'teacher'
+                session.permanent = True
+                return redirect(url_for('teacher.dashboard'))
+            else:
+                flash('Invalid credentials', 'error')
+                return render_template('teacher_login.html', error='Invalid credentials')
+        except Exception as e:
+            print(f"🚨 Authentication error: {str(e)}")
+            flash('An error occurred during authentication. Please try again.', 'error')
+            return render_template('teacher_login.html', error='Invalid credentials')
 
     return render_template('teacher_login.html')
 
 @auth_bp.route('/classteacher_login', methods=['GET', 'POST'])
-@csrf.exempt
 @auth_rate_limit
 @sql_injection_protection
 def classteacher_login():
@@ -253,54 +205,43 @@ def classteacher_login():
         client_ip = request.environ.get('REMOTE_ADDR', 'unknown')
         print(f"🔍 Class teacher login attempt from IP: {client_ip}")
 
-        # TODO: Replace with proper authentication service once buffer overflow is fixed
-        # TEMPORARY FIX: Load credentials from environment variables for security
-        valid_classteacher_credentials = {
-            os.getenv('CLASSTEACHER_USERNAME', 'kevin'): {
-                'password': os.getenv('CLASSTEACHER_PASSWORD', 'kev123'),
-                'teacher_id': int(os.getenv('CLASSTEACHER_ID', '4')),  # Kevin's actual ID is 4 (verified from database)
-                'role': 'classteacher'
-            }
-        }
+        try:
+            # First try to authenticate as classteacher
+            teacher = authenticate_teacher(username, password, 'classteacher')
 
-        if username in valid_classteacher_credentials and password == valid_classteacher_credentials[username]['password']:
-            print(f"🔍 Class teacher authentication successful via bypass mechanism from IP: {client_ip}")
-            session['teacher_id'] = valid_classteacher_credentials[username]['teacher_id']
-            session['username'] = username
-            session['role'] = valid_classteacher_credentials[username]['role']
-            session.permanent = True
-            print(f"🔍 Session set, redirecting to class teacher dashboard...")
-            return redirect(url_for('classteacher.dashboard'))
-
-        print(f"🔍 Class teacher authentication failed from IP: {client_ip}")
-
-        # First try to authenticate as classteacher
-        teacher = authenticate_teacher(username, password, 'classteacher')
-
-        if teacher:
-            session['teacher_id'] = teacher.id
-            session['role'] = 'classteacher'
-            session.permanent = True
-            return redirect(url_for('classteacher.dashboard'))
-
-        # If classteacher auth failed, try as subject teacher with class assignments
-        teacher = authenticate_teacher(username, password, 'teacher')
-
-        if teacher:
-            # Check if this subject teacher has class assignments
-            from ..services.flexible_marks_service import FlexibleMarksService
-            can_access = FlexibleMarksService.can_teacher_access_classteacher_portal(teacher.id)
-
-            if can_access:
+            if teacher:
                 session['teacher_id'] = teacher.id
-                session['role'] = 'teacher'  # Keep original role but allow access
+                session['username'] = username
+                session['role'] = 'classteacher'
                 session.permanent = True
                 return redirect(url_for('classteacher.dashboard'))
-            else:
-                return render_template('classteacher_login.html',
-                                     error='You don\'t have any class assignments. Please use the subject teacher portal.')
 
-        return render_template('classteacher_login.html', error='Invalid credentials')
+            # If classteacher auth failed, try as subject teacher with class assignments
+            teacher = authenticate_teacher(username, password, 'teacher')
+
+            if teacher:
+                # Check if this subject teacher has class assignments
+                from ..services.flexible_marks_service import FlexibleMarksService
+                can_access = FlexibleMarksService.can_teacher_access_classteacher_portal(teacher.id)
+
+                if can_access:
+                    session['teacher_id'] = teacher.id
+                    session['username'] = username
+                    session['role'] = 'teacher'  # Keep original role but allow access
+                    session.permanent = True
+                    return redirect(url_for('classteacher.dashboard'))
+                else:
+                    flash('You don\'t have any class assignments. Please use the subject teacher portal.', 'error')
+                    return render_template('classteacher_login.html',
+                                         error='You don\'t have any class assignments. Please use the subject teacher portal.')
+            
+            flash('Invalid credentials', 'error')
+            return render_template('classteacher_login.html', error='Invalid credentials')
+
+        except Exception as e:
+            print(f"🚨 Authentication error: {str(e)}")
+            flash('An error occurred during authentication. Please try again.', 'error')
+            return render_template('classteacher_login.html', error='An error occurred during authentication. Please try again.')
 
     return render_template('classteacher_login.html')
 
