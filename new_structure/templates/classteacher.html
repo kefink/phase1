@@ -14,10 +14,40 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-    />
+    <!-- Heroicons (inline SVGs) -->
+    <style>
+      .icon-hero {
+        width: 2.5rem;
+        height: 2.5rem;
+        margin-bottom: 1rem;
+        stroke-width: 1.75;
+      }
+      /* Contextual colors */
+      .icon-dashboard {
+        stroke: #fdf6e3;
+      }
+      .icon-upload {
+        stroke: var(--cyan);
+      }
+      .icon-reports {
+        stroke: var(--violet);
+      }
+      .icon-generate {
+        stroke: var(--orange);
+      }
+      .icon-students {
+        stroke: var(--green);
+      }
+      .icon-analytics {
+        stroke: var(--blue);
+      }
+      .icon-settings {
+        stroke: var(--magenta);
+      }
+      .action-card.primary .icon-dashboard {
+        stroke: #fdf6e3;
+      }
+    </style>
 
     <!-- Solar Theme CSS -->
     <style>
@@ -76,16 +106,16 @@
       .container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 2rem;
+        padding: 1.5rem; /* tightened */
       }
 
       .header {
         background: var(--card-bg);
         border: 1px solid var(--border-color);
-        padding: 1.5rem;
+        padding: 1.25rem; /* tightened */
         border-radius: var(--radius);
         box-shadow: var(--shadow);
-        margin-bottom: 2rem;
+        margin-bottom: 1.25rem; /* tightened */
       }
 
       .header h1 {
@@ -135,8 +165,8 @@
       .actions-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
+        gap: 1.25rem; /* tightened */
+        margin-bottom: 1.5rem; /* tightened */
       }
 
       .action-card {
@@ -221,10 +251,10 @@
       .stats-overview {
         background: var(--card-bg);
         border: 1px solid var(--border-color);
-        padding: 1.5rem;
+        padding: 1.25rem; /* tightened */
         border-radius: var(--radius);
         box-shadow: var(--shadow);
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem; /* tightened */
       }
 
       .stats-overview h3 {
@@ -694,17 +724,274 @@
 
   <body data-ct-auto-open="true">
     {% include 'classteacher/_hamburger_nav.html' %}
+    <!-- Desktop Navbar -->
+    <nav
+      id="ctDesktopNav"
+      style="
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        justify-content: space-between;
+        padding: 0.75rem 2rem;
+        margin: 0 0 1.5rem 0;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 500;
+        backdrop-filter: blur(6px);
+      "
+    >
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          gap: 1.25rem;
+          flex-wrap: wrap;
+        "
+      >
+        <a
+          href="{{ url_for('classteacher.dashboard') }}"
+          class="ctd-brand"
+          style="
+            font-weight: 600;
+            color: var(--text-emphasis);
+            text-decoration: none;
+            font-size: 1rem;
+          "
+          >Class Teacher</a
+        >
+        <div
+          class="ctd-links"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+          "
+        >
+          <a
+            href="{{ url_for('classteacher.class_overview') }}"
+            class="ctd-link"
+            >Overview</a
+          >
+          <a href="{{ url_for('classteacher.upload_marks') }}" class="ctd-link"
+            >Upload</a
+          >
+          <a href="{{ url_for('classteacher.all_reports') }}" class="ctd-link"
+            >Reports</a
+          >
+          <a
+            href="{{ url_for('classteacher.manage_students') }}"
+            class="ctd-link"
+            >Students</a
+          >
+          <a
+            href="{{ url_for('classteacher.analytics_dashboard') }}"
+            class="ctd-link"
+            >Analytics</a
+          >
+          <a
+            href="{{ url_for('classteacher.dashboard') }}#generate-section"
+            class="ctd-link"
+            >Generate</a
+          >
+          <a
+            href="{{ url_for('classteacher.dashboard') }}#settings-section"
+            class="ctd-link"
+            >Settings</a
+          >
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem">
+        <button
+          id="desktopThemeToggleMini"
+          aria-label="Toggle theme"
+          style="
+            background: var(--card-hover);
+            border: 1px solid var(--border-color);
+            color: var(--text-bright);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+          "
+        >
+          <svg
+            id="desktopThemeIconMini"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="1.5"
+            style="width: 18px; height: 18px"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M21 12.79A9 9 0 0 1 11.21 3 9 9 0 1 0 21 12.79Z"
+            />
+          </svg>
+        </button>
+        <a
+          href="{{ url_for('auth.logout_route') }}"
+          class="ctd-logout"
+          style="
+            background: linear-gradient(135deg, var(--red), #8b1a18);
+            color: #fff;
+            padding: 0.55rem 1rem;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(220, 50, 47, 0.4);
+            transition: background 0.3s;
+          "
+          >Logout</a
+        >
+      </div>
+    </nav>
+    <style>
+      @media (max-width: 900px) {
+        #ctDesktopNav {
+          display: none;
+        }
+      }
+      @media (min-width: 901px) {
+        .ct-menu-btn,
+        #ctOverlay,
+        #ctDrawer {
+          display: none !important;
+        }
+      }
+      #ctDesktopNav .ctd-link {
+        position: relative;
+        padding: 0.45rem 0.85rem;
+        border-radius: 6px;
+        text-decoration: none;
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 0.85rem;
+        letter-spacing: 0.3px;
+        border: 1px solid transparent;
+        transition: all 0.25s;
+      }
+      #ctDesktopNav .ctd-link:hover {
+        color: var(--text-emphasis);
+        border-color: var(--border-color);
+        background: var(--card-hover);
+      }
+      #ctDesktopNav .ctd-link.active {
+        background: linear-gradient(135deg, var(--primary-color), var(--cyan));
+        color: var(--text-emphasis);
+        box-shadow: 0 4px 14px rgba(38, 139, 210, 0.35);
+      }
+      #ctDesktopNav .ctd-logout:hover {
+        background: linear-gradient(135deg, #b92d29, #721210);
+      }
+    </style>
+    <script>
+      (function () {
+        const links = document.querySelectorAll("#ctDesktopNav .ctd-link");
+        const path = window.location.pathname + window.location.hash;
+        links.forEach((a) => {
+          if (path.startsWith(a.getAttribute("href").replace(/#.*$/, "")))
+            a.classList.add("active");
+        });
+        const themeBtn = document.getElementById("desktopThemeToggleMini");
+        const icon = document.getElementById("desktopThemeIconMini");
+        const KEY = "ctTheme";
+        const mql =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)");
+        const system = () => (mql && mql.matches ? "dark" : "light");
+        const apply = (t) => {
+          document.documentElement.setAttribute("data-theme", t);
+          document.body.setAttribute("data-theme", t);
+          icon.innerHTML =
+            t === "dark"
+              ? '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364-1.414-1.414M8.05 8.05 6.636 6.636m0 10.728 1.414-1.414M17.95 8.05l1.414-1.414" /><circle cx="12" cy="12" r="5" />'
+              : '<path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 0 1 11.21 3 9 9 0 1 0 21 12.79Z" />';
+        };
+        let saved;
+        try {
+          saved = localStorage.getItem(KEY);
+        } catch (e) {}
+        apply(saved || system());
+        themeBtn.addEventListener("click", () => {
+          const cur =
+            document.documentElement.getAttribute("data-theme") || system();
+          const next = cur === "dark" ? "light" : "dark";
+          try {
+            localStorage.setItem(KEY, next);
+          } catch (e) {}
+          apply(next);
+        });
+        if (mql && mql.addEventListener) {
+          mql.addEventListener("change", (e) => {
+            let s;
+            try {
+              s = localStorage.getItem(KEY);
+            } catch (_e) {}
+            if (!s) apply(e.matches ? "dark" : "light");
+          });
+        }
+      })();
+    </script>
     <div class="container">
       <!-- Error Messages -->
       {% if error_message %}
       <div class="alert alert-danger">
-        <strong><i class="fas fa-exclamation-triangle"></i> Error:</strong> {{
-        error_message|safe }}
+        <strong>
+          <svg
+            class="icon-hero"
+            style="
+              width: 1.1rem;
+              height: 1.1rem;
+              stroke: var(--red);
+              vertical-align: middle;
+              margin-right: 4px;
+            "
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a1 1 0 0 0 .86 1.5h18.64a1 1 0 0 0 .86-1.5L13.71 3.86a1 1 0 0 0-1.72 0Z"
+            /></svg
+          >Error:</strong
+        >
+        {{ error_message|safe }}
       </div>
       {% endif %} {% if confirmation_message %}
       <div class="alert alert-success">
-        <strong><i class="fas fa-check-circle"></i> Success:</strong> {{
-        confirmation_message|safe }}
+        <strong>
+          <svg
+            class="icon-hero"
+            style="
+              width: 1.1rem;
+              height: 1.1rem;
+              stroke: var(--green);
+              vertical-align: middle;
+              margin-right: 4px;
+            "
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m4.5 12.75 6 6 9-13.5"
+            /></svg
+          >Success:</strong
+        >
+        {{ confirmation_message|safe }}
       </div>
       {% endif %}
 
@@ -715,17 +1002,80 @@
         class="alert {% if category == 'error' %}alert-danger{% elif category == 'success' %}alert-success{% elif category == 'warning' %}alert-warning{% else %}alert-info{% endif %}"
       >
         <strong>
-          {% if category == 'error' %}<i
-            class="fas fa-exclamation-triangle"
-          ></i>
-          Error: {% elif category == 'success' %}<i
-            class="fas fa-check-circle"
-          ></i>
-          Success: {% elif category == 'warning' %}<i
-            class="fas fa-exclamation-circle"
-          ></i>
-          Warning: {% else %}<i class="fas fa-info-circle"></i> Info: {% endif
-          %}
+          {% if category == 'error' %}
+          <svg
+            style="
+              width: 1rem;
+              height: 1rem;
+              stroke: var(--red);
+              vertical-align: middle;
+              margin-right: 4px;
+            "
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a1 1 0 0 0 .86 1.5h18.64a1 1 0 0 0 .86-1.5L13.71 3.86a1 1 0 0 0-1.72 0Z"
+            /></svg
+          >Error: {% elif category == 'success' %}
+          <svg
+            style="
+              width: 1rem;
+              height: 1rem;
+              stroke: var(--green);
+              vertical-align: middle;
+              margin-right: 4px;
+            "
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m4.5 12.75 6 6 9-13.5"
+            /></svg
+          >Success: {% elif category == 'warning' %}
+          <svg
+            style="
+              width: 1rem;
+              height: 1rem;
+              stroke: var(--orange);
+              vertical-align: middle;
+              margin-right: 4px;
+            "
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a1 1 0 0 0 .86 1.5h18.64a1 1 0 0 0 .86-1.5L13.71 3.86a1 1 0 0 0-1.72 0Z"
+            /></svg
+          >Warning: {% else %}
+          <svg
+            style="
+              width: 1rem;
+              height: 1rem;
+              stroke: var(--blue);
+              vertical-align: middle;
+              margin-right: 4px;
+            "
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M11.25 11.25h1.5v5.25h-1.5zM12 9A.75.75 0 1 0 12 7.5.75.75 0 0 0 12 9Z"
+            />
+            <circle cx="12" cy="12" r="9" stroke-width="1.5" /></svg
+          >Info: {% endif %}
         </strong>
         {{ message }}
       </div>
@@ -734,21 +1084,81 @@
       <!-- Teacher Assignment Status -->
       {% if not has_assignments %}
       <div class="alert alert-info">
-        <strong><i class="fas fa-info-circle"></i> Note:</strong> You are not
-        currently assigned to any class stream. You can still manage students
-        and view reports for all grades and streams.
-      </div>
-      {% elif stream %}
-      <div class="alert alert-success">
-        <i class="fas fa-check-circle"></i>
-        <strong>Assigned Class:</strong> Grade {{ grade }} {{ stream }}
+        <strong>
+          <svg
+            style="
+              width: 1rem;
+              height: 1rem;
+              stroke: var(--blue);
+              vertical-align: middle;
+              margin-right: 4px;
+            "
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M11.25 11.25h1.5v5.25h-1.5zM12 9A.75.75 0 1 0 12 7.5.75.75 0 0 0 12 9Z"
+            />
+            <circle cx="12" cy="12" r="9" stroke-width="1.5" /></svg
+          >Note:</strong
+        >
+        You are not currently assigned to any class stream. You can still manage
+        students and view reports for all grades and streams.
       </div>
       {% endif %}
 
       <!-- Header -->
-      <div class="header">
-        <h1>Class Teacher Dashboard</h1>
-        <p>Welcome back! Choose an action to get started.</p>
+      <div
+        class="header"
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+        "
+      >
+        <div>
+          <h1>Class Teacher Dashboard</h1>
+          <p>Welcome back! Choose an action to get started.</p>
+        </div>
+        <button
+          id="desktopThemeToggle"
+          aria-label="Toggle theme"
+          style="
+            background: var(--card-hover);
+            color: var(--text-bright);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+          "
+        >
+          <svg
+            id="desktopThemeIcon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            style="width: 20px; height: 20px"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364-1.414-1.414M8.05 8.05 6.636 6.636m0 10.728 1.414-1.414M17.95 8.05l1.414-1.414"
+            />
+            <circle cx="12" cy="12" r="5" />
+          </svg>
+          <span id="desktopThemeText">Theme</span>
+        </button>
       </div>
 
       <!-- Quick Stats -->
@@ -763,7 +1173,10 @@
           📊 Quick Overview
         </h3>
         <div class="stats-grid">
-          <div class="stat-item students-stat">
+          <div
+            class="stat-item students-stat"
+            data-total-students="{% if my_students %}{{ my_students|length }}{% elif class_teacher_assignments %}{% set student_count = 0 %}{% for assignment in class_teacher_assignments %}{% set student_count = student_count + (assignment.estimated_students or 25) %}{% endfor %}{{ student_count }}{% else %}{{ total_students or 0 }}{% endif %}"
+          >
             <div class="stat-icon">👥</div>
             <div class="stat-value">
               {% if my_students %} {{ my_students|length }} {% elif
@@ -883,23 +1296,26 @@
         </div>
       </div>
 
-      <!-- Notice for New Implementation -->
-      <div class="notice">
-        <div style="display: flex; align-items: center; gap: 0.5rem">
-          <span style="font-size: 1.2rem">🌟</span>
-          <strong>Enhanced Dashboard:</strong> This streamlined dashboard
-          focuses on your core teaching responsibilities with improved
-          navigation and real-time data display.
-        </div>
-      </div>
-
       <!-- Main Actions -->
       <div class="actions-grid">
         <a
           href="{{ url_for('classteacher.class_overview') }}"
           class="action-card primary"
         >
-          <i class="fas fa-tachometer-alt action-icon"></i>
+          <svg
+            class="icon-hero icon-dashboard"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 3c-4.97 0-9 4.03-9 9 0 3.53 2.06 6.58 5.03 8 .35.16.62-.06.62-.43v-2.07c0-.3-.2-.57-.48-.68A6.003 6.003 0 0 1 6 12c0-3.31 2.69-6 6-6s6 2.69 6 6a6.003 6.003 0 0 1-2.17 4.62c-.28.11-.48.38-.48.68v2.07c0 .37.27.59.62.43A8.997 8.997 0 0 0 21 12c0-4.97-4.03-9-9-9Zm0 5.25A3.75 3.75 0 0 0 8.25 12 3.75 3.75 0 0 0 12 15.75 3.75 3.75 0 0 0 15.75 12 3.75 3.75 0 0 0 12 8.25Z"
+            />
+          </svg>
           <h3>Class Overview</h3>
           <p>View all subjects and upload status for your classes</p>
         </a>
@@ -908,13 +1324,39 @@
           href="{{ url_for('classteacher.upload_marks') }}"
           class="action-card"
         >
-          <i class="fas fa-upload action-icon"></i>
+          <svg
+            class="icon-hero icon-upload"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 12h6m-7 4h8M9 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+            />
+          </svg>
           <h3>Upload Marks</h3>
           <p>Add student marks for tests and assignments</p>
         </a>
 
         <a href="{{ url_for('classteacher.all_reports') }}" class="action-card">
-          <i class="fas fa-chart-line action-icon"></i>
+          <svg
+            class="icon-hero icon-reports"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 3v18h18M7 14l3-3 4 4 5-7"
+            />
+          </svg>
           <h3>View Reports</h3>
           <p>Browse existing reports and performance data</p>
         </a>
@@ -923,7 +1365,25 @@
           href="{{ url_for('classteacher.dashboard') }}#generate-section"
           class="action-card"
         >
-          <i class="fas fa-file-pdf action-icon"></i>
+          <svg
+            class="icon-hero icon-generate"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 3v6h6"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 3h6l6 6v12a.997.997 0 0 1-1 1H6a1 1 0 0 1-1-1V4c0-.55.45-1 1-1Zm3 11h2a2 2 0 1 1 0 4H9v-4Zm0 0V11h4"
+            />
+          </svg>
           <h3>Generate Reports</h3>
           <p>Create marksheets and performance reports</p>
         </a>
@@ -932,7 +1392,20 @@
           href="{{ url_for('classteacher.manage_students') }}"
           class="action-card"
         >
-          <i class="fas fa-users action-icon"></i>
+          <svg
+            class="icon-hero icon-students"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm0 2c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4Z"
+            />
+          </svg>
           <h3>Manage Students</h3>
           <p>View and manage student information</p>
         </a>
@@ -941,7 +1414,20 @@
           href="{{ url_for('classteacher.analytics_dashboard') }}"
           class="action-card"
         >
-          <i class="fas fa-chart-line action-icon"></i>
+          <svg
+            class="icon-hero icon-analytics"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 5h2l3 10 4-6 3 4h6"
+            />
+          </svg>
           <h3>Analytics (Enhanced)</h3>
           <p>View detailed performance analytics</p>
         </a>
@@ -950,56 +1436,26 @@
           href="{{ url_for('classteacher.dashboard') }}#settings-section"
           class="action-card"
         >
-          <i class="fas fa-cogs action-icon"></i>
+          <svg
+            class="icon-hero icon-settings"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.757.426 1.757 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.757-2.924 1.757-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.757-.426-1.757-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.573-1.065ZM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+            />
+          </svg>
           <h3>Settings</h3>
           <p>Configure grades, subjects, and preferences</p>
         </a>
       </div>
 
-      <!-- Quick Actions Footer -->
-      <div
-        style="
-          text-align: center;
-          margin-top: 3rem;
-          padding: 1.5rem;
-          background: rgba(147, 161, 161, 0.02);
-          border-radius: var(--radius);
-          border-top: 2px solid var(--primary-color);
-          color: var(--text-secondary);
-        "
-      >
-        <p style="margin-bottom: 0.5rem; font-weight: 500">
-          📚 Class Teacher Portal • Solar Theme
-        </p>
-        <p style="font-size: 0.9rem">
-          Need help?
-          <a
-            href="#"
-            style="
-              color: var(--primary-color);
-              text-decoration: none;
-              font-weight: 500;
-            "
-            >📞 Contact Support</a
-          >
-          |
-          <a
-            href="#"
-            style="
-              color: var(--primary-color);
-              text-decoration: none;
-              font-weight: 500;
-            "
-            >📖 User Guide</a
-          >
-          |
-          <a
-            href="{{ url_for('auth.logout_route') }}"
-            style="color: var(--red); text-decoration: none; font-weight: 500"
-            >🚪 Logout</a
-          >
-        </p>
-      </div>
+      <!-- Footer removed per request -->
 
       <!-- Upload Section (hidden by default) -->
       <div id="upload-section" style="display: none; margin-top: 2rem">
@@ -1165,46 +1621,106 @@
 
     <!-- Enhanced JavaScript -->
     <script>
+      // Desktop theme toggle syncs with mobile drawer theme logic
+      (function () {
+        const THEME_KEY = "ctTheme";
+        const btn = document.getElementById("desktopThemeToggle");
+        const icon = document.getElementById("desktopThemeIcon");
+        const text = document.getElementById("desktopThemeText");
+        if (!btn) return;
+        const mql =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)");
+        const systemTheme = () => (mql && mql.matches ? "dark" : "light");
+        function apply(theme) {
+          document.documentElement.setAttribute("data-theme", theme);
+          document.body.setAttribute("data-theme", theme);
+          // swap icon glyph (sun for dark mode active)
+          icon.innerHTML =
+            theme === "dark"
+              ? '<path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 0 1 11.21 3 9 9 0 1 0 21 12.79Z" />'
+              : '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364-1.414-1.414M8.05 8.05 6.636 6.636m0 10.728 1.414-1.414M17.95 8.05l1.414-1.414" /><circle cx="12" cy="12" r="5" />';
+          text.textContent = theme === "dark" ? "Light Mode" : "Dark Mode";
+        }
+        function init() {
+          let saved;
+          try {
+            saved = localStorage.getItem(THEME_KEY);
+          } catch (e) {}
+          apply(saved || systemTheme());
+        }
+        function toggle() {
+          const current =
+            document.documentElement.getAttribute("data-theme") ||
+            systemTheme();
+          const next = current === "dark" ? "light" : "dark";
+          try {
+            localStorage.setItem(THEME_KEY, next);
+          } catch (e) {}
+          apply(next);
+        }
+        btn.addEventListener("click", toggle);
+        init();
+        if (mql && mql.addEventListener) {
+          mql.addEventListener("change", (e) => {
+            let saved;
+            try {
+              saved = localStorage.getItem(THEME_KEY);
+            } catch (err) {}
+            if (!saved) apply(e.matches ? "dark" : "light");
+          });
+        }
+      })();
+      // end desktop theme toggle
       // Toggle subjects display function
       function toggleSubjects(button) {
-        const container = button.closest('.subjects-container');
-        const grid = container.querySelector('.subjects-grid');
-        const toggleText = button.querySelector('.toggle-text');
-        const toggleIcon = button.querySelector('.toggle-icon');
+        const container = button.closest(".subjects-container");
+        const grid = container.querySelector(".subjects-grid");
+        const toggleText = button.querySelector(".toggle-text");
+        const toggleIcon = button.querySelector(".toggle-icon");
 
-        if (button.classList.contains('expanded')) {
+        if (button.classList.contains("expanded")) {
           // Collapse
-          grid.classList.remove('expanded');
-          button.classList.remove('expanded');
-          toggleText.textContent = 'Show All';
-          toggleIcon.style.transform = 'rotate(0deg)';
+          grid.classList.remove("expanded");
+          button.classList.remove("expanded");
+          toggleText.textContent = "Show All";
+          toggleIcon.style.transform = "rotate(0deg)";
         } else {
           // Expand
-          grid.classList.add('expanded');
-          button.classList.add('expanded');
-          toggleText.textContent = 'Show Less';
-          toggleIcon.style.transform = 'rotate(180deg)';
+          grid.classList.add("expanded");
+          button.classList.add("expanded");
+          toggleText.textContent = "Show Less";
+          toggleIcon.style.transform = "rotate(180deg)";
         }
       }
 
       // Toggle students display function
       function toggleStudents() {
-        const moreGrid = document.getElementById('students-grid-more');
-        const toggleText = document.getElementById('students-toggle-text');
-        const toggleIcon = document.getElementById('students-toggle-icon');
+        const moreGrid = document.getElementById("students-grid-more");
+        const toggleText = document.getElementById("students-toggle-text");
+        const toggleIcon = document.getElementById("students-toggle-icon");
 
-        if (moreGrid.classList.contains('hidden')) {
+        if (moreGrid.classList.contains("hidden")) {
           // Show more students
-          moreGrid.classList.remove('hidden');
-          toggleText.textContent = 'Show Less';
-          toggleIcon.style.transform = 'rotate(180deg)';
+          moreGrid.classList.remove("hidden");
+          toggleText.textContent = "Show Less";
+          toggleIcon.style.transform = "rotate(180deg)";
         } else {
           // Hide extra students
-          moreGrid.classList.add('hidden');
-          const totalStudents = {{ my_students|length if my_students else 0 }};
+          moreGrid.classList.add("hidden");
+          // Safely inject Jinja value (numeric) while keeping JS parsable
+          const totalStudentsEl = document.querySelector(
+            "[data-total-students]"
+          );
+          const totalStudents = totalStudentsEl
+            ? parseInt(
+                totalStudentsEl.getAttribute("data-total-students"),
+                10
+              ) || 0
+            : 0;
           const extraCount = totalStudents - 12;
           toggleText.textContent = `Show ${extraCount} More Students`;
-          toggleIcon.style.transform = 'rotate(0deg)';
+          toggleIcon.style.transform = "rotate(0deg)";
         }
       }
 
