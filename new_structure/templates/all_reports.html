@@ -9,34 +9,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Solar Theme Variables */
+        /* Dark Solar Theme (aligned with classteacher dashboard) */
         :root {
-            --solar-base03: #002b36;
-            --solar-base02: #073642;
-            --solar-base01: #586e75;
-            --solar-base00: #657b83;
-            --solar-base0: #839496;
-            --solar-base1: #93a1a1;
-            --solar-base2: #eee8d5;
-            --solar-base3: #fdf6e3;
-            
-            --solar-yellow: #b58900;
-            --solar-orange: #cb4b16;
-            --solar-red: #dc322f;
-            --solar-magenta: #d33682;
-            --solar-violet: #6c71c4;
-            --solar-blue: #268bd2;
-            --solar-cyan: #2aa198;
-            --solar-green: #859900;
-            
-            /* Component Colors */
-            --bg-primary: var(--solar-base3);
-            --bg-secondary: var(--solar-base2);
-            --text-primary: var(--solar-base02);
-            --text-secondary: var(--solar-base01);
-            --border-color: rgba(147, 161, 161, 0.2);
-            --shadow: 0 4px 12px rgba(0, 43, 54, 0.15);
-            --shadow-lg: 0 8px 25px rgba(0, 43, 54, 0.2);
+            --primary-color: #268bd2;
+            --secondary-color: #2aa198;
+            --success-color: #859900;
+            --warning-color: #b58900;
+            --danger-color: #dc322f;
+            --info-color: #6c71c4;
+            --orange: #cb4b16;
+            --red: #dc322f;
+            --magenta: #d33682;
+            --violet: #6c71c4;
+            --blue: #268bd2;
+            --cyan: #2aa198;
+            --green: #859900;
+            --yellow: #b58900;
+            --bg-color: #002b36; /* base03 */
+            --bg-secondary: #073642; /* base02 */
+            --card-bg: #073642;
+            --card-hover: #0e4a58;
+            --text-primary: #839496; /* base0 */
+            --text-secondary: #586e75; /* base01 */
+            --text-bright: #93a1a1; /* base1 */
+            --text-emphasis: #eee8d5; /* base2 */
+            --border-color: #0e4a58;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.25);
+            --shadow-lg: 0 10px 28px rgba(0,0,0,0.5);
             --radius: 12px;
             --radius-lg: 16px;
         }
@@ -49,7 +48,7 @@
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            background: var(--bg-color);
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
@@ -57,8 +56,7 @@
 
         /* Navigation */
         .navbar {
-            background: rgba(253, 246, 227, 0.95);
-            backdrop-filter: blur(10px);
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
             border-radius: var(--radius-lg);
@@ -72,7 +70,7 @@
         .navbar-brand {
             font-size: 1.5rem;
             font-weight: 700;
-            color: var(--solar-blue);
+            color: var(--text-emphasis);
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -99,13 +97,13 @@
         }
 
         .nav-link:hover {
-            background: rgba(38, 139, 210, 0.1);
-            color: var(--solar-blue);
+            background: rgba(38,139,210,0.15);
+            color: var(--blue);
         }
 
         .nav-link.active {
-            background: var(--solar-blue);
-            color: white;
+            background: var(--blue);
+            color: #fff;
         }
 
         /* Container */
@@ -117,7 +115,7 @@
 
         /* Page Header */
         .page-header {
-            background: rgba(253, 246, 227, 0.8);
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 32px;
@@ -129,7 +127,7 @@
         .page-title {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--solar-blue);
+            color: var(--text-emphasis);
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -144,7 +142,7 @@
 
         /* Filters Section */
         .filters-section {
-            background: rgba(253, 246, 227, 0.6);
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 24px;
@@ -176,23 +174,23 @@
 
         .filter-select {
             padding: 12px;
-            border: 2px solid var(--border-color);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            background: white;
-            color: var(--text-primary);
+            background: #002f3a;
+            color: var(--text-bright);
             font-family: inherit;
             transition: all 0.2s ease;
         }
 
         .filter-select:focus {
             outline: none;
-            border-color: var(--solar-blue);
-            box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.1);
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(38,139,210,0.25);
         }
 
         .reset-btn {
-            background: var(--solar-cyan);
-            color: white;
+            background: var(--cyan);
+            color: #fff;
             border: none;
             padding: 12px 20px;
             border-radius: 8px;
@@ -205,7 +203,7 @@
         }
 
         .reset-btn:hover {
-            background: var(--solar-blue);
+            background: var(--blue);
             transform: translateY(-1px);
         }
 
@@ -217,7 +215,7 @@
         .section-title {
             font-size: 1.5rem;
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--text-emphasis);
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -231,8 +229,8 @@
         }
 
         .report-card {
-            background: rgba(253, 246, 227, 0.8);
-            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 24px;
             box-shadow: var(--shadow);
@@ -244,7 +242,8 @@
         .report-card:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
-            border-color: var(--solar-blue);
+            border-color: var(--blue);
+            background: var(--card-hover);
         }
 
         .action-btn {
@@ -257,18 +256,14 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .subject-btn:hover {
-            background: #2563eb !important;
-        }
+    .subject-btn:hover { background: #1e6ba8 !important; }
 
-        .class-btn:hover {
-            background: #059669 !important;
-        }
+    .class-btn:hover { background: #0d7a58 !important; }
 
         .report-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: var(--solar-blue);
+            color: var(--blue);
             margin-bottom: 12px;
             display: flex;
             align-items: center;
@@ -287,7 +282,7 @@
             align-items: center;
             gap: 6px;
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .report-stats {
@@ -308,7 +303,7 @@
         .stat-value {
             font-size: 1.5rem;
             font-weight: 700;
-            color: var(--solar-green);
+            color: var(--green);
         }
 
         .stat-label {
@@ -321,12 +316,14 @@
             position: absolute;
             top: 16px;
             right: 16px;
-            background: var(--solar-yellow);
-            color: white;
+            background: var(--yellow);
+            color: #002b36;
             padding: 4px 8px;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         /* Empty State */
@@ -334,13 +331,16 @@
             text-align: center;
             padding: 60px 20px;
             color: var(--text-secondary);
+            background: var(--card-bg);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius);
         }
 
         .empty-icon {
             width: 64px;
             height: 64px;
             margin: 0 auto 16px;
-            color: var(--solar-cyan);
+            color: var(--cyan);
         }
 
         /* Heroicons */
@@ -390,6 +390,38 @@
             .report-stats {
                 flex-direction: column;
                 gap: 8px;
+            }
+        }
+
+        /* Mobile-only navbar refinement (keep desktop completely unchanged) */
+        @media (max-width: 640px) {
+            .navbar {
+                flex-wrap: nowrap;
+                gap: 8px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding: 10px 12px;
+            }
+            .navbar::-webkit-scrollbar { display: none; }
+            .navbar-brand {
+                font-size: 1.15rem;
+                max-width: 55%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .navbar-nav {
+                flex-wrap: nowrap;
+                gap: 8px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .navbar-nav::-webkit-scrollbar { display: none; }
+            .nav-link {
+                padding: 6px 10px;
+                font-size: 0.72rem;
+                white-space: nowrap;
+                flex: 0 0 auto;
             }
         }
     </style>
@@ -578,13 +610,13 @@
                     <!-- Report Action Buttons -->
                     <div class="report-actions" style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap;">
                         {% if report.subject_id %}
-                        <button onclick="event.stopPropagation(); window.location.href='{{ url_for('classteacher.subject_report', grade_id=report.grade_id, stream_id=report.stream_id, subject_id=report.subject_id, term_id=report.term_id, assessment_type_id=report.assessment_type_id) }}'"
-                                class="action-btn subject-btn" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                        <button data-subject-url="{{ url_for('classteacher.subject_report', grade_id=report.grade_id, stream_id=report.stream_id, subject_id=report.subject_id, term_id=report.term_id, assessment_type_id=report.assessment_type_id) }}"
+                                onclick="event.stopPropagation(); window.location.href=this.dataset.subjectUrl" class="action-btn subject-btn" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             📚 Subject Report
                         </button>
                         {% endif %}
-                        <button onclick="event.stopPropagation(); window.location.href='{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}'"
-                                class="action-btn class-btn" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                        <button data-class-url="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}"
+                                onclick="event.stopPropagation(); window.location.href=this.dataset.classUrl" class="action-btn class-btn" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             📊 Class Report
                         </button>
                         <button onclick="event.stopPropagation(); deleteReport('{{ report.grade }}', '{{ report.stream }}', '{{ report.term }}', '{{ report.assessment_type }}')"
@@ -602,6 +634,56 @@
                 </svg>
                 <h3>No Reports Found</h3>
                 <p>No reports match your current filters. Try adjusting the filters or <a href="{{ url_for('classteacher.upload_marks') }}" style="color: var(--solar-blue);">upload some marks</a> to generate reports.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Subject Reports Section -->
+        <div class="reports-section" style="margin-top: 3rem;">
+            <h2 class="section-title" style="display:flex;align-items:center;gap:8px;">
+                <svg class="heroicon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"></path>
+                </svg>
+                Subject Reports ({{ subject_reports|length if subject_reports is defined else 0 }})
+            </h2>
+
+            {% if subject_reports and subject_reports|length > 0 %}
+            <div class="reports-grid">
+                {% for report in subject_reports %}
+                <div class="report-card" data-download-url="{{ report.download_url }}" onclick="window.location.href='{{ report.download_url }}'" style="cursor:pointer;">
+                    <div class="report-date">{{ report.date }}</div>
+                    <h3 class="report-title" style="font-size:1rem;">
+                        📘 {{ report.subject }}<br>
+                        <span style="font-weight:500; color:var(--text-secondary);">{{ report.grade }} {{ report.stream }}</span>
+                    </h3>
+                    <div class="report-meta">
+                        <div class="meta-item">{{ report.term }}</div>
+                        <div class="meta-item">{{ report.assessment_type }}</div>
+                    </div>
+                    <div class="report-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ report.mark_count }}</div>
+                            <div class="stat-label">Marks</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ report.id }}</div>
+                            <div class="stat-label">ID</div>
+                        </div>
+                    </div>
+                    <div class="report-actions" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button onclick="event.stopPropagation(); window.location.href='{{ report.download_url }}'" class="action-btn subject-btn" style="background:#3b82f6;color:#fff;border:none;padding:6px 12px;border-radius:4px;font-size:12px;cursor:pointer;">📚 View Subject</button>
+                        <button data-class-url="{{ url_for('classteacher.preview_class_report', grade=report.grade, stream=report.stream, term=report.term, assessment_type=report.assessment_type) }}" onclick="event.stopPropagation(); window.location.href=this.dataset.classUrl" class="action-btn class-btn" style="background:#10b981;color:#fff;border:none;padding:6px 12px;border-radius:4px;font-size:12px;cursor:pointer;">📊 Class</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6l4 2" />
+                </svg>
+                <h3>No Subject Reports Found</h3>
+                <p>Generate subject marks or <a href="{{ url_for('classteacher.upload_marks') }}" style="color:var(--solar-blue);">upload marks</a> to see subject analytics.</p>
             </div>
             {% endif %}
         </div>

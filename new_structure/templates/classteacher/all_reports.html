@@ -74,6 +74,8 @@
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
+            max-width:100%;
+            overflow:hidden;
         }
 
         .navbar-brand {
@@ -92,6 +94,7 @@
             gap: 24px;
             list-style: none;
             flex-wrap: wrap;
+            max-width:100%;
         }
 
         .nav-link {
@@ -352,18 +355,9 @@
         }
 
         /* Responsive */
-    @media (max-width: 768px) {
-            .navbar {
-        margin: 10px;
-        padding: 12px 16px;
-        gap: 8px;
-            }
-
-            .navbar-nav {
-        gap: 12px;
-        width: 100%;
-        justify-content: space-between;
-            }
+        @media (max-width: 820px) {
+            /* Hide desktop navbar; hamburger (_hamburger_nav.html) already included */
+            .navbar { display:none !important; }
 
             .page-title {
                 font-size: 2rem;
@@ -396,9 +390,7 @@
             .filters-section { padding: 16px; margin: 12px; }
             .reports-grid { gap: 12px; }
             .report-card { padding: 16px; }
-            .navbar { margin: 8px; padding: 10px 12px; }
-            /* Hide wide inline nav on phones; use the hamburger drawer instead */
-            .navbar-nav { display: none; }
+            .navbar { display:none !important; }
             /* Keep brand tidy */
             .navbar-brand { font-size: 1.25rem; }
         }

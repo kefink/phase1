@@ -35,6 +35,13 @@ def create_app(config_name='default'):
     # Initialize extensions
     db.init_app(app)
     csrf.init_app(app)
+    # Configure rate limiter storage (Redis) & defaults
+    if app.config.get('RATELIMIT_STORAGE_URL'):
+        try:
+            limiter.storage_uri = app.config['RATELIMIT_STORAGE_URL']
+        except Exception:
+            pass  # Fallback silently to in-memory
+    limiter.default_limits = [app.config.get('RATELIMIT_DEFAULT', '100 per hour')]
     limiter.init_app(app)
 
     # Initialize database with tables and default data

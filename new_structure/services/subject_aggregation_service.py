@@ -5,7 +5,7 @@ This service handles the aggregation of independent subjects into composite subj
 for display purposes while maintaining independent upload functionality.
 """
 
-from subject_config.subject_aggregation import (
+from ..subject_config.subject_aggregation import (
     get_composite_subjects,
     get_component_subjects,
     get_composite_max_marks,

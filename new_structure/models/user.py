@@ -2,7 +2,7 @@
 User-related models for the Hillview School Management System.
 """
 import hmac
-from ..extensions import db
+from new_structure.extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Define the many-to-many relationship table
@@ -12,10 +12,16 @@ teacher_subjects = db.Table('teacher_subjects',
 )
 
 class Teacher(db.Model):
-    """Teacher model representing school staff members."""
+    """Teacher model representing school staff members.
+
+    The canonical hashed password is stored in the 'password' column.
+    Legacy password_hash alias has been removed after migration cleanup.
+    """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+    # Renamed hashed column (now canonical)
+    password = db.Column(db.String(255), nullable=False)
+    # Backwards compatibility alias property defined below
     role = db.Column(db.String(50), nullable=False)  # e.g., 'headteacher', 'teacher', 'classteacher'
     stream_id = db.Column(db.Integer, db.ForeignKey('stream.id'), nullable=True)
 
@@ -39,42 +45,39 @@ class Teacher(db.Model):
     subjects = db.relationship('Subject', secondary=teacher_subjects, back_populates='teachers')
 
     def set_password(self, password):
-        """Set password hash."""
-        self.password = generate_password_hash(password)
+        """Set (and hash) the user's password using secure hashing only.
+
+        Plain-text storage in the legacy `password` column is deprecated. We now
+        mirror the hashed value into `password` simply to satisfy the NOT NULL
+        constraint until the column is dropped in a future migration.
+        """
+        if not password:
+            return
+        hashed = generate_password_hash(str(password))
+        self.password = hashed
 
     def check_password(self, password):
-        """Check password against hash."""
-        # Input validation to prevent SQL injection
-        if not password or not isinstance(password, str):
+        """Validate password using the canonical hashed 'password' column."""
+        if not password or not isinstance(password, str) or len(password) > 128:
             return False
-
-        # Sanitize password input to prevent injection attacks
-        if len(password) > 128:  # Reasonable password length limit
-            return False
-
-        # Check for SQL injection patterns in password
+        # Minimal injection style validation (defense in depth)
         try:
-            from ..security.sql_injection_protection import SQLInjectionProtection
+            from new_structure.security.sql_injection_protection import SQLInjectionProtection
             if not SQLInjectionProtection.validate_input(password, "password"):
                 return False
         except ImportError:
-            # Fallback validation if security module not available
-            dangerous_chars = ["'", '"', ';', '--', '/*', '*/', 'DROP', 'SELECT', 'INSERT', 'UPDATE', 'DELETE']
-            if any(char.upper() in password.upper() for char in dangerous_chars):
-                return False
-
-        # Handle both hashed and plain text passwords for backward compatibility
-        if self.password.startswith('scrypt:') or self.password.startswith('pbkdf2:'):
-            # This is a hashed password
+            pass
+        if not self.password:
+            return False
+        if self.password.startswith(('scrypt:', 'pbkdf2:')):
             return check_password_hash(self.password, password)
-
-        # This is a plain text password (legacy) - secure comparison
-        # Use constant-time comparison to prevent timing attacks
         return hmac.compare_digest(self.password, password)
 
     def is_password_hashed(self):
-        """Check if password is hashed."""
-        return self.password.startswith('scrypt:') or self.password.startswith('pbkdf2:')
+        """Return True if canonical password column stores a modern hash."""
+        return bool(self.password and self.password.startswith(('scrypt:', 'pbkdf2:')))
+
+    # Backwards compatibility attribute removed; refer only to 'password'.
 
     @property
     def full_name(self):

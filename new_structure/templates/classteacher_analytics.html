@@ -16,6 +16,7 @@
 {% block breadcrumb %}{% endblock %}
 
 {% block body_class %}analytics-premium{% endblock %}
+{% block body_tag_extra %}data-is-headteacher="{{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }}"{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}">
@@ -375,7 +376,7 @@
                 {{ student.total_marks_obtained or 0 }}/{{ student.total_marks_possible or 0 }} marks
               </div>
               <div class="performance-bar">
-                <div class="progress-fill" style="width: {{ (student.average_percentage|float)|round(1) }}%"></div>
+                <div class="progress-fill" data-width="{{ (student.average_percentage|float)|round(1) }}"></div>
               </div>
             </div>
             
@@ -585,7 +586,7 @@
                 {{ subject.total_marks or subject.total_assessments or 0 }} assessments
               </div>
               <div class="progress-bar" aria-label="Average percentage">
-                <div class="progress-fill" style="width: {{ [avg, 100]|min }}%"></div>
+                <div class="progress-fill" data-width="{{ [avg, 100]|min }}"></div>
               </div>
               <div class="subject-status {{ status_class }}">
                 {% if avg >= 80 %}Exceeding Expectation
@@ -665,7 +666,7 @@
                 <td>
                   <div class="performer-percentage">
                     <div class="percentage-value">{{ avg|round(1) }}%</div>
-                    <div class="percentage-bar"><div class="percentage-fill" style="width: {{ [avg, 100]|min }}%"></div></div>
+                    <div class="percentage-bar"><div class="percentage-fill" data-width="{{ [avg, 100]|min }}"></div></div>
                   </div>
                 </td>
                 <td>{{ subject.student_count or subject.students_count or 0 }}</td>
@@ -767,9 +768,177 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <!-- Analytics page uses server-side rendered data, no external JS needed -->
 
 <script>
+  // --- Lightweight async analytics enhancement (placeholder charts) ---
+  // Containers (insert near insights section via DOMContentLoaded if absent)
+  document.addEventListener('DOMContentLoaded', () => {
+    const insightsSection = document.querySelector('.analytics-insights-section');
+    if (insightsSection && !document.getElementById('subject-performance-chart')) {
+      const chartWrap = document.createElement('div');
+      chartWrap.className = 'analytics-chart-wrapper';
+      chartWrap.innerHTML = `
+        <h3 style="margin-top:2rem;display:flex;align-items:center;gap:.5rem;">
+          <span style="display:inline-flex;">📈</span>
+          Subject Performance (Live)
+        </h3>
+        <div id="subject-performance-chart" style="min-height:260px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:var(--radius);padding:1rem;position:relative;overflow:hidden;">
+          <div class="chart-empty" style="text-align:center;color:var(--text-secondary);font-size:.9rem;">
+            <div style="font-size:2rem;line-height:1.2;">📊</div>
+            <div>Loading subject performance...</div>
+          </div>
+        </div>
+        <div id="top-performers-mini" style="margin-top:1.5rem;background:var(--card-bg);border:1px solid var(--border-color);border-radius:var(--radius);padding:1rem;">
+          <h4 style="margin:0 0 .75rem;font-size:1rem;display:flex;align-items:center;gap:.4rem;">🏅 Top Students (Live)</h4>
+          <ul id="top-performers-mini-list" style="list-style:none;margin:0;padding:0;display:grid;gap:.4rem;font-size:.85rem;">
+            <li style="color:var(--text-secondary);">Loading...</li>
+          </ul>
+        </div>`;
+      insightsSection.appendChild(chartWrap);
+    }
+    hydrateProgressWidths();
+    fetchLiveAnalytics();
+  });
+
+  function hydrateProgressWidths() {
+    document.querySelectorAll('.progress-fill[data-width], .percentage-fill[data-width]').forEach(el => {
+      const raw = parseFloat(el.getAttribute('data-width')) || 0;
+      const clamped = Math.min(Math.max(raw, 0), 100);
+      el.style.width = clamped + '%';
+    });
+  }
+
+  let subjectChartInstance = null;
+  function buildSimpleBarChart(container, subjects) {
+    if (!subjects.length) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-secondary);">No subject data.</div>';
+      return;
+    }
+    // Prepare or reuse canvas
+    let canvas = container.querySelector('canvas');
+    if (!canvas) {
+      container.innerHTML = '';
+      canvas = document.createElement('canvas');
+      canvas.height = 240;
+      container.appendChild(canvas);
+    }
+    const labels = subjects.map(s => s.subject_name || s.subject || 'Subject').slice(0,12);
+    const dataVals = subjects.map(s => parseFloat(s.average_percentage || 0)).slice(0,12);
+    try {
+      if (subjectChartInstance) {
+        subjectChartInstance.data.labels = labels;
+        subjectChartInstance.data.datasets[0].data = dataVals;
+        subjectChartInstance.update();
+        return;
+      }
+      subjectChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Avg %',
+            data: dataVals,
+            borderRadius: 6,
+            backgroundColor: function(ctx){
+              const v = ctx.raw || 0; return v >= 80 ? 'rgba(34,197,94,0.8)' : v >= 50 ? 'rgba(234,179,8,0.8)' : 'rgba(239,68,68,0.8)';
+            },
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero:true, max:100, ticks:{ color:'var(--text-secondary)', font:{size:10}}, grid:{color:'rgba(255,255,255,0.08)'} },
+            x: { ticks:{ color:'var(--text-secondary)', font:{size:10}, maxRotation:45, minRotation:0 }, grid:{display:false} }
+          },
+          plugins: {
+            legend: { display:false },
+            tooltip: { callbacks: { label: (ctx)=> `${ctx.parsed.y.toFixed(1)}%` } }
+          }
+        }
+      });
+    } catch(err) {
+      // Fallback if Chart.js not available
+      container.innerHTML = '<div style="text-align:center;color:var(--text-secondary);">Chart unavailable. Rendering simple bars...</div>';
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'margin-top:.75rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.75rem;';
+      subjects.slice(0,12).forEach(s => {
+        const val = parseFloat(s.average_percentage || 0);
+        const card = document.createElement('div');
+        card.style.cssText='background:var(--card-hover);border:1px solid var(--border-color);padding:.5rem .6rem;border-radius:.5rem;display:flex;flex-direction:column;gap:.4rem;';
+        card.innerHTML = `<div style="font-size:.7rem;font-weight:500;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.subject_name || s.subject || 'Subject'}</div>
+          <div style="height:46px;position:relative;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:.25rem;overflow:hidden;">
+            <div style="position:absolute;bottom:0;left:0;width:${Math.min(val,100)}%;height:100%;background:var(--primary-color);"></div>
+            <span style="position:absolute;bottom:2px;right:4px;font-size:.6rem;font-weight:600;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.6);">${val.toFixed(1)}%</span>
+          </div>`;
+        wrap.appendChild(card);
+      });
+      container.appendChild(wrap);
+    }
+  }
+
+  function updateTopMini(listEl, performers) {
+    listEl.innerHTML = '';
+    if (!performers.length) {
+      listEl.innerHTML = '<li style="color:var(--text-secondary);">No top performers.</li>';
+      return;
+    }
+    performers.slice(0,8).forEach((p,i) => {
+      const li = document.createElement('li');
+      li.style.cssText = 'display:flex;align-items:center;gap:.5rem;background:var(--card-hover);border:1px solid var(--border-color);padding:.4rem .55rem;border-radius:.45rem;';
+      li.innerHTML = `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;font-size:.6rem;font-weight:600;background:var(--primary-color);color:#fff;border-radius:4px;">${i+1}</span>
+        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.student_name || p.name || 'Student'}</span>
+        <span style="font-weight:600;font-size:.7rem;color:var(--text-secondary);">${parseFloat(p.average_percentage||0).toFixed(1)}%</span>`;
+      listEl.appendChild(li);
+    });
+  }
+
+  function fetchLiveAnalytics() {
+    const term = document.getElementById('analytics-term-filter')?.value || '';
+    const assessment = document.getElementById('analytics-assessment-filter')?.value || '';
+    const grade = document.getElementById('analytics-grade-filter')?.value || '';
+    const stream = document.getElementById('analytics-stream-filter')?.value || '';
+    const params = new URLSearchParams();
+    if (term) params.append('term', term);
+    if (assessment) params.append('assessment_type', assessment);
+    if (grade) params.append('grade', grade);
+    if (stream) params.append('stream', stream);
+    const url = '/classteacher/analytics/data' + (params.toString() ? ('?' + params.toString()) : '');
+    const chartContainer = document.getElementById('subject-performance-chart');
+    const miniList = document.getElementById('top-performers-mini-list');
+    if (chartContainer) chartContainer.classList.add('loading');
+    fetch(url, { credentials:'same-origin' })
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.error) {
+          if (chartContainer) chartContainer.innerHTML = `<div style='color:var(--text-secondary);text-align:center;'>${data?.error || 'Error loading analytics.'}</div>`;
+          return;
+        }
+        // Update summary figures if present
+        if (data.summary) {
+          const s = data.summary;
+            const el1 = document.getElementById('total-students-analyzed'); if (el1) el1.textContent = s.students_analyzed || 0;
+            const el2 = document.getElementById('total-subjects-analyzed'); if (el2) el2.textContent = s.subjects_analyzed || 0;
+            const el3 = document.getElementById('top-subject-performance'); if (el3) el3.textContent = (s.best_subject_average || 0) + '%';
+            const el4 = document.getElementById('top-student-performance'); if (el4) el4.textContent = (s.top_student_average || 0) + '%';
+        }
+        const subjects = data.subject_analytics || [];
+        if (chartContainer) buildSimpleBarChart(chartContainer, subjects);
+        const performers = data.top_performers || data.top_students || [];
+        if (miniList) updateTopMini(miniList, performers);
+      })
+      .catch(err => {
+        if (chartContainer) chartContainer.innerHTML = '<div style="color:var(--text-secondary);text-align:center;">Failed to load.</div>';
+      })
+      .finally(()=>{ if (chartContainer) chartContainer.classList.remove('loading'); });
+  }
+
+  // Expose manual refresh hook
+  window.fetchLiveAnalytics = fetchLiveAnalytics;
+
   // Block external analytics_dashboard.js from overwriting our values
   window.analyticsOverrideDisabled = true;
   
@@ -891,8 +1060,8 @@
 
   // Delete report function for analytics (only for headteachers)
   function deleteReportFromAnalytics(grade, stream, term, assessmentType) {
-    // Check if user is headteacher
-    const isHeadteacher = {{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }};
+    // Check if user is headteacher (read from body data attribute set server-side)
+    const isHeadteacher = document.body.getAttribute('data-is-headteacher') === 'true';
 
     if (!isHeadteacher) {
       showNotification("Only headteachers can delete reports from analytics.", "error");
@@ -935,7 +1104,7 @@
   }
 
   // Set headteacher flag for delete buttons
-  window.isHeadteacher = {{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }};
+  window.isHeadteacher = document.body.getAttribute('data-is-headteacher') === 'true';
 
   // Simple but effective enhanced functionality
   function toggleEnhancedDetails(studentId) {

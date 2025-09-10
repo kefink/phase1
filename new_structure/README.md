@@ -23,6 +23,41 @@ The Hillview School Management System is a comprehensive, secure, and scalable p
 - **Optimized Performance** - Connection pooling and indexing
 - **Data Integrity** - Foreign key constraints and validation
 
+#### Migrations & Schema Management
+
+The system now uses Alembic for all schema changes (baseline pending if not yet generated).
+
+1. Generate baseline (first time only if existing tables):
+   ```bash
+   alembic revision --autogenerate -m "baseline"
+   alembic upgrade head
+   ```
+2. After model changes:
+   ```bash
+   alembic revision --autogenerate -m "add new model XYZ"
+   alembic upgrade head
+   ```
+
+Legacy runtime table creation/SQLite repair scripts have been removed or stubbed. Use migrations exclusively.
+
+#### Database Health
+
+`utils/database_health.py` now performs SQLAlchemy-based inspection:
+
+- Lists existing tables
+- Flags missing expected tables
+- Counts records (best-effort; skips on errors)
+- Warns if no headteacher account exists
+  Deprecated function `create_missing_tables()` returns a notice (use migrations instead).
+
+#### Connection Pooling
+
+SQLite custom pool removed. MySQL connections managed by SQLAlchemy engine with production-tuned pool settings in `ProductionConfig`.
+
+#### Rate Limiting & Redis
+
+`RATELIMIT_STORAGE_URL` config enables Redis-backed Flask-Limiter storage. Falls back silently to in-memory if Redis unreachable. Default limits set by `RATELIMIT_DEFAULT`.
+
 ### 🚀 Quick Start
 
 #### Prerequisites

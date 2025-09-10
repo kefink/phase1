@@ -1,0 +1,107 @@
+# AUTO-GENERATED Classteacher Route Index
+
+Regenerate via: `python -m scripts.generate_route_index`
+
+Legend: CORE = template-linked/main, AUX = supporting/data, DEV = dev gated, LEGACY = debug/unused candidates.
+
+Template endpoint references detected: 53
+
+| Category | Methods | Path | Endpoint |
+|----------|---------|------|----------|
+| AUX | POST | /classteacher/add_assessment_ajax | add_assessment_ajax |
+| AUX | POST | /classteacher/add_term_ajax | add_term_ajax |
+| AUX | GET | /classteacher/api/assessment_types | api_get_assessment_types |
+| AUX | GET | /classteacher/api/check_stream_status/<grade>/<term>/<assessment_type> | check_stream_status |
+| AUX | GET | /classteacher/api/stream_status/<grade>/<term>/<assessment_type> | api_get_stream_status |
+| AUX | GET | /classteacher/api/streams/<grade> | api_get_streams |
+| AUX | GET | /classteacher/api/streams_by_id/<int:grade_id> | api_get_streams_by_id |
+| AUX | POST | /classteacher/bulk_assign_subjects | bulk_assign_subjects |
+| AUX | POST | /classteacher/bulk_import_subjects | bulk_import_subjects |
+| AUX | POST | /classteacher/delete_assessment_ajax | delete_assessment_ajax |
+| AUX | POST | /classteacher/delete_marksheet/<grade>/<stream>/<term>/<assessment_type> | delete_marksheet |
+| AUX | GET,POST | /classteacher/delete_report/<grade>/<stream>/<term>/<assessment_type> | delete_report |
+| AUX | POST | /classteacher/delete_term_ajax | delete_term_ajax |
+| AUX | GET | /classteacher/download_class_report/<grade>/<stream>/<term>/<assessment_type> | download_class_report |
+| AUX | GET | /classteacher/download_grade_marksheet/<grade>/<term>/<assessment_type> | download_grade_marksheet |
+| AUX | GET | /classteacher/download_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name> | download_individual_report |
+| AUX | POST | /classteacher/edit_assessment_ajax | edit_assessment_ajax |
+| AUX | POST | /classteacher/edit_grade | edit_grade |
+| AUX | POST | /classteacher/edit_stream | edit_stream |
+| AUX | POST | /classteacher/edit_term_ajax | edit_term_ajax |
+| AUX | GET | /classteacher/export_subjects | export_subjects |
+| AUX | GET | /classteacher/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type> | generate_all_individual_reports |
+| AUX | GET | /classteacher/generate_batch_grade_reports/<grade_name>/<term>/<assessment_type> | generate_batch_grade_reports |
+| AUX | GET | /classteacher/generate_grade_marksheet/<grade>/<term>/<assessment_type>/<action> | generate_grade_marksheet |
+| AUX | GET | /classteacher/get_grade_streams/<int:grade_id> | get_grade_streams |
+| AUX | GET | /classteacher/get_streams/<grade_id> | get_streams |
+| AUX | GET | /classteacher/get_streams_by_level/<grade> | get_streams_by_level |
+| AUX | GET | /classteacher/get_subjects_by_education_level/<education_level> | get_subjects_by_education_level |
+| AUX | GET | /classteacher/get_teacher_assignments/<int:teacher_id> | get_teacher_assignments |
+| CORE | GET,POST | /classteacher/ | dashboard |
+| CORE | GET | /classteacher/advanced_assignments | advanced_assignments |
+| CORE | GET | /classteacher/all_reports | all_reports |
+| CORE | GET | /classteacher/analytics | analytics_dashboard |
+| CORE | GET,POST | /classteacher/assign_subjects | assign_subjects |
+| CORE | POST | /classteacher/bulk_transfer_assignments | bulk_transfer_assignments |
+| CORE | GET | /classteacher/class_marks_status/<int:grade_id>/<int:stream_id>/<int:term_id>/<int:assessment_type_id> | class_marks_status |
+| CORE | GET | /classteacher/class_overview | class_overview |
+| CORE | POST | /classteacher/clear_assignment_session | clear_assignment_session |
+| CORE | GET | /classteacher/clear_cache | clear_cache |
+| CORE | GET | /classteacher/collaborative_marks_dashboard | collaborative_marks_dashboard |
+| CORE | GET,POST | /classteacher/database_health | database_health |
+| CORE | POST | /classteacher/delete_subject_report | delete_subject_report |
+| CORE | GET | /classteacher/download_class_list | download_class_list |
+| CORE | GET | /classteacher/download_marks_template | download_marks_template |
+| CORE | GET | /classteacher/download_student_template | download_student_template |
+| CORE | GET | /classteacher/download_subject_template | download_subject_template |
+| CORE | GET | /classteacher/download_template | download_template |
+| CORE | GET | /classteacher/edit_class_marks/<grade>/<stream>/<term>/<assessment_type> | edit_class_marks |
+| CORE | POST | /classteacher/enhanced_bulk_assign_subjects | enhanced_bulk_assign_subjects |
+| CORE | GET | /classteacher/enhanced_class_report/<grade>/<stream>/<term>/<assessment_type> | enhanced_class_report |
+| CORE | GET | /classteacher/generate_consolidated_grade_report/<grade_name>/<term>/<assessment_type> | generate_consolidated_grade_report |
+| CORE | GET | /classteacher/generate_individual_stream_report/<grade_name>/<stream_name>/<term>/<assessment_type> | generate_individual_stream_report |
+| CORE | GET | /classteacher/grade_reports_dashboard | grade_reports_dashboard |
+| CORE | GET | /classteacher/grade_streams_status/<grade_name>/<term>/<assessment_type> | grade_streams_status |
+| CORE | GET,POST | /classteacher/manage_grades_streams | manage_grades_streams |
+| CORE | GET,POST | /classteacher/manage_students | manage_students |
+| CORE | GET,POST | /classteacher/manage_subjects | manage_subjects |
+| CORE | GET,POST | /classteacher/manage_teacher_assignments | manage_teacher_assignments |
+| CORE | GET,POST | /classteacher/manage_teacher_subjects/<int:teacher_id> | manage_teacher_subjects |
+| CORE | GET,POST | /classteacher/manage_teachers | manage_teachers |
+| CORE | GET,POST | /classteacher/manage_terms_assessments | manage_terms_assessments |
+| CORE | GET | /classteacher/permission_denied | permission_denied |
+| CORE | GET,POST | /classteacher/preview_class_report/<grade>/<stream>/<term>/<assessment_type> | preview_class_report |
+| CORE | GET | /classteacher/preview_grade_marksheet/<grade>/<term>/<assessment_type> | preview_grade_marksheet |
+| CORE | GET | /classteacher/preview_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name> | preview_individual_report |
+| CORE | GET | /classteacher/print_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name> | print_individual_report |
+| CORE | POST | /classteacher/reassign_class_teacher | reassign_class_teacher |
+| CORE | POST | /classteacher/reassign_subject_teacher | reassign_subject_teacher |
+| CORE | POST | /classteacher/remove_assignment | remove_assignment |
+| CORE | GET,POST | /classteacher/report_configuration | report_configuration |
+| CORE | GET | /classteacher/subject_report/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id> | subject_report |
+| CORE | POST | /classteacher/submit_single_subject_marks/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id> | submit_single_subject_marks |
+| CORE | POST | /classteacher/submit_subject_marks/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id> | submit_subject_marks |
+| CORE | GET | /classteacher/teacher_management_hub | teacher_management_hub |
+| CORE | GET | /classteacher/teacher_streams/<int:grade_id> | teacher_streams |
+| CORE | POST | /classteacher/update_class_marks/<grade>/<stream>/<term>/<assessment_type> | update_class_marks |
+| CORE | GET,POST | /classteacher/upload | upload_marks |
+| CORE | GET | /classteacher/upload_class_marks/<int:grade_id>/<int:stream_id>/<int:term_id>/<int:assessment_type_id> | upload_class_marks |
+| CORE | GET | /classteacher/upload_single_subject_marks/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id> | upload_single_subject_marks |
+| CORE | GET | /classteacher/upload_subject_marks/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id> | upload_subject_marks |
+| CORE | GET | /classteacher/view_all_reports | view_all_reports |
+| CORE | GET | /classteacher/view_student_reports/<grade>/<stream>/<term>/<assessment_type> | view_student_reports |
+| DEV | GET | /classteacher/api/test_streams | api_test_streams |
+| DEV | GET | /classteacher/create_test_marks | create_test_marks |
+| DEV | GET | /classteacher/debug_marks_data/<grade>/<stream>/<term>/<assessment_type> | debug_marks_data |
+| DEV | GET | /classteacher/debug_subjects_public | debug_subjects_public |
+| DEV | GET | /classteacher/fix_independent_subjects | fix_independent_subjects |
+| DEV | GET | /classteacher/fix_kevin_assignment | fix_kevin_assignment |
+| DEV | GET | /classteacher/fixed_class_report/<grade>/<stream>/<term>/<assessment_type> | fixed_class_report |
+| DEV | GET | /classteacher/implement_composite_fix | implement_composite_fix |
+| DEV | GET | /classteacher/test-analytics | test_analytics_dashboard |
+| DEV | GET | /classteacher/test_component_upload | test_component_upload |
+| DEV | GET | /classteacher/test_components | test_components |
+| DEV | GET | /classteacher/test_debug | test_debug |
+| DEV | GET | /classteacher/test_report_debug | test_report_debug |
+| DEV | GET | /classteacher/upload_test | upload_test |
+| DEV | GET | /classteacher/verify_composite_setup | verify_composite_setup |

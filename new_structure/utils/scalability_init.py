@@ -11,7 +11,6 @@ from flask import Flask
 # Import scalability modules
 from .cache_manager import cache, warm_cache
 from .background_tasks import task_queue, start_periodic_cleanup
-from .db_pool import initialize_pool as init_db_pool
 from .session_manager import initialize_session_manager
 from .enhanced_logging import setup_enhanced_logging, get_performance_stats
 from .rate_limiter import initialize_rate_limiter
@@ -29,133 +28,73 @@ class ScalabilityManager:
         self.redis_client = None
         
     def initialize_all(self, app: Flask, config: Dict[str, Any] = None) -> Dict[str, Any]:
-        """
-        Initialize all scalability features
-        
-        Args:
-            app: Flask application instance
-            config: Configuration dictionary
-            
-        Returns:
-            Dictionary with initialization results
-        """
+        """Initialize all scalability features (db_pool removed)."""
         self.config = config or {}
-        results = {
-            'success': True,
-            'initialized': [],
-            'failed': [],
-            'warnings': []
-        }
-        
+        results = {'success': True, 'initialized': [], 'failed': [], 'warnings': []}
         logger.info("🚀 Initializing scalability features...")
-        
-        # 1. Initialize Enhanced Logging
+
+        # Enhanced Logging
         try:
-            log_level = self.config.get('LOG_LEVEL', 'INFO')
-            setup_enhanced_logging(app, log_level)
+            setup_enhanced_logging(app, self.config.get('LOG_LEVEL', 'INFO'))
             self.initialized_features['logging'] = True
             results['initialized'].append('Enhanced Logging')
-            logger.info("✅ Enhanced logging initialized")
         except Exception as e:
-            results['failed'].append(f'Enhanced Logging: {str(e)}')
-            logger.error(f"❌ Enhanced logging failed: {e}")
-        
-        # 2. Initialize Redis (if available)
+            results['failed'].append(f'Enhanced Logging: {e}')
+
+        # Redis
         try:
             self._initialize_redis()
             if self.redis_client:
                 results['initialized'].append('Redis Connection')
-                logger.info("✅ Redis connection established")
             else:
-                results['warnings'].append('Redis not available, using fallback storage')
-                logger.warning("⚠️ Redis not available, using fallback storage")
+                results['warnings'].append('Redis not available (fallback)')
         except Exception as e:
-            results['warnings'].append(f'Redis: {str(e)}')
-            logger.warning(f"⚠️ Redis initialization warning: {e}")
-        
-        # 3. Initialize Database Connection Pool
+            results['warnings'].append(f'Redis initialization warning: {e}')
+
+        # Database pool removed
+        results['warnings'].append('Database pool skipped (managed by SQLAlchemy)')
+
+        # Caching
         try:
-            db_path = self.config.get('DATABASE_PATH', 'kirima_primary.db')
-            min_conn = self.config.get('DB_MIN_CONNECTIONS', 5)
-            max_conn = self.config.get('DB_MAX_CONNECTIONS', 20)
-            idle_time = self.config.get('DB_MAX_IDLE_TIME', 300)
-            
-            init_db_pool(db_path, min_conn, max_conn, idle_time)
-            self.initialized_features['db_pool'] = True
-            results['initialized'].append('Database Connection Pool')
-            logger.info("✅ Database connection pool initialized")
-        except Exception as e:
-            results['failed'].append(f'Database Pool: {str(e)}')
-            logger.error(f"❌ Database pool failed: {e}")
-        
-        # 4. Initialize Caching
-        try:
-            if self.redis_client:
-                # Redis caching already initialized in cache_manager
-                pass
-            
-            # Warm up cache with frequently accessed data
             warm_cache()
             self.initialized_features['caching'] = True
             results['initialized'].append('Caching System')
-            logger.info("✅ Caching system initialized")
         except Exception as e:
-            results['failed'].append(f'Caching: {str(e)}')
-            logger.error(f"❌ Caching failed: {e}")
-        
-        # 5. Initialize Session Management
+            results['failed'].append(f'Caching: {e}')
+
+        # Session Management
         try:
-            session_dir = self.config.get('SESSION_DIR', 'sessions')
-            session_timeout = self.config.get('SESSION_TIMEOUT', 3600)
-            
             initialize_session_manager(
                 redis_client=self.redis_client,
-                session_dir=session_dir,
-                session_timeout=session_timeout
+                session_dir=self.config.get('SESSION_DIR', 'sessions'),
+                session_timeout=self.config.get('SESSION_TIMEOUT', 3600)
             )
             self.initialized_features['session_management'] = True
             results['initialized'].append('Session Management')
-            logger.info("✅ Session management initialized")
         except Exception as e:
-            results['failed'].append(f'Session Management: {str(e)}')
-            logger.error(f"❌ Session management failed: {e}")
-        
-        # 6. Initialize Rate Limiting
+            results['failed'].append(f'Session Management: {e}')
+
+        # Rate Limiting
         try:
-            rate_limits = {
-                'requests_per_minute': self.config.get('RATE_LIMIT_PER_MINUTE', 60),
-                'requests_per_hour': self.config.get('RATE_LIMIT_PER_HOUR', 1000),
-                'burst_capacity': self.config.get('RATE_LIMIT_BURST', 10)
-            }
-            
-            initialize_rate_limiter(**rate_limits)
+            initialize_rate_limiter(
+                requests_per_minute=self.config.get('RATE_LIMIT_PER_MINUTE', 60),
+                requests_per_hour=self.config.get('RATE_LIMIT_PER_HOUR', 1000),
+                burst_capacity=self.config.get('RATE_LIMIT_BURST', 10)
+            )
             self.initialized_features['rate_limiting'] = True
             results['initialized'].append('Rate Limiting')
-            logger.info("✅ Rate limiting initialized")
         except Exception as e:
-            results['failed'].append(f'Rate Limiting: {str(e)}')
-            logger.error(f"❌ Rate limiting failed: {e}")
-        
-        # 7. Initialize Background Tasks
+            results['failed'].append(f'Rate Limiting: {e}')
+
+        # Background Tasks
         try:
-            # Background task queue is already initialized globally
             start_periodic_cleanup()
             self.initialized_features['background_tasks'] = True
             results['initialized'].append('Background Tasks')
-            logger.info("✅ Background tasks initialized")
         except Exception as e:
-            results['failed'].append(f'Background Tasks: {str(e)}')
-            logger.error(f"❌ Background tasks failed: {e}")
-        
-        # Set overall success status
+            results['failed'].append(f'Background Tasks: {e}')
+
         results['success'] = len(results['failed']) == 0
-        
-        # Log summary
-        logger.info(f"🎯 Scalability initialization complete:")
-        logger.info(f"   ✅ Initialized: {len(results['initialized'])} features")
-        logger.info(f"   ❌ Failed: {len(results['failed'])} features")
-        logger.info(f"   ⚠️ Warnings: {len(results['warnings'])} items")
-        
         return results
     
     def _initialize_redis(self):
@@ -220,17 +159,8 @@ class ScalabilityManager:
                     health['overall_status'] = 'degraded'
             
             elif feature == 'db_pool':
-                try:
-                    from .db_pool import get_pool_stats
-                    stats = get_pool_stats()
-                    if stats.get('failed_requests', 0) > 0:
-                        health['features'][feature] = 'degraded'
-                        health['overall_status'] = 'degraded'
-                    else:
-                        health['features'][feature] = 'healthy'
-                except Exception:
-                    health['features'][feature] = 'unhealthy'
-                    health['overall_status'] = 'degraded'
+                # Legacy placeholder
+                health['features'][feature] = 'deprecated'
             
             elif feature == 'rate_limiting':
                 try:
@@ -309,42 +239,26 @@ class ScalabilityManager:
         Returns:
             Dictionary with metrics
         """
-        metrics = {
-            'timestamp': os.times(),
-            'features': {}
-        }
-        
-        # Performance metrics
+        metrics = {'timestamp': os.times(), 'features': {}}
         try:
             metrics['performance'] = get_performance_stats()
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             metrics['performance'] = {'error': str(e)}
-        
-        # Database pool metrics
-        try:
-            from .db_pool import get_pool_stats
-            metrics['features']['database_pool'] = get_pool_stats()
-        except Exception as e:
-            metrics['features']['database_pool'] = {'error': str(e)}
-        
-        # Rate limiter metrics
+        metrics['features']['database_pool'] = {'status': 'removed'}
         try:
             from .rate_limiter import get_rate_limiter
             limiter = get_rate_limiter()
             if limiter:
                 metrics['features']['rate_limiter'] = limiter.get_stats()
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             metrics['features']['rate_limiter'] = {'error': str(e)}
-        
-        # Session management metrics
         try:
             from .session_manager import get_session_manager
             session_mgr = get_session_manager()
             if session_mgr:
                 metrics['features']['session_manager'] = session_mgr.get_session_stats()
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             metrics['features']['session_manager'] = {'error': str(e)}
-        
         return metrics
 
 # Global scalability manager instance

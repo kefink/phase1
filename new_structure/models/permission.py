@@ -2,7 +2,7 @@
 Permission management models for the Hillview School Management System.
 Implements delegation-based permission system where headteacher grants permissions to classteachers.
 """
-from ..extensions import db
+from new_structure.extensions import db
 from datetime import datetime
 
 class ClassTeacherPermission(db.Model):

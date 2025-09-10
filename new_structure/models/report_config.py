@@ -3,7 +3,7 @@ Report Configuration models for the Hillview School Management System.
 Manages dynamic staff assignments, term dates, and report settings.
 """
 
-from ..extensions import db
+from new_structure.extensions import db
 from datetime import datetime
 
 class ReportConfiguration(db.Model):

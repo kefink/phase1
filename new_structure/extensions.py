@@ -10,4 +10,7 @@ from flask_limiter.util import get_remote_address
 # Initialize extensions
 db = SQLAlchemy()
 csrf = CSRFProtect()
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(
+	key_func=get_remote_address,
+	storage_uri=None  # Will default to in-memory; create_app will override via app.config['RATELIMIT_STORAGE_URL'] if set
+)

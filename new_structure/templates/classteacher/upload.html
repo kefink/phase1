@@ -132,6 +132,13 @@
         background: rgba(147, 161, 161, 0.05);
         color: var(--text-primary);
         transition: all 0.3s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
       }
 
       .form-control:focus {
@@ -304,6 +311,60 @@
           grid-template-columns: 1fr;
           gap: 0.5rem;
         }
+
+        /* Prevent overlapping dropdown options and ensure readability */
+        select.form-control {
+          font-size: 1rem;
+          padding-right: 2.25rem; /* space for implicit arrow */
+          background: rgba(147,161,161,0.12);
+          color: var(--text-primary) !important;
+          max-width: 100%;
+        }
+        select.form-control option {
+          color: #000; /* ensure visible in native dropdown */
+          background: #f8f9fa;
+        }
+        body[data-theme="dark"] select.form-control option {
+          color: #e5e7eb;
+          background: #0f172a;
+        }
+        /* Wrap long option text on very narrow screens */
+        @supports (-webkit-touch-callout: none) {
+          select.form-control { white-space: normal; }
+        }
+        /* Fix potential stacking / overlap by forcing block layout */
+        .form-group select.form-control {
+          display: block;
+          width: 100%;
+        }
+      }
+
+      /* High-contrast selected text inside select (desktop & mobile) */
+      select.form-control:focus, select.form-control:active {
+        color: var(--text-emphasis);
+      }
+      /* Fallback for browsers where selected text becomes transparent */
+      select.form-control option:checked {
+        font-weight: 600;
+      }
+      /* Custom enhanced select (mobile) */
+      @media (max-width: 768px) {
+        .enhanced-select-wrapper { position: relative; }
+        .enhanced-select-wrapper.hidden-native select { display: none; }
+        .ct-select { position: relative; }
+        .ct-select-toggle { width: 100%; text-align: left; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border:1px solid var(--border-color); border-radius: var(--radius); background: rgba(147,161,161,0.1); color: var(--text-primary); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:space-between; }
+        .ct-select-toggle:focus { outline:none; border-color: var(--primary-color); box-shadow:0 0 0 3px rgba(38,139,210,0.15); }
+        .ct-select-toggle .placeholder { opacity:0.7; }
+        .ct-select-panel { position:absolute; left:0; right:0; top:100%; margin-top:4px; background: var(--card-bg); border:1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); z-index: 200; max-height:320px; display:flex; flex-direction:column; }
+        .ct-select-search { border:none; border-bottom:1px solid var(--border-color); padding:0.6rem 0.75rem; background:rgba(147,161,161,0.08); color:var(--text-primary); font-size:0.95rem; }
+        .ct-select-search:focus { outline:none; background:rgba(147,161,161,0.12); }
+        .ct-options { list-style:none; margin:0; padding:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+        .ct-options li { padding:0.55rem 0.75rem; font-size:0.95rem; border-bottom:1px solid rgba(147,161,161,0.07); cursor:pointer; }
+        .ct-options li:last-child { border-bottom:none; }
+        .ct-options li[aria-selected="true"], .ct-options li:hover { background:rgba(38,139,210,0.15); color:var(--text-emphasis); }
+        .ct-options li.no-results { cursor:default; opacity:0.7; }
+        .ct-chevron { width:18px; height:18px; flex-shrink:0; margin-left:0.5rem; transition: transform 0.25s ease; }
+        .ct-select.open .ct-chevron { transform: rotate(180deg); }
       }
     </style>
   </head>
@@ -343,18 +404,21 @@
 
             <div class="form-group">
               <label for="grade">Grade</label>
-              <select
-                name="grade"
-                id="grade"
-                class="form-control"
-                required
-                onchange="updateStreams()"
-              >
-                <option value="">Select Grade</option>
-                {% for grade in grades %}
-                <option value="{{ grade.id }}">{{ grade.name }}</option>
-                {% endfor %}
-              </select>
+              <div class="enhanced-select-wrapper" id="gradeSelectWrapper">
+                <select
+                  name="grade"
+                  id="grade"
+                  class="form-control"
+                  required
+                  onchange="updateStreams()"
+                >
+                  <option value="">Select Grade</option>
+                  {% for grade in grades %}
+                  <option value="{{ grade.id }}">{{ grade.name }}</option>
+                  {% endfor %}
+                </select>
+                <!-- Mobile enhanced version injected by JS -->
+              </div>
             </div>
 
             <div class="form-group">
@@ -528,6 +592,100 @@
     </div>
 
     <script>
+  // Abort controller for stream fetch to avoid duplicate population
+  let streamFetchController = null;
+      // Progressive enhancement: build custom searchable dropdown for Grade on mobile (<768px)
+      (function() {
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        const nativeSelect = document.getElementById('grade');
+        const wrapper = document.getElementById('gradeSelectWrapper');
+        if (!nativeSelect || !wrapper || !isMobile) return; // desktop keep native
+
+        // Build structure
+        wrapper.classList.add('hidden-native');
+        const comp = document.createElement('div');
+        comp.className = 'ct-select';
+        comp.innerHTML = `
+          <button type="button" class="ct-select-toggle" aria-haspopup="listbox" aria-expanded="false">
+            <span class="label placeholder">Select Grade</span>
+            <svg class="ct-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="ct-select-panel" hidden>
+            <input type="text" class="ct-select-search" placeholder="Search..." aria-label="Search grades" />
+            <ul class="ct-options" role="listbox"></ul>
+          </div>`;
+        wrapper.appendChild(comp);
+
+        const toggle = comp.querySelector('.ct-select-toggle');
+        const panel = comp.querySelector('.ct-select-panel');
+        const search = comp.querySelector('.ct-select-search');
+        const list = comp.querySelector('.ct-options');
+        const labelSpan = toggle.querySelector('.label');
+
+        // Lazy load options only when user opens the dropdown
+        let loaded = false;
+        let optionData = [];
+        function render(filter='') {
+          if (!loaded) {
+            optionData = Array.from(nativeSelect.options).map(o => ({ value: o.value, text: o.textContent }));
+            loaded = true;
+          }
+          list.innerHTML = '';
+          const term = filter.trim().toLowerCase();
+          const filtered = optionData.filter(o => o.text.toLowerCase().includes(term));
+          if (filtered.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = 'No results';
+            li.className = 'no-results';
+            list.appendChild(li);
+            return;
+          }
+          filtered.forEach(o => {
+            if (o.value === '') return; // skip placeholder option
+            const li = document.createElement('li');
+            li.textContent = o.text;
+            li.setAttribute('role','option');
+            li.dataset.value = o.value;
+            if (nativeSelect.value === o.value) li.setAttribute('aria-selected','true');
+            li.addEventListener('click', () => {
+              nativeSelect.value = o.value;
+              labelSpan.textContent = o.text;
+              labelSpan.classList.remove('placeholder');
+              const streamEl = document.getElementById('stream');
+              updateStreams(() => {
+                if (streamEl) {
+                  streamEl.focus();
+                  setTimeout(() => streamEl.scrollIntoView({behavior:'smooth', block:'center'}), 80);
+                }
+              });
+              close();
+              // Clear list so options disappear until next click
+              list.innerHTML = '';
+              loaded = false; // force re-load next time (reflect any dynamic changes)
+            });
+            list.appendChild(li);
+          });
+        }
+
+        function open() {
+          panel.hidden = false; comp.classList.add('open'); toggle.setAttribute('aria-expanded','true'); search.focus();
+        }
+        function close() {
+          panel.hidden = true; comp.classList.remove('open'); toggle.setAttribute('aria-expanded','false');
+        }
+        toggle.addEventListener('click', () => {
+          if (panel.hidden) {
+            render();
+            open();
+          } else {
+            close();
+          }
+        });
+        search.addEventListener('input', () => render(search.value));
+        document.addEventListener('click', (e) => { if (!comp.contains(e.target)) close(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+      })();
+
       function switchTab(tabName) {
         // Hide all tabs
         document.querySelectorAll(".tab-content").forEach((tab) => {
@@ -544,7 +702,7 @@
         event.target.classList.add("active");
       }
 
-      function updateStreams() {
+  function updateStreams(done) {
         const gradeSelect = document.getElementById("grade");
         const streamSelect = document.getElementById("stream");
         const gradeId = gradeSelect.value;
@@ -553,8 +711,13 @@
         streamSelect.innerHTML = '<option value="">Select Stream</option>';
 
         if (gradeId) {
+          // Cancel any in-flight request
+          if (streamFetchController) {
+            try { streamFetchController.abort(); } catch(e) {}
+          }
+          streamFetchController = new AbortController();
           // Fetch streams from API using grade ID
-          fetch(`/classteacher/api/streams_by_id/${gradeId}`)
+          fetch(`/classteacher/api/streams_by_id/${gradeId}`, { signal: streamFetchController.signal })
             .then((response) => response.json())
             .then((data) => {
               if (data.streams && data.streams.length > 0) {
@@ -564,6 +727,7 @@
                   option.textContent = stream.display_name; // Use display name like "Stream A"
                   streamSelect.appendChild(option);
                 });
+    if (typeof done === 'function') done();
               } else {
                 // If no streams found, add a default message
                 const option = document.createElement("option");
@@ -571,9 +735,11 @@
                 option.textContent = "No streams available for this grade";
                 option.disabled = true;
                 streamSelect.appendChild(option);
+    if (typeof done === 'function') done();
               }
             })
             .catch((error) => {
+              if (error.name === 'AbortError') return; // ignore aborted
               console.error("Error fetching streams:", error);
               // Add error message option
               const option = document.createElement("option");
@@ -581,6 +747,7 @@
               option.textContent = "Error loading streams";
               option.disabled = true;
               streamSelect.appendChild(option);
+        if (typeof done === 'function') done();
             });
         }
       }

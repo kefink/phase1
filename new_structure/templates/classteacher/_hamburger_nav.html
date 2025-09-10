@@ -57,8 +57,9 @@
   .ct-menu-btn:active {
     transform: scale(0.98);
   }
-  .ct-menu-btn .fa-bars {
-    font-size: 1.125rem;
+  .ct-menu-btn svg {
+    width: 22px;
+    height: 22px;
   }
   .ct-overlay {
     position: fixed;
@@ -200,9 +201,10 @@
       rgba(255, 255, 255, 0.03)
     );
   }
-  .ct-nav i {
+  .ct-nav svg {
     width: 18px;
-    text-align: center;
+    height: 18px;
+    flex-shrink: 0;
     color: var(--primary-color, #22c55e);
   }
   .ct-nav a.active {
@@ -329,7 +331,17 @@
   aria-controls="ctDrawer"
   aria-expanded="false"
 >
-  <i class="fas fa-bars" aria-hidden="true"></i>
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
   <span class="sr-only">Menu</span>
   <!-- Screen-reader only text (kept minimal, no external CSS needed) -->
 </button>
@@ -362,10 +374,31 @@
         aria-label="Toggle theme"
         title="Toggle theme"
       >
-        <i class="fas fa-moon"></i>
+        <svg
+          id="ctThemeIcon"
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+        </svg>
       </button>
       <button class="ct-close-btn" id="ctCloseBtn" aria-label="Close menu">
-        <i class="fas fa-times"></i>
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
     </div>
   </div>
@@ -375,34 +408,110 @@
       href="{{ url_for('classteacher.dashboard') if url_for else '#' }}"
       class="{{ 'active' if current == 'classteacher.dashboard' else '' }}"
       aria-current="{{ 'page' if current == 'classteacher.dashboard' else 'false' }}"
-      ><i class="fas fa-home"></i> Dashboard</a
+      ><svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+        />
+      </svg>
+      Dashboard</a
     >
     <a
       href="{{ url_for('classteacher.upload_marks') if url_for else '#' }}"
       class="{{ 'active' if current == 'classteacher.upload_marks' else '' }}"
       aria-current="{{ 'page' if current == 'classteacher.upload_marks' else 'false' }}"
-      ><i class="fas fa-upload"></i> Upload Marks</a
+      ><svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+        <path d="M12 12V4m0 0l-4 4m4-4l4 4" />
+      </svg>
+      Upload Marks</a
     >
     <a
       href="{{ url_for('classteacher.view_all_reports') if url_for else '#' }}"
       class="{{ 'active' if current == 'classteacher.view_all_reports' else '' }}"
       aria-current="{{ 'page' if current == 'classteacher.view_all_reports' else 'false' }}"
-      ><i class="fas fa-chart-line"></i> View Reports</a
+      ><svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M11 3h2v18h-2z" />
+        <path d="M18 8h2v13h-2z" />
+        <path d="M4 13h2v8H4z" />
+      </svg>
+      View Reports</a
     >
     <a
       href="{{ url_for('classteacher.grade_reports_dashboard') if url_for else '#' }}"
       class="{{ 'active' if current == 'classteacher.grade_reports_dashboard' else '' }}"
       aria-current="{{ 'page' if current == 'classteacher.grade_reports_dashboard' else 'false' }}"
-      ><i class="fas fa-file-pdf"></i> Generate Reports</a
+      ><svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+        <path d="M14 2v6h6" />
+      </svg>
+      Generate Reports</a
     >
     <a
       href="{{ url_for('classteacher.manage_students') if url_for else '#' }}"
       class="{{ 'active' if current == 'classteacher.manage_students' else '' }}"
       aria-current="{{ 'page' if current == 'classteacher.manage_students' else 'false' }}"
-      ><i class="fas fa-users"></i> Manage Students</a
+      ><svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 20v-2a4 4 0 00-3-3.87" />
+        <path d="M16 3.13a4 4 0 010 7.75" />
+      </svg>
+      Manage Students</a
     >
     <a href="{{ url_for('auth.logout_route') if url_for else '#' }}"
-      ><i class="fas fa-sign-out-alt"></i> Logout</a
+      ><svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M13 16l4-4m0 0l-4-4m4 4H3" />
+        <path d="M13 4v16" />
+      </svg>
+      Logout</a
     >
   </div>
   <!-- Optional footer or version could go here -->
@@ -464,9 +573,13 @@
     };
     const setThemeIcon = (val) => {
       if (!themeBtn) return;
-      const icon = themeBtn.querySelector("i");
-      if (!icon) return;
-      icon.className = "fas " + (val === "dark" ? "fa-sun" : "fa-moon");
+      const svg = document.getElementById("ctThemeIcon");
+      if (!svg) return;
+      // Replace path for sun/moon
+      svg.innerHTML =
+        val === "dark"
+          ? '<circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 7.07l-1.41-1.41M6.46 6.46L5.05 5.05m12.02-1.41l-1.41 1.41M6.46 17.54l-1.41 1.41"/>'
+          : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
       themeBtn.title =
         "Switch to " + (val === "dark" ? "light" : "dark") + " theme";
       themeBtn.setAttribute("aria-pressed", val === "dark");

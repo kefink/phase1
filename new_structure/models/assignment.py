@@ -1,7 +1,7 @@
 """
 Assignment-related models for the Hillview School Management System.
 """
-from ..extensions import db
+from new_structure.extensions import db
 
 class TeacherSubjectAssignment(db.Model):
     """Model representing the assignment of teachers to subjects for specific grades and streams."""

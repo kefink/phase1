@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # Import db from extensions
 try:
-    from ..extensions import db
+    from new_structure.extensions import db
 except ImportError:
     # Fallback for direct imports
     from extensions import db

@@ -1,0 +1,584 @@
+[
+  {
+    "rule": "/classteacher/add_assessment_ajax",
+    "endpoint": "add_assessment_ajax",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/add_term_ajax",
+    "endpoint": "add_term_ajax",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/api/assessment_types",
+    "endpoint": "api_get_assessment_types",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/api/check_stream_status/<grade>/<term>/<assessment_type>",
+    "endpoint": "check_stream_status",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/api/stream_status/<grade>/<term>/<assessment_type>",
+    "endpoint": "api_get_stream_status",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/api/streams/<grade>",
+    "endpoint": "api_get_streams",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/api/streams_by_id/<int:grade_id>",
+    "endpoint": "api_get_streams_by_id",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/bulk_assign_subjects",
+    "endpoint": "bulk_assign_subjects",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/bulk_import_subjects",
+    "endpoint": "bulk_import_subjects",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/delete_assessment_ajax",
+    "endpoint": "delete_assessment_ajax",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/delete_marksheet/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "delete_marksheet",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/delete_report/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "delete_report",
+    "methods": "GET,POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/delete_term_ajax",
+    "endpoint": "delete_term_ajax",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/download_class_report/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "download_class_report",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/download_grade_marksheet/<grade>/<term>/<assessment_type>",
+    "endpoint": "download_grade_marksheet",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/download_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>",
+    "endpoint": "download_individual_report",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/edit_assessment_ajax",
+    "endpoint": "edit_assessment_ajax",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/edit_grade",
+    "endpoint": "edit_grade",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/edit_stream",
+    "endpoint": "edit_stream",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/edit_term_ajax",
+    "endpoint": "edit_term_ajax",
+    "methods": "POST",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/export_subjects",
+    "endpoint": "export_subjects",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "generate_all_individual_reports",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/generate_batch_grade_reports/<grade_name>/<term>/<assessment_type>",
+    "endpoint": "generate_batch_grade_reports",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/generate_grade_marksheet/<grade>/<term>/<assessment_type>/<action>",
+    "endpoint": "generate_grade_marksheet",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/get_grade_streams/<int:grade_id>",
+    "endpoint": "get_grade_streams",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/get_streams/<grade_id>",
+    "endpoint": "get_streams",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/get_streams_by_level/<grade>",
+    "endpoint": "get_streams_by_level",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/get_subjects_by_education_level/<education_level>",
+    "endpoint": "get_subjects_by_education_level",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/get_teacher_assignments/<int:teacher_id>",
+    "endpoint": "get_teacher_assignments",
+    "methods": "GET",
+    "category": "AUX"
+  },
+  {
+    "rule": "/classteacher/",
+    "endpoint": "dashboard",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/advanced_assignments",
+    "endpoint": "advanced_assignments",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/all_reports",
+    "endpoint": "all_reports",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/analytics",
+    "endpoint": "analytics_dashboard",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/assign_subjects",
+    "endpoint": "assign_subjects",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/bulk_transfer_assignments",
+    "endpoint": "bulk_transfer_assignments",
+    "methods": "POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/class_marks_status/<int:grade_id>/<int:stream_id>/<int:term_id>/<int:assessment_type_id>",
+    "endpoint": "class_marks_status",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/class_overview",
+    "endpoint": "class_overview",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/clear_assignment_session",
+    "endpoint": "clear_assignment_session",
+    "methods": "POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/clear_cache",
+    "endpoint": "clear_cache",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/collaborative_marks_dashboard",
+    "endpoint": "collaborative_marks_dashboard",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/database_health",
+    "endpoint": "database_health",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/delete_subject_report",
+    "endpoint": "delete_subject_report",
+    "methods": "POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/download_class_list",
+    "endpoint": "download_class_list",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/download_marks_template",
+    "endpoint": "download_marks_template",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/download_student_template",
+    "endpoint": "download_student_template",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/download_subject_template",
+    "endpoint": "download_subject_template",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/download_template",
+    "endpoint": "download_template",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/edit_class_marks/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "edit_class_marks",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/enhanced_bulk_assign_subjects",
+    "endpoint": "enhanced_bulk_assign_subjects",
+    "methods": "POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/enhanced_class_report/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "enhanced_class_report",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/generate_consolidated_grade_report/<grade_name>/<term>/<assessment_type>",
+    "endpoint": "generate_consolidated_grade_report",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/generate_individual_stream_report/<grade_name>/<stream_name>/<term>/<assessment_type>",
+    "endpoint": "generate_individual_stream_report",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/grade_reports_dashboard",
+    "endpoint": "grade_reports_dashboard",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/grade_streams_status/<grade_name>/<term>/<assessment_type>",
+    "endpoint": "grade_streams_status",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/manage_grades_streams",
+    "endpoint": "manage_grades_streams",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/manage_students",
+    "endpoint": "manage_students",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/manage_subjects",
+    "endpoint": "manage_subjects",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/manage_teacher_assignments",
+    "endpoint": "manage_teacher_assignments",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/manage_teacher_subjects/<int:teacher_id>",
+    "endpoint": "manage_teacher_subjects",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/manage_teachers",
+    "endpoint": "manage_teachers",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/manage_terms_assessments",
+    "endpoint": "manage_terms_assessments",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/permission_denied",
+    "endpoint": "permission_denied",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/preview_class_report/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "preview_class_report",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/preview_grade_marksheet/<grade>/<term>/<assessment_type>",
+    "endpoint": "preview_grade_marksheet",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/preview_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>",
+    "endpoint": "preview_individual_report",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/print_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>",
+    "endpoint": "print_individual_report",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/reassign_class_teacher",
+    "endpoint": "reassign_class_teacher",
+    "methods": "POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/reassign_subject_teacher",
+    "endpoint": "reassign_subject_teacher",
+    "methods": "POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/remove_assignment",
+    "endpoint": "remove_assignment",
+    "methods": "POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/report_configuration",
+    "endpoint": "report_configuration",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/subject_report/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id>",
+    "endpoint": "subject_report",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/submit_single_subject_marks/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id>",
+    "endpoint": "submit_single_subject_marks",
+    "methods": "POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/submit_subject_marks/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id>",
+    "endpoint": "submit_subject_marks",
+    "methods": "POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/teacher_management_hub",
+    "endpoint": "teacher_management_hub",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/teacher_streams/<int:grade_id>",
+    "endpoint": "teacher_streams",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/update_class_marks/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "update_class_marks",
+    "methods": "POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/upload",
+    "endpoint": "upload_marks",
+    "methods": "GET,POST",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/upload_class_marks/<int:grade_id>/<int:stream_id>/<int:term_id>/<int:assessment_type_id>",
+    "endpoint": "upload_class_marks",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/upload_single_subject_marks/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id>",
+    "endpoint": "upload_single_subject_marks",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/upload_subject_marks/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id>",
+    "endpoint": "upload_subject_marks",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/view_all_reports",
+    "endpoint": "view_all_reports",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/view_student_reports/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "view_student_reports",
+    "methods": "GET",
+    "category": "CORE"
+  },
+  {
+    "rule": "/classteacher/api/test_streams",
+    "endpoint": "api_test_streams",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/create_test_marks",
+    "endpoint": "create_test_marks",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/debug_marks_data/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "debug_marks_data",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/debug_subjects_public",
+    "endpoint": "debug_subjects_public",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/fix_independent_subjects",
+    "endpoint": "fix_independent_subjects",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/fix_kevin_assignment",
+    "endpoint": "fix_kevin_assignment",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/fixed_class_report/<grade>/<stream>/<term>/<assessment_type>",
+    "endpoint": "fixed_class_report",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/implement_composite_fix",
+    "endpoint": "implement_composite_fix",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/test-analytics",
+    "endpoint": "test_analytics_dashboard",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/test_component_upload",
+    "endpoint": "test_component_upload",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/test_components",
+    "endpoint": "test_components",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/test_debug",
+    "endpoint": "test_debug",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/test_report_debug",
+    "endpoint": "test_report_debug",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/upload_test",
+    "endpoint": "upload_test",
+    "methods": "GET",
+    "category": "DEV"
+  },
+  {
+    "rule": "/classteacher/verify_composite_setup",
+    "endpoint": "verify_composite_setup",
+    "methods": "GET",
+    "category": "DEV"
+  }
+]

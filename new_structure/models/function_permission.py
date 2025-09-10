@@ -2,7 +2,7 @@
 Enhanced function-level permission system for granular access control.
 Allows headteacher to grant specific function permissions to classteachers.
 """
-from ..extensions import db
+from new_structure.extensions import db
 from datetime import datetime
 
 class FunctionPermission(db.Model):

@@ -2,7 +2,7 @@
 Enhanced School Setup and Configuration models for plug-and-play deployment.
 """
 
-from ..extensions import db
+from new_structure.extensions import db
 from datetime import datetime
 import json
 

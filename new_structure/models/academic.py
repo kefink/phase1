@@ -1,7 +1,7 @@
 """
 Academic-related models for the Hillview School Management System.
 """
-from ..extensions import db
+from new_structure.extensions import db
 from .user import teacher_subjects
 
 class SchoolConfiguration(db.Model):

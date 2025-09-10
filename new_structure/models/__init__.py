@@ -4,7 +4,7 @@ This file imports and exposes all models for easy access.
 """
 # Import database instance
 try:
-    from ..extensions import db
+    from new_structure.extensions import db
 except ImportError:
     from extensions import db
 from .user import Teacher, teacher_subjects

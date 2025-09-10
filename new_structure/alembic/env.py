@@ -1,34 +1,37 @@
 from __future__ import annotations
 import os
+import sys
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
-# Interpret the config file for Python logging.
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# --- Application metadata (import models) ---
-import sys
+# Adjust sys.path to include project parent so 'new_structure' package is importable
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..'))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..'))  # .../new_structure
+PROJECT_PARENT = os.path.abspath(os.path.join(PROJECT_ROOT, '..'))  # .../phase1
+for p in (PROJECT_PARENT,):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
-from extensions import db  # noqa
-from models import user, academic, assignment  # noqa
-try:
-    from models import permission, function_permission, parent, report_config, school_setup  # noqa
-except Exception:  # noqa
-    pass
+try:  # Import db and models via package-qualified imports
+    from new_structure.extensions import db  # noqa
+    # Import the models package which imports all model modules
+    from new_structure import models  # noqa
+except Exception as e:  # pragma: no cover
+    raise RuntimeError(f"Failed importing models for Alembic: {e}")
 
 target_metadata = db.metadata
 
 # Database URL from environment or fallback to config value
 DB_URL = os.environ.get('DB_URL') or os.environ.get('SQLALCHEMY_DATABASE_URI')
 if DB_URL:
-    config.set_main_option('sqlalchemy.url', DB_URL)
+    # Escape % for configparser interpolation handling
+    safe_url = DB_URL.replace('%', '%%')
+    config.set_main_option('sqlalchemy.url', safe_url)
 
 
 def run_migrations_offline():

@@ -3,7 +3,7 @@ Enhanced Grading System Models for Hillview School Management System.
 Supports multiple grading systems including CBC, percentage, letter grades, and custom systems.
 """
 
-from ..extensions import db
+from new_structure.extensions import db
 from datetime import datetime
 import json
 
