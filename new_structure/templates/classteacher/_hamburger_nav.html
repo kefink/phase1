@@ -322,6 +322,32 @@
       );
     }
   }
+
+  /* Floating desktop theme toggle (auto-injected on pages without a desktop button) */
+  .ct-theme-fab {
+    position: fixed;
+    bottom: 1.1rem;
+    right: 1.1rem;
+    z-index: 1100;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+    -webkit-backdrop-filter: saturate(1.4) blur(10px);
+    backdrop-filter: saturate(1.4) blur(10px);
+    box-shadow: 0 8px 30px -6px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,0.05) inset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background .25s, border-color .25s, transform .25s;
+    color: var(--text-primary, #e5e7eb);
+  }
+  .ct-theme-fab:focus-visible { outline: 2px solid var(--primary-color,#16a34a); outline-offset: 2px; }
+  .ct-theme-fab:hover { background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)); border-color: rgba(255,255,255,0.28); }
+  .ct-theme-fab:active { transform: scale(.95); }
+  @media (max-width: 900px) { .ct-theme-fab { display:none; } }
 </style>
 
 <button
@@ -626,5 +652,40 @@
 
     // Initialize theme last to ensure icon state matches
     initTheme();
+
+    // Inject desktop floating theme toggle if no desktop toggle present
+    function injectDesktopFab() {
+      // Skip if dashboard-style desktop button already exists
+      if (document.getElementById('desktopThemeToggleMini')) return;
+      // Avoid duplicate insertion
+      if (document.getElementById('ctGlobalThemeFab')) return;
+      // Large screens only
+      if (window.innerWidth < 901) return;
+      const btn = document.createElement('button');
+      btn.id = 'ctGlobalThemeFab';
+      btn.type = 'button';
+      btn.className = 'ct-theme-fab';
+      btn.setAttribute('aria-label', 'Toggle theme');
+      const current = document.documentElement.getAttribute('data-theme') || systemTheme();
+      btn.innerHTML = current === 'dark'
+        ? '<svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 7.07-1.41-1.41M6.46 6.46 5.05 5.05m12.02-1.41-1.41 1.41M6.46 17.54l-1.41 1.41"/></svg>'
+        : '<svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+      btn.addEventListener('click', () => {
+        const cur = document.documentElement.getAttribute('data-theme') || systemTheme();
+        const next = cur === 'dark' ? 'light' : 'dark';
+        try { localStorage.setItem(THEME_KEY, next); } catch(e) {}
+        applyTheme(next);
+        // Update icon
+        btn.innerHTML = next === 'dark'
+          ? '<svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 7.07-1.41-1.41M6.46 6.46 5.05 5.05m12.02-1.41-1.41 1.41M6.46 17.54l-1.41 1.41"/></svg>'
+          : '<svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+      });
+      document.body.appendChild(btn);
+    }
+    // Execute after load (slight delay to avoid layout shift)
+    window.requestAnimationFrame(() => injectDesktopFab());
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 901) injectDesktopFab();
+    });
   })();
 </script>
