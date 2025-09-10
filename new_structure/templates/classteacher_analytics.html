@@ -36,11 +36,15 @@
 </style>
 {% endblock %}
 
+
 {# Remove the entire base header on this page #}
 {% block base_header %}{% endblock %}
 
 {% block content %}
 <div class="analytics-container">
+  <div style="display:flex; justify-content:flex-end; margin:-10px 0 15px;">
+    <button id="analyticsThemeToggle" aria-label="Toggle theme" title="Toggle theme" style="position:relative; appearance:none; border:1px solid rgba(255,255,255,0.14); background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)); color:var(--text-emphasis,#93a1a1); border-radius:14px; width:46px; height:46px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 20px -4px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,0.05) inset; transition:.25s background,.25s border-color,.25s transform;"></button>
+  </div>
   <!-- Breadcrumb Navigation -->
   <div class="analytics-breadcrumb">
     <a href="{{ url_for('classteacher.dashboard') }}" class="breadcrumb-link">
@@ -1673,6 +1677,16 @@
   document.addEventListener("DOMContentLoaded", function () {
     // The analytics dashboard will be initialized by the main analytics_dashboard.js file
     // which now checks for analytics page elements before initializing
+    // Initialize theme toggle once DOM ready
+    (function(){
+      var btn=document.getElementById('analyticsThemeToggle'); if(!btn) return;
+      var KEY='ctTheme';
+      function sys(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+      function setTheme(t){document.documentElement.setAttribute('data-theme',t); document.body&&document.body.setAttribute('data-theme',t); btn.innerHTML = t==='dark' ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 7.07-1.41-1.41M6.46 6.46 5.05 5.05m12.02-1.41-1.41 1.41M6.46 17.54l-1.41 1.41"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'; btn.title='Switch to '+(t==='dark'?'light':'dark')+' theme'; }
+      var saved; try{saved=localStorage.getItem(KEY);}catch(e){}
+      setTheme(saved||sys());
+      btn.addEventListener('click',function(){ var cur=document.documentElement.getAttribute('data-theme')||sys(); var next=cur==='dark'?'light':'dark'; try{localStorage.setItem(KEY,next);}catch(e){} setTheme(next); });
+    })();
   });
 
   // Utility function for notifications

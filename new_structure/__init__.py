@@ -297,6 +297,17 @@ def create_app(config_name='default'):
         # Check if user can access this path
         path_allowed = any(request.path.startswith(path) for path in allowed_paths)
 
+        # Targeted temporary bypass for specific endpoint blocked unexpectedly
+        # User report: 403 "Access denied: classteacher cannot access class_marks_status" when
+        # hitting /classteacher/class_marks_status/... despite /classteacher/ being whitelisted.
+        # This ensures the detailed marks status view is reachable while broader
+        # permission refactor is in progress.
+        try:
+            if request.endpoint == 'classteacher.class_marks_status':
+                path_allowed = True
+        except Exception:
+            pass
+
         # Debug logging for student promotion route
         if 'student-promotion' in request.path:
             print(f"🔍 SECURITY DEBUG: Student promotion route check")

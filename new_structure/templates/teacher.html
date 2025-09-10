@@ -177,9 +177,10 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
             position: relative;
             z-index: 2;
-            flex: 1;
-            min-width: 0; /* Allow text to shrink */
-            max-width: 60%; /* Prevent taking too much space */
+            flex: 0 0 auto; /* Do not stretch brand so links can center */
+            min-width: 0;
+            max-width: 40%;
+            margin-right: 12px;
         }
 
         .navbar-brand-text {
@@ -244,15 +245,43 @@
             display: flex;
             list-style: none;
             align-items: center;
-            gap: 8px;
-            padding: 6px;
+            gap: 18px; /* wider spacing */
+            padding: 8px 14px;
             margin: 0;
             background: rgba(7, 54, 66, 0.5);
             border: 1px solid rgba(131, 148, 150, 0.25);
-            border-radius: 14px;
+            border-radius: 18px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             backdrop-filter: blur(6px);
+            flex: 1 1 auto; /* allow group to expand */
+            justify-content: flex-start; /* allow spacer to push actions right */
+            max-width: 100%;
         }
+        .navbar-nav .nav-spacer { flex: 1 1 auto; display: block; }
+        .navbar-nav li { display: flex; }
+        .navbar-nav li:last-child { margin-left: 8px; } /* subtle separation before logout */
+        @media (min-width: 1200px) {
+            .navbar-nav { gap: 22px; }
+        }
+        /* Theme toggle button styling */
+        .theme-toggle-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, rgba(7,54,66,0.85), rgba(7,54,66,0.65));
+            border: 1px solid rgba(131,148,150,0.4);
+            color: #fdf6e3;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            position: relative;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        }
+        .theme-toggle-btn:hover { background: rgba(181,137,0,0.4); border-color: rgba(181,137,0,0.6); }
+        .theme-toggle-btn:focus-visible { outline: 2px solid rgba(181,137,0,0.9); outline-offset: 2px; }
+        .theme-toggle-btn svg { width: 22px; height: 22px; }
 
         .nav-link {
             color: #fdf6e3;
@@ -268,7 +297,7 @@
             font-size: 0.9rem;
             line-height: 1;
             border: 1px solid rgba(131, 148, 150, 0.35);
-            background: linear-gradient(180deg, rgba(7, 54, 66, 0.8), rgba(7, 54, 66, 0.6));
+            background: var(--nav-link-bg, linear-gradient(180deg, rgba(7, 54, 66, 0.8), rgba(7, 54, 66, 0.6)));
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
@@ -3186,7 +3215,99 @@
             /* Increase tap targets */
             .nav-link, .logout-btn { min-height: 44px; padding: 10px 14px; }
         }
-    </style>
+
+        /* Mobile / Responsive Navbar Toggle */
+        .navbar-toggle {
+            display: none;
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid rgba(131,148,150,0.4);
+            background: linear-gradient(180deg, rgba(7,54,66,0.9), rgba(7,54,66,0.7));
+            color: #fdf6e3;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition-fast);
+        }
+        .navbar-toggle:hover { background: rgba(181,137,0,0.35); border-color: rgba(181,137,0,0.6); }
+        .navbar-toggle:focus-visible { outline: 2px solid rgba(181,137,0,0.9); outline-offset: 2px; }
+        .navbar-toggle .bar {
+            position: absolute;
+            width: 22px;
+            height: 2px;
+            background: currentColor;
+            border-radius: 2px;
+            transition: var(--transition-fast);
+        }
+        .navbar-toggle .bar:nth-child(1) { top: 14px; }
+        .navbar-toggle .bar:nth-child(2) { top: 21px; }
+        .navbar-toggle .bar:nth-child(3) { top: 28px; }
+        .navbar-toggle.is-active .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .navbar-toggle.is-active .bar:nth-child(2) { opacity: 0; }
+        .navbar-toggle.is-active .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        @media (max-width: 860px) {
+            .navbar { flex-wrap: wrap; }
+            .navbar-toggle { display: inline-flex; order: 2; }
+            .navbar-brand { order: 1; }
+            .navbar-nav { order: 3; width: 100%; justify-content: flex-start; flex-wrap: wrap; display: none; padding: 10px 12px; gap: 12px; }
+            .navbar-nav.open { display: flex; }
+            .navbar-nav li { flex: 1 1 calc(50% - 12px); } /* two columns on narrow screens */
+            .navbar-nav li:last-child { flex-basis: 100%; } /* logout spans full width for prominence */
+            .logout-btn { width: 100%; justify-content: center; }
+            .navbar-nav .nav-spacer { display: none; }
+        }
+        @media (max-width: 480px) {
+            .navbar-nav li { flex: 1 1 100%; } /* single column for very small screens */
+        }
+        /* Light theme overrides */
+        [data-theme='light'] {
+            --primary-color: #b58900;
+            --secondary-color: #657b83;
+            --accent-color: #268bd2;
+            --success-color: #2aa198;
+            --warning-color: #cb4b16;
+            --danger-color: #d33682;
+            --info-color: #268bd2;
+            --text-primary: #073642;
+            --text-secondary: #586e75;
+            --text-muted: #657b83;
+            --text-white: #002b36;
+            --bg-primary: #fdf6e3;
+            --bg-secondary: #eee8d5;
+            --bg-card: rgba(255,255,255,0.85);
+            --bg-card-hover: rgba(255,255,255,0.95);
+            --glass-bg: rgba(255,255,255,0.65);
+            --glass-border: rgba(0,0,0,0.15);
+            --nav-link-bg: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75));
+        }
+        [data-theme='light'] body, body[data-theme='light'] {
+            color: var(--text-primary);
+        }
+        [data-theme='light'] .navbar {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        [data-theme='light'] .nav-link { color: #073642; border-color: rgba(0,0,0,0.15); text-shadow: none; }
+        [data-theme='light'] .nav-link:hover { background: rgba(181,137,0,0.25); color: #002b36; }
+        [data-theme='light'] .logout-btn { box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        [data-theme='light'] .page-title { color: #002b36; text-shadow: none; }
+                [data-theme='light'] .page-subtitle { color: #586e75; text-shadow: none; }
+        </style>
+        <script>
+            (function(){
+                try {
+                    var KEY='ctTheme';
+                    var saved=localStorage.getItem(KEY);
+                    if(!saved){ saved=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'; }
+                    document.documentElement.setAttribute('data-theme', saved);
+                } catch(e) {}
+            })();
+        </script>
 </head>
 <body>
     <!-- Error Message Section -->
@@ -3230,7 +3351,12 @@
                 </div>
             </div>
         </a>
-    <ul class="navbar-nav" role="menubar">
+        <button class="navbar-toggle" id="teacherNavToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="teacherNavMenu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    <ul class="navbar-nav" id="teacherNavMenu" role="menubar">
             <li role="none">
                 <a href="{{ url_for('teacher.dashboard') }}" class="nav-link" role="menuitem" aria-label="Dashboard">
                     <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -3259,6 +3385,12 @@
                 </a>
             </li>
             <li role="none">
+                <button id="teacherThemeToggle" class="theme-toggle-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
+                    <svg id="teacherThemeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M21 12h-2M5 12H3m15.07 7.07-1.41-1.41M6.34 6.34 4.93 4.93m12.73 0-1.41 1.41M6.34 17.66l-1.41 1.41"/></svg>
+                </button>
+            </li>
+            <li class="nav-spacer" aria-hidden="true"></li>
+            <li role="none">
                 <a href="{{ url_for('auth.logout_route') }}" class="logout-btn" role="menuitem" aria-label="Logout">
                     <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
                         <path d="M15.75 9V7.5A2.25 2.25 0 0 0 13.5 5.25h-6A2.25 2.25 0 0 0 5.25 7.5v9A2.25 2.25 0 0 0 7.5 18.75h6A2.25 2.25 0 0 0 15.75 16.5V15"></path>
@@ -3269,6 +3401,46 @@
             </li>
         </ul>
     </nav>
+    <script>
+    (function(){
+        const toggle = document.getElementById('teacherNavToggle');
+        const menu = document.getElementById('teacherNavMenu');
+        if(!toggle || !menu) return;
+        toggle.addEventListener('click', function(){
+            const open = menu.classList.toggle('open');
+            toggle.classList.toggle('is-active', open);
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+    })();
+    (function(){
+        const KEY='ctTheme';
+        const btn=document.getElementById('teacherThemeToggle');
+        const icon=document.getElementById('teacherThemeIcon');
+        if(!btn||!icon) return;
+        function sys(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+        function setTheme(t){
+            document.documentElement.setAttribute('data-theme',t);
+            document.body&&document.body.setAttribute('data-theme',t);
+            // swap icon
+            if(t==='dark') {
+                icon.innerHTML='<circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M21 12h-2M5 12H3m15.07 7.07-1.41-1.41M6.34 6.34 4.93 4.93m12.73 0-1.41 1.41M6.34 17.66l-1.41 1.41"/>';
+                btn.title='Switch to light theme';
+            } else {
+                icon.innerHTML='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+                btn.title='Switch to dark theme';
+            }
+        }
+        let saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+    // apply immediately so flash of wrong theme minimized
+    setTheme(saved||sys());
+        btn.addEventListener('click',function(){
+            const cur=document.documentElement.getAttribute('data-theme')||sys();
+            const next=cur==='dark'?'light':'dark';
+            try{localStorage.setItem(KEY,next);}catch(e){}
+            setTheme(next);
+        });
+    })();
+    </script>
 
     <div class="container">
         <!-- Modern Page Header -->

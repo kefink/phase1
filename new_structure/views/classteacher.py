@@ -116,63 +116,120 @@ def class_overview():
     teacher = Teacher.query.get(teacher_id) if teacher_id else None
 
     classes_data = []
-    try:
+    try:  # Build richer overview data with per-subject status
         if teacher_id:
-            direct_stream = None
-            if teacher and teacher.stream_id:
-                direct_stream = Stream.query.get(teacher.stream_id)
+            # Resolve assignments (fallback to teacher's own stream if no explicit assignment records)
+            direct_stream = Stream.query.get(teacher.stream_id) if (teacher and teacher.stream_id) else None
             try:
                 assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
             except Exception:
                 assignment_summary = {}
             class_assignments = assignment_summary.get('class_teacher_assignments', []) if assignment_summary else []
             if not class_assignments and direct_stream:
-                grade_obj = Grade.query.get(direct_stream.grade_id)
+                g_obj = Grade.query.get(direct_stream.grade_id) if direct_stream else None
                 class_assignments = [{
-                    'grade_id': grade_obj.id if grade_obj else None,
-                    'grade_name': grade_obj.name if grade_obj else '',
+                    'grade_id': g_obj.id if g_obj else None,
+                    'grade_name': g_obj.name if g_obj else '',
                     'stream_id': direct_stream.id,
                     'stream_name': direct_stream.name
                 }]
+
+            # Current term & default assessment (prefer current/active)
+            current_term = Term.query.filter_by(is_current=True).first() or Term.query.first()
+            default_assessment = AssessmentType.query.filter_by(is_active=True).order_by(AssessmentType.id.asc()).first() or AssessmentType.query.first()
+
             for assignment in class_assignments:
                 grade_id = assignment.get('grade_id') or assignment.get('gradeId')
                 stream_id = assignment.get('stream_id') or assignment.get('streamId')
-                grade_name = assignment.get('grade_name') or assignment.get('grade') or ''
-                stream_name = assignment.get('stream_name') or assignment.get('stream') or ''
-                latest_mark = Mark.query.join(Student, Mark.student_id == Student.id) \
-                    .filter(Student.stream_id == stream_id) \
-                    .order_by(Mark.created_at.desc()).first()
-                if latest_mark:
-                    term_obj = Term.query.get(latest_mark.term_id)
-                    assess_obj = AssessmentType.query.get(latest_mark.assessment_type_id)
+                if not (grade_id and stream_id):
+                    continue
+                grade_obj = Grade.query.get(grade_id)
+                stream_obj = Stream.query.get(stream_id)
+                if not stream_obj:
+                    continue
+
+                # Robust grade name resolution (avoid <Grade 21> repr leaking to UI)
+                raw_grade_name = assignment.get('grade_name') or assignment.get('grade') or ''
+                if hasattr(raw_grade_name, 'name') and not grade_obj:
+                    # raw_grade_name might itself be a Grade instance
+                    try:  # pragma: no cover - defensive
+                        raw_grade_name = raw_grade_name.name
+                    except Exception:
+                        raw_grade_name = ''
+                # Use DB name if available
+                display_grade_name = grade_obj.name if grade_obj and hasattr(grade_obj, 'name') else raw_grade_name
+                if isinstance(display_grade_name, str):
+                    # Normalize casing (e.g., GRADE 9 -> Grade 9)
+                    if display_grade_name.upper().startswith('GRADE '):
+                        parts = display_grade_name.strip().split()
+                        if len(parts) == 2 and parts[1].isdigit():
+                            display_grade_name = f"Grade {parts[1]}"
+                    elif display_grade_name.upper() in ('PP1', 'PP2'):
+                        display_grade_name = display_grade_name.upper()
                 else:
-                    term_obj = Term.query.first()
-                    assess_obj = AssessmentType.query.first()
+                    display_grade_name = str(display_grade_name)
+
+                term_obj = current_term
+                assess_obj = default_assessment
                 term_name = term_obj.name if term_obj else 'Term'
                 assessment_name = assess_obj.name if assess_obj else 'Assessment'
-                total_subjects = Subject.query.count()
-                completed_subject_ids = set([
-                    m.subject_id for m in Mark.query.join(Student) \
-                        .filter(Student.stream_id == stream_id) \
-                        .filter(Mark.term_id == (term_obj.id if term_obj else Mark.term_id)) \
-                        .filter(Mark.assessment_type_id == (assess_obj.id if assess_obj else Mark.assessment_type_id))
-                ])
-                completed_subjects = len(completed_subject_ids)
-                completion_percentage = (completed_subjects / total_subjects * 100) if total_subjects else 0
+
+                # Subjects constrained by grade's education level if available
+                if grade_obj and grade_obj.education_level:
+                    subjects_query = Subject.query.filter_by(education_level=grade_obj.education_level)
+                else:
+                    subjects_query = Subject.query
+                subjects_list = subjects_query.all()
+                total_subjects = len(subjects_list)
+
+                # Preload students in stream for per-subject completion percentage
+                student_ids = [s.id for s in Student.query.filter_by(stream_id=stream_id).all()]
+                student_count = len(student_ids)
+
+                # Fetch marks for this stream / term / assessment once to avoid N+1
+                marks = Mark.query.filter(
+                    Mark.stream_id == stream_id,
+                    Mark.term_id == (term_obj.id if term_obj else Mark.term_id),
+                    Mark.assessment_type_id == (assess_obj.id if assess_obj else Mark.assessment_type_id)
+                ).all()
+
+                # Organize marks by subject -> set(student_id)
+                marks_by_subject = {}
+                for m in marks:
+                    marks_by_subject.setdefault(m.subject_id, set()).add(m.student_id)
+
+                subject_status = []
+                completed_subjects_counter = 0
+                for subj in subjects_list:
+                    student_marks = marks_by_subject.get(subj.id, set())
+                    subj_completion_pct = (len(student_marks) / student_count * 100) if student_count else 0
+                    is_uploaded = subj_completion_pct > 0
+                    if is_uploaded:
+                        completed_subjects_counter += 1
+                    subject_status.append({
+                        'id': subj.id,
+                        'name': subj.name,
+                        'is_uploaded': is_uploaded,
+                        'completion_percentage': subj_completion_pct
+                    })
+
+                overall_completion_percentage = (completed_subjects_counter / total_subjects * 100) if total_subjects else 0
+
                 classes_data.append({
-                    'grade': grade_name,
+                    'grade': display_grade_name,
                     'grade_id': grade_id,
-                    'stream': stream_name,
+                    'stream': stream_obj.name if stream_obj else (assignment.get('stream_name') or ''),
                     'stream_id': stream_id,
                     'term_name': term_name,
                     'term_id': term_obj.id if term_obj else None,
                     'assessment_name': assessment_name,
                     'assessment_type_id': assess_obj.id if assess_obj else None,
                     'total_subjects': total_subjects,
-                    'completed_subjects': completed_subjects,
-                    'completion_percentage': completion_percentage,
-                    'subjects': [],
-                    'can_generate_report': completion_percentage > 0
+                    'completed_subjects': completed_subjects_counter,
+                    'completion_percentage': overall_completion_percentage,
+                    'subjects': subject_status,
+                    # Enable report only when all subjects have some marks (100%)
+                    'can_generate_report': overall_completion_percentage >= 100
                 })
     except Exception as e:  # pragma: no cover
         print(f"⚠️ class_overview generation issue: {e}")
@@ -777,25 +834,45 @@ def analytics_dashboard():
 
         print(f"🔍 Filter options - Terms: {len(terms)}, Assessments: {len(assessment_types)}, Grades: {len(grades)}")
 
-        return render_template(
-            'classteacher_analytics.html',
-            teacher=teacher,
-            analytics_data=analytics_data,
-            terms=terms,
-            assessment_types=assessment_types,
-            grades=grades,
-            # Effective filters reflect defaults when none selected
-            effective_term_filter=selected_term_id if 'selected_term_id' in locals() else request.args.get('term', type=int),
-            effective_assessment_filter=selected_assessment_type_id if 'selected_assessment_type_id' in locals() else request.args.get('assessment_type', type=int),
-            effective_grade_filter=selected_grade_id if 'selected_grade_id' in locals() else request.args.get('grade', type=int),
-            effective_stream_filter=selected_stream_id if 'selected_stream_id' in locals() else request.args.get('stream', type=int),
-            current_term_filter=request.args.get('term', type=int),
-            current_assessment_filter=request.args.get('assessment_type', type=int),
-            current_grade_filter=request.args.get('grade', type=int),
-            show_all=show_all if 'show_all' in locals() else False,
-            current_limit=(requested_limit if 'requested_limit' in locals() else None),
-            page_title="Academic Performance Analytics",
-        )
+        try:
+            # Guarantee required summary keys to avoid template KeyErrors
+            summary_defaults = {
+                'students_analyzed': 0,
+                'subjects_analyzed': 0,
+                'best_subject_average': 0,
+                'top_student_average': 0,
+                'has_sufficient_data': False
+            }
+            analytics_data.setdefault('summary', {})
+            for k,v in summary_defaults.items():
+                analytics_data['summary'].setdefault(k, v)
+            analytics_data.setdefault('top_performers', analytics_data.get('topPerformers', []))
+            analytics_data.setdefault('subject_analytics', analytics_data.get('subjectAnalytics', []))
+
+            return render_template(
+                'classteacher_analytics.html',
+                teacher=teacher,
+                analytics_data=analytics_data,
+                terms=terms,
+                assessment_types=assessment_types,
+                grades=grades,
+                # Effective filters reflect defaults when none selected
+                effective_term_filter=selected_term_id if 'selected_term_id' in locals() else request.args.get('term', type=int),
+                effective_assessment_filter=selected_assessment_type_id if 'selected_assessment_type_id' in locals() else request.args.get('assessment_type', type=int),
+                effective_grade_filter=selected_grade_id if 'selected_grade_id' in locals() else request.args.get('grade', type=int),
+                effective_stream_filter=selected_stream_id if 'selected_stream_id' in locals() else request.args.get('stream', type=int),
+                current_term_filter=request.args.get('term', type=int),
+                current_assessment_filter=request.args.get('assessment_type', type=int),
+                current_grade_filter=request.args.get('grade', type=int),
+                show_all=show_all if 'show_all' in locals() else False,
+                current_limit=(requested_limit if 'requested_limit' in locals() else None),
+                page_title="Academic Performance Analytics",
+            )
+        except Exception as render_err:
+            print(f"🚨 Template render error analytics_dashboard: {render_err}")
+            import traceback; traceback.print_exc()
+            flash('Analytics page rendering error.', 'error')
+            return redirect(url_for('classteacher.dashboard'))
 
     except Exception as e:
         print(f"🚨 Error in analytics route: {e}")
