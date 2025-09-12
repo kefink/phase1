@@ -586,6 +586,140 @@ tbody tr:hover {
   content: "⚡";
 }
 
+/* Advanced Bulk Assignment Modal (structure classes mapped from inline styles) */
+.modal {
+  display: none; /* toggled via JS */
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 2rem 1.25rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.modal-content {
+  background: var(--solar-base3);
+  margin: 0 auto;
+  width: 100%;
+  max-width: 760px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(181, 137, 0, 0.35);
+  box-shadow: var(--shadow-lg);
+  padding: 1.75rem 1.75rem 2.25rem;
+  position: relative;
+  animation: modalIn 0.4s cubic-bezier(.16,.67,.43,.99);
+}
+@keyframes modalIn { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0);} }
+.modal-content h2 {
+  margin-top: 0;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  line-height: 1.2;
+  color: var(--solar-base02);
+}
+.modal-content p.lead-desc { color: var(--solar-base01); margin-bottom: 1.1rem; font-size: .95rem; }
+.modal .close {
+  position: absolute;
+  top: .6rem;
+  right: .75rem;
+  font-size: 1.9rem;
+  color: var(--solar-base0);
+  cursor: pointer;
+  line-height: 1;
+  transition: color .25s ease, transform .25s ease;
+}
+.modal .close:hover { color: var(--solar-red); transform: rotate(6deg); }
+
+/* Builder Areas */
+#assignment-builder,
+#assignment-combinations,
+#advanced-assignment-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+#assignment-combinations .combo-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+  gap: .75rem;
+  align-items: flex-end;
+  background: rgba(238,232,213,.6);
+  padding: .85rem .9rem 1rem;
+  border: 1px solid rgba(181,137,0,.35);
+  border-radius: var(--radius-md);
+}
+#assignment-combinations .combo-row:not(:last-child) { margin-bottom: .35rem; }
+#assignment-combinations .remove-combo-btn { justify-self: end; }
+
+/* Checkbox / selection grids reused inside modal */
+.checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: .65rem .8rem; }
+.streams-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(120px,1fr)); gap: .55rem .6rem; }
+
+/* Scroll container for large dynamic sections */
+.modal-section-scroll {
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: .5rem;
+}
+.modal-section-scroll::-webkit-scrollbar { width: 8px; }
+.modal-section-scroll::-webkit-scrollbar-thumb { background: var(--solar-yellow); border-radius: 6px; }
+
+/* Summary panel */
+#assignment-summary, #advanced-assignment-preview {
+  background: rgba(133,153,0,.12);
+  border: 1px solid rgba(133,153,0,.35);
+  border-left: 4px solid var(--solar-green);
+}
+
+/* Responsive refinements for modal & grids */
+@media (max-width: 900px) {
+  .modal { padding: 1.75rem 1rem; }
+  .modal-content { padding: 1.5rem 1.35rem 2rem; max-width: 660px; }
+  #assignment-combinations .combo-row { grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); }
+}
+@media (max-width: 720px) {
+  .modal { padding: 1.5rem .85rem; }
+  .modal-content { padding: 1.35rem 1.1rem 1.75rem; border-radius: var(--radius-md); }
+  .modal-content h2 { font-size: 1.35rem; }
+  .checkbox-grid { grid-template-columns: repeat(auto-fill,minmax(120px,1fr)); }
+  .streams-grid { grid-template-columns: repeat(auto-fill,minmax(110px,1fr)); }
+  #assignment-combinations .combo-row { padding: .75rem .7rem .85rem; }
+  .modal .close { font-size: 1.7rem; top: .4rem; right: .55rem; }
+}
+@media (max-width: 560px) {
+  .modal { padding: 1.1rem .65rem; }
+  .modal-content { padding: 1.15rem .85rem 1.35rem; }
+  .modal-content h2 { font-size: 1.2rem; }
+  .checkbox-grid { grid-template-columns: repeat(auto-fill,minmax(105px,1fr)); }
+  .streams-grid { grid-template-columns: repeat(2,1fr); }
+  #assignment-combinations .combo-row { grid-template-columns: repeat(auto-fit,minmax(100px,1fr)); gap: .55rem; }
+  .modal-section-scroll { max-height: 300px; }
+}
+@media (max-width: 420px) {
+  .modal { padding: .9rem .5rem; }
+  .modal-content { padding: 1rem .75rem 1.15rem; }
+  .modal-content h2 { font-size: 1.05rem; }
+  .checkbox-grid { grid-template-columns: repeat(2,1fr); }
+  .streams-grid { grid-template-columns: repeat(2,1fr); }
+  .modal .close { font-size: 1.55rem; }
+}
+
+/* Dark mode modal adjustments */
+[data-theme="solar-dark"] .modal-content {
+  background: linear-gradient(145deg, rgba(0,43,54,.95) 0%, rgba(7,54,66,.9) 100%);
+  border-color: rgba(181,137,0,.35);
+  box-shadow: 0 10px 26px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.05);
+  color: var(--solar-base1);
+}
+[data-theme="solar-dark"] .modal .close { color: var(--solar-base1); }
+[data-theme="solar-dark"] .modal .close:hover { color: var(--solar-red); }
+[data-theme="solar-dark"] #assignment-combinations .combo-row { background: rgba(0,43,54,.55); border-color: rgba(181,137,0,.35); }
+[data-theme="solar-dark"] .modal-section-scroll::-webkit-scrollbar-thumb { background: var(--solar-yellow); }
+[data-theme="solar-dark"] #assignment-summary, [data-theme="solar-dark"] #advanced-assignment-preview { background: rgba(133,153,0,.18); }
+
+
 /* Badges */
 .class-teacher-badge {
   background: var(--solar-green);
