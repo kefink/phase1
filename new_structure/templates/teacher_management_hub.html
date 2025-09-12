@@ -19,11 +19,7 @@
       rel="stylesheet"
     />
 
-    <!-- Modern CSS Framework -->
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
-    />
+    <!-- Solar Theme Active: Removed previous modern_classteacher.css to eliminate conflicting legacy theme -->
     <style>
       /* Solar Theme - Enhanced Professional Styling for Teacher Management Hub */
 
@@ -773,6 +769,37 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #2c5530;
       }
+
+      /* Theme Toggle Button */
+      .solar-theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: 50px;
+        padding: 10px 16px;
+        cursor: pointer;
+        font-family: "Inter", sans-serif;
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--solar-text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.3s ease;
+        z-index: 1000;
+      }
+
+      .solar-theme-toggle:hover {
+        background: rgba(255, 255, 255, 1);
+      }
+
+      .solar-theme-toggle svg {
+        width: 18px;
+        height: 18px;
+        fill: var(--solar-accent-blue);
+      }
     </style>
   </head>
   <body>
@@ -1209,7 +1236,7 @@
                   <path
                     fill-rule="evenodd"
                     clip-rule="evenodd"
-                    d="M4.125 3C3.089 3 2.25 3.84 2.25 4.875V15.375C2.25 16.41 3.089 17.25 4.125 17.25H5.625V20.25C5.625 20.6642 6.08579 20.9092 6.46967 20.7197L10.4407 18.7347C10.6168 18.6347 10.8199 18.5833 11.0268 18.5833H19.875C20.911 18.5833 21.75 17.7433 21.75 16.7083V4.875C21.75 3.84 20.911 3 19.875 3H4.125ZM7.5 8.25C7.5 7.83579 7.83579 7.5 8.25 7.5H15.75C16.1642 7.5 16.5 7.83579 16.5 8.25C16.5 8.66421 16.1642 9 15.75 9H8.25C7.83579 9 7.5 8.66421 7.5 8.25ZM8.25 10.5C7.83579 10.5 7.5 10.8358 7.5 11.25C7.5 11.6642 7.83579 12 8.25 12H12.75C13.1642 12 13.5 11.6642 13.5 11.25C13.5 10.8358 13.1642 10.5 12.75 10.5H8.25Z"
+                    d="M4.125 3C3.089 3 2.25 3.84 2.25 4.875V15.375C2.25 16.41 3.089 17.25 4.125 17.25H5.625V20.25C5.625 20.6642 6.08579 20.9092 6.46967 20.7197L10.4407 18.7347C10.6168 18.6347 10.8199 18.5833 11.0268 18.5833H19.875C20.911 18.5833 21.75 17.7433 21.75 16.7083V4.875C21.75 3.84 20.911 3 19.875 3H4.125ZM7.5 8.25C7.5 7.83579 7.83579 7.5 8.25 7.5H15.75C16.1642 7.5 16.5 7.83579 16.5 8.25C16.5 8.66421 16.1642 9 15.75 9H8.25C7.83579 9 7.5 8.66421 7.5 8.25ZM8.25 10.5C7.83579 10.5 7.5 10.8358 7.5 11.25C7.5 11.6642 7.83579 12 8.25 12H12.75C13.1642 12 13.5 11.6642 13.5 11.25C13.5 10.8358 13.1642 10.5 12.75 10.5H8.25ZM7.5 15C7.5 14.5858 7.83579 14.25 8.25 14.25H15.75C16.1642 14.25 16.5 14.5858 16.5 15C16.5 15.4142 16.1642 15.75 15.75 15.75H8.25C7.83579 15.75 7.5 15.4142 7.5 15Z"
                   />
                 </svg>
               </div>
@@ -1348,5 +1375,7 @@
         </div>
       </div>
     </div>
+
+    {% include '_solar_theme_toggle.html' %}
   </body>
 </html>

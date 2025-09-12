@@ -11,8 +11,9 @@ page_subtitle %}
 <!-- Responsive Framework is already included in base template -->
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
+  href="{{ url_for('static', filename='css/solar_theme.css') }}"
 />
+{# Solar theme toggle handled by reusable include #}
 <style>
   /* Premium Analytics Styling */
   body {
@@ -1425,8 +1426,7 @@ page_subtitle %}
   rel="stylesheet"
   href="{{ url_for('static', filename='css/enhanced_analytics.css') }}"
 />
-
-{% endblock %} {% block extra_js %}
+{% include '_solar_theme_toggle.html' %} {% endblock %} {% block extra_js %}
 <!-- Analytics Dashboard JavaScript -->
 <script src="{{ url_for('static', filename='js/analytics_dashboard.js') }}?v=20250609"></script>
 
@@ -1873,7 +1873,7 @@ page_subtitle %}
       return;
     }
 
-    let html = '<div class="top-subject-performers-grid">';
+    let html = '<div class="top-subject_performers-grid">';
 
     Object.entries(data).forEach(([gradeName, streams]) => {
       html += `
@@ -2964,7 +2964,7 @@ page_subtitle %}
     color: var(--text-secondary);
     cursor: pointer;
     padding: var(--space-1);
-    border-radius: 50%;
+    border-radius: var(--radius-sm);
     transition: all 0.3s ease;
   }
 
@@ -3302,6 +3302,7 @@ page_subtitle %}
   .item-count {
     color: var(--text-secondary);
     font-size: 0.85rem;
+    margin-left: var(--space-2);
   }
 
   .loading-preview,

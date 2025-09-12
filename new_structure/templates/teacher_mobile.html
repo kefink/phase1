@@ -1080,7 +1080,9 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
 
 <!-- Subject Teaching Assignments Section -->
 {% if assignment_summary and assignment_summary.subject_assignments %}
-<div class="dashboard-section active" id="assignments-section">
+{# Auto-activate marks section after an upload attempt or when showing student marks #}
+{% set show_marks_section = show_students or (request.method == 'POST' and ('upload_marks' in request.form or 'submit_marks' in request.form)) or error_message %}
+<div class="dashboard-section {% if not show_marks_section %}active{% endif %}" id="assignments-section">
     <div class="section-header">
         <i class="fas fa-chalkboard-teacher"></i>
         <h2>My Subject Assignments</h2>
@@ -1145,7 +1147,7 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
 {% endif %}
 
 <!-- Marks Entry Section -->
-<div id="marks-section" class="dashboard-section">
+<div id="marks-section" class="dashboard-section {% if show_marks_section %}active{% endif %}">
     <div class="section-header">
         <i class="fas fa-edit"></i>
         <h2>Enter Student Marks</h2>
@@ -2020,6 +2022,15 @@ Welcome back, {{ session.get('username', 'Teacher') }}! Manage your classes with
 
     // Initialize percentages on page load for existing marks
     document.addEventListener('DOMContentLoaded', function() {
+        // If backend set marks section active (auto after upload), sync nav highlight
+        try {
+            var marksSection = document.getElementById('marks-section');
+            if (marksSection && marksSection.classList.contains('active')) {
+                document.querySelectorAll('.mobile-nav-link').forEach(l=>l.classList.remove('active'));
+                var navLink = document.querySelector('.mobile-nav-link[href="#marks-section"]');
+                if (navLink) navLink.classList.add('active');
+            }
+        } catch(e) { /* silent */ }
         const markInputs = document.querySelectorAll('.mark-input');
         markInputs.forEach(input => {
             const studentId = input.getAttribute('data-student-id');

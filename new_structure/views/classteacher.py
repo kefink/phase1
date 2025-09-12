@@ -6171,19 +6171,38 @@ def manage_teacher_assignments():
     subjects = Subject.query.all()
     grades = Grade.query.all()
 
-    # Get all class teacher assignments
+    # Determine scope (mine | all). Default is 'mine' for safety.
+    scope = request.args.get('scope', 'mine').lower()
+    if scope not in ('mine', 'all'):
+        scope = 'mine'
+    # Authorize access to global scope; only allow privileged roles
+    requested_scope = scope
+    try:
+        user_role = get_role(session)
+    except Exception:
+        user_role = None
+    # Roles allowed to view ALL assignments (add or remove as policy evolves)
+    allowed_global_roles = {'classteacher', 'admin', 'superadmin', 'headteacher'}
+    if requested_scope == 'all' and user_role not in allowed_global_roles:
+        # Fallback silently to 'mine' to avoid information disclosure
+        scope = 'mine'
+
+    # Get current teacher context (always needed for 'mine')
+    current_teacher_id = session.get('teacher_id')
+    current_teacher = Teacher.query.get(current_teacher_id) if current_teacher_id else None
+
+    # Get class teacher assignments respecting scope
     class_teacher_assignments = []
     try:
-        # Get the current teacher ID
-        current_teacher_id = session.get('teacher_id')
-        current_teacher = Teacher.query.get(current_teacher_id)
-
-        # Only show class teacher assignments for the current teacher
-        # This ensures a teacher only sees their own class teacher assignments
-        assignments = TeacherSubjectAssignment.query.filter_by(
-            teacher_id=current_teacher_id,
-            is_class_teacher=True
-        ).all()
+        if scope == 'all':
+            assignments = TeacherSubjectAssignment.query.filter_by(
+                is_class_teacher=True
+            ).all()
+        else:
+            assignments = TeacherSubjectAssignment.query.filter_by(
+                teacher_id=current_teacher_id,
+                is_class_teacher=True
+            ).all()
 
         # Use a set to track unique grade-stream combinations to avoid duplicates
         seen_combinations = set()
@@ -6236,18 +6255,22 @@ def manage_teacher_assignments():
     except Exception as e:
         print(f"Error fetching class teacher assignments: {str(e)}")
 
-    # Get all subject assignments
+    # Get subject assignments respecting scope
     subject_assignments = []
     try:
-        # Only show subject assignments for the current teacher
-        # This ensures a teacher only sees their own subject assignments
-        assignments = TeacherSubjectAssignment.query.filter_by(
-            teacher_id=current_teacher_id,
-            is_class_teacher=False
-        ).all()
+        if scope == 'all':
+            assignments = TeacherSubjectAssignment.query.filter_by(
+                is_class_teacher=False
+            ).all()
+        else:
+            assignments = TeacherSubjectAssignment.query.filter_by(
+                teacher_id=current_teacher_id,
+                is_class_teacher=False
+            ).all()
 
         # Use a set to track unique subject-grade-stream combinations to avoid duplicates
         seen_subject_combinations = set()
+        allow_dup_flag = request.args.get('allow_duplicates_for_pagination') == '1'
 
         for assignment in assignments:
             teacher = Teacher.query.get(assignment.teacher_id)
@@ -6258,11 +6281,11 @@ def manage_teacher_assignments():
             # Create a unique key for this subject-grade-stream combination
             subject_combination_key = (assignment.subject_id, assignment.grade_id, assignment.stream_id)
 
-            # Skip if we've already seen this combination
-            if subject_combination_key in seen_subject_combinations:
-                continue
-
-            seen_subject_combinations.add(subject_combination_key)
+            # Skip if we've already seen this combination (unless testing flag bypasses it)
+            if not allow_dup_flag:
+                if subject_combination_key in seen_subject_combinations:
+                    continue
+                seen_subject_combinations.add(subject_combination_key)
 
             subject_assignments.append({
                 "id": assignment.id,
@@ -6284,15 +6307,111 @@ def manage_teacher_assignments():
     if 'assignment_success' in session:
         clear_session = True
 
+    # ---- Pagination Logic ----
+    # Query params for pages / per-page (independent for class & subject tables)
+    try:
+        class_page = int(request.args.get('class_page', 1))
+    except ValueError:
+        class_page = 1
+    try:
+        subject_page = int(request.args.get('subject_page', 1))
+    except ValueError:
+        subject_page = 1
+    try:
+        per_page_class = int(request.args.get('per_page_class', 10))
+    except ValueError:
+        per_page_class = 10
+    try:
+        per_page_subject = int(request.args.get('per_page_subject', 25))
+    except ValueError:
+        per_page_subject = 25
+
+    # Enforce sensible bounds
+    per_page_class = max(1, min(per_page_class, 100))
+    per_page_subject = max(1, min(per_page_subject, 200))
+    class_page = max(1, class_page)
+    subject_page = max(1, subject_page)
+
+    # Sort deterministically (grade, stream, subject, teacher) before slicing
+    def natural_teacher_key(username: str):
+        if not username:
+            return (username, -1)
+        if username.startswith('t_'):
+            try:
+                return ('t_', int(username.split('_', 1)[1]))
+            except ValueError:
+                return (username, -1)
+        return (username, -1)
+    def natural_stream_key(stream_name: str):
+        if not stream_name:
+            return (stream_name, -1)
+        # Pattern S<number>
+        if stream_name.startswith('S'):
+            try:
+                return ('S', int(stream_name[1:]))
+            except ValueError:
+                return (stream_name, -1)
+        return (stream_name, -1)
+
+    class_teacher_assignments.sort(key=lambda a: (
+        a.get('grade_level') or '',
+        natural_stream_key(a.get('stream_name') or ''),
+        natural_teacher_key(a.get('teacher_username'))
+    ))
+    subject_assignments.sort(key=lambda a: (
+        a.get('subject_name') or '',
+        a.get('grade_level') or '',
+        natural_stream_key(a.get('stream_name') or ''),
+        natural_teacher_key(a.get('teacher_username'))
+    ))
+
+    total_class_assignment_count = len(class_teacher_assignments)
+    total_subject_assignment_count = len(subject_assignments)
+    total_combined_assignment_count = total_class_assignment_count + total_subject_assignment_count
+
+    def paginate(list_, page, per_page):
+        total = len(list_)
+        start = (page - 1) * per_page
+        end = start + per_page
+        items = list_[start:end]
+        total_pages = (total + per_page - 1) // per_page if per_page else 1
+        return items, {
+            'page': page,
+            'per_page': per_page,
+            'total': total,
+            'total_pages': total_pages,
+            'has_prev': page > 1,
+            'has_next': page < total_pages,
+            'prev_page': page - 1 if page > 1 else None,
+            'next_page': page + 1 if page < total_pages else None
+        }
+
+    class_teacher_assignments_page, class_pagination = paginate(class_teacher_assignments, class_page, per_page_class)
+    subject_assignments_page, subject_pagination = paginate(subject_assignments, subject_page, per_page_subject)
+
+    # Global (unfiltered) totals for badge/tooltips (server-side authoritative counts)
+    agg_class_total = TeacherSubjectAssignment.query.filter_by(is_class_teacher=True).count()
+    agg_subject_total = TeacherSubjectAssignment.query.filter_by(is_class_teacher=False).count()
+
     response = render_template(
         'manage_teacher_assignments.html',
         teachers=teachers,
         subjects=subjects,
         grades=grades,
-        class_teacher_assignments=class_teacher_assignments,
-        subject_assignments=subject_assignments,
+        class_teacher_assignments=class_teacher_assignments_page,
+        subject_assignments=subject_assignments_page,
         error_message=error_message,
-        success_message=success_message
+        success_message=success_message,
+        view_scope=scope,
+        total_class_assignment_count=total_class_assignment_count,
+        total_subject_assignment_count=total_subject_assignment_count,
+        total_combined_assignment_count=total_combined_assignment_count,
+        aggregate_class_count=agg_class_total,
+        aggregate_subject_count=agg_subject_total,
+        requested_scope=requested_scope,
+        user_role=user_role,
+        class_pagination=class_pagination,
+        subject_pagination=subject_pagination
     )
 
     # Clear session variables after rendering the template
@@ -7328,6 +7447,14 @@ def bulk_transfer_assignments():
     to_teacher_id = request.form.get('to_teacher_id')
     transfer_class_teacher = 'transfer_class_teacher' in request.form
     transfer_subject_assignments = 'transfer_subject_assignments' in request.form
+    # New: optional explicit selection list (comma separated IDs) for granular transfer
+    raw_selected_ids = request.form.get('selected_assignment_ids', '').strip()
+    selected_ids = []
+    if raw_selected_ids:
+        for part in raw_selected_ids.split(','):
+            part = part.strip()
+            if part.isdigit():
+                selected_ids.append(int(part))
 
     if not from_teacher_id or not to_teacher_id:
         flash("Please select both source and destination teachers.", "error")
@@ -7337,8 +7464,9 @@ def bulk_transfer_assignments():
         flash("Source and destination teachers cannot be the same.", "error")
         return redirect(url_for('classteacher.manage_teacher_assignments'))
 
-    if not transfer_class_teacher and not transfer_subject_assignments:
-        flash("Please select at least one type of assignment to transfer.", "error")
+    # If no broad category flags and no explicit IDs, reject
+    if not transfer_class_teacher and not transfer_subject_assignments and not selected_ids:
+        flash("Please select at least one type of assignment or specific assignments to transfer.", "error")
         return redirect(url_for('classteacher.manage_teacher_assignments'))
 
     try:
@@ -7353,40 +7481,74 @@ def bulk_transfer_assignments():
         # Track statistics
         class_teacher_count = 0
         subject_count = 0
+        skipped_duplicates = 0
 
-        # Transfer class teacher assignments if selected
-        if transfer_class_teacher:
-            class_teacher_assignments = TeacherSubjectAssignment.query.filter_by(
-                teacher_id=from_teacher_id,
-                is_class_teacher=True
+        # Helper: determine if duplicate exists already for destination
+        def already_exists(a: TeacherSubjectAssignment):
+            return TeacherSubjectAssignment.query.filter_by(
+                teacher_id=to_teacher_id,
+                grade_id=a.grade_id,
+                stream_id=a.stream_id,
+                subject_id=a.subject_id,
+                is_class_teacher=a.is_class_teacher
+            ).first() is not None
+
+        # If explicit selection provided, ignore broad flags and move only those
+        if selected_ids:
+            assignments = TeacherSubjectAssignment.query.filter(
+                TeacherSubjectAssignment.teacher_id==from_teacher_id,
+                TeacherSubjectAssignment.id.in_(selected_ids)
             ).all()
-
-            for assignment in class_teacher_assignments:
+            for assignment in assignments:
+                if already_exists(assignment):
+                    skipped_duplicates += 1
+                    continue
+                if assignment.is_class_teacher:
+                    class_teacher_count += 1
+                else:
+                    subject_count += 1
                 assignment.teacher_id = to_teacher_id
-                class_teacher_count += 1
-
-        # Transfer subject assignments if selected
-        if transfer_subject_assignments:
-            subject_assignments = TeacherSubjectAssignment.query.filter_by(
-                teacher_id=from_teacher_id,
-                is_class_teacher=False
-            ).all()
-
-            for assignment in subject_assignments:
-                assignment.teacher_id = to_teacher_id
-                subject_count += 1
+        else:
+            # Transfer class teacher assignments if selected
+            if transfer_class_teacher:
+                class_teacher_assignments = TeacherSubjectAssignment.query.filter_by(
+                    teacher_id=from_teacher_id,
+                    is_class_teacher=True
+                ).all()
+                for assignment in class_teacher_assignments:
+                    if already_exists(assignment):
+                        skipped_duplicates += 1
+                        continue
+                    assignment.teacher_id = to_teacher_id
+                    class_teacher_count += 1
+            # Transfer subject assignments if selected
+            if transfer_subject_assignments:
+                subject_assignments = TeacherSubjectAssignment.query.filter_by(
+                    teacher_id=from_teacher_id,
+                    is_class_teacher=False
+                ).all()
+                for assignment in subject_assignments:
+                    if already_exists(assignment):
+                        skipped_duplicates += 1
+                        continue
+                    assignment.teacher_id = to_teacher_id
+                    subject_count += 1
 
         # Commit the changes
         db.session.commit()
 
         # Create success message
-        message = f"Successfully transferred assignments from {from_teacher.username} to {to_teacher.username}: "
-        if transfer_class_teacher:
-            message += f"{class_teacher_count} class teacher assignments"
-        if transfer_class_teacher and transfer_subject_assignments:
-            message += " and "
-        if transfer_subject_assignments:
-            message += f"{subject_count} subject assignments"
+        message = f"Transferred from {from_teacher.username} to {to_teacher.username}: "
+        parts = []
+        if class_teacher_count:
+            parts.append(f"{class_teacher_count} class teacher")
+        if subject_count:
+            parts.append(f"{subject_count} subject")
+        if not parts:
+            parts.append("0 assignments")
+        message += ", ".join(parts)
+        if skipped_duplicates:
+            message += f" (skipped {skipped_duplicates} duplicates)"
 
         flash(message, "success")
     except Exception as e:
@@ -7394,6 +7556,28 @@ def bulk_transfer_assignments():
         flash("Error transferring assignments. Please try again.", "error")
 
     return redirect(url_for('classteacher.manage_teacher_assignments'))
+
+@classteacher_bp.route('/api/teacher_assignments/<int:teacher_id>')
+@classteacher_required
+def api_teacher_assignments(teacher_id):
+    """Return JSON of a teacher's assignments for granular bulk transfer UI."""
+    assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher_id).all()
+    data = []
+    for a in assignments:
+        grade = Grade.query.get(a.grade_id) if a.grade_id else None
+        stream = Stream.query.get(a.stream_id) if a.stream_id else None
+        subject = Subject.query.get(a.subject_id) if a.subject_id else None
+        data.append({
+            'id': a.id,
+            'grade_id': a.grade_id,
+            'grade_name': grade.name if grade else None,
+            'stream_id': a.stream_id,
+            'stream_name': stream.name if stream else None,
+            'subject_id': a.subject_id,
+            'subject_name': subject.name if subject else None,
+            'is_class_teacher': a.is_class_teacher
+        })
+    return jsonify(data)
 
 @classteacher_bp.route('/teacher_management_hub', methods=['GET'])
 @classteacher_required

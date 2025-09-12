@@ -1,0 +1,252 @@
+:root {
+  --solar-bg-primary: #fdf6e3;
+  --solar-bg-secondary: #eee8d5;
+  --solar-bg-tertiary: #d6d2c4;
+  --solar-accent-yellow: #b58900;
+  --solar-accent-blue: #268bd2;
+  --solar-accent-green: #859900;
+  --solar-accent-red: #dc322f;
+  --solar-text-primary: #002b36;
+  --solar-text-secondary: #073642;
+  --solar-border: rgba(238, 232, 213, 0.5);
+  --solar-card-bg: rgba(255, 255, 255, 0.9);
+  --solar-gradient-accent: linear-gradient(
+    135deg,
+    var(--solar-accent-blue) 0%,
+    var(--solar-accent-green) 100%
+  );
+  --solar-focus-ring: 0 0 0 3px rgba(38, 139, 210, 0.4);
+  --solar-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --solar-shadow: 0 16px 40px rgba(181, 137, 0, 0.15);
+  --solar-radius-sm: 8px;
+  --solar-radius: 16px;
+  --solar-radius-lg: 24px;
+  --solar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark variant */
+[data-theme="solar-dark"] {
+  --solar-bg-primary: #002b36;
+  --solar-bg-secondary: #073642;
+  --solar-bg-tertiary: #0d3c49;
+  --solar-accent-yellow: #b58900;
+  --solar-accent-blue: #268bd2;
+  --solar-accent-green: #859900;
+  --solar-accent-red: #dc322f;
+  --solar-text-primary: #fdf6e3;
+  --solar-text-secondary: #eee8d5;
+  --solar-border: rgba(147, 161, 161, 0.4);
+  --solar-card-bg: rgba(0, 43, 54, 0.85);
+  --solar-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+body.solar-enabled {
+  background: linear-gradient(
+    135deg,
+    var(--solar-bg-primary) 0%,
+    var(--solar-bg-secondary) 100%
+  );
+  color: var(--solar-text-primary);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  min-height: 100vh;
+  transition: background var(--solar-transition), color var(--solar-transition);
+}
+
+/* Utility classes */
+.solar-card {
+  background: var(--solar-card-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--solar-border);
+  border-radius: var(--solar-radius);
+  box-shadow: var(--solar-shadow-sm);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: var(--solar-transition);
+}
+.solar-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+.solar-gradient-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    var(--solar-accent-blue),
+    var(--solar-accent-green)
+  );
+}
+.solar-btn,
+.solar-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 50px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  position: relative;
+  overflow: hidden;
+  transition: var(--solar-transition);
+  cursor: pointer;
+  font-family: inherit;
+}
+.solar-btn {
+  background: var(--solar-gradient-accent);
+  color: #fff;
+  border: 1px solid var(--solar-accent-blue);
+  box-shadow: 0 8px 25px rgba(38, 139, 210, 0.3);
+}
+.solar-btn:hover {
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+}
+.solar-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--solar-focus-ring);
+}
+
+.solar-btn-outline {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--solar-text-primary);
+  border: 1px solid var(--solar-border);
+  backdrop-filter: blur(10px);
+}
+[data-theme="solar-dark"] .solar-btn-outline {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--solar-text-primary);
+}
+.solar-btn-outline:hover {
+  background: var(--solar-gradient-accent);
+  color: #fff;
+  border-color: var(--solar-accent-blue);
+  box-shadow: 0 8px 25px rgba(38, 139, 210, 0.25);
+}
+
+/* Headers */
+.solar-header {
+  background: var(--solar-gradient-accent);
+  color: #fff;
+  border-radius: var(--solar-radius-lg);
+  padding: 2.5rem 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(38, 139, 210, 0.25);
+}
+.solar-header h1,
+.solar-header h2,
+.solar-header h3 {
+  color: #fff;
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+/* Theme toggle */
+.solar-theme-toggle {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 1000;
+  background: var(--solar-card-bg);
+  border: 1px solid var(--solar-border);
+  border-radius: 40px;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--solar-shadow-sm);
+  transition: var(--solar-transition);
+}
+.solar-theme-toggle:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+/* Sun/Moon icon swap */
+.solar-theme-toggle .icon-wrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+.solar-theme-toggle .icon-sun,
+.solar-theme-toggle .icon-moon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  transition: var(--solar-transition);
+}
+.solar-theme-toggle .icon-moon {
+  transform: scale(0) rotate(-45deg);
+  opacity: 0;
+}
+[data-theme="solar-dark"] .solar-theme-toggle .icon-sun {
+  transform: scale(0) rotate(45deg);
+  opacity: 0;
+}
+[data-theme="solar-dark"] .solar-theme-toggle .icon-moon {
+  transform: scale(1) rotate(0deg);
+  opacity: 1;
+}
+
+/* Icon color helpers */
+.heroicon-solar-blue {
+  fill: var(--solar-accent-blue);
+}
+.heroicon-solar-green {
+  fill: var(--solar-accent-green);
+}
+.heroicon-solar-yellow {
+  fill: var(--solar-accent-yellow);
+}
+.heroicon-solar-red {
+  fill: var(--solar-accent-red);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--solar-bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--solar-accent-blue);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--solar-accent-green);
+}
+
+/* Dark adjustments */
+[data-theme="solar-dark"] .solar-card {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+[data-theme="solar-dark"] .solar-header {
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6);
+}
+[data-theme="solar-dark"] ::-webkit-scrollbar-track {
+  background: var(--solar-bg-tertiary);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Theme JS helper (inline functions will use data-theme attr on <html>) */

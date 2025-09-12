@@ -17,11 +17,9 @@
       rel="stylesheet"
     />
 
-    <!-- Modern CSS Framework -->
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/modern_classteacher.css') }}"
-    />
+    <!-- Solar Theme Framework -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/solar_theme.css') }}" />
+  {# Theme toggle handled by reusable include #}
 
     <style>
       /* Solar Theme Tokens + Premium Styling */
@@ -512,7 +510,7 @@
           </div>
           <div style="margin-top: var(--space-4); padding: var(--space-3); background: rgba(59, 130, 246, 0.1); border-radius: var(--radius-lg); border-left: 4px solid var(--info-color);">
             <p style="margin: 0; color: var(--info-color); font-weight: 500; display: flex; align-items: center; gap: 8px;">
-              <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.76 9.76 0 0012 2.25zM12.75 7.5a.75.75 0 10-1.5 0 .75.75 0 001.5 0zM12 9.75a.75.75 0 01.75.75v5.25a.75.75 0 11-1.5 0V10.5A.75.75 0 0112 9.75z" clip-rule="evenodd"/></svg>
+              <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.76 9.76 0 0012 2.25zm0 1.5a8.25 8.25 0 11-8.25 8.25A8.26 8.26 0 0112 3.75z" clip-rule="evenodd"/></svg>
               Selected: <span id="selected-count">0</span> students | Ready for promotion: <span id="promotion-ready">0</span> | Requires review: <span id="review-required">0</span>
             </p>
           </div>
@@ -640,7 +638,7 @@
             </div>
             <div class="grade-summary">
               <span
-                ><svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path d="M1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/></svg> {{ grade_data.total_count }}
+                ><svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path d="M1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 007 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/></svg> {{ grade_data.total_count }}
                 students</span
               >
               <span
@@ -1792,5 +1790,7 @@
         });
       }
     </script>
+
+  {% include '_solar_theme_toggle.html' %}
   </body>
 </html>

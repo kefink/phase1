@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#002b36" />
   <title>{{ page_title }} - {{ school_info.school_name|default('School Management System') }}</title>
+  <!-- Shared Solar Theme Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/solar-shared.css') }}" />
     <!-- Heroicons - Premium SVG Icons (No external dependencies, guaranteed display) -->
     <style>
       /* FORCE SOLAR THEME BACKGROUND - HIGHEST PRIORITY */
@@ -16,10 +18,38 @@
         min-height: 100vh !important;
       }
       
-      /* Universal page specific override */
-      .container, .main-container, .wrapper, div {
+      /* Scoped transparency only for high-level wrappers (avoid killing solar-card backgrounds) */
+      .container, .main-container, .wrapper {
         background: transparent !important;
       }
+
+      /* Solar theme overrides (non-destructive) */
+      body.solar-theme .card,
+      body.solar-theme .stat-card,
+      body.solar-theme .quick-action-card,
+      body.solar-theme .class-card {
+        background: var(--solar-surface, rgba(253,246,227,0.94)) !important;
+        border: 1px solid rgba(147,161,161,0.28) !important;
+        box-shadow: var(--shadow-md, 0 4px 12px rgba(0,43,54,0.12));
+        backdrop-filter: blur(6px);
+        transition: box-shadow .25s, transform .25s;
+      }
+      body.solar-theme .card:hover,
+      body.solar-theme .stat-card:hover,
+      body.solar-theme .quick-action-card:hover,
+      body.solar-theme .class-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg, 0 12px 28px rgba(0,43,54,0.18));
+        border-color: rgba(181,137,0,0.45) !important;
+      }
+      body.solar-theme .card::before,
+      body.solar-theme .stat-card::before,
+      body.solar-theme .quick-action-card::before,
+      body.solar-theme .class-card::before { display:none; }
+      body.solar-theme .action-btn { background: var(--primary-color); border:1px solid rgba(0,0,0,0.05); }
+      body.solar-theme .action-btn.secondary { background:#586e75; }
+      body.solar-theme .action-btn:hover { background:#cb4b16; }
+      :root { --solar-surface:#fdf6e3; }
       
       /* Heroicons SVG Icon Base Styles */
       .heroicon {
@@ -225,6 +255,7 @@
         align-items: center;
         gap: 0.5rem;
   min-height: 44px; /* touch target */
+  border: 1px solid transparent; /* allow active/hover border */
       }
 
       .nav-link:hover {
@@ -233,6 +264,35 @@
         transform: translateY(-1px);
         border-color: rgba(181, 137, 0, 0.4);
       }
+
+      /* Active state styling aligned with primary Solar palette */
+      .nav-link.active {
+        background: rgba(181, 137, 0, 0.22);
+        color: #fdf6e3;
+        border-color: rgba(181, 137, 0, 0.55);
+        box-shadow: 0 2px 8px rgba(181, 137, 0, 0.18), inset 0 1px 0 rgba(253, 246, 227, 0.4);
+      }
+      .nav-link.active .heroicon { filter: brightness(1.15); }
+
+      /* Color–coded navigation icons (progressive order) */
+      .navbar-nav li:nth-child(1) .heroicon { color: #b58900; }
+      .navbar-nav li:nth-child(2) .heroicon { color: #268bd2; }
+      .navbar-nav li:nth-child(3) .heroicon { color: #859900; }
+      .navbar-nav li:nth-child(4) .heroicon { color: #dc322f; }
+
+      /* Small-screen nav label hiding while keeping accessible names */
+      @media (max-width: 600px) {
+        .navbar-nav .nav-link span.nav-text { display: none; }
+        .navbar-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 0.25rem; }
+      }
+
+      /* Improve quick action card tap targets on very small devices */
+      @media (max-width: 480px) {
+        .quick-action-card { min-height: 96px; }
+      }
+
+      /* Subtle focus ring harmonized with Solar Blue */
+      .nav-link:focus-visible { outline: 2px solid #268bd2; outline-offset: 2px; }
 
       .logout-btn {
         background: #dc322f;
@@ -805,35 +865,6 @@
           >
             <!-- Heroicon: key (solid) - Permissions icon -->
             <svg class="heroicon heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
-
-          /* Responsive tweaks for management options */
-          @media (max-width: 992px) {
-            .quick-actions-grid {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-
-          @media (max-width: 560px) {
-            .quick-actions-grid {
-              grid-template-columns: 1fr;
-            }
-            .quick-action-card {
-              padding: var(--spacing-md);
-              min-height: 88px;
-              display: grid;
-              grid-template-columns: 48px 1fr;
-              align-items: center;
-              gap: var(--spacing-sm);
-            }
-            .quick-action-icon { font-size: 1.75rem; margin-bottom: 0; }
-            .quick-action-title { font-size: 1rem; margin-bottom: 2px; }
-            .quick-action-desc { font-size: 0.9rem; margin: 0; grid-column: 2; }
-          }
-
-          /* Disable hover transforms on touch devices to prevent sticky hover */
-          @media (hover: none) {
-            .quick-action-card:hover { transform: none; }
-          }
               <path fill-rule="evenodd" d="M15.75 1.5a6.75 6.75 0 00-6.651 7.906c.067.39-.032.717-.221.906l-6.5 6.499a3 3 0 00-.878 2.121v2.818c0 .414.336.75.75.75H6a.75.75 0 00.75-.75v-1.5h1.5A.75.75 0 009 19.5V18h1.5a.75.75 0 00.53-.22l2.658-2.658c.19-.189.517-.288.906-.22A6.75 6.75 0 1015.75 1.5zm1.5 3a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>
             </svg>
             Permissions
@@ -871,28 +902,28 @@
 
       <!-- Dashboard Statistics -->
       <div class="dashboard-grid">
-        <div class="card stat-card">
+  <div class="card stat-card solar-card">
           <div class="stat-number" id="totalGrades">
             {{ dashboard_data.class_statistics.total_grades or 0 }}
           </div>
           <div class="stat-label">Total Grades</div>
         </div>
 
-        <div class="card stat-card">
+  <div class="card stat-card solar-card">
           <div class="stat-number" id="totalClasses">
             {{ dashboard_data.class_statistics.total_classes or 0 }}
           </div>
           <div class="stat-label">Total Classes</div>
         </div>
 
-        <div class="card stat-card">
+  <div class="card stat-card solar-card">
           <div class="stat-number" id="totalStudents">
             {{ dashboard_data.class_statistics.total_students or 0 }}
           </div>
           <div class="stat-label">Total Students</div>
         </div>
 
-        <div class="card stat-card">
+  <div class="card stat-card solar-card">
           <div class="stat-number text-info" id="structureType">
             {{ dashboard_data.class_statistics.structure_type or 'Unknown' }}
           </div>
@@ -925,7 +956,7 @@
           <div class="quick-actions-grid" role="list" aria-labelledby="student-management">
             <a
               href="{{ url_for('universal.proxy_manage_students') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Manage Students"
               aria-describedby="desc-manage-students">
@@ -943,7 +974,7 @@
 
             <a
               href="{{ url_for('universal.proxy_download_student_template') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Download Student Template"
               aria-describedby="desc-student-template">
@@ -959,7 +990,7 @@
             
             <a
               href="{{ url_for('universal.proxy_download_class_list') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Export Class Lists"
               aria-describedby="desc-class-lists">
@@ -987,7 +1018,7 @@
           <div class="quick-actions-grid" role="list" aria-labelledby="subject-management">
             <a
               href="{{ url_for('universal.proxy_manage_subjects') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Manage Subjects"
               aria-describedby="desc-manage-subjects">
@@ -1003,7 +1034,7 @@
 
             <a
               href="{{ url_for('universal.proxy_download_subject_template') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Download Subject Template"
               aria-describedby="desc-subject-template">
@@ -1019,7 +1050,7 @@
             
             <a
               href="{{ url_for('universal.proxy_export_subjects') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Export Subjects"
               aria-describedby="desc-export-subjects">
@@ -1049,7 +1080,7 @@
           <div class="quick-actions-grid" role="list" aria-labelledby="teacher-management">
             <a
               href="{{ url_for('universal.proxy_teacher_management_hub') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Teacher Hub"
               aria-describedby="desc-teacher-hub">
@@ -1065,7 +1096,7 @@
             
             <a
               href="{{ url_for('universal.proxy_manage_teachers') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Manage Teachers"
               aria-describedby="desc-manage-teachers">
@@ -1087,7 +1118,7 @@
           <div class="quick-actions-grid">
             <a
               href="#"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
             >
               <div class="quick-action-icon">
                 <i class="fas fa-user-friends"></i>
@@ -1098,7 +1129,7 @@
 
             <a
               href="#"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
             >
               <div class="quick-action-icon">
                 <i class="fas fa-user-plus"></i>
@@ -1111,7 +1142,7 @@
             <!-- Email Configuration - TEMPORARILY DISABLED
             <a
               href="#"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
             >
               <div class="quick-action-icon">
                 <i class="fas fa-envelope-open-text"></i>
@@ -1136,7 +1167,7 @@
           <div class="quick-actions-grid" role="list" aria-labelledby="assignments-settings">
             <a
               href="{{ url_for('universal.proxy_assign_subjects') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Assign Subjects"
               aria-describedby="desc-assign-subjects"
@@ -1154,7 +1185,7 @@
 
             <a
               href="{{ url_for('universal.proxy_manage_teacher_assignments') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Teacher Assignments"
               aria-describedby="desc-teacher-assignments"
@@ -1171,7 +1202,7 @@
 
             <a
               href="{{ url_for('universal.proxy_report_configuration') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Staff Report Settings"
               aria-describedby="desc-staff-report-settings"
@@ -1202,7 +1233,7 @@
           <div class="quick-actions-grid" role="list" aria-labelledby="marks-management">
             <a
               href="{{ url_for('universal.proxy_classteacher_dashboard') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Upload Marks"
               aria-describedby="desc-upload-marks">
@@ -1218,7 +1249,7 @@
 
             <a
               href="{{ url_for('universal.proxy_download_marks_template') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Download Marks Template"
               aria-describedby="desc-marks-template">
@@ -1234,7 +1265,7 @@
             
             <a
               href="{{ url_for('universal.proxy_collaborative_marks_dashboard') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="Collaborative Marks"
               aria-describedby="desc-collaborative-marks">
@@ -1263,7 +1294,7 @@
           <div class="quick-actions-grid" role="list" aria-labelledby="reports-management">
             <a
               href="{{ url_for('universal.proxy_view_all_reports') }}"
-              class="quick-action-card"
+              class="quick-action-card solar-card"
               role="listitem"
               aria-label="View All Reports"
               aria-describedby="desc-view-all-reports">
@@ -1512,6 +1543,20 @@
     </div>
 
     <script>
+      // Solar Theme: auto-highlight current navigation link
+      (function() {
+        try {
+          var path = window.location.pathname;
+          var links = document.querySelectorAll('.navbar-nav .nav-link');
+          links.forEach(function(l){
+            var href = l.getAttribute('href');
+            if (href && path.startsWith(href)) {
+              l.classList.add('active');
+            }
+          });
+        } catch(e) { /* fail silently */ }
+      })();
+
       // Initialize the universal dashboard
       document.addEventListener("DOMContentLoaded", function () {
         loadClassGrid();

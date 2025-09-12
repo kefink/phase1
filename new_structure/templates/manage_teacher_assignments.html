@@ -85,6 +85,24 @@
         padding: 0 !important;
         background: transparent !important;
       }
+      /* Mobile enhancements */
+      @media (max-width: 760px) {
+        .page-header {padding:20px !important;}
+        .assignment-stats-grid {grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
+        .filter-section {flex-direction:column;align-items:stretch;}
+        .filter-section.compact-hide {display:none;}
+        .filter-toggle-btn {display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,var(--solar-secondary),var(--solar-green));color:#fff;border:none;padding:10px 14px;border-radius:12px;font-size:.75rem;font-weight:600;box-shadow:0 6px 16px rgba(38,139,210,.35);cursor:pointer;margin-bottom:12px;}
+        .filter-toggle-btn[aria-expanded="true"] {background:linear-gradient(90deg,var(--solar-primary),var(--solar-secondary));}
+        .table-wrapper {overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .data-table {min-width:680px;}
+        .pagination-bar {flex-wrap:wrap;justify-content:center;}
+        .pagination-bar .mini-btn {padding:10px 14px;font-size:.68rem;}
+      }
+      @media (max-width:480px){
+        .data-table {min-width:600px;}
+        .stat-value {font-size:1.1rem;}
+        .page-header h1 {font-size:1.15rem;}
+      }
       .page-header {
         background: linear-gradient(
             145deg,
@@ -224,25 +242,69 @@
         background: #f8d2d6;
       }
 
-      .filter-section {
-        margin-bottom: 20px;
-        padding: 15px;
-        background: rgba(238, 232, 213, 0.6);
-        border-radius: 12px;
-        border: 1px solid var(--border-color);
-      }
-      .filter-section h3 {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 0 0 10px 0;
-        color: var(--solar-text-secondary);
-      }
+      /* Enhanced Filters / Toolbar */
+      .filter-section {margin:0 0 18px 0;padding:16px 18px 12px 18px;background:linear-gradient(110deg,#ffffff,#f8f5eb 90%);border-radius:18px;border:1px solid rgba(38,139,210,.15);box-shadow:0 6px 18px rgba(0,43,54,.06);display:flex;flex-wrap:wrap;gap:14px 18px;align-items:flex-end;}
+      .filter-section h3 {flex:1 1 100%;display:flex;align-items:center;gap:10px;margin:0 0 6px 0;font-size:1.05rem;font-weight:700;letter-spacing:.5px;color:var(--solar-text-primary);}      
+      .filter-section select,.filter-section input[type="text"]{background:#fff;border:1.5px solid rgba(38,139,210,.25);border-radius:10px;padding:9px 12px;font-size:.8rem;min-width:200px;outline:none;transition:var(--transition);box-shadow:0 2px 4px rgba(38,139,210,.05);}      
+      .filter-section select:focus,.filter-section input[type="text"]:focus{border-color:var(--solar-secondary);box-shadow:0 0 0 3px rgba(38,139,210,.25);}      
+      .toolbar-inline-actions{margin-left:auto;display:flex;gap:10px;}      
+      .mini-btn{background:linear-gradient(90deg,var(--solar-secondary),var(--solar-green));color:#fff;border:none;padding:8px 14px;border-radius:10px;font-size:.65rem;font-weight:600;letter-spacing:.7px;cursor:pointer;box-shadow:0 6px 14px rgba(38,139,210,.25);transition:.3s;}      
+      .mini-btn:hover{filter:brightness(1.05);transform:translateY(-2px);}      
+      .mini-btn.alt{background:linear-gradient(90deg,#d04d44,#dc322f);}      
+      /* Stats Tiles */
+      .assignment-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin:26px 0 24px;}      
+      .stat-tile{position:relative;background:#fff;border:1px solid rgba(38,139,210,.18);border-radius:16px;padding:14px 16px 16px;box-shadow:0 8px 22px rgba(0,43,54,.06);display:flex;flex-direction:column;gap:6px;overflow:hidden;}      
+      .stat-tile:before{content:"";position:absolute;inset:0;background:linear-gradient(130deg,rgba(38,139,210,.08),rgba(133,153,0,.06));opacity:0;transition:.45s;}      
+      .stat-tile:hover:before{opacity:1;}      
+      .stat-label{font-size:.62rem;font-weight:700;letter-spacing:.9px;text-transform:uppercase;opacity:.7;}      
+      .stat-value{font-size:1.45rem;font-weight:700;line-height:1.1;color:var(--solar-secondary);display:flex;align-items:center;gap:8px;}      
+      .stat-meta{font-size:.6rem;opacity:.65;}      
+      /* Table Wrapper + Density */
+  .table-wrapper{position:relative;border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 14px 34px rgba(0,43,54,.08);border:1px solid rgba(38,139,210,.18);}      
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative;}
+  .table-scroll table{min-width:720px;}
+  .table-scroll.is-scrollable:after{content:'Swipe →';position:absolute;top:6px;right:10px;background:rgba(0,43,54,.7);color:#fff;font-size:.55rem;padding:4px 8px;border-radius:12px;font-weight:600;letter-spacing:.5px;pointer-events:none;transition:opacity .35s;}
+  .table-scroll.is-scrollable.scrolled:after{opacity:0;}
+  .data-table th,.data-table td{white-space:nowrap;}
+      .table-wrapper.compact .data-table td{padding:6px 8px;font-size:.68rem;}      
+      .table-wrapper.compact .data-table th{padding:10px 10px;font-size:.7rem;}      
+      .data-table th{background:linear-gradient(90deg,var(--solar-secondary),var(--solar-green));}      
+      /* Empty State */
+      .empty-state{border:2px dashed rgba(38,139,210,.35);background:#f5fafc;padding:26px 28px;border-radius:18px;display:flex;gap:18px;align-items:flex-start;margin:18px 0 6px;}      
+      .empty-state svg{flex-shrink:0;} .empty-state strong{display:block;margin-bottom:6px;}      
+      /* Modals */
+      .modal{display:none;position:fixed;inset:0;background:rgba(0,43,54,.55);backdrop-filter:blur(6px);z-index:1000;padding:40px 24px;overflow:auto;}      
+      .modal-content{background:#ffffff;border-radius:22px;padding:32px 34px 40px;width:100%;max-width:640px;margin:0 auto;position:relative;box-shadow:0 30px 70px -10px rgba(0,43,54,.35);border:1px solid rgba(38,139,210,.18);animation:modalIn .55s cubic-bezier(.25,.8,.25,1);}      
+      .modal-content h2{margin-top:0;font-size:1.4rem;display:flex;align-items:center;gap:10px;}      
+      .modal-content .close{position:absolute;top:14px;right:14px;font-size:1.2rem;cursor:pointer;background:linear-gradient(135deg,var(--solar-secondary),var(--solar-green));color:#fff;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 6px 16px rgba(38,139,210,.4);}      
+      .modal-content .close:hover{filter:brightness(1.05);transform:translateY(-2px);}      
+      @keyframes modalIn{from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}      
+      .form-group{margin-bottom:16px;display:flex;flex-direction:column;gap:6px;}      
+      .form-group label{font-size:.72rem;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--solar-text-secondary);}      
+      .form-control{background:#fff;border:1.5px solid rgba(38,139,210,.25);border-radius:10px;padding:10px 12px;font-size:.85rem;outline:none;transition:var(--transition);}      
+      .form-control:focus{border-color:var(--solar-secondary);box-shadow:0 0 0 3px rgba(38,139,210,.25);}      
+      .btn.btn-primary{background:linear-gradient(90deg,var(--solar-secondary),var(--solar-green));border:none;font-weight:600;letter-spacing:.6px;box-shadow:0 8px 22px rgba(38,139,210,.35);}      
+      .btn.btn-primary:hover{filter:brightness(1.05);transform:translateY(-2px);}      
+      mark.assignment-hl{background:linear-gradient(90deg,rgba(38,139,210,.4),rgba(133,153,0,.4));padding:1px 3px;border-radius:4px;}      
+      @media (max-width:900px){.assignment-stats-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}.filter-section select,.filter-section input[type=text]{min-width:160px;}}
+      @media (max-width:600px){.filter-section{padding:14px 14px 10px;border-radius:16px;}.modal{padding:30px 16px;}.modal-content{padding:26px 24px 34px;}}
+      .visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important;}
 
       /* Remove legacy duplicate tab block (replaced by Solar styles above) */
     </style>
   </head>
   <body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages" style="max-width:95%;margin:10px auto 0;padding:0 10px;">
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}" style="background:#fffbe6;border:1px solid #e0d9b8;padding:8px 12px;border-radius:6px;margin-bottom:6px;font-size:0.9rem;">
+          <strong>{{ category|capitalize }}:</strong> {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
     <div class="manage-container">
         <header class="page-header">
           <h1>
@@ -298,27 +360,57 @@
           </button>
         </div>
 
+        {% set class_count = class_teacher_assignments|length if class_teacher_assignments else 0 %}
+        {% set subject_count = subject_assignments|length if subject_assignments else 0 %}
+        <div class="assignment-stats-grid" id="assignment-stats"
+             data-total-class="{{ total_class_assignment_count }}"
+             data-total-subject="{{ total_subject_assignment_count }}"
+             data-total-combined="{{ total_combined_assignment_count }}">
+          <div class="stat-tile">
+            <div class="stat-label">Scope</div>
+            <div class="stat-value" id="stat-scope">{{ 'All Teachers' if view_scope=='all' else 'My Assigns' }}</div>
+            <div class="stat-meta">
+              {% if requested_scope=='all' and view_scope!='all' %}
+                <span style="display:inline-block;background:#fbe3e5;color:#dc322f;padding:2px 6px;border-radius:6px;font-size:.55rem;font-weight:600;" title="You requested ALL but lack privileges; showing only your assignments">Restricted</span>
+                Fallback to your assignments (insufficient role)
+              {% elif view_scope=='all' %}
+                <span style="display:inline-block;background:#e0f5d6;color:#2f6a00;padding:2px 6px;border-radius:6px;font-size:.55rem;font-weight:600;" title="Includes workloads belonging to other teachers">Global View</span>
+                All teachers' assignments loaded
+              {% else %}
+                Personal scope (only yours)
+              {% endif %}
+              <br>
+              <a href="{{ url_for('classteacher.manage_teacher_assignments', scope=('mine' if view_scope=='all' else 'all')) }}" style="font-size:.55rem;text-decoration:none;color:var(--solar-secondary);font-weight:600;">Switch to {{ 'Mine Only' if view_scope=='all' else 'All' }}</a>
+            </div>
+          </div>
+          <div class="stat-tile"><div class="stat-label">Class Assignments</div><div class="stat-value" id="stat-class-assign">{{ class_count }}</div><div class="stat-meta">Homeroom ({{ view_scope }})</div></div>
+          <div class="stat-tile"><div class="stat-label">Subject Assignments</div><div class="stat-value" id="stat-subject-assign">{{ subject_count }}</div><div class="stat-meta">Teaching loads ({{ view_scope }})</div></div>
+          <div class="stat-tile"><div class="stat-label">All Assignments</div><div class="stat-value" id="stat-total-assign">{{ class_count + subject_count }}</div><div class="stat-meta">Combined total</div></div>
+          <div class="stat-tile"><div class="stat-label">Visible Rows</div><div class="stat-value" id="stat-visible-class">0</div><div class="stat-meta">After filters (class tab)</div></div>
+        </div>
+
         <!-- Class Teacher Assignments Tab -->
         <div id="ClassTeachers" class="tabcontent" style="display: block">
-          <div class="filter-section">
-            <h3>Filter Class Teacher Assignments</h3>
-            <select id="educationLevelFilter" onchange="filterClassTeachers()">
+          <button id="toggleClassFilters" class="filter-toggle-btn" aria-controls="class-filter-bar" aria-expanded="true" style="display:none;">Hide Filters</button>
+          <div class="filter-section" id="class-filter-bar">
+            <h3>Class Teacher Assignments</h3>
+            <input type="text" id="classSearch" placeholder="Search class assignments..." />
+            <select id="educationLevelFilter" aria-label="Filter by education level">
               <option value="">All Education Levels</option>
               <option value="lower_primary">Lower Primary (Grades 1-3)</option>
               <option value="upper_primary">Upper Primary (Grades 4-6)</option>
-              <option value="junior_secondary">
-                Junior Secondary (Grades 7-9)
-              </option>
+              <option value="junior_secondary">Junior Secondary (Grades 7-9)</option>
             </select>
-            <select id="gradeFilter" onchange="filterClassTeachers()">
+            <select id="gradeFilter" aria-label="Filter by grade">
               <option value="">All Grades</option>
-              {% for grade in grades %}
-              <option value="{{ grade.id }}">{{ grade.name }}</option>
-              {% endfor %}
+              {% for grade in grades %}<option value="{{ grade.id }}">{{ grade.name }}</option>{% endfor %}
             </select>
+            <div class="toolbar-inline-actions"><button type="button" class="mini-btn" id="classDensityToggle">Compact</button><button type="button" class="mini-btn alt" id="classReset">Reset</button></div>
+            <div id="class-stats-announcer" class="visually-hidden" aria-live="polite"></div>
           </div>
-
-          <table class="data-table">
+          <div class="table-wrapper" id="classTableWrapper">
+          <div class="table-scroll" id="classTableScroll">
+          <table class="data-table" id="classAssignmentsTable">
             <thead>
               <tr>
                 <th>Grade</th>
@@ -354,39 +446,87 @@
               </tr>
               {% endfor %}
               </tbody>
-          </table>
+        </table>
+          </div>
+        {% if class_pagination and class_pagination.total_pages > 1 %}
+        <div class="pagination-bar" style="display:flex;align-items:center;gap:10px;padding:10px 8px 14px 8px;flex-wrap:wrap;justify-content:flex-end;font-size:0.7rem;">
+          <div style="margin-right:auto;font-weight:600;">Page {{ class_pagination.page }} of {{ class_pagination.total_pages }} (Total {{ total_class_assignment_count }})</div>
+          <div class="page-links" style="display:flex;gap:4px;flex-wrap:wrap;">
+            {% set window = 2 %}
+            {% set start_page = class_pagination.page - window if class_pagination.page - window > 1 else 1 %}
+            {% set end_page = class_pagination.page + window if class_pagination.page + window < class_pagination.total_pages else class_pagination.total_pages %}
+            {% if start_page > 1 %}
+              <a class="mini-btn" style="text-decoration:none;" href="{{ url_for('classteacher.manage_teacher_assignments', scope=view_scope, class_page=1, subject_page=subject_pagination.page if subject_pagination else 1, per_page_class=class_pagination.per_page, per_page_subject=subject_pagination.per_page if subject_pagination else 25) }}#ClassTeachers">1</a>
+              {% if start_page > 2 %}<span style="padding:4px 6px;">…</span>{% endif %}
+            {% endif %}
+            {% for p in range(start_page, end_page + 1) %}
+              {% if p == class_pagination.page %}
+                <span class="mini-btn" style="background:linear-gradient(90deg,var(--solar-primary),var(--solar-secondary));color:#fff;font-weight:600;">{{ p }}</span>
+              {% else %}
+                <a class="mini-btn" style="text-decoration:none;" href="{{ url_for('classteacher.manage_teacher_assignments', scope=view_scope, class_page=p, subject_page=subject_pagination.page if subject_pagination else 1, per_page_class=class_pagination.per_page, per_page_subject=subject_pagination.per_page if subject_pagination else 25) }}#ClassTeachers">{{ p }}</a>
+              {% endif %}
+            {% endfor %}
+            {% if end_page < class_pagination.total_pages %}
+              {% if end_page < class_pagination.total_pages - 1 %}<span style="padding:4px 6px;">…</span>{% endif %}
+              <a class="mini-btn" style="text-decoration:none;" href="{{ url_for('classteacher.manage_teacher_assignments', scope=view_scope, class_page=class_pagination.total_pages, subject_page=subject_pagination.page if subject_pagination else 1, per_page_class=class_pagination.per_page, per_page_subject=subject_pagination.per_page if subject_pagination else 25) }}#ClassTeachers">{{ class_pagination.total_pages }}</a>
+            {% endif %}
+          </div>
+          {% if class_pagination.has_prev %}
+            <a class="mini-btn" style="text-decoration:none;" href="{{ url_for('classteacher.manage_teacher_assignments', scope=view_scope, class_page=class_pagination.prev_page, subject_page=subject_pagination.page if subject_pagination else 1, per_page_class=class_pagination.per_page, per_page_subject=subject_pagination.per_page if subject_pagination else 25) }}#ClassTeachers">&laquo; Prev</a>
+          {% else %}
+            <span style="opacity:.4;" class="mini-btn" aria-disabled="true">&laquo; Prev</span>
+          {% endif %}
+          {% if class_pagination.has_next %}
+            <a class="mini-btn" style="text-decoration:none;" href="{{ url_for('classteacher.manage_teacher_assignments', scope=view_scope, class_page=class_pagination.next_page, subject_page=subject_pagination.page if subject_pagination else 1, per_page_class=class_pagination.per_page, per_page_subject=subject_pagination.per_page if subject_pagination else 25) }}#ClassTeachers">Next &raquo;</a>
+          {% else %}
+            <span style="opacity:.4;" class="mini-btn" aria-disabled="true">Next &raquo;</span>
+          {% endif %}
+          <form method="get" style="display:inline-flex;align-items:center;gap:4px;" action="{{ url_for('classteacher.manage_teacher_assignments') }}">
+            <input type="hidden" name="scope" value="{{ view_scope }}" />
+            <input type="hidden" name="subject_page" value="{{ subject_pagination.page if subject_pagination else 1 }}" />
+            <label style="font-size:.55rem;font-weight:600;letter-spacing:.5px;">Rows:</label>
+            <select name="per_page_class" onchange="this.form.submit()" style="padding:4px 6px;border-radius:6px;">
+              {% for opt in [5,10,25,50] %}
+              <option value="{{ opt }}" {% if opt == class_pagination.per_page %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+            <input type="hidden" name="class_page" value="1" />
+            <input type="hidden" name="per_page_subject" value="{{ subject_pagination.per_page if subject_pagination else 25 }}" />
+          </form>
+        </div>
+        {% endif %}
+        {% if not class_teacher_assignments %}
+        <div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM11.25 7.5A.75.75 0 0112 6.75h.008a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zM12 10.5a.75.75 0 00-.75.75v4.5a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75z" fill="#268bd2"/></svg><div><strong>No Class Teacher Assignments</strong><span>Get started by assigning class teachers to grades and streams.</span></div></div>
+        {% endif %}
+        </div>
         </div>
 
         <!-- Subject Teacher Assignments Tab -->
         <div id="SubjectTeachers" class="tabcontent">
-          <div class="filter-section">
-            <h3>Filter Subject Teacher Assignments</h3>
-            <select
-              id="subjectEducationLevelFilter"
-              onchange="filterSubjectTeachers()"
-            >
+          <button id="toggleSubjectFilters" class="filter-toggle-btn" aria-controls="subject-filter-bar" aria-expanded="true" style="display:none;">Hide Filters</button>
+          <div class="filter-section" id="subject-filter-bar">
+            <h3>Subject Teacher Assignments</h3>
+            <input type="text" id="subjectSearch" placeholder="Search subject assignments..." />
+            <select id="subjectEducationLevelFilter" aria-label="Filter by education level">
               <option value="">All Education Levels</option>
               <option value="lower_primary">Lower Primary (Grades 1-3)</option>
               <option value="upper_primary">Upper Primary (Grades 4-6)</option>
-              <option value="junior_secondary">
-                Junior Secondary (Grades 7-9)
-              </option>
+              <option value="junior_secondary">Junior Secondary (Grades 7-9)</option>
             </select>
-            <select id="subjectGradeFilter" onchange="filterSubjectTeachers()">
+            <select id="subjectGradeFilter" aria-label="Filter by grade">
               <option value="">All Grades</option>
-              {% for grade in grades %}
-              <option value="{{ grade.id }}">{{ grade.name }}</option>
-              {% endfor %}
+              {% for grade in grades %}<option value="{{ grade.id }}">{{ grade.name }}</option>{% endfor %}
             </select>
-            <select id="subjectFilter" onchange="filterSubjectTeachers()">
+            <select id="subjectFilter" aria-label="Filter by subject">
               <option value="">All Subjects</option>
-              {% for subject in subjects %}
-              <option value="{{ subject.id }}">{{ subject.name }}</option>
-              {% endfor %}
+              {% for subject in subjects %}<option value="{{ subject.id }}">{{ subject.name }}</option>{% endfor %}
             </select>
+            <div class="toolbar-inline-actions"><button type="button" class="mini-btn" id="subjectDensityToggle">Compact</button><button type="button" class="mini-btn alt" id="subjectReset">Reset</button></div>
+            <div id="subject-stats-announcer" class="visually-hidden" aria-live="polite"></div>
           </div>
-
-          <table class="data-table">
+          <div class="table-wrapper" id="subjectTableWrapper">
+          <div class="table-scroll" id="subjectTableScroll">
+          <table class="data-table" id="subjectAssignmentsTable">
             <thead>
               <tr>
                 <th>Subject</th>
@@ -425,7 +565,59 @@
               </tr>
               {% endfor %}
               </tbody>
-          </table>
+        </table>
+          </div>
+        {% if subject_pagination and subject_pagination.total_pages > 1 %}
+        <div class="pagination-bar" style="display:flex;align-items:center;gap:10px;padding:10px 8px 14px 8px;flex-wrap:wrap;justify-content:flex-end;font-size:0.7rem;">
+          <div style="margin-right:auto;font-weight:600;">Page {{ subject_pagination.page }} of {{ subject_pagination.total_pages }} (Total {{ total_subject_assignment_count }})</div>
+          <div class="page-links" style="display:flex;gap:4px;flex-wrap:wrap;">
+            {% set window = 2 %}
+            {% set start_page = subject_pagination.page - window if subject_pagination.page - window > 1 else 1 %}
+            {% set end_page = subject_pagination.page + window if subject_pagination.page + window < subject_pagination.total_pages else subject_pagination.total_pages %}
+            {% if start_page > 1 %}
+              <a class="mini-btn" style="text-decoration:none;" href="{{ url_for('classteacher.manage_teacher_assignments', scope=view_scope, subject_page=1, class_page=class_pagination.page if class_pagination else 1, per_page_subject=subject_pagination.per_page, per_page_class=class_pagination.per_page if class_pagination else 10) }}#SubjectTeachers">1</a>
+              {% if start_page > 2 %}<span style="padding:4px 6px;">…</span>{% endif %}
+            {% endif %}
+            {% for p in range(start_page, end_page + 1) %}
+              {% if p == subject_pagination.page %}
+                <span class="mini-btn" style="background:linear-gradient(90deg,var(--solar-primary),var(--solar-secondary));color:#fff;font-weight:600;">{{ p }}</span>
+              {% else %}
+                <a class="mini-btn" style="text-decoration:none;" href="{{ url_for('classteacher.manage_teacher_assignments', scope=view_scope, subject_page=p, class_page=class_pagination.page if class_pagination else 1, per_page_subject=subject_pagination.per_page, per_page_class=class_pagination.per_page if class_pagination else 10) }}#SubjectTeachers">{{ p }}</a>
+              {% endif %}
+            {% endfor %}
+            {% if end_page < subject_pagination.total_pages %}
+              {% if end_page < subject_pagination.total_pages - 1 %}<span style="padding:4px 6px;">…</span>{% endif %}
+              <a class="mini-btn" style="text-decoration:none;" href="{{ url_for('classteacher.manage_teacher_assignments', scope=view_scope, subject_page=subject_pagination.total_pages, class_page=class_pagination.page if class_pagination else 1, per_page_subject=subject_pagination.per_page, per_page_class=class_pagination.per_page if class_pagination else 10) }}#SubjectTeachers">{{ subject_pagination.total_pages }}</a>
+            {% endif %}
+          </div>
+          {% if subject_pagination.has_prev %}
+            <a class="mini-btn" style="text-decoration:none;" href="{{ url_for('classteacher.manage_teacher_assignments', scope=view_scope, subject_page=subject_pagination.prev_page, class_page=class_pagination.page if class_pagination else 1, per_page_subject=subject_pagination.per_page, per_page_class=class_pagination.per_page if class_pagination else 10) }}#SubjectTeachers">&laquo; Prev</a>
+          {% else %}
+            <span style="opacity:.4;" class="mini-btn" aria-disabled="true">&laquo; Prev</span>
+          {% endif %}
+          {% if subject_pagination.has_next %}
+            <a class="mini-btn" style="text-decoration:none;" href="{{ url_for('classteacher.manage_teacher_assignments', scope=view_scope, subject_page=subject_pagination.next_page, class_page=class_pagination.page if class_pagination else 1, per_page_subject=subject_pagination.per_page, per_page_class=class_pagination.per_page if class_pagination else 10) }}#SubjectTeachers">Next &raquo;</a>
+          {% else %}
+            <span style="opacity:.4;" class="mini-btn" aria-disabled="true">Next &raquo;</span>
+          {% endif %}
+          <form method="get" style="display:inline-flex;align-items:center;gap:4px;" action="{{ url_for('classteacher.manage_teacher_assignments') }}">
+            <input type="hidden" name="scope" value="{{ view_scope }}" />
+            <input type="hidden" name="class_page" value="{{ class_pagination.page if class_pagination else 1 }}" />
+            <label style="font-size:.55rem;font-weight:600;letter-spacing:.5px;">Rows:</label>
+            <select name="per_page_subject" onchange="this.form.submit()" style="padding:4px 6px;border-radius:6px;">
+              {% for opt in [10,25,50,100] %}
+              <option value="{{ opt }}" {% if opt == subject_pagination.per_page %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+            <input type="hidden" name="subject_page" value="1" />
+            <input type="hidden" name="per_page_class" value="{{ class_pagination.per_page if class_pagination else 10 }}" />
+          </form>
+        </div>
+        {% endif %}
+        {% if not subject_assignments %}
+        <div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM8.25 10.5a.75.75 0 000 1.5h7.5a.75.75 0 000-1.5h-7.5z" fill="#b58900"/></svg><div><strong>No Subject Teacher Assignments</strong><span>Allocate subjects to teachers to build instructional load.</span></div></div>
+        {% endif %}
+        </div>
         </div>
 
         <!-- Bulk Transfer Tab -->
@@ -441,6 +633,8 @@
 
           <form id="bulkTransferForm" method="POST" action="{{ url_for('classteacher.bulk_transfer_assignments') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <!-- Hidden field for granular selected assignments -->
+            <input type="hidden" name="selected_assignment_ids" id="selected_assignment_ids" />
 
             <div class="form-group">
               <label for="from_teacher_id">Transfer From:</label>
@@ -494,6 +688,14 @@
               </label>
             </div>
 
+            <div class="granular-box">
+              <h3>Or Select Specific Assignments</h3>
+              <p class="small-muted">After choosing a source teacher, their assignments will appear below. Tick specific ones to transfer instead of all.</p>
+              <div id="granularAssignments" class="granular-assignments empty">
+                <em>Select a source teacher to load assignments...</em>
+              </div>
+            </div>
+
             <button type="submit" name="bulk_transfer" class="btn">
               <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 7.5A.75.75 0 013 6.75h12.19l-1.72-1.72a.75.75 0 111.06-1.06l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 01-1.06-1.06l1.72-1.72H3A.75.75 0 012.25 7.5zM21.75 16.5a.75.75 0 00-.75-.75H8.81l1.72-1.72a.75.75 0 10-1.06-1.06l-3 3a.75.75 0 000 1.06l3 3a.75.75 0 001.06-1.06l-1.72-1.72H21a.75.75 0 00.75-.75z" clip-rule="evenodd"/></svg>
               Transfer Assignments
@@ -527,6 +729,81 @@
                   readonly
                 />
               </div>
+              <script>
+              // Granular bulk transfer selection logic
+              (function(){
+                const fromSel = document.getElementById('from_teacher_id');
+                const container = document.getElementById('granularAssignments');
+                const hidden = document.getElementById('selected_assignment_ids');
+                const form = document.getElementById('bulkTransferForm');
+
+                function renderAssignments(list){
+                  if(!list.length){
+                    container.classList.add('empty');
+                    container.innerHTML = '<em>No assignments for this teacher.</em>';
+                    return;
+                  }
+                  container.classList.remove('empty');
+                  const rows = list.map(a => {
+                    const type = a.is_class_teacher ? 'Class' : 'Subject';
+                    const gradeLabel = a.grade_name || (a.grade_id || '-');
+                    const streamLabel = a.stream_name || (a.stream_id || '');
+                    const subjLabel = a.subject_name || (a.subject_id || '');
+                    let descriptor;
+                    if(a.is_class_teacher){
+                      descriptor = gradeLabel + (streamLabel ? ' ' + streamLabel : '');
+                    } else {
+                      descriptor = subjLabel + ' • ' + gradeLabel + (streamLabel ? ' ' + streamLabel : '');
+                    }
+                    return `<label class="granular-item"><input type="checkbox" data-assignment-id="${a.id}" data-type="${type}"/> <span>${type}: ${descriptor}</span></label>`;
+                  }).join('');
+                  container.innerHTML = rows + '<div class="granular-actions"><button type="button" id="selectAllGranular" class="btn btn-sm">Select All</button> <button type="button" id="clearAllGranular" class="btn btn-sm">Clear</button></div>';
+                  container.querySelector('#selectAllGranular').addEventListener('click', ()=>{
+                    container.querySelectorAll('input[type=checkbox][data-assignment-id]').forEach(cb=>cb.checked=true);syncHidden();
+                  });
+                  container.querySelector('#clearAllGranular').addEventListener('click', ()=>{
+                    container.querySelectorAll('input[type=checkbox][data-assignment-id]').forEach(cb=>cb.checked=false);syncHidden();
+                  });
+                  container.querySelectorAll('input[type=checkbox][data-assignment-id]').forEach(cb=>{
+                    cb.addEventListener('change', syncHidden);
+                  });
+                }
+
+                function syncHidden(){
+                  const ids = Array.from(container.querySelectorAll('input[type=checkbox][data-assignment-id]:checked')).map(cb=>cb.getAttribute('data-assignment-id'));
+                  hidden.value = ids.join(',');
+                }
+
+                async function loadAssignments(teacherId){
+                  hidden.value='';
+                  if(!teacherId){
+                    container.innerHTML = '<em>Select a source teacher to load assignments...</em>';
+                    container.classList.add('empty');
+                    return;
+                  }
+                  container.innerHTML = '<em>Loading...</em>';
+                  try{
+                    const resp = await fetch(`/classteacher/api/teacher_assignments/${teacherId}`);
+                    if(!resp.ok){ throw new Error('Network'); }
+                    const data = await resp.json();
+                    renderAssignments(data);
+                  }catch(e){
+                    container.innerHTML = '<em>Error loading assignments.</em>';
+                  }
+                }
+
+                fromSel && fromSel.addEventListener('change', e=>{
+                  loadAssignments(e.target.value);
+                });
+
+                form.addEventListener('submit', function(){
+                  // If granular IDs chosen, uncheck broad checkboxes to avoid confusion
+                  if(hidden.value.trim().length){
+                    form.querySelectorAll('input[name=transfer_class_teacher], input[name=transfer_subject_assignments]').forEach(cb=>cb.checked=false);
+                  }
+                });
+              })();
+              </script>
 
               <div class="form-group">
                 <label for="new_teacher_id">New Class Teacher:</label>
@@ -622,6 +899,24 @@
     <script>
       // Auto-hide messages after 5 seconds
       document.addEventListener("DOMContentLoaded", function () {
+        // Horizontal scroll hint
+        function initScrollHints(){
+          const wrappers = document.querySelectorAll('.table-scroll');
+          wrappers.forEach(w=>{
+            function assess(){
+              if(w.scrollWidth > w.clientWidth){
+                w.classList.add('is-scrollable');
+                if(w.scrollLeft > 10){w.classList.add('scrolled');} else {w.classList.remove('scrolled');}
+              } else {
+                w.classList.remove('is-scrollable','scrolled');
+              }
+            }
+            w.addEventListener('scroll', assess, {passive:true});
+            window.addEventListener('resize', assess);
+            assess();
+          });
+        }
+        initScrollHints();
         setTimeout(function () {
           const messages = document.querySelectorAll(".message");
           messages.forEach((message) => { message.style.display = "none"; });
@@ -656,6 +951,32 @@
             if (!ok) ev.preventDefault();
           });
         }
+        // Responsive filter toggle logic (only show toggle under breakpoint)
+        function setupFilterToggle(btnId, sectionId){
+          const btn = document.getElementById(btnId);
+          const section = document.getElementById(sectionId);
+          if(!btn || !section) return;
+          const breakpoint = 760;
+          function applyVisibility(){
+            if(window.innerWidth <= breakpoint){
+              btn.style.display='inline-flex';
+            } else {
+              btn.style.display='none';
+              section.classList.remove('compact-hide');
+              btn.setAttribute('aria-expanded','true');
+              btn.textContent = 'Hide Filters';
+            }
+          }
+          btn.addEventListener('click', ()=>{
+            const hidden = section.classList.toggle('compact-hide');
+            btn.setAttribute('aria-expanded', hidden ? 'false':'true');
+            btn.textContent = hidden ? 'Show Filters' : 'Hide Filters';
+          });
+          window.addEventListener('resize', applyVisibility);
+          applyVisibility();
+        }
+        setupFilterToggle('toggleClassFilters','class-filter-bar');
+        setupFilterToggle('toggleSubjectFilters','subject-filter-bar');
       });
 
       // Tab functionality
@@ -673,56 +994,92 @@
         evt.currentTarget.className += " active";
       }
 
-      // Filter class teachers
-      function filterClassTeachers() {
-        const educationLevel = document.getElementById(
-          "educationLevelFilter"
-        ).value;
-        const gradeId = document.getElementById("gradeFilter").value;
-        const rows = document.querySelectorAll("#classTeacherTableBody tr");
+      /* === Enhanced Filtering / Search / Stats === */
+      const classEls = {
+        search: document.getElementById('classSearch'),
+        edu: document.getElementById('educationLevelFilter'),
+        grade: document.getElementById('gradeFilter'),
+        tbody: document.getElementById('classTeacherTableBody'),
+        visibleStat: document.getElementById('stat-visible-class'),
+        announcer: document.getElementById('class-stats-announcer'),
+        wrapper: document.getElementById('classTableWrapper'),
+        densityToggle: document.getElementById('classDensityToggle'),
+        reset: document.getElementById('classReset')
+      };
+      const subjectEls = {
+        search: document.getElementById('subjectSearch'),
+        edu: document.getElementById('subjectEducationLevelFilter'),
+        grade: document.getElementById('subjectGradeFilter'),
+        subject: document.getElementById('subjectFilter'),
+        tbody: document.getElementById('subjectTeacherTableBody'),
+        announcer: document.getElementById('subject-stats-announcer'),
+        wrapper: document.getElementById('subjectTableWrapper'),
+        densityToggle: document.getElementById('subjectDensityToggle'),
+        reset: document.getElementById('subjectReset')
+      };
 
-        rows.forEach((row) => {
-          let showRow = true;
-
-          if (educationLevel && row.dataset.educationLevel !== educationLevel) {
-            showRow = false;
-          }
-
-          if (gradeId && row.dataset.grade !== gradeId) {
-            showRow = false;
-          }
-
-          row.style.display = showRow ? "" : "none";
-        });
+      function highlight(cell, query) {
+        if (!cell) return; const raw = cell.getAttribute('data-raw') || cell.textContent; cell.setAttribute('data-raw', raw);
+        if (!query) { cell.innerHTML = raw; return; }
+        const safe = query.replace(/[.*+?^${}()|[\]\\]/g, r=> '\\'+r);
+        const re = new RegExp('('+safe+')','ig');
+        cell.innerHTML = raw.replace(re,'<mark class="assignment-hl">$1<\/mark>');
       }
 
-      // Filter subject teachers
-      function filterSubjectTeachers() {
-        const educationLevel = document.getElementById(
-          "subjectEducationLevelFilter"
-        ).value;
-        const gradeId = document.getElementById("subjectGradeFilter").value;
-        const subjectId = document.getElementById("subjectFilter").value;
-        const rows = document.querySelectorAll("#subjectTeacherTableBody tr");
-
-        rows.forEach((row) => {
-          let showRow = true;
-
-          if (educationLevel && row.dataset.educationLevel !== educationLevel) {
-            showRow = false;
-          }
-
-          if (gradeId && row.dataset.grade !== gradeId) {
-            showRow = false;
-          }
-
-          if (subjectId && row.dataset.subject !== subjectId) {
-            showRow = false;
-          }
-
-          row.style.display = showRow ? "" : "none";
+      function filterAssignments(config, rowSelector, extraPredicates=[]) {
+        if (!config.tbody) return; const rows = Array.from(config.tbody.querySelectorAll(rowSelector));
+        const q = (config.search && config.search.value.trim().toLowerCase()) || '';
+        let visible = 0;
+        rows.forEach(r => {
+          let show = true;
+          extraPredicates.forEach(fn => { if (show) show = fn(r); });
+          if (q && show) {
+            const blob = r.textContent.toLowerCase();
+            if (!blob.includes(q)) show = false; }
+          r.style.display = show ? '' : 'none';
+          if (show) { visible++; const cells = r.querySelectorAll('td'); cells.forEach(c=>highlight(c,q)); }
+          else { r.querySelectorAll('td').forEach(c=>highlight(c,'')); }
         });
+        if (config.visibleStat) config.visibleStat.textContent = visible;
+        if (config.announcer) config.announcer.textContent = `${visible} rows visible`;
       }
+
+      function applyClassFilters() {
+        filterAssignments(classEls, 'tr', [
+          r => !classEls.edu.value || r.dataset.educationLevel === classEls.edu.value,
+          r => !classEls.grade.value || r.dataset.grade === classEls.grade.value
+        ]);
+      }
+      function applySubjectFilters() {
+        filterAssignments(subjectEls, 'tr', [
+          r => !subjectEls.edu.value || r.dataset.educationLevel === subjectEls.edu.value,
+          r => !subjectEls.grade.value || r.dataset.grade === subjectEls.grade.value,
+          r => !subjectEls.subject.value || r.dataset.subject === subjectEls.subject.value
+        ]);
+      }
+
+      ['input','change'].forEach(ev => {
+        if (classEls.search) classEls.search.addEventListener(ev, applyClassFilters);
+        if (classEls.edu) classEls.edu.addEventListener(ev, applyClassFilters);
+        if (classEls.grade) classEls.grade.addEventListener(ev, applyClassFilters);
+        if (subjectEls.search) subjectEls.search.addEventListener(ev, applySubjectFilters);
+        if (subjectEls.edu) subjectEls.edu.addEventListener(ev, applySubjectFilters);
+        if (subjectEls.grade) subjectEls.grade.addEventListener(ev, applySubjectFilters);
+        if (subjectEls.subject) subjectEls.subject.addEventListener(ev, applySubjectFilters);
+      });
+
+      if (classEls.densityToggle && classEls.wrapper) {
+        classEls.densityToggle.addEventListener('click', ()=>{ classEls.wrapper.classList.toggle('compact'); classEls.densityToggle.textContent = classEls.wrapper.classList.contains('compact') ? 'Comfort' : 'Compact'; });
+      }
+      if (subjectEls.densityToggle && subjectEls.wrapper) {
+        subjectEls.densityToggle.addEventListener('click', ()=>{ subjectEls.wrapper.classList.toggle('compact'); subjectEls.densityToggle.textContent = subjectEls.wrapper.classList.contains('compact') ? 'Comfort' : 'Compact'; });
+      }
+      if (classEls.reset) classEls.reset.addEventListener('click', ()=>{ if(classEls.search) classEls.search.value=''; if(classEls.edu) classEls.edu.value=''; if(classEls.grade) classEls.grade.value=''; applyClassFilters(); });
+      if (subjectEls.reset) subjectEls.reset.addEventListener('click', ()=>{ if(subjectEls.search) subjectEls.search.value=''; if(subjectEls.edu) subjectEls.edu.value=''; if(subjectEls.grade) subjectEls.grade.value=''; if(subjectEls.subject) subjectEls.subject.value=''; applySubjectFilters(); });
+
+      // Initialize
+      applyClassFilters();
+      applySubjectFilters();
 
       // Reassign class teacher modal functions
       function openReassignModal(assignmentId, grade, stream, teacher) {

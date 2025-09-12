@@ -15,6 +15,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <!-- Shared Solar Theme Core Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/solar-shared.css') }}" />
     <!-- Brandi Bootstrap CSS (page-scoped, before custom styles) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}">
@@ -556,9 +558,9 @@
         }
     </style>
 </head>
-<body>
+<body class="solar-theme">
     <div class="container manage-container">
-        <header class="page-header">
+        <header class="page-header solar-card">
             <h1>
                 <svg class="heroicon-solar-blue" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z"/>
@@ -569,19 +571,19 @@
                 Add, edit, and manage student profiles and information
             </p>
             <div class="nav-links">
-                <a href="{{ url_for('classteacher.teacher_management_hub') }}">
+                <a class="solar-btn-outline" href="{{ url_for('classteacher.teacher_management_hub') }}">
                     <svg class="heroicon-solar-green" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M11.0991 1.29289C11.4896 0.902369 12.1228 0.902369 12.5133 1.29289L22.5133 11.2929C22.9038 11.6834 22.9038 12.3166 22.5133 12.7071C22.1228 13.0976 21.4896 13.0976 21.0991 12.7071L20.0124 11.6204V20C20.0124 21.6569 18.6693 23 17.0124 23H7.01245C5.3556 23 4.01245 21.6569 4.01245 20V11.6204L2.92578 12.7071C2.53526 13.0976 1.90209 13.0976 1.51157 12.7071C1.12104 12.3166 1.12104 11.6834 1.51157 11.2929L11.5116 1.29289Z"/>
                     </svg>
                     Teacher Hub
                 </a>
-                <a href="{{ url_for('classteacher.dashboard') }}">
+                <a class="solar-btn-outline" href="{{ url_for('classteacher.dashboard') }}">
                     <svg class="heroicon-solar-blue" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M3 6C3 4.34315 4.34315 3 6 3H8C9.65685 3 11 4.34315 11 6V8C11 9.65685 9.65685 11 8 11H6C4.34315 11 3 9.65685 3 8V6ZM6 5C5.44772 5 5 5.44772 5 6V8C5 8.55228 5.44772 9 6 9H8C8.55228 9 9 8.55228 9 8V6C9 5.44772 8.55228 5 8 5H6ZM13 6C13 4.34315 14.3431 3 16 3H18C19.6569 3 21 4.34315 21 6V8C21 9.65685 19.6569 11 18 11H16C14.3431 11 13 9.65685 13 8V6ZM16 5C15.4477 5 15 5.44772 15 6V8C15 8.55228 15.4477 9 16 9H18C18.5523 9 19 8.55228 19 8V6C19 5.44772 18.5523 5 18 5H16ZM3 16C3 14.3431 4.34315 13 6 13H8C9.65685 13 11 14.3431 11 16V18C11 19.6569 9.65685 21 8 21H6C4.34315 21 3 19.6569 3 18V16ZM6 15C5.44772 15 5 15.4477 5 16V18C5 18.5523 5.44772 19 6 19H8C8.55228 19 9 18.5523 9 18V16C9 15.4477 8.55228 15 8 15H6ZM13 16C13 14.3431 14.3431 13 16 13H18C19.6569 13 21 14.3431 21 16V18C21 19.6569 19.6569 21 18 21H16C14.3431 21 13 19.6569 13 18V16ZM16 15C15.4477 15 15 15.4477 15 16V18C15 18.5523 15.4477 19 16 19H18C18.5523 19 19 18.5523 19 18V16C19 15.4477 18.5523 15 18 15H16Z"/>
                     </svg>
                     Dashboard
                 </a>
-                <a href="{{ url_for('auth.logout_route') }}">
+                <a class="solar-btn-outline" href="{{ url_for('auth.logout_route') }}">
                     <svg class="heroicon-solar-red" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 3.75C16.0858 3.75 15.75 4.08579 15.75 4.5C15.75 4.91421 16.0858 5.25 16.5 5.25H19.5C19.9142 5.25 20.25 5.58579 20.25 6V18C20.25 18.4142 19.9142 18.75 19.5 18.75H16.5C16.0858 18.75 15.75 19.0858 15.75 19.5C15.75 19.9142 16.0858 20.25 16.5 20.25H19.5C20.7426 20.25 21.75 19.2426 21.75 18V6C21.75 4.75736 20.7426 3.75 19.5 3.75H16.5ZM9.96967 7.96967C10.2626 7.67678 10.7374 7.67678 11.0303 7.96967L14.0303 10.9697C14.3232 11.2626 14.3232 11.7374 14.0303 12.0303L11.0303 15.0303C10.7374 15.3232 10.2626 15.3232 9.96967 15.0303C9.67678 14.7374 9.67678 14.2626 9.96967 13.9697L11.1893 12.75H4.5C4.08579 12.75 3.75 12.4142 3.75 12C3.75 11.5858 4.08579 11.25 4.5 11.25H11.1893L9.96967 10.0303C9.67678 9.73744 9.67678 9.26256 9.96967 7.96967Z"/>
                     </svg>

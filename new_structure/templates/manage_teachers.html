@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manage Teachers - Hillview School (Class Teacher)</title>
+    <!-- Shared Solar Theme Core Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
+    />
     <!-- Solar Theme Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -52,7 +57,7 @@
         --transition: all 0.25s ease;
       }
 
-      body {
+      body.solar-theme {
         background: linear-gradient(
           135deg,
           #fdf6e3 0%,
@@ -184,9 +189,18 @@
       /* Forms grid layout */
       .forms-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(520px, 1fr) 420px;
         gap: var(--spacing-xl);
         margin: var(--spacing-xl) 0;
+        align-items: start;
+      }
+      .side-column {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xl);
+      }
+      .side-column > .teaching-assignments-card {
+        margin-top: 0;
       }
 
       /* Table improvements */
@@ -196,6 +210,13 @@
         border-radius: var(--border-radius-lg);
         box-shadow: var(--shadow-md);
         background: var(--white);
+      }
+      .table-responsive.compact #teachers-table td {
+        padding: 6px 6px !important;
+        font-size: 0.72rem !important;
+      }
+      .table-responsive.compact #teachers-table th {
+        font-size: 0.7rem !important;
       }
       table {
         border-collapse: separate !important;
@@ -214,6 +235,164 @@
       }
       tr:hover {
         background: rgba(38, 139, 210, 0.06) !important;
+      }
+
+      /* ===== Existing Teachers Enhancements ===== */
+      .teachers-section-enhanced h2 {
+        margin-bottom: 18px;
+      }
+      .teacher-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 14px;
+        margin-bottom: 22px;
+      }
+      .teacher-stat-tile {
+        position: relative;
+        background: #ffffff;
+        border: 1px solid rgba(38, 139, 210, 0.18);
+        border-radius: 14px;
+        padding: 12px 14px 14px 14px;
+        box-shadow: 0 6px 16px rgba(38, 139, 210, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .teacher-stat-tile .label {
+        font-size: 0.58rem;
+        font-weight: 700;
+        letter-spacing: 0.9px;
+        text-transform: uppercase;
+        opacity: 0.75;
+      }
+      .teacher-stat-tile .value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        line-height: 1.1;
+        color: var(--solar-accent-blue);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .teacher-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: flex-end;
+        margin-bottom: 14px;
+        background: linear-gradient(120deg, #ffffff, #f5f9fb);
+        border: 1px solid rgba(38, 139, 210, 0.15);
+        padding: 14px 16px 10px 16px;
+        border-radius: 14px;
+      }
+      .toolbar-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 200px;
+      }
+      .toolbar-group.inline-actions {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+        min-width: unset;
+      }
+      .solar-search-input {
+        background: #ffffff;
+        border: 1.5px solid rgba(38, 139, 210, 0.25);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        outline: none;
+        transition: var(--transition);
+        box-shadow: 0 2px 4px rgba(38, 139, 210, 0.06);
+        width: 260px;
+      }
+      .solar-search-input:focus {
+        border-color: var(--solar-accent-blue);
+        box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.25),
+          0 4px 14px rgba(38, 139, 210, 0.15);
+      }
+      .filter-select {
+        background: #ffffff;
+        border: 1.5px solid rgba(38, 139, 210, 0.25);
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        font-weight: 500;
+        letter-spacing: 0.4px;
+        outline: none;
+        min-width: 170px;
+        color: var(--solar-text-primary);
+        box-shadow: 0 2px 4px rgba(38, 139, 210, 0.05);
+      }
+      .filter-select:focus {
+        border-color: var(--solar-accent-blue);
+      }
+      .toolbar-label {
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--solar-text-secondary);
+      }
+      .density-toggle,
+      .clear-filters-btn {
+        background: linear-gradient(
+          90deg,
+          var(--solar-accent-blue),
+          var(--solar-accent-green)
+        );
+        color: #fff;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.7px;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(38, 139, 210, 0.25);
+        transition: 0.3s;
+      }
+      .clear-filters-btn {
+        background: linear-gradient(90deg, #d04d44, #dc322f);
+      }
+      .density-toggle:hover,
+      .clear-filters-btn:hover {
+        filter: brightness(1.05);
+        transform: translateY(-2px);
+      }
+      mark.search-highlight {
+        background: linear-gradient(
+          90deg,
+          rgba(38, 139, 210, 0.35),
+          rgba(133, 153, 0, 0.35)
+        );
+        padding: 1px 3px;
+        border-radius: 4px;
+      }
+      .visually-hidden {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0 0 0 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+      @media (max-width: 860px) {
+        .solar-search-input {
+          width: 100%;
+        }
+        .toolbar-group {
+          min-width: 140px;
+        }
+        .teacher-toolbar {
+          padding: 12px 14px 8px;
+        }
       }
 
       /* Button styling */
@@ -406,11 +585,657 @@
           display: none;
         }
       }
+
+      /* ================= Enhanced Add Teacher Card ================= */
+      .add-teacher-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(
+          145deg,
+          #ffffff 0%,
+          #f9f5e8 100%
+        ) !important;
+        border: 1px solid rgba(181, 137, 0, 0.25) !important;
+      }
+      .add-teacher-card:before,
+      .add-teacher-card:after {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(
+          circle at center,
+          rgba(255, 211, 85, 0.35),
+          transparent 70%
+        );
+        filter: blur(8px);
+        z-index: 0;
+        pointer-events: none;
+      }
+      .add-teacher-card:before {
+        top: -80px;
+        right: -60px;
+      }
+      .add-teacher-card:after {
+        bottom: -90px;
+        left: -70px;
+        background: radial-gradient(
+          circle at center,
+          rgba(38, 139, 210, 0.28),
+          transparent 70%
+        );
+      }
+      .add-teacher-card h2 {
+        position: relative;
+        z-index: 2;
+        margin: 0 0 18px 0 !important;
+        font-size: 1.4rem !important;
+        padding-bottom: 8px;
+      }
+      .add-teacher-card h2 svg {
+        background: #e8f3ff;
+        padding: 4px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(38, 139, 210, 0.25);
+      }
+      .add-teacher-card h2:after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 140px;
+        height: 4px;
+        background: linear-gradient(
+          90deg,
+          var(--solar-accent-blue),
+          var(--solar-accent-green)
+        );
+        border-radius: 4px;
+      }
+      .teacher-form {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+      }
+      .form-section {
+        background: rgba(255, 255, 255, 0.65);
+        padding: 14px 18px 18px 18px;
+        border: 1px solid rgba(181, 137, 0, 0.2);
+        border-radius: 14px;
+        box-shadow: 0 5px 18px rgba(181, 137, 0, 0.08);
+        position: relative;
+        backdrop-filter: blur(4px);
+      }
+      .form-section:not(:last-child) {
+        margin-bottom: 0;
+      }
+      .form-section-title {
+        margin: 0 0 10px 0;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--solar-accent-blue);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .form-section-title:before {
+        content: "";
+        width: 26px;
+        height: 6px;
+        background: linear-gradient(
+          90deg,
+          var(--solar-accent-blue),
+          var(--solar-accent-green)
+        );
+        border-radius: 10px;
+      }
+      .fields-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 16px 18px;
+      }
+      .solar-field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        position: relative;
+      }
+      .solar-field label {
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--solar-text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .solar-field label .req {
+        color: var(--solar-accent-red);
+        font-weight: 700;
+        font-size: 0.9em;
+      }
+      .solar-input,
+      .solar-select {
+        background: #ffffff;
+        border: 1.5px solid rgba(38, 139, 210, 0.25);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.92rem;
+        outline: none;
+        color: var(--solar-text-primary);
+        font-family: inherit;
+        transition: var(--transition);
+        box-shadow: 0 2px 4px rgba(38, 139, 210, 0.06);
+      }
+      .solar-input:focus,
+      .solar-select:focus {
+        border-color: var(--solar-accent-blue);
+        box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.25),
+          0 4px 14px rgba(38, 139, 210, 0.15);
+      }
+      .solar-select optgroup[label] {
+        font-weight: 600;
+        color: var(--solar-accent-green);
+        background: #f9fdf5;
+      }
+      .password-wrapper {
+        position: relative;
+      }
+      .password-wrapper .pw-toggle {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        background: linear-gradient(
+          135deg,
+          var(--solar-accent-blue),
+          var(--solar-accent-green)
+        );
+        color: #fff;
+        border: none;
+        font-size: 0.65rem;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        padding: 5px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(38, 139, 210, 0.3);
+        transition: var(--transition);
+      }
+      .password-wrapper .pw-toggle:hover {
+        filter: brightness(1.05);
+        transform: translateY(-50%) scale(1.05);
+      }
+      .manage-btn.enhanced-submit {
+        margin-top: 4px !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.5px;
+        padding: 14px 18px !important;
+        border-radius: 14px !important;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(
+          90deg,
+          var(--solar-accent-blue),
+          var(--solar-accent-green)
+        ) !important;
+        border: none !important;
+      }
+      .manage-btn.enhanced-submit:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          120deg,
+          rgba(255, 255, 255, 0.15),
+          transparent 70%
+        );
+        mix-blend-mode: overlay;
+        opacity: 0;
+        transition: var(--transition);
+      }
+      .manage-btn.enhanced-submit:hover:before {
+        opacity: 1;
+      }
+      .helper-text {
+        font-size: 0.7rem;
+        color: #556;
+        opacity: 0.9;
+        margin-top: -2px;
+      }
+      /* Username availability + password strength */
+      .inline-status {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .status-pill {
+        padding: 2px 6px;
+        border-radius: 8px;
+        background: #eee;
+        font-size: 0.6rem;
+        letter-spacing: 0.5px;
+      }
+      .status-available {
+        color: #146c2e;
+      }
+      .status-available .status-pill {
+        background: #d6f5df;
+        color: #0f5a25;
+      }
+      .status-taken {
+        color: #8a1111;
+      }
+      .status-taken .status-pill {
+        background: #ffe3e3;
+        color: #8a1111;
+      }
+      .status-checking {
+        color: #665500;
+      }
+      .status-checking .status-pill {
+        background: #fff7d6;
+        color: #5a4c00;
+      }
+      .pw-meter-wrapper {
+        margin-top: 4px;
+      }
+      .pw-meter-bar-bg {
+        height: 6px;
+        width: 100%;
+        background: #ececec;
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+      }
+      .pw-meter-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #dc322f, #b58900, #859900, #268bd2);
+        transition: width 0.35s ease;
+      }
+      .pw-strength-label {
+        margin-top: 3px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 0.6px;
+      }
+      .pw-weak {
+        color: #dc322f;
+      }
+      .pw-fair {
+        color: #b58900;
+      }
+      .pw-good {
+        color: #859900;
+      }
+      .pw-strong {
+        color: #268bd2;
+      }
+      /* Password error + input error state */
+      .input-error {
+        border-color: var(--solar-accent-red) !important;
+        box-shadow: 0 0 0 3px rgba(220, 50, 47, 0.25) !important;
+      }
+      #password-error.inline-status {
+        margin-top: 6px;
+        font-size: 0.62rem;
+      }
+      #password-error .status-pill {
+        background: #ffe3e3;
+        color: #8a1111;
+      }
+      .shake {
+        animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      }
+      @keyframes shake {
+        10%,
+        90% {
+          transform: translateX(-2px);
+        }
+        20%,
+        80% {
+          transform: translateX(4px);
+        }
+        30%,
+        50%,
+        70% {
+          transform: translateX(-6px);
+        }
+        40%,
+        60% {
+          transform: translateX(6px);
+        }
+      }
+
+      /* Submit loading state */
+      .manage-btn.enhanced-submit.loading {
+        pointer-events: none;
+        opacity: 0.85;
+      }
+      .manage-btn.enhanced-submit.loading span {
+        opacity: 0;
+      }
+      .manage-btn.enhanced-submit .loader {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .ring-loader {
+        width: 22px;
+        height: 22px;
+        border: 3px solid rgba(255, 255, 255, 0.35);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+
+      /* Section entrance animation */
+      .form-section {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      .form-section.visible {
+        animation: sectionIn 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+      }
+      @keyframes sectionIn {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 880px) {
+        .fields-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 600px) {
+        .fields-grid {
+          grid-template-columns: 1fr;
+        }
+        .add-teacher-card h2 {
+          font-size: 1.15rem !important;
+        }
+      }
+      /* Additional responsive refinements based on mobile screenshots */
+      @media (max-width: 1100px) {
+        .forms-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 880px) {
+        .manage-container {
+          padding: var(--spacing-lg) !important;
+        }
+        .page-header {
+          padding: 30px !important;
+        }
+        .page-header h1 {
+          font-size: 34px !important;
+        }
+        .nav-links a {
+          padding: 8px 14px !important;
+          font-size: 0.85rem !important;
+        }
+        .add-teacher-card,
+        .forms-grid > .form-card {
+          width: 100%;
+        }
+        .teacher-form {
+          gap: 20px;
+        }
+        .form-section {
+          padding: 14px 14px 16px 14px;
+        }
+      }
+      @media (max-width: 540px) {
+        .page-header {
+          padding: 24px !important;
+        }
+        .page-header h1 {
+          font-size: 30px !important;
+        }
+        .form-section-title {
+          font-size: 0.78rem;
+        }
+        .solar-input,
+        .solar-select {
+          padding: 9px 10px;
+          font-size: 0.88rem;
+        }
+        .manage-btn.enhanced-submit {
+          padding: 13px 16px !important;
+          font-size: 0.9rem !important;
+        }
+        .nav-links {
+          gap: 8px !important;
+        }
+        .nav-links a {
+          flex: 1 1 auto;
+          justify-content: center;
+        }
+      }
+      /* ===== Enhanced Teaching Assignments Section ===== */
+      .teaching-assignments-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(
+          160deg,
+          #ffffff 0%,
+          #f7f3e4 120%
+        ) !important;
+      }
+      .teaching-assignments-card h2 {
+        font-size: 1.35rem !important;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .assignment-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 14px;
+        margin: 14px 0 20px;
+      }
+      .summary-tile {
+        position: relative;
+        background: #ffffff;
+        border: 1px solid rgba(38, 139, 210, 0.18);
+        padding: 14px 14px 14px 14px;
+        border-radius: 14px;
+        box-shadow: 0 6px 18px rgba(38, 139, 210, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .summary-tile:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          120deg,
+          rgba(38, 139, 210, 0.08),
+          rgba(133, 153, 0, 0.06)
+        );
+        opacity: 0;
+        transition: 0.4s;
+        border-radius: inherit;
+      }
+      .summary-tile:hover:before {
+        opacity: 1;
+      }
+      .summary-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.9px;
+        text-transform: uppercase;
+        color: var(--solar-text-secondary);
+      }
+      .summary-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--solar-accent-blue);
+        line-height: 1.1;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .badge-small {
+        font-size: 0.55rem;
+        background: var(--solar-accent-green);
+        color: #fff;
+        padding: 3px 6px;
+        border-radius: 10px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      .assignment-panels {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .assignment-panel {
+        border: 1px solid rgba(38, 139, 210, 0.18);
+        border-radius: 14px;
+        background: #ffffff;
+        overflow: hidden;
+        box-shadow: 0 8px 22px rgba(38, 139, 210, 0.06);
+      }
+      .assignment-panel + .assignment-panel {
+        margin-top: 2px;
+      }
+      .assignment-panel-header {
+        cursor: pointer;
+        position: relative;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(90deg, #f0f7fb, #ffffff);
+      }
+      .assignment-panel-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .assignment-panel-header .count-chip {
+        background: var(--solar-accent-blue);
+        color: #fff;
+        padding: 4px 10px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        border-radius: 30px;
+        letter-spacing: 0.6px;
+      }
+      .assignment-panel-header .chevron {
+        margin-left: auto;
+        width: 18px;
+        height: 18px;
+        transition: transform 0.35s ease;
+        fill: var(--solar-accent-blue);
+      }
+      .assignment-panel.open .assignment-panel-header .chevron {
+        transform: rotate(180deg);
+      }
+      .assignment-panel-body {
+        padding: 16px 18px 20px;
+        border-top: 1px solid rgba(38, 139, 210, 0.15);
+        animation: fadeSlide 0.45s ease;
+      }
+      @keyframes fadeSlide {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .empty-assignment {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        background: #f5fafc;
+        border: 1px dashed rgba(38, 139, 210, 0.35);
+        padding: 14px 16px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        line-height: 1.2rem;
+      }
+      .empty-assignment svg {
+        flex-shrink: 0;
+      }
+      .cta-inline-btn {
+        background: linear-gradient(
+          90deg,
+          var(--solar-accent-blue),
+          var(--solar-accent-green)
+        );
+        color: #fff;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.7px;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(38, 139, 210, 0.25);
+        transition: 0.3s;
+      }
+      .cta-inline-btn:hover {
+        filter: brightness(1.05);
+        transform: translateY(-2px);
+      }
+      .assignment-table-wrapper table {
+        width: 100%;
+      }
+      .assignment-table-wrapper th {
+        font-size: 0.7rem !important;
+      }
+      .assignment-table-wrapper td {
+        font-size: 0.72rem;
+      }
+      @media (max-width: 640px) {
+        .assignment-summary-grid {
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          gap: 10px;
+        }
+        .summary-value {
+          font-size: 1.2rem;
+        }
+        .assignment-panel-header {
+          padding: 12px 14px;
+        }
+        .assignment-panel-body {
+          padding: 14px 16px 18px;
+        }
+      }
     </style>
   </head>
-  <body>
+  <body class="solar-theme">
     <div class="manage-container">
-      <header class="page-header">
+      <header class="page-header solar-card">
         <h1>
           <svg
             class="heroicon-solar-blue"
@@ -432,7 +1257,10 @@
           Add, edit, and manage teacher profiles and information
         </p>
         <div class="nav-links">
-          <a href="{{ url_for('classteacher.teacher_management_hub') }}">
+          <a
+            class="solar-btn-outline"
+            href="{{ url_for('classteacher.teacher_management_hub') }}"
+          >
             <svg
               class="heroicon-solar-green"
               width="18"
@@ -449,7 +1277,10 @@
             </svg>
             Teacher Hub
           </a>
-          <a href="{{ url_for('classteacher.dashboard') }}">
+          <a
+            class="solar-btn-outline"
+            href="{{ url_for('classteacher.dashboard') }}"
+          >
             <svg
               class="heroicon-solar-blue"
               width="18"
@@ -466,7 +1297,10 @@
             </svg>
             Dashboard
           </a>
-          <a href="{{ url_for('auth.logout_route') }}">
+          <a
+            class="solar-btn-outline"
+            href="{{ url_for('auth.logout_route') }}"
+          >
             <svg
               class="heroicon-solar-red"
               width="18"
@@ -541,8 +1375,8 @@
       </div>
 
       <div class="forms-grid">
-        <!-- Add Teacher Form -->
-        <div class="form-card">
+        <!-- Left Primary Column: Add Teacher Form -->
+        <div class="form-card add-teacher-card primary-column">
           <h2>
             <svg
               class="heroicon-solar-green"
@@ -561,224 +1395,252 @@
             Add New Teacher
           </h2>
           <form
+            class="teacher-form"
             method="POST"
             action="{{ url_for('classteacher.manage_teachers') }}"
           >
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
-            <!-- Basic Information -->
-            <div
-              style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px"
-            >
-              <div class="form-group">
-                <label for="first_name">First Name:</label>
-                <input
-                  type="text"
-                  name="first_name"
-                  id="first_name"
-                  class="form-control"
-                  placeholder="Enter first name"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="last_name">Last Name:</label>
-                <input
-                  type="text"
-                  name="last_name"
-                  id="last_name"
-                  class="form-control"
-                  placeholder="Enter last name"
-                />
+            <!-- Section: Basic Information -->
+            <div class="form-section">
+              <h3 class="form-section-title">Basic Information</h3>
+              <div class="fields-grid">
+                <div class="solar-field">
+                  <label for="first_name">First Name</label>
+                  <input
+                    type="text"
+                    name="first_name"
+                    id="first_name"
+                    class="solar-input"
+                    placeholder="Jane"
+                  />
+                </div>
+                <div class="solar-field">
+                  <label for="last_name">Last Name</label>
+                  <input
+                    type="text"
+                    name="last_name"
+                    id="last_name"
+                    class="solar-input"
+                    placeholder="Doe"
+                  />
+                </div>
+                <div class="solar-field">
+                  <label for="username"
+                    >Username <span class="req">*</span></label
+                  >
+                  <input
+                    type="text"
+                    name="username"
+                    id="username"
+                    class="solar-input"
+                    required
+                    placeholder="unique.username"
+                    autocomplete="off"
+                  />
+                  <div class="helper-text">This will be used to log in</div>
+                  <div
+                    id="username-status"
+                    class="inline-status"
+                    aria-live="polite"
+                  ></div>
+                </div>
+                <div class="solar-field password-wrapper">
+                  <label for="password"
+                    >Password <span class="req">*</span></label
+                  >
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    class="solar-input"
+                    required
+                    placeholder="Create secure password"
+                  />
+                  <button
+                    type="button"
+                    id="toggle-password"
+                    class="pw-toggle"
+                    tabindex="-1"
+                  >
+                    SHOW
+                  </button>
+                  <div class="helper-text">
+                    Min 6 characters; mix letters & numbers
+                  </div>
+                  <div
+                    class="pw-meter-wrapper"
+                    id="pw-meter-wrapper"
+                    style="display: none"
+                  >
+                    <div class="pw-meter-bar-bg">
+                      <div class="pw-meter-bar" id="pw-meter-bar"></div>
+                    </div>
+                    <div class="pw-strength-label" id="pw-strength-label"></div>
+                  </div>
+                  <div
+                    id="password-error"
+                    class="inline-status"
+                    aria-live="polite"
+                    style="display: none"
+                  ></div>
+                </div>
+                <div class="solar-field">
+                  <label for="role">Role <span class="req">*</span></label>
+                  <select name="role" id="role" class="solar-select" required>
+                    <option value="">Select Role</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="classteacher">Class Teacher</option>
+                    <option value="headteacher">Head Teacher</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="username"
-                >Username: <span style="color: red">*</span></label
-              >
-              <input
-                type="text"
-                name="username"
-                id="username"
-                class="form-control"
-                required
-                placeholder="Enter unique username"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="password"
-                >Password: <span style="color: red">*</span></label
-              >
-              <input
-                type="password"
-                name="password"
-                id="password"
-                class="form-control"
-                required
-                placeholder="Enter secure password"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="role">Role: <span style="color: red">*</span></label>
-              <select name="role" id="role" class="form-control" required>
-                <option value="">Select Role</option>
-                <option value="teacher">Teacher</option>
-                <option value="classteacher">Class Teacher</option>
-                <option value="headteacher">Head Teacher</option>
-              </select>
-            </div>
-
-            <!-- Contact Information -->
-            <div
-              style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px"
-            >
-              <div class="form-group">
-                <label for="email">Email:</label>
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  class="form-control"
-                  placeholder="teacher@school.com"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="phone">Phone:</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  id="phone"
-                  class="form-control"
-                  placeholder="+254 700 000 000"
-                />
+            <!-- Section: Contact -->
+            <div class="form-section">
+              <h3 class="form-section-title">Contact Details</h3>
+              <div class="fields-grid">
+                <div class="solar-field">
+                  <label for="email">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    class="solar-input"
+                    placeholder="teacher@school.com"
+                  />
+                </div>
+                <div class="solar-field">
+                  <label for="phone">Phone</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    id="phone"
+                    class="solar-input"
+                    placeholder="+254 700 000 000"
+                  />
+                </div>
               </div>
             </div>
 
-            <!-- Professional Information -->
-            <div
-              style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px"
-            >
-              <div class="form-group">
-                <label for="qualification">Qualification:</label>
-                <select
-                  name="qualification"
-                  id="qualification"
-                  class="form-control"
-                >
-                  <option value="">Select Qualification</option>
-                  <option value="P1">P1 Certificate</option>
-                  <option value="DIPLOMA">Diploma</option>
-                  <option value="DEGREE">Bachelor's Degree</option>
-                  <option value="MASTERS">Master's Degree</option>
-                  <option value="PHD">PhD</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="specialization">Subject Specialization:</label>
-                <select
-                  name="specialization"
-                  id="specialization"
-                  class="form-control"
-                >
-                  <option value="">Select Specialization</option>
-                  <!-- Lower Primary Specializations -->
-                  <optgroup label="Lower Primary (PP1-Grade 3)">
-                    <option value="Early Childhood Education">
-                      Early Childhood Education
-                    </option>
-                    <option value="Mathematics Activities">
-                      Mathematics Activities
-                    </option>
-                    <option value="English Activities">
-                      English Activities
-                    </option>
-                    <option value="Kiswahili Activities">
-                      Kiswahili Activities
-                    </option>
-                    <option value="Environmental Activities">
-                      Environmental Activities
-                    </option>
-                    <option value="Religious Activities">
-                      Religious Activities
-                    </option>
-                    <option value="Indigenous Language">
-                      Indigenous Language
-                    </option>
-                  </optgroup>
-
-                  <!-- Upper Primary Specializations -->
-                  <optgroup label="Upper Primary (Grade 4-6)">
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="English">English Language</option>
-                    <option value="Kiswahili">Kiswahili</option>
-                    <option value="Science and Technology">
-                      Science and Technology
-                    </option>
-                    <option value="Social Studies">Social Studies</option>
-                    <option value="Creative Arts">Creative Arts</option>
-                    <option value="Agriculture and Nutrition">
-                      Agriculture and Nutrition
-                    </option>
-                    <option value="Religious Education">
-                      Religious Education
-                    </option>
-                  </optgroup>
-
-                  <!-- Junior Secondary Specializations -->
-                  <optgroup label="Junior Secondary (Grade 7-9)">
-                    <option value="Mathematics (JS)">Mathematics</option>
-                    <option value="English (JS)">English Language</option>
-                    <option value="Kiswahili (JS)">Kiswahili</option>
-                    <option value="Integrated Science">
-                      Integrated Science
-                    </option>
-                    <option value="Social Studies (JS)">Social Studies</option>
-                    <option value="Creative Arts and Sports">
-                      Creative Arts and Sports
-                    </option>
-                    <option value="Pre-Technical Studies">
-                      Pre-Technical Studies
-                    </option>
-                    <option value="Agriculture">Agriculture</option>
-                    <option value="Religious Education (JS)">
-                      Religious Education
-                    </option>
-                  </optgroup>
-
-                  <!-- Administrative Specializations -->
-                  <optgroup label="Administrative">
-                    <option value="School Administration">
-                      School Administration
-                    </option>
-                    <option value="Curriculum Development">
-                      Curriculum Development
-                    </option>
-                    <option value="Educational Leadership">
-                      Educational Leadership
-                    </option>
-                    <option value="Special Needs Education">
-                      Special Needs Education
-                    </option>
-                    <option value="Guidance and Counseling">
-                      Guidance and Counseling
-                    </option>
-                  </optgroup>
-                </select>
+            <!-- Section: Professional -->
+            <div class="form-section">
+              <h3 class="form-section-title">Professional Profile</h3>
+              <div class="fields-grid">
+                <div class="solar-field">
+                  <label for="qualification">Qualification</label>
+                  <select
+                    name="qualification"
+                    id="qualification"
+                    class="solar-select"
+                  >
+                    <option value="">Select Qualification</option>
+                    <option value="P1">P1 Certificate</option>
+                    <option value="DIPLOMA">Diploma</option>
+                    <option value="DEGREE">Bachelor's Degree</option>
+                    <option value="MASTERS">Master's Degree</option>
+                    <option value="PHD">PhD</option>
+                  </select>
+                </div>
+                <div class="solar-field" style="grid-column: span 2">
+                  <label for="specialization">Subject Specialization</label>
+                  <select
+                    name="specialization"
+                    id="specialization"
+                    class="solar-select"
+                  >
+                    <option value="">Select Specialization</option>
+                    <optgroup label="Lower Primary (PP1-Grade 3)">
+                      <option value="Early Childhood Education">
+                        Early Childhood Education
+                      </option>
+                      <option value="Mathematics Activities">
+                        Mathematics Activities
+                      </option>
+                      <option value="English Activities">
+                        English Activities
+                      </option>
+                      <option value="Kiswahili Activities">
+                        Kiswahili Activities
+                      </option>
+                      <option value="Environmental Activities">
+                        Environmental Activities
+                      </option>
+                      <option value="Religious Activities">
+                        Religious Activities
+                      </option>
+                      <option value="Indigenous Language">
+                        Indigenous Language
+                      </option>
+                    </optgroup>
+                    <optgroup label="Upper Primary (Grade 4-6)">
+                      <option value="Mathematics">Mathematics</option>
+                      <option value="English">English Language</option>
+                      <option value="Kiswahili">Kiswahili</option>
+                      <option value="Science and Technology">
+                        Science and Technology
+                      </option>
+                      <option value="Social Studies">Social Studies</option>
+                      <option value="Creative Arts">Creative Arts</option>
+                      <option value="Agriculture and Nutrition">
+                        Agriculture and Nutrition
+                      </option>
+                      <option value="Religious Education">
+                        Religious Education
+                      </option>
+                    </optgroup>
+                    <optgroup label="Junior Secondary (Grade 7-9)">
+                      <option value="Mathematics (JS)">Mathematics</option>
+                      <option value="English (JS)">English Language</option>
+                      <option value="Kiswahili (JS)">Kiswahili</option>
+                      <option value="Integrated Science">
+                        Integrated Science
+                      </option>
+                      <option value="Social Studies (JS)">
+                        Social Studies
+                      </option>
+                      <option value="Creative Arts and Sports">
+                        Creative Arts and Sports
+                      </option>
+                      <option value="Pre-Technical Studies">
+                        Pre-Technical Studies
+                      </option>
+                      <option value="Agriculture">Agriculture</option>
+                      <option value="Religious Education (JS)">
+                        Religious Education
+                      </option>
+                    </optgroup>
+                    <optgroup label="Administrative">
+                      <option value="School Administration">
+                        School Administration
+                      </option>
+                      <option value="Curriculum Development">
+                        Curriculum Development
+                      </option>
+                      <option value="Educational Leadership">
+                        Educational Leadership
+                      </option>
+                      <option value="Special Needs Education">
+                        Special Needs Education
+                      </option>
+                      <option value="Guidance and Counseling">
+                        Guidance and Counseling
+                      </option>
+                    </optgroup>
+                  </select>
+                </div>
               </div>
             </div>
 
             <button
               type="submit"
               name="add_teacher"
-              class="manage-btn"
-              style="width: 100%; margin-top: 15px"
+              class="manage-btn enhanced-submit"
             >
-              <span style="display: inline-flex; align-items: center; gap: 8px">
+              <span
+                style="display: inline-flex; align-items: center; gap: 10px"
+              >
                 <svg
                   class="heroicon-solar-blue"
                   width="20"
@@ -799,226 +1661,432 @@
           </form>
         </div>
 
-        <!-- This is the second column for tips -->
-        <div class="form-card">
-          <h2>
-            <svg
-              class="heroicon-solar-yellow"
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M12 1.5a7.5 7.5 0 00-4.5 13.5v1.125c0 .621.504 1.125 1.125 1.125h6.75c.621 0 1.125-.504 1.125-1.125V15A7.5 7.5 0 0012 1.5zm-2.25 18a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5z"
-              />
-            </svg>
-            Teacher Management Tips
-          </h2>
-          <div class="tips-content">
-            <p>Here are some tips for managing teachers effectively:</p>
-            <ul>
-              <li>Create unique usernames for each teacher account</li>
-              <li>Ensure passwords are secure but easy to remember</li>
-              <li>
-                Assign appropriate subjects based on teacher specialization
-              </li>
-              <li>
-                Be careful when deleting teacher accounts - this will remove all
-                associated data
-              </li>
-              <li>
-                Teachers must be assigned to a grade and stream to access class
-                information
-              </li>
-              <li>
-                Different roles have different levels of access in the system
-              </li>
-            </ul>
+        <!-- Right Side Column: Tips + Teaching Assignments -->
+        <div class="side-column">
+          <div class="form-card">
+            <h2>
+              <svg
+                class="heroicon-solar-yellow"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M12 1.5a7.5 7.5 0 00-4.5 13.5v1.125c0 .621.504 1.125 1.125 1.125h6.75c.621 0 1.125-.504 1.125-1.125V15A7.5 7.5 0 0012 1.5zm-2.25 18a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5z"
+                />
+              </svg>
+              Teacher Management Tips
+            </h2>
+            <div class="tips-content">
+              <p>Here are some tips for managing teachers effectively:</p>
+              <ul>
+                <li>Create unique usernames for each teacher account</li>
+                <li>Ensure passwords are secure but easy to remember</li>
+                <li>
+                  Assign appropriate subjects based on teacher specialization
+                </li>
+                <li>
+                  Be careful when deleting teacher accounts - this will remove
+                  all associated data
+                </li>
+                <li>
+                  Teachers must be assigned to a grade and stream to access
+                  class information
+                </li>
+                <li>
+                  Different roles have different levels of access in the system
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Teacher Assignments Section -->
-      <div class="students-section">
-        <h2>
-          <svg
-            class="heroicon-solar-blue"
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+          <!-- Teaching Assignments moved into side column -->
+          <div
+            class="students-section teaching-assignments-card"
+            id="teaching-assignments"
           >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M3 6.75A2.25 2.25 0 015.25 4.5h6.5A2.25 2.25 0 0114 6.75v10.5a.75.75 0 01-1.2.6L9 15.75l-3.8 2.1a.75.75 0 01-1.2-.6V6.75zM15.75 6a.75.75 0 01.75-.75h3a2.25 2.25 0 012.25 2.25v10.5a.75.75 0 01-1.2.6l-2.3-1.27-2.3 1.27a.75.75 0 01-1.2-.6V6z"
-            />
-          </svg>
-          My Teaching Assignments
-        </h2>
-
-        <!-- Class Teacher Assignments -->
-        <div class="assignment-section" style="margin-bottom: 20px">
-          <h3>Class Teacher Assignments</h3>
-          {% if class_teacher_assignments %}
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Grade</th>
-                  <th>Stream</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for assignment in class_teacher_assignments %}
-                <tr>
-                  <td>
-                    {{ assignment.grade.name if assignment.grade is not mapping
-                    else assignment.grade }}
-                  </td>
-                  <td>
-                    {% if assignment.stream is not mapping %} {{
-                    assignment.stream.name if assignment.stream else 'All
-                    Streams' }} {% else %} {{ assignment.stream.name if
-                    assignment.stream else 'All Streams' }} {% endif %}
-                  </td>
-                  <td>
-                    <div class="action-buttons">
-                      <form
-                        method="POST"
-                        action="{{ url_for('classteacher.manage_teachers') }}"
-                        style="display: inline"
+            <h2>
+              <svg
+                class="heroicon-solar-blue"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M3 6.75A2.25 2.25 0 015.25 4.5h6.5A2.25 2.25 0 0114 6.75v10.5a.75.75 0 01-1.2.6L9 15.75l-3.8 2.1a.75.75 0 01-1.2-.6V6.75zM15.75 6a.75.75 0 01.75-.75h3a2.25 2.25 0 012.25 2.25v10.5a.75.75 0 01-1.2.6l-2.3-1.27-2.3 1.27a.75.75 0 01-1.2-.6V6z"
+                />
+              </svg>
+              My Teaching Assignments
+            </h2>
+            <div class="assignment-summary-grid">
+              <div class="summary-tile">
+                <div class="summary-label">Class Assignments</div>
+                <div class="summary-value">
+                  {{ class_teacher_assignments|length if
+                  class_teacher_assignments else 0 }}
+                </div>
+                <div style="font-size: 0.6rem; opacity: 0.7">
+                  Total homerooms
+                </div>
+              </div>
+              <div class="summary-tile">
+                <div class="summary-label">Subject Assign.</div>
+                <div class="summary-value">
+                  {{ subject_assignments|length if subject_assignments else 0 }}
+                </div>
+                <div style="font-size: 0.6rem; opacity: 0.7">
+                  Distinct scheduled subjects
+                </div>
+              </div>
+              <div class="summary-tile">
+                <div class="summary-label">Overall Load</div>
+                <div class="summary-value">
+                  {{ (class_teacher_assignments|length if
+                  class_teacher_assignments else 0) +
+                  (subject_assignments|length if subject_assignments else 0) }}
+                </div>
+                <div style="font-size: 0.6rem; opacity: 0.7">
+                  Current active roles
+                </div>
+              </div>
+              <div class="summary-tile">
+                <div class="summary-label">Status</div>
+                {% set active_ass = (class_teacher_assignments|length if
+                class_teacher_assignments else 0) + (subject_assignments|length
+                if subject_assignments else 0) %}
+                <div class="summary-value">
+                  {% if active_ass > 0 %}<span
+                    style="color: var(--solar-accent-green)"
+                    >Active</span
+                  >{% else %}<span style="color: var(--solar-accent-red)"
+                    >Idle</span
+                  >{% endif %}
+                </div>
+                <div style="font-size: 0.6rem; opacity: 0.7">
+                  Assignment state
+                </div>
+              </div>
+            </div>
+            <div class="assignment-panels">
+              <div
+                class="assignment-panel {% if class_teacher_assignments %}open{% endif %}"
+                data-panel
+              >
+                <div class="assignment-panel-header" data-toggle-panel>
+                  <h3>
+                    <svg
+                      class="heroicon-solar-green"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M3 6.75A2.25 2.25 0 015.25 4.5h6.5A2.25 2.25 0 0114 6.75v10.5a.75.75 0 01-1.2.6L9 15.75l-3.8 2.1a.75.75 0 01-1.2-.6V6.75zM15.75 6a.75.75 0 01.75-.75h3a2.25 2.25 0 012.25 2.25v10.5a.75.75 0 01-1.2.6l-2.3-1.27-2.3 1.27a.75.75 0 01-1.2-.6V6z"
+                      /></svg
+                    >Class Teacher Assignments
+                  </h3>
+                  <div class="count-chip">
+                    {{ class_teacher_assignments|length if
+                    class_teacher_assignments else 0 }}
+                  </div>
+                  <svg class="chevron" viewBox="0 0 24 24">
+                    <path d="M12 15.5l-7-8h14l-7 8z" />
+                  </svg>
+                </div>
+                <div
+                  class="assignment-panel-body"
+                  {%
+                  if
+                  not
+                  class_teacher_assignments
+                  %}style="display:block"
+                  {%
+                  endif
+                  %}
+                >
+                  {% if class_teacher_assignments %}
+                  <div
+                    class="assignment-table-wrapper table-responsive"
+                    style="margin: 0; box-shadow: none; background: transparent"
+                  >
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Grade</th>
+                          <th>Stream</th>
+                          <th style="width: 110px">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for assignment in class_teacher_assignments %}
+                        <tr>
+                          <td>
+                            {{ assignment.grade.name if assignment.grade is not
+                            mapping else assignment.grade }}
+                          </td>
+                          <td>
+                            {% if assignment.stream is not mapping %} {{
+                            assignment.stream.name if assignment.stream else
+                            'All Streams' }} {% else %} {{
+                            assignment.stream.name if assignment.stream else
+                            'All Streams' }} {% endif %}
+                          </td>
+                          <td>
+                            <div class="action-buttons">
+                              <form
+                                method="POST"
+                                action="{{ url_for('classteacher.manage_teachers') }}"
+                                style="display: inline"
+                              >
+                                <input
+                                  type="hidden"
+                                  name="csrf_token"
+                                  value="{{ csrf_token() }}"
+                                /><input
+                                  type="hidden"
+                                  name="assignment_id"
+                                  value="{{ assignment.id }}"
+                                /><input
+                                  type="hidden"
+                                  name="assignment_type"
+                                  value="class_teacher"
+                                /><button
+                                  type="submit"
+                                  name="delete_assignment"
+                                  class="delete-btn"
+                                  onclick="return confirm('Remove this class teacher assignment?')"
+                                >
+                                  Delete
+                                </button>
+                              </form>
+                              <a
+                                href="{{ url_for('bulk_assignments.edit_assignment', assignment_id=assignment.id, assignment_type='class_teacher') }}"
+                                class="edit-btn"
+                                >Edit</a
+                              >
+                            </div>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <div class="empty-assignment">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5zM11.25 7.5c0-.414.336-.75.75-.75h.008a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zM12 10.5a.75.75 0 00-.75.75v4.5a.75.75 0 001.5 0v-4.5A.75.75 0 0012 10.5z"
+                        fill="#268bd2"
+                      />
+                    </svg>
+                    <div>
+                      <strong style="display: block; margin-bottom: 4px"
+                        >No Class Teacher Assignments</strong
+                      ><span
+                        >You are not assigned as a homeroom / class teacher yet.
+                        Assign yourself or request an administrator to allocate
+                        a class.</span
                       >
-                        <input
-                          type="hidden"
-                          name="csrf_token"
-                          value="{{ csrf_token() }}"
-                        />
-                        <input
-                          type="hidden"
-                          name="assignment_id"
-                          value="{{ assignment.id }}"
-                        />
-                        <input
-                          type="hidden"
-                          name="assignment_type"
-                          value="class_teacher"
-                        />
-                        <button
-                          type="submit"
-                          name="delete_assignment"
-                          class="delete-btn"
-                          onclick="return confirm('Are you sure you want to remove this class teacher assignment?')"
+                      <div
+                        style="
+                          margin-top: 8px;
+                          display: flex;
+                          gap: 8px;
+                          flex-wrap: wrap;
+                        "
+                      >
+                        <a
+                          href="{{ url_for('bulk_assignments.edit_assignment', assignment_id=0, assignment_type='class_teacher') }}"
+                          class="cta-inline-btn"
+                          style="text-decoration: none"
+                          >Assign Class</a
                         >
-                          Delete
-                        </button>
-                      </form>
-                      <a
-                        href="{{ url_for('bulk_assignments.edit_assignment', assignment_id=assignment.id, assignment_type='class_teacher') }}"
-                        class="edit-btn"
-                      >
-                        Edit
-                      </a>
+                      </div>
                     </div>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <p>
-            You are not currently assigned as a class teacher for any class.
-          </p>
-          {% endif %}
-        </div>
-
-        <!-- Subject Assignments -->
-        <div class="assignment-section" style="margin-bottom: 30px">
-          <h3>Subject Assignments</h3>
-          {% if subject_assignments %}
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Education Level</th>
-                  <th>Grade</th>
-                  <th>Stream</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for assignment in subject_assignments %}
-                <tr>
-                  <td>{{ assignment.subject.name }}</td>
-                  <td>
-                    {{ assignment.subject.education_level|replace('_', '
-                    ')|title if assignment.subject.education_level else 'N/A' }}
-                  </td>
-                  <td>{{ assignment.grade.name }}</td>
-                  <td>
-                    {{ assignment.stream.name if assignment.stream else 'All
-                    Streams' }}
-                  </td>
-                  <td>
-                    <div class="action-buttons">
-                      <form
-                        method="POST"
-                        action="{{ url_for('classteacher.manage_teachers') }}"
-                        style="display: inline"
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div
+                class="assignment-panel {% if subject_assignments %}open{% endif %}"
+                data-panel
+              >
+                <div class="assignment-panel-header" data-toggle-panel>
+                  <h3>
+                    <svg
+                      class="heroicon-solar-blue"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M4.5 5.25A.75.75 0 015.25 4.5h13.5a.75.75 0 010 1.5H5.25A.75.75 0 014.5 5.25zM4.5 9a.75.75 0 01.75-.75h9a.75.75 0 010 1.5h-9A.75.75 0 014.5 9zm0 3.75a.75.75 0 01.75-.75h6a.75.75 0 010 1.5h-6a.75.75 0 01-.75-.75zm0 3.75a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-3a.75.75 0 01-.75-.75z"
+                      /></svg
+                    >Subject Assignments
+                  </h3>
+                  <div class="count-chip">
+                    {{ subject_assignments|length if subject_assignments else 0
+                    }}
+                  </div>
+                  <svg class="chevron" viewBox="0 0 24 24">
+                    <path d="M12 15.5l-7-8h14l-7 8z" />
+                  </svg>
+                </div>
+                <div
+                  class="assignment-panel-body"
+                  {%
+                  if
+                  not
+                  subject_assignments
+                  %}style="display:block"
+                  {%
+                  endif
+                  %}
+                >
+                  {% if subject_assignments %}
+                  <div
+                    class="assignment-table-wrapper table-responsive"
+                    style="margin: 0; box-shadow: none; background: transparent"
+                  >
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Subject</th>
+                          <th>Level</th>
+                          <th>Grade</th>
+                          <th>Stream</th>
+                          <th style="width: 110px">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for assignment in subject_assignments %}
+                        <tr>
+                          <td>{{ assignment.subject.name }}</td>
+                          <td>
+                            {{ assignment.subject.education_level|replace('_','
+                            ')|title if assignment.subject.education_level else
+                            'N/A' }}
+                          </td>
+                          <td>{{ assignment.grade.name }}</td>
+                          <td>
+                            {{ assignment.stream.name if assignment.stream else
+                            'All Streams' }}
+                          </td>
+                          <td>
+                            <div class="action-buttons">
+                              <form
+                                method="POST"
+                                action="{{ url_for('classteacher.manage_teachers') }}"
+                                style="display: inline"
+                              >
+                                <input
+                                  type="hidden"
+                                  name="csrf_token"
+                                  value="{{ csrf_token() }}"
+                                /><input
+                                  type="hidden"
+                                  name="assignment_id"
+                                  value="{{ assignment.id if assignment is not mapping else assignment['id'] }}"
+                                /><input
+                                  type="hidden"
+                                  name="assignment_type"
+                                  value="subject"
+                                /><button
+                                  type="submit"
+                                  name="delete_assignment"
+                                  class="delete-btn"
+                                  onclick="return confirm('Remove this subject assignment?')"
+                                >
+                                  Delete
+                                </button>
+                              </form>
+                              <a
+                                href="{{ url_for('bulk_assignments.edit_assignment', assignment_id=assignment.id, assignment_type='subject') }}"
+                                class="edit-btn"
+                                >Edit</a
+                              >
+                            </div>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <div class="empty-assignment">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM8.25 10.5a.75.75 0 000 1.5h7.5a.75.75 0 000-1.5h-7.5z"
+                        fill="#b58900"
+                      />
+                    </svg>
+                    <div>
+                      <strong style="display: block; margin-bottom: 4px"
+                        >No Subject Assignments</strong
+                      ><span
+                        >You have not been assigned any teaching subjects. Add a
+                        subject to activate performance tracking and
+                        dashboards.</span
                       >
-                        <input
-                          type="hidden"
-                          name="csrf_token"
-                          value="{{ csrf_token() }}"
-                        />
-                        <input
-                          type="hidden"
-                          name="assignment_id"
-                          value="{{ assignment.id if assignment is not mapping else assignment['id'] }}"
-                        />
-                        <input
-                          type="hidden"
-                          name="assignment_type"
-                          value="subject"
-                        />
-                        <button
-                          type="submit"
-                          name="delete_assignment"
-                          class="delete-btn"
-                          onclick="return confirm('Are you sure you want to remove this subject assignment?')"
+                      <div
+                        style="
+                          margin-top: 8px;
+                          display: flex;
+                          gap: 8px;
+                          flex-wrap: wrap;
+                        "
+                      >
+                        <a
+                          href="{{ url_for('bulk_assignments.edit_assignment', assignment_id=0, assignment_type='subject') }}"
+                          class="cta-inline-btn"
+                          style="text-decoration: none"
+                          >Assign Subject</a
                         >
-                          Delete
-                        </button>
-                      </form>
-                      <a
-                        href="{{ url_for('bulk_assignments.edit_assignment', assignment_id=assignment.id, assignment_type='subject') }}"
-                        class="edit-btn"
-                      >
-                        Edit
-                      </a>
+                      </div>
                     </div>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
           </div>
-          {% else %}
-          <p>You are not currently assigned to teach any subjects.</p>
-          {% endif %}
         </div>
+        <!-- end side-column -->
       </div>
 
       <!-- Teachers Table -->
-      <div class="students-section">
+      <div class="students-section teachers-section-enhanced">
         <h2>
           <svg
             class="heroicon-solar-green"
@@ -1036,63 +2104,87 @@
           </svg>
           Existing Teachers
         </h2>
-        <div id="student-filter">
-          <label for="teacher-search">Search teachers:</label>
-          <input
-            type="text"
-            id="teacher-search"
-            onkeyup="searchTeachers()"
-            placeholder="Type to search..."
-          />
+        <!-- Stats Tiles -->
+        <div class="teacher-stats-grid" id="teacher-stats-grid">
+          <div class="teacher-stat-tile" data-stat="total">
+            <div class="label">Total Teachers</div>
+            <div class="value" id="stat-total">0</div>
+          </div>
+          <div class="teacher-stat-tile" data-stat="active">
+            <div class="label">Active</div>
+            <div class="value" id="stat-active">0</div>
+          </div>
+          <div class="teacher-stat-tile" data-stat="noassign">
+            <div class="label">No Assignments</div>
+            <div class="value" id="stat-idle">0</div>
+          </div>
+          <div class="teacher-stat-tile" data-stat="filtered">
+            <div class="label">Visible</div>
+            <div class="value" id="stat-visible">0</div>
+          </div>
         </div>
-
-        <!-- Filter and Sort Controls -->
-        <div
-          class="filter-controls"
-          style="
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-          "
-        >
-          <div>
-            <label for="role-filter">Filter by Role:</label>
-            <select
-              id="role-filter"
-              onchange="filterTeachers()"
-              style="padding: 5px"
-            >
+        <div class="teacher-toolbar">
+          <div class="toolbar-group" style="flex: 1 1 260px; min-width: 240px">
+            <label for="teacher-search" class="toolbar-label">Search</label>
+            <input
+              type="text"
+              id="teacher-search"
+              class="solar-search-input"
+              placeholder="Username, subject or role..."
+              autocomplete="off"
+            />
+          </div>
+          <div class="toolbar-group">
+            <label for="role-filter" class="toolbar-label">Role</label>
+            <select id="role-filter" class="filter-select">
               <option value="">All Roles</option>
               <option value="teacher">Teacher</option>
               <option value="classteacher">Class Teacher</option>
               <option value="headteacher">Head Teacher</option>
             </select>
           </div>
-
-          <div>
-            <label for="assignment-filter">Filter by Assignment:</label>
-            <select
-              id="assignment-filter"
-              onchange="filterTeachers()"
-              style="padding: 5px"
+          <div class="toolbar-group">
+            <label for="assignment-filter" class="toolbar-label"
+              >Assignment</label
             >
+            <select id="assignment-filter" class="filter-select">
               <option value="">All Teachers</option>
-              <option value="has-class">Has Class Assignment</option>
-              <option value="has-subject">Has Subject Assignment</option>
+              <option value="has-class">Has Class</option>
+              <option value="has-subject">Has Subject</option>
               <option value="no-assignment">No Assignments</option>
             </select>
           </div>
-
-          <div>
-            <label for="sort-by">Sort by:</label>
-            <select id="sort-by" onchange="sortTeachers()" style="padding: 5px">
-              <option value="username">Username</option>
-              <option value="role">Role</option>
+          <div class="toolbar-group">
+            <label for="sort-by" class="toolbar-label">Sort</label>
+            <select id="sort-by" class="filter-select">
               <option value="assignments">Total Assignments</option>
+              <option value="username">Username (A-Z)</option>
+              <option value="role">Role (A-Z)</option>
             </select>
           </div>
+          <div class="toolbar-group inline-actions">
+            <button
+              type="button"
+              id="density-toggle"
+              class="density-toggle"
+              title="Toggle row density"
+            >
+              Compact
+            </button>
+            <button
+              type="button"
+              id="clear-filters"
+              class="clear-filters-btn"
+              title="Reset filters"
+            >
+              Reset
+            </button>
+          </div>
+          <div
+            id="teacher-stats-announcer"
+            class="visually-hidden"
+            aria-live="polite"
+          ></div>
         </div>
 
         <div class="table-responsive">
@@ -1658,6 +2750,401 @@
           setTimeout(function () {
             loadingIndicator.style.display = "none";
           }, 2000);
+        }
+
+        // Password toggle for enhanced add teacher form
+        const pwToggle = document.getElementById("toggle-password");
+        const pwInput = document.getElementById("password");
+        if (pwToggle && pwInput) {
+          pwToggle.addEventListener("click", () => {
+            const isPassword = pwInput.getAttribute("type") === "password";
+            pwInput.setAttribute("type", isPassword ? "text" : "password");
+            pwToggle.textContent = isPassword ? "HIDE" : "SHOW";
+          });
+        }
+
+        /* ================= Password Strength Meter ================= */
+        const pwMeterWrapper = document.getElementById("pw-meter-wrapper");
+        const pwMeterBar = document.getElementById("pw-meter-bar");
+        const pwStrengthLabel = document.getElementById("pw-strength-label");
+        function evaluatePasswordStrength(pw) {
+          let score = 0;
+          if (!pw) return { score: 0, label: "", className: "" };
+          if (pw.length >= 6) score++;
+          if (pw.length >= 10) score++;
+          if (/[A-Z]/.test(pw)) score++;
+          if (/[0-9]/.test(pw)) score++;
+          if (/[^A-Za-z0-9]/.test(pw)) score++;
+          // Max score 5
+          let pct = (score / 5) * 100;
+          let label = "Weak";
+          let className = "pw-weak";
+          if (score >= 2) {
+            label = "Fair";
+            className = "pw-fair";
+          }
+          if (score >= 3) {
+            label = "Good";
+            className = "pw-good";
+          }
+          if (score >= 4) {
+            label = "Strong";
+            className = "pw-strong";
+          }
+          if (score === 5) {
+            label = "Excellent";
+            className = "pw-strong";
+          }
+          return { score: pct, label, className };
+        }
+        if (pwInput) {
+          pwInput.addEventListener("input", () => {
+            const val = pwInput.value.trim();
+            if (val.length === 0) {
+              pwMeterWrapper.style.display = "none";
+              return;
+            }
+            pwMeterWrapper.style.display = "block";
+            const res = evaluatePasswordStrength(val);
+            pwMeterBar.style.width = res.score + "%";
+            pwStrengthLabel.textContent = res.label;
+            pwStrengthLabel.className = "pw-strength-label " + res.className;
+          });
+        }
+
+        /* ================= Username Availability Check ================= */
+        // Assumption: endpoint returns JSON {available: true/false}
+        // We'll attempt /classteacher/api/check_username?u=<username>
+        const usernameInput = document.getElementById("username");
+        const usernameStatus = document.getElementById("username-status");
+        let usernameTimer = null;
+        async function checkUsernameAvailability(u) {
+          if (!u || u.length < 3) {
+            usernameStatus.innerHTML = "";
+            return;
+          }
+          usernameStatus.className = "inline-status status-checking";
+          usernameStatus.innerHTML =
+            '<span class="status-pill">...</span> Checking';
+          const endpointCandidates = [
+            `/classteacher/api/check_username?u=${encodeURIComponent(u)}`,
+            `/headteacher/api/check_username?u=${encodeURIComponent(u)}`,
+            `/universal/api/check_username?u=${encodeURIComponent(u)}`,
+          ];
+          for (const url of endpointCandidates) {
+            try {
+              const resp = await fetch(url, { credentials: "same-origin" });
+              if (!resp.ok) continue;
+              const data = await resp.json();
+              if (typeof data.available === "boolean") {
+                if (data.available) {
+                  usernameStatus.className = "inline-status status-available";
+                  usernameStatus.innerHTML =
+                    '<span class="status-pill">OK</span> Username available';
+                } else {
+                  usernameStatus.className = "inline-status status-taken";
+                  usernameStatus.innerHTML =
+                    '<span class="status-pill">TAKEN</span> Try another';
+                }
+                return;
+              }
+            } catch (e) {
+              /* try next */
+            }
+          }
+          // Fallback if all endpoints fail
+          usernameStatus.className = "inline-status status-checking";
+          usernameStatus.innerHTML =
+            '<span class="status-pill">?</span> Could not verify now';
+        }
+        if (usernameInput) {
+          usernameInput.addEventListener("input", () => {
+            clearTimeout(usernameTimer);
+            const val = usernameInput.value.trim();
+            if (val.length < 3) {
+              usernameStatus.innerHTML = "";
+              return;
+            }
+            usernameTimer = setTimeout(
+              () => checkUsernameAvailability(val),
+              450
+            );
+          });
+        }
+
+        /* ================= Submit Progress Indicator ================= */
+        const addTeacherForm = document.querySelector(".teacher-form");
+        if (addTeacherForm) {
+          addTeacherForm.addEventListener("submit", (e) => {
+            // Enforce password score >= Fair (score >= 40%) -> using label or bar width
+            const pwVal = pwInput ? pwInput.value.trim() : "";
+            const passwordError = document.getElementById("password-error");
+            let allow = true;
+            if (pwVal.length === 0) {
+              allow = false;
+              if (passwordError) {
+                passwordError.style.display = "flex";
+                passwordError.className = "inline-status status-taken";
+                passwordError.innerHTML =
+                  '<span class="status-pill">REQ</span> Password is required';
+              }
+            } else {
+              // Evaluate again to ensure latest state
+              const res = evaluatePasswordStrength(pwVal);
+              // res.score is percentage (0-100)
+              if (res.score < 40) {
+                // below Fair threshold
+                allow = false;
+                if (passwordError) {
+                  passwordError.style.display = "flex";
+                  passwordError.className = "inline-status status-taken";
+                  passwordError.innerHTML =
+                    '<span class="status-pill">WEAK</span> Use at least 6 chars incl. uppercase & number';
+                }
+              } else {
+                if (passwordError) {
+                  passwordError.style.display = "none";
+                }
+              }
+            }
+            if (!allow) {
+              e.preventDefault();
+              if (pwInput) {
+                pwInput.classList.add("input-error", "shake");
+                setTimeout(() => pwInput.classList.remove("shake"), 500);
+              }
+              return;
+            }
+            const submitBtn = addTeacherForm.querySelector(".enhanced-submit");
+            if (submitBtn && !submitBtn.classList.contains("loading")) {
+              submitBtn.classList.add("loading");
+              submitBtn.insertAdjacentHTML(
+                "beforeend",
+                '<div class="loader"><div class="ring-loader"></div></div>'
+              );
+            }
+          });
+          if (pwInput) {
+            pwInput.addEventListener("input", () => {
+              const passwordError = document.getElementById("password-error");
+              if (pwInput.classList.contains("input-error")) {
+                pwInput.classList.remove("input-error");
+              }
+              if (passwordError && passwordError.style.display !== "none") {
+                passwordError.style.display = "none";
+              }
+            });
+          }
+        }
+
+        /* ================= Section Entrance Animation ================= */
+        const sections = document.querySelectorAll(
+          ".teacher-form .form-section"
+        );
+        const reveal = (entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        };
+        const sectionObserver = new IntersectionObserver(reveal, {
+          threshold: 0.2,
+        });
+        sections.forEach((sec) => sectionObserver.observe(sec));
+
+        /* ================= Collapsible Assignment Panels ================= */
+        document.querySelectorAll("[data-toggle-panel]").forEach((header) => {
+          header.addEventListener("click", () => {
+            const panel = header.closest("[data-panel]");
+            const body = panel.querySelector(".assignment-panel-body");
+            const isOpen = panel.classList.contains("open");
+            if (isOpen) {
+              panel.classList.remove("open");
+              body.style.display = "none";
+            } else {
+              panel.classList.add("open");
+              body.style.display = "block";
+            }
+          });
+        });
+
+        /* ================= Existing Teachers Toolbar Enhancements ================= */
+        const teacherSearchInput = document.getElementById("teacher-search");
+        const roleFilter = document.getElementById("role-filter");
+        const assignmentFilter = document.getElementById("assignment-filter");
+        const sortSelect = document.getElementById("sort-by");
+        const densityToggleBtn = document.getElementById("density-toggle");
+        const clearFiltersBtn = document.getElementById("clear-filters");
+        const statsAnnouncer = document.getElementById(
+          "teacher-stats-announcer"
+        );
+
+        // Reuse previously defined teachersTable if exists
+        const tableWrapper =
+          typeof teachersTable !== "undefined" && teachersTable
+            ? teachersTable.closest(".table-responsive")
+            : document.getElementById("teachers-table")
+            ? document
+                .getElementById("teachers-table")
+                .closest(".table-responsive")
+            : null;
+
+        function highlightMatches(cell, query) {
+          const text = cell.getAttribute("data-raw") || cell.textContent;
+          cell.setAttribute("data-raw", text);
+          if (!query) {
+            cell.innerHTML = text;
+            return;
+          }
+          const regex = new RegExp(
+            "(" + query.replace(/[.*+?^${}()|[\\]\\]/g, (r) => "\\" + r) + ")",
+            "ig"
+          );
+          cell.innerHTML = text.replace(
+            regex,
+            '<mark class="search-highlight">$1<\/mark>'
+          );
+        }
+
+        function updateTeacherStats() {
+          const rows = Array.from(teachersTable.querySelectorAll("tbody tr"));
+          const visibleRows = rows.filter((r) => r.style.display !== "none");
+          const total = rows.length;
+          let active = 0,
+            idle = 0;
+          rows.forEach((r) => {
+            const assignments = parseInt(r.dataset.assignments || "0");
+            if (assignments > 0) active++;
+            else idle++;
+          });
+          const statTotal = document.getElementById("stat-total");
+          const statActive = document.getElementById("stat-active");
+          const statIdle = document.getElementById("stat-idle");
+          const statVisible = document.getElementById("stat-visible");
+          if (statTotal) statTotal.textContent = total;
+          if (statActive) statActive.textContent = active;
+          if (statIdle) statIdle.textContent = idle;
+          if (statVisible) statVisible.textContent = visibleRows.length;
+          if (statsAnnouncer)
+            statsAnnouncer.textContent = `${visibleRows.length} of ${total} teachers visible. ${active} active.`;
+        }
+
+        function applyFiltersAndSearch() {
+          if (!teachersTable) return;
+          const q = teacherSearchInput.value.trim().toLowerCase();
+          const role = roleFilter.value;
+          const assign = assignmentFilter.value;
+          const rows = Array.from(teachersTable.querySelectorAll("tbody tr"));
+
+          rows.forEach((row) => {
+            const rowRole = row.dataset.role;
+            const hasClass = row.dataset.hasClass === "true";
+            const hasSubject = row.dataset.hasSubject === "true";
+            const assignments = parseInt(row.dataset.assignments);
+            const usernameCell = row.cells[1];
+            const roleCell = row.cells[2];
+            const subjectsCell = row.cells[4];
+
+            // base visibility
+            let show = true;
+            if (role && rowRole !== role) show = false;
+            if (assign && show) {
+              switch (assign) {
+                case "has-class":
+                  if (!hasClass) show = false;
+                  break;
+                case "has-subject":
+                  if (!hasSubject) show = false;
+                  break;
+                case "no-assignment":
+                  if (assignments > 0) show = false;
+                  break;
+              }
+            }
+            if (show && q) {
+              const blob = (
+                usernameCell.textContent +
+                " " +
+                roleCell.textContent +
+                " " +
+                subjectsCell.textContent
+              ).toLowerCase();
+              if (!blob.includes(q)) show = false;
+            }
+            row.style.display = show ? "" : "none";
+            // highlight only if visible
+            [usernameCell, roleCell, subjectsCell].forEach((cell) =>
+              highlightMatches(cell, show ? q : "")
+            );
+          });
+          sortCurrentRows(); // re-apply sorting after filter to keep ordering
+          updateTeacherStats();
+        }
+
+        function sortCurrentRows() {
+          const sortBy = sortSelect.value;
+          const tbody = teachersTable.querySelector("tbody");
+          const rows = Array.from(tbody.querySelectorAll("tr")).filter(
+            (r) => r.style.display !== "none"
+          );
+          rows.sort((a, b) => {
+            switch (sortBy) {
+              case "username":
+                return a.cells[1].textContent
+                  .trim()
+                  .localeCompare(b.cells[1].textContent.trim());
+              case "role":
+                return a.dataset.role.localeCompare(b.dataset.role);
+              case "assignments":
+                return (
+                  parseInt(b.dataset.assignments) -
+                  parseInt(a.dataset.assignments)
+                );
+              default:
+                return 0;
+            }
+          });
+          rows.forEach((r) => tbody.appendChild(r));
+        }
+
+        if (teacherSearchInput)
+          teacherSearchInput.addEventListener("input", applyFiltersAndSearch);
+        if (roleFilter)
+          roleFilter.addEventListener("change", applyFiltersAndSearch);
+        if (assignmentFilter)
+          assignmentFilter.addEventListener("change", applyFiltersAndSearch);
+        if (sortSelect)
+          sortSelect.addEventListener("change", () => {
+            sortCurrentRows();
+          });
+
+        if (densityToggleBtn && tableWrapper) {
+          densityToggleBtn.addEventListener("click", () => {
+            tableWrapper.classList.toggle("compact");
+            densityToggleBtn.textContent = tableWrapper.classList.contains(
+              "compact"
+            )
+              ? "Comfort"
+              : "Compact";
+          });
+        }
+        if (clearFiltersBtn) {
+          clearFiltersBtn.addEventListener("click", () => {
+            teacherSearchInput.value = "";
+            roleFilter.value = "";
+            assignmentFilter.value = "";
+            sortSelect.value = "assignments";
+            applyFiltersAndSearch();
+            sortCurrentRows();
+          });
+        }
+
+        // Initialize stats after DOM ready
+        if (teachersTable) {
+          updateTeacherStats();
+          applyFiltersAndSearch();
         }
       });
     </script>
