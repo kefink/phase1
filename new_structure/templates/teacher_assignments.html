@@ -947,6 +947,97 @@
         }
       }
 
+      // Intercept enhanced bulk assignment form submission for AJAX behavior
+      document.addEventListener('DOMContentLoaded', function() {
+        const bulkForm = document.getElementById('bulk-assignment-form');
+        if (bulkForm) {
+          bulkForm.addEventListener('submit', function(e) {
+            // If advanced mode is active, use AJAX to avoid full reload and show message inline
+            const mode = document.querySelector('input[name="assignment_mode"]:checked')?.value;
+            if (mode === 'advanced') {
+              e.preventDefault();
+              const submitBtn = bulkForm.querySelector('button[type="submit"], input[type="submit"]');
+              if (submitBtn) {
+                submitBtn.dataset.originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Processing...';
+                submitBtn.disabled = true;
+              }
+              const formData = new FormData(bulkForm);
+              fetch(bulkForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                credentials: 'same-origin'
+              })
+              .then(resp => {
+                const ct = resp.headers.get('Content-Type') || '';
+                if (!resp.ok) throw new Error('Server error ' + resp.status);
+                if (ct.includes('application/json')) { return resp.json(); }
+                return { status: 'error', message: 'Unexpected response format' };
+              })
+              .then(data => {
+                const feedbackId = 'bulk-ajax-feedback';
+                let feedback = document.getElementById(feedbackId);
+                if (!feedback) {
+                  feedback = document.createElement('div');
+                  feedback.id = feedbackId;
+                  bulkForm.prepend(feedback);
+                }
+                feedback.style.marginBottom = '12px';
+                feedback.style.padding = '10px 12px';
+                feedback.style.borderRadius = '6px';
+                feedback.style.fontSize = '.9rem';
+                feedback.style.fontWeight = '500';
+                feedback.style.borderLeft = '4px solid';
+                if (data.status === 'success') {
+                  feedback.style.background = 'rgba(133,153,0,0.15)';
+                  feedback.style.color = '#4a6741';
+                  feedback.style.borderLeftColor = '#4a6741';
+                } else if (data.status === 'warning') {
+                  feedback.style.background = 'rgba(181,137,0,0.15)';
+                  feedback.style.color = '#b58900';
+                  feedback.style.borderLeftColor = '#b58900';
+                } else {
+                  feedback.style.background = 'rgba(220,50,47,0.15)';
+                  feedback.style.color = '#dc322f';
+                  feedback.style.borderLeftColor = '#dc322f';
+                }
+                feedback.innerHTML = `<strong>${data.status?.toUpperCase() || 'STATUS'}:</strong> ${data.message || 'Operation completed.'}`;
+
+                // Refresh teacher assignments preview if a teacher is selected
+                const teacherSelect = document.getElementById('bulk_teacher_id');
+                if (teacherSelect && teacherSelect.value) {
+                  loadTeacherCurrentAssignments();
+                }
+              })
+              .catch(err => {
+                console.error('Bulk assignment AJAX error:', err);
+                const feedbackId = 'bulk-ajax-feedback';
+                let feedback = document.getElementById(feedbackId);
+                if (!feedback) {
+                  feedback = document.createElement('div');
+                  bulkForm.prepend(feedback);
+                }
+                feedback.style.marginBottom = '12px';
+                feedback.style.padding = '10px 12px';
+                feedback.style.borderRadius = '6px';
+                feedback.style.background = 'rgba(220,50,47,0.15)';
+                feedback.style.color = '#dc322f';
+                feedback.style.borderLeft = '4px solid #dc322f';
+                feedback.innerHTML = `<strong>ERROR:</strong> ${err.message}`;
+              })
+              .finally(() => {
+                const submitBtn = bulkForm.querySelector('button[type="submit"], input[type="submit"]');
+                if (submitBtn) {
+                  submitBtn.textContent = submitBtn.dataset.originalText || 'Submit';
+                  submitBtn.disabled = false;
+                }
+              });
+            }
+          });
+        }
+      });
+
       // Enhanced grade selection toggle with dynamic stream loading
       function toggleGradeSelection(gradeId, gradeLevel) {
         const checkbox = document.getElementById(`grade-${gradeId}`);

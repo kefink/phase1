@@ -8400,6 +8400,22 @@ def enhanced_bulk_assign_subjects():
         print(f"Error in enhanced bulk assignment: {str(e)}")
         flash(f"Error creating assignments: {str(e)}", "error")
 
+    # If this is an AJAX (fetch) request expecting JSON, return structured response instead of redirect
+    wants_json = (
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        or 'application/json' in (request.headers.get('Accept') or '')
+    )
+    if wants_json:
+        status = 'success' if assignments_created > 0 else 'warning'
+        return jsonify({
+            'status': status,
+            'created': assignments_created,
+            'skipped': assignments_skipped,
+            'class_teacher_conflicts': class_teacher_conflicts,
+            'errors': errors,
+            'message': "; ".join(message_parts) if assignments_created > 0 else ("; ".join(message_parts[1:]) if message_parts else "No changes applied")
+        })
+
     return redirect(url_for('classteacher.assign_subjects'))
 
 def create_single_assignment(teacher_id, subject_id, grade_id, stream_id, is_class_teacher):
