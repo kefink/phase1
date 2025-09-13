@@ -1,89 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Teacher Management Hub - Hillview School</title>
-
-    <!-- Modern Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Icons -->
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-    />
-
-    <!-- Solar Theme Active: Removed previous modern_classteacher.css to eliminate conflicting legacy theme -->
-    <style>
-      /* Solar Theme - Enhanced Professional Styling for Teacher Management Hub */
-
-      /* Solar Theme Color Palette */
-      :root {
-        --solar-bg-primary: #fdf6e3;
-        --solar-bg-secondary: #eee8d5;
-        --solar-bg-tertiary: #d6d2c4;
-        --solar-accent-yellow: #b58900;
-        --solar-accent-blue: #268bd2;
-        --solar-accent-green: #859900;
-        --solar-accent-red: #dc322f;
-        --solar-text-primary: #002b36;
-        --solar-text-secondary: #073642;
-      }
-
-      /* Global Solar Theme Overrides */
-      body {
-        background: linear-gradient(
-          135deg,
-          #fdf6e3 0%,
-          #eee8d5 100%
-        ) !important;
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif !important;
-        color: var(--solar-text-primary) !important;
-        min-height: 100vh !important;
-      }
-
-      /* Heroicons Solar Theme Classes */
-      .heroicon-solar-blue {
-        fill: var(--solar-accent-blue);
-      }
-      .heroicon-solar-green {
-        fill: var(--solar-accent-green);
-      }
-      .heroicon-solar-yellow {
-        fill: var(--solar-accent-yellow);
-      }
-      .heroicon-solar-red {
-        fill: var(--solar-accent-red);
-      }
-
-      /* Override container styles for manage pages */
-      .manage-container {
-        max-width: 95% !important;
-        width: 95% !important;
-        margin: 80px auto 60px !important;
-        padding: 40px !important;
-        background: rgba(253, 246, 227, 0.8) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border-radius: 24px !important;
-        box-shadow: 0 20px 60px rgba(181, 137, 0, 0.15) !important;
-        border: 1px solid rgba(238, 232, 213, 0.3) !important;
-      }
-
-      /* Enhanced Page header styling */
-      .page-header {
-        background: linear-gradient(
-          135deg,
-          var(--solar-accent-blue) 0%,
-          var(--solar-accent-green) 100%
-        ) !important;
         color: white !important;
         padding: 40px !important;
         border-radius: 20px !important;
@@ -881,6 +797,119 @@
             />
           </svg>
           Overview
+        </h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg
+                class="heroicon-solar-blue"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z"
+                />
+              </svg>
+            </div>
+            <div class="stat-value">{{ total_teachers or 0 }}</div>
+            <div class="stat-label">Total Teachers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg
+                class="heroicon-solar-green"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M4.125 3C3.089 3 2.25 3.84 2.25 4.875V15.375C2.25 16.41 3.089 17.25 4.125 17.25H5.625V20.25C5.625 20.6642 6.08579 20.9092 6.46967 20.7197L10.4407 18.7347C10.6168 18.6347 10.8199 18.5833 11.0268 18.5833H19.875C20.911 18.5833 21.75 17.7433 21.75 16.7083V4.875C21.75 3.84 20.911 3 19.875 3H4.125ZM7.5 8.25C7.5 7.83579 7.83579 7.5 8.25 7.5H15.75C16.1642 7.5 16.5 7.83579 16.5 8.25C16.5 8.66421 16.1642 9 15.75 9H8.25C7.83579 9 7.5 8.66421 7.5 8.25ZM8.25 10.5C7.83579 10.5 7.5 10.8358 7.5 11.25C7.5 11.6642 7.83579 12 8.25 12H12.75C13.1642 12 13.5 11.6642 13.5 11.25C13.5 10.8358 13.1642 10.5 12.75 10.5H8.25Z"
+                />
+              </svg>
+            </div>
+            <div class="stat-value">{{ total_assignments or 0 }}</div>
+            <div class="stat-label">Active Assignments</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg
+                class="heroicon-solar-yellow"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M3 4.875C3 3.839 3.84 3 4.875 3H19.125C20.16 3 21 3.839 21 4.875V19.125C21 20.16 20.16 21 19.125 21H4.875C3.839 21 3 20.16 3 19.125V4.875ZM4.875 4.5C4.669 4.5 4.5 4.669 4.5 4.875V19.125C4.5 19.331 4.669 19.5 4.875 19.5H19.125C19.331 19.5 19.5 19.331 19.5 19.125V4.875C19.5 4.669 19.331 4.5 19.125 4.5H4.875ZM7.5 7.5C7.5 7.08579 7.83579 6.75 8.25 6.75H15.75C16.1642 6.75 16.5 7.08579 16.5 7.5C16.5 7.91421 16.1642 8.25 15.75 8.25H8.25C7.83579 8.25 7.5 7.91421 7.5 7.5ZM8.25 10.5C7.83579 10.5 7.5 10.8358 7.5 11.25C7.5 11.6642 7.83579 12 8.25 12H12C12.4142 12 12.75 11.6642 12.75 11.25C12.75 10.8358 12.4142 10.5 12 10.5H8.25ZM7.5 15C7.5 14.5858 7.83579 14.25 8.25 14.25H15.75C16.1642 14.25 16.5 14.5858 16.5 15C16.5 15.4142 16.1642 15.75 15.75 15.75H8.25C7.83579 15.75 7.5 15.4142 7.5 15Z"
+                />
+              </svg>
+            </div>
+            <div class="stat-value">{{ class_teachers or 0 }}</div>
+            <div class="stat-label">Class Teachers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg
+                class="heroicon-solar-red"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M4.5 3.75C3.67157 3.75 3 4.42157 3 5.25V18.75C3 19.5784 3.67157 20.25 4.5 20.25H19.5C20.3284 20.25 21 19.5784 21 18.75V5.25C21 4.42157 20.3284 3.75 19.5 3.75H4.5ZM18.75 7.5H5.25V5.25H18.75V7.5ZM5.25 9.75H18.75V18.75H5.25V9.75ZM8.25 12C8.25 11.5858 8.58579 11.25 9 11.25H15C15.4142 11.25 15.75 11.5858 15.75 12C15.75 12.4142 15.4142 12.75 15 12.75H9C8.58579 12.75 8.25 12.4142 8.25 12ZM9 14.25C8.58579 14.25 8.25 14.5858 8.25 15C8.25 15.4142 8.58579 15.75 9 15.75H12C12.4142 15.75 12.75 15.4142 12.75 15C12.75 14.5858 12.4142 14.25 12 14.25H9Z"
+                />
+              </svg>
+            </div>
+            <div class="stat-value">{{ subject_assignments or 0 }}</div>
+            <div class="stat-label">Subject Assignments</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hub Sections -->
+      <div class="hub-sections">
+        <!-- Teacher Profiles Section -->
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg
+                class="heroicon-solar-blue"
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-1.381z"
+                />
+              </svg>
+            </div>
+            <h3 class="section-title">Teacher Profiles</h3>
+          </div>
+          <p class="section-description">
+            Manage individual teacher profiles, add new teachers, and view
+            teacher information and performance metrics.
+          </p>
+          <div class="quick-actions">
             <a
               href="{{ url_for('classteacher.manage_teachers') }}"
               class="action-btn"
