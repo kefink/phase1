@@ -2,8 +2,9 @@
 Authentication views for the Hillview School Management System.
 """
 import os
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, send_from_directory, get_flashed_messages
-from ..extensions import csrf
+from datetime import datetime, timedelta
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, send_from_directory, get_flashed_messages, current_app
+from ..extensions import csrf, limiter
 try:
     from ..services import authenticate_teacher, logout
 except ImportError:
@@ -36,6 +37,57 @@ class RCEProtection:
 # Create a blueprint for authentication routes
 auth_bp = Blueprint('auth', __name__)
 
+LOCKOUT_THRESHOLD = 5           # failed attempts
+LOCKOUT_WINDOW = timedelta(minutes=30)
+
+def rotate_session():
+    """Rotate session identifier to mitigate fixation after successful login."""
+    # Flask's signed cookie session does not expose session id; emulate rotation by clearing & re-setting needed keys.
+    preserved = {}
+    # Keep minimal flash storage only (Flask stores flashes in session['_flashes'])
+    flashes = session.get('_flashes')
+    if flashes:
+        preserved['_flashes'] = flashes
+    session.clear()
+    for k, v in preserved.items():
+        session[k] = v
+
+def register_successful_login(teacher_obj, username, role):
+    rotate_session()
+    session['teacher_id'] = teacher_obj.id
+    session['username'] = username
+    session['role'] = role
+    session['login_at'] = datetime.utcnow().isoformat()
+    session.permanent = True
+    # Update teacher security metadata
+    try:
+        from ..extensions import db
+        teacher_obj.failed_login_attempts = 0
+        teacher_obj.locked_until = None
+        teacher_obj.last_login = datetime.utcnow()
+        db.session.commit()
+    except Exception as e:
+        print(f"⚠️ Failed to persist login metadata: {e}")
+
+def register_failed_login(teacher_obj):
+    # Increment failed attempts & lock if threshold reached
+    try:
+        from ..extensions import db
+        if teacher_obj:
+            teacher_obj.failed_login_attempts = (teacher_obj.failed_login_attempts or 0) + 1
+            if teacher_obj.failed_login_attempts >= LOCKOUT_THRESHOLD:
+                teacher_obj.locked_until = datetime.utcnow() + LOCKOUT_WINDOW
+            db.session.commit()
+    except Exception as e:
+        print(f"⚠️ Failed to persist failed login metadata: {e}")
+
+def is_locked(teacher_obj):
+    if not teacher_obj:
+        return False
+    if teacher_obj.locked_until and teacher_obj.locked_until > datetime.utcnow():
+        return True
+    return False
+
 @auth_bp.route('/')
 def index():
     """Route for the main index/login page."""
@@ -62,7 +114,7 @@ def polished_login():
     return render_template('login_polished.html', school_info=school_info)
 
 @auth_bp.route('/admin_login', methods=['GET', 'POST'])
-@auth_rate_limit
+@limiter.limit("10/minute;3/5second", override_defaults=False)
 @sql_injection_protection
 def admin_login():
     """Route for headteacher login."""
@@ -93,18 +145,26 @@ def admin_login():
 
         try:
             teacher = authenticate_teacher(username, password, 'headteacher')
+            if teacher and is_locked(teacher):
+                flash('Account temporarily locked. Try again later.', 'error')
+                return render_template('admin_login.html', error='Invalid credentials')
             print(f"🔍 Authentication result: {teacher}")
 
             if teacher:
                 print(f"🔍 Setting session for teacher ID: {teacher.id}")
-                session['teacher_id'] = teacher.id
-                session['username'] = username
-                session['role'] = 'headteacher'
-                session.permanent = True
+                register_successful_login(teacher, username, 'headteacher')
                 print(f"🔍 Redirecting to admin dashboard...")
                 return redirect(url_for('admin.dashboard'))
             else:
                 print(f"🔍 Authentication failed for: {username}")
+                # Attempt to find teacher by username irrespective of role for failed attempt tracking
+                try:
+                    from ..models.user import Teacher
+                    from ..extensions import db
+                    candidate = Teacher.query.filter_by(username=username).first()
+                except Exception:
+                    candidate = None
+                register_failed_login(candidate)
                 flash('Invalid credentials', 'error')
                 return render_template('admin_login.html', error='Invalid credentials')
         except Exception as e:
@@ -115,7 +175,7 @@ def admin_login():
     return render_template('admin_login.html')
 
 @auth_bp.route('/teacher_login', methods=['GET', 'POST'])
-@auth_rate_limit
+@limiter.limit("15/minute;5/10second", override_defaults=False)
 @sql_injection_protection
 def teacher_login():
     """Route for teacher login."""
@@ -155,14 +215,20 @@ def teacher_login():
 
         try:
             teacher = authenticate_teacher(username, password, 'teacher')
+            if teacher and is_locked(teacher):
+                flash('Account temporarily locked. Try again later.', 'error')
+                return render_template('teacher_login.html', error='Invalid credentials')
 
             if teacher:
-                session['teacher_id'] = teacher.id
-                session['username'] = username
-                session['role'] = 'teacher'
-                session.permanent = True
+                register_successful_login(teacher, username, 'teacher')
                 return redirect(url_for('teacher.dashboard'))
             else:
+                try:
+                    from ..models.user import Teacher
+                    candidate = Teacher.query.filter_by(username=username).first()
+                except Exception:
+                    candidate = None
+                register_failed_login(candidate)
                 flash('Invalid credentials', 'error')
                 return render_template('teacher_login.html', error='Invalid credentials')
         except Exception as e:
@@ -173,7 +239,7 @@ def teacher_login():
     return render_template('teacher_login.html')
 
 @auth_bp.route('/classteacher_login', methods=['GET', 'POST'])
-@auth_rate_limit
+@limiter.limit("15/minute;5/10second", override_defaults=False)
 @sql_injection_protection
 def classteacher_login():
     """Route for class teacher login. Also allows subject teachers with class assignments."""
@@ -208,12 +274,12 @@ def classteacher_login():
         try:
             # First try to authenticate as classteacher
             teacher = authenticate_teacher(username, password, 'classteacher')
+            if teacher and is_locked(teacher):
+                flash('Account temporarily locked. Try again later.', 'error')
+                return render_template('classteacher_login.html', error='Invalid credentials')
 
             if teacher:
-                session['teacher_id'] = teacher.id
-                session['username'] = username
-                session['role'] = 'classteacher'
-                session.permanent = True
+                register_successful_login(teacher, username, 'classteacher')
                 return redirect(url_for('classteacher.dashboard'))
 
             # If classteacher auth failed, try as subject teacher with class assignments
@@ -225,16 +291,19 @@ def classteacher_login():
                 can_access = FlexibleMarksService.can_teacher_access_classteacher_portal(teacher.id)
 
                 if can_access:
-                    session['teacher_id'] = teacher.id
-                    session['username'] = username
-                    session['role'] = 'teacher'  # Keep original role but allow access
-                    session.permanent = True
+                    register_successful_login(teacher, username, 'teacher')  # Keep original role but allow access
                     return redirect(url_for('classteacher.dashboard'))
                 else:
                     flash('You don\'t have any class assignments. Please use the subject teacher portal.', 'error')
                     return render_template('classteacher_login.html',
                                          error='You don\'t have any class assignments. Please use the subject teacher portal.')
             
+            try:
+                from ..models.user import Teacher
+                candidate = Teacher.query.filter_by(username=username).first()
+            except Exception:
+                candidate = None
+            register_failed_login(candidate)
             flash('Invalid credentials', 'error')
             return render_template('classteacher_login.html', error='Invalid credentials')
 
@@ -250,6 +319,13 @@ def logout_route():
     """Route for logging out."""
     logout(session)
     return redirect(url_for('auth.index'))
+
+# Guard debug/simple login route if present in create_app main __init__ (we do not redefine here)
+@auth_bp.before_app_request
+def protect_debug_login():
+    if request.endpoint and 'debug_simple_login' in request.endpoint:
+        if not current_app.debug and not current_app.config.get('ENABLE_DEBUG_LOGIN', False):
+            return abort(404)
 
 @auth_bp.route('/mobile-test')
 def mobile_test():

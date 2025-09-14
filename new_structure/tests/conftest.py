@@ -12,6 +12,8 @@ def app():
         SQLALCHEMY_DATABASE_URI=TEST_DB_URI,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         WTF_CSRF_ENABLED=False,
+        SECRET_KEY='test-secret-key',
+        SESSION_COOKIE_NAME='hillview_secure_session'
     )
     from new_structure.extensions import db
     db.init_app(app)

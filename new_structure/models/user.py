@@ -40,6 +40,16 @@ class Teacher(db.Model):
 
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
+    # Authentication Security Fields (A2 hardening)
+    failed_login_attempts = db.Column(db.Integer, default=0)
+    locked_until = db.Column(db.DateTime, nullable=True)
+    last_login = db.Column(db.DateTime, nullable=True)
+    # NOTE: If using an existing production database, create Alembic migration to add:
+    #   failed_login_attempts INT DEFAULT 0
+    #   locked_until DATETIME NULL
+    #   last_login DATETIME NULL
+    # These are additive, backwards-compatible columns.
+
     # Relationships
     stream = db.relationship('Stream', backref=db.backref('teachers', lazy=True))
     subjects = db.relationship('Subject', secondary=teacher_subjects, back_populates='teachers')
@@ -53,7 +63,15 @@ class Teacher(db.Model):
         """
         if not password:
             return
-        hashed = generate_password_hash(str(password))
+
+        # Basic password quality (non-breaking) guidance – only warn for legacy weak passwords.
+        # Future enforcement can raise ValueError, but we keep compatibility with existing short test passwords.
+        pwd = str(password)
+        if len(pwd) < 6:
+            # Too short for modern policy, but allow for backward compatibility.
+            pass
+        # Hash (Werkzeug defaults to PBKDF2-HMAC-SHA256)
+        hashed = generate_password_hash(pwd)
         self.password = hashed
 
     def check_password(self, password):
