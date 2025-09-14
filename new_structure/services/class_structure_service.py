@@ -5,6 +5,7 @@ Provides unified interface for headteacher universal access to all class functio
 from ..models.academic import Grade, Stream, Student, Mark
 from ..extensions import db
 from sqlalchemy import func
+import re
 
 class ClassStructureService:
     """Service for detecting and managing class structures intelligently."""
@@ -211,16 +212,54 @@ class ClassStructureService:
         Returns:
             Tuple of (grade_name, stream_name)
         """
-        if '|' in class_identifier:
-            grade_name, stream_name = class_identifier.split('|', 1)
-            return grade_name.strip(), stream_name.strip()
+        # Defensive: normalize to string
+        if not isinstance(class_identifier, str):
+            return '', None
+
+        raw_identifier = class_identifier.strip()
+
+        # Reject overly long identifiers to prevent abuse
+        if len(raw_identifier) > 100:
+            return raw_identifier[:100], None
+
+        # Basic allowlist: letters, numbers, spaces, dash, underscore, pipe
+        # Remove any other characters to mitigate injection vectors (", '; -- etc.)
+        safe_identifier = re.sub(r"[^A-Za-z0-9 _|\-]", "", raw_identifier)
+
+        # Normalize multiple spaces
+        safe_identifier = re.sub(r"\s+", " ", safe_identifier).strip()
+
+        # Remove common SQL comment initiators to reduce log pollution and attempted injections
+        # Patterns: --comment, /* comment */ (basic), and trailing semicolons
+        # Remove anything after --
+        if '--' in safe_identifier:
+            safe_identifier = safe_identifier.split('--', 1)[0].rstrip()
+        # Remove simple /* */ blocks (non-greedy)
+        safe_identifier = re.sub(r"/\*.*?\*/", "", safe_identifier).strip()
+        # Trim trailing semicolons
+        safe_identifier = safe_identifier.rstrip(';')
+
+        if '|' in safe_identifier:
+            grade_name, stream_name = safe_identifier.split('|', 1)
+            grade_name = grade_name.strip()
+            stream_name = stream_name.strip()
+            # Additional length checks per component
+            if len(grade_name) > 50:
+                grade_name = grade_name[:50]
+            if len(stream_name) > 50:
+                stream_name = stream_name[:50]
+            return grade_name, stream_name
         else:
-            # Single class - find the default stream
-            grade = Grade.query.filter_by(name=class_identifier.strip()).first()
-            if grade:
-                stream = Stream.query.filter_by(grade_id=grade.id).first()
-                return grade.name, stream.name if stream else 'Main'
-            return class_identifier.strip(), None
+            # Single class - attempt lookup using sanitized identifier (gracefully skip if no app context)
+            try:
+                grade = Grade.query.filter_by(name=safe_identifier).first()
+                if grade:
+                    stream = Stream.query.filter_by(grade_id=grade.id).first()
+                    return grade.name, stream.name if stream else 'Main'
+            except Exception:
+                # Working outside application context or DB error; fallback to sanitized identifier only
+                pass
+            return safe_identifier, None
     
     @staticmethod
     def get_class_statistics():

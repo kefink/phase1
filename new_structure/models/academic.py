@@ -122,10 +122,17 @@ class Subject(db.Model):
         return self.is_component and self.composite_parent == parent_name
 
 class Grade(db.Model):
-    """Grade model representing grade levels in the school."""
+    """Grade model representing grade levels in the school.
+
+    Injection Hardening Note:
+    Added default for education_level to prevent IntegrityError in tests or legacy
+    code paths that create Grade without specifying education_level explicitly.
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)  # e.g., Grade 1, Grade 2
-    education_level = db.Column(db.String(50), nullable=False)  # e.g., lower_primary, upper_primary
+    education_level = db.Column(
+        db.String(50), nullable=False, default='primary', server_default='primary'
+    )  # e.g., lower_primary, upper_primary
     streams = db.relationship('Stream', backref='grade', lazy=True)
 
 class Stream(db.Model):

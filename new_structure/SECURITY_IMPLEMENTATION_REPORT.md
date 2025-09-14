@@ -1,3 +1,46 @@
+## A1: Injection Mitigations (Headteacher / Universal Access)
+
+Implemented targeted safeguards against injection vectors in routes serving the Headteacher Universal dashboard and related proxy endpoints:
+
+### 1. Input Sanitization for Class Identifiers
+File: `services/class_structure_service.py`
+Changes:
+- Added strict allow‑list regex (alphanumeric, space, dash, underscore, pipe) and removal of disallowed characters.
+- Added normalization (collapsing multiple spaces) and max length enforcement (100 for full identifier, 50 per component when split).
+- Added stripping of common SQL comment markers (`--`, `/* ... */`) and trailing semicolons.
+- Added graceful fallback when outside an app context (prevents test/utility misuse from causing unexpected exceptions).
+
+Risk Addressed:
+- Prevents crafted path segments (e.g. `/universal/api/class_data/Grade 2|A; DROP TABLE ...`) from propagating suspicious tokens into ORM lookups, logs, or later dynamic SQL construction.
+
+### 2. Defensive Defaults in Data Model
+File: `models/academic.py`
+- Added `default` and `server_default` (`'primary'`) for `Grade.education_level` to avoid IntegrityErrors in legacy code paths or tests omitting the value (reduced error surfaces that could leak stack traces to users if unhandled).
+
+### 3. Parameterization Already in Place
+- Existing direct SQL executions rely on SQLAlchemy `text()` with bound parameters or fixed DDL statements; no dynamic concatenation involving user input was found for headteacher dashboard paths.
+- Verified no raw f‑string or string formatting constructs building SQL with untrusted request data in `headteacher_universal.py` and `headteacher_universal_service.py`.
+
+### 4. Added Automated Tests
+File: `tests/test_class_identifier_sanitization.py`
+- Introduces regression tests covering malicious payload patterns: comment injection, statement chaining (`; DROP TABLE`), logical operator payloads (`' OR '1'='1`), whitespace abuse, and overlong identifiers.
+- Confirms sanitized outputs align with hardening logic and that non‑string inputs are safely rejected.
+
+### 5. Logging Noise Reduction
+- By trimming comment markers and illegal characters early, subsequent logging (debug prints and potential audit logs) no longer contain raw injection payloads, minimizing log pollution and accidental log‑based exploitation patterns.
+
+### Residual Risk / Next Steps
+- Consider centralizing a generic `sanitize_identifier` helper for reuse across other endpoints accepting composite identifiers.
+- Add structured security logging (e.g. flag and count sanitization events for monitoring anomalous activity).
+- Enforce stricter canonical form (e.g. uppercase grade names) if business logic benefits from normalization.
+- Extend similar sanitation to any future endpoints that accept subject codes, assessment names, or dynamic export filters.
+
+### Verification
+- All newly added tests pass (`pytest tests/test_class_identifier_sanitization.py`).
+- No existing functionality broken (sanitization occurs only on inbound path components; legitimate identifiers preserved).
+
+Status: Completed for A1 (Injection) scope of the Headteacher / Universal Access pages.
+
 # 🔒 HILLVIEW SCHOOL MANAGEMENT SYSTEM - 100% SECURITY IMPLEMENTATION REPORT
 
 ## Executive Summary
