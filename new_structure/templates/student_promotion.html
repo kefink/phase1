@@ -242,6 +242,18 @@
         border-bottom: 1px solid var(--border-color) !important;
         vertical-align: middle !important;
       }
+      .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .table-responsive::-webkit-scrollbar {
+        height: 8px;
+      }
+      .table-responsive::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,0.2);
+        border-radius: 4px;
+      }
       .students-table tbody tr:nth-child(even) {
         background: rgba(181, 137, 0, 0.04) !important;
       }
@@ -309,6 +321,44 @@
         box-shadow: 0 8px 20px rgba(133, 153, 0, 0.3) !important;
         filter: brightness(1.05) !important;
       }
+
+      /* Mobile-first responsiveness */
+      @media (max-width: 960px) {
+        .content-wrapper { margin: 16px auto 40px; }
+        .promotion-header { padding: 20px !important; }
+        .promotion-header h1 { font-size: 1.6rem !important; }
+        .promotion-stats { grid-template-columns: repeat(auto-fit, minmax(150px,1fr)) !important; gap: 12px !important; }
+        .stat-card { padding: 14px !important; }
+        .stat-number { font-size: 1.5rem !important; }
+        .analytics-section-compact { padding: 16px !important; }
+        .analytics-cards-compact { grid-template-columns: 1fr !important; }
+        .batch-controls { padding: 16px !important; }
+        .grade-section { margin: 16px 0 !important; }
+        .grade-header { padding: 14px 16px !important; cursor: pointer; position: relative; }
+        .grade-header:after { content: '\25BC'; position: absolute; right: 16px; top: 50%; transform: translateY(-50%) rotate(0deg); transition: transform .3s ease; font-size: .9rem; }
+        .grade-header.collapsed:after { transform: translateY(-50%) rotate(-90deg); }
+        .grade-body { display: block; }
+        .grade-body.collapsed { display: none; }
+        .students-table th, .students-table td { padding: 10px 8px !important; font-size: .78rem !important; }
+        .students-table th { position: static !important; }
+        .table-responsive { border: 1px solid var(--border-color); border-radius: 10px; }
+        .promotion-actions-bar { flex-direction: column !important; align-items: stretch !important; gap: 8px !important; }
+        .filters-row { flex-direction: column !important; gap: 12px !important; }
+        .filters-row select, .filters-row input { width: 100% !important; }
+        .students-table .notes-input { min-width: 120px !important; }
+      }
+
+      @media (max-width: 600px) {
+        .promotion-header h1 { font-size: 1.35rem !important; }
+        .promotion-stats { grid-template-columns: repeat(auto-fit, minmax(130px,1fr)) !important; }
+        .stat-number { font-size: 1.3rem !important; }
+        .analytics-header-compact { font-size: 1.05rem !important; }
+        .students-table th, .students-table td { font-size: .72rem !important; }
+        .btn-promotion, .btn-primary, .btn-success, .btn-warning, .btn-danger { padding: 10px 14px !important; font-size: .8rem !important; }
+      }
+
+      /* Utility to visually indicate horizontal scroll */
+      .scroll-hint { font-size: .7rem; text-align: right; color: var(--text-secondary); margin-top: 4px; opacity: .7; }
     </style>
   </head>
   <body>
@@ -655,6 +705,7 @@
           </div>
 
           <div style="padding: var(--space-6)">
+            <div class="table-responsive">
             <table class="students-table">
               <thead>
                 <tr>
@@ -766,6 +817,8 @@
                 {% endfor %}
               </tbody>
             </table>
+            <div class="scroll-hint">Swipe sideways to see more &rarr;</div>
+            </div>
           </div>
         </div>
         {% endfor %}
@@ -872,7 +925,7 @@
     </div>
 
     <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-overlay" id="loadingOverlay" style="display:none;">
       <div class="loading-spinner">
         <div class="spinner"></div>
         <h3 style="margin: 0; color: var(--text-primary)">
@@ -897,6 +950,34 @@
 
       if (document.querySelector('.page-container') || document.title.includes('Student Promotion')) {
         console.log('✅ Page condition met - executing JavaScript');
+        // Mobile collapsible grade sections
+        function initCollapsibleGrades() {
+          const mobile = window.matchMedia('(max-width: 960px)').matches;
+          const gradeSections = document.querySelectorAll('.grade-section');
+          gradeSections.forEach(section => {
+            const header = section.querySelector('.grade-header');
+            const body = section.querySelector('.grade-body');
+            if (!header || !body) return;
+            // Ensure body wrapper exists
+            if (!body.dataset.enhanced) {
+              body.dataset.enhanced = 'true';
+            }
+            if (mobile) {
+              header.classList.add('collapsible');
+              header.addEventListener('click', () => {
+                const collapsed = body.classList.toggle('collapsed');
+                header.classList.toggle('collapsed', collapsed);
+              }, { once: false });
+            } else {
+              // Reset desktop state
+              body.classList.remove('collapsed');
+              header.classList.remove('collapsed');
+            }
+          });
+        }
+        window.addEventListener('resize', initCollapsibleGrades);
+        document.addEventListener('DOMContentLoaded', initCollapsibleGrades);
+        initCollapsibleGrades();
         // Load promotion data from JSON script
         let promotionData = { students_by_grade: {}, available_streams: {}, pagination: { page: 1, total_pages: 1 } };
         const dataEl = document.getElementById('promotion-data');
@@ -1697,37 +1778,56 @@
                 students: studentsData
             };
 
-            // Show loading overlay
-            document.getElementById('loadingOverlay').style.display = 'flex';
+            // Show loading overlay (robust)
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+              overlay.style.display = 'flex';
+            }
 
-            // Send promotion request
+            // Watchdog: ensure overlay never stays stuck >20s
+            const overlayWatchdog = setTimeout(() => {
+              if (overlay && overlay.style.display !== 'none') {
+                console.warn('⏱️ Overlay watchdog auto-hide');
+                overlay.style.display = 'none';
+              }
+            }, 20000);
+
+            // Send promotion request with better error handling
             fetch('{{ url_for("admin.process_promotion") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify(promotionPayload)
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': (document.querySelector('meta[name="csrf-token"]') || {}).getAttribute?.('content') || ''
+              },
+              body: JSON.stringify(promotionPayload)
             })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('loadingOverlay').style.display = 'none';
-
-                if (data.success) {
-                    alert(`Promotion completed successfully!\n\nProcessed: ${data.processed_count} students\nPromoted: ${data.promoted_count}\nRepeated: ${data.repeated_count}\nTransferred: ${data.transferred_count}\nGraduated: ${data.graduated_count}`);
-                    location.reload(); // Refresh the page to show updated data
-                } else {
-                    alert(`Promotion failed: ${data.error}`);
-                    if (data.errors && data.errors.length > 0) {
-                        console.error('Promotion errors:', data.errors);
-                    }
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`Server error ${response.status}`);
                 }
-            })
-            .catch(error => {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                return response
+                  .json()
+                  .catch(() => { throw new Error('Invalid JSON response'); });
+              })
+              .then(data => {
+                if (data.success) {
+                  alert(`Promotion completed successfully!\n\nProcessed: ${data.processed_count} students\nPromoted: ${data.promoted_count}\nRepeated: ${data.repeated_count}\nTransferred: ${data.transferred_count}\nGraduated: ${data.graduated_count}`);
+                  location.reload();
+                } else {
+                  alert(`Promotion failed: ${data.error}`);
+                  if (data.errors && data.errors.length > 0) {
+                    console.error('Promotion errors:', data.errors);
+                  }
+                }
+              })
+              .catch(error => {
                 alert(`Error processing promotions: ${error.message}`);
                 console.error('Error:', error);
-            });
+              })
+              .finally(() => {
+                clearTimeout(overlayWatchdog);
+                if (overlay) overlay.style.display = 'none';
+              });
         }
 
         function findGradeIdByName(gradeName) {

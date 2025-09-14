@@ -285,16 +285,45 @@
     </style>
   </head>
   <body data-theme="solar-light">
-    <div id="theme-toggle-container" style="position:fixed;top:10px;right:10px;z-index:50;"></div>
+    <div
+      id="theme-toggle-container"
+      style="position: fixed; top: 10px; right: 10px; z-index: 50"
+    ></div>
     <div class="setup-container">
       <a href="{{ url_for('school_setup.setup_dashboard') }}" class="back-link">
-        <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10 5l-5 5m0 0l5 5m-5-5h10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg
+          class="hi h-4 w-4"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            d="M10 5l-5 5m0 0l5 5m-5-5h10"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
         Back to Setup Dashboard
       </a>
 
       <div class="setup-header">
         <h1>
-          <svg class="heroicon-md heroicon-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 4h13l5 4-5 4 5 4-5 4H3V4z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg
+            class="heroicon-md heroicon-accent"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              d="M3 4h13l5 4-5 4 5 4-5 4H3V4z"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
           Review & Complete Setup
         </h1>
         <p>Step 6 of 6 - Review your configuration and complete setup</p>
@@ -313,14 +342,40 @@
         <!-- Basic Information Review -->
         <div class="review-section">
           <h3>
-            <svg class="heroicon text-primary heroicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg
+              class="heroicon text-primary heroicon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
             Basic Information
             <a
               href="{{ url_for('school_setup.basic_info') }}"
               class="edit-link"
               style="margin-left: auto"
             >
-              <svg class="heroicon-sm" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg
+                class="heroicon-sm"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
               Edit
             </a>
           </h3>
@@ -361,14 +416,46 @@
         <!-- Registration Information Review -->
         <div class="review-section">
           <h3>
-            <svg class="heroicon text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 5a3 3 0 006 0M9 12h6M9 16h6M9 8h.01M15 8h.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg
+              class="heroicon text-primary"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M9 5a3 3 0 006 0M9 12h6M9 16h6M9 8h.01M15 8h.01"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
             Registration Information
             <a
               href="{{ url_for('school_setup.registration_info') }}"
               class="edit-link"
               style="margin-left: auto"
             >
-              <svg class="heroicon-sm" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg
+                class="heroicon-sm"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
               Edit
             </a>
           </h3>
@@ -411,14 +498,46 @@
         <!-- Academic Configuration Review -->
         <div class="review-section">
           <h3>
-            <svg class="heroicon text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 14l9-5-9-5-9 5 9 5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 14l6.16-3.422A12.083 12.083 0 0118 20.5c0 .167 0 .333-.01.5M12 14L5.84 10.578A12.083 12.083 0 006 20.5v.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg
+              class="heroicon text-primary"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 14l9-5-9-5-9 5 9 5z"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M12 14l6.16-3.422A12.083 12.083 0 0118 20.5c0 .167 0 .333-.01.5M12 14L5.84 10.578A12.083 12.083 0 006 20.5v.5"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
             Academic Configuration
             <a
               href="{{ url_for('school_setup.academic_config') }}"
               class="edit-link"
               style="margin-left: auto"
             >
-              <svg class="heroicon-sm" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg
+                class="heroicon-sm"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
               Edit
             </a>
           </h3>
@@ -454,14 +573,40 @@
         <!-- Branding Review -->
         <div class="review-section">
           <h3>
-            <svg class="heroicon text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg
+              class="heroicon text-primary"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
             Branding
             <a
               href="{{ url_for('school_setup.branding') }}"
               class="edit-link"
               style="margin-left: auto"
             >
-              <svg class="heroicon-sm" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg
+                class="heroicon-sm"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
               Edit
             </a>
           </h3>
@@ -475,7 +620,32 @@
                   alt="School Logo"
                 />
                 {% else %}
-                <svg class="heroicon-md" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" aria-hidden="true"><path d="M3 5a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14l5-5 4 4 5-6 4 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 6h.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg
+                  class="heroicon-md"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#9ca3af"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 5a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M3 14l5-5 4 4 5-6 4 5"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M13 6h.01"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
                 {% endif %}
               </div>
             </div>
@@ -505,14 +675,40 @@
         <!-- Features Review -->
         <div class="review-section">
           <h3>
-            <svg class="heroicon text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10.325 4.317l.856-1.819a1 1 0 011.638 0l.856 1.819a1 1 0 00.95.592h1.908a1 1 0 01.832 1.555l-1.2 1.8a1 1 0 000 1.11l1.2 1.8a1 1 0 01-.832 1.555h-1.908a1 1 0 00-.95.592l-.856 1.819a1 1 0 01-1.638 0l-.856-1.819a1 1 0 00-.95-.592H7.467a1 1 0 01-.832-1.555l1.2-1.8a1 1 0 000-1.11l-1.2-1.8a1 1 0 01.832-1.555h1.908a1 1 0 00.95-.592z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg
+              class="heroicon text-primary"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M10.325 4.317l.856-1.819a1 1 0 011.638 0l.856 1.819a1 1 0 00.95.592h1.908a1 1 0 01.832 1.555l-1.2 1.8a1 1 0 000 1.11l1.2 1.8a1 1 0 01-.832 1.555h-1.908a1 1 0 00-.95.592l-.856 1.819a1 1 0 01-1.638 0l-.856-1.819a1 1 0 00-.95-.592H7.467a1 1 0 01-.832-1.555l1.2-1.8a1 1 0 000-1.11l-1.2-1.8a1 1 0 01.832-1.555h1.908a1 1 0 00.95-.592z"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
             Features
             <a
               href="{{ url_for('school_setup.features') }}"
               class="edit-link"
               style="margin-left: auto"
             >
-              <svg class="heroicon-sm" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg
+                class="heroicon-sm"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
               Edit
             </a>
           </h3>
@@ -547,8 +743,24 @@
 
         <!-- Completion Section -->
         <div class="completion-section">
-          <div class="completion-icon" style="display:flex;justify-content:center;align-items:center;">
-            <svg class="heroicon-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 15a7 7 0 017-7V3l5 5-5 5v-5a7 7 0 00-7 7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div
+            class="completion-icon"
+            style="display: flex; justify-content: center; align-items: center"
+          >
+            <svg
+              class="heroicon-xl"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 15a7 7 0 017-7V3l5 5-5 5v-5a7 7 0 00-7 7z"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
           </div>
           <h2 style="color: var(--primary-color); margin-bottom: 1rem">
             Ready to Launch!
@@ -565,7 +777,20 @@
           >
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             <button type="submit" class="btn btn-primary">
-              <svg class="heroicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M9 12l2 2 4-4M7 20h10a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg
+                class="heroicon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M9 12l2 2 4-4M7 20h10a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
               Complete Setup & Launch System
             </button>
           </form>
@@ -573,22 +798,74 @@
 
         <!-- Form Actions -->
         <div class="form-actions">
-          <a href="{{ url_for('school_setup.features') }}" class="btn btn-secondary">
-            <svg class="heroicon-sm" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10 5l-5 5m0 0l5 5m-5-5h10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <a
+            href="{{ url_for('school_setup.features') }}"
+            class="btn btn-secondary"
+          >
+            <svg
+              class="heroicon-sm"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M10 5l-5 5m0 0l5 5m-5-5h10"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
             Back to Features
           </a>
           <div style="color: #6b7280; font-size: 0.9rem">
-            <svg class="heroicon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg
+              class="heroicon-sm"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
             You can always modify these settings later from the admin dashboard
           </div>
         </div>
       </div>
     </div>
     <script>
-      (function(){
-        const storageKey='solar-theme-mode';
-        const root=document.body;function apply(m){root.setAttribute('data-theme',m);} const saved=localStorage.getItem(storageKey)||'solar-light';apply(saved);
-        const host=document.getElementById('theme-toggle-container'); if(host){ const b=document.createElement('button'); b.type='button'; b.textContent=saved==='solar-dark'?'Light Mode':'Dark Mode'; b.style.cssText='background:#1f7d53;color:#fff;border:none;padding:0.5rem 1rem;border-radius:20px;font-size:.8rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.25);'; b.addEventListener('click',()=>{const next=root.getAttribute('data-theme')==='solar-dark'?'solar-light':'solar-dark'; apply(next); localStorage.setItem(storageKey,next); b.textContent= next==='solar-dark'?'Light Mode':'Dark Mode';}); host.appendChild(b);} })();
+      (function () {
+        const storageKey = "solar-theme-mode";
+        const root = document.body;
+        function apply(m) {
+          root.setAttribute("data-theme", m);
+        }
+        const saved = localStorage.getItem(storageKey) || "solar-light";
+        apply(saved);
+        const host = document.getElementById("theme-toggle-container");
+        if (host) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = saved === "solar-dark" ? "Light Mode" : "Dark Mode";
+          b.style.cssText =
+            "background:#1f7d53;color:#fff;border:none;padding:0.5rem 1rem;border-radius:20px;font-size:.8rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.25);";
+          b.addEventListener("click", () => {
+            const next =
+              root.getAttribute("data-theme") === "solar-dark"
+                ? "solar-light"
+                : "solar-dark";
+            apply(next);
+            localStorage.setItem(storageKey, next);
+            b.textContent = next === "solar-dark" ? "Light Mode" : "Dark Mode";
+          });
+          host.appendChild(b);
+        }
+      })();
     </script>
   </body>
 </html>

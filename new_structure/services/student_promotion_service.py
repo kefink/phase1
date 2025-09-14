@@ -348,7 +348,16 @@ class StudentPromotionService:
             # Validate promotion data
             is_valid, error_message = StudentPromotionService.validate_promotion_data(promotion_data)
             if not is_valid:
-                return {'success': False, 'error': error_message}
+                return {
+                    'success': False,
+                    'error': error_message,
+                    'processed_count': 0,
+                    'promoted_count': 0,
+                    'repeated_count': 0,
+                    'transferred_count': 0,
+                    'graduated_count': 0,
+                    'errors': []
+                }
             
             # Generate batch ID for tracking
             batch_id = str(uuid.uuid4())[:8]
@@ -367,7 +376,7 @@ class StudentPromotionService:
             for student_data in promotion_data['students']:
                 try:
                     result = StudentPromotionService._process_individual_promotion(
-                        student_data, 
+                        student_data,
                         promotion_data['academic_year_to'],
                         promoted_by_teacher_id,
                         batch_id
@@ -402,7 +411,12 @@ class StudentPromotionService:
             return {
                 'success': False,
                 'error': f"Bulk promotion failed: {str(e)}",
-                'processed_count': 0
+                'processed_count': 0,
+                'promoted_count': 0,
+                'repeated_count': 0,
+                'transferred_count': 0,
+                'graduated_count': 0,
+                'errors': []
             }
 
     @staticmethod
@@ -436,20 +450,17 @@ class StudentPromotionService:
             if not current_grade:
                 return {'success': False, 'error': f"Student {student_id} has no current grade"}
 
-            # Create promotion history record
+            # Create promotion history record using existing model fields
             promotion_history = StudentPromotionHistory(
                 student_id=student_id,
                 from_grade_id=student.grade_id,
                 from_stream_id=student.stream_id,
-                academic_year_from=student.academic_year or academic_year_to,
-                promoted_by_teacher_id=promoted_by_teacher_id,
+                academic_year=academic_year_to,
                 promotion_type=action,
                 promotion_reason=student_data.get('reason', 'bulk_promotion'),
-                promotion_notes=student_data.get('notes', ''),
-                is_bulk_promotion=True,
-                bulk_promotion_batch_id=batch_id,
-                final_average=student_data.get('final_average'),
-                final_position=student_data.get('final_position')
+                processed_by_teacher_id=promoted_by_teacher_id,
+                batch_id=batch_id,
+                notes=student_data.get('notes', '')
             )
 
             # Process based on action type
@@ -500,14 +511,14 @@ class StudentPromotionService:
             # Update promotion history
             promotion_history.to_grade_id = to_grade_id
             promotion_history.to_stream_id = to_stream_id
-            promotion_history.academic_year_to = academic_year_to
+            promotion_history.academic_year = academic_year_to
 
             # Update student record
             student.grade_id = to_grade_id
             student.stream_id = to_stream_id
             student.academic_year = academic_year_to
             student.date_last_promoted = datetime.utcnow()
-            student.promotion_status = 'active'
+            student.promotion_status = 'promoted'
             student.promotion_notes = student_data.get('notes', '')
 
             # Save records
@@ -527,11 +538,11 @@ class StudentPromotionService:
             # Student stays in same grade but academic year advances
             promotion_history.to_grade_id = student.grade_id
             promotion_history.to_stream_id = student.stream_id
-            promotion_history.academic_year_to = academic_year_to
+            promotion_history.academic_year = academic_year_to
 
             # Update student record
             student.academic_year = academic_year_to
-            student.promotion_status = 'active'  # Still active, just repeating
+            student.promotion_status = 'repeated'
             student.promotion_notes = student_data.get('notes', 'Repeating grade')
 
             # Save records
@@ -549,7 +560,7 @@ class StudentPromotionService:
         """Handle student transfer to another school."""
         try:
             # No target grade/stream for transfers
-            promotion_history.academic_year_to = academic_year_to
+            promotion_history.academic_year = academic_year_to
 
             # Update student status
             student.promotion_status = 'transferred'
@@ -571,7 +582,7 @@ class StudentPromotionService:
         """Handle student graduation from the system."""
         try:
             # No target grade/stream for graduation
-            promotion_history.academic_year_to = academic_year_to
+            promotion_history.academic_year = academic_year_to
 
             # Update student status
             student.promotion_status = 'graduated'
@@ -629,7 +640,7 @@ class StudentPromotionService:
             query = StudentPromotionHistory.query
 
             if academic_year:
-                query = query.filter_by(academic_year_to=academic_year)
+                query = query.filter_by(academic_year=academic_year)
 
             # Get promotion type counts
             promotion_counts = {}

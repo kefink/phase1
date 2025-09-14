@@ -5,57 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Grade Reports Dashboard - Hillview School</title>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
     />
     <style>
-      :root {
-        --primary-color: #268bd2;
-        --cyan: #2aa198;
-        --blue: #268bd2;
-        --green: #859900;
-        --orange: #cb4b16;
-        --red: #dc322f;
-        --violet: #6c71c4;
-        --magenta: #d33682;
-        --yellow: #b58900;
-      }
-      html[data-theme="dark"],
-      body[data-theme="dark"] {
-        --bg: #002b36;
-        --bg-alt: #073642;
-        --card-bg: #073642;
-        --card-hover: #0e4a58;
-        --border-color: #0e4a58;
-        --text-primary: #839496;
-        --text-secondary: #586e75;
-        --text-emphasis: #eee8d5;
-      }
-      html[data-theme="light"],
-      body[data-theme="light"] {
-        --bg: #fdf6e3;
-        --bg-alt: #eee8d5;
-        --card-bg: #ffffff;
-        --card-hover: #f5f5f0;
-        --border-color: #e2e8f0;
-        --text-primary: #334155;
-        --text-secondary: #64748b;
-        --text-emphasis: #0f172a;
-      }
-      body {
-        background: var(--bg);
-        color: var(--text-primary);
-        font-family: "Inter", "Segoe UI", sans-serif;
-        min-height: 100vh;
-      }
+      /* Page-specific minimal tweaks layered atop Solar theme */
       .page-shell {
         max-width: 1200px;
         margin: 0 auto;
-        padding: clamp(1rem, 2vw, 2rem) clamp(0.75rem, 1.2vw, 1.5rem) 3rem;
+        padding: 1.5rem 1.1rem 3rem;
       }
       .top-bar {
         display: flex;
@@ -66,293 +24,242 @@
         margin-bottom: 1.25rem;
       }
       .breadcrumb {
-        --bs-breadcrumb-divider: "/";
-        margin: 0;
+        font-size: 0.7rem;
         background: transparent;
         padding: 0;
-        font-size: 0.75rem;
+        margin: 0;
+        display: flex;
+        gap: 0.35rem;
+        list-style: none;
       }
-      .breadcrumb-item a {
-        color: var(--cyan);
+      .breadcrumb a {
+        color: var(--solar-cyan);
         text-decoration: none;
       }
-      .breadcrumb-item a:hover {
+      .breadcrumb a:hover {
         text-decoration: underline;
       }
-      .breadcrumb-item.active {
-        color: var(--text-secondary);
+      .breadcrumb .active {
+        color: var(--solar-base01);
         font-weight: 600;
       }
       .back-btn {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        color: var(--text-emphasis);
+        background: rgba(255, 255, 255, 0.35);
+        border: 1px solid rgba(181, 137, 0, 0.35);
+        color: var(--solar-base03);
         padding: 0.55rem 0.9rem;
-        border-radius: 0.6rem;
-        font-size: 0.7rem;
+        border-radius: var(--radius-md);
+        font-size: 0.65rem;
         font-weight: 600;
         letter-spacing: 0.05em;
         text-decoration: none;
         display: inline-flex;
         gap: 0.45rem;
         align-items: center;
-        transition: 0.25s background, 0.25s border-color;
+      }
+      [data-theme="solar-dark"] .back-btn {
+        background: rgba(0, 43, 54, 0.55);
+        color: var(--solar-base2);
       }
       .back-btn:hover {
-        background: var(--card-hover);
+        background: rgba(181, 137, 0, 0.18);
       }
-      .dashboard-container {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 1rem;
-        padding: 1.75rem 1.5rem 2.25rem;
-        box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.45);
-      }
+      .dashboard-container { padding: 1.6rem 1.35rem 2.1rem; }
       .header-section {
         text-align: center;
-        margin: 0 0 1.9rem;
-        padding: 0 0 1.1rem;
-        border-bottom: 2px solid var(--border-color);
+        margin: 0 0 1.6rem;
+        padding: 0 0 1rem;
+        border-bottom: 2px solid rgba(181, 137, 0, 0.35);
       }
       .header-title {
-        font-size: clamp(1.6rem, 4vw, 2.35rem);
+        font-size: clamp(1.55rem, 4vw, 2.2rem);
         font-weight: 700;
-        margin: 0 0 0.65rem;
-        color: var(--text-emphasis);
+        margin: 0 0 0.55rem;
         letter-spacing: 0.5px;
+        color: var(--solar-base02);
       }
-      .header-title i {
-        background: linear-gradient(135deg, var(--cyan), var(--blue));
+      [data-theme="solar-dark"] .header-title {
+        color: var(--solar-base2);
+      }
+      .header-title .gradient-text {
+        background: linear-gradient(
+          135deg,
+          var(--solar-cyan),
+          var(--solar-blue)
+        );
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
       }
       .header-subtitle {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
+        color: var(--solar-base01);
+        font-size: 0.85rem;
         max-width: 760px;
         margin: 0 auto;
       }
-      .selection-form {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.04),
-          rgba(255, 255, 255, 0.02)
-        );
-        border: 1px solid var(--border-color);
-        border-radius: 1rem;
-        padding: 1.4rem 1.25rem 1.55rem;
-        margin: 0 0 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) inset,
-          0 4px 10px -2px rgba(0, 0, 0, 0.4);
-      }
+      .selection-form { padding: 1.25rem 1.1rem 1.4rem; margin: 0 0 2rem; }
       .selection-form h3 {
-        font-size: 1.05rem;
-        margin: 0 0 1.1rem;
+        font-size: 1.02rem;
+        margin: 0 0 1rem;
         font-weight: 600;
         letter-spacing: 0.5px;
-        color: var(--text-emphasis);
         display: flex;
         align-items: center;
         gap: 0.55rem;
       }
-      .form-group {
-        margin-bottom: 1rem;
+      .form-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       }
       .form-label {
-        font-size: 0.65rem;
-        letter-spacing: 0.05em;
+        font-size: 0.55rem;
         text-transform: uppercase;
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin: 0 0 0.4rem;
-      }
-      .form-select {
-        background: var(--bg-alt);
-        color: var(--text-emphasis);
-        border: 1px solid var(--border-color);
-        font-size: 0.8rem;
-        font-weight: 500;
-        border-radius: 0.65rem;
-        padding: 0.6rem 0.75rem;
-        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
-      }
-      .form-select:focus {
-        outline: none;
-        border-color: var(--cyan);
-        box-shadow: 0 0 0 2px rgba(42, 161, 152, 0.35);
-      }
-      .btn-primary {
-        background: linear-gradient(135deg, var(--cyan), var(--blue));
-        border: none;
-        font-size: 0.75rem;
         letter-spacing: 0.06em;
-        text-transform: uppercase;
+        font-weight: 600;
+        color: var(--solar-base01);
+        margin: 0 0 0.35rem;
+      }
+      .solar-select {
+        font-size: 0.78rem;
+      }
+      .submit-btn {
+        background: linear-gradient(
+          135deg,
+          var(--solar-cyan),
+          var(--solar-blue)
+        );
+        color: #fff;
+        border: none;
+        font-size: 0.7rem;
         font-weight: 700;
-        padding: 0.75rem 1.4rem;
-        border-radius: 0.65rem;
-        box-shadow: 0 6px 18px -6px rgba(38, 139, 210, 0.5),
-          0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        padding: 0.7rem 1.3rem;
+        border-radius: var(--radius-md);
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
       }
-      .btn-primary:hover {
-        filter: brightness(1.08);
-      }
-      .features-section {
-        margin-top: 1rem;
+      .submit-btn:hover {
+        box-shadow: var(--shadow-md);
       }
       .features-section h3 {
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 600;
-        letter-spacing: 0.5px;
-        margin: 0 0 1.25rem;
-        color: var(--text-emphasis);
+        letter-spacing: 0.45px;
+        margin: 0 0 1.15rem;
         display: flex;
-        align-items: center;
         justify-content: center;
         gap: 0.55rem;
       }
-      .feature-card {
-        background: var(--bg-alt);
-        border: 1px solid var(--border-color);
-        border-radius: 1rem;
-        padding: 1.1rem 0.95rem 1rem;
-        margin: 0 0 1rem;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-        transition: 0.3s background, 0.3s border-color, 0.3s transform;
-        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02) inset,
-          0 4px 14px -4px rgba(0, 0, 0, 0.5);
+      .feature-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       }
-      .feature-card:before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(
-          circle at 85% 15%,
-          rgba(42, 161, 152, 0.18),
-          transparent 70%
-        );
-        opacity: 0.6;
-        pointer-events: none;
-      }
+      .feature-card { position:relative; padding:1rem 0.9rem 0.9rem; transition:0.3s; }
       .feature-card:hover {
-        background: var(--card-hover);
-        border-color: var(--cyan);
         transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
       }
+      /* Dark mode refinement for custom accents */
+      [data-theme='solar-dark'] .info-box { background: linear-gradient(135deg, rgba(42,161,152,0.2), rgba(38,139,210,0.18)); }
       .feature-icon {
-        font-size: 1.9rem;
-        margin: 0 0 0.65rem;
-        background: linear-gradient(135deg, var(--cyan), var(--blue));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
+        margin: 0 0 0.55rem;
       }
       .feature-title {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 600;
-        letter-spacing: 0.5px;
-        margin: 0 0 0.4rem;
-        color: var(--text-emphasis);
+        margin: 0 0 0.35rem;
+        letter-spacing: 0.45px;
       }
       .feature-description {
-        font-size: 0.7rem;
-        line-height: 1.4;
-        color: var(--text-secondary);
+        font-size: 0.62rem;
+        line-height: 1.35;
         margin: 0;
+        color: var(--solar-base01);
       }
-      .alert {
-        border-radius: 0.75rem;
-        border: 1px solid var(--border-color);
-        background: var(--bg-alt);
-        color: var(--text-primary);
-        font-size: 0.7rem;
-      }
-      .alert-info {
+      .info-box {
+        margin-top: 1.25rem;
+        border: 1px solid rgba(42, 161, 152, 0.45);
         background: linear-gradient(
           135deg,
           rgba(42, 161, 152, 0.12),
           rgba(38, 139, 210, 0.12)
         );
-        border-color: rgba(42, 161, 152, 0.45);
-        color: var(--text-emphasis);
+        border-radius: var(--radius-lg);
+        padding: 1rem 0.9rem 1.1rem;
+        font-size: 0.66rem;
       }
       .info-steps {
-        font-size: 0.65rem;
-        margin: 0.5rem 0 0;
         display: grid;
         gap: 0.3rem;
+        margin: 0.55rem 0 0;
+        font-size: 0.6rem;
       }
       .steps-title {
         font-weight: 600;
-        color: var(--text-secondary);
+        color: var(--solar-base01);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
       }
-      .steps-title i {
-        color: var(--cyan);
+      .badge-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
-      /* Mobile tweaks */
-      @media (max-width: 780px) {
-        .dashboard-container {
-          padding: 1.25rem 1rem 1.75rem;
-        }
-        .feature-card {
-          margin-bottom: 0.85rem;
-        }
-        .header-title {
-          font-size: 1.6rem;
-        }
-        .selection-form {
-          padding: 1rem 0.9rem 1.2rem;
-        }
-        .form-select {
-          font-size: 0.75rem;
-        }
-      }
-      @media (max-width: 520px) {
-        .top-bar {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .back-btn {
-          width: 100%;
-          justify-content: center;
-        }
-        .feature-card {
-          padding: 0.9rem 0.75rem 0.85rem;
-        }
-        .feature-title {
-          font-size: 0.8rem;
-        }
-        .feature-icon {
-          font-size: 1.6rem;
+      @media (max-width: 640px) {
+        .feature-grid {
+          grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
         }
       }
     </style>
   </head>
-  <body data-theme="dark">
+  <body class="solar-theme" data-theme="solar-dark">
     {% include 'classteacher/_hamburger_nav.html' %}
     <div class="page-shell">
       <div class="top-bar">
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item">
+        <nav aria-label="breadcrumb" class="solar-breadcrumb-wrapper">
+          <ol class="breadcrumb">
+            <li>
               <a href="{{ url_for('classteacher.dashboard') }}">Dashboard</a>
             </li>
-            <li class="breadcrumb-item active">Grade Reports</li>
+            <li class="active" aria-current="page">Grade Reports</li>
           </ol>
         </nav>
-        <a href="{{ url_for('classteacher.dashboard') }}" class="back-btn">
-          <span aria-hidden="true" style="display: inline-flex">🔙</span> Back
-          to Dashboard
+        <div style="display:flex; align-items:center; gap:.5rem;">
+          <button id="themeToggle" type="button" class="solar-btn subtle" aria-label="Toggle theme" title="Toggle light/dark mode">
+            <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 3a9 9 0 100 18 1 1 0 01.117 1.993L12 23A11 11 0 1112 1a1 1 0 01-.117 1.993L12 3z" />
+            </svg>
+          </button>
+        
+        <a
+          href="{{ url_for('classteacher.dashboard') }}"
+          class="back-btn solar-focus-ring"
+          aria-label="Back to Dashboard"
+        >
+          <svg
+            class="heroicon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="15 18 9 12 15 6" />
+            <path d="M3 12h18" />
+          </svg>
+          <span class="solar-hide-sm">Back</span>
         </a>
       </div>
-      <div class="dashboard-container">
+  <div class="dashboard-container solar-card">
         <!-- Header -->
         <div class="header-section">
           <h1 class="header-title">
-            <i class="fas fa-chart-line"></i>
-            Grade Reports Dashboard
+            <span class="gradient-text">Grade Reports</span> Dashboard
           </h1>
           <p class="header-subtitle">
             Generate comprehensive reports for entire grades with multiple
@@ -362,179 +269,282 @@
 
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %} {% if
-        messages %} {% for category, message in messages %}
-        <div
-          class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
-          role="alert"
-        >
-          {{ message }}
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-          ></button>
+        messages %}
+        <div class="solar-grid" style="margin-bottom: 1rem">
+          {% for category, message in messages %}
+          <div class="solar-card" role="alert" style="padding: 0.75rem 1rem">
+            <strong>{{ 'Error:' if category == 'error' else '' }}</strong> {{
+            message }}
+          </div>
+          {% endfor %}
         </div>
-        {% endfor %} {% endif %} {% endwith %}
+        {% endif %} {% endwith %}
 
-        <!-- Selection Form -->
-        <div class="selection-form">
+        <!-- Selection Form (clean, single instance) -->
+  <div class="selection-form solar-fade-up solar-card" style="box-shadow:none;">
           <h3>
-            <i class="fas fa-filter"></i>
+            <svg
+              class="heroicon heroicon-solar-blue"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v8" />
+              <path d="M8 12h8" />
+            </svg>
             Select Grade and Assessment
           </h3>
-
-          <form id="gradeReportForm">
-            <div class="row">
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="grade" class="form-label">Grade</label>
-                  <select class="form-select" id="grade" name="grade" required>
-                    <option value="">Select Grade</option>
-                    {% for grade in grades %}
-                    <option value="{{ grade.name }}">{{ grade.name }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="term" class="form-label">Term</label>
-                  <select class="form-select" id="term" name="term" required>
-                    <option value="">Select Term</option>
-                    {% for term in terms %}
-                    <option value="{{ term.name }}">
-                      {{ term.name.replace('_', ' ').title() }}
-                    </option>
-                    {% endfor %}
-                  </select>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="assessment_type" class="form-label"
-                    >Assessment Type</label
-                  >
-                  <select
-                    class="form-select"
-                    id="assessment_type"
-                    name="assessment_type"
-                    required
-                  >
-                    <option value="">Select Assessment</option>
-                    {% for assessment in assessment_types %}
-                    <option value="{{ assessment.name }}">
-                      {{ assessment.name.replace('_', ' ').title() }}
-                    </option>
-                    {% endfor %}
-                  </select>
-                </div>
-              </div>
+          <form id="gradeReportForm" class="form-grid" autocomplete="off">
+            <div>
+              <label for="grade" class="form-label">Grade</label>
+              <select class="solar-select" id="grade" name="grade" required>
+                <option value="">Select Grade</option>
+                {% for grade in grades %}
+                <option value="{{ grade.name }}">{{ grade.name }}</option>
+                {% endfor %}
+              </select>
             </div>
-
-            <div class="text-center mt-3">
-              <button type="submit" class="btn btn-primary">
-                <i class="fas fa-search me-1"></i>
-                View Grade Streams
+            <div>
+              <label for="term" class="form-label">Term</label>
+              <select class="solar-select" id="term" name="term" required>
+                <option value="">Select Term</option>
+                {% for term in terms %}
+                <option value="{{ term.name }}">
+                  {{ term.name.replace('_', ' ').title() }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label for="assessment_type" class="form-label"
+                >Assessment Type</label
+              >
+              <select
+                class="solar-select"
+                id="assessment_type"
+                name="assessment_type"
+                required
+              >
+                <option value="">Select Assessment</option>
+                {% for assessment in assessment_types %}
+                <option value="{{ assessment.name }}">
+                  {{ assessment.name.replace('_', ' ').title() }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div style="display: flex; align-items: flex-end">
+              <button
+                type="submit"
+                class="submit-btn solar-focus-ring"
+                aria-label="View Grade Streams"
+              >
+                <svg
+                  class="heroicon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+                <span>View Streams</span>
               </button>
             </div>
           </form>
         </div>
 
         <!-- Features Section -->
-        <div class="features-section">
+        <div class="features-section solar-fade-up">
           <h3>
-            <i class="fas fa-star"></i>
+            <svg
+              class="heroicon heroicon-solar-yellow"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polygon
+                points="12 2 15 8.5 22 9.3 17 14 18.5 21 12 17.8 5.5 21 7 14 2 9.3 9 8.5 12 2"
+              />
+            </svg>
             Enhanced Features
           </h3>
-
-          <div class="row">
-            <div class="col-md-4">
-              <div class="feature-card text-center">
-                <div class="feature-icon">
-                  <i class="fas fa-layer-group"></i>
-                </div>
-                <h4 class="feature-title">Multi-Stream Support</h4>
-                <p class="feature-description">
-                  Automatically detects and handles grades with multiple streams
-                  (A, B, C, D, etc.)
-                </p>
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg
+                  class="heroicon heroicon-lg heroicon-solar-blue"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="14" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                </svg>
               </div>
+              <h4 class="feature-title">Multi-Stream Support</h4>
+              <p class="feature-description">
+                Automatically detects and handles grades with multiple streams
+                (A, B, C, D, etc.)
+              </p>
             </div>
-            <div class="col-md-4">
-              <div class="feature-card text-center">
-                <div class="feature-icon">
-                  <i class="fas fa-file-pdf"></i>
-                </div>
-                <h4 class="feature-title">Individual Stream Reports</h4>
-                <p class="feature-description">
-                  Generate separate detailed reports for each stream within a
-                  grade
-                </p>
+            <div class="feature-card solar-card" style="box-shadow:none;">
+              <div class="feature-icon">
+                <svg
+                  class="heroicon heroicon-lg heroicon-solar-green"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 4h16v16H4z" />
+                  <path d="M8 8h8v8H8z" />
+                </svg>
               </div>
+              <h4 class="feature-title">Individual Stream Reports</h4>
+              <p class="feature-description">
+                Generate detailed reports for each stream within a grade
+              </p>
             </div>
-            <div class="col-md-4">
-              <div class="feature-card text-center">
-                <div class="feature-icon">
-                  <i class="fas fa-chart-bar"></i>
-                </div>
-                <h4 class="feature-title">Consolidated Grade Report</h4>
-                <p class="feature-description">
-                  Combined analysis report showing performance across all
-                  streams in the grade
-                </p>
+            <div class="feature-card solar-card" style="box-shadow:none;">
+              <div class="feature-icon">
+                <svg
+                  class="heroicon heroicon-lg heroicon-solar-red"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 3h18v18H3z" />
+                  <path d="M3 9h18" />
+                  <path d="M9 21V9" />
+                </svg>
               </div>
+              <h4 class="feature-title">Consolidated Grade Report</h4>
+              <p class="feature-description">
+                Combined performance across all streams in the grade
+              </p>
             </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4">
-              <div class="feature-card text-center">
-                <div class="feature-icon">
-                  <i class="fas fa-download"></i>
-                </div>
-                <h4 class="feature-title">Batch Download</h4>
-                <p class="feature-description">
-                  Download all stream reports and consolidated report in a
-                  single ZIP file
-                </p>
+            <div class="feature-card solar-card" style="box-shadow:none;">
+              <div class="feature-icon">
+                <svg
+                  class="heroicon heroicon-lg"
+                  style="color: var(--solar-orange)"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
               </div>
+              <h4 class="feature-title">Batch Download</h4>
+              <p class="feature-description">
+                Download all reports in a single ZIP archive
+              </p>
             </div>
-            <div class="col-md-4">
-              <div class="feature-card text-center">
-                <div class="feature-icon">
-                  <i class="fas fa-cogs"></i>
-                </div>
-                <h4 class="feature-title">Flexible Configuration</h4>
-                <p class="feature-description">
-                  Works with any number of streams - from single class grades to
-                  4+ stream grades
-                </p>
+            <div class="feature-card solar-card" style="box-shadow:none;">
+              <div class="feature-icon">
+                <svg
+                  class="heroicon heroicon-lg"
+                  style="color: var(--solar-violet)"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10.6 3.1V3a2 2 0 1 1 4 0v.09c0 .65.39 1.24 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.65 0 1.24.39 1.51 1H21a2 2 0 1 1 0 4h-.09c-.65 0-1.24.39-1.51 1Z"
+                  />
+                </svg>
               </div>
+              <h4 class="feature-title">Flexible Configuration</h4>
+              <p class="feature-description">
+                Supports any number of streams seamlessly
+              </p>
             </div>
-            <div class="col-md-4">
-              <div class="feature-card text-center">
-                <div class="feature-icon">
-                  <i class="fas fa-chart-pie"></i>
-                </div>
-                <h4 class="feature-title">Advanced Analytics</h4>
-                <p class="feature-description">
-                  Cross-stream comparisons, grade-level statistics, and
-                  performance insights
-                </p>
+            <div class="feature-card solar-card" style="box-shadow:none;">
+              <div class="feature-icon">
+                <svg
+                  class="heroicon heroicon-lg"
+                  style="color: var(--solar-magenta)"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 13h2l4 8 4-16 4 8h4" />
+                </svg>
               </div>
+              <h4 class="feature-title">Advanced Analytics</h4>
+              <p class="feature-description">
+                Cross-stream metrics and performance insights
+              </p>
             </div>
           </div>
         </div>
 
         <!-- Info Alert -->
-        <div class="alert alert-info mt-4">
+        <div
+          class="info-box solar-fade-up"
+          role="note"
+          aria-label="How it works"
+        >
           <strong>How it works:</strong> Select a grade, term, and assessment
           type to view all streams in that grade. Generate individual stream
-          reports, a consolidated grade report, or download everything in a
-          batch.
+          reports, a consolidated grade report, or batch download.
           <div class="info-steps">
             <div class="steps-title">
-              <i class="fas fa-check-circle"></i> Quick Steps:
+              <svg
+                class="heroicon heroicon-solar-green"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Quick Steps:
             </div>
             <div>1. Choose Grade & Term</div>
             <div>2. Pick Assessment Type</div>
@@ -543,18 +553,31 @@
         </div>
       </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Respect stored theme (ctTheme) for consistency with other pages
-      (function () {
-        try {
-          const saved = localStorage.getItem("ctTheme");
-          if (saved) {
-            document.documentElement.setAttribute("data-theme", saved);
-            document.body.setAttribute("data-theme", saved);
-          }
-        } catch (e) {}
+      // Unified Solar Theme toggle (backward compatible with ctTheme)
+      (function() {
+        const root = document.body;
+        const legacy = localStorage.getItem('ctTheme');
+        const stored = localStorage.getItem('solar-theme') || legacy;
+        if (stored) {
+          root.setAttribute('data-theme', stored);
+          document.documentElement.setAttribute('data-theme', stored);
+        } else {
+          root.setAttribute('data-theme','solar-light');
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+          const btn = document.getElementById('themeToggle');
+          if (!btn) return;
+          btn.addEventListener('click', () => {
+            const current = root.getAttribute('data-theme');
+            const next = current === 'solar-dark' ? 'solar-light' : 'solar-dark';
+            root.setAttribute('data-theme', next);
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('solar-theme', next);
+            // keep legacy key for other pages not yet migrated
+            localStorage.setItem('ctTheme', next);
+          });
+        });
       })();
       document
         .getElementById("gradeReportForm")

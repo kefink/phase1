@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Basic Information - School Setup</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/heroicons.css') }}" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/heroicons.css') }}"
+    />
     <style>
       :root {
         --primary-color: #1f7d53;
@@ -275,15 +278,29 @@
   <body>
     <div class="setup-container">
       <a href="{{ url_for('school_setup.setup_dashboard') }}" class="back-link">
-        <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12l7.5-7.5M3 12h18"/></svg>
+        <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M10.5 19.5L3 12l7.5-7.5M3 12h18"
+          />
+        </svg>
         Back to Setup Dashboard
       </a>
 
       <div class="setup-header">
         <h1>
-          <svg class="heroicon heroicon-lg" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            class="heroicon heroicon-lg"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <circle cx="12" cy="12" r="9" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 10.5h1.5v5.25h-1.5zM12 7.5a.75.75 0 100-1.5.75.75 0 000 1.5z" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M11.25 10.5h1.5v5.25h-1.5zM12 7.5a.75.75 0 100-1.5.75.75 0 000 1.5z"
+            />
           </svg>
           Basic Information
         </h1>
@@ -305,11 +322,36 @@
           class="alert alert-{{ 'error' if category == 'error' else 'success' }}"
         >
           {% if category == 'error' %}
-          <svg class="heroicon heroicon-sm heroicon-warning" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3L2.25 20.25h19.5L12 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75v4.5M12 17.25h.007"/></svg>
+          <svg
+            class="heroicon heroicon-sm heroicon-warning"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 3L2.25 20.25h19.5L12 3z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9.75v4.5M12 17.25h.007"
+            />
+          </svg>
           {% else %}
-          <svg class="heroicon heroicon-sm heroicon-success" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-          {% endif %}
-          {{ message }}
+          <svg
+            class="heroicon heroicon-sm heroicon-success"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 12.75l2 2 4-4"
+            />
+            <circle cx="12" cy="12" r="9" />
+          </svg>
+          {% endif %} {{ message }}
         </div>
         {% endfor %} {% endif %} {% endwith %}
 
@@ -318,7 +360,13 @@
           <!-- School Identity Section -->
           <div class="form-section">
             <h3>
-              <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5M12 2.25l8.955 4.477a.75.75 0 01-.705 1.343L12 4.114 3.75 8.07a.75.75 0 01-.705-1.343L12 2.25zM4.5 10.5h15v9h-15v-9zM9 14.25h6" /></svg>
+              <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.25 21h19.5M12 2.25l8.955 4.477a.75.75 0 01-.705 1.343L12 4.114 3.75 8.07a.75.75 0 01-.705-1.343L12 2.25zM4.5 10.5h15v9h-15v-9zM9 14.25h6"
+                />
+              </svg>
               School Identity
             </h3>
             <div class="form-grid">
@@ -390,7 +438,13 @@
           <!-- Contact Information Section -->
           <div class="form-section">
             <h3>
-              <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75A3 3 0 015.25 3h.5a2 2 0 012 1.7l.37 2.6a2 2 0 01-.55 1.71l-1.2 1.2a14.5 14.5 0 006.19 6.19l1.2-1.2a2 2 0 011.71-.55l2.6.37a2 2 0 011.7 2v.5a3 3 0 01-3.75 3 18.5 18.5 0 01-11-11 3 3 0 01-.45-1.52z"/></svg>
+              <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.25 6.75A3 3 0 015.25 3h.5a2 2 0 012 1.7l.37 2.6a2 2 0 01-.55 1.71l-1.2 1.2a14.5 14.5 0 006.19 6.19l1.2-1.2a2 2 0 011.71-.55l2.6.37a2 2 0 011.7 2v.5a3 3 0 01-3.75 3 18.5 18.5 0 01-11-11 3 3 0 01-.45-1.52z"
+                />
+              </svg>
               Contact Information
             </h3>
             <div class="form-grid">
@@ -457,7 +511,14 @@
           <!-- Address Information Section -->
           <div class="form-section">
             <h3>
-              <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s6-5.25 6-10.5A6 6 0 0012 4.5a6 6 0 00-6 6c0 5.25 6 10.5 6 10.5z"/><circle cx="12" cy="10.5" r="2.25"/></svg>
+              <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 21s6-5.25 6-10.5A6 6 0 0012 4.5a6 6 0 00-6 6c0 5.25 6 10.5 6 10.5z"
+                />
+                <circle cx="12" cy="10.5" r="2.25" />
+              </svg>
               Address Information
             </h3>
             <div class="form-group full-width">
@@ -499,12 +560,32 @@
               href="{{ url_for('school_setup.setup_dashboard') }}"
               class="btn btn-secondary"
             >
-              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12l7.5-7.5M3 12h18"/></svg>
+              <svg
+                class="heroicon heroicon-sm"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M10.5 19.5L3 12l7.5-7.5M3 12h18"
+                />
+              </svg>
               Back to Dashboard
             </a>
             <button type="submit" class="btn btn-primary">
               Continue to Registration Info
-              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3"/></svg>
+              <svg
+                class="heroicon heroicon-sm"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.5 4.5L21 12l-7.5 7.5M21 12H3"
+                />
+              </svg>
             </button>
           </div>
         </form>

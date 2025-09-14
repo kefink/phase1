@@ -5118,40 +5118,58 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
 @classteacher_bp.route('/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type>')
 @classteacher_required
 def generate_all_individual_reports(grade, stream, term, assessment_type):
-    """Route for generating and downloading all individual reports as a ZIP file using the same format as preview."""
-    try:
-        print(f"🚀 Starting ZIP generation for {grade} {stream} {term} {assessment_type}")
+    """Generate and return a ZIP containing all individual reports for a stream.
 
-        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
+    Hardened version: robust stream resolution, improved error handling, safety headers,
+    and explicit JSON responses for AJAX requests. Falls back gracefully when no data.
+    """
+    def is_ajax():
+        return request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in (request.headers.get('Accept') or '')
+
+    def json_or_flash(message, code=400):
+        if is_ajax():
+            return jsonify({'error': message}), code
+        flash(message, 'error')
+        return redirect(url_for('classteacher.dashboard'))
+
+    try:
+        print(f"🚀 Starting ZIP generation for grade='{grade}', stream='{stream}', term='{term}', assessment='{assessment_type}'")
+
+        # Attempt to resolve the stream more intelligently instead of using stream[-1]
+        raw_stream = stream
+        stream_name_candidates = {raw_stream}
+        # If the provided stream includes spaces, add last token (e.g. "Stream A" -> "A")
+        parts = raw_stream.split()
+        if len(parts) > 1:
+            stream_name_candidates.add(parts[-1])
+        # Add uppercase variant of last token and original
+        if parts:
+            stream_name_candidates.add(parts[-1].upper())
+            stream_name_candidates.add(parts[-1].lower())
+
+        print(f"🔍 Stream name candidates: {stream_name_candidates}")
+
+        stream_obj = Stream.query.join(Grade).filter(
+            Grade.name == grade,
+            Stream.name.in_(stream_name_candidates)
+        ).first()
+
         term_obj = Term.query.filter_by(name=term).first()
         assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
         if not (stream_obj and term_obj and assessment_type_obj):
-            error_msg = "Invalid grade, stream, term, or assessment type"
-            # Check if this is an AJAX request
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
-                return jsonify({'error': error_msg}), 400
-            flash(error_msg, "error")
-            return redirect(url_for('classteacher.dashboard'))
+            return json_or_flash("Invalid grade, stream, term, or assessment type", 400)
 
-        # Get students in this stream
         students = Student.query.filter_by(stream_id=stream_obj.id).all()
-        print(f"📊 Found {len(students)} students in {grade} Stream {stream[-1]}")
+        print(f"📊 Found {len(students)} students for stream id={stream_obj.id} ({stream_obj.name})")
 
         if not students:
-            error_msg = f"No students found for {grade} Stream {stream[-1]}"
-            # Check if this is an AJAX request
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
-                return jsonify({'error': error_msg}), 400
-            flash(error_msg, "error")
-            return redirect(url_for('classteacher.dashboard'))
+            return json_or_flash(f"No students found for {grade} Stream {stream_obj.name}", 400)
 
-        # Check if we can generate PDFs (optional - will fallback to text if not available)
+        # Detect PDF generation capability (optional)
         pdf_available = False
         try:
-            import pdfkit
-            import os
-            # Test if wkhtmltopdf is working
+            import pdfkit, os
             test_html = "<html><body><h1>Test</h1></body></html>"
             temp_test_file = os.path.join(tempfile.gettempdir(), "wkhtmltopdf_test.pdf")
             pdfkit.from_string(test_html, temp_test_file, options={'page-size': 'A4'})
@@ -5159,93 +5177,81 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
                 os.remove(temp_test_file)
                 pdf_available = True
                 print("✅ PDF generation available")
-            else:
-                print("⚠️ wkhtmltopdf not working, will use text fallback")
         except Exception as e:
-            print(f"⚠️ PDF generation not available: {e}, will use text fallback")
+            print(f"⚠️ PDF generation not available: {e}; proceeding with fallback formats")
 
-        # Import necessary modules
-        import zipfile
-        import tempfile
-        import os
+        import zipfile, tempfile, os
         from datetime import datetime
 
-        # Create a temporary directory to store the PDFs
         temp_dir = tempfile.mkdtemp()
-        print(f"📁 Created temp directory: {temp_dir}")
+        print(f"📁 Using temp directory: {temp_dir}")
 
-        # Create a ZIP file
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        zip_filename = f"Individual_Reports_{grade.replace(' ', '_')}_{stream}_{term}_{assessment_type}_{timestamp}.zip"
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        safe_grade = grade.replace(' ', '_')
+        zip_filename = f"Individual_Reports_{safe_grade}_{stream}_{term}_{assessment_type}_{timestamp}.zip"
         zip_path = os.path.join(temp_dir, zip_filename)
-        print(f"📦 Creating ZIP file: {zip_filename}")
+        print(f"📦 Will create ZIP at: {zip_path}")
 
-        # Generate PDFs for each student and add them to the ZIP file
         successful_reports = 0
         failed_reports = 0
 
         with zipfile.ZipFile(zip_path, 'w') as zipf:
-            for i, student in enumerate(students, 1):
+            for i, student in enumerate(students, start=1):
                 try:
-                    print(f"📄 Processing student {i}/{len(students)}: {student.name}")
-
-                    # Use the same format as preview - generate report file (PDF or HTML)
+                    print(f"📄 ({i}/{len(students)}) Generating report for: {student.name}")
                     report_file = generate_individual_report_like_preview_for_zip(
                         student, grade, stream, term, assessment_type,
                         stream_obj, term_obj, assessment_type_obj, pdf_available
                     )
-
                     if report_file and os.path.exists(report_file):
-                        # Determine file extension from the actual file
-                        file_extension = os.path.splitext(report_file)[1]  # Gets .pdf, .html, or .txt
-                        report_filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}{file_extension}"
-                        zipf.write(report_file, report_filename)
+                        ext = os.path.splitext(report_file)[1]
+                        safe_student = student.name.replace(' ', '_')
+                        internal_name = f"Individual_Report_{safe_grade}_{stream}_{safe_student}{ext}"
+                        zipf.write(report_file, internal_name)
                         successful_reports += 1
-                        print(f"✅ Generated report for {student.name}")
-
-                        # Clean up individual report file
+                        print(f"✅ Added {internal_name}")
                         try:
                             os.remove(report_file)
-                        except:
+                        except OSError:
                             pass
                     else:
                         failed_reports += 1
-                        print(f"⚠️ No report generated for {student.name} (no marks found)")
-
+                        print(f"⚠️ No data / report skipped for {student.name}")
                 except Exception as e:
                     failed_reports += 1
-                    print(f"❌ Error generating report for {student.name}: {str(e)}")
+                    print(f"❌ Exception building report for {student.name}: {e}")
                     continue
 
-        print(f"📊 Generation complete: {successful_reports} successful, {failed_reports} failed")
+        print(f"📊 Summary: success={successful_reports}, failed={failed_reports}")
 
         if successful_reports == 0:
-            error_msg = f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}."
-            # Check if this is an AJAX request
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
-                return jsonify({'error': error_msg}), 400
-            flash(error_msg, "error")
-            return redirect(url_for('classteacher.dashboard'))
+            return json_or_flash(f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}.", 400)
 
-        flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", "success")
+        if not os.path.exists(zip_path):
+            return json_or_flash("ZIP file was not created due to an internal error.", 500)
 
-        # Return the ZIP file
-        return send_file(
+        # Success flash only for non-AJAX flow
+        if not is_ajax():
+            flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", 'success')
+
+        response = send_file(
             zip_path,
             as_attachment=True,
             download_name=zip_filename,
             mimetype='application/zip'
         )
+        # Anti-caching & security headers
+        response.headers['Cache-Control'] = 'no-store'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        return response
 
     except Exception as e:
-        print(f"💥 Critical error in ZIP generation: {str(e)}")
+        print(f"💥 Critical error in ZIP generation: {e}")
         import traceback
         traceback.print_exc()
-        error_msg = f"Error generating reports: {str(e)}"
-        # Check if this is an AJAX request
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
-            return jsonify({'error': error_msg}), 500
-        flash(error_msg, "error")
+        if is_ajax():
+            return jsonify({'error': f'Error generating reports: {str(e)}'}), 500
+        flash(f"Error generating reports: {str(e)}", 'error')
         return redirect(url_for('classteacher.dashboard'))
 
 @classteacher_bp.route('/download_class_list', methods=['GET'])

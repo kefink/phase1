@@ -1,5 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Management Hub - Hillview School</title>
+
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Solar Theme Active: Removed previous modern_classteacher.css to eliminate conflicting legacy theme -->
+    <style>
+      /* Solar Theme - Enhanced Professional Styling for Teacher Management Hub */
+
+      /* Solar Theme Color Palette */
+      :root {
+        --solar-bg-primary: #fdf6e3;
+        --solar-bg-secondary: #eee8d5;
+        --solar-bg-tertiary: #d6d2c4;
+        --solar-accent-yellow: #b58900;
+        --solar-accent-blue: #268bd2;
+        --solar-accent-green: #859900;
+        --solar-accent-red: #dc322f;
+        --solar-text-primary: #002b36;
+        --solar-text-secondary: #073642;
+      }
+
+      /* Global Solar Theme Overrides */
+      body {
+        background: linear-gradient(
+          135deg,
+          #fdf6e3 0%,
+          #eee8d5 100%
+        ) !important;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif !important;
+        color: var(--solar-text-primary) !important;
+        min-height: 100vh !important;
+      }
+
+      /* Heroicons Solar Theme Classes */
+      .heroicon-solar-blue {
+        fill: var(--solar-accent-blue);
+      }
+      .heroicon-solar-green {
+        fill: var(--solar-accent-green);
+      }
+      .heroicon-solar-yellow {
+        fill: var(--solar-accent-yellow);
+      }
+      .heroicon-solar-red {
+        fill: var(--solar-accent-red);
+      }
+
+      /* Override container styles for manage pages */
+      .manage-container {
+        max-width: 95% !important;
+        width: 95% !important;
+        margin: 80px auto 60px !important;
+        padding: 40px !important;
+        background: rgba(253, 246, 227, 0.8) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 20px 60px rgba(181, 137, 0, 0.15) !important;
+        border: 1px solid rgba(238, 232, 213, 0.3) !important;
+      }
+
+      /* Enhanced Page header styling */
+      .page-header {
+        background: linear-gradient(
+          135deg,
+          var(--solar-accent-blue) 0%,
+          var(--solar-accent-green) 100%
+        ) !important;
         color: white !important;
         padding: 40px !important;
         border-radius: 20px !important;
@@ -1110,7 +1194,8 @@
           </div>
         </div>
 
-        <!-- Bulk Operations Section -->
+        <!-- Bulk Operations Section (commented out) -->
+        {#
         <div class="section-card">
           <div class="section-header">
             <div class="section-icon">
@@ -1223,6 +1308,7 @@
             </a>
           </div>
         </div>
+        #}
       </div>
 
       <!-- Recent Activity -->
