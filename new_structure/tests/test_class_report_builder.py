@@ -24,8 +24,8 @@ def app():
         db.session.add_all([stream, term, assess, subj_math, subj_eng])
         db.session.commit()
         # Students
-        s1 = Student(name='Alice', grade_id=grade.id, stream_id=stream.id)
-        s2 = Student(name='Bob', grade_id=grade.id, stream_id=stream.id)
+        s1 = Student(name='Alice', admission_number='A001', grade_id=grade.id, stream_id=stream.id)
+        s2 = Student(name='Bob', admission_number='A002', grade_id=grade.id, stream_id=stream.id)
         db.session.add_all([s1, s2])
         db.session.commit()
         # Marks (raw 80/100 and 60/100)
