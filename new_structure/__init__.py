@@ -26,6 +26,18 @@ def create_app(config_name='default'):
     # Load configuration
     app.config.from_object(config[config_name])
 
+    # Enforce strong secrets in non-testing production contexts
+    if config_name == 'production':
+        weak_secret_markers = ['your_secret_key_here', 'changeme', 'secret', 'dev']
+        secret_key = app.config.get('SECRET_KEY') or ''
+        if any(marker in secret_key.lower() for marker in weak_secret_markers):
+            raise RuntimeError("Insecure SECRET_KEY detected in production configuration")
+
+        # Detect default / placeholder DB password patterns
+        db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        if 'mysql+pymysql://' in db_uri and ('@2494/lK' in db_uri or 'password@' in db_uri):
+            raise RuntimeError("Insecure default database password present in production DB URI")
+
     # Configure Flask-Limiter to use Redis
     app.config['RATELIMIT_STORAGE_URL'] = "redis://localhost:6379"
 
@@ -63,6 +75,14 @@ def create_app(config_name='default'):
     # Register blueprints with error handling
     try:
         from .views import blueprints
+        # Activate optional data protection (encryption listeners) after models imported
+        try:
+            from .security import data_protection_service  # noqa: F401
+            # Ensure key refresh in case environment variable was set *after* first import
+            if hasattr(data_protection_service, 'refresh_key'):
+                data_protection_service.refresh_key()
+        except Exception as e:
+            print(f"⚠️ Data protection service initialization skipped: {e}")
         for blueprint in blueprints:
             if blueprint.name == 'auth':
                 limiter.limit("10 per minute")(blueprint)
@@ -338,13 +358,13 @@ def create_app(config_name='default'):
 
     # ULTRA-SECURE SESSION CONFIGURATION AT RUNTIME
     app.config.update({
-        'SESSION_COOKIE_SECURE': False,          # Allow HTTP for development
-        'SESSION_COOKIE_HTTPONLY': True,        # No JavaScript access
-        'SESSION_COOKIE_SAMESITE': 'Lax',       # Less strict for development
-        'PERMANENT_SESSION_LIFETIME': 1800,     # 30 minutes timeout
+        'SESSION_COOKIE_SECURE': app.config.get('ENV') == 'production' or config_name == 'production',
+        'SESSION_COOKIE_HTTPONLY': True,
+        'SESSION_COOKIE_SAMESITE': 'Lax',
+        'PERMANENT_SESSION_LIFETIME': 1800,
         'SESSION_COOKIE_NAME': 'hillview_secure_session',
-        'FORCE_HTTPS': False,                    # Disable for testing
-        'STRICT_ROLE_ENFORCEMENT': True         # Strict access control
+        'FORCE_HTTPS': app.config.get('ENV') == 'production' or config_name == 'production',
+        'STRICT_ROLE_ENFORCEMENT': True
     })
 
     # Remove problematic headers for development

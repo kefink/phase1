@@ -21,6 +21,22 @@ def setup_logging(app):
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.WARNING)  # Only show warnings and errors in console
 
+    class SensitiveDataFilter(logging.Filter):
+        """Redact obvious sensitive data patterns (emails, phone-like digit sequences)."""
+        import re
+        EMAIL_RE = re.compile(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+')
+        PHONE_RE = re.compile(r'\b\+?\d[\d\-() ]{6,}\b')
+        def filter(self, record):  # noqa: D401
+            msg = record.getMessage()
+            try:
+                redacted = self.EMAIL_RE.sub('[REDACTED-EMAIL]', msg)
+                redacted = self.PHONE_RE.sub('[REDACTED-PHONE]', redacted)
+                if redacted != msg:
+                    record.msg = redacted
+            except Exception:
+                pass
+            return True
+
     # Create formatter
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -28,6 +44,7 @@ def setup_logging(app):
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.WARNING)  # Only warnings and errors to console
     console_handler.setFormatter(formatter)
+    console_handler.addFilter(SensitiveDataFilter())
     root_logger.addHandler(console_handler)
     
     # Create file handler for general logs
@@ -35,6 +52,7 @@ def setup_logging(app):
     file_handler = RotatingFileHandler(general_log_file, maxBytes=10485760, backupCount=10)
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
+    file_handler.addFilter(SensitiveDataFilter())
     root_logger.addHandler(file_handler)
     
     # Create file handler for mark validation logs
@@ -46,6 +64,7 @@ def setup_logging(app):
     # Create mark validation logger
     mark_validation_logger = logging.getLogger('mark_validation')
     mark_validation_logger.setLevel(logging.INFO)
+    mark_validation_handler.addFilter(SensitiveDataFilter())
     mark_validation_logger.addHandler(mark_validation_handler)
     
     # Log startup message only for the main process
