@@ -4,10 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Review & Complete - School Setup</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
+    <!-- Replaced Font Awesome with shared Heroicons utilities -->
+    <link rel="stylesheet" href="/static/css/heroicons.css" />
     <style>
       :root {
           --primary-color: {{ setup.primary_color or '#1f7d53' }};
@@ -265,16 +263,40 @@
           .review-grid { grid-template-columns: 1fr; }
           .form-actions { flex-direction: column; gap: 1rem; }
       }
+
+      /* Dark mode (solar) */
+      body[data-theme='solar-dark'] { background: linear-gradient(135deg,#0d1f17 0%,#0b1209 100%); color:#f3f4f6; }
+      body[data-theme='solar-dark'] .setup-header { color:#f3f4f6; }
+      body[data-theme='solar-dark'] .progress-section { background:rgba(255,255,255,0.08); color:#e5e7eb; }
+      body[data-theme='solar-dark'] .progress-bar { background:rgba(255,255,255,0.15); }
+      body[data-theme='solar-dark'] .review-section { background:#16221c; border-left-color: var(--accent-color); }
+      body[data-theme='solar-dark'] .review-section h3 { color:#f3f4f6; }
+      body[data-theme='solar-dark'] .review-value { color:#f3f4f6; border-bottom-color:#1f2d28; }
+      body[data-theme='solar-dark'] .review-value.empty { color:#6b7280; }
+      body[data-theme='solar-dark'] .feature-badge { filter:brightness(0.9); }
+      body[data-theme='solar-dark'] .feature-badge.disabled { background:#374151; color:#9ca3af; }
+      body[data-theme='solar-dark'] .setup-card { background:rgba(20,32,28,0.92); box-shadow:0 25px 50px rgba(0,0,0,0.6); }
+      body[data-theme='solar-dark'] .completion-section { background:linear-gradient(135deg,#052e16 0%,#064e3b 100%); border-color: var(--accent-color); }
+      body[data-theme='solar-dark'] .btn-secondary { background:#374151; }
+      body[data-theme='solar-dark'] .btn-secondary:hover { background:#4b5563; }
+      body[data-theme='solar-dark'] .back-link { background:rgba(255,255,255,0.08); }
+      body[data-theme='solar-dark'] .back-link:hover { background:rgba(255,255,255,0.15); }
+      body[data-theme='solar-dark'] .form-actions { border-top-color:#1f2d28; }
     </style>
   </head>
-  <body>
+  <body data-theme="solar-light">
+    <div id="theme-toggle-container" style="position:fixed;top:10px;right:10px;z-index:50;"></div>
     <div class="setup-container">
       <a href="{{ url_for('school_setup.setup_dashboard') }}" class="back-link">
-        <i class="fas fa-arrow-left"></i> Back to Setup Dashboard
+        <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10 5l-5 5m0 0l5 5m-5-5h10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back to Setup Dashboard
       </a>
 
       <div class="setup-header">
-        <h1><i class="fas fa-flag-checkered"></i> Review & Complete Setup</h1>
+        <h1>
+          <svg class="hi h-7 w-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 4h13l5 4-5 4 5 4-5 4H3V4z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Review & Complete Setup
+        </h1>
         <p>Step 6 of 6 - Review your configuration and complete setup</p>
       </div>
 
@@ -291,13 +313,15 @@
         <!-- Basic Information Review -->
         <div class="review-section">
           <h3>
-            <i class="fas fa-info-circle"></i> Basic Information
+            <svg class="hi h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Basic Information
             <a
               href="{{ url_for('school_setup.basic_info') }}"
               class="edit-link"
               style="margin-left: auto"
             >
-              <i class="fas fa-edit"></i> Edit
+              <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit
             </a>
           </h3>
           <div class="review-grid">
@@ -337,13 +361,15 @@
         <!-- Registration Information Review -->
         <div class="review-section">
           <h3>
-            <i class="fas fa-clipboard-list"></i> Registration Information
+            <svg class="hi h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 5a3 3 0 006 0M9 12h6M9 16h6M9 8h.01M15 8h.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Registration Information
             <a
               href="{{ url_for('school_setup.registration_info') }}"
               class="edit-link"
               style="margin-left: auto"
             >
-              <i class="fas fa-edit"></i> Edit
+              <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit
             </a>
           </h3>
           <div class="review-grid">
@@ -385,13 +411,15 @@
         <!-- Academic Configuration Review -->
         <div class="review-section">
           <h3>
-            <i class="fas fa-graduation-cap"></i> Academic Configuration
+            <svg class="hi h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 14l9-5-9-5-9 5 9 5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 14l6.16-3.422A12.083 12.083 0 0118 20.5c0 .167 0 .333-.01.5M12 14L5.84 10.578A12.083 12.083 0 006 20.5v.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Academic Configuration
             <a
               href="{{ url_for('school_setup.academic_config') }}"
               class="edit-link"
               style="margin-left: auto"
             >
-              <i class="fas fa-edit"></i> Edit
+              <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit
             </a>
           </h3>
           <div class="review-grid">
@@ -426,13 +454,15 @@
         <!-- Branding Review -->
         <div class="review-section">
           <h3>
-            <i class="fas fa-palette"></i> Branding
+            <svg class="hi h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Branding
             <a
               href="{{ url_for('school_setup.branding') }}"
               class="edit-link"
               style="margin-left: auto"
             >
-              <i class="fas fa-edit"></i> Edit
+              <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit
             </a>
           </h3>
           <div class="review-grid">
@@ -445,7 +475,7 @@
                   alt="School Logo"
                 />
                 {% else %}
-                <i class="fas fa-image" style="color: #9ca3af"></i>
+                <svg class="hi h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" aria-hidden="true"><path d="M3 5a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14l5-5 4 4 5-6 4 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 6h.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 {% endif %}
               </div>
             </div>
@@ -475,13 +505,15 @@
         <!-- Features Review -->
         <div class="review-section">
           <h3>
-            <i class="fas fa-cogs"></i> Features
+            <svg class="hi h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10.325 4.317l.856-1.819a1 1 0 011.638 0l.856 1.819a1 1 0 00.95.592h1.908a1 1 0 01.832 1.555l-1.2 1.8a1 1 0 000 1.11l1.2 1.8a1 1 0 01-.832 1.555h-1.908a1 1 0 00-.95.592l-.856 1.819a1 1 0 01-1.638 0l-.856-1.819a1 1 0 00-.95-.592H7.467a1 1 0 01-.832-1.555l1.2-1.8a1 1 0 000-1.11l-1.2-1.8a1 1 0 01.832-1.555h1.908a1 1 0 00.95-.592z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Features
             <a
               href="{{ url_for('school_setup.features') }}"
               class="edit-link"
               style="margin-left: auto"
             >
-              <i class="fas fa-edit"></i> Edit
+              <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5h4m-2-2v4M4 13l4 4 8-8-4-4-8 8zm0 0v4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit
             </a>
           </h3>
           <div class="feature-list">
@@ -515,8 +547,8 @@
 
         <!-- Completion Section -->
         <div class="completion-section">
-          <div class="completion-icon">
-            <i class="fas fa-rocket"></i>
+          <div class="completion-icon" style="display:flex;justify-content:center;align-items:center;">
+            <svg class="hi h-16 w-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 15a7 7 0 017-7V3l5 5-5 5v-5a7 7 0 00-7 7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <h2 style="color: var(--primary-color); margin-bottom: 1rem">
             Ready to Launch!
@@ -533,25 +565,30 @@
           >
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             <button type="submit" class="btn btn-primary">
-              <i class="fas fa-check-circle"></i> Complete Setup & Launch System
+              <svg class="hi h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M9 12l2 2 4-4M7 20h10a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Complete Setup & Launch System
             </button>
           </form>
         </div>
 
         <!-- Form Actions -->
         <div class="form-actions">
-          <a
-            href="{{ url_for('school_setup.features') }}"
-            class="btn btn-secondary"
-          >
-            <i class="fas fa-arrow-left"></i> Back to Features
+          <a href="{{ url_for('school_setup.features') }}" class="btn btn-secondary">
+            <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10 5l-5 5m0 0l5 5m-5-5h10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back to Features
           </a>
           <div style="color: #6b7280; font-size: 0.9rem">
-            <i class="fas fa-info-circle"></i>
+            <svg class="hi h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             You can always modify these settings later from the admin dashboard
           </div>
         </div>
       </div>
     </div>
+    <script>
+      (function(){
+        const storageKey='solar-theme-mode';
+        const root=document.body;function apply(m){root.setAttribute('data-theme',m);} const saved=localStorage.getItem(storageKey)||'solar-light';apply(saved);
+        const host=document.getElementById('theme-toggle-container'); if(host){ const b=document.createElement('button'); b.type='button'; b.textContent=saved==='solar-dark'?'Light Mode':'Dark Mode'; b.style.cssText='background:#1f7d53;color:#fff;border:none;padding:0.5rem 1rem;border-radius:20px;font-size:.8rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.25);'; b.addEventListener('click',()=>{const next=root.getAttribute('data-theme')==='solar-dark'?'solar-light':'solar-dark'; apply(next); localStorage.setItem(storageKey,next); b.textContent= next==='solar-dark'?'Light Mode':'Dark Mode';}); host.appendChild(b);} })();
+    </script>
   </body>
 </html>

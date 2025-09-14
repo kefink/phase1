@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academic Configuration - School Setup</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Replaced Font Awesome with shared Heroicons utilities -->
+    <link rel="stylesheet" href="/static/css/heroicons.css">
     <style>
         :root {
             --primary-color: #1f7d53;
@@ -308,8 +309,33 @@
             }
 
             .setup-card {
+
+        /* Dark mode (solar variant) */
+        body[data-theme='solar-dark'] { background: linear-gradient(135deg,#0d1f17 0%,#0b1209 100%); color: var(--gray-100); }
+        body[data-theme='solar-dark'] .setup-header { color: var(--gray-100); }
+        body[data-theme='solar-dark'] .setup-card { background: rgba(20,32,28,0.92); box-shadow:0 25px 50px rgba(0,0,0,0.6); }
+        body[data-theme='solar-dark'] .form-section h3 { color: var(--gray-100); border-bottom-color: var(--accent-color); }
+        body[data-theme='solar-dark'] .form-label { color: var(--gray-200); }
+        body[data-theme='solar-dark'] .form-input, body[data-theme='solar-dark'] .form-select { background:#111c17; border-color:#1f2d28; color: var(--gray-100); }
+        body[data-theme='solar-dark'] .form-input:focus, body[data-theme='solar-dark'] .form-select:focus { border-color: var(--accent-color); box-shadow:0 0 0 3px rgba(74,222,128,0.15); }
+        body[data-theme='solar-dark'] .grading-preview { background:#10221c; border-color:#1f2d28; }
+        body[data-theme='solar-dark'] .secondary-grading { background:#152823; }
+        body[data-theme='solar-dark'] .custom-grading { background:#3b2f14; border-color:#a16207; }
+        body[data-theme='solar-dark'] .custom-grading h4 { color:#fcd34d; }
+        body[data-theme='solar-dark'] .alert-success { background:#063a2b; color:#d1fae5; border-color:#065f46; }
+        body[data-theme='solar-dark'] .alert-error { background:#3b0c0c; color:#fecaca; border-color:#7f1d1d; }
+        body[data-theme='solar-dark'] .back-link { background:rgba(255,255,255,0.08); color: var(--gray-100); }
+        body[data-theme='solar-dark'] .back-link:hover { background:rgba(255,255,255,0.15); }
+        body[data-theme='solar-dark'] .btn-secondary { background:#374151; }
+        body[data-theme='solar-dark'] .btn-secondary:hover { background:#4b5563; }
+        body[data-theme='solar-dark'] .help-text { color: var(--gray-400); }
+        body[data-theme='solar-dark'] .form-actions { border-top-color:#1f2d28; }
+        body[data-theme='solar-dark'] .step-number { background:rgba(255,255,255,0.15); color: var(--gray-100); }
+        body[data-theme='solar-dark'] .step.active .step-number { background: var(--accent-color); color:#052e16; }
+    </style>
                 padding: 2rem;
-            }
+<body data-theme="solar-light">
+    <div id="theme-toggle-container" style="position:fixed;top:10px;right:10px;z-index:50;"></div>
 
             .form-grid {
                 grid-template-columns: 1fr;
@@ -334,21 +360,29 @@
 <body>
     <div class="setup-container">
         <a href="{{ url_for('school_setup.setup_dashboard') }}" class="back-link">
-            <i class="fas fa-arrow-left"></i> Back to Setup Dashboard
+            <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10 5l-5 5m0 0l5 5m-5-5h10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back to Setup Dashboard
         </a>
 
         <div class="setup-header">
-            <h1><i class="fas fa-graduation-cap"></i> Academic Configuration</h1>
+            <h1>
+                <svg class="hi h-7 w-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 14l9-5-9-5-9 5 9 5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 14l6.16-3.422A12.083 12.083 0 0118 20.5c0 .167 0 .333-.01.5M12 14L5.84 10.578A12.083 12.083 0 006 20.5v.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Academic Configuration
+            </h1>
             <p>Step 3 of 6 - Configure academic settings and structure</p>
         </div>
 
         <div class="step-indicator">
             <div class="step">
-                <div class="step-number"><i class="fas fa-check"></i></div>
+                <div class="step-number">
+                    <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L8.5 11.086l6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                </div>
                 <span>Basic</span>
             </div>
             <div class="step">
-                <div class="step-number"><i class="fas fa-check"></i></div>
+                <div class="step-number">
+                    <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L8.5 11.086l6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                </div>
                 <span>Registration</span>
             </div>
             <div class="step active">
@@ -363,7 +397,11 @@
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
-                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }}"></i>
+                            {% if category == 'error' %}
+                                <svg class="hi h-5 w-5 text-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 9v4m0 4h.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            {% else %}
+                                <svg class="hi h-5 w-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            {% endif %}
                             {{ message }}
                         </div>
                     {% endfor %}
@@ -374,7 +412,10 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <!-- Academic Year and Terms -->
                 <div class="form-section">
-                    <h3><i class="fas fa-calendar-alt"></i> Academic Year & Terms</h3>
+                    <h3>
+                        <svg class="hi h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Academic Year & Terms
+                    </h3>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="current_academic_year" class="form-label">Current Academic Year</label>
@@ -410,7 +451,10 @@
 
                 <!-- School Structure -->
                 <div class="form-section">
-                    <h3><i class="fas fa-sitemap"></i> School Structure</h3>
+                    <h3>
+                        <svg class="hi h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M6 9V3H4v6H1l3 4 3-4H4zm14 0V3h-2v6h-3l3 4 3-4h-3zM9 21v-6H7v6H4l3 4 3-4H7zm8-6v6h2v-6h3l-3-4-3 4h3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        School Structure
+                    </h3>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="lowest_grade" class="form-label">Lowest Grade</label>
@@ -450,7 +494,10 @@
 
                 <!-- Assessment Configuration -->
                 <div class="form-section">
-                    <h3><i class="fas fa-chart-bar"></i> Assessment Configuration</h3>
+                    <h3>
+                        <svg class="hi h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 3v18h18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 13h2v4H7v-4zm4-6h2v10h-2V7zm4 3h2v7h-2v-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Assessment Configuration
+                    </h3>
 
                     <!-- Primary Grading System -->
                     <div class="form-group">
@@ -527,10 +574,14 @@
 
                     <!-- Custom Grading System -->
                     <div id="custom-grading" class="custom-grading" style="display: {% if setup.grading_system == 'Custom' %}block{% else %}none{% endif %};">
-                        <h4><i class="fas fa-cog"></i> Custom Grading System</h4>
+                        <h4>
+                            <svg class="hi h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10.325 4.317l.856-1.819a1 1 0 011.638 0l.856 1.819a1 1 0 00.95.592h1.908a1 1 0 01.832 1.555l-1.2 1.8a1 1 0 000 1.11l1.2 1.8a1 1 0 01-.832 1.555h-1.908a1 1 0 00-.95.592l-.856 1.819a1 1 0 01-1.638 0l-.856-1.819a1 1 0 00-.95-.592H7.467a1 1 0 01-.832-1.555l1.2-1.8a1 1 0 000-1.11l-1.2-1.8a1 1 0 01.832-1.555h1.908a1 1 0 00.95-.592z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            Custom Grading System
+                        </h4>
                         <div class="help-text">Define your own grading bands and criteria</div>
                         <button type="button" class="btn btn-secondary" onclick="openCustomGradingModal()">
-                            <i class="fas fa-plus"></i> Configure Custom Grading
+                            <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10 5v10m5-5H5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            Configure Custom Grading
                         </button>
                     </div>
                 </div>
@@ -538,16 +589,17 @@
                 <!-- Form Actions -->
                 <div class="form-actions">
                     <a href="{{ url_for('school_setup.registration_info') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Registration
+                        <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10 5l-5 5m0 0l5 5m-5-5h10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Back to Registration
                     </a>
                     <button type="submit" class="btn btn-primary">
-                        Continue to Branding <i class="fas fa-arrow-right"></i>
+                        Continue to Branding
+                        <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10 5l5 5m0 0l-5 5m5-5H5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
     <script>
         // Grading system data
         const gradingSystems = {
@@ -601,7 +653,7 @@
             const customDiv = document.getElementById('custom-grading');
 
             if (selectedSystem === 'Custom') {
-                previewDiv.innerHTML = '<p><i class="fas fa-info-circle"></i> Configure your custom grading system below.</p>';
+                previewDiv.innerHTML = '<p><svg class="hi hi-inline h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Configure your custom grading system below.</p>';
                 customDiv.style.display = 'block';
                 return;
             } else {
@@ -610,7 +662,7 @@
 
             if (gradingSystems[selectedSystem]) {
                 const system = gradingSystems[selectedSystem];
-                let html = `<h4><i class="fas fa-chart-bar"></i> ${system.name} Preview</h4>`;
+                let html = `<h4><svg class='hi hi-inline h-4 w-4 text-primary' viewBox='0 0 24 24' fill='none' stroke='currentColor' aria-hidden='true'><path d='M3 3v18h18' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/><path d='M7 13h2v4H7v-4zm4-6h2v10h-2V7zm4 3h2v7h-2v-7z' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg> ${system.name} Preview</h4>`;
 
                 system.bands.forEach(band => {
                     html += `
@@ -660,6 +712,11 @@
                 });
             });
         });
+        // Theme toggle (shared snippet)
+        (function(){
+            const storageKey='solar-theme-mode';
+            const root=document.body;function apply(m){root.setAttribute('data-theme',m);} const saved=localStorage.getItem(storageKey)||'solar-light';apply(saved);
+            const host=document.getElementById('theme-toggle-container'); if(host){ const b=document.createElement('button'); b.type='button'; b.textContent=saved==='solar-dark'?'Light Mode':'Dark Mode'; b.style.cssText='background:#1f7d53;color:#fff;border:none;padding:0.5rem 1rem;border-radius:20px;font-size:.8rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.25);'; b.addEventListener('click',()=>{const next=root.getAttribute('data-theme')==='solar-dark'?'solar-light':'solar-dark'; apply(next); localStorage.setItem(storageKey,next); b.textContent= next==='solar-dark'?'Light Mode':'Dark Mode';}); host.appendChild(b);} })();
     </script>
 </body>
 </html>
