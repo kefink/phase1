@@ -2,7 +2,7 @@
 Permission management views for headteacher delegation system.
 Allows headteacher to grant/revoke classteacher permissions for specific classes/streams.
 """
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, current_app, abort
 from ..models import ClassTeacherPermission, Teacher, Grade, Stream
 from ..services.permission_service import PermissionService
 from ..services.enhanced_permission_service import EnhancedPermissionService
@@ -15,6 +15,32 @@ from functools import wraps
 # Create blueprint for permission management
 permission_bp = Blueprint('permission', __name__, url_prefix='/permission')
 
+# ---------------------------------------------------------------------------
+# Feature Flags (temporary suspension of advanced permission features)
+# Toggle values to True to re-enable. Using 404 for disabled features hides
+# unfinished surfaces rather than exposing an authorization error.
+# ---------------------------------------------------------------------------
+FEATURE_FLAGS = {
+    'CLASS_PERMISSION_MANAGEMENT': False,       # /permission/manage
+    'FUNCTION_PERMISSION_MANAGEMENT': False,    # /permission/manage_functions
+    'PERMISSION_REQUESTS_REVIEW': False         # /permission/requests
+}
+
+def feature_required(flag_key):
+    """Decorator: abort with 404 if feature flag disabled."""
+    def decorator(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if not FEATURE_FLAGS.get(flag_key, False):
+                try:
+                    current_app.logger.info(f"Feature disabled (404): {flag_key}")
+                except Exception:
+                    pass
+                abort(404)
+            return f(*args, **kwargs)
+        return wrapped
+    return decorator
+
 def headteacher_required(f):
     """Decorator to require headteacher authentication."""
     @wraps(f)
@@ -26,6 +52,7 @@ def headteacher_required(f):
 
 @permission_bp.route('/manage')
 @headteacher_required
+@feature_required('CLASS_PERMISSION_MANAGEMENT')
 def manage_permissions():
     """Enhanced permission management page for headteacher with pagination and filtering."""
     try:
@@ -260,6 +287,7 @@ def request_permission():
 
 @permission_bp.route('/requests')
 @headteacher_required
+@feature_required('PERMISSION_REQUESTS_REVIEW')
 def get_pending_requests():
     """Get all pending permission requests for headteacher review."""
     try:
@@ -333,19 +361,60 @@ def check_class_access():
 
 @permission_bp.route('/manage_functions')
 @headteacher_required
+@feature_required('FUNCTION_PERMISSION_MANAGEMENT')
 def manage_function_permissions():
     """Enhanced permission management page for function-level permissions."""
+    # Build a resilient fallback so template never explodes (previously any render error silently redirected)
     try:
-        # Get comprehensive function permission data
-        dashboard_data = EnhancedPermissionService.get_all_function_permissions_dashboard()
+        dashboard_data = EnhancedPermissionService.get_all_function_permissions_dashboard() or {}
+    except Exception as service_error:
+        current_app.logger.exception("Error fetching function permission dashboard data")
+        dashboard_data = {}
 
-        return render_template('enhanced_permission_management.html',
-                             data=dashboard_data,
-                             current_user=session.get('teacher_id'))
+    # Inject guaranteed keys to avoid Jinja Undefined call errors (e.g. .items() on Undefined)
+    try:
+        from ..models.function_permission import DefaultFunctionPermissions
+        fallback_available = {
+            'default_allowed': getattr(DefaultFunctionPermissions, 'DEFAULT_ALLOWED_FUNCTIONS', {}),
+            'restricted': getattr(DefaultFunctionPermissions, 'RESTRICTED_FUNCTIONS', {})
+        }
+    except Exception as import_error:
+        current_app.logger.exception("Error importing DefaultFunctionPermissions for fallback")
+        fallback_available = {'default_allowed': {}, 'restricted': {}}
 
-    except Exception as e:
-        flash(f'Error loading function permission management: {str(e)}', 'error')
-        return redirect(url_for('admin.dashboard'))
+    safe_data = {
+        'teachers': dashboard_data.get('teachers', []),
+        'function_permissions': dashboard_data.get('function_permissions', []),
+        'available_functions': dashboard_data.get('available_functions', fallback_available),
+        'grades': dashboard_data.get('grades', []),
+        'streams': dashboard_data.get('streams', []),
+        'permission_stats': dashboard_data.get('permission_stats', {
+            'total_permissions': len(dashboard_data.get('function_permissions', [])),
+            'teachers_with_permissions': len({p.get('teacher_id') for p in dashboard_data.get('function_permissions', [])}),
+            'most_granted_function': None
+        })
+    }
+
+    # Final render with granular error capture so we do not hard-redirect; show user an inline error instead
+    try:
+        return render_template(
+            'enhanced_permission_management.html',
+            data=safe_data,
+            current_user=session.get('teacher_id')
+        )
+    except Exception as render_error:
+        current_app.logger.exception("Error rendering enhanced_permission_management.html")
+        flash('A rendering error occurred while loading Function Permissions. Fallback view shown.', 'error')
+        # Provide an ultra-minimal empty safe payload so page shell can still load
+        minimal_data = {
+            'teachers': [],
+            'function_permissions': [],
+            'available_functions': fallback_available,
+            'grades': [],
+            'streams': [],
+            'permission_stats': {'total_permissions': 0, 'teachers_with_permissions': 0, 'most_granted_function': None}
+        }
+        return render_template('enhanced_permission_management.html', data=minimal_data, current_user=session.get('teacher_id'))
 
 @permission_bp.route('/grant_function', methods=['POST'])
 @headteacher_required
