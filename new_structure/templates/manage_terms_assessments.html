@@ -9,553 +9,318 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <!-- Simplified single shared stylesheet (unified with manage_grades_streams) -->
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
     />
     <style>
-      /* Solar Theme Tokens + Heroicon utilities */
-      :root {
-        --solar-bg-1: #fdf6e3;
-        --solar-bg-2: #eee8d5;
-        --solar-bg-3: #d6d2c4;
-        --solar-primary: #b58900;
-        --solar-secondary: #268bd2;
-        --solar-green: #859900;
-        --solar-red: #dc322f;
-        --solar-text-primary: #002b36;
-        --solar-text-secondary: #073642;
+      .page-shell {
+        max-width: 1250px;
+        margin: 0 auto;
+        padding: 1.4rem 1.1rem 3rem;
       }
-
-      /* Map legacy vars used below to Solar palette */
-      :root {
-        --primary-color: var(--solar-primary) !important;
-        --secondary-color: var(--solar-secondary) !important;
-        --background-color: var(--solar-bg-2) !important;
-        --white: #ffffff !important;
-        --border-color: rgba(238, 232, 213, 0.5) !important;
-        --shadow-md: 0 10px 30px rgba(181, 137, 0, 0.1) !important;
-        --border-radius: 10px !important;
-        --border-radius-lg: 16px !important;
-        --spacing-sm: 8px !important;
-        --spacing-md: 12px !important;
-        --spacing-lg: 20px !important;
-        --spacing-xl: 32px !important;
-        --transition: all 0.25s ease !important;
-        --text-dark: var(--solar-text-primary) !important;
-        --text-light: #6b7280 !important;
-        --warning-color: #f3c614 !important;
-        --error-color: var(--solar-red) !important;
-      }
-
-      body {
+      .header-block {
+        border: 1px solid rgba(181, 137, 0, 0.35);
+        border-radius: var(--radius-lg);
+        padding: 1.35rem 1.15rem 1.5rem;
         background: linear-gradient(
           135deg,
-          var(--solar-bg-1) 0%,
-          var(--solar-bg-2) 60%,
-          var(--solar-bg-3) 100%
-        ) !important;
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif !important;
-        color: var(--solar-text-primary) !important;
-      }
-
-      .heroicon {
-        display: inline-block;
-        width: 1.1rem;
-        height: 1.1rem;
-        fill: currentColor;
-        vertical-align: middle;
-      }
-
-      .heroicon-lg {
-        width: 1.5rem;
-        height: 1.5rem;
-      }
-
-      .heroicon-solar-blue {
-        color: var(--solar-secondary);
-      }
-
-      .heroicon-solar-green {
-        color: var(--solar-green);
-      }
-
-      .heroicon-solar-yellow {
-        color: var(--solar-primary);
-      }
-
-      .heroicon-solar-red {
-        color: var(--solar-red);
-      }
-
-      /* Page layout/header overrides for Solar look */
-      .manage-container {
-        max-width: 95% !important;
-        width: 95% !important;
-        margin: 60px auto !important;
-        padding: 0 !important;
-        background: transparent !important;
-      }
-
-      .page-header {
-        background: linear-gradient(
-          145deg,
-          rgba(253, 246, 227, 0.95) 0%,
-          rgba(238, 232, 213, 0.9) 100%
-        ) !important;
-        backdrop-filter: blur(14px);
-        padding: 30px !important;
-        border-radius: 24px !important;
-        box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15) !important;
-        border: 1px solid rgba(238, 232, 213, 0.5) !important;
-        margin-bottom: 24px !important;
-      }
-
-      .page-header h1 {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: var(--solar-text-primary) !important;
-        margin: 0 0 10px 0 !important;
-        font-size: 2rem !important;
-      }
-
-      .page-subtitle {
-        margin: 0 0 14px 0;
-        color: var(--solar-text-secondary);
-      }
-
-      .nav-links {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .nav-links a {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--solar-text-secondary) !important;
-        background: rgba(253, 246, 227, 0.5);
-        padding: 8px 14px;
-        border-radius: 999px;
-        border: 1px solid rgba(238, 232, 213, 0.6);
-        text-decoration: none;
-      }
-
-      .nav-links a:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-      }
-
-      /* Statistics section */
-      .stats-section {
-        background: white;
-        padding: 2.5rem;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(31, 125, 83, 0.1);
-        margin-bottom: 3rem;
+          rgba(253, 246, 227, 0.9),
+          rgba(238, 232, 213, 0.78)
+        );
+        box-shadow: var(--shadow-md);
+        margin: 0 0 1.75rem;
         position: relative;
-        overflow: hidden;
       }
-
-      .stats-section::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary-color), #28a745);
+      [data-theme="solar-dark"] .header-block {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 43, 54, 0.82),
+          rgba(7, 54, 66, 0.72)
+        );
       }
-
-      .stats-section h2 {
-        color: var(--primary-color);
-        margin-bottom: 2rem;
-        font-size: 1.8rem;
-        font-weight: 700;
+      .header-block h1 {
+        margin: 0 0 0.4rem;
+        font-size: clamp(1.35rem, 3.5vw, 2rem);
         display: flex;
+        gap: 0.55rem;
         align-items: center;
-        gap: 12px;
+        font-weight: 700;
       }
-
+      .page-subtitle {
+        margin: 0 0 0.85rem;
+        font-size: 0.8rem;
+        color: var(--solar-base01);
+        max-width: 800px;
+        line-height: 1.35;
+      }
+      .quick-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin: 0.35rem 0 0;
+      }
+      .quick-links a {
+        font-size: 0.63rem;
+        letter-spacing: 0.05em;
+        padding: 0.5rem 0.8rem;
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(181, 137, 0, 0.35);
+        border-radius: 999px;
+        text-decoration: none;
+        display: inline-flex;
+        gap: 0.4rem;
+        align-items: center;
+        font-weight: 600;
+      }
+      [data-theme="solar-dark"] .quick-links a {
+        background: rgba(0, 43, 54, 0.55);
+      }
+      .quick-links a:hover {
+        background: rgba(181, 137, 0, 0.18);
+      }
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 2rem;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        margin: 0 0 1.7rem;
       }
-
       .stat-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        border: 2px solid #f8f9fa;
-        text-align: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(181, 137, 0, 0.35);
+        border-radius: var(--radius-lg);
+        padding: 0.85rem 0.95rem 0.8rem;
+        background: linear-gradient(
+          135deg,
+          rgba(253, 246, 227, 0.85),
+          rgba(238, 232, 213, 0.73)
+        );
         position: relative;
-        overflow: hidden;
+        box-shadow: var(--shadow-sm);
       }
-
-      .stat-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--primary-color), #28a745);
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
+      [data-theme="solar-dark"] .stat-card {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 43, 54, 0.82),
+          rgba(7, 54, 66, 0.72)
+        );
       }
-
-      .stat-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-        border-color: var(--primary-color);
-      }
-
-      .stat-card:hover::before {
-        transform: scaleX(1);
-      }
-
       .stat-card h3 {
-        color: var(--primary-color);
-        margin-bottom: 1rem;
-        font-size: 1.1rem;
+        margin: 0 0 0.35rem;
+        font-size: 0.6rem;
+        letter-spacing: 0.06em;
         font-weight: 600;
+        text-transform: uppercase;
+        color: var(--solar-base01);
       }
-
       .stat-value {
-        font-size: 2.5rem;
+        font-size: 1.55rem;
         font-weight: 700;
-        color: var(--primary-color);
-        display: block;
+        letter-spacing: 0.5px;
+        color: var(--solar-yellow);
+        line-height: 1.1;
       }
-
-      /* Forms grid layout */
       .forms-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--spacing-xl);
-        margin: var(--spacing-xl) 0;
+        gap: 1.35rem;
+        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+        margin: 0 0 2rem;
       }
-
-      /* Form card styling */
-      .form-card {
-        background: var(--white);
-        padding: var(--spacing-lg);
-        border-radius: var(--border-radius-lg);
+      .panel {
+        border: 1px solid rgba(181, 137, 0, 0.35);
+        border-radius: var(--radius-lg);
+        padding: 1.15rem 1.1rem 1.25rem;
+        background: linear-gradient(
+          135deg,
+          rgba(253, 246, 227, 0.88),
+          rgba(238, 232, 213, 0.73)
+        );
         box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-color);
-      }
-
-      .form-card h2 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-lg);
-        font-size: 1.3rem;
-      }
-
-      /* Section styling */
-      .terms-section,
-      .assessments-section {
-        background: white;
-        padding: 2.5rem;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(31, 125, 83, 0.1);
-        margin-bottom: 3rem;
         position: relative;
-        overflow: hidden;
       }
-
-      .terms-section::before,
-      .assessments-section::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #17a2b8, var(--primary-color));
+      [data-theme="solar-dark"] .panel {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 43, 54, 0.82),
+          rgba(7, 54, 66, 0.72)
+        );
       }
-
-      .terms-section h2,
-      .assessments-section h2 {
-        color: var(--primary-color);
-        margin-bottom: 2rem;
-        font-size: 1.8rem;
+      .panel h2 {
+        margin: 0 0 0.8rem;
+        font-size: 1.05rem;
+        display: flex;
+        gap: 0.55rem;
+        align-items: center;
         font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 12px;
       }
-
-      /* Form styling */
-      .form-group {
-        margin-bottom: var(--spacing-lg);
+      .field-grid {
+        display: grid;
+        gap: 1rem 1.1rem;
+        grid-template-columns: 1fr 1fr;
       }
-
-      .form-group label {
-        display: block;
-        margin-bottom: var(--spacing-sm);
-        color: var(--text-dark);
-        font-weight: 500;
-      }
-
-      .form-control {
-        width: 100%;
-        padding: var(--spacing-md);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        font-size: 1rem;
-        color: var(--text-dark);
-        background: var(--white);
-      }
-
-      .form-control:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(31, 125, 83, 0.1);
-      }
-
-      /* Button styling */
-      .manage-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--primary-color);
-        color: var(--white);
-        border: none;
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: var(--border-radius);
-        cursor: pointer;
-        transition: var(--transition);
-        font-size: 1rem;
-        font-weight: 500;
-      }
-
-      .manage-btn:hover {
-        background: var(--secondary-color);
-      }
-
-      /* Table improvements */
-      .table-responsive {
-        overflow-x: auto;
-        margin: var(--spacing-lg) 0;
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        background: var(--white);
-      }
-
-      table {
-        width: 100%;
-        min-width: 600px;
-        border-collapse: collapse;
-      }
-
-      th,
-      td {
-        padding: var(--spacing-md);
-        text-align: left;
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      th {
-        background: var(--primary-color);
-        color: var(--white);
-        font-weight: 600;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-      }
-
-      tr:nth-child(even) {
-        background: rgba(31, 125, 83, 0.05);
-      }
-
-      tr:hover {
-        background: rgba(31, 125, 83, 0.1);
-      }
-
-      /* Action buttons */
-      .action-buttons {
-        display: flex;
-        gap: var(--spacing-sm);
-        flex-wrap: wrap;
-      }
-
-      .edit-btn,
-      .delete-btn {
-        padding: var(--spacing-sm) var(--spacing-md);
-        border: none;
-        border-radius: var(--border-radius);
-        cursor: pointer;
-        font-size: 0.9rem;
-        transition: var(--transition);
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-      }
-
-      .edit-btn {
-        background: #fdf0c7 !important;
-        color: var(--solar-text-primary) !important;
-        border: 1px solid rgba(245, 199, 0, 0.3) !important;
-      }
-
-      .edit-btn:hover {
-        background: #fde9aa !important;
-      }
-
-      .delete-btn {
-        background: #fbe3e5 !important;
-        color: var(--solar-red) !important;
-        border: 1px solid rgba(220, 50, 47, 0.25) !important;
-      }
-
-      .delete-btn:hover {
-        background: #f8d2d6 !important;
-      }
-
-      /* Checkbox styling */
-      .checkbox-group {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-top: 1.5rem;
-        padding: 1rem;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 10px;
-        border: 1px solid #e9ecef;
-      }
-
-      .checkbox-group input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        margin: 0;
-        accent-color: var(--primary-color);
-        cursor: pointer;
-      }
-
-      .checkbox-group label {
-        margin: 0;
-        font-weight: 500;
-        color: var(--text-dark);
-        cursor: pointer;
-        font-size: 1rem;
-      }
-
-      /* Enhanced Date Input Styling */
-      input[type="date"] {
-        position: relative;
-        cursor: pointer;
-      }
-
-      input[type="date"]::-webkit-calendar-picker-indicator {
-        background: var(--primary-color);
-        border-radius: 3px;
-        cursor: pointer;
-      }
-
-      /* Enhanced Number Input Styling */
-      input[type="number"] {
-        -moz-appearance: textfield;
-        appearance: textfield;
-      }
-
-      input[type="number"]::-webkit-outer-spin-button,
-      input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-
-      /* Enhanced Table Status Indicators */
-      .status-current {
-        color: var(--primary-color);
-        font-weight: 600;
-        background: rgba(31, 125, 83, 0.1);
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 0.9rem;
-      }
-
-      .status-yes {
-        color: var(--primary-color);
-        font-weight: 600;
-        background: rgba(31, 125, 83, 0.1);
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 0.9rem;
-      }
-
-      .status-no {
-        color: var(--text-light);
-        background: #f8f9fa;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 0.9rem;
-      }
-
-      /* Enhanced Empty State Messages */
-      .empty-state {
-        text-align: center;
-        padding: 3rem 2rem;
-        color: var(--text-light);
-        font-style: italic;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 12px;
-        border: 1px dashed #dee2e6;
-      }
-
-      .empty-state::before {
-        content: "📋";
-        font-size: 3rem;
-        display: block;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-      }
-
-      /* Enhanced Responsive design */
-      @media (max-width: 768px) {
-        .stats-grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1.5rem;
-        }
-
-        .checkbox-group {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 8px;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .stats-grid {
+      @media (max-width: 760px) {
+        .field-grid {
           grid-template-columns: 1fr;
         }
-
-        .stat-card {
-          padding: 1.5rem;
-        }
-
-        .terms-section,
-        .assessments-section {
-          padding: 1.5rem;
+      }
+      .field-group label {
+        display: block;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        margin: 0 0 0.35rem;
+        color: var(--solar-base01);
+      }
+      .field-group input[type="text"],
+      .field-group input[type="date"],
+      .field-group input[type="number"] {
+        width: 100%;
+        padding: 0.55rem 0.6rem;
+        border: 1px solid rgba(181, 137, 0, 0.45);
+        border-radius: 6px;
+        background: #fff;
+        font-size: 0.78rem;
+      }
+      .field-group input:focus {
+        outline: 2px solid var(--solar-yellow);
+      }
+      .checkbox-row {
+        display: flex;
+        gap: 0.65rem;
+        align-items: center;
+        padding: 0.6rem 0.8rem;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px dashed rgba(181, 137, 0, 0.45);
+        border-radius: var(--radius-md);
+        margin: 0.85rem 0 1rem;
+      }
+      [data-theme="solar-dark"] .checkbox-row {
+        background: rgba(0, 43, 54, 0.55);
+      }
+      .actions {
+        margin-top: 0.2rem;
+        display: flex;
+        gap: 0.55rem;
+      }
+      .mini-hint {
+        font-size: 0.55rem;
+        color: var(--solar-base00);
+        margin: 0.45rem 0 0;
+        line-height: 1.3;
+      }
+      .table-shell {
+        border: 1px solid rgba(181, 137, 0, 0.35);
+        border-radius: var(--radius-lg);
+        background: linear-gradient(
+          135deg,
+          rgba(253, 246, 227, 0.88),
+          rgba(238, 232, 213, 0.73)
+        );
+        padding: 1.05rem 1rem 1.2rem;
+        box-shadow: var(--shadow-md);
+      }
+      [data-theme="solar-dark"] .table-shell {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 43, 54, 0.82),
+          rgba(7, 54, 66, 0.72)
+        );
+      }
+      table.solar-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.72rem;
+      }
+      table.solar-table thead th {
+        background: linear-gradient(
+          135deg,
+          var(--solar-yellow),
+          var(--solar-orange)
+        );
+        color: #fff;
+        padding: 0.55rem 0.6rem;
+        text-align: left;
+        position: sticky;
+        top: 0;
+      }
+      table.solar-table td {
+        padding: 0.5rem 0.55rem;
+        border-top: 1px solid rgba(147, 161, 161, 0.35);
+      }
+      table.solar-table tbody tr:hover td {
+        background: rgba(181, 137, 0, 0.08);
+      }
+      .action-buttons {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+      }
+      .edit-btn,
+      .delete-btn {
+        font-size: 0.6rem;
+        padding: 0.45rem 0.6rem;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border: 1px solid transparent;
+        cursor: pointer;
+      }
+      .edit-btn {
+        background: rgba(181, 137, 0, 0.18);
+        color: var(--solar-base02);
+      }
+      .edit-btn:hover {
+        background: rgba(181, 137, 0, 0.28);
+      }
+      .delete-btn {
+        background: rgba(220, 50, 47, 0.15);
+        color: var(--solar-red);
+      }
+      .delete-btn:hover {
+        background: rgba(220, 50, 47, 0.25);
+      }
+      .message {
+        border: 1px solid;
+        padding: 0.6rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 0.65rem;
+        margin: 0 0 1rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-start;
+      }
+      .message-success {
+        background: linear-gradient(
+          135deg,
+          rgba(42, 161, 152, 0.12),
+          rgba(38, 139, 210, 0.12)
+        );
+        border-color: rgba(42, 161, 152, 0.55);
+      }
+      .message-error {
+        background: linear-gradient(
+          135deg,
+          rgba(220, 50, 47, 0.15),
+          rgba(203, 75, 22, 0.15)
+        );
+        border-color: rgba(220, 50, 47, 0.55);
+      }
+      @media (max-width: 640px) {
+        .header-block h1 {
+          font-size: 1.3rem;
         }
       }
     </style>
   </head>
-  <body>
+  <body class="solar-theme" data-theme="solar-dark">
     <div
-      class="manage-container"
       id="manage-root"
       data-is-headteacher="{{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }}"
     >
-      <header class="page-header">
+      <section class="header-block">
         <h1>
-          <!-- Heroicon: calendar-days -->
           <svg
             class="heroicon heroicon-lg heroicon-solar-yellow"
             viewBox="0 0 24 24"
@@ -564,89 +329,111 @@
             <path
               d="M6.75 2.25a.75.75 0 01.75.75V4.5h9V3a.75.75 0 011.5 0V4.5h.75A2.25 2.25 0 0121.75 6.75v10.5A2.25 2.25 0 0119.5 19.5H4.5A2.25 2.25 0 012.25 17.25V6.75A2.25 2.25 0 014.5 4.5h.75V3a.75.75 0 01.75-.75zM4.5 6h15a.75.75 0 01.75.75V9H3.75V6.75A.75.75 0 014.5 6z"
             />
-            <path d="M7.5 12.75h3v3h-3v-3z" />
           </svg>
           Manage Terms & Assessments
         </h1>
         <p class="page-subtitle">
-          Organize academic terms, assessment types, and evaluation periods
+          Organize academic terms, assessment types, and evaluation periods.
         </p>
-        <div class="nav-links">
-          <a href="{{ url_for('classteacher.teacher_management_hub') }}">
-            <!-- Heroicon: rectangle-stack -->
-            <svg
-              class="heroicon heroicon-solar-blue"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 18H6A2.25 2.25 0 013.75 15.75V6zM6 5.25a.75.75 0 00-.75.75v9.75c0 .414.336.75.75.75h11.25a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H16.5V6a.75.75 0 00-.75-.75H6z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            Teacher Hub
-          </a>
-          <a href="{{ url_for('classteacher.dashboard') }}">
-            <!-- Heroicon: squares-2x2 -->
-            <svg
-              class="heroicon heroicon-solar-green"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path
-                d="M3.75 4.5A2.25 2.25 0 016 2.25h3A2.25 2.25 0 0111.25 4.5v3A2.25 2.25 0 019 9.75H6A2.25 2.25 0 013.75 7.5v-3zM12.75 4.5A2.25 2.25 0 0115 2.25h3A2.25 2.25 0 0120.75 4.5v3A2.25 2.25 0 0118 9.75h-3A2.25 2.25 0 0112.75 7.5v-3zM3.75 13.5A2.25 2.25 0 016 11.25h3A2.25 2.25 0 0111.25 13.5v3A2.25 2.25 0 019 18.75H6A2.25 2.25 0 013.75 16.5v-3zM12.75 13.5A2.25 2.25 0 0115 11.25h3A2.25 2.25 0 0120.75 13.5v3A2.25 2.25 0 0118 18.75h-3A2.25 2.25 0 0112.75 16.5v-3z"
-              />
-            </svg>
-            Dashboard
-          </a>
-          <a href="{{ url_for('auth.logout_route') }}">
-            <!-- Heroicon: arrow-right-on-rectangle -->
-            <svg
-              class="heroicon heroicon-solar-red"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M3.75 5.25A2.25 2.25 0 016 3h6a2.25 2.25 0 012.25 2.25v2.378a.75.75 0 01-1.5 0V5.25a.75.75 0 00-.75-.75H6a.75.75 0 00-.75.75v13.5c0 .414.336.75.75.75h6a.75.75 0 00.75-.75v-2.378a.75.75 0 011.5 0v2.378A2.25 2.25 0 0112 21H6a2.25 2.25 0 01-2.25-2.25V5.25z"
-                clip-rule="evenodd"
-              />
-              <path
-                fill-rule="evenodd"
-                d="M14.47 15.28a.75.75 0 001.06 0l3-3a.75.75 0 000-1.06l-3-3a.75.75 0 10-1.06 1.06l1.72 1.72H9a.75.75 0 000 1.5h7.19l-1.72 1.72a.75.75 0 000 1.06z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            Logout
-          </a>
-        </div>
-      </header>
-
-      <!-- Message container for notifications -->
-      <div id="message-container">
-        {% if error_message %}
-        <div class="message message-error">{{ error_message }}</div>
-        {% endif %} {% if success_message %}
-        <div class="message message-success">{{ success_message }}</div>
-        {% endif %}
-      </div>
-
-      <!-- Statistics Section -->
-      <div class="stats-section">
-        <h2>
-          <!-- Heroicon: chart-bar -->
-          <svg
-            class="heroicon heroicon-solar-blue"
-            viewBox="0 0 24 24"
-            fill="currentColor"
+        <div
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 0.4rem;
+          "
+        >
+          <div class="quick-links" aria-label="Quick navigation links">
+            <a href="{{ url_for('classteacher.teacher_management_hub') }}">
+              <svg
+                class="heroicon heroicon-solar-blue"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 18H6A2.25 2.25 0 013.75 15.75V6zM6 5.25a.75.75 0 00-.75.75v9.75c0 .414.336.75.75.75h11.25a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H16.5V6a.75.75 0 00-.75-.75H6z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Teacher Hub
+            </a>
+            <a href="{{ url_for('classteacher.dashboard') }}">
+              <svg
+                class="heroicon heroicon-solar-green"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M3.75 4.5A2.25 2.25 0 016 2.25h3A2.25 2.25 0 0111.25 4.5v3A2.25 2.25 0 019 9.75H6A2.25 2.25 0 013.75 7.5v-3zM12.75 4.5A2.25 2.25 0 0115 2.25h3A2.25 2.25 0 0120.75 4.5v3A2.25 2.25 0 0118 9.75h-3A2.25 2.25 0 0112.75 7.5v-3zM3.75 13.5A2.25 2.25 0 016 11.25h3A2.25 2.25 0 0111.25 13.5v3A2.25 2.25 0 019 18.75H6A2.25 2.25 0 013.75 16.5v-3zM12.75 13.5A2.25 2.25 0 0115 11.25h3A2.25 2.25 0 0120.75 13.5v3A2.25 2.25 0 0118 18.75h-3A2.25 2.25 0 0112.75 16.5v-3z"
+                />
+              </svg>
+              Dashboard
+            </a>
+            <a href="{{ url_for('auth.logout_route') }}">
+              <svg
+                class="heroicon heroicon-solar-red"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M3.75 5.25A2.25 2.25 0 016 3h6a2.25 2.25 0 012.25 2.25v2.378a.75.75 0 01-1.5 0V5.25a.75.75 0 00-.75-.75H6a.75.75 0 00-.75.75v13.5c0 .414.336.75.75.75h6a.75.75 0 00.75-.75v-2.378a.75.75 0 011.5 0v2.378A2.25 2.25 0 0112 21H6a2.25 2.25 0 01-2.25-2.25V5.25z"
+                  clip-rule="evenodd"
+                />
+                <path
+                  fill-rule="evenodd"
+                  d="M14.47 15.28a.75.75 0 001.06 0l3-3a.75.75 0 000-1.06l-3-3a.75.75 0 10-1.06 1.06l1.72 1.72H9a.75.75 0 000 1.5h7.19l-1.72 1.72a.75.75 0 000 1.06z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Logout
+            </a>
+          </div>
+          <button
+            id="theme-toggle"
+            type="button"
+            class="solar-btn-outline"
+            style="
+              display: inline-flex;
+              align-items: center;
+              gap: 0.4rem;
+              font-size: 0.6rem;
+              padding: 0.45rem 0.75rem;
+            "
           >
-            <path
-              d="M2.25 13.5a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v6a.75.75 0 01-.75.75H3a.75.75 0 01-.75-.75v-6zM8.25 9a.75.75 0 01.75-.75H11.25a.75.75 0 01.75.75v10.5a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75V9zM14.25 5.25a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v14.25a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z"
-            />
-          </svg>
-          Academic Overview
-        </h2>
+            <svg
+              id="theme-toggle-icon"
+              class="heroicon"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M12 18a6 6 0 100-12 6 6 0 000 12z" />
+              <path
+                fill-rule="evenodd"
+                d="M12 1.5a.75.75 0 01.75.75v2a.75.75 0 01-1.5 0v-2A.75.75 0 0112 1.5zm0 16a.75.75 0 01.75.75v2a.75.75 0 01-1.5 0v-2a.75.75 0 01.75-.75zM4.72 4.72a.75.75 0 011.06 0l1.42 1.42a.75.75 0 01-1.06 1.06L4.72 5.78a.75.75 0 010-1.06zm10.66 10.66a.75.75 0 011.06 0l1.42 1.42a.75.75 0 11-1.06 1.06l-1.42-1.42a.75.75 0 010-1.06zM1.5 12a.75.75 0 01.75-.75h2a.75.75 0 010 1.5h-2A.75.75 0 011.5 12zm16-.75a.75.75 0 000 1.5h2a.75.75 0 000-1.5h-2zM6.2 15.38a.75.75 0 010 1.06l-1.42 1.42a.75.75 0 11-1.06 1.06l1.42-1.42a.75.75 0 011.06 0zm11.6-8.76a.75.75 0 010 1.06l-1.42 1.42a.75.75 0 11-1.06 1.06l1.42-1.42a.75.75 0 011.06 0z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <span id="theme-toggle-text">Light Mode</span>
+          </button>
+        </div>
+      </section>
+      <div class="page-shell">
+        <div id="message-container" aria-live="polite" aria-atomic="true">
+          {% if error_message %}
+          <div class="message message-error" role="alert">
+            {{ error_message }}
+          </div>
+          {% endif %} {% if success_message %}
+          <div class="message message-success" role="status">
+            {{ success_message }}
+          </div>
+          {% endif %}
+        </div>
         <div class="stats-grid">
           <div class="stat-card">
             <h3>Total Terms</h3>
@@ -665,14 +452,306 @@
             <div class="stat-value">{{ current_academic_year }}</div>
           </div>
         </div>
-      </div>
-
-      <!-- Forms Grid -->
-      <div class="forms-grid">
-        <!-- Add New Term Form -->
-        <div class="form-card">
-          <h2>
-            <!-- Heroicon: calendar-days -->
+        <div class="forms-grid">
+          <div class="panel" id="panel-term">
+            <h2>
+              <svg
+                class="heroicon heroicon-solar-yellow"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6.75 2.25a.75.75 0 01.75.75V4.5h9V3a.75.75 0 011.5 0V4.5h.75A2.25 2.25 0 0121.75 6.75v10.5A2.25 2.25 0 0119.5 19.5H4.5A2.25 2.25 0 012.25 17.25V6.75A2.25 2.25 0 014.5 4.5h.75V3a.75.75 0 01.75-.75zM4.5 6h15a.75.75 0 01.75.75V9H3.75V6.75A.75.75 0 014.5 6z"
+                />
+              </svg>
+              Add New Term
+            </h2>
+            <form
+              method="POST"
+              action="{{ url_for('classteacher.manage_terms_assessments') }}"
+              novalidate
+            >
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
+              <div class="field-grid">
+                <div class="field-group">
+                  <label for="term_name">Term Name</label>
+                  <input
+                    type="text"
+                    name="term_name"
+                    id="term_name"
+                    placeholder="Term 1"
+                    required
+                  />
+                  <p class="mini-hint">Examples: Term 1, Term 2, Term 3</p>
+                </div>
+                <div class="field-group">
+                  <label for="academic_year"
+                    >Academic Year
+                    <span
+                      style="
+                        font-size: 0.5rem;
+                        padding: 0.18rem 0.45rem;
+                        background: rgba(181, 137, 0, 0.18);
+                        border: 1px solid rgba(181, 137, 0, 0.45);
+                        border-radius: 999px;
+                        font-weight: 600;
+                        color: var(--solar-yellow);
+                      "
+                      >Optional</span
+                    ></label
+                  >
+                  <input
+                    type="text"
+                    name="academic_year"
+                    id="academic_year"
+                    placeholder="2024-2025"
+                  />
+                  <p class="mini-hint">Format: YYYY-YYYY</p>
+                </div>
+                <div class="field-group">
+                  <label for="term_start_date"
+                    >Start Date
+                    <span
+                      style="
+                        font-size: 0.5rem;
+                        padding: 0.18rem 0.45rem;
+                        background: rgba(181, 137, 0, 0.18);
+                        border: 1px solid rgba(181, 137, 0, 0.45);
+                        border-radius: 999px;
+                        font-weight: 600;
+                        color: var(--solar-yellow);
+                      "
+                      >Optional</span
+                    ></label
+                  >
+                  <input
+                    type="date"
+                    name="term_start_date"
+                    id="term_start_date"
+                  />
+                </div>
+                <div class="field-group">
+                  <label for="term_end_date"
+                    >End Date
+                    <span
+                      style="
+                        font-size: 0.5rem;
+                        padding: 0.18rem 0.45rem;
+                        background: rgba(181, 137, 0, 0.18);
+                        border: 1px solid rgba(181, 137, 0, 0.45);
+                        border-radius: 999px;
+                        font-weight: 600;
+                        color: var(--solar-yellow);
+                      "
+                      >Optional</span
+                    ></label
+                  >
+                  <input type="date" name="term_end_date" id="term_end_date" />
+                </div>
+              </div>
+              <div class="checkbox-row">
+                <input
+                  type="checkbox"
+                  name="is_current_term"
+                  id="is_current_term"
+                  value="1"
+                />
+                <label
+                  for="is_current_term"
+                  style="margin: 0; font-weight: 600; font-size: 0.75rem"
+                  >Set as Current Term</label
+                >
+              </div>
+              <hr
+                style="
+                  border: none;
+                  height: 1px;
+                  background: rgba(181, 137, 0, 0.35);
+                  margin: 0.9rem 0 1.05rem;
+                "
+              />
+              <div class="actions">
+                <button
+                  type="submit"
+                  name="add_term"
+                  class="solar-btn"
+                  aria-label="Add Term"
+                >
+                  <svg
+                    class="heroicon heroicon-solar-green"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 4.5a.75.75 0 01.75.75V11.25H18a.75.75 0 010 1.5h-5.25V18a.75.75 0 01-1.5 0v-5.25H6a.75.75 0 010-1.5h5.25V5.25A.75.75 0 0112 4.5z"
+                    />
+                  </svg>
+                  <span>Add Term</span>
+                </button>
+              </div>
+              <p class="mini-hint" style="margin-top: 0.55rem">
+                Setting a new current term automatically marks previous terms as
+                not current.
+              </p>
+            </form>
+          </div>
+          <div class="panel" id="panel-assessment">
+            <h2>
+              <svg
+                class="heroicon heroicon-solar-blue"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4.5 3.75A2.25 2.25 0 016.75 1.5h10.5A2.25 2.25 0 0119.5 3.75v16.5a.75.75 0 01-1.17.624l-3.66-2.44a2.25 2.25 0 00-1.24-.384H6.75A2.25 2.25 0 014.5 15.75V3.75z"
+                />
+              </svg>
+              Add New Assessment Type
+            </h2>
+            <form
+              method="POST"
+              action="{{ url_for('classteacher.manage_terms_assessments') }}"
+              novalidate
+            >
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
+              <div class="field-grid">
+                <div class="field-group">
+                  <label for="assessment_name">Assessment Name</label>
+                  <input
+                    type="text"
+                    name="assessment_name"
+                    id="assessment_name"
+                    placeholder="Mid Term"
+                    required
+                  />
+                  <p class="mini-hint">Examples: Mid Term, End Term, CAT</p>
+                </div>
+                <div class="field-group">
+                  <label for="assessment_weight"
+                    >Weight
+                    <span
+                      style="
+                        font-size: 0.5rem;
+                        padding: 0.18rem 0.45rem;
+                        background: rgba(181, 137, 0, 0.18);
+                        border: 1px solid rgba(181, 137, 0, 0.45);
+                        border-radius: 999px;
+                        font-weight: 600;
+                        color: var(--solar-yellow);
+                      "
+                      >Optional</span
+                    ></label
+                  >
+                  <input
+                    type="number"
+                    name="assessment_weight"
+                    id="assessment_weight"
+                    placeholder="30"
+                    min="0"
+                    max="100"
+                  />
+                  <p class="mini-hint">Percentage of total (0-100)</p>
+                </div>
+                <div class="field-group">
+                  <label for="assessment_group"
+                    >Group
+                    <span
+                      style="
+                        font-size: 0.5rem;
+                        padding: 0.18rem 0.45rem;
+                        background: rgba(181, 137, 0, 0.18);
+                        border: 1px solid rgba(181, 137, 0, 0.45);
+                        border-radius: 999px;
+                        font-weight: 600;
+                        color: var(--solar-yellow);
+                      "
+                      >Optional</span
+                    ></label
+                  >
+                  <input
+                    type="text"
+                    name="assessment_group"
+                    id="assessment_group"
+                    placeholder="Continuous Assessment"
+                  />
+                  <p class="mini-hint">
+                    e.g., Continuous Assessment, Summative
+                  </p>
+                </div>
+                <div class="field-group">
+                  <label for="show_on_reports">Visibility</label>
+                  <div class="checkbox-row" style="margin: 0">
+                    <input
+                      type="checkbox"
+                      name="show_on_reports"
+                      id="show_on_reports"
+                      value="1"
+                      checked
+                    />
+                    <label
+                      for="show_on_reports"
+                      style="margin: 0; font-weight: 600; font-size: 0.75rem"
+                      >Show on Reports</label
+                    >
+                  </div>
+                </div>
+              </div>
+              <hr
+                style="
+                  border: none;
+                  height: 1px;
+                  background: rgba(181, 137, 0, 0.35);
+                  margin: 0.9rem 0 1.05rem;
+                "
+              />
+              <div class="actions">
+                <button
+                  type="submit"
+                  name="add_assessment"
+                  class="solar-btn"
+                  aria-label="Add Assessment Type"
+                >
+                  <svg
+                    class="heroicon heroicon-solar-cyan"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 4.5a.75.75 0 01.75.75V11.25H18a.75.75 0 010 1.5h-5.25V18a.75.75 0 01-1.5 0v-5.25H6a.75.75 0 010-1.5h5.25V5.25A.75.75 0 0112 4.5z"
+                    />
+                  </svg>
+                  <span>Add Assessment Type</span>
+                </button>
+              </div>
+              <p class="mini-hint" style="margin-top: 0.55rem">
+                Weight and group are optional; visibility controls inclusion in
+                generated reports.
+              </p>
+            </form>
+          </div>
+        </div>
+        <div class="table-shell" style="margin: 0 0 2.4rem">
+          <h2
+            style="
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin: 0 0 0.9rem;
+              font-size: 1rem;
+            "
+          >
             <svg
               class="heroicon heroicon-solar-yellow"
               viewBox="0 0 24 24"
@@ -682,82 +761,107 @@
                 d="M6.75 2.25a.75.75 0 01.75.75V4.5h9V3a.75.75 0 011.5 0V4.5h.75A2.25 2.25 0 0121.75 6.75v10.5A2.25 2.25 0 0119.5 19.5H4.5A2.25 2.25 0 012.25 17.25V6.75A2.25 2.25 0 014.5 4.5h.75V3a.75.75 0 01.75-.75zM4.5 6h15a.75.75 0 01.75.75V9H3.75V6.75A.75.75 0 014.5 6z"
               />
             </svg>
-            Add New Term
+            Existing Terms
           </h2>
-          <form
-            method="POST"
-            action="{{ url_for('classteacher.manage_terms_assessments') }}"
-          >
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-
-            <div class="form-group">
-              <label for="term_name">Term Name:</label>
-              <input
-                type="text"
-                name="term_name"
-                id="term_name"
-                class="form-control"
-                placeholder="e.g., Term 1, Term 2, Term 3"
-                required
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="term_start_date">Start Date (Optional):</label>
-              <input
-                type="date"
-                name="term_start_date"
-                id="term_start_date"
-                class="form-control"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="term_end_date">End Date (Optional):</label>
-              <input
-                type="date"
-                name="term_end_date"
-                id="term_end_date"
-                class="form-control"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="academic_year">Academic Year (Optional):</label>
-              <input
-                type="text"
-                name="academic_year"
-                id="academic_year"
-                class="form-control"
-                placeholder="e.g., 2024-2025"
-              />
-            </div>
-
-            <div class="checkbox-group">
-              <input
-                type="checkbox"
-                name="is_current_term"
-                id="is_current_term"
-                value="1"
-              />
-              <label for="is_current_term">Set as Current Term</label>
-            </div>
-
-            <button type="submit" name="add_term" class="manage-btn">
-              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M12 4.5a.75.75 0 01.75.75V11.25H18a.75.75 0 010 1.5h-5.25V18a.75.75 0 01-1.5 0v-5.25H6a.75.75 0 010-1.5h5.25V5.25A.75.75 0 0112 4.5z"
-                />
-              </svg>
-              Add Term
-            </button>
-          </form>
+          {% if terms %}
+          <div style="overflow-x: auto">
+            <table class="solar-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Term Name</th>
+                  <th>Academic Year</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Current</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for term in terms %}
+                <tr>
+                  <td>{{ term.id }}</td>
+                  <td>{{ term.name }}</td>
+                  <td>
+                    {% if term.academic_year %} {{ term.academic_year }} {% else
+                    %} - {% endif %}
+                  </td>
+                  <td>
+                    {% if term.start_date %} {{
+                    term.start_date.strftime('%Y-%m-%d') if term.start_date else
+                    '-' }} {% else %} - {% endif %}
+                  </td>
+                  <td>
+                    {% if term.end_date %} {{ term.end_date.strftime('%Y-%m-%d')
+                    if term.end_date else '-' }} {% else %} - {% endif %}
+                  </td>
+                  <td>
+                    {% if term.is_current %}
+                    <span style="color: var(--primary-color); font-weight: 600"
+                      >✓ Current</span
+                    >
+                    {% else %} - {% endif %}
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button
+                        class="edit-btn edit-term-btn"
+                        data-term-id="{{ term.id }}"
+                        data-term-name="{{ term.name }}"
+                        data-academic-year="{{ term.academic_year if term.academic_year else '' }}"
+                      >
+                        <svg
+                          class="heroicon heroicon-solar-blue"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M16.862 3.487a2.1 2.1 0 112.97 2.97L8.36 17.93a4.2 4.2 0 01-1.672 1.05l-2.66.887a.6.6 0 01-.759-.76l.887-2.659a4.2 4.2 0 011.05-1.673L16.862 3.487z"
+                          />
+                        </svg>
+                        Edit
+                      </button>
+                      <button
+                        class="delete-btn delete-term-btn"
+                        data-term-id="{{ term.id }}"
+                        data-term-name="{{ term.name }}"
+                      >
+                        <svg
+                          class="heroicon heroicon-solar-red"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M9 2.25A1.5 1.5 0 007.5 3.75V4.5H4.5a.75.75 0 000 1.5h.69l.62 12a2.25 2.25 0 002.247 2.1h7.226a2.25 2.25 0 002.247-2.1l.62-12h.69a.75.75 0 000-1.5H16.5V3.75A1.5 1.5 0 0015 2.25H9z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="mini-hint" style="margin-top: 0.5rem">
+            No terms found. Add your first term using the form above.
+          </p>
+          {% endif %}
         </div>
-
-        <!-- Add New Assessment Type Form -->
-        <div class="form-card">
-          <h2>
-            <!-- Heroicon: document-text -->
+        <div class="table-shell" style="margin: 0 0 2.4rem">
+          <h2
+            style="
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin: 0 0 0.9rem;
+              font-size: 1rem;
+            "
+          >
             <svg
               class="heroicon heroicon-solar-blue"
               viewBox="0 0 24 24"
@@ -767,283 +871,143 @@
                 d="M4.5 3.75A2.25 2.25 0 016.75 1.5h10.5A2.25 2.25 0 0119.5 3.75v16.5a.75.75 0 01-1.17.624l-3.66-2.44a2.25 2.25 0 00-1.24-.384H6.75A2.25 2.25 0 014.5 15.75V3.75z"
               />
             </svg>
-            Add New Assessment Type
+            Existing Assessment Types
           </h2>
-          <form
-            method="POST"
-            action="{{ url_for('classteacher.manage_terms_assessments') }}"
-          >
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-
-            <div class="form-group">
-              <label for="assessment_name">Assessment Name:</label>
-              <input
-                type="text"
-                name="assessment_name"
-                id="assessment_name"
-                class="form-control"
-                placeholder="e.g., Mid Term, End Term, CAT"
-                required
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="assessment_weight">Weight (Optional):</label>
-              <input
-                type="number"
-                name="assessment_weight"
-                id="assessment_weight"
-                class="form-control"
-                placeholder="e.g., 30, 70"
-                min="0"
-                max="100"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="assessment_group">Group (Optional):</label>
-              <input
-                type="text"
-                name="assessment_group"
-                id="assessment_group"
-                class="form-control"
-                placeholder="e.g., Continuous Assessment, Summative"
-              />
-            </div>
-
-            <div class="checkbox-group">
-              <input
-                type="checkbox"
-                name="show_on_reports"
-                id="show_on_reports"
-                value="1"
-                checked
-              />
-              <label for="show_on_reports">Show on Reports</label>
-            </div>
-
-            <button type="submit" name="add_assessment" class="manage-btn">
-              <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M12 4.5a.75.75 0 01.75.75V11.25H18a.75.75 0 010 1.5h-5.25V18a.75.75 0 01-1.5 0v-5.25H6a.75.75 0 010-1.5h5.25V5.25A.75.75 0 0112 4.5z"
-                />
-              </svg>
-              Add Assessment Type
-            </button>
-          </form>
+          {% if assessment_types %}
+          <div style="overflow-x: auto">
+            <table class="solar-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Assessment Name</th>
+                  <th>Weight</th>
+                  <th>Group</th>
+                  <th>Show on Reports</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for assessment in assessment_types %}
+                <tr>
+                  <td>{{ assessment.id }}</td>
+                  <td>{{ assessment.name }}</td>
+                  <td>
+                    {% if assessment.weight %} {{ assessment.weight }}% {% else
+                    %} - {% endif %}
+                  </td>
+                  <td>
+                    {% if assessment.group %} {{ assessment.group }} {% else %}
+                    - {% endif %}
+                  </td>
+                  <td>
+                    {% if assessment.show_on_reports %}
+                    <span style="color: var(--primary-color); font-weight: 600"
+                      >✓ Yes</span
+                    >
+                    {% else %}
+                    <span style="color: var(--text-light)">No</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button
+                        class="edit-btn edit-assessment-btn"
+                        data-assessment-id="{{ assessment.id }}"
+                        data-assessment-name="{{ assessment.name }}"
+                        data-assessment-weight="{{ assessment.weight if assessment.weight else '' }}"
+                        data-assessment-group="{{ assessment.group if assessment.group else '' }}"
+                        data-show-on-reports="{{ 'true' if assessment.show_on_reports else 'false' }}"
+                      >
+                        <svg
+                          class="heroicon heroicon-solar-blue"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M16.862 3.487a2.1 2.1 0 112.97 2.97L8.36 17.93a4.2 4.2 0 01-1.672 1.05l-2.66.887a.6.6 0 01-.759-.76l.887-2.659a4.2 4.2 0 011.05-1.673L16.862 3.487z"
+                          />
+                        </svg>
+                        Edit
+                      </button>
+                      <button
+                        class="delete-btn delete-assessment-btn"
+                        data-assessment-id="{{ assessment.id }}"
+                        data-assessment-name="{{ assessment.name }}"
+                      >
+                        <svg
+                          class="heroicon heroicon-solar-red"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M9 2.25A1.5 1.5 0 007.5 3.75V4.5H4.5a.75.75 0 000 1.5h.69l.62 12a2.25 2.25 0 002.247 2.1h7.226a2.25 2.25 0 002.247-2.1l.62-12h.69a.75.75 0 000-1.5H16.5V3.75A1.5 1.5 0 0015 2.25H9z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="mini-hint" style="margin-top: 0.5rem">
+            No assessment types found. Add your first assessment type using the
+            form above.
+          </p>
+          {% endif %}
         </div>
       </div>
-
-      <!-- Terms Section -->
-      <div class="terms-section">
-        <h2>
-          <!-- Heroicon: calendar-days -->
-          <svg
-            class="heroicon heroicon-solar-yellow"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <path
-              d="M6.75 2.25a.75.75 0 01.75.75V4.5h9V3a.75.75 0 011.5 0V4.5h.75A2.25 2.25 0 0121.75 6.75v10.5A2.25 2.25 0 0119.5 19.5H4.5A2.25 2.25 0 012.25 17.25V6.75A2.25 2.25 0 014.5 4.5h.75V3a.75.75 0 01.75-.75zM4.5 6h15a.75.75 0 01.75.75V9H3.75V6.75A.75.75 0 014.5 6z"
-            />
-          </svg>
-          Existing Terms
-        </h2>
-        {% if terms %}
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Term Name</th>
-                <th>Academic Year</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Current</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for term in terms %}
-              <tr>
-                <td>{{ term.id }}</td>
-                <td>{{ term.name }}</td>
-                <td>
-                  {% if term.academic_year %} {{ term.academic_year }} {% else
-                  %} - {% endif %}
-                </td>
-                <td>
-                  {% if term.start_date %} {{
-                  term.start_date.strftime('%Y-%m-%d') if term.start_date else
-                  '-' }} {% else %} - {% endif %}
-                </td>
-                <td>
-                  {% if term.end_date %} {{ term.end_date.strftime('%Y-%m-%d')
-                  if term.end_date else '-' }} {% else %} - {% endif %}
-                </td>
-                <td>
-                  {% if term.is_current %}
-                  <span style="color: var(--primary-color); font-weight: 600"
-                    >✓ Current</span
-                  >
-                  {% else %} - {% endif %}
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <button
-                      class="edit-btn edit-term-btn"
-                      data-term-id="{{ term.id }}"
-                      data-term-name="{{ term.name }}"
-                      data-academic-year="{{ term.academic_year if term.academic_year else '' }}"
-                    >
-                      <svg
-                        class="heroicon"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path
-                          d="M16.862 3.487a2.1 2.1 0 112.97 2.97L8.36 17.93a4.2 4.2 0 01-1.672 1.05l-2.66.887a.6.6 0 01-.759-.76l.887-2.659a4.2 4.2 0 011.05-1.673L16.862 3.487z"
-                        />
-                      </svg>
-                      Edit
-                    </button>
-                    <button
-                      class="delete-btn delete-term-btn"
-                      data-term-id="{{ term.id }}"
-                      data-term-name="{{ term.name }}"
-                    >
-                      <svg
-                        class="heroicon"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M9 2.25A1.5 1.5 0 007.5 3.75V4.5H4.5a.75.75 0 000 1.5h.69l.62 12a2.25 2.25 0 002.247 2.1h7.226a2.25 2.25 0 002.247-2.1l.62-12h.69a.75.75 0 000-1.5H16.5V3.75A1.5 1.5 0 0015 2.25H9z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <p>No terms found. Add your first term using the form above.</p>
-        {% endif %}
-      </div>
-
-      <!-- Assessment Types Section -->
-      <div class="assessments-section">
-        <h2>
-          <!-- Heroicon: document-text -->
-          <svg
-            class="heroicon heroicon-solar-blue"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <path
-              d="M4.5 3.75A2.25 2.25 0 016.75 1.5h10.5A2.25 2.25 0 0119.5 3.75v16.5a.75.75 0 01-1.17.624l-3.66-2.44a2.25 2.25 0 00-1.24-.384H6.75A2.25 2.25 0 014.5 15.75V3.75z"
-            />
-          </svg>
-          Existing Assessment Types
-        </h2>
-        {% if assessment_types %}
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Assessment Name</th>
-                <th>Weight</th>
-                <th>Group</th>
-                <th>Show on Reports</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for assessment in assessment_types %}
-              <tr>
-                <td>{{ assessment.id }}</td>
-                <td>{{ assessment.name }}</td>
-                <td>
-                  {% if assessment.weight %} {{ assessment.weight }}% {% else %}
-                  - {% endif %}
-                </td>
-                <td>
-                  {% if assessment.group %} {{ assessment.group }} {% else %} -
-                  {% endif %}
-                </td>
-                <td>
-                  {% if assessment.show_on_reports %}
-                  <span style="color: var(--primary-color); font-weight: 600"
-                    >✓ Yes</span
-                  >
-                  {% else %}
-                  <span style="color: var(--text-light)">No</span>
-                  {% endif %}
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <button
-                      class="edit-btn edit-assessment-btn"
-                      data-assessment-id="{{ assessment.id }}"
-                      data-assessment-name="{{ assessment.name }}"
-                      data-assessment-weight="{{ assessment.weight if assessment.weight else '' }}"
-                      data-assessment-group="{{ assessment.group if assessment.group else '' }}"
-                      data-show-on-reports="{{ 'true' if assessment.show_on_reports else 'false' }}"
-                    >
-                      <svg
-                        class="heroicon"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path
-                          d="M16.862 3.487a2.1 2.1 0 112.97 2.97L8.36 17.93a4.2 4.2 0 01-1.672 1.05l-2.66.887a.6.6 0 01-.759-.76l.887-2.659a4.2 4.2 0 011.05-1.673L16.862 3.487z"
-                        />
-                      </svg>
-                      Edit
-                    </button>
-                    <button
-                      class="delete-btn delete-assessment-btn"
-                      data-assessment-id="{{ assessment.id }}"
-                      data-assessment-name="{{ assessment.name }}"
-                    >
-                      <svg
-                        class="heroicon"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M9 2.25A1.5 1.5 0 007.5 3.75V4.5H4.5a.75.75 0 000 1.5h.69l.62 12a2.25 2.25 0 002.247 2.1h7.226a2.25 2.25 0 002.247-2.1l.62-12h.69a.75.75 0 000-1.5H16.5V3.75A1.5 1.5 0 0015 2.25H9z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <p>
-          No assessment types found. Add your first assessment type using the
-          form above.
-        </p>
-        {% endif %}
-      </div>
+      <!-- /.page-shell -->
     </div>
-
     <script>
-      // Delegate button clicks to avoid inline onclick and fix lints
+      // Theme toggle (aligned with manage_grades_streams pattern)
+      (function initTheme() {
+        const root = document.documentElement;
+        const btn = document.getElementById("theme-toggle");
+        if (!btn) return;
+        const icon = document.getElementById("theme-toggle-icon");
+        const text = document.getElementById("theme-toggle-text");
+        const stored = localStorage.getItem("solar-theme-mode");
+        if (stored === "light") {
+          root.removeAttribute("data-theme");
+          document.body.classList.add("solar-theme");
+          text.textContent = "Dark Mode";
+          setLightIcon();
+        } else {
+          root.setAttribute("data-theme", "solar-dark");
+          document.body.classList.add("solar-theme");
+          text.textContent = "Light Mode";
+          setDarkIcon();
+        }
+        btn.addEventListener("click", () => {
+          const darkActive = root.getAttribute("data-theme") === "solar-dark";
+          if (darkActive) {
+            root.removeAttribute("data-theme");
+            localStorage.setItem("solar-theme-mode", "light");
+            text.textContent = "Dark Mode";
+            setLightIcon();
+          } else {
+            root.setAttribute("data-theme", "solar-dark");
+            localStorage.setItem("solar-theme-mode", "dark");
+            text.textContent = "Light Mode";
+            setDarkIcon();
+          }
+        });
+        function setLightIcon() {
+          icon.innerHTML = `<path d="M12 18a6 6 0 100-12 6 6 0 000 12z"/><path fill-rule=\"evenodd\" d=\"M12 1.5a.75.75 0 01.75.75v2a.75.75 0 01-1.5 0v-2A.75.75 0 0112 1.5zm0 16a.75.75 0 01.75.75v2a.75.75 0 01-1.5 0v-2a.75.75 0 01.75-.75zM4.72 4.72a.75.75 0 011.06 0l1.42 1.42a.75.75 0 01-1.06 1.06L4.72 5.78a.75.75 0 010-1.06zm10.66 10.66a.75.75 0 011.06 0l1.42 1.42a.75.75 0 11-1.06 1.06l-1.42-1.42a.75.75 0 010-1.06zM1.5 12a.75.75 0 01.75-.75h2a.75.75 0 010 1.5h-2A.75.75 0 011.5 12zm16-.75a.75.75 0 000 1.5h2a.75.75 0 000-1.5h-2zM6.2 15.38a.75.75 0 010 1.06l-1.42 1.42a.75.75 0 11-1.06 1.06l1.42-1.42a.75.75 0 011.06 0zm11.6-8.76a.75.75 0 010 1.06l-1.42 1.42a.75.75 0 11-1.06 1.06l1.42-1.42a.75.75 0 011.06 0z\" clip-rule=\"evenodd\"/>`;
+        }
+        function setDarkIcon() {
+          icon.innerHTML = `<path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 12c0 5.385 4.365 9.75 9.75 9.75 4.021 0 7.48-2.401 9.002-5.748z"/>`;
+        }
+      })();
+    </script>
+    <script>
+      // Delegated handlers (simplified, logic retained)
       document.addEventListener("DOMContentLoaded", function () {
         document.body.addEventListener("click", function (e) {
           const termEdit = e.target.closest(".edit-term-btn");
@@ -1095,8 +1059,10 @@
         if (termNameEl) termNameEl.value = name || "";
         if (acadYearEl) acadYearEl.value = academicYear || "";
         // Scroll to form
-        const formCard = document.querySelector(".form-card");
-        if (formCard) formCard.scrollIntoView({ behavior: "smooth" });
+        const formPanel =
+          document.getElementById("panel-term") ||
+          document.querySelector(".mta-panel");
+        if (formPanel) formPanel.scrollIntoView({ behavior: "smooth" });
       }
 
       function deleteTerm(id, name) {
@@ -1142,8 +1108,8 @@
         if (weightEl) weightEl.value = weight || "";
         if (groupEl) groupEl.value = group || "";
         if (showEl) showEl.checked = !!showOnReports;
-        const cards = document.querySelectorAll(".form-card");
-        if (cards && cards[1]) cards[1].scrollIntoView({ behavior: "smooth" });
+        const assessPanel = document.getElementById("panel-assessment");
+        if (assessPanel) assessPanel.scrollIntoView({ behavior: "smooth" });
       }
 
       function deleteAssessment(id, name) {

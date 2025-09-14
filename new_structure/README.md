@@ -184,6 +184,55 @@ Edit `config.py` to configure:
 - **Username**: `carol`
 - **Password**: `carol123`
 
+### 🎨 Solar Theme (Simplified Usage)
+
+The Manage Terms & Assessments page has been simplified to match the lighter pattern used in `manage_grades_streams.html`.
+
+Current approach:
+
+- Single shared Solar palette file: `css/solar-shared.css` (provides color tokens + base utilities + heroicon color helpers).
+- Lean, page-scoped inline `<style>` block for layout (stats, panels, tables) – keeps CSS local and easy to refactor.
+- Dark mode toggle persisted via `localStorage` key: `solar-theme-mode` (values: `light` | `dark`).
+
+Removed (previous experiment):
+
+- `solar-mta-enhancements.css` (gradient text/icons, accent cycling utilities)
+- Extra high/soft/faint text class wrappers (simplified to standard palette variables)
+
+Minimal structure for a new Solar-themed page now looks like:
+
+```
+<head>
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/solar-shared.css') }}">
+   <style>
+      /* Optional local layout styles here */
+   </style>
+</head>
+<body class="solar-theme" data-theme="solar-dark">
+   <!-- content -->
+   <button id="theme-toggle">Toggle</button>
+   <script>
+      (function(){
+         const root=document.documentElement;const btn=document.getElementById('theme-toggle');
+         if(!btn) return;const stored=localStorage.getItem('solar-theme-mode');
+         if(stored==='light') root.removeAttribute('data-theme'); else root.setAttribute('data-theme','solar-dark');
+         btn.addEventListener('click',()=>{const dark=root.getAttribute('data-theme')==='solar-dark';
+            if(dark){root.removeAttribute('data-theme');localStorage.setItem('solar-theme-mode','light');}
+            else {root.setAttribute('data-theme','solar-dark');localStorage.setItem('solar-theme-mode','dark');}
+         });
+      })();
+   </script>
+</body>
+```
+
+Benefits of simplification:
+
+- Fewer network requests (single CSS file)
+- Easier maintenance & parity across related class teacher pages
+- Faster first meaningful paint without additional enhancement layer
+
+If future pages require richer visual accents (gradients, animated emphasis, extended utility classes), reintroduce a small optional enhancement file on a per‑page basis rather than globally.
+
 ### 📞 Support
 
 For technical support or questions, please refer to the documentation or contact the development team.

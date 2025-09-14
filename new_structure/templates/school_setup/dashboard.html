@@ -22,14 +22,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
 
-    <!-- Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
+  <!-- Replaced external Font Awesome with inline Heroicons (lightweight, no network dependency) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/heroicons.css') }}" />
     <style>
       :root {
           --primary-color: {{ setup.primary_color or '#1f7d53' }};
@@ -63,6 +57,12 @@
           min-height: 100vh;
           color: var(--gray-800);
       }
+
+  /* Minor contextual sizing overrides leveraging shared heroicon classes */
+  .completion-icon .heroicon { width:4rem; height:4rem; }
+  .quick-action .heroicon { width:2rem; height:2rem; margin-bottom:0.5rem; }
+  .step-number .heroicon { width:1.35rem; height:1.35rem; }
+  .step-action .heroicon { width:1.05rem; height:1.05rem; }
 
       .setup-container {
           max-width: 1200px;
@@ -319,11 +319,7 @@
           box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
       }
 
-      .quick-action i {
-          font-size: 2rem;
-          color: var(--primary-color);
-          margin-bottom: 0.5rem;
-      }
+    .quick-action svg { color: var(--primary-color); }
 
       .quick-action h4 {
           margin-bottom: 0.5rem;
@@ -373,11 +369,19 @@
   <body>
     <div class="setup-container">
       <a href="{{ url_for('admin.dashboard') }}" class="back-link">
-        <i class="fas fa-arrow-left"></i> Back to Dashboard
+        <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12l7.5-7.5M3 12h18" />
+        </svg>
+        Back to Dashboard
       </a>
 
       <div class="setup-header">
-        <h1><i class="fas fa-school"></i> School Setup</h1>
+        <h1>
+          <svg class="heroicon heroicon-lg" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5M12 2.25l8.955 4.477a.75.75 0 01-.705 1.343L12 4.114 3.75 8.07a.75.75 0 01-.705-1.343L12 2.25zM4.5 10.5h15v9h-15v-9zM9 14.25h6" />
+          </svg>
+          School Setup
+        </h1>
         <p>Configure your school for plug-and-play deployment</p>
       </div>
 
@@ -386,7 +390,10 @@
       <div class="setup-card">
         <div class="completion-section">
           <div class="completion-icon">
-            <i class="fas fa-check-circle"></i>
+            <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+              <circle cx="12" cy="12" r="9" />
+            </svg>
           </div>
           <h2 class="completion-title">Setup Completed!</h2>
           <p class="completion-description">
@@ -394,31 +401,32 @@
             start managing students, teachers, and generating reports.
           </p>
           <a href="{{ url_for('admin.dashboard') }}" class="dashboard-btn">
-            <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+            <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h7.5v7.5H3V3zm10.5 0H21v7.5h-7.5V3zM3 13.5h7.5V21H3v-7.5zm10.5 0H21V21h-7.5v-7.5z" />
+            </svg>
+            Go to Dashboard
           </a>
 
           <div class="quick-actions">
-            <a
-              href="{{ url_for('school_setup.basic_info') }}"
-              class="quick-action"
-            >
-              <i class="fas fa-edit"></i>
+            <a href="{{ url_for('school_setup.basic_info') }}" class="quick-action">
+              <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.688-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.862 4.487z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18 14v4.75A1.75 1.75 0 0116.25 20.5H5.75A1.75 1.75 0 014 18.75V7.75A1.75 1.75 0 015.75 6H10" />
+              </svg>
               <h4>Edit School Info</h4>
               <p>Update school details</p>
             </a>
-            <a
-              href="{{ url_for('school_setup.branding') }}"
-              class="quick-action"
-            >
-              <i class="fas fa-palette"></i>
+            <a href="{{ url_for('school_setup.branding') }}" class="quick-action">
+              <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.75 21a4 4 0 01-.713-7.938 5.501 5.501 0 0110.185-2.432 3.501 3.501 0 014.09 4.272A3.501 3.501 0 0118.25 21H5.75z" />
+              </svg>
               <h4>Update Branding</h4>
               <p>Change logo and colors</p>
             </a>
-            <a
-              href="{{ url_for('school_setup.features') }}"
-              class="quick-action"
-            >
-              <i class="fas fa-cogs"></i>
+            <a href="{{ url_for('school_setup.features') }}" class="quick-action">
+              <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 6.75H3m18 0a2.25 2.25 0 11-4.5 0m4.5 0a2.25 2.25 0 11-4.5 0M21 12H3m18 0a2.25 2.25 0 11-4.5 0m4.5 0a2.25 2.25 0 11-4.5 0M21 17.25H3m18 0a2.25 2.25 0 11-4.5 0m4.5 0a2.25 2.25 0 11-4.5 0" />
+              </svg>
               <h4>Configure Features</h4>
               <p>Enable/disable features</p>
             </a>
@@ -449,8 +457,10 @@
             <div class="step-header">
               <div class="step-number">
                 {% if setup.setup_step > 1 %}
-                <i class="fas fa-check"></i>
-                {% else %} 1 {% endif %}
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+                {% else %}
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.688-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.862 4.487z"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 14v4.75A1.75 1.75 0 0116.25 20.5H5.75A1.75 1.75 0 014 18.75V7.75A1.75 1.75 0 015.75 6H10"/></svg>
+                {% endif %}
               </div>
               <h3 class="step-title">Basic Information</h3>
             </div>
@@ -463,8 +473,12 @@
               class="step-action {% if setup.setup_step > 1 %}completed{% endif %}"
             >
               {% if setup.setup_step > 1 %}
-              <i class="fas fa-check"></i> Completed {% else %}
-              <i class="fas fa-play"></i> Start Setup {% endif %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+              Completed
+              {% else %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.75 9.75 0 0012 2.25zm-1.5 6.75l6 3-6 3v-6z" /></svg>
+              Start Setup
+              {% endif %}
             </a>
           </div>
 
@@ -474,8 +488,10 @@
             <div class="step-header">
               <div class="step-number">
                 {% if setup.setup_step > 2 %}
-                <i class="fas fa-check"></i>
-                {% else %} 2 {% endif %}
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+                {% else %}
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5l8.25-1.5v9L3 13.5V4.5zM11.25 3L18 1.5v9l-6.75 1.5V3z" /></svg>
+                {% endif %}
               </div>
               <h3 class="step-title">Registration Info</h3>
             </div>
@@ -488,9 +504,15 @@
               class="step-action {% if setup.setup_step > 2 %}completed{% elif setup.setup_step < 2 %}disabled{% endif %}"
             >
               {% if setup.setup_step > 2 %}
-              <i class="fas fa-check"></i> Completed {% elif setup.setup_step ==
-              2 %} <i class="fas fa-play"></i> Continue {% else %}
-              <i class="fas fa-lock"></i> Locked {% endif %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+              Completed
+              {% elif setup.setup_step == 2 %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.75 9.75 0 0012 2.25zm-1.5 6.75l6 3-6 3v-6z" /></svg>
+              Continue
+              {% else %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V9a4.5 4.5 0 00-9 0v1.5M6 10.5h12v9H6v-9z" /></svg>
+              Locked
+              {% endif %}
             </a>
           </div>
 
@@ -500,8 +522,10 @@
             <div class="step-header">
               <div class="step-number">
                 {% if setup.setup_step > 3 %}
-                <i class="fas fa-check"></i>
-                {% else %} 3 {% endif %}
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+                {% else %}
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l-3.5 2.1 1-4-3.1-2.7 4-.3L12 5l1.6 4.1 4 .3-3.1 2.7 1 4z" /></svg>
+                {% endif %}
               </div>
               <h3 class="step-title">Academic Config</h3>
             </div>
@@ -514,9 +538,15 @@
               class="step-action {% if setup.setup_step > 3 %}completed{% elif setup.setup_step < 3 %}disabled{% endif %}"
             >
               {% if setup.setup_step > 3 %}
-              <i class="fas fa-check"></i> Completed {% elif setup.setup_step ==
-              3 %} <i class="fas fa-play"></i> Continue {% else %}
-              <i class="fas fa-lock"></i> Locked {% endif %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+              Completed
+              {% elif setup.setup_step == 3 %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.75 9.75 0 0012 2.25zm-1.5 6.75l6 3-6 3v-6z" /></svg>
+              Continue
+              {% else %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V9a4.5 4.5 0 00-9 0v1.5M6 10.5h12v9H6v-9z" /></svg>
+              Locked
+              {% endif %}
             </a>
           </div>
 
@@ -526,8 +556,10 @@
             <div class="step-header">
               <div class="step-number">
                 {% if setup.setup_step > 4 %}
-                <i class="fas fa-check"></i>
-                {% else %} 4 {% endif %}
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+                {% else %}
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5h14M4 10h16M7 15h10M9 20h6" /></svg>
+                {% endif %}
               </div>
               <h3 class="step-title">Branding</h3>
             </div>
@@ -540,9 +572,15 @@
               class="step-action {% if setup.setup_step > 4 %}completed{% elif setup.setup_step < 4 %}disabled{% endif %}"
             >
               {% if setup.setup_step > 4 %}
-              <i class="fas fa-check"></i> Completed {% elif setup.setup_step ==
-              4 %} <i class="fas fa-play"></i> Continue {% else %}
-              <i class="fas fa-lock"></i> Locked {% endif %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+              Completed
+              {% elif setup.setup_step == 4 %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.75 9.75 0 0012 2.25zm-1.5 6.75l6 3-6 3v-6z" /></svg>
+              Continue
+              {% else %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V9a4.5 4.5 0 00-9 0v1.5M6 10.5h12v9H6v-9z" /></svg>
+              Locked
+              {% endif %}
             </a>
           </div>
 
@@ -552,8 +590,10 @@
             <div class="step-header">
               <div class="step-number">
                 {% if setup.setup_step > 5 %}
-                <i class="fas fa-check"></i>
-                {% else %} 5 {% endif %}
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+                {% else %}
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 6.75H3m18 0a2.25 2.25 0 11-4.5 0m4.5 0a2.25 2.25 0 11-4.5 0M21 12H3m18 0a2.25 2.25 0 11-4.5 0m4.5 0a2.25 2.25 0 11-4.5 0M21 17.25H3m18 0a2.25 2.25 0 11-4.5 0m4.5 0a2.25 2.25 0 11-4.5 0" /></svg>
+                {% endif %}
               </div>
               <h3 class="step-title">Features</h3>
             </div>
@@ -566,9 +606,15 @@
               class="step-action {% if setup.setup_step > 5 %}completed{% elif setup.setup_step < 5 %}disabled{% endif %}"
             >
               {% if setup.setup_step > 5 %}
-              <i class="fas fa-check"></i> Completed {% elif setup.setup_step ==
-              5 %} <i class="fas fa-play"></i> Continue {% else %}
-              <i class="fas fa-lock"></i> Locked {% endif %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+              Completed
+              {% elif setup.setup_step == 5 %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.75 9.75 0 0012 2.25zm-1.5 6.75l6 3-6 3v-6z" /></svg>
+              Continue
+              {% else %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V9a4.5 4.5 0 00-9 0v1.5M6 10.5h12v9H6v-9z" /></svg>
+              Locked
+              {% endif %}
             </a>
           </div>
 
@@ -576,7 +622,9 @@
             class="step-card {% if setup.setup_step >= 6 %}current{% endif %}"
           >
             <div class="step-header">
-              <div class="step-number">6</div>
+              <div class="step-number">
+                <svg class="heroicon" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5l8.25-1.5v9L3 13.5V4.5zM11.25 3L18 1.5v9l-6.75 1.5V3z" /></svg>
+              </div>
               <h3 class="step-title">Review & Complete</h3>
             </div>
             <p class="step-description">
@@ -588,8 +636,12 @@
               class="step-action {% if setup.setup_step < 6 %}disabled{% endif %}"
             >
               {% if setup.setup_step >= 6 %}
-              <i class="fas fa-flag-checkered"></i> Complete Setup {% else %}
-              <i class="fas fa-lock"></i> Locked {% endif %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5l8.25-1.5v9L3 13.5V4.5zM11.25 3L18 1.5v9l-6.75 1.5V3z" /></svg>
+              Complete Setup
+              {% else %}
+              <svg class="heroicon heroicon-sm" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V9a4.5 4.5 0 00-9 0v1.5M6 10.5h12v9H6v-9z" /></svg>
+              Locked
+              {% endif %}
             </a>
           </div>
         </div>
