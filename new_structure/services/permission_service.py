@@ -8,6 +8,49 @@ from flask import session
 
 class PermissionService:
     """Service class for managing classteacher permissions."""
+    @staticmethod
+    def check_class_access(user_id, grade_id, stream_id=None):
+        """Check access using numeric identifiers (used by unified authorization layer).
+
+        This method differs from check_classteacher_permission which accepts grade/stream names.
+        Here we operate directly on ids to avoid extra lookups when already resolved.
+
+        Access Rules:
+            - headteacher / admin / superadmin: always True
+            - classteacher: must possess active ClassTeacherPermission record (grade + optional stream)
+            - teacher: currently treated similar to classteacher for read/write marks if permission exists
+              (future refinement may differentiate teacher vs classteacher scopes)
+            - others: False
+
+        Args:
+            user_id: int – teacher id from session
+            grade_id: int – grade primary key
+            stream_id: Optional[int] – stream primary key or None for single-class grades
+
+        Returns:
+            bool: True if user has class scope access
+        """
+        try:
+            if not user_id or not grade_id:
+                return False
+
+            # Resolve role once (avoid importing auth_service at module import time to prevent circulars)
+            from flask import session as _session  # lazy import; tests may patch session
+            role = _session.get('role') if _session else None
+
+            if role in ('headteacher', 'admin', 'superadmin'):
+                return True
+
+            if role in ('classteacher', 'teacher'):
+                return ClassTeacherPermission.has_permission(
+                    teacher_id=user_id,
+                    grade_id=grade_id,
+                    stream_id=stream_id
+                )
+            return False
+        except Exception as e:  # pragma: no cover - defensive
+            print(f"Error in check_class_access: {e}")
+            return False
     
     @staticmethod
     def check_classteacher_permission(teacher_id, grade_name, stream_name=None):

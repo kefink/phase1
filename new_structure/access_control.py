@@ -2,6 +2,12 @@
 from functools import wraps
 from flask import session, abort, request
 
+# DEPRECATION NOTICE (A5 phase):
+# This lightweight module is superseded by `security.authorization` which provides
+# unified resource/action/role/scope enforcement. New code should import
+# decorators from `security.authorization` instead of adding logic here.
+# Retained temporarily for backward compatibility with untouched routes.
+
 def require_role(required_roles):
     """Decorator to enforce role-based access control."""
     def decorator(f):

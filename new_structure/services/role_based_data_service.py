@@ -23,7 +23,8 @@ class RoleBasedDataService:
             Dictionary containing assignment summary data
         """
         try:
-            teacher = Teacher.query.get(teacher_id)
+            # Use modern SQLAlchemy 2.x style session.get for primary key lookup
+            teacher = db.session.get(Teacher, teacher_id)
             if not teacher:
                 return {'error': 'Teacher not found'}
             

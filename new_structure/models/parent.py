@@ -17,7 +17,11 @@ class Parent(db.Model):
     __tablename__ = 'parent'
     
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    # Avoid auto-creating an indexed name that can collide across repeated
+    # metadata initializations in tests. `unique=True` already creates an
+    # implicit index on most backends. If a dedicated index is ever needed,
+    # define it in __table_args__ with an explicit name and extend_existing.
+    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     
     # Personal Information
@@ -49,7 +53,7 @@ class Parent(db.Model):
     reset_token_expires = db.Column(db.DateTime, nullable=True)
     
     # Relationships - TEMPORARILY DISABLED (parent portal under development)
-    children = db.relationship('ParentStudent', back_populates='parent', lazy=True)
+    children = db.relationship(lambda: __import__('new_structure.models.parent', fromlist=['ParentStudent']).ParentStudent, back_populates='parent', lazy=True)
     # email_logs = db.relationship('ParentEmailLog', back_populates='parent', lazy=True)
     
     def set_password(self, password):
@@ -103,9 +107,9 @@ class ParentStudent(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)  # Admin who linked them
     
     # Relationships
-    parent = db.relationship('Parent', back_populates='children')
-    student = db.relationship('Student', backref='parent_links')
-    linked_by = db.relationship('Teacher', backref='parent_student_links')
+    parent = db.relationship(lambda: __import__('new_structure.models.parent', fromlist=['Parent']).Parent, back_populates='children')
+    student = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Student']).Student, backref='parent_links')
+    linked_by = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, backref='parent_student_links')
     
     # Unique constraint to prevent duplicate parent-student links
     __table_args__ = (db.UniqueConstraint('parent_id', 'student_id', name='unique_parent_student'),)
@@ -174,7 +178,7 @@ class EmailTemplate(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
 
     # Relationships
-    creator = db.relationship('Teacher', backref='email_templates')
+    creator = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, backref='email_templates')
 
     def __repr__(self):
         return f'<EmailTemplate {self.name}>'

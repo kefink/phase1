@@ -35,13 +35,13 @@ try:
         'port': Config.MYSQL_PORT
     }
 except ImportError:
-    # Fallback configuration
+    # Fallback configuration via environment variables (no hardcoded secrets)
     DB_CONFIG = {
-        'host': 'localhost',
-        'database': 'hillview_demo001',
-        'user': 'root',
-        'password': '@2494/lK',
-        'port': 3306
+        'host': os.environ.get('MYSQL_HOST', 'localhost'),
+        'database': os.environ.get('MYSQL_DATABASE', 'hillview_demo001'),
+        'user': os.environ.get('MYSQL_USER', 'root'),
+        'password': os.environ.get('MYSQL_PASSWORD', ''),
+        'port': int(os.environ.get('MYSQL_PORT', 3306)),
     }
 
 def get_db_connection():

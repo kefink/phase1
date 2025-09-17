@@ -3,13 +3,10 @@ User-related models for the Hillview School Management System.
 """
 import hmac
 from new_structure.extensions import db
+from .associations import teacher_subjects
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# Define the many-to-many relationship table
-teacher_subjects = db.Table('teacher_subjects',
-    db.Column('teacher_id', db.Integer, db.ForeignKey('teacher.id'), primary_key=True),
-    db.Column('subject_id', db.Integer, db.ForeignKey('subject.id'), primary_key=True)
-)
+# Association table imported from models.associations to avoid circular imports
 
 class Teacher(db.Model):
     """Teacher model representing school staff members.
@@ -50,9 +47,16 @@ class Teacher(db.Model):
     #   last_login DATETIME NULL
     # These are additive, backwards-compatible columns.
 
-    # Relationships
-    stream = db.relationship('Stream', backref=db.backref('teachers', lazy=True))
-    subjects = db.relationship('Subject', secondary=teacher_subjects, back_populates='teachers')
+    # Relationships (use callables to avoid ambiguous string lookups across re-imports)
+    stream = db.relationship(
+        lambda: __import__('new_structure.models.academic', fromlist=['Stream']).Stream,
+        backref=db.backref('teachers', lazy=True)
+    )
+    subjects = db.relationship(
+        lambda: __import__('new_structure.models.academic', fromlist=['Subject']).Subject,
+        secondary=teacher_subjects,
+        back_populates='teachers'
+    )
 
     def set_password(self, password):
         """Set (and hash) the user's password using secure hashing only.

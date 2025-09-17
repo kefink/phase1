@@ -3,9 +3,9 @@ Flask-SQLAlchemy==3.0.5
 Flask-WTF==1.1.1
 WTForms==3.0.1
 Werkzeug==2.3.7
-PyMySQL>=1.0.2
-cryptography>=3.4.8
-mysql-connector-python>=8.0.33
+PyMySQL==1.1.1  # Pinned (A9) for deterministic DB driver behavior (was >=1.0.2)
+cryptography==42.0.5  # Pinned (A9) to latest stable for security patches (was >=3.4.8)
+mysql-connector-python==8.4.0  # Pinned (A9) to avoid silent major changes (was >=8.0.33)
 reportlab==4.0.4
 Pillow==10.0.0
 openpyxl==3.1.2
@@ -41,3 +41,7 @@ requests==2.31.0
 bleach==6.0.0
 python-magic==0.4.27
 Alembic==1.13.2
+Flask-Limiter==3.5.0
+marshmallow==3.21.1
+bandit==1.7.9
+pip-audit==2.7.3

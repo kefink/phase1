@@ -38,10 +38,10 @@ class FunctionPermission(db.Model):
     auto_granted = db.Column(db.Boolean, default=False)  # True for default permissions
     
     # Relationships
-    teacher = db.relationship('Teacher', foreign_keys=[teacher_id])
-    granted_by_teacher = db.relationship('Teacher', foreign_keys=[granted_by])
-    grade = db.relationship('Grade')
-    stream = db.relationship('Stream')
+    teacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[teacher_id])
+    granted_by_teacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[granted_by])
+    grade = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Grade']).Grade)
+    stream = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Stream']).Stream)
     
     def __repr__(self):
         scope = f" ({self.scope_type})" if self.scope_type != 'global' else ""

@@ -1,39 +1,139 @@
 import pytest
-from flask import Flask
+from new_structure import create_app
+import os
 
 TEST_DB_URI = 'sqlite:///:memory:'
 
-@pytest.fixture()
+# --- Session-scoped App Lifecycle --------------------------------------------------
+# We observed intermittent "app not registered with this SQLAlchemy instance" errors
+# during large suite runs when creating *many* Flask app objects (one per test) while
+# the pytest-flask plugin's autouse fixtures also accessed the 'app' fixture. Moving
+# to a single session-scoped app with a function-scoped database reset eliminates
+# engine re-binding races and keeps a stable registration in db._app_engines.
+
+@pytest.fixture(scope='session')
 def app():
-    """Create a new Flask app + fresh in-memory DB per test to ensure isolation."""
-    app = Flask(__name__)
-    app.config.update(
-        TESTING=True,
-        SQLALCHEMY_DATABASE_URI=TEST_DB_URI,
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        WTF_CSRF_ENABLED=False,
-        SECRET_KEY='test-secret-key',
-        SESSION_COOKIE_NAME='hillview_secure_session'
-    )
+    os.environ['TEST_SQLALCHEMY_DATABASE_URI'] = TEST_DB_URI
+    flask_app = create_app('testing')
+    # Provide deterministic test secret key (sufficient length to avoid upgrade loop)
+    flask_app.config['SECRET_KEY'] = 'test-session-secret-key-1234567890'
+    # Flag this as the central session-scoped test app so other fixtures can detect it
+    flask_app.config['_SESSION_SCOPED_TEST_APP'] = True
     from new_structure.extensions import db
-    db.init_app(app)
-    with app.app_context():
+    with flask_app.app_context():
+        # Ensure all models are registered before creating tables
+        try:
+            import importlib
+            importlib.import_module('new_structure.models')
+        except Exception:
+            pass
         db.create_all()
-    yield app
-    with app.app_context():
-        db.drop_all()
+    return flask_app
+
+# Function-scoped DB reset for isolation. Runs BEFORE seeding/other autouse fixtures.
+@pytest.fixture(autouse=True)
+def _db_reset(app, request):
+    if request.node.get_closest_marker('nodb'):
+        # Skip DB work for nodb tests
+        yield
+        return
+    # Only operate on our session-scoped test app; skip module-defined custom apps
+    if not getattr(app, 'config', {}).get('_SESSION_SCOPED_TEST_APP', False):
+        yield
+        return
+    from new_structure.extensions import db
+    # If the provided app isn't registered with this SQLAlchemy instance, skip reset
+    try:
+        with app.app_context():
+            # Ensure all model metadata is loaded before touching the engine
+            try:
+                import importlib
+                # Import the aggregate models package which pulls in all model modules
+                importlib.import_module('new_structure.models')
+            except Exception as e:
+                print(f"[conftest::_db_reset] Model import warning: {e}")
+            # Accessing db.engine will raise if app not registered with this db instance
+            _ = db.engine  # noqa: F841
+            # Drop & recreate all tables to guarantee clean state per test
+            try:
+                db.drop_all()
+                db.create_all()
+            except Exception as e:
+                # Emit diagnostics and retry once after re-importing concrete modules
+                print(f"[conftest::_db_reset] create_all error: {e}; retrying after explicit module imports")
+                try:
+                    import importlib
+                    for mod in (
+                        'new_structure.models.academic',
+                        'new_structure.models.user',
+                        'new_structure.models.assignment',
+                        'new_structure.models.permission',
+                        'new_structure.models.function_permission',
+                        'new_structure.models.report_config',
+                        'new_structure.models.school_setup',
+                        'new_structure.models.parent',
+                        'new_structure.models.access_audit',
+                    ):
+                        try:
+                            importlib.import_module(mod)
+                        except Exception:
+                            pass
+                    db.drop_all()
+                    db.create_all()
+                except Exception as e2:
+                    print(f"[conftest::_db_reset] Retry create_all failed: {e2}")
+                    raise
+    except Exception:
+        # Non-DB tests or custom minimal apps without db.init_app(app)
+        yield
+        return
+    yield
+    # Post-test cleanup: ensure session rolled back/removed
+    try:
+        with app.app_context():
+            db.session.rollback()
+            db.session.remove()
+    except Exception:
+        pass
+
+@pytest.fixture()
+def client(app):
+    """Return test client bound to session-scoped app."""
+    return app.test_client()
+
+# Retain no-op override (harmless) – still prevents unexpected plugin reconfiguration.
+@pytest.fixture(autouse=True)
+def _configure_application():  # type: ignore
+    yield
+
+# NOTE: Avoid pushing a global app context per test. Some tests intentionally
+# create additional Flask apps (e.g., production-like config checks), and a
+# globally pushed session app context can confuse Flask-SQLAlchemy's app
+# binding. Tests that need a context should use the provided client, app, or
+# explicitly push app.app_context() as they already do in this suite.
 
 @pytest.fixture()
 def db_session(app):
-    """Return the active db.session (already bound) for direct usage."""
+    """Provide active db.session for current (reset) database state."""
     from new_structure.extensions import db
-    # Use nested transaction pattern if desired; for now simple session usage.
-    yield db.session
-    # Rollback any leftover transaction state to keep memory DB clean (not strictly needed with drop_all per test)
+    # Keep an active app context PUSHED for the entire test body
+    # so that db.session.commit()/queries during the test see the
+    # correct current_app and registered SQLAlchemy engine.
+    ctx = app.app_context()
+    ctx.push()
     try:
-        db.session.rollback()
-    except Exception:
-        pass
+        yield db.session
+    finally:
+        try:
+            db.session.rollback()
+            db.session.remove()
+        except Exception:
+            pass
+        # Pop the application context last
+        try:
+            ctx.pop()
+        except Exception:
+            pass
 
 # Factories
 @pytest.fixture()
@@ -82,8 +182,9 @@ def teacher_factory(db_session):
     counter = {'n': 0}
     def _create(username=None, role='teacher'):
         counter['n'] += 1
+        # Prefix with test_ to avoid collisions with seeded default users
         t = Teacher(
-            username=username or f"teacher{counter['n']}",
+            username=username or f"test_teacher{counter['n']}",
             role=role,
             password='pbkdf2:dummy'  # hashed-like placeholder to satisfy NOT NULL
         )
@@ -91,3 +192,129 @@ def teacher_factory(db_session):
         db_session.commit()
         return t
     return _create
+
+# Ensure session cleared before each test to avoid leakage causing auth state differences.
+# IMPORTANT: Do NOT depend directly on the client fixture so that nodb-marked tests avoid
+# triggering app/client (and thus DB) creation. This prevents config fail-fast tests from
+# unintentionally initializing the full application stack.
+@pytest.fixture(autouse=True)
+def clear_session(request):
+    if request.node.get_closest_marker('nodb'):
+        return
+    client = request.getfixturevalue('client')
+    with client.session_transaction() as sess:
+        sess.clear()
+    # Remove session cookie using public API (avoid private cookie_jar)
+    try:
+        app = getattr(client, 'application', None)
+        cookie_name = None
+        if app and getattr(app, 'config', None):
+            cookie_name = app.config.get('SESSION_COOKIE_NAME', 'session')
+        # Remove without specifying deprecated server_name parameter
+        client.delete_cookie(key=cookie_name or 'session')
+        if cookie_name and cookie_name != 'session':
+            client.delete_cookie(key='session')
+    except Exception:
+        # Best-effort; a fresh client per test keeps cookies isolated anyway
+        pass
+
+# --- Baseline Domain Seeding ------------------------------------------------------
+# Many tests assumed per-test app fixture seeded specific baseline entities (teachers, grade/stream, term, assessment type, subjects).
+# Provide a unified baseline after each DB reset to eliminate repeated bespoke seeding fixtures and NoneType lookup failures.
+@pytest.fixture(autouse=True)
+def baseline_seed(_db_reset, app, request):
+    if request.node.get_closest_marker('nobaseline') or request.node.get_closest_marker('nodb'):
+        # Allow tests to opt-out (e.g., config validation, minimal schema tests)
+        return
+    # Only seed when using our central session-scoped test app to avoid interfering
+    # with tests that build and seed their own minimal apps.
+    if not getattr(app, 'config', {}).get('_SESSION_SCOPED_TEST_APP', False):
+        return
+    from new_structure.extensions import db
+    from new_structure.models.academic import Grade, Stream, Term, AssessmentType, Subject
+    from new_structure.models.user import Teacher
+    from new_structure.models.assignment import TeacherSubjectAssignment
+    # Skip seeding when the current app is not registered with this SQLAlchemy instance
+    try:
+        with app.app_context():
+            _ = db.engine  # noqa: F841
+    except Exception:
+        return
+    with app.app_context():
+        # Grades & Streams
+        grade4 = Grade.query.filter_by(name='Grade 4').first()
+        if not grade4:
+            grade4 = Grade(name='Grade 4', education_level='upper_primary')
+            db.session.add(grade4)
+            db.session.flush()
+        streamA = Stream.query.filter_by(name='A', grade_id=grade4.id).first()
+        if not streamA:
+            streamA = Stream(name='A', grade_id=grade4.id)
+            db.session.add(streamA)
+            db.session.flush()
+        # Term & Assessment Types
+        term1 = Term.query.filter_by(name='Term 1').first()
+        if not term1:
+            term1 = Term(name='Term 1', is_current=True)
+            db.session.add(term1)
+        opener = AssessmentType.query.filter_by(name='Opener').first()
+        if not opener:
+            opener = AssessmentType(name='Opener', is_active=True)
+            db.session.add(opener)
+        # Subjects
+        math = Subject.query.filter_by(name='Mathematics').first()
+        if not math:
+            math = Subject(name='Mathematics', education_level='upper_primary')
+            db.session.add(math)
+        english = Subject.query.filter_by(name='English').first()
+        if not english:
+            english = Subject(name='English', education_level='upper_primary')
+            db.session.add(english)
+        # Teachers (headteacher, classteachers ct1/ct2, generic teacher carol)
+        head = Teacher.query.filter_by(username='head').first()
+        if not head:
+            head = Teacher(username='head', role='headteacher', password='pbkdf2:hash')
+            db.session.add(head)
+        ct1 = Teacher.query.filter_by(username='ct1').first()
+        if not ct1:
+            ct1 = Teacher(username='ct1', role='classteacher', password='pbkdf2:hash')
+            db.session.add(ct1)
+            db.session.flush()
+        ct2 = Teacher.query.filter_by(username='ct2').first()
+        if not ct2:
+            ct2 = Teacher(username='ct2', role='classteacher', password='pbkdf2:hash')
+            db.session.add(ct2)
+        carol = Teacher.query.filter_by(username='carol').first()
+        if not carol:
+            carol = Teacher(username='carol', role='teacher', password='pbkdf2:hash')
+            db.session.add(carol)
+        db.session.flush()
+        # Ensure ct1 is a class teacher for Grade 4 A (assignment) & subject teacher for math
+        existing_assignment = TeacherSubjectAssignment.query.filter_by(teacher_id=ct1.id, subject_id=math.id, grade_id=grade4.id, stream_id=streamA.id).first()
+        if not existing_assignment:
+            db.session.add(TeacherSubjectAssignment(teacher_id=ct1.id, subject_id=math.id, grade_id=grade4.id, stream_id=streamA.id, is_class_teacher=True))
+        # Provide second assignment for ct2 (non-class teacher) for scope tests when they reuse baseline
+        existing_assignment_ct2 = TeacherSubjectAssignment.query.filter_by(teacher_id=ct2.id, subject_id=math.id, grade_id=grade4.id, stream_id=streamA.id).first()
+        if not existing_assignment_ct2:
+            db.session.add(TeacherSubjectAssignment(teacher_id=ct2.id, subject_id=math.id, grade_id=grade4.id, stream_id=streamA.id, is_class_teacher=False))
+        db.session.commit()
+
+# --- Fresh App Fixture for Dynamic Route Tests -------------------------------------
+# Some tests (e.g., rate limit headers) dynamically add routes; with a session-scoped app
+# after first request Flask disallows further route registration. Provide a function-scoped
+# fresh_app that mirrors base create_app but isolated for those tests (mark with freshapp).
+@pytest.fixture()
+def fresh_app(request):
+    if not request.node.get_closest_marker('freshapp'):
+        # Only supply when explicitly requested to avoid inadvertent divergence
+        pytest.skip('fresh_app fixture only available with @pytest.mark.freshapp')
+    os.environ['TEST_SQLALCHEMY_DATABASE_URI'] = TEST_DB_URI
+    fa = create_app('testing')
+    from new_structure.extensions import db as _db
+    with fa.app_context():
+        _db.create_all()
+    return fa
+
+@pytest.fixture()
+def fresh_client(fresh_app):
+    return fresh_app.test_client()

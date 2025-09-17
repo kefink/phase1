@@ -1,70 +1,66 @@
 import pytest
-import os
-from flask import Flask, session, Blueprint
-from new_structure.extensions import db
-from new_structure.views.classteacher import classteacher_bp
 from new_structure.models import Teacher, Grade, Subject, Stream, TeacherSubjectAssignment
+from new_structure.extensions import db
+"""Scope tests for manage_teacher_assignments.
 
-@pytest.fixture()
-def app():
-    # Point Flask at the real templates directory so render_template can find assignment template
-    templates_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
-    app = Flask(__name__, template_folder=templates_path)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY'] = 'test'
-    db.init_app(app)
-    # Provide a csrf_token() callable expected by templates
-    @app.context_processor
-    def inject_csrf():
-        return {'csrf_token': lambda: 'test-csrf-token'}
-    # Dummy auth blueprint to satisfy template links
-    auth_bp = Blueprint('auth', __name__)
-    @auth_bp.route('/logout')
-    def logout_route():
-        return 'ok'
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(classteacher_bp)
+These originally re-registered the classteacher blueprint & context processor
+after the first request, which under a session-scoped app raises the Flask
+"setup finished" AssertionError. The blueprint is already registered during
+app factory execution (views.__init__ aggregated). We only need a lightweight
+csrf token helper (many templates guard its usage) – inject it once at import
+time if not already present.
+"""
+
+# Provide csrf helper without using app.context_processor dynamically per-test.
+# We avoid late registration by patching jinja env globals directly.
+@pytest.fixture(autouse=True, scope='session')
+def _ensure_csrf_global(app):
+    if 'csrf_token' not in app.jinja_env.globals:
+        app.jinja_env.globals['csrf_token'] = lambda: 'test-csrf-token'
+    yield
+
+@pytest.fixture(autouse=True)
+def seed_scope_data(app):
     with app.app_context():
-        db.create_all()
-        # Seed teachers with mandatory fields (password, role)
-        t1 = Teacher(username='alpha', password='hashed', role='teacher')
-        t2 = Teacher(username='beta', password='hashed', role='teacher')
-        db.session.add_all([t1, t2])
-        db.session.commit()
-        # Seed grade/stream/subject
-        g = Grade(name='Grade 4', education_level='upper_primary')
-        s = Subject(name='Mathematics', education_level='upper_primary')
-        db.session.add_all([g, s])
-        db.session.commit()
-        stream = Stream(name='A', grade_id=g.id)
-        db.session.add(stream)
-        db.session.commit()
-        # Assignment for beta only
-        assign = TeacherSubjectAssignment(teacher_id=t2.id, subject_id=s.id, grade_id=g.id, stream_id=stream.id, is_class_teacher=False)
-        db.session.add(assign)
-        db.session.commit()
-    yield app
+        # Baseline already provides Grade 4, Stream A, Mathematics subject.
+        grade = Grade.query.filter_by(name='Grade 4').first()
+        stream = Stream.query.filter_by(name='A', grade_id=grade.id if grade else None).first() if grade else None
+        subject = Subject.query.filter_by(name='Mathematics').first()
 
-@pytest.fixture()
-def client(app):
-    return app.test_client()
+        # Create alpha/beta teachers only if missing (avoid touching baseline teachers ct1/ct2 etc.)
+        alpha = Teacher.query.filter_by(username='alpha').first()
+        if not alpha:
+            alpha = Teacher(username='alpha', password='hashed', role='teacher')
+            db.session.add(alpha)
+        beta = Teacher.query.filter_by(username='beta').first()
+        if not beta:
+            beta = Teacher(username='beta', password='hashed', role='teacher')
+            db.session.add(beta)
+        db.session.commit()
+
+        # Ensure an assignment exists for beta only (scoped visibility tests)
+        if all([beta, subject, grade, stream]):
+            existing = TeacherSubjectAssignment.query.filter_by(teacher_id=beta.id, subject_id=subject.id, grade_id=grade.id, stream_id=stream.id).first()
+            if not existing:
+                db.session.add(TeacherSubjectAssignment(teacher_id=beta.id, subject_id=subject.id, grade_id=grade.id, stream_id=stream.id, is_class_teacher=False))
+                db.session.commit()
+    yield
 
 # Helper to login teacher id into session
 @pytest.fixture()
-def login_alpha(app, client):
+def login_alpha(client):
     with client.session_transaction() as sess:
         alpha = Teacher.query.filter_by(username='alpha').first()
         sess['teacher_id'] = alpha.id
-        sess['role'] = 'teacher'  # not privileged global scope
+        sess['role'] = 'teacher'
     return client
 
 @pytest.fixture()
-def login_alpha_as_class_teacher(app, client):
+def login_alpha_as_class_teacher(client):
     with client.session_transaction() as sess:
         alpha = Teacher.query.filter_by(username='alpha').first()
         sess['teacher_id'] = alpha.id
-        sess['role'] = 'classteacher'  # privileged (allowed global)
+        sess['role'] = 'classteacher'
     return client
 
 def test_scope_default_mine_hides_other(login_alpha):

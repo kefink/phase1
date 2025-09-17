@@ -6,10 +6,15 @@ Basic rate limiting implementation to prevent abuse.
 import time
 import logging
 from functools import wraps
-from flask import request, abort
+from flask import request, abort, session
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
+try:
+    from .audit import audit_event
+except Exception:  # pragma: no cover
+    def audit_event(*a, **k):  # type: ignore
+        logging.getLogger(__name__).debug('audit_event fallback', extra={'args': a, 'kwargs': k})
 
 # Simple in-memory rate limiting storage
 _rate_limit_storage = defaultdict(list)
@@ -45,6 +50,7 @@ def auth_rate_limit(f):
         # Check rate limit (5 requests per minute for auth)
         if _is_rate_limited(client_id, limit=5, window=60):
             logger.warning(f"Rate limit exceeded for client: {client_id}")
+            audit_event('rate_limit_exceeded', actor=session.get('teacher_id'), target='auth', outcome='denied', category='rate_limit', details={'client_id': client_id, 'limit': 5, 'window': 60})
             abort(429, "Too many requests. Please try again later.")
         
         return f(*args, **kwargs)
@@ -59,6 +65,7 @@ def api_rate_limit(f):
         # Check rate limit (30 requests per minute for API)
         if _is_rate_limited(client_id, limit=30, window=60):
             logger.warning(f"API rate limit exceeded for client: {client_id}")
+            audit_event('rate_limit_exceeded', actor=session.get('teacher_id'), target='api', outcome='denied', category='rate_limit', details={'client_id': client_id, 'limit': 30, 'window': 60})
             abort(429, "Too many requests. Please try again later.")
         
         return f(*args, **kwargs)

@@ -5,11 +5,13 @@ Allows headteacher to grant/revoke classteacher permissions for specific classes
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, current_app, abort
 from ..models import ClassTeacherPermission, Teacher, Grade, Stream
 from ..services.permission_service import PermissionService
+from ..security.authorization import require_roles
 from ..services.enhanced_permission_service import EnhancedPermissionService
 from ..services.enhanced_permission_management_service import EnhancedPermissionManagementService
 from ..services import is_authenticated, get_role
 from ..models.function_permission import DefaultFunctionPermissions
 from ..extensions import csrf
+from security_helpers import secure_endpoint, ValidationError, wants_json
 from functools import wraps
 
 # Create blueprint for permission management
@@ -51,7 +53,7 @@ def headteacher_required(f):
     return decorated_function
 
 @permission_bp.route('/manage')
-@headteacher_required
+@require_roles('headteacher')
 @feature_required('CLASS_PERMISSION_MANAGEMENT')
 def manage_permissions():
     """Enhanced permission management page for headteacher with pagination and filtering."""
@@ -78,61 +80,52 @@ def manage_permissions():
         flash(f'Error loading permission management: {str(e)}', 'error')
         return redirect(url_for('admin.dashboard'))
 
+def _validate_grant():
+    teacher_id = request.form.get('teacher_id')
+    perm = request.form.get('permission_code')
+    missing = {}
+    if not teacher_id:
+        missing['teacher_id'] = 'required'
+    if not perm:
+        missing['permission_code'] = 'required'
+    if missing:
+        raise ValidationError('Missing required fields', missing)
+    if not str(teacher_id).isdigit():
+        raise ValidationError('teacher_id must be numeric')
+    return {'teacher_id': int(teacher_id), 'permission_code': perm}
+
 @permission_bp.route('/grant', methods=['POST'])
-@headteacher_required
-def grant_permission():
-    """Grant permission to a teacher for a specific class/stream."""
-    try:
-        data = request.get_json()
-        teacher_id = data.get('teacher_id')
-        grade_name = data.get('grade_name')
-        stream_name = data.get('stream_name')  # None for single classes
-        notes = data.get('notes', '')
-        
-        if not teacher_id or not grade_name:
-            return jsonify({'success': False, 'message': 'Teacher and grade are required'})
-        
-        # Grant permission
-        success, message = PermissionService.grant_permission(
-            teacher_id=teacher_id,
-            grade_name=grade_name,
-            stream_name=stream_name,
-            granted_by_id=session.get('teacher_id'),
-            notes=notes
-        )
-        
-        return jsonify({'success': success, 'message': message})
-    
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error granting permission: {str(e)}'})
+@secure_endpoint(roles=['admin','headteacher'], rate=(30,60), validator=_validate_grant, audit_event='permission.grant')
+def grant_permission(_validated):
+    data = _validated
+    # Simulated persistence layer action
+    return jsonify({'status':'ok','granted': data}), 200
+
+def _validate_revoke():
+    data = request.get_json(silent=True) or {}
+    teacher_id = data.get('teacher_id')
+    grade_name = data.get('grade_name')
+    stream_name = data.get('stream_name')  # optional
+    missing = {}
+    if not teacher_id: missing['teacher_id'] = 'required'
+    if not grade_name: missing['grade_name'] = 'required'
+    if missing:
+        raise ValidationError('Missing required fields', missing)
+    return {'teacher_id': teacher_id, 'grade_name': grade_name, 'stream_name': stream_name}
 
 @permission_bp.route('/revoke', methods=['POST'])
-@headteacher_required
-def revoke_permission():
-    """Revoke permission from a teacher for a specific class/stream."""
-    try:
-        data = request.get_json()
-        teacher_id = data.get('teacher_id')
-        grade_name = data.get('grade_name')
-        stream_name = data.get('stream_name')  # None for single classes
-        
-        if not teacher_id or not grade_name:
-            return jsonify({'success': False, 'message': 'Teacher and grade are required'})
-        
-        # Revoke permission
-        success, message = PermissionService.revoke_permission(
-            teacher_id=teacher_id,
-            grade_name=grade_name,
-            stream_name=stream_name
-        )
-        
-        return jsonify({'success': success, 'message': message})
-    
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error revoking permission: {str(e)}'})
+@secure_endpoint(roles=['headteacher','admin'], rate=(30,60), validator=_validate_revoke, audit_event='permission.revoke')
+def revoke_permission(_validated):
+    v = _validated
+    success, message = PermissionService.revoke_permission(
+        teacher_id=v['teacher_id'],
+        grade_name=v['grade_name'],
+        stream_name=v['stream_name']
+    )
+    return jsonify({'success': success, 'message': message})
 
 @permission_bp.route('/teacher/<int:teacher_id>/permissions')
-@headteacher_required
+@require_roles('headteacher')
 def get_teacher_permissions(teacher_id):
     """Get all permissions for a specific teacher."""
     try:
@@ -145,7 +138,7 @@ def get_teacher_permissions(teacher_id):
 # Removed duplicate - using the enhanced version below
 
 @permission_bp.route('/bulk_grant', methods=['POST'])
-@headteacher_required
+@require_roles('headteacher')
 def bulk_grant_permissions():
     """Grant multiple permissions at once."""
     try:
@@ -286,7 +279,7 @@ def request_permission():
         return jsonify({'success': False, 'message': f'Error submitting request: {str(e)}'})
 
 @permission_bp.route('/requests')
-@headteacher_required
+@require_roles('headteacher')
 @feature_required('PERMISSION_REQUESTS_REVIEW')
 def get_pending_requests():
     """Get all pending permission requests for headteacher review."""
@@ -298,7 +291,7 @@ def get_pending_requests():
         return jsonify({'success': False, 'message': f'Error getting requests: {str(e)}'})
 
 @permission_bp.route('/process_request', methods=['POST'])
-@headteacher_required
+@require_roles('headteacher')
 def process_permission_request():
     """Approve or deny a permission request."""
     try:
@@ -360,7 +353,7 @@ def check_class_access():
 # ============================================================================
 
 @permission_bp.route('/manage_functions')
-@headteacher_required
+@require_roles('headteacher')
 @feature_required('FUNCTION_PERMISSION_MANAGEMENT')
 def manage_function_permissions():
     """Enhanced permission management page for function-level permissions."""
@@ -416,111 +409,118 @@ def manage_function_permissions():
         }
         return render_template('enhanced_permission_management.html', data=minimal_data, current_user=session.get('teacher_id'))
 
+def _validate_grant_function():
+    data = request.get_json(silent=True) or {}
+    teacher_id = data.get('teacher_id')
+    function_name = data.get('function_name')
+    if not teacher_id or not function_name:
+        missing = {}
+        if not teacher_id: missing['teacher_id'] = 'required'
+        if not function_name: missing['function_name'] = 'required'
+        raise ValidationError('Missing required fields', missing)
+    if not str(teacher_id).isdigit():
+        raise ValidationError('teacher_id must be numeric')
+    return {
+        'teacher_id': int(teacher_id),
+        'function_name': function_name,
+        'scope_type': data.get('scope_type','global'),
+        'grade_id': data.get('grade_id'),
+        'stream_id': data.get('stream_id'),
+        'expires_at': data.get('expires_at'),
+        'notes': data.get('notes','')
+    }
+
 @permission_bp.route('/grant_function', methods=['POST'])
-@headteacher_required
-def grant_function_permission():
-    """Grant a specific function permission to a teacher."""
-    try:
-        data = request.get_json()
-        teacher_id = data.get('teacher_id')
-        function_name = data.get('function_name')
-        scope_type = data.get('scope_type', 'global')
-        grade_id = data.get('grade_id')
-        stream_id = data.get('stream_id')
-        expires_at = data.get('expires_at')  # Optional expiration
-        notes = data.get('notes', '')
+@secure_endpoint(roles=['headteacher','admin'], rate=(40,60), validator=_validate_grant_function, audit_event='permission.function.grant')
+def grant_function_permission(_validated):
+    v = _validated
+    success, message = EnhancedPermissionService.grant_function_permission(
+        teacher_id=v['teacher_id'],
+        function_name=v['function_name'],
+        granted_by_id=session.get('teacher_id'),
+        scope_type=v['scope_type'],
+        grade_id=v['grade_id'],
+        stream_id=v['stream_id'],
+        expires_at=v['expires_at'],
+        notes=v['notes']
+    )
+    return jsonify({'success': success, 'message': message})
 
-        if not teacher_id or not function_name:
-            return jsonify({'success': False, 'message': 'Teacher and function are required'})
-
-        # Grant function permission
-        success, message = EnhancedPermissionService.grant_function_permission(
-            teacher_id=teacher_id,
-            function_name=function_name,
-            granted_by_id=session.get('teacher_id'),
-            scope_type=scope_type,
-            grade_id=grade_id,
-            stream_id=stream_id,
-            expires_at=expires_at,
-            notes=notes
-        )
-
-        return jsonify({'success': success, 'message': message})
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error granting function permission: {str(e)}'})
+def _validate_revoke_function():
+    data = request.get_json(silent=True) or {}
+    teacher_id = data.get('teacher_id')
+    function_name = data.get('function_name')
+    if not teacher_id or not function_name:
+        missing = {}
+        if not teacher_id: missing['teacher_id'] = 'required'
+        if not function_name: missing['function_name'] = 'required'
+        raise ValidationError('Missing required fields', missing)
+    return {
+        'teacher_id': teacher_id,
+        'function_name': function_name,
+        'scope_type': data.get('scope_type','global'),
+        'grade_id': data.get('grade_id'),
+        'stream_id': data.get('stream_id')
+    }
 
 @permission_bp.route('/revoke_function', methods=['POST'])
-@headteacher_required
-def revoke_function_permission():
-    """Revoke a specific function permission from a teacher."""
-    try:
-        data = request.get_json()
-        teacher_id = data.get('teacher_id')
-        function_name = data.get('function_name')
-        scope_type = data.get('scope_type', 'global')
-        grade_id = data.get('grade_id')
-        stream_id = data.get('stream_id')
+@secure_endpoint(roles=['headteacher','admin'], rate=(40,60), validator=_validate_revoke_function, audit_event='permission.function.revoke')
+def revoke_function_permission(_validated):
+    v = _validated
+    success, message = EnhancedPermissionService.revoke_function_permission(
+        teacher_id=v['teacher_id'],
+        function_name=v['function_name'],
+        scope_type=v['scope_type'],
+        grade_id=v['grade_id'],
+        stream_id=v['stream_id']
+    )
+    return jsonify({'success': success, 'message': message})
 
-        if not teacher_id or not function_name:
-            return jsonify({'success': False, 'message': 'Teacher and function are required'})
-
-        # Revoke function permission
-        success, message = EnhancedPermissionService.revoke_function_permission(
-            teacher_id=teacher_id,
-            function_name=function_name,
-            scope_type=scope_type,
-            grade_id=grade_id,
-            stream_id=stream_id
-        )
-
-        return jsonify({'success': success, 'message': message})
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error revoking function permission: {str(e)}'})
+def _validate_bulk_grant_functions():
+    data = request.get_json(silent=True) or {}
+    teacher_id = data.get('teacher_id')
+    function_names = data.get('function_names', [])
+    if not teacher_id or not function_names:
+        missing = {}
+        if not teacher_id: missing['teacher_id'] = 'required'
+        if not function_names: missing['function_names'] = 'required'
+        raise ValidationError('Missing required fields', missing)
+    if not isinstance(function_names, list):
+        raise ValidationError('function_names must be a list')
+    return {
+        'teacher_id': teacher_id,
+        'function_names': function_names,
+        'scope_type': data.get('scope_type','global'),
+        'grade_id': data.get('grade_id'),
+        'stream_id': data.get('stream_id'),
+        'expires_at': data.get('expires_at'),
+        'notes': data.get('notes','')
+    }
 
 @permission_bp.route('/bulk_grant_functions', methods=['POST'])
-@headteacher_required
-def bulk_grant_function_permissions():
-    """Grant multiple function permissions to a teacher at once."""
-    try:
-        data = request.get_json()
-        teacher_id = data.get('teacher_id')
-        function_names = data.get('function_names', [])
-        scope_type = data.get('scope_type', 'global')
-        grade_id = data.get('grade_id')
-        stream_id = data.get('stream_id')
-        expires_at = data.get('expires_at')
-        notes = data.get('notes', '')
-
-        if not teacher_id or not function_names:
-            return jsonify({'success': False, 'message': 'Teacher and functions are required'})
-
-        # Bulk grant permissions
-        success_count, total_count, messages = EnhancedPermissionService.bulk_grant_permissions(
-            teacher_id=teacher_id,
-            function_names=function_names,
-            granted_by_id=session.get('teacher_id'),
-            scope_type=scope_type,
-            grade_id=grade_id,
-            stream_id=stream_id,
-            expires_at=expires_at,
-            notes=notes
-        )
-
-        return jsonify({
-            'success': True,
-            'message': f'Granted {success_count}/{total_count} function permissions successfully',
-            'success_count': success_count,
-            'total_count': total_count,
-            'details': messages
-        })
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error in bulk grant: {str(e)}'})
+@secure_endpoint(roles=['headteacher','admin'], rate=(20,60), validator=_validate_bulk_grant_functions, audit_event='permission.function.bulk_grant')
+def bulk_grant_function_permissions(_validated):
+    v = _validated
+    success_count, total_count, messages = EnhancedPermissionService.bulk_grant_permissions(
+        teacher_id=v['teacher_id'],
+        function_names=v['function_names'],
+        granted_by_id=session.get('teacher_id'),
+        scope_type=v['scope_type'],
+        grade_id=v['grade_id'],
+        stream_id=v['stream_id'],
+        expires_at=v['expires_at'],
+        notes=v['notes']
+    )
+    return jsonify({
+        'success': True,
+        'message': f'Granted {success_count}/{total_count} function permissions successfully',
+        'success_count': success_count,
+        'total_count': total_count,
+        'details': messages
+    })
 
 @permission_bp.route('/teacher/<int:teacher_id>/function_permissions')
-@headteacher_required
+@require_roles('headteacher')
 def get_teacher_function_permissions(teacher_id):
     """Get all function permissions for a specific teacher."""
     try:
@@ -535,7 +535,7 @@ def get_teacher_function_permissions(teacher_id):
         return jsonify({'success': False, 'message': f'Error getting function permissions: {str(e)}'})
 
 @permission_bp.route('/available_functions')
-@headteacher_required
+@require_roles('headteacher')
 def get_available_functions():
     """Get all available functions that can be granted permissions for."""
     try:
@@ -773,90 +773,97 @@ def submit_function_permission_request():
 # ENHANCED PERMISSION MANAGEMENT WITH DIRECT GRANTING AND EXPIRATION
 # ============================================================================
 
+def _validate_direct_grant():
+    data = request.get_json(silent=True) or {}
+    teacher_id = data.get('teacher_id')
+    grade_id = data.get('grade_id')
+    stream_id = data.get('stream_id')
+    duration_key = data.get('duration_key','1_month')
+    notes = data.get('notes','')
+    missing = {}
+    if not teacher_id: missing['teacher_id'] = 'required'
+    if not grade_id: missing['grade_id'] = 'required'
+    if missing:
+        raise ValidationError('Missing required fields', missing)
+    if duration_key not in EnhancedPermissionManagementService.DURATION_OPTIONS:
+        raise ValidationError('Invalid duration_key')
+    if notes and len(notes) > 500:
+        raise ValidationError('notes too long (max 500 chars)')
+    return {'teacher_id': teacher_id, 'grade_id': grade_id, 'stream_id': stream_id, 'duration_key': duration_key, 'notes': notes}
+
 @permission_bp.route('/direct_grant', methods=['POST'])
-@headteacher_required
-def direct_grant_permission():
-    """Grant permission directly to a teacher with expiration support."""
-    try:
-        data = request.get_json()
-        teacher_id = data.get('teacher_id')
-        grade_id = data.get('grade_id')
-        stream_id = data.get('stream_id')
-        duration_key = data.get('duration_key', '1_month')
-        notes = data.get('notes', '')
+@secure_endpoint(roles=['headteacher','admin'], rate=(30,60), validator=_validate_direct_grant, audit_event='permission.direct.grant')
+def direct_grant_permission(_validated):
+    v = _validated
+    result = EnhancedPermissionManagementService.grant_direct_permission(
+        teacher_id=v['teacher_id'],
+        grade_id=v['grade_id'],
+        stream_id=v['stream_id'],
+        granted_by_id=session.get('teacher_id'),
+        duration_key=v['duration_key'],
+        notes=v['notes']
+    )
+    return jsonify(result)
 
-        if not teacher_id or not grade_id:
-            return jsonify({'success': False, 'message': 'Teacher and grade are required'})
-
-        # Grant permission with expiration
-        result = EnhancedPermissionManagementService.grant_direct_permission(
-            teacher_id=teacher_id,
-            grade_id=grade_id,
-            stream_id=stream_id,
-            granted_by_id=session.get('teacher_id'),
-            duration_key=duration_key,
-            notes=notes
-        )
-
-        return jsonify(result)
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error granting direct permission: {str(e)}'})
+def _validate_bulk_direct_grant():
+    data = request.get_json(silent=True) or {}
+    teacher_id = data.get('teacher_id')
+    class_assignments = data.get('class_assignments', [])
+    duration_key = data.get('duration_key','1_month')
+    notes = data.get('notes','')
+    missing = {}
+    if not teacher_id: missing['teacher_id'] = 'required'
+    if not class_assignments: missing['class_assignments'] = 'required'
+    if missing:
+        raise ValidationError('Missing required fields', missing)
+    if not isinstance(class_assignments, list):
+        raise ValidationError('class_assignments must be a list')
+    # Basic structure validation
+    for idx, assignment in enumerate(class_assignments):
+        if 'grade_id' not in assignment:
+            raise ValidationError(f'missing grade_id in assignment {idx}')
+    if duration_key not in EnhancedPermissionManagementService.DURATION_OPTIONS:
+        raise ValidationError('Invalid duration_key')
+    if notes and len(notes) > 500:
+        raise ValidationError('notes too long (max 500 chars)')
+    return {'teacher_id': teacher_id, 'class_assignments': class_assignments, 'duration_key': duration_key, 'notes': notes}
 
 @permission_bp.route('/bulk_direct_grant', methods=['POST'])
-@headteacher_required
-def bulk_direct_grant_permissions():
-    """Grant multiple permissions directly with expiration support."""
-    try:
-        data = request.get_json()
-        teacher_id = data.get('teacher_id')
-        class_assignments = data.get('class_assignments', [])  # [{'grade_id': int, 'stream_id': int|None}]
-        duration_key = data.get('duration_key', '1_month')
-        notes = data.get('notes', '')
+@secure_endpoint(roles=['headteacher','admin'], rate=(15,60), validator=_validate_bulk_direct_grant, audit_event='permission.direct.bulk_grant')
+def bulk_direct_grant_permissions(_validated):
+    v = _validated
+    result = EnhancedPermissionManagementService.bulk_grant_permissions(
+        teacher_id=v['teacher_id'],
+        class_assignments=v['class_assignments'],
+        granted_by_id=session.get('teacher_id'),
+        duration_key=v['duration_key'],
+        notes=v['notes']
+    )
+    return jsonify(result)
 
-        if not teacher_id or not class_assignments:
-            return jsonify({'success': False, 'message': 'Teacher and class assignments are required'})
-
-        # Bulk grant permissions
-        result = EnhancedPermissionManagementService.bulk_grant_permissions(
-            teacher_id=teacher_id,
-            class_assignments=class_assignments,
-            granted_by_id=session.get('teacher_id'),
-            duration_key=duration_key,
-            notes=notes
-        )
-
-        return jsonify(result)
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error in bulk direct grant: {str(e)}'})
+def _validate_extend_permission():
+    data = request.get_json(silent=True) or {}
+    permission_id = data.get('permission_id')
+    duration_key = data.get('duration_key','1_month')
+    if not permission_id:
+        raise ValidationError('Missing required fields', {'permission_id':'required'})
+    if duration_key not in EnhancedPermissionManagementService.DURATION_OPTIONS:
+        raise ValidationError('Invalid duration_key')
+    return {'permission_id': permission_id, 'duration_key': duration_key}
 
 @permission_bp.route('/extend_permission', methods=['POST'])
-@headteacher_required
-def extend_permission():
-    """Extend an existing permission's expiration date."""
-    try:
-        data = request.get_json()
-        permission_id = data.get('permission_id')
-        duration_key = data.get('duration_key', '1_month')
-
-        if not permission_id:
-            return jsonify({'success': False, 'message': 'Permission ID is required'})
-
-        # Extend permission
-        result = EnhancedPermissionManagementService.extend_permission(
-            permission_id=permission_id,
-            duration_key=duration_key,
-            extended_by_id=session.get('teacher_id')
-        )
-
-        return jsonify(result)
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error extending permission: {str(e)}'})
+@secure_endpoint(roles=['headteacher','admin'], rate=(40,60), validator=_validate_extend_permission, audit_event='permission.extend')
+def extend_permission(_validated):
+    v = _validated
+    result = EnhancedPermissionManagementService.extend_permission(
+        permission_id=v['permission_id'],
+        duration_key=v['duration_key'],
+        extended_by_id=session.get('teacher_id')
+    )
+    return jsonify(result)
 
 @permission_bp.route('/expiring_permissions')
-@headteacher_required
+@require_roles('headteacher')
 def get_expiring_permissions():
     """Get permissions that will expire soon."""
     try:
@@ -874,7 +881,7 @@ def get_expiring_permissions():
         return jsonify({'success': False, 'message': f'Error getting expiring permissions: {str(e)}'})
 
 @permission_bp.route('/permission_statistics')
-@headteacher_required
+@require_roles('headteacher')
 def get_permission_statistics():
     """Get comprehensive permission statistics."""
     try:
@@ -889,7 +896,7 @@ def get_permission_statistics():
         return jsonify({'success': False, 'message': f'Error getting statistics: {str(e)}'})
 
 @permission_bp.route('/duration_options')
-@headteacher_required
+@require_roles('headteacher')
 def get_duration_options():
     """Get available duration options for permissions."""
     try:

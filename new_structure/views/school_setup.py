@@ -11,6 +11,7 @@ from datetime import datetime
 from ..services import is_authenticated, get_role
 from functools import wraps
 import os
+from ..security_helpers import secure_endpoint, validate_uploaded_file, ValidationError
 
 # Create blueprint
 school_setup_bp = Blueprint('school_setup', __name__, url_prefix='/school-setup')
@@ -269,31 +270,33 @@ def complete_setup():
         flash(f'Error completing setup: {str(e)}', 'error')
         return redirect(url_for('school_setup.review'))
 
+def _validate_logo_upload():
+    from flask import current_app
+    cfg = current_app.config
+    allowed = cfg.get('FILE_ALLOWED_IMAGE_EXTENSIONS', {'.png', '.jpg', '.jpeg', '.gif'})
+    max_bytes = cfg.get('FILE_UPLOAD_MAX_BYTES', 5 * 1024 * 1024)
+    meta = validate_uploaded_file('logo', allowed_exts=allowed, max_bytes=max_bytes)
+    return meta
+
 @school_setup_bp.route('/api/upload-logo', methods=['POST'])
-@headteacher_required
-def api_upload_logo():
-    """API endpoint for logo upload."""
+@secure_endpoint(roles=['headteacher'], rate=(10,300), validator=_validate_logo_upload, audit_event='branding.logo_upload')
+def api_upload_logo(_validated):
     try:
-        if 'logo' not in request.files:
-            return jsonify({'success': False, 'message': 'No logo file provided'})
-        
-        logo_file = request.files['logo']
-        if not logo_file.filename:
-            return jsonify({'success': False, 'message': 'No file selected'})
-        
+        logo_file = _validated['file']
         filename = EnhancedSchoolSetupService.save_school_logo(logo_file)
-        if filename:
-            return jsonify({
-                'success': True,
-                'message': 'Logo uploaded successfully',
-                'filename': filename,
-                'url': f'/static/uploads/logos/{filename}'
-            })
-        else:
+        if not filename:
             return jsonify({'success': False, 'message': 'Failed to upload logo'})
-            
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
+        return jsonify({
+            'success': True,
+            'message': 'Logo uploaded successfully',
+            'filename': filename,
+            'size': _validated['size'],
+            'url': f'/static/uploads/logos/{filename}'
+        })
+    except ValidationError as ve:
+        return jsonify({'error': {'code': 'INVALID_REQUEST', 'message': str(ve), 'details': ve.details}}), 422
+    except Exception as e:  # pragma: no cover
+        return jsonify({'error': {'code': 'SERVER_ERROR', 'message': 'Unexpected error'}}), 500
 
 @school_setup_bp.route('/api/progress')
 @headteacher_required

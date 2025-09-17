@@ -8,11 +8,16 @@ import magic
 import hashlib
 import logging
 from functools import wraps
-from flask import request, abort, current_app
+from flask import request, abort, current_app, session
 from werkzeug.utils import secure_filename
 from PIL import Image
 import zipfile
 import tempfile
+try:
+    from ..utils.audit import audit_event
+except Exception:  # pragma: no cover
+    def audit_event(*a, **k):  # type: ignore
+        logging.getLogger(__name__).debug('audit_event fallback', extra={'args': a, 'kwargs': k})
 
 class FileUploadSecurity:
     """Comprehensive file upload security."""
@@ -478,12 +483,14 @@ def secure_file_upload(allowed_extensions=None, max_size=None):
                     
                     if not is_valid:
                         logging.warning(f"File upload blocked: {error_msg} for file {file.filename}")
+                        audit_event('file_upload_blocked', actor=session.get('teacher_id'), target=file.filename, outcome='denied', category='file_upload', details={'reason': error_msg})
                         abort(400, f"File upload error: {error_msg}")
                     
                     # Additional custom validation
                     if allowed_extensions:
                         _, ext = os.path.splitext(file.filename.lower())
                         if ext not in allowed_extensions:
+                            audit_event('file_extension_blocked', actor=session.get('teacher_id'), target=file.filename, outcome='denied', category='file_upload', details={'ext': ext})
                             abort(400, f"File extension {ext} not allowed for this upload")
                     
                     if max_size:
@@ -491,6 +498,7 @@ def secure_file_upload(allowed_extensions=None, max_size=None):
                         file_size = file.tell()
                         file.seek(0)
                         if file_size > max_size:
+                            audit_event('file_size_blocked', actor=session.get('teacher_id'), target=file.filename, outcome='denied', category='file_upload', details={'size': file_size, 'limit': max_size})
                             abort(400, "File size exceeds limit for this upload")
             
             return f(*args, **kwargs)

@@ -3,6 +3,7 @@ Flexible Marks Service for managing subject-specific marks upload.
 Handles filtering subjects based on teacher assignments and showing upload status.
 """
 from ..models.academic import Subject, Mark, Grade, Stream, Term, AssessmentType, Student
+from ..utils.safe_get import safe_get
 from ..models.assignment import TeacherSubjectAssignment
 from ..models.user import Teacher
 from ..extensions import db
@@ -36,9 +37,9 @@ class FlexibleMarksService:
             class_assignments = {}
 
             for assignment in assignments:
-                grade_obj = Grade.query.get(assignment.grade_id)
-                stream_obj = Stream.query.get(assignment.stream_id) if assignment.stream_id else None
-                subject_obj = Subject.query.get(assignment.subject_id)
+                grade_obj = safe_get(Grade, assignment.grade_id)
+                stream_obj = safe_get(Stream, assignment.stream_id) if assignment.stream_id else None
+                subject_obj = safe_get(Subject, assignment.subject_id)
 
                 if not grade_obj or not subject_obj:
                     continue
@@ -93,7 +94,8 @@ class FlexibleMarksService:
         try:
             # Get grade and stream objects
             grade_obj = Grade.query.filter_by(name=grade_name).first()
-            stream_obj = Stream.query.filter_by(name=stream_name).first()
+            # Disambiguate stream within grade context
+            stream_obj = Stream.query.filter_by(name=stream_name, grade_id=grade_obj.id).first() if grade_obj else None
             
             if not grade_obj or not stream_obj:
                 return []
@@ -165,7 +167,7 @@ class FlexibleMarksService:
         try:
             # Get grade, stream, term, and assessment type objects
             grade_obj = Grade.query.filter_by(name=grade_name).first()
-            stream_obj = Stream.query.filter_by(name=stream_name).first()
+            stream_obj = Stream.query.filter_by(name=stream_name, grade_id=grade_obj.id).first() if grade_obj else None
             term_obj = Term.query.filter_by(name=term_name).first()
             assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type_name).first()
             
@@ -287,7 +289,7 @@ class FlexibleMarksService:
         """
         try:
             grade_obj = Grade.query.filter_by(name=grade_name).first()
-            stream_obj = Stream.query.filter_by(name=stream_name).first()
+            stream_obj = Stream.query.filter_by(name=stream_name, grade_id=grade_obj.id).first() if grade_obj else None
             
             if not grade_obj or not stream_obj:
                 return False
@@ -344,7 +346,7 @@ class FlexibleMarksService:
             Dictionary with teacher's portal access summary
         """
         try:
-            teacher = Teacher.query.get(teacher_id)
+            teacher = safe_get(Teacher, teacher_id)
             if not teacher:
                 return {'error': 'Teacher not found'}
 

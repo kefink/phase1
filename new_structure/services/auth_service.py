@@ -66,16 +66,13 @@ def get_teacher_by_id(teacher_id):
     return Teacher.query.get(teacher_id)
 
 def is_authenticated(session):
+    """Return True only if both teacher_id and role are set.
+
+    Some legacy flows populated teacher_id prematurely; requiring role prevents
+    partially initialized sessions being treated as authenticated (restores
+    expected 401 for tests relying on strict semantics).
     """
-    Check if a user is authenticated based on session data.
-    
-    Args:
-        session: The Flask session object
-        
-    Returns:
-        Boolean indicating if the user is authenticated
-    """
-    return 'teacher_id' in session
+    return 'teacher_id' in session and 'role' in session
 
 def get_role(session):
     """

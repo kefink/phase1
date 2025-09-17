@@ -13,10 +13,10 @@ class TeacherSubjectAssignment(db.Model):
     is_class_teacher = db.Column(db.Boolean, default=False)  # Indicates if this teacher is the class teacher
 
     # Relationships
-    teacher = db.relationship('Teacher', backref=db.backref('subject_assignments', lazy=True, cascade='all, delete-orphan'))
-    subject = db.relationship('Subject')
-    grade = db.relationship('Grade')
-    stream = db.relationship('Stream')
+    teacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, backref=db.backref('subject_assignments', lazy=True, cascade='all, delete-orphan'))
+    subject = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Subject']).Subject)
+    grade = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Grade']).Grade)
+    stream = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Stream']).Stream)
 
     def __repr__(self):
         teacher_name = self.teacher.username if self.teacher else f"Teacher ID {self.teacher_id}"

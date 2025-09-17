@@ -9,16 +9,18 @@ from flask import session, request, abort, current_app
 try:
     from ..services.auth_service import is_authenticated, get_role
 except ImportError:
-    # Fallback for direct imports
     try:
         from services.auth_service import is_authenticated, get_role
     except ImportError:
-        # Mock functions for testing
         def is_authenticated(session):
             return session.get('teacher_id') is not None
-
         def get_role(session):
             return session.get('role', 'guest')
+try:  # Audit import
+    from ..utils.audit import audit_event
+except Exception:  # pragma: no cover
+    def audit_event(*a, **k):  # type: ignore
+        logging.getLogger(__name__).debug('audit_event fallback', extra={'args': a, 'kwargs': k})
 
 class AccessControlProtection:
     """Comprehensive access control protection."""
@@ -43,6 +45,7 @@ class AccessControlProtection:
         },
         'marks': {
             'read': ['teacher', 'classteacher', 'headteacher', 'admin'],
+            # Teacher restored for write; class-scope decorator will still narrow effective access when enforced
             'write': ['teacher', 'classteacher', 'headteacher', 'admin'],
             'delete': ['headteacher', 'admin']
         },
@@ -215,10 +218,26 @@ class AccessControlProtection:
         ip = ip_address or request.remote_addr if request else "unknown"
         
         logging.info(f"ACCESS {status}: User {user_id} attempted {action} on {resource} from {ip}")
-        
-        # In production, you might want to store this in a database for analysis
         if not success:
             logging.warning(f"SECURITY ALERT: Unauthorized access attempt by user {user_id}")
+            audit_event('access_denied', actor=user_id, target=f"{resource}:{action}", outcome='denied', category='authorization', details={'ip': ip})
+        else:
+            audit_event('access_granted', actor=user_id, target=f"{resource}:{action}", outcome='success', category='authorization', details={'ip': ip})
+
+        # Persistent audit logging (Phase 2)
+        try:  # pragma: no cover (DB failures shouldn't break flow)
+            from ..models.access_audit import AccessAudit
+            from flask import session as _sess
+            AccessAudit.record(
+                user_id=user_id,
+                role=_sess.get('role'),
+                resource=resource,
+                action=action,
+                success=bool(success),
+                ip_address=ip
+            )
+        except Exception:
+            logging.debug("Audit persistence skipped due to error", exc_info=True)
 
 def require_role(required_role):
     """

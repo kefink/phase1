@@ -5,7 +5,7 @@ Comprehensive security configurations and headers.
 
 import os
 import logging
-from flask import Flask, request, session
+from flask import Flask, request, session, redirect, url_for, render_template, abort
 from datetime import timedelta
 
 class SecurityConfiguration:
@@ -56,8 +56,19 @@ class SecurityConfiguration:
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         
         # Rate limiting configuration
-        app.config['RATELIMIT_STORAGE_URL'] = 'memory://'
-        app.config['RATELIMIT_DEFAULT'] = '100 per hour'
+        # Prefer new RATE_LIMIT_STORAGE_URI (Redis) but keep backward compat with RATELIMIT_STORAGE_URL
+        redis_host = os.environ.get('REDIS_HOST', 'localhost')
+        redis_port = os.environ.get('REDIS_PORT', '6379')
+        redis_db = os.environ.get('REDIS_DB', '0')
+        redis_password = os.environ.get('REDIS_PASSWORD')
+        if redis_password:
+            redis_uri = f"redis://:{redis_password}@{redis_host}:{redis_port}/{redis_db}"
+        else:
+            redis_uri = f"redis://{redis_host}:{redis_port}/{redis_db}"
+        app.config.setdefault('RATE_LIMIT_STORAGE_URI', redis_uri)
+        # Backwards compatibility key used by flask-limiter <3 style examples
+        app.config.setdefault('RATELIMIT_STORAGE_URL', app.config['RATE_LIMIT_STORAGE_URI'])
+        app.config.setdefault('RATELIMIT_DEFAULT', '100 per hour')
         
         # Logging configuration
         SecurityConfiguration.configure_security_logging(app)

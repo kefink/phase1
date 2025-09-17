@@ -26,6 +26,10 @@ try:
     # Import create_app from the new_structure package
     from new_structure import create_app
 
+    # Default: disable Redis-backed rate limiting in dev unless explicitly forced
+    if not os.environ.get('FORCE_REDIS') and not os.environ.get('REDIS_DISABLED'):
+        os.environ['REDIS_DISABLED'] = '1'
+
     # Create the Flask application
     app = create_app('development')
 

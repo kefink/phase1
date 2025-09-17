@@ -8,7 +8,8 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 from datetime import datetime
 
-from ..utils.performance import get_performance_category, get_grade_and_points
+# Fixed relative import: this module resides inside the top-level 'utils' package, so use a single-dot relative import.
+from .performance import get_performance_category, get_grade_and_points
 
 def generate_individual_report_pdf(grade, stream, term, assessment_type, student_name, class_data, education_level, total_marks, subjects):
     """

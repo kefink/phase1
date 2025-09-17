@@ -4,6 +4,7 @@ Report Configuration Service for managing dynamic report settings.
 
 from ..models.report_config import ReportConfiguration, ClassReportConfiguration, ReportTemplate
 from ..models import Teacher, Term, Grade, Stream
+from ..utils.safe_get import safe_get
 from ..extensions import db
 from datetime import datetime, date
 from sqlalchemy import and_, or_
@@ -125,7 +126,14 @@ class ReportConfigService:
         
         # Get grade and stream objects
         grade_obj = Grade.query.filter_by(name=grade).first()
-        stream_obj = Stream.query.filter_by(name=stream.split()[-1]).first() if stream else None
+        stream_obj = None
+        if stream:
+            stream_letter = stream.split()[-1]
+            if grade_obj:
+                stream_obj = Stream.query.filter_by(name=stream_letter, grade_id=grade_obj.id).first()
+            else:
+                # Grade unknown; fall back (legacy behavior) but this path should rarely execute
+                stream_obj = Stream.query.filter_by(name=stream_letter).first()
         
         # Get global report configuration
         global_config = ReportConfigService.get_report_config_for_term(term)
@@ -180,18 +188,18 @@ class ReportConfigService:
         # Class Teacher
         class_teacher = None
         if class_config and class_config.class_teacher_id:
-            class_teacher = Teacher.query.get(class_config.class_teacher_id)
+            class_teacher = safe_get(Teacher, class_config.class_teacher_id)
         elif class_teacher_id:
-            class_teacher = Teacher.query.get(class_teacher_id)
+            class_teacher = safe_get(Teacher, class_teacher_id)
         
         staff_info['class_teacher'] = get_teacher_info(class_teacher)
         
         # Headteacher
         headteacher = None
         if class_config and class_config.custom_headteacher_id:
-            headteacher = Teacher.query.get(class_config.custom_headteacher_id)
+            headteacher = safe_get(Teacher, class_config.custom_headteacher_id)
         elif global_config and global_config.headteacher_id:
-            headteacher = Teacher.query.get(global_config.headteacher_id)
+            headteacher = safe_get(Teacher, global_config.headteacher_id)
         else:
             # Fallback to role-based lookup
             headteacher = Teacher.query.filter_by(role='headteacher').first()
@@ -201,9 +209,9 @@ class ReportConfigService:
         # Deputy Headteacher
         deputy = None
         if class_config and class_config.custom_deputy_id:
-            deputy = Teacher.query.get(class_config.custom_deputy_id)
+            deputy = safe_get(Teacher, class_config.custom_deputy_id)
         elif global_config and global_config.deputy_headteacher_id:
-            deputy = Teacher.query.get(global_config.deputy_headteacher_id)
+            deputy = safe_get(Teacher, global_config.deputy_headteacher_id)
         else:
             # Fallback to role-based lookup or qualification
             deputy = Teacher.query.filter(
@@ -215,9 +223,9 @@ class ReportConfigService:
         # Principal
         principal = None
         if class_config and class_config.custom_principal_id:
-            principal = Teacher.query.get(class_config.custom_principal_id)
+            principal = safe_get(Teacher, class_config.custom_principal_id)
         elif global_config and global_config.principal_id:
-            principal = Teacher.query.get(global_config.principal_id)
+            principal = safe_get(Teacher, global_config.principal_id)
         else:
             # Fallback to role-based lookup
             principal = Teacher.query.filter(

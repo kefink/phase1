@@ -2,6 +2,8 @@
 Staff Assignment Service for managing dynamic teacher assignments and report generation.
 """
 from ..models import Teacher, TeacherSubjectAssignment, SchoolConfiguration, Grade, Stream, Subject
+from ..utils.safe_get import safe_get
+from ..utils.stream_lookup import get_stream_by_name_and_grade
 from ..extensions import db
 from sqlalchemy import and_
 
@@ -23,7 +25,7 @@ class StaffAssignmentService:
         try:
             # Get grade and stream objects
             grade_obj = Grade.query.filter_by(name=grade).first()
-            stream_obj = Stream.query.filter_by(name=stream).first()
+            stream_obj = get_stream_by_name_and_grade(stream, grade_obj)
 
             if not grade_obj or not stream_obj:
                 print(f"Grade or stream not found: {grade}, {stream}")
@@ -74,7 +76,7 @@ class StaffAssignmentService:
         try:
             # Get grade and stream objects
             grade_obj = Grade.query.filter_by(name=grade).first()
-            stream_obj = Stream.query.filter_by(name=stream).first()
+            stream_obj = get_stream_by_name_and_grade(stream, grade_obj)
 
             if not grade_obj or not stream_obj:
                 return {}
@@ -110,7 +112,7 @@ class StaffAssignmentService:
             config = SchoolConfiguration.get_config()
             # Check if dynamic headteacher_id field exists (after migration)
             if hasattr(config, 'headteacher_id') and config.headteacher_id:
-                return Teacher.query.get(config.headteacher_id)
+                return safe_get(Teacher, config.headteacher_id)
             # Fallback: try to find headteacher by role
             return Teacher.query.filter_by(role='headteacher').first()
         except Exception as e:
@@ -129,7 +131,7 @@ class StaffAssignmentService:
             config = SchoolConfiguration.get_config()
             # Check if dynamic deputy_headteacher_id field exists (after migration)
             if hasattr(config, 'deputy_headteacher_id') and config.deputy_headteacher_id:
-                return Teacher.query.get(config.deputy_headteacher_id)
+                return safe_get(Teacher, config.deputy_headteacher_id)
             # Fallback: return None for now (can be enhanced later)
             return None
         except Exception as e:
@@ -152,8 +154,8 @@ class StaffAssignmentService:
         try:
             # Get grade and stream objects
             grade_obj = Grade.query.filter_by(name=grade).first()
-            stream_obj = Stream.query.filter_by(name=stream).first()
-            teacher = Teacher.query.get(teacher_id)
+            stream_obj = get_stream_by_name_and_grade(stream, grade_obj)
+            teacher = safe_get(Teacher, teacher_id)
 
             if not grade_obj or not stream_obj or not teacher:
                 return False
@@ -215,7 +217,7 @@ class StaffAssignmentService:
         """
         try:
             config = SchoolConfiguration.get_config()
-            teacher = Teacher.query.get(teacher_id)
+            teacher = safe_get(Teacher, teacher_id)
 
             if not teacher:
                 return False
@@ -247,7 +249,7 @@ class StaffAssignmentService:
         """
         try:
             config = SchoolConfiguration.get_config()
-            teacher = Teacher.query.get(teacher_id)
+            teacher = safe_get(Teacher, teacher_id)
 
             if not teacher:
                 return False
@@ -340,7 +342,7 @@ class StaffAssignmentService:
                 return False
 
             # Find Stream B
-            stream_b = Stream.query.filter_by(name='B').first()
+            stream_b = get_stream_by_name_and_grade('B', grade_9)
             if not stream_b:
                 print("Stream B not found")
                 return False

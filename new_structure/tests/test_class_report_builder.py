@@ -1,40 +1,32 @@
 import pytest
-from flask import Flask
 from new_structure.extensions import db
 from new_structure.services.class_report_builder import ClassReportBuilder
 from new_structure.models.academic import Grade, Stream, Term, AssessmentType, Subject, Student, Mark
 
-@pytest.fixture(scope='module')
-def app():
-    app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db.init_app(app)
+@pytest.fixture(autouse=True)
+def _seed_builder_data(app):
+    # Rely on baseline seed for Grade 4 / Stream A / Term 1 / Opener / subjects
     with app.app_context():
-        db.create_all()
-        # Seed minimal data
-        grade = Grade(name='Grade 4')
-        db.session.add(grade)
-        db.session.commit()
-        stream = Stream(name='A', grade_id=grade.id)
-        term = Term(name='Term 1')
-        assess = AssessmentType(name='Opener')
-        subj_math = Subject(name='Mathematics', education_level='upper_primary')
-        subj_eng = Subject(name='English', education_level='upper_primary')
-        db.session.add_all([stream, term, assess, subj_math, subj_eng])
-        db.session.commit()
-        # Students
-        s1 = Student(name='Alice', admission_number='A001', grade_id=grade.id, stream_id=stream.id)
-        s2 = Student(name='Bob', admission_number='A002', grade_id=grade.id, stream_id=stream.id)
-        db.session.add_all([s1, s2])
-        db.session.commit()
-        # Marks (raw 80/100 and 60/100)
-        m1 = Mark(student_id=s1.id, subject_id=subj_math.id, term_id=term.id, assessment_type_id=assess.id, grade_id=grade.id, stream_id=stream.id, raw_mark=80, raw_total_marks=100)
-        m2 = Mark(student_id=s2.id, subject_id=subj_math.id, term_id=term.id, assessment_type_id=assess.id, grade_id=grade.id, stream_id=stream.id, raw_mark=60, raw_total_marks=100)
-        m3 = Mark(student_id=s1.id, subject_id=subj_eng.id, term_id=term.id, assessment_type_id=assess.id, grade_id=grade.id, stream_id=stream.id, raw_mark=70, raw_total_marks=100)
-        db.session.add_all([m1, m2, m3])
-        db.session.commit()
-    yield app
+        grade = Grade.query.filter_by(name='Grade 4').first()
+        stream = Stream.query.filter_by(name='A', grade_id=grade.id).first()
+        term = Term.query.filter_by(name='Term 1').first()
+        assess = AssessmentType.query.filter_by(name='Opener').first()
+        subj_math = Subject.query.filter_by(name='Mathematics').first()
+        subj_eng = Subject.query.filter_by(name='English').first()
+        # Students & marks
+        if not Student.query.filter_by(admission_number='A001').first():
+            s1 = Student(name='Alice', admission_number='A001', grade_id=grade.id, stream_id=stream.id)
+            s2 = Student(name='Bob', admission_number='A002', grade_id=grade.id, stream_id=stream.id)
+            db.session.add_all([s1, s2])
+            db.session.commit()
+        s1 = Student.query.filter_by(admission_number='A001').first()
+        s2 = Student.query.filter_by(admission_number='A002').first()
+        if not Mark.query.first():
+            m1 = Mark(student_id=s1.id, subject_id=subj_math.id, term_id=term.id, assessment_type_id=assess.id, grade_id=grade.id, stream_id=stream.id, raw_mark=80, raw_total_marks=100)
+            m2 = Mark(student_id=s2.id, subject_id=subj_math.id, term_id=term.id, assessment_type_id=assess.id, grade_id=grade.id, stream_id=stream.id, raw_mark=60, raw_total_marks=100)
+            m3 = Mark(student_id=s1.id, subject_id=subj_eng.id, term_id=term.id, assessment_type_id=assess.id, grade_id=grade.id, stream_id=stream.id, raw_mark=70, raw_total_marks=100)
+            db.session.add_all([m1, m2, m3])
+            db.session.commit()
 
 @pytest.fixture()
 def ctx(app):

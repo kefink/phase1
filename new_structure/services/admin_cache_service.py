@@ -5,7 +5,16 @@ import os
 import json
 import time
 import hashlib
-import pickle
+import pickle  # Legacy migration only
+from flask import current_app
+from utils.serialization import (
+    serialize_to_file,
+    deserialize_from_file,
+    migrate_legacy_pickle,
+    is_legacy_pickle,
+    SerializationError,
+    IntegrityError,
+)
 
 # Cache directory
 CACHE_DIR = 'cache'
@@ -50,13 +59,15 @@ def cache_dashboard_stats(stats_data, expiry=3600):
     }
     
     # Store in file cache
-    cache_file = os.path.join(ADMIN_CACHE_DIR, f"{cache_key}.pickle")
-    with open(cache_file, 'wb') as f:
-        pickle.dump({
+    cache_file = os.path.join(ADMIN_CACHE_DIR, f"{cache_key}.jsons")
+    try:
+        serialize_to_file({
             'data': stats_data,
             'timestamp': time.time(),
             'expiry': expiry
-        }, f)
+        }, cache_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+    except SerializationError:
+        pass
 
 def get_cached_dashboard_stats():
     """
@@ -75,18 +86,26 @@ def get_cached_dashboard_stats():
             return cache_entry['data']
     
     # Check file cache
-    cache_file = os.path.join(ADMIN_CACHE_DIR, f"{cache_key}.pickle")
-    if os.path.exists(cache_file):
-        with open(cache_file, 'rb') as f:
-            try:
+    new_file = os.path.join(ADMIN_CACHE_DIR, f"{cache_key}.jsons")
+    if os.path.exists(new_file):
+        try:
+            cache_entry = deserialize_from_file(new_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+            if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
+                _admin_memory_cache[cache_key] = cache_entry
+                return cache_entry['data']
+        except (SerializationError, IntegrityError, KeyError, TypeError):
+            pass
+    legacy_file = os.path.join(ADMIN_CACHE_DIR, f"{cache_key}.pickle")
+    if os.path.exists(legacy_file) and is_legacy_pickle(legacy_file):
+        try:
+            with open(legacy_file, 'rb') as f:
                 cache_entry = pickle.load(f)
-                if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
-                    # Update memory cache
-                    _admin_memory_cache[cache_key] = cache_entry
-                    return cache_entry['data']
-            except (pickle.PickleError, KeyError):
-                # Invalid cache file, ignore
-                pass
+            migrate_legacy_pickle(legacy_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+            if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
+                _admin_memory_cache[cache_key] = cache_entry
+                return cache_entry['data']
+        except Exception:
+            pass
     
     return None
 
@@ -111,13 +130,15 @@ def cache_subject_list(subjects_data, expiry=3600):
     }
     
     # Store in file cache
-    cache_file = os.path.join(ADMIN_CACHE_DIR, f"{cache_key}.pickle")
-    with open(cache_file, 'wb') as f:
-        pickle.dump({
+    cache_file = os.path.join(ADMIN_CACHE_DIR, f"{cache_key}.jsons")
+    try:
+        serialize_to_file({
             'data': subjects_data,
             'timestamp': time.time(),
             'expiry': expiry
-        }, f)
+        }, cache_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+    except SerializationError:
+        pass
 
 def get_cached_subject_list():
     """
@@ -136,18 +157,26 @@ def get_cached_subject_list():
             return cache_entry['data']
     
     # Check file cache
-    cache_file = os.path.join(ADMIN_CACHE_DIR, f"{cache_key}.pickle")
-    if os.path.exists(cache_file):
-        with open(cache_file, 'rb') as f:
-            try:
+    new_file = os.path.join(ADMIN_CACHE_DIR, f"{cache_key}.jsons")
+    if os.path.exists(new_file):
+        try:
+            cache_entry = deserialize_from_file(new_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+            if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
+                _admin_memory_cache[cache_key] = cache_entry
+                return cache_entry['data']
+        except (SerializationError, IntegrityError, KeyError, TypeError):
+            pass
+    legacy_file = os.path.join(ADMIN_CACHE_DIR, f"{cache_key}.pickle")
+    if os.path.exists(legacy_file) and is_legacy_pickle(legacy_file):
+        try:
+            with open(legacy_file, 'rb') as f:
                 cache_entry = pickle.load(f)
-                if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
-                    # Update memory cache
-                    _admin_memory_cache[cache_key] = cache_entry
-                    return cache_entry['data']
-            except (pickle.PickleError, KeyError):
-                # Invalid cache file, ignore
-                pass
+            migrate_legacy_pickle(legacy_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+            if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
+                _admin_memory_cache[cache_key] = cache_entry
+                return cache_entry['data']
+        except Exception:
+            pass
     
     return None
 

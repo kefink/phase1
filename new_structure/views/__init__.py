@@ -3,6 +3,7 @@ Views package for the Hillview School Management System.
 This file imports and exposes view blueprints for registration with the Flask app.
 """
 from .auth import auth_bp
+from .api_teacher import api_teacher_bp
 from .teacher import teacher_bp
 from .classteacher import classteacher_bp
 from .admin import admin_bp
@@ -47,7 +48,8 @@ blueprints = [
     bulk_assignments_bp, setup_bp, staff_bp,
     permission_bp, universal_bp, analytics_api_bp,
     school_setup_bp, subject_config_api, missing_routes_bp,
-    mobile_performance_api
+    mobile_performance_api,
+    api_teacher_bp
 ]
 
 # Add parent blueprint if available

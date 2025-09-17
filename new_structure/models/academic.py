@@ -2,7 +2,7 @@
 Academic-related models for the Hillview School Management System.
 """
 from new_structure.extensions import db
-from .user import teacher_subjects
+from .associations import teacher_subjects
 
 class SchoolConfiguration(db.Model):
     """Model for storing school-specific configuration settings."""
@@ -44,10 +44,16 @@ class SchoolConfiguration(db.Model):
     deputy_headteacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
 
     # Relationships for dynamic staff assignment
-    headteacher = db.relationship('Teacher', foreign_keys=[headteacher_id],
-                                 backref='headteacher_schools')
-    deputy_headteacher = db.relationship('Teacher', foreign_keys=[deputy_headteacher_id],
-                                        backref='deputy_headteacher_schools')
+    headteacher = db.relationship(
+        lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher,
+        foreign_keys=[headteacher_id],
+        backref='headteacher_schools'
+    )
+    deputy_headteacher = db.relationship(
+        lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher,
+        foreign_keys=[deputy_headteacher_id],
+        backref='deputy_headteacher_schools'
+    )
 
 
 
@@ -62,11 +68,34 @@ class SchoolConfiguration(db.Model):
     @classmethod
     def get_config(cls):
         """Get the school configuration, creating default if none exists."""
-        config = cls.query.first()
+        try:
+            config = cls.query.first()
+        except Exception:
+            # Attempt to use a known bound app if available (test safety)
+            app = getattr(db, 'app', None)
+            if app is not None:
+                try:
+                    with app.app_context():
+                        config = cls.query.first()
+                except Exception:
+                    config = None
+            else:
+                config = None
         if not config:
-            config = cls()
-            db.session.add(config)
-            db.session.commit()
+            # Create the default row inside an active session/context
+            try:
+                config = cls()
+                db.session.add(config)
+                db.session.commit()
+            except Exception:
+                app = getattr(db, 'app', None)
+                if app is not None:
+                    with app.app_context():
+                        config = cls()
+                        db.session.add(config)
+                        db.session.commit()
+                else:
+                    raise
         return config
 
     def update_config(self, **kwargs):
@@ -88,9 +117,13 @@ class Subject(db.Model):
     composite_parent = db.Column(db.String(100))  # Parent subject name (e.g., 'English' for 'English Grammar')
     component_weight = db.Column(db.Float, default=1.0)  # Weight of this component in the parent subject
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    marks = db.relationship('Mark', backref='subject', lazy=True)
-    teachers = db.relationship('Teacher', secondary=teacher_subjects, back_populates='subjects')
-    components = db.relationship('SubjectComponent', backref='subject', lazy=True)
+    marks = db.relationship(lambda: Mark, backref='subject', lazy=True)
+    teachers = db.relationship(
+        lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher,
+        secondary=teacher_subjects,
+        back_populates='subjects'
+    )
+    components = db.relationship(lambda: SubjectComponent, backref='subject', lazy=True)
 
     def get_components(self):
         """Get the components of this subject if it's composite."""
@@ -133,14 +166,14 @@ class Grade(db.Model):
     education_level = db.Column(
         db.String(50), nullable=False, default='primary', server_default='primary'
     )  # e.g., lower_primary, upper_primary
-    streams = db.relationship('Stream', backref='grade', lazy=True)
+    streams = db.relationship(lambda: Stream, backref='grade', lazy=True)
 
 class Stream(db.Model):
     """Stream model representing class streams within a grade."""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(10), nullable=False)  # e.g., A, B, C
     grade_id = db.Column(db.Integer, db.ForeignKey('grade.id'), nullable=False)
-    students = db.relationship('Student', backref='stream', lazy=True)
+    students = db.relationship(lambda: Student, backref='stream', lazy=True)
 
 class Term(db.Model):
     """Term model representing school terms."""
@@ -149,7 +182,7 @@ class Term(db.Model):
     academic_year = db.Column(db.String(20), nullable=True)  # e.g., 2023, 2024
     is_current = db.Column(db.Boolean, default=False)  # Whether this is the current active term
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    marks = db.relationship('Mark', backref='term', lazy=True)
+    marks = db.relationship(lambda: Mark, backref='term', lazy=True)
 
 class AssessmentType(db.Model):
     """AssessmentType model representing types of assessments."""
@@ -159,7 +192,7 @@ class AssessmentType(db.Model):
     category = db.Column(db.String(50), nullable=True)  # Category of assessment (e.g., "Exams", "Projects")
     is_active = db.Column(db.Boolean, default=True)  # Whether this assessment type is active
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    marks = db.relationship('Mark', backref='assessment_type', lazy=True)
+    marks = db.relationship(lambda: Mark, backref='assessment_type', lazy=True)
 
 class Student(db.Model):
     """Student model representing learners in the school."""
@@ -178,10 +211,10 @@ class Student(db.Model):
     promotion_notes = db.Column(db.Text, nullable=True)
 
     # Relationships
-    grade = db.relationship('Grade', lazy=True)
+    grade = db.relationship(lambda: Grade, lazy=True)
     # Note: 'stream' relationship is already defined by Stream.students backref
-    marks = db.relationship('Mark', backref='student', lazy=True)
-    promotion_history = db.relationship('StudentPromotionHistory', backref='student', lazy=True)
+    marks = db.relationship(lambda: Mark, backref='student', lazy=True)
+    promotion_history = db.relationship(lambda: StudentPromotionHistory, backref='student', lazy=True)
 
     def is_final_grade(self):
         """Check if student is in final grade (Grade 9 for junior secondary)."""
@@ -281,7 +314,7 @@ class Mark(db.Model):
     upload_date = db.Column(db.DateTime, nullable=True)  # Match database
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     # Relationship with component marks
-    component_marks = db.relationship('ComponentMark', backref='mark', lazy=True)
+    component_marks = db.relationship(lambda: ComponentMark, backref='mark', lazy=True)
 
     # Backward compatibility property
     @property
@@ -409,7 +442,7 @@ class SubjectComponent(db.Model):
     name = db.Column(db.String(100), nullable=False)
     weight = db.Column(db.Float, default=1.0)  # Weight of this component in the subject (e.g., 0.6 for 60%)
     max_raw_mark = db.Column(db.Integer, default=100)  # Default maximum raw mark for this component
-    component_marks = db.relationship('ComponentMark', backref='component', lazy=True)
+    component_marks = db.relationship(lambda: ComponentMark, backref='component', lazy=True)
 
     def __repr__(self):
         return f"<SubjectComponent {self.name} for Subject {self.subject_id}>"
@@ -476,12 +509,12 @@ class SubjectMarksStatus(db.Model):
     completion_percentage = db.Column(db.Float, default=0.0)
 
     # Relationships
-    grade = db.relationship('Grade')
-    stream = db.relationship('Stream')
-    subject = db.relationship('Subject')
-    term = db.relationship('Term')
-    assessment_type = db.relationship('AssessmentType')
-    uploaded_by = db.relationship('Teacher')
+    grade = db.relationship(lambda: Grade)
+    stream = db.relationship(lambda: Stream)
+    subject = db.relationship(lambda: Subject)
+    term = db.relationship(lambda: Term)
+    assessment_type = db.relationship(lambda: AssessmentType)
+    uploaded_by = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher)
 
     def __repr__(self):
         return f"<SubjectMarksStatus {self.subject.name if self.subject else 'Unknown'} - Grade {self.grade.name if self.grade else 'Unknown'} - {'Complete' if self.is_uploaded else 'Pending'}>"
@@ -566,11 +599,15 @@ class StudentPromotionHistory(db.Model):
     notes = db.Column(db.Text, nullable=True)
 
     # Relationships
-    from_grade = db.relationship('Grade', foreign_keys=[from_grade_id], lazy=True)
-    to_grade = db.relationship('Grade', foreign_keys=[to_grade_id], lazy=True)
-    from_stream = db.relationship('Stream', foreign_keys=[from_stream_id], lazy=True)
-    to_stream = db.relationship('Stream', foreign_keys=[to_stream_id], lazy=True)
-    processed_by = db.relationship('Teacher', backref='processed_promotions', lazy=True)
+    from_grade = db.relationship(lambda: Grade, foreign_keys=[from_grade_id], lazy=True)
+    to_grade = db.relationship(lambda: Grade, foreign_keys=[to_grade_id], lazy=True)
+    from_stream = db.relationship(lambda: Stream, foreign_keys=[from_stream_id], lazy=True)
+    to_stream = db.relationship(lambda: Stream, foreign_keys=[to_stream_id], lazy=True)
+    processed_by = db.relationship(
+        lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher,
+        backref='processed_promotions',
+        lazy=True
+    )
 
     def to_dict(self):
         """Convert promotion history record to dictionary."""

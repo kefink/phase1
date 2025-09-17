@@ -1,51 +1,75 @@
 """
 Configuration settings for the Hillview School Management System.
-Enhanced with scalability features and multi-environment support.
+Enhanced with scalability features, multi-environment support, and
+production-grade secret management (no hardcoded passwords/keys in prod).
 """
 import os
-import urllib.parse
 from typing import Optional
 from pathlib import Path
+from sqlalchemy.pool import StaticPool
 
 class Config:
-    # ULTRA-SECURE SESSION CONFIGURATION - FIXES 1 VULNERABILITY
-    SESSION_COOKIE_SECURE = True           # HTTPS only
-    SESSION_COOKIE_HTTPONLY = True        # No JavaScript access
-    SESSION_COOKIE_SAMESITE = 'Strict'    # Strict CSRF protection
-    PERMANENT_SESSION_LIFETIME = 1800     # 30 minutes timeout
-    SESSION_COOKIE_NAME = 'hillview_secure_session'
-    
-    # HTTPS ENFORCEMENT - FIXES 1 VULNERABILITY
-    FORCE_HTTPS = True  # Enable in production
-    
-    # STRICT SECURITY SETTINGS
+    """Base configuration class with settings common to all environments.
+
+    Normalized to eliminate duplicated/conflicting definitions observed during A6 assessment.
+    """
+    # Session / Cookie Security (single authoritative definition; production overrides Secure=True)
+    SESSION_COOKIE_NAME = 'hillview_session'
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'  # Production may tighten to 'Strict' if needed
+    SESSION_COOKIE_SECURE = False    # Set True in ProductionConfig
+    PERMANENT_SESSION_LIFETIME = 3600  # 1 hour baseline (Production may shorten or keep)
+
+    # HTTPS / Transport
+    FORCE_HTTPS = True  # Enforced in production; ignored in testing
+
+    # Access Control / Auth Hardening
     STRICT_ROLE_ENFORCEMENT = True
     SESSION_PROTECTION = 'strong'
-    WTF_CSRF_TIME_LIMIT = 3600  # 1 hour CSRF token lifetime
+    WTF_CSRF_TIME_LIMIT = 3600
 
-    # Secure Session Configuration
-    SESSION_COOKIE_SECURE = False  # Set to True when using HTTPS
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
-    PERMANENT_SESSION_LIFETIME = 1800  # 30 minutes
-    SESSION_COOKIE_NAME = 'hillview_session'
+    # Security Validation Toggle
+    SECURITY_VALIDATION_STRICT = True  # Disable only for controlled migration scenarios
 
-    """Base configuration class with settings common to all environments."""
+    # CORS Allowlist (comma-separated origins). Empty => no CORS headers emitted.
+    ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS', '')
+
+    # Content Security Policy (override via env CSP_POLICY if customizing)
+    CSP_POLICY = os.environ.get('CSP_POLICY', (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; "
+        "frame-ancestors 'none'; upgrade-insecure-requests"
+    ))
+
+    # Secret keys (development defaults only; production strictly requires env)
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your_secret_key_here_change_in_production'
+    WTF_CSRF_SECRET_KEY = os.environ.get('WTF_CSRF_SECRET_KEY')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # MySQL Configuration
+    # Database Configuration
+    # Prefer DATABASE_URL if provided, otherwise compose from individual MySQL env vars
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+
+    # MySQL Configuration (safe development defaults; no hardcoded prod password)
     MYSQL_HOST = os.environ.get('MYSQL_HOST') or 'localhost'
     MYSQL_PORT = int(os.environ.get('MYSQL_PORT') or 3306)
     MYSQL_USER = os.environ.get('MYSQL_USER') or 'root'
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or urllib.parse.quote_plus('@2494/lK')
+    # IMPORTANT: No insecure default password. Empty by default for local dev.
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or ''
     MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE') or 'hillview_demo001'
     
-    # SQLAlchemy MySQL URI
-    SQLALCHEMY_DATABASE_URI = (
-        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
-        "?charset=utf8mb4"
-    )
+    # SQLAlchemy Database URI resolution
+    if DATABASE_URL:
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    else:
+        SQLALCHEMY_DATABASE_URI = (
+            f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+            "?charset=utf8mb4"
+        )
     
     # Connection Pool Settings
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -56,11 +80,7 @@ class Config:
         'max_overflow': 20
     }
     
-    # Session configuration
-    PERMANENT_SESSION_LIFETIME = 86400  # 24 hours
-    SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
+    # (Removed duplicate session config block – unified above)
 
     # Redis Configuration for Caching and Sessions
     REDIS_HOST = os.environ.get('REDIS_HOST') or 'localhost'
@@ -93,6 +113,11 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
     UPLOAD_FOLDER = 'uploads'
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'xlsx', 'xls', 'csv'}
+    # Security-focused fine-grained file validation (Phase C additions)
+    FILE_UPLOAD_MAX_BYTES = int(os.environ.get('FILE_UPLOAD_MAX_BYTES', 5 * 1024 * 1024))  # 5MB logical cap for CSV/XLSX academic imports
+    FILE_ALLOWED_DATA_EXTENSIONS = {'.csv', '.xlsx', '.xls'}
+    FILE_ALLOWED_IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif'}
+    FILE_STRICT_MIME_CHECK = True
 
     # Logging Configuration
     LOG_LEVEL = 'INFO'
@@ -144,7 +169,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """Configuration for testing environment."""
     TESTING = True
-    DEBUG = True
+    DEBUG = False
 
     # Testing-specific overrides
     CACHE_TYPE = 'null'  # Disable caching for testing
@@ -157,36 +182,25 @@ class TestingConfig(Config):
 
     # Use in-memory SQLite for testing
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    # Ensure in-memory SQLite persists across connections within the test process
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_pre_ping': True,
-        'pool_recycle': 300,
+        'poolclass': StaticPool,
+        'connect_args': {'check_same_thread': False},
     }
 
 
 class ProductionConfig(Config):
-    """Configuration for production environment (consolidated)."""
+    """Production environment hardening."""
     DEBUG = False
     SESSION_COOKIE_SECURE = True
-
-    # Production-specific overrides
+    SESSION_COOKIE_SAMESITE = 'Strict'
+    PERMANENT_SESSION_LIFETIME = 7200  # 2 hours session window
     RATELIMIT_DEFAULT = "200 per hour"
     LOG_LEVEL = 'WARNING'
     LOG_FILE = '/var/log/hillview/app.log'
+    WTF_CSRF_TIME_LIMIT = 7200
 
-    # Enhanced security for production
-    WTF_CSRF_TIME_LIMIT = 7200  # 2 hours
-    PERMANENT_SESSION_LIFETIME = 7200  # 2 hours
-
-    # Security headers previously duplicated in second ProductionConfig
-    SECURITY_HEADERS = {
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-        'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
-        'X-XSS-Protection': '1; mode=block',
-        'Referrer-Policy': 'strict-origin-when-cross-origin'
-    }
-
-    # Production database with enhanced connection pooling
+    # Harden pool & performance
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 20,
         'pool_timeout': 30,
@@ -197,25 +211,53 @@ class ProductionConfig(Config):
 
     @classmethod
     def init_app(cls, app):
-        """Initialize production app (logging + security headers)."""
         super().init_app(app)
+        # Strict secret and database configuration validation for production
+        # 1) SECRET_KEY must be provided via environment and must not be the placeholder
+        secret_from_env = os.environ.get('SECRET_KEY')
+        if not secret_from_env or secret_from_env == 'your_secret_key_here_change_in_production':
+            raise RuntimeError(
+                'SECURITY ERROR: SECRET_KEY must be set via environment for production '
+                'and cannot use the development placeholder.'
+            )
 
-        # Configure production logging
+        # 2) CSRF secret should be provided explicitly (falls back to SECRET_KEY if missing)
+        csrf_secret = os.environ.get('WTF_CSRF_SECRET_KEY')
+        if not csrf_secret:
+            # Not fatal, but strongly recommended; log a warning
+            app.logger.warning('WTF_CSRF_SECRET_KEY is not set; falling back to SECRET_KEY. Set an explicit CSRF secret in production.')
+
+        # 3) Database credentials must not rely on insecure defaults
+        # Require either DATABASE_URL or a non-empty MYSQL_PASSWORD
+        has_database_url = bool(os.environ.get('DATABASE_URL'))
+        has_secure_mysql_password = bool(os.environ.get('MYSQL_PASSWORD'))
+        if not (has_database_url or has_secure_mysql_password):
+            raise RuntimeError(
+                'SECURITY ERROR: Database credentials not configured for production. '
+                'Provide DATABASE_URL or set MYSQL_PASSWORD in the environment.'
+            )
+
+        # Logging setup
         import logging
         from logging.handlers import RotatingFileHandler
-
         if cls.LOG_FILE:
-            file_handler = RotatingFileHandler(
-                cls.LOG_FILE, maxBytes=10*1024*1024, backupCount=10
-            )
-            file_handler.setFormatter(logging.Formatter(cls.LOG_FORMAT))
-            file_handler.setLevel(logging.INFO)
-            app.logger.addHandler(file_handler)
-            app.logger.setLevel(logging.INFO)
-
-        # Apply security headers if defined
-        if hasattr(cls, 'SECURITY_HEADERS'):
-            app.config['SECURITY_HEADERS'] = cls.SECURITY_HEADERS
+            try:
+                file_handler = RotatingFileHandler(
+                    cls.LOG_FILE, maxBytes=10*1024*1024, backupCount=10
+                )
+                file_handler.setFormatter(logging.Formatter(cls.LOG_FORMAT))
+                file_handler.setLevel(logging.INFO)
+                app.logger.addHandler(file_handler)
+                app.logger.setLevel(logging.INFO)
+            except Exception:
+                app.logger.warning('Could not attach rotating file handler', exc_info=True)
+        app.config['SECURITY_HEADERS'] = {
+            'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+            'X-Content-Type-Options': 'nosniff',
+            'X-Frame-Options': 'DENY',
+            'X-XSS-Protection': '1; mode=block',
+            'Referrer-Policy': 'strict-origin-when-cross-origin'
+        }
 
 
 # Configuration dictionary (after ProductionConfig consolidation)

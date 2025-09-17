@@ -39,8 +39,8 @@ class ClassTeacherPermission(db.Model):
     notes = db.Column(db.Text, nullable=True)
     
     # Relationships (temporarily commented out due to FK issues)
-    teacher = db.relationship('Teacher', foreign_keys=[teacher_id], backref='class_permissions')
-    granted_by_teacher = db.relationship('Teacher', foreign_keys=[granted_by])
+    teacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[teacher_id], backref='class_permissions')
+    granted_by_teacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[granted_by])
     # grade = db.relationship('Grade', backref='permission_assignments')
     # stream = db.relationship('Stream', backref='permission_assignments')
     
@@ -292,10 +292,10 @@ class PermissionRequest(db.Model):
     admin_notes = db.Column(db.Text, nullable=True)
     
     # Relationships
-    teacher = db.relationship('Teacher', foreign_keys=[teacher_id])
-    processed_by_teacher = db.relationship('Teacher', foreign_keys=[processed_by])
-    grade = db.relationship('Grade')
-    stream = db.relationship('Stream')
+    teacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[teacher_id])
+    processed_by_teacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[processed_by])
+    grade = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Grade']).Grade)
+    stream = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Stream']).Stream)
     
     def __repr__(self):
         if self.grade:

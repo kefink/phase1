@@ -17,6 +17,7 @@ from .report_config import ReportConfiguration, ClassReportConfiguration, Report
 from .school_setup import SchoolSetup, SchoolBranding, SchoolCustomization
 from .permission import ClassTeacherPermission, PermissionRequest
 from .function_permission import FunctionPermission, DefaultFunctionPermissions
+from .access_audit import AccessAudit
 
 # Import parent portal models (with error handling for backward compatibility)
 try:

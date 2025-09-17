@@ -7,7 +7,15 @@ import json
 import time
 import hashlib
 from flask import current_app
-import pickle
+import pickle  # Legacy support (migration only)
+from utils.serialization import (
+    serialize_to_file,
+    deserialize_from_file,
+    migrate_legacy_pickle,
+    is_legacy_pickle,
+    SerializationError,
+    IntegrityError,
+)
 
 # Cache directory
 CACHE_DIR = 'cache'
@@ -133,13 +141,17 @@ def cache_report(grade, stream, term, assessment_type, report_data, expiry=3600)
     }
     
     # Store in file cache
-    cache_file = os.path.join(REPORT_CACHE_DIR, f"{cache_key}.pickle")
-    with open(cache_file, 'wb') as f:
-        pickle.dump({
+    # New secure serialization path (.jsons) replacing pickle
+    cache_file = os.path.join(REPORT_CACHE_DIR, f"{cache_key}.jsons")
+    try:
+        serialize_to_file({
             'data': report_data,
             'timestamp': time.time(),
             'expiry': expiry
-        }, f)
+        }, cache_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+    except SerializationError:
+        # Fallback: do not cache if serialization fails
+        pass
 
 def get_cached_report(grade, stream, term, assessment_type):
     """
@@ -165,18 +177,29 @@ def get_cached_report(grade, stream, term, assessment_type):
             return cache_entry['data']
     
     # Check file cache
-    cache_file = os.path.join(REPORT_CACHE_DIR, f"{cache_key}.pickle")
-    if os.path.exists(cache_file):
-        with open(cache_file, 'rb') as f:
-            try:
+    # Prefer new secure file
+    new_file = os.path.join(REPORT_CACHE_DIR, f"{cache_key}.jsons")
+    if os.path.exists(new_file):
+        try:
+            cache_entry = deserialize_from_file(new_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+            if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
+                _memory_cache[memory_key] = cache_entry
+                return cache_entry['data']
+        except (SerializationError, IntegrityError, KeyError, TypeError):
+            pass
+    # Legacy pickle migration path
+    legacy_file = os.path.join(REPORT_CACHE_DIR, f"{cache_key}.pickle")
+    if os.path.exists(legacy_file) and is_legacy_pickle(legacy_file):
+        try:
+            with open(legacy_file, 'rb') as f:
                 cache_entry = pickle.load(f)
-                if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
-                    # Update memory cache
-                    _memory_cache[memory_key] = cache_entry
-                    return cache_entry['data']
-            except (pickle.PickleError, KeyError):
-                # Invalid cache file, ignore
-                pass
+            # Migrate
+            migrate_legacy_pickle(legacy_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+            if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
+                _memory_cache[memory_key] = cache_entry
+                return cache_entry['data']
+        except Exception:
+            pass
     
     return None
 
@@ -309,13 +332,15 @@ def cache_analytics(cache_key, analytics_data, expiry=1800):
     }
 
     # Store in file cache
-    cache_file = os.path.join(ANALYTICS_CACHE_DIR, f"{cache_key}.pickle")
-    with open(cache_file, 'wb') as f:
-        pickle.dump({
+    cache_file = os.path.join(ANALYTICS_CACHE_DIR, f"{cache_key}.jsons")
+    try:
+        serialize_to_file({
             'data': analytics_data,
             'timestamp': time.time(),
             'expiry': expiry
-        }, f)
+        }, cache_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+    except SerializationError:
+        pass
 
 
 def get_cached_analytics(cache_key):
@@ -337,18 +362,26 @@ def get_cached_analytics(cache_key):
             return cache_entry['data']
 
     # Check file cache
-    cache_file = os.path.join(ANALYTICS_CACHE_DIR, f"{cache_key}.pickle")
-    if os.path.exists(cache_file):
-        with open(cache_file, 'rb') as f:
-            try:
+    new_file = os.path.join(ANALYTICS_CACHE_DIR, f"{cache_key}.jsons")
+    if os.path.exists(new_file):
+        try:
+            cache_entry = deserialize_from_file(new_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+            if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
+                _memory_cache[memory_key] = cache_entry
+                return cache_entry['data']
+        except (SerializationError, IntegrityError, KeyError, TypeError):
+            pass
+    legacy_file = os.path.join(ANALYTICS_CACHE_DIR, f"{cache_key}.pickle")
+    if os.path.exists(legacy_file) and is_legacy_pickle(legacy_file):
+        try:
+            with open(legacy_file, 'rb') as f:
                 cache_entry = pickle.load(f)
-                if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
-                    # Update memory cache
-                    _memory_cache[memory_key] = cache_entry
-                    return cache_entry['data']
-            except (pickle.PickleError, KeyError):
-                # Invalid cache file, ignore
-                pass
+            migrate_legacy_pickle(legacy_file, current_app.config.get('SECRET_KEY', 'dev-secret'))
+            if time.time() - cache_entry['timestamp'] < cache_entry['expiry']:
+                _memory_cache[memory_key] = cache_entry
+                return cache_entry['data']
+        except Exception:
+            pass
 
     return None
 
@@ -366,7 +399,7 @@ def invalidate_analytics_cache(cache_key=None):
         if memory_key in _memory_cache:
             del _memory_cache[memory_key]
 
-        cache_file = os.path.join(ANALYTICS_CACHE_DIR, f"{cache_key}.pickle")
+        cache_file = os.path.join(ANALYTICS_CACHE_DIR, f"{cache_key}.jsons")
         if os.path.exists(cache_file):
             try:
                 os.remove(cache_file)
@@ -381,7 +414,7 @@ def invalidate_analytics_cache(cache_key=None):
         # Clear all analytics cache files
         if os.path.exists(ANALYTICS_CACHE_DIR):
             for filename in os.listdir(ANALYTICS_CACHE_DIR):
-                if filename.endswith('.pickle'):
+                if filename.endswith('.pickle') or filename.endswith('.jsons'):
                     try:
                         os.remove(os.path.join(ANALYTICS_CACHE_DIR, filename))
                     except OSError:

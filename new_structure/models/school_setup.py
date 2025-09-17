@@ -82,7 +82,7 @@ class SchoolSetup(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    setup_completed_by_teacher = db.relationship('Teacher', backref='completed_setups')
+    setup_completed_by_teacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, backref='completed_setups')
     
     @classmethod
     def get_current_setup(cls):

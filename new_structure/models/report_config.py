@@ -49,11 +49,11 @@ class ReportConfiguration(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
     
     # Relationships
-    term = db.relationship('Term', backref='report_configurations')
-    headteacher = db.relationship('Teacher', foreign_keys=[headteacher_id], backref='headteacher_configs')
-    deputy_headteacher = db.relationship('Teacher', foreign_keys=[deputy_headteacher_id], backref='deputy_configs')
-    principal = db.relationship('Teacher', foreign_keys=[principal_id], backref='principal_configs')
-    created_by_teacher = db.relationship('Teacher', foreign_keys=[created_by], backref='created_configs')
+    term = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Term']).Term, backref='report_configurations')
+    headteacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[headteacher_id], backref='headteacher_configs')
+    deputy_headteacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[deputy_headteacher_id], backref='deputy_configs')
+    principal = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[principal_id], backref='principal_configs')
+    created_by_teacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[created_by], backref='created_configs')
     
     def __repr__(self):
         return f'<ReportConfiguration {self.academic_year} - {self.term.name if self.term else "No Term"}>'
@@ -92,13 +92,13 @@ class ClassReportConfiguration(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    grade = db.relationship('Grade', backref='class_report_configs')
-    stream = db.relationship('Stream', backref='class_report_configs')
-    term = db.relationship('Term', backref='class_report_configs')
-    class_teacher = db.relationship('Teacher', foreign_keys=[class_teacher_id], backref='class_configs')
-    custom_headteacher = db.relationship('Teacher', foreign_keys=[custom_headteacher_id], backref='custom_head_configs')
-    custom_deputy = db.relationship('Teacher', foreign_keys=[custom_deputy_id], backref='custom_deputy_configs')
-    custom_principal = db.relationship('Teacher', foreign_keys=[custom_principal_id], backref='custom_principal_configs')
+    grade = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Grade']).Grade, backref='class_report_configs')
+    stream = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Stream']).Stream, backref='class_report_configs')
+    term = db.relationship(lambda: __import__('new_structure.models.academic', fromlist=['Term']).Term, backref='class_report_configs')
+    class_teacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[class_teacher_id], backref='class_configs')
+    custom_headteacher = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[custom_headteacher_id], backref='custom_head_configs')
+    custom_deputy = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[custom_deputy_id], backref='custom_deputy_configs')
+    custom_principal = db.relationship(lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher, foreign_keys=[custom_principal_id], backref='custom_principal_configs')
     
     def __repr__(self):
         stream_name = f" Stream {self.stream.name}" if self.stream else ""
@@ -141,7 +141,11 @@ class ReportTemplate(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
     
     # Relationships
-    created_by_teacher = db.relationship('Teacher', backref='created_templates')
+    created_by_teacher = db.relationship(
+        lambda: __import__('new_structure.models.user', fromlist=['Teacher']).Teacher,
+        foreign_keys=[created_by],
+        backref='created_templates'
+    )
     
     def __repr__(self):
         return f'<ReportTemplate {self.template_name} - {self.template_type}>'

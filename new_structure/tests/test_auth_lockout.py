@@ -17,8 +17,11 @@ def app():  # independent app fixture for this test module
     # Disable limiter during this test module to simplify assertions
     test_app.config['RATELIMIT_ENABLED'] = False
 
+    from new_structure.extensions import db
     with test_app.app_context():
+        db.create_all()
         yield test_app
+        db.drop_all()
 
 @pytest.fixture()
 def client(app):

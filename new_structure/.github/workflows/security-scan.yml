@@ -1,0 +1,78 @@
+name: Security Scanning
+
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 3 * * 1'  # Weekly Monday 03:00 UTC
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+            python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pip-audit bandit
+
+      - name: pip-audit (dependency vulnerabilities)
+        run: |
+          pip-audit --progress-spinner=off --desc --format json > pip-audit.json || true
+          echo 'pip-audit report saved to artifact'
+      - name: Upload pip-audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit.json
+
+      - name: Bandit (static analysis)
+        run: |
+          bandit -r . -f json -o bandit.json || true
+      - name: Upload bandit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit.json
+
+      - name: Fail on high severity issues
+        run: |
+          python - <<'PY'
+import json, sys
+# Fail if pip-audit has critical/high (CVSS >=7.0)
+try:
+    with open('pip-audit.json') as f:
+        data = json.load(f)
+    vulns = data if isinstance(data,list) else data.get('dependencies', [])
+    high = []
+    for dep in vulns:
+        for v in dep.get('vulns', []):
+            score = (v.get('fix_versions') and 7.0) or 0  # simplistic; pip-audit JSON may not include CVSS by default
+            if score >= 7.0:
+                high.append(v)
+    if high:
+        print(f"Found {len(high)} potential high severity dependency issues")
+        sys.exit(1)
+except FileNotFoundError:
+    print('pip-audit report missing, skipping severity gate')
+# Fail if Bandit has issues of severity HIGH
+try:
+    with open('bandit.json') as f:
+        b = json.load(f)
+    issues = [i for i in b.get('results', []) if i.get('issue_severity') == 'HIGH']
+    if issues:
+        print(f"Found {len(issues)} HIGH severity Bandit issues")
+        sys.exit(1)
+except FileNotFoundError:
+    print('bandit report missing, skipping severity gate')
+print('Security scan completed with no blocking high severity findings')
+PY

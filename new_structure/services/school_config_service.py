@@ -195,6 +195,17 @@ class SchoolConfigService:
     @staticmethod
     def get_school_info_dict():
         """Get all school information as a dictionary for templates."""
+        # Ensure we have an active app context for SQLAlchemy binding
+        try:
+            from flask import has_app_context
+            if not has_app_context():
+                app = getattr(db, 'app', None)
+                if app is not None:
+                    with app.app_context():
+                        return SchoolConfigService.get_school_info_dict()
+        except Exception:
+            pass
+
         # Check if enhanced school setup is completed and use that data
         try:
             from ..models.school_setup import SchoolSetup

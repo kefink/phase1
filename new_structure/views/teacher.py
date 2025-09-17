@@ -4,6 +4,7 @@ Adapted from proven classteacher functionality for single-subject use.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark, Teacher, TeacherSubjectAssignment
+from ..utils.safe_get import safe_get
 from ..services import is_authenticated, get_role, RoleBasedDataService
 from ..extensions import db
 from ..utils import get_performance_category, get_performance_summary
@@ -327,7 +328,7 @@ def dashboard():
                 # Check if stream is a numeric ID (from mobile form)
                 if stream.isdigit():
                     stream_id = int(stream)
-                    stream_obj = Stream.query.get(stream_id)
+                    stream_obj = safe_get(Stream, stream_id)
                     print(f"🔍 DEBUG: Looking up stream ID {stream_id}, found: {stream_obj}")
 
                     # Validate that the stream belongs to the selected grade
@@ -336,7 +337,7 @@ def dashboard():
                         if grade.isdigit():
                             # Mobile form submits grade ID
                             grade_id = int(grade)
-                            grade_obj = Grade.query.get(grade_id)
+                            grade_obj = safe_get(Grade, grade_id)
                             print(f"🔍 DEBUG: Looking up grade ID {grade_id}, found: {grade_obj}")
                         else:
                             # Desktop form submits grade name
@@ -374,7 +375,7 @@ def dashboard():
                     try:
                         grade_obj_for_access = None
                         if grade.isdigit():
-                            grade_obj_for_access = Grade.query.get(int(grade))
+                            grade_obj_for_access = safe_get(Grade, int(grade))
                         else:
                             grade_obj_for_access = Grade.query.filter_by(name=grade).first()
 
@@ -446,7 +447,7 @@ def dashboard():
                 # Check if stream is a numeric ID (from mobile form)
                 if stream.isdigit():
                     stream_id = int(stream)
-                    stream_obj = Stream.query.get(stream_id)
+                    stream_obj = safe_get(Stream, stream_id)
                     print(f"🔍 DEBUG: Submit - Looking up stream ID {stream_id}, found: {stream_obj}")
 
                     # Validate that the stream belongs to the selected grade
@@ -455,7 +456,7 @@ def dashboard():
                         if grade.isdigit():
                             # Mobile form submits grade ID
                             grade_id = int(grade)
-                            grade_obj = Grade.query.get(grade_id)
+                            grade_obj = safe_get(Grade, grade_id)
                             print(f"🔍 DEBUG: Submit - Looking up grade ID {grade_id}, found: {grade_obj}")
                         else:
                             # Desktop form submits grade name
@@ -881,7 +882,7 @@ def generate_subject_report():
         if grade.isdigit():
             # Mobile submits grade ID
             grade_id = int(grade)
-            grade_obj = Grade.query.get(grade_id)
+            grade_obj = safe_get(Grade, grade_id)
             print(f"Grade lookup by ID {grade_id}: {grade_obj}")
         else:
             # Desktop submits grade name
@@ -898,7 +899,7 @@ def generate_subject_report():
         if stream.isdigit():
             # Mobile submits stream ID
             stream_id = int(stream)
-            stream_obj = Stream.query.get(stream_id)
+            stream_obj = safe_get(Stream, stream_id)
             print(f"Stream lookup by ID {stream_id}: {stream_obj}")
 
             # Validate that stream belongs to the grade
@@ -1109,7 +1110,7 @@ def generate_subject_report():
         # Get teacher information
         print(f"🔍 Getting teacher information...")
         teacher_id = session.get('teacher_id')
-        teacher = Teacher.query.get(teacher_id) if teacher_id else None
+        teacher = safe_get(Teacher, teacher_id) if teacher_id else None
         teacher_name = teacher.full_name if teacher else "Unknown Teacher"
         print(f"Teacher: {teacher_name} (ID: {teacher_id})")
 
@@ -1129,7 +1130,7 @@ def generate_subject_report():
                 'logo_url': '/static/uploads/logos/optimized_school_logo_1750595986_hvs.jpg'
             }
 
-    # Prepare report data
+        # Prepare report data
         print(f"🔍 Preparing report data...")
         report_data = {
             'subject': subject,
@@ -1495,7 +1496,11 @@ def api_report_history():
             else:
                 # accept formats like 'A' or 'Stream A'
                 stream_letter = stream.replace('Stream ', '').strip()
-                stream_obj = Stream.query.filter_by(name=stream_letter).first()
+                # Use grade_id context when available to avoid cross‑grade collisions; fallback to name only.
+                if grade_id:
+                    stream_obj = Stream.query.filter_by(name=stream_letter, grade_id=grade_id).first()
+                else:
+                    stream_obj = Stream.query.filter_by(name=stream_letter).first()
                 stream_id = stream_obj.id if stream_obj else None
 
         term = request.args.get('term')

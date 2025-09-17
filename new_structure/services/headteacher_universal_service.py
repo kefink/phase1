@@ -55,6 +55,21 @@ class HeadteacherUniversalService:
         """Get recent activity across all classes."""
         try:
             # Get recent marks uploads
+            # Dialect-aware 7-day window: prefer DATE_SUB(NOW(), INTERVAL 7 DAY) for MySQL, fallback to generic current_timestamp - interval
+            from sqlalchemy import text
+            engine_name = db.session.bind.dialect.name if db.session.bind else 'default'
+            if engine_name == 'mysql':
+                # MySQL compatible 7-day interval expression
+                date_filter = text("DATE_SUB(NOW(), INTERVAL 7 DAY)")
+            else:
+                # Generic fallback: current_timestamp - 7 days (SQLite/others)
+                # For SQLite, use datetime(CURRENT_TIMESTAMP, '-7 days') inline via text to avoid dialect translation issues
+                if engine_name == 'sqlite':
+                    date_filter = text("datetime(CURRENT_TIMESTAMP, '-7 days')")
+                else:
+                    # As a broad fallback, use current_timestamp (may return more results but avoids syntax errors)
+                    date_filter = func.current_timestamp()  # degrade gracefully
+
             recent_marks = db.session.query(
                 Mark.created_at,
                 Grade.name.label('grade_name'),
@@ -70,7 +85,7 @@ class HeadteacherUniversalService:
             ).join(
                 Subject, Mark.subject_id == Subject.id
             ).filter(
-                Mark.created_at >= func.date('now', '-7 days')
+                Mark.created_at >= date_filter  # date_filter is raw text or function; safe for read-only analytics
             ).group_by(
                 Mark.created_at, Grade.name, Stream.name, Subject.name
             ).order_by(
@@ -90,6 +105,40 @@ class HeadteacherUniversalService:
                     'date': mark.created_at.strftime('%Y-%m-%d %H:%M') if mark.created_at else '',
                     'description': f"{mark.mark_count} marks uploaded for {mark.subject_name} in {class_name}"
                 })
+
+            # Fallback: if no activity found in window, fetch last 10 uploads without date constraint
+            if not activity:
+                fallback_marks = db.session.query(
+                    Mark.created_at,
+                    Grade.name.label('grade_name'),
+                    Stream.name.label('stream_name'),
+                    Subject.name.label('subject_name'),
+                    func.count(Mark.id).label('mark_count')
+                ).join(
+                    Student, Mark.student_id == Student.id
+                ).join(
+                    Stream, Student.stream_id == Stream.id
+                ).join(
+                    Grade, Stream.grade_id == Grade.id
+                ).join(
+                    Subject, Mark.subject_id == Subject.id
+                ).group_by(
+                    Mark.created_at, Grade.name, Stream.name, Subject.name
+                ).order_by(
+                    Mark.created_at.desc()
+                ).limit(10).all()
+                for mark in fallback_marks:
+                    class_name = ClassStructureService.get_class_display_name(
+                        mark.grade_name, mark.stream_name
+                    )
+                    activity.append({
+                        'type': 'marks_upload',
+                        'class_name': class_name,
+                        'subject': mark.subject_name,
+                        'count': mark.mark_count,
+                        'date': mark.created_at.strftime('%Y-%m-%d %H:%M') if mark.created_at else '',
+                        'description': f"{mark.mark_count} marks uploaded for {mark.subject_name} in {class_name} (all-time fallback)"
+                    })
             
             return activity
             
@@ -180,9 +229,10 @@ class HeadteacherUniversalService:
         try:
             # Get class teacher assignments
             class_teachers = db.session.query(
-                Teacher.id,
-                Teacher.username,
-                Teacher.full_name,
+                Teacher.id.label('id'),
+                Teacher.username.label('username'),
+                Teacher.first_name.label('first_name'),
+                Teacher.last_name.label('last_name'),
                 Grade.name.label('grade_name'),
                 Stream.name.label('stream_name')
             ).join(
@@ -198,9 +248,18 @@ class HeadteacherUniversalService:
                 class_name = ClassStructureService.get_class_display_name(
                     teacher.grade_name, teacher.stream_name
                 )
+                if teacher.first_name and teacher.last_name:
+                    display_name = f"{teacher.first_name} {teacher.last_name}"
+                elif teacher.first_name:
+                    display_name = teacher.first_name
+                elif teacher.last_name:
+                    display_name = teacher.last_name
+                else:
+                    display_name = teacher.username
+
                 assignments.append({
                     'teacher_id': teacher.id,
-                    'teacher_name': teacher.full_name or teacher.username,
+                    'teacher_name': display_name,
                     'teacher_username': teacher.username,
                     'class_name': class_name,
                     'grade_name': teacher.grade_name,

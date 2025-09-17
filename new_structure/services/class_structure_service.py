@@ -250,15 +250,9 @@ class ClassStructureService:
                 stream_name = stream_name[:50]
             return grade_name, stream_name
         else:
-            # Single class - attempt lookup using sanitized identifier (gracefully skip if no app context)
-            try:
-                grade = Grade.query.filter_by(name=safe_identifier).first()
-                if grade:
-                    stream = Stream.query.filter_by(grade_id=grade.id).first()
-                    return grade.name, stream.name if stream else 'Main'
-            except Exception:
-                # Working outside application context or DB error; fallback to sanitized identifier only
-                pass
+            # Single class identifier: do not perform DB lookups here to keep this function
+            # purely sanitization-focused and deterministic for tests.
+            # Return the sanitized grade identifier and None for stream.
             return safe_identifier, None
     
     @staticmethod

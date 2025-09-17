@@ -9,6 +9,7 @@ from ..services.staff_assignment_service import StaffAssignmentService
 from ..services import is_authenticated, get_role
 from ..extensions import db
 from functools import wraps
+from ..security.authorization import require_roles
 
 staff_bp = Blueprint('staff', __name__, url_prefix='/staff')
 
@@ -79,7 +80,7 @@ def headteacher_required(f):
     return decorated_function
 
 @staff_bp.route('/assign_headteacher', methods=['POST'])
-@headteacher_required
+@require_roles('headteacher')
 def assign_headteacher():
     """Assign a teacher as headteacher."""
     try:
@@ -99,7 +100,7 @@ def assign_headteacher():
         return jsonify({'success': False, 'message': str(e)})
 
 @staff_bp.route('/assign_deputy', methods=['POST'])
-@headteacher_required
+@require_roles('headteacher')
 def assign_deputy():
     """Assign a teacher as deputy headteacher."""
     try:
