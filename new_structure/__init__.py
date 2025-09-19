@@ -157,6 +157,20 @@ def create_app(config_name='default'):
             app.logger.warning("Could not persist generated SECRET_KEY; using ephemeral key only.")
         app.config['SECRET_KEY'] = new_key
 
+    # Ensure CSRF secret is present: if not provided, reuse SECRET_KEY
+    try:
+        if not app.config.get('WTF_CSRF_SECRET_KEY'):
+            app.config['WTF_CSRF_SECRET_KEY'] = app.config.get('SECRET_KEY')
+    except Exception:
+        pass
+
+    # Explicitly set app.secret_key to avoid extensions seeing a None value
+    try:
+        if not getattr(app, 'secret_key', None):
+            app.secret_key = app.config.get('SECRET_KEY')
+    except Exception:
+        pass
+
     # Set up logging (simplify in TESTING to avoid file handler contention on Windows)
     if app.config.get('TESTING'):
         import logging

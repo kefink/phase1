@@ -13,6 +13,40 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 sys.path.insert(0, current_dir)
 
+# Lightweight .env loader (no external dependency). This ensures MySQL creds are
+# available before the app reads configuration. We intentionally do NOT fallback
+# to SQLite – the app remains MySQL-first. Supported files (first found wins):
+#   .env, .env.development, .env.local
+def _load_env_file():
+    candidates = [
+        os.path.join(current_dir, '.env'),
+        os.path.join(current_dir, '.env.development'),
+        os.path.join(current_dir, '.env.local'),
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    for raw in f:
+                        line = raw.strip()
+                        if not line or line.startswith('#'):
+                            continue
+                        if '=' not in line:
+                            continue
+                        key, val = line.split('=', 1)
+                        key = key.strip()
+                        val = val.strip().strip('"').strip("'")
+                        # Don't override if already set in the environment
+                        if key and key not in os.environ:
+                            os.environ[key] = val
+                # Only load the first existing env file
+                break
+            except Exception:
+                # Non-fatal: proceed without .env if parsing fails
+                pass
+
+_load_env_file()
+
 try:
     # Define the port
     PORT = 8080
