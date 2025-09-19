@@ -86,9 +86,16 @@ class ClassReportBuilder:
             stream_letter = stream[-1] if len(stream) > 1 else stream
 
         try:
-            stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
-            term_obj = Term.query.filter_by(name=term).first()
-            assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+            stream_obj = (
+                Stream.query.join(Grade)
+                .filter(Grade.name == grade, Stream.name == stream_letter)
+                .first()
+            )
+            # Case-insensitive, trimmed matching for term and assessment type
+            term_norm = (term or '').strip()
+            assess_norm = (assessment_type or '').strip()
+            term_obj = Term.query.filter(db.func.lower(Term.name) == term_norm.lower()).first()
+            assessment_type_obj = AssessmentType.query.filter(db.func.lower(AssessmentType.name) == assess_norm.lower()).first()
         except Exception as e:
             return {"error": f"Database lookup error: {e}"}
 

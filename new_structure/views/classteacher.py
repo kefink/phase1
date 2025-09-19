@@ -276,22 +276,36 @@ def preview_class_report(grade, stream, term, assessment_type):
     start_time = time.time()
     _log.debug('preview_class_report.enter', extra={'grade': grade, 'stream': stream, 'term': term, 'assessment_type': assessment_type, 'session_role': session.get('role'), 'session_teacher_id': session.get('teacher_id')})
     validation_warning = False
+    from ..services.validation_schemas import ClassReportPathSchema
+    from marshmallow import ValidationError as _VE
+    schema = ClassReportPathSchema()
     try:
-        from ..services.validation_schemas import ClassReportPathSchema
-        from marshmallow import ValidationError as _VE
-        schema = ClassReportPathSchema()
         schema.load({'grade': grade, 'stream': stream, 'term': term, 'assessment_type': assessment_type})
-    except Exception as ve:  # permissive fallback for legacy HTML behavior
+    except _VE as ve:  # true validation error
         validation_warning = True
         try:
-            _log.debug('preview_class_report.validation_warning', extra={'error': str(ve)})
+            _log.debug('preview_class_report.validation_warning', extra={'error': str(ve), 'details': getattr(ve, 'messages', None)})
         except Exception:
             pass
-        if request.accept_mimetypes.accept_json or request.is_json:
+        # Only block when obvious length constraints are violated; otherwise continue
+        too_long = (
+            (isinstance(grade, str) and len(grade) > 100) or
+            (isinstance(stream, str) and len(stream) > 50) or
+            (isinstance(term, str) and len(term) > 50) or
+            (isinstance(assessment_type, str) and len(assessment_type) > 50)
+        )
+        if too_long and (request.accept_mimetypes.accept_json or request.is_json):
             from ..utils.error_responses import error_response
-            details = getattr(ve, 'messages', None) if hasattr(ve, 'messages') else None
+            details = getattr(ve, 'messages', None)
             return error_response('INVALID_PATH_PARAMS', 'Invalid path parameters', 400, details=details)
-        # HTML clients proceed with best-effort values
+        # Otherwise proceed with best-effort values (for both HTML and JSON)
+    except Exception as ve:  # non-validation issue (e.g., import/version); log and continue
+        validation_warning = True
+        try:
+            _log.debug('preview_class_report.validation_nonvalidation_exception', extra={'error': str(ve)})
+        except Exception:
+            pass
+        # Proceed for both HTML and JSON to avoid blocking legitimate requests due to env issues
     from ..services.class_report_builder import ClassReportBuilder  # local import to avoid circulars
 
     # Handle subject selection form submission
