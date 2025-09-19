@@ -3470,8 +3470,9 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
 @classteacher_bp.route('/preview_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
 @classteacher_required
 def preview_individual_report(grade, stream, term, assessment_type, student_name):
-    # Check if this is a print request
+    # Flags
     print_mode = request.args.get('print', '0') == '1'
+    show_all = request.args.get('show_all', '0') == '1'
     if print_mode:
         return redirect(url_for('classteacher.print_individual_report',
                                grade=grade,
@@ -3530,8 +3531,23 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
     table_data = []
     composite_data = {}
 
-    # Get only subjects that have marks in the class report data
+    # Subject set selection
+    # Current behavior (default): only subjects that have marks in the class report data
     subjects_with_marks = class_data_result.get("subjects", [])
+    # Optional full subject lineup (expected subjects) by education level
+    # Fallback to education-level subjects; union with subjects present in class_data_result to avoid omissions
+    full_subjects = []
+    try:
+        from ..models.academic import Subject as _Subject
+        if education_level:
+            full_subjects = [s.name for s in _Subject.query.filter_by(education_level=education_level).all()]
+    except Exception:
+        # If model import/query fails for any reason, keep full_subjects empty and rely on report data
+        full_subjects = []
+    # Ensure we at least include subjects already appearing in the class report
+    for _s in subjects_with_marks:
+        if _s not in full_subjects:
+            full_subjects.append(_s)
 
     # Define subject order - core subjects first (with variations)
     subject_order = [
@@ -3545,15 +3561,18 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
         "Creative Art and Sports", "CREATIVE ART AND SPORTS", "Creative Arts", "CREATIVE ARTS"
     ]
 
-    # Sort subjects according to the defined order, but only include those with marks
+    # Choose which base list we order: only-with-marks (default) or full list (toggle)
+    base_subject_list = subjects_with_marks if not show_all else full_subjects
+
+    # Sort subjects according to the defined order
     ordered_subject_names = []
-    # First add subjects in the specified order if they have marks
+    # First add subjects in the specified order if present in the base list
     for subject_name in subject_order:
-        if subject_name in subjects_with_marks and subject_name not in ordered_subject_names:
+        if subject_name in base_subject_list and subject_name not in ordered_subject_names:
             ordered_subject_names.append(subject_name)
 
-    # Then add any remaining subjects with marks alphabetically
-    remaining_subject_names = [s for s in subjects_with_marks if s not in ordered_subject_names]
+    # Then add any remaining subjects alphabetically
+    remaining_subject_names = [s for s in base_subject_list if s not in ordered_subject_names]
     remaining_subject_names.sort()
     ordered_subject_names.extend(remaining_subject_names)
 
@@ -3685,8 +3704,10 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
 
     # Calculate total marks and points based on subjects with marks
     total_marks = student_data.get("total_marks", 0)
-    total_possible_marks = len(subjects_with_marks) * class_data_result.get("total_marks", 100)
-    total_points = mean_points * len(subjects_with_marks)
+    # Totals should reflect what is displayed: either only-with-marks or full list
+    visible_count = len(base_subject_list)
+    total_possible_marks = visible_count * class_data_result.get("total_marks", 100)
+    total_points = mean_points * visible_count
 
     # Generate admission number if not available
     admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
@@ -4135,7 +4156,7 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
         # Check if we have a cached PDF
         cached_pdf = get_cached_pdf(grade, "all", term, assessment_type, "marksheet")
         if cached_pdf:
-            return send_file(
+            return render_template(
                 cached_pdf,
                 as_attachment=True,
                 download_name=f"{grade}_{term}_{assessment_type}_Grade_Marksheet.xlsx",
@@ -4155,7 +4176,6 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
         flash("Invalid term or assessment type", "error")
         return redirect(url_for('classteacher.dashboard'))
 
-    # Fetch all streams for the grade
     streams = Stream.query.filter_by(grade_id=grade_obj.id).all()
     if not streams:
         flash(f"No streams found for grade {grade}", "error")
