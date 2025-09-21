@@ -38,24 +38,24 @@
         font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
         margin: 0;
         padding: 15px;
-        background: var(--solar-base03);
-        color: var(--solar-base0);
+        background: #f7fafc; /* Light background */
+        color: #1f2937; /* Slate-800 text */
         font-size: 12px;
         min-height: 100vh;
       }
       .report-container {
         max-width: 100%;
         margin: 0 auto;
-        background: var(--solar-base2);
+        background: #ffffff;
         padding: 0;
-        box-shadow: 0 20px 60px rgba(0, 43, 54, 0.15);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
         border-radius: 12px;
-        border: 1px solid var(--solar-base01);
+        border: 1px solid #e2e8f0;
         overflow: hidden;
       }
       .header {
-        background: var(--solar-base02);
-        color: var(--solar-base1);
+        background: #ffffff;
+        color: #1f2937;
         padding: 20px 30px;
         margin: 0;
         display: flex;
@@ -63,8 +63,8 @@
         align-items: center;
         font-weight: bold;
         position: relative;
-        box-shadow: 0 4px 20px rgba(0, 43, 54, 0.1);
-        border-bottom: 2px solid var(--solar-yellow);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        border-bottom: 1px solid #e2e8f0;
       }
 
       .header-left {
@@ -210,22 +210,22 @@
       .school-details {
         font-size: 11px;
         opacity: 0.95;
-        color: var(--solar-base2);
+        color: #4a5568;
         font-weight: 400;
         line-height: 1.4;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        text-shadow: none;
       }
 
       .class-info-section {
-        background: var(--solar-base3);
+        background: #f8fafc;
         padding: 15px 30px;
-        border-bottom: 1px solid var(--solar-base2);
+        border-bottom: 1px solid #e2e8f0;
         display: flex;
         justify-content: space-between;
         align-items: center;
         font-size: 13px;
         font-weight: 600;
-        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: none;
       }
 
       .class-info-left {
@@ -238,14 +238,14 @@
         align-items: center;
         gap: 8px;
         padding: 8px 15px;
-        background: var(--solar-base2);
+        background: #ffffff;
         border-radius: 20px;
-        box-shadow: 0 2px 8px rgba(0, 43, 54, 0.1);
-        border: 1px solid var(--solar-base1);
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        border: 1px solid #e2e8f0;
       }
 
       .class-info-label {
-        color: var(--solar-base01);
+        color: #6b7280;
         font-weight: 500;
         font-size: 11px;
         text-transform: uppercase;
@@ -253,7 +253,7 @@
       }
 
       .class-info-value {
-        color: var(--solar-base00);
+        color: #111827;
         font-weight: 700;
         font-size: 13px;
       }
@@ -304,6 +304,97 @@
         margin: 15px 0 10px;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         letter-spacing: 1px;
+      }
+
+      /* --- Solar Enhanced Table Styles --- */
+      .report-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #ffffff;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .report-table thead th {
+        background: #e9f2fb;
+        color: #1f2937;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        font-size: 11px;
+        padding: 10px 8px;
+        border-bottom: 2px solid #cfe0f3;
+        border-right: 1px solid #e5e7eb;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+      .report-table thead th::after {
+        content: none;
+      }
+
+      .report-table thead th.subject-header {
+        color: #1d4ed8;
+      }
+      .report-table thead th.composite-main-header {
+        background: #e3f2fd;
+        color: #0f172a;
+        border-bottom-color: #bfd7f2;
+      }
+      .report-table thead th.component-header {
+        background: #f7fafc;
+        color: #2d3748;
+        font-weight: 600;
+      }
+      .report-table thead th.total-header {
+        background: #fff5e6;
+        color: #7c2d12;
+        font-weight: 800;
+      }
+
+      .report-table tbody td {
+        padding: 8px 8px;
+        border-right: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        color: #111827;
+      }
+
+      .report-table tbody tr:nth-child(even) {
+        background: #f8fafc;
+      }
+      .report-table tbody tr:hover {
+        background: #eef7ff;
+        transition: background 180ms ease-in-out;
+      }
+
+      .report-table .total-cell {
+        background: #fff7e6;
+        color: #b45309;
+        font-weight: 800;
+      }
+      .report-table .avg-cell {
+        color: #2563eb;
+        font-weight: 800;
+      }
+      .report-table .grade-cell {
+        color: #7c3aed;
+        font-weight: 800;
+      }
+      .report-table .rank-cell {
+        color: #059669;
+        font-weight: 800;
+      }
+      .report-table .averages-row {
+        background: #eef7ff;
+      }
+      .report-table .average-label,
+      .report-table .average_label {
+        background: #e1effe;
+        color: #1f2937;
+        font-weight: 800;
       }
 
       .report-subtitle {
@@ -368,18 +459,18 @@
       }
 
       .composite-main-header {
-        background-color: #e3f2fd !important;
-        color: #0d47a1 !important;
+        background-color: #e8f0fe !important;
+        color: #0f172a !important;
         font-weight: bold;
         writing-mode: horizontal-tb !important;
         text-orientation: mixed;
         text-align: center;
-        border-bottom: 2px solid #1976d2;
+        border-bottom: 2px solid #bfdbfe;
       }
 
       .component-header {
-        background-color: #f5f5f5;
-        color: #333;
+        background-color: #f7fafc;
+        color: #334155;
         font-size: 10px;
         font-weight: normal;
         writing-mode: vertical-rl;
@@ -387,7 +478,7 @@
         width: 25px;
         min-width: 25px;
         max-width: 25px;
-        border-top: 1px solid #ddd;
+        border-top: 1px solid #e2e8f0;
       }
 
       .performance-summary {
@@ -530,22 +621,22 @@
         font-size: 16px;
       }
       tbody tr:nth-child(even) {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        background: #f8fafc;
       }
 
       tbody tr:hover {
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-        transform: translateY(-1px);
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        background: #eef7ff;
+        transform: none;
+        transition: background 180ms ease-in-out;
+        box-shadow: none;
       }
 
       .student-row td:first-child {
         font-weight: 700;
         text-align: center;
         width: 40px;
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        color: white;
+        background: #e2e8f0;
+        color: #1f2937;
         font-size: 11px;
       }
 
@@ -563,27 +654,28 @@
       }
       .total-cell {
         font-weight: bold;
-        background-color: #eaf2f8;
+        background-color: #fff7e6;
+        color: #7c2d12;
       }
       .avg-cell {
         font-weight: bold;
-        color: #2980b9;
+        color: #2563eb;
       }
       .grade-cell {
         font-weight: bold;
       }
       .rank-cell {
         font-weight: bold;
-        background-color: #f5f5f5;
+        background-color: #f3f4f6;
       }
       .averages-row {
-        background-color: #eaf2f8;
+        background-color: #eef7ff;
         font-weight: bold;
       }
       .average-label {
         text-align: center;
-        background-color: #3498db;
-        color: white;
+        background-color: #e1effe;
+        color: #1f2937;
       }
       .subject-average,
       .total-average {
@@ -1723,42 +1815,19 @@
         </div>
       </div>
 
-      <!-- Composite Layout Indicator -->
-      <div
-        style="
-          background-color: #e8f5e8;
-          padding: 8px;
-          margin-bottom: 10px;
-          border-radius: 4px;
-          font-size: 12px;
-          color: #2d5016;
-        "
-      >
-        📊 <strong>Composite Layout:</strong> Individual subjects grouped under
-        main subjects (English Grammar + English Composition under ENGLISH)
-      </div>
-
       <!-- Table wrapper for horizontal scroll on very small screens -->
       <div style="overflow-x: auto; -webkit-overflow-scrolling: touch">
-        <table>
+        <table class="report-table">
           <thead>
             <tr>
               <th>S/N</th>
               <th>STUDENT NAME</th>
-              {% for subject_name in subject_names %} {% if subject_name ==
-              "English Grammar" %}
-              <!-- English composite subject header -->
+              {% for subject_name in subject_names %} {% if composite_structure
+              and composite_structure.get(subject_name) %}
+              <!-- Composite subject header -->
               <th class="subject-header composite-main-header" colspan="3">
-                ENGLISH
+                {{ subject_name }}
               </th>
-              {% elif subject_name == "Kiswahili Lugha" %}
-              <!-- Kiswahili composite subject header -->
-              <th class="subject-header composite-main-header" colspan="3">
-                KISWAHILI
-              </th>
-              {% elif subject_name in ["English Composition", "Kiswahili Insha"]
-              %}
-              <!-- Skip these as they're already included in composite headers -->
               {% else %}
               <!-- Regular subject header -->
               <th class="subject-header">
@@ -1776,30 +1845,19 @@
               <!-- Empty for S/N -->
               <th></th>
               <!-- Empty for STUDENT NAME -->
-              {% for subject_name in subject_names %} {% if subject_name ==
-              "English Grammar" %}
-              <!-- English component headers -->
-              <th class="component-header">GRAM</th>
-              <th class="component-header">COMP</th>
+              {% for subject_name in subject_names %} {% if composite_structure
+              and composite_structure.get(subject_name) %}
+              <!-- Composite subject component headers -->
+              {% set comp_info = composite_structure[subject_name] %} {% for
+              display_name in comp_info.component_display %}
+              <th class="component-header">{{ display_name }}</th>
+              {% endfor %}
               <th
                 class="component-header total-header"
                 style="background-color: #e8f4fd; font-weight: bold"
               >
                 TOTAL
               </th>
-              {% elif subject_name == "Kiswahili Lugha" %}
-              <!-- Kiswahili component headers -->
-              <th class="component-header">LUGHA</th>
-              <th class="component-header">INSHA</th>
-              <th
-                class="component-header total-header"
-                style="background-color: #e8f4fd; font-weight: bold"
-              >
-                TOTAL
-              </th>
-              {% elif subject_name in ["English Composition", "Kiswahili Insha"]
-              %}
-              <!-- Skip these as they're already included in composite headers -->
               {% else %}
               <!-- Empty for regular subjects -->
               <th></th>
@@ -1819,40 +1877,18 @@
             <tr class="student-row">
               <td>{{ student_data.index }}</td>
               <td>{{ student_data.student.upper() }}</td>
-              {% for subject_name in subject_names %} {% if subject_name ==
-              "English Grammar" %}
-              <!-- English component marks -->
+              {% for subject_name in subject_names %} {% if composite_structure
+              and composite_structure.get(subject_name) %}
+              <!-- Composite subject component marks -->
+              {% set comp_info = composite_structure[subject_name] %} {% for
+              comp_name in comp_info.component_names %}
               <td style="font-size: 12px">
-                {{ student_data.filtered_marks.get('English Grammar', 0) | int
-                }}
+                {{ student_data.filtered_marks.get(comp_name, 0) | int }}
               </td>
-              <td style="font-size: 12px">
-                {{ student_data.filtered_marks.get('English Composition', 0) |
-                int }}
-              </td>
+              {% endfor %}
               <td style="background-color: #f0f8ff; font-weight: bold">
-                {{ ((student_data.filtered_marks.get('English Grammar', 0) +
-                student_data.filtered_marks.get('English Composition', 0)) / 2)
-                | round(0) | int }}
+                {{ student_data.filtered_marks.get(subject_name, 0) | int }}
               </td>
-              {% elif subject_name == "Kiswahili Lugha" %}
-              <!-- Kiswahili component marks -->
-              <td style="font-size: 12px">
-                {{ student_data.filtered_marks.get('Kiswahili Lugha', 0) | int
-                }}
-              </td>
-              <td style="font-size: 12px">
-                {{ student_data.filtered_marks.get('Kiswahili Insha', 0) | int
-                }}
-              </td>
-              <td style="background-color: #f0f8ff; font-weight: bold">
-                {{ ((student_data.filtered_marks.get('Kiswahili Lugha', 0) +
-                student_data.filtered_marks.get('Kiswahili Insha', 0)) / 2) |
-                round(0) | int }}
-              </td>
-              {% elif subject_name in ["English Composition", "Kiswahili Insha"]
-              %}
-              <!-- Skip these as they're already included in composite display -->
               {% else %}
               <!-- Regular subject mark -->
               <td>
@@ -1864,7 +1900,7 @@
                 student_data.total_possible_marks }}
               </td>
               <td class="avg-cell">
-                {{ student_data.filtered_average | round(0) }}
+                {{ '%.2f' | format(student_data.filtered_average or 0) }}
               </td>
               <td class="grade-cell">
                 {{ student_data.performance_category }}
@@ -1876,40 +1912,24 @@
             <!-- Subject Averages Row -->
             <tr class="averages-row">
               <td colspan="2" class="average-label">SUBJECT AVERAGES</td>
-              {% for subject_name in subject_names %} {% if subject_name ==
-              "English Grammar" %}
-              <!-- English component averages -->
+              {% for subject_name in subject_names %} {% if composite_structure
+              and composite_structure.get(subject_name) %}
+              <!-- Composite subject component averages -->
+              {% set comp_info = composite_structure[subject_name] %} {% for
+              comp_name in comp_info.component_names %}
               <td class="subject-average" style="font-size: 11px">
-                {{ subject_averages.get('English Grammar', 0) | round(2) }}
+                {{ '%.2f' | format(subject_averages.get(comp_name, 0) or 0) }}
               </td>
-              <td class="subject-average" style="font-size: 11px">
-                {{ subject_averages.get('English Composition', 0) | round(2) }}
-              </td>
+              {% endfor %}
               <td class="subject-average" style="background-color: #d6eaf8">
-                {{ [100, ((subject_averages.get('English Grammar', 0) +
-                subject_averages.get('English Composition', 0)) / 2)] | min |
-                round(2) }}
+                {{ '%.2f' | format(subject_averages.get(subject_name, 0) or 0)
+                }}
               </td>
-              {% elif subject_name == "Kiswahili Lugha" %}
-              <!-- Kiswahili component averages -->
-              <td class="subject-average" style="font-size: 11px">
-                {{ subject_averages.get('Kiswahili Lugha', 0) | round(2) }}
-              </td>
-              <td class="subject-average" style="font-size: 11px">
-                {{ subject_averages.get('Kiswahili Insha', 0) | round(2) }}
-              </td>
-              <td class="subject-average" style="background-color: #d6eaf8">
-                {{ [100, ((subject_averages.get('Kiswahili Lugha', 0) +
-                subject_averages.get('Kiswahili Insha', 0)) / 2)] | min |
-                round(2) }}
-              </td>
-              {% elif subject_name in ["English Composition", "Kiswahili Insha"]
-              %}
-              <!-- Skip these as they're already included in composite display -->
               {% else %}
               <!-- Regular subject average -->
               <td class="subject-average">
-                {{ subject_averages.get(subject_name, 0) | round(2) }}
+                {{ '%.2f' | format(subject_averages.get(subject_name, 0) or 0)
+                }}
               </td>
               {% endif %} {% endfor %}
 
@@ -1920,30 +1940,24 @@
               <td class="empty-cell"></td>
             </tr>
 
-            <!-- Class Mean Score Row -->
+            <!-- Class Mean Score Row (dynamic composite layout) -->
             <tr class="averages-row">
-              <td colspan="2" class="average-label">CLASS MEAN SCORE</td>
-              {% for subject_name in subject_names %} {% if subject_name ==
-              "English Grammar" %}
-              <!-- English empty cells -->
+              <td colspan="2" class="average_label">CLASS MEAN SCORE</td>
+              {% for subject_name in subject_names %} {% if composite_structure
+              and composite_structure.get(subject_name) %} {% set comp_info =
+              composite_structure[subject_name] %} {% for _ in
+              comp_info.component_names %}
               <td class="empty-cell"></td>
+              {% endfor %}
               <td class="empty-cell"></td>
-              <td class="empty-cell"></td>
-              {% elif subject_name == "Kiswahili Lugha" %}
-              <!-- Kiswahili empty cells -->
-              <td class="empty-cell"></td>
-              <td class="empty-cell"></td>
-              <td class="empty-cell"></td>
-              {% elif subject_name in ["English Composition", "Kiswahili Insha"]
-              %}
-              <!-- Skip these as they're already included in composite display -->
               {% else %}
-              <!-- Regular subject empty cell -->
               <td class="empty-cell"></td>
               {% endif %} {% endfor %}
 
               <!-- Mean score in TOTAL column -->
-              <td class="total-cell">{{ class_average | round(2) }}</td>
+              <td class="total-cell">
+                {{ '%.2f' | format(class_average or 0) }}
+              </td>
               <td class="empty-cell"></td>
               <td class="empty-cell"></td>
               <td class="empty-cell"></td>

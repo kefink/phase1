@@ -136,11 +136,16 @@ class ClassReportBuilder:
         students = Student.query.filter_by(stream_id=stream_obj.id).all()
         student_ids = [s.id for s in students]
 
-        # Candidate subjects for this education level
+        # Candidate subjects for this education level (case-insensitive)
         if education_level_code:
             all_education_subjects = Subject.query.filter_by(education_level=education_level_code).all()
         else:
             all_education_subjects = Subject.query.all()
+        
+        # Handle case-insensitive subject matching for flexible naming
+        def normalize_subject_name(name):
+            """Normalize subject names for case-insensitive comparison"""
+            return name.lower().strip() if name else ""
 
         # Filter subjects by selected ids (if provided)
         if selected_subject_ids:
@@ -148,14 +153,115 @@ class ClassReportBuilder:
         else:
             filtered_subjects = all_education_subjects
 
-        subject_names = [s.name for s in filtered_subjects]
+        # Group subjects for composite display (English and Kiswahili)
+        grouped_subjects = {}
+        standalone_subjects = []
+        
+        # Define composite subject groups with flexible case matching
+        composite_groups = {
+            'english': {
+                'main_name': 'ENGLISH',
+                'components': ['english grammar', 'english composition', 'grammar', 'composition', 'grammer'],
+                # Per user request, show component headers as ENG GRAM and ENG COMP
+                'component_display': ['ENG GRAM', 'ENG COMP']
+            },
+            'kiswahili': {
+                'main_name': 'KISWAHILI', 
+                'components': ['kiswahili lugha', 'kiswahili insha', 'lugha', 'insha'],
+                'component_display': ['KIS LUGHA', 'KIS INSHA']
+            }
+        }
+        
+        # Group subjects by composite categories
+        for subject in filtered_subjects:
+            normalized_name = normalize_subject_name(subject.name)
+            grouped = False
+            
+            for group_key, group_info in composite_groups.items():
+                if any(comp in normalized_name for comp in group_info['components']):
+                    if group_key not in grouped_subjects:
+                        grouped_subjects[group_key] = {
+                            'main_name': group_info['main_name'],
+                            'components': [],
+                            'component_display': group_info['component_display']
+                        }
+                    grouped_subjects[group_key]['components'].append(subject)
+                    grouped = True
+                    break
+            
+            if not grouped:
+                standalone_subjects.append(subject)
+        
+        # Build final subject list combining composite and standalone
+        final_subject_names = []
+        final_abbreviated_subjects = []
+        composite_structure = {}
+        
+        # Add composite subjects first
+        for group_key, group_data in grouped_subjects.items():
+            main_name = group_data['main_name']
+            components = group_data['components']
+            
+            if len(components) >= 2:  # Only if we have multiple components
+                final_subject_names.append(main_name)
+                final_abbreviated_subjects.append(main_name[:3])
+                composite_structure[main_name] = {
+                    'components': components,
+                    'component_names': [comp.name for comp in components],
+                    'component_display': group_data['component_display'][:len(components)]
+                }
+            else:
+                # If only one component found, treat as standalone
+                standalone_subjects.extend(components)
+        
+        # If a composite exists, remove any standalone base subject with the same main name or alias
+        base_aliases = {
+            'ENGLISH': {'english', 'eng'},
+            'KISWAHILI': {'kiswahili', 'kis', 'kisw', 'swahili'},
+        }
+        if composite_structure:
+            composite_mains = list(composite_structure.keys())
+            filtered_standalone = []
+            for subject in standalone_subjects:
+                n = normalize_subject_name(subject.name)
+                remove = False
+                for main in composite_mains:
+                    aliases = base_aliases.get(main.upper(), {main.lower()})
+                    if n in aliases:
+                        remove = True
+                        break
+                if not remove:
+                    filtered_standalone.append(subject)
+            standalone_subjects = filtered_standalone
 
-        # Fetch marks for those students/subjects in chosen term & assessment
-        if subject_names:
+        # Add standalone subjects
+        for subject in standalone_subjects:
+            final_subject_names.append(subject.name)
+            parts = subject.name.split()
+            if len(parts) > 1:
+                final_abbreviated_subjects.append("".join(p[0].upper() for p in parts))
+            else:
+                final_abbreviated_subjects.append(subject.name[:3].upper())
+        
+        # Deduplicate final subject names to prevent duplicate headers
+        seen = set()
+        subject_names = []
+        abbreviated_subjects = []
+        for nm, abbr in zip(final_subject_names, final_abbreviated_subjects):
+            key = (nm or '').strip().lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            subject_names.append(nm)
+            abbreviated_subjects.append(abbr)
+
+        # Fetch marks for all individual subjects (both composite components and standalone)
+        all_subject_ids = [s.id for s in filtered_subjects]
+        if all_subject_ids:
             all_marks = (
                 Mark.query.filter(
                     Mark.student_id.in_(student_ids),
-                    Mark.subject_id.in_([s.id for s in filtered_subjects]),
+                    Mark.subject_id.in_(all_subject_ids),
                     Mark.term_id == term_obj.id,
                     Mark.assessment_type_id == assessment_type_obj.id,
                 ).all()
@@ -186,7 +292,7 @@ class ClassReportBuilder:
 
         class_data = report_data.get("class_data", [])
 
-        # Augment each student entry with filtered marks / totals
+        # Augment each student entry with processed marks (including composite totals)
         for student_record in class_data:
             stud = Student.query.filter_by(name=student_record.get("student")).first()
             if not stud:
@@ -196,18 +302,48 @@ class ClassReportBuilder:
             filtered_marks = {}
             total_val = 0.0
             counted = 0
-            for subj in filtered_subjects:
-                val = marks_index.get(stud.id, {}).get(subj.id, 0)
-                filtered_marks[subj.name] = val
-                if val > 0:
-                    total_val += val
-                    counted += 1
+            
+            # Process each subject in our final list
+            for subject_name in subject_names:
+                if subject_name in composite_structure:
+                    # Handle composite subject
+                    comp_info = composite_structure[subject_name]
+                    components = comp_info['components']
+                    component_marks = []
+                    
+                    # Get marks for each component
+                    for comp_subject in components:
+                        comp_mark = marks_index.get(stud.id, {}).get(comp_subject.id, 0)
+                        component_marks.append(comp_mark)
+                        # Store individual component marks for template access
+                        filtered_marks[comp_subject.name] = comp_mark
+                    
+                    # Calculate composite total (average of components)
+                    if component_marks and any(mark > 0 for mark in component_marks):
+                        valid_marks = [mark for mark in component_marks if mark > 0]
+                        composite_total = sum(valid_marks) / len(valid_marks) if valid_marks else 0
+                        filtered_marks[subject_name] = composite_total
+                        total_val += composite_total
+                        counted += 1
+                    else:
+                        filtered_marks[subject_name] = 0
+                        
+                else:
+                    # Handle standalone subject
+                    subj = next((s for s in standalone_subjects if s.name == subject_name), None)
+                    if subj:
+                        val = marks_index.get(stud.id, {}).get(subj.id, 0)
+                        filtered_marks[subject_name] = val
+                        if val > 0:
+                            total_val += val
+                            counted += 1
+            
             student_record["filtered_marks"] = filtered_marks
             student_record["filtered_total"] = total_val
             per_subject_possible = report_data.get("total_marks", 100) or 100
             student_record["total_possible_marks"] = per_subject_possible * max(len(subject_names), 1)
             student_record["filtered_average"] = (
-                (total_val / (counted * per_subject_possible)) * 100 if counted and per_subject_possible else 0
+                (total_val / counted) if counted else 0
             )
 
         # Sort by filtered_total desc & assign rank + performance_category
@@ -234,9 +370,17 @@ class ClassReportBuilder:
                 cat = "BE2"
             student_record["performance_category"] = cat
 
-        # Averages per subject
+        # Averages per subject (including composite subjects). Also compute
+        # averages for component names so footer rows can display them.
         subject_averages: Dict[str, float] = {}
-        for name in subject_names:
+        avg_targets: List[str] = list(subject_names)
+        # Include component names for composite structures
+        for _main, _info in composite_structure.items():
+            for _comp_name in _info.get('component_names', []):
+                if _comp_name not in avg_targets:
+                    avg_targets.append(_comp_name)
+
+        for name in avg_targets:
             total = 0.0
             count = 0
             for sd in class_data:
@@ -251,14 +395,8 @@ class ClassReportBuilder:
         students_with_marks = [sd for sd in class_data if sd.get("filtered_total", 0) > 0]
         class_average = round(class_total / len(students_with_marks), 2) if students_with_marks else 0
 
-        # Abbreviated subject names (stable logic)
-        abbreviated_subjects = []
-        for subj_name in subject_names:
-            parts = subj_name.split()
-            if len(parts) > 1:
-                abbreviated_subjects.append("".join(p[0].upper() for p in parts))
-            else:
-                abbreviated_subjects.append(subj_name[:3].upper())
+        # Store composite structure for template access
+        ctx_composite_structure = composite_structure
 
         # Component / composite breakdown (unchanged semantics)
         subject_components = {}
@@ -347,6 +485,7 @@ class ClassReportBuilder:
             visibility=visibility,
             is_aggregated=report_data.get("is_aggregated", False),
             education_level_code=education_level_code,
+            composite_structure=ctx_composite_structure,
         )
         # Store in cache (simple LRU eviction)
         if len(ClassReportBuilder._cache) >= ClassReportBuilder._CACHE_MAX:

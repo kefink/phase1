@@ -61,7 +61,11 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(45deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+        background: linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0.3) 0%,
+          transparent 100%
+        );
         pointer-events: none;
       }
 
@@ -119,7 +123,11 @@
         letter-spacing: 1px;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         padding: 8px 16px;
-        background: linear-gradient(135deg, rgba(214, 158, 46, 0.1), rgba(214, 158, 46, 0.05));
+        background: linear-gradient(
+          135deg,
+          rgba(214, 158, 46, 0.1),
+          rgba(214, 158, 46, 0.05)
+        );
         border-radius: 8px;
         border: 1px solid rgba(214, 158, 46, 0.3);
       }
@@ -208,7 +216,7 @@
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         background: white;
         border-radius: 12px;
         overflow: hidden;
@@ -271,6 +279,9 @@
         font-size: 15px;
         position: relative;
         color: #2d3748;
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: anywhere;
       }
 
       .marks-table td:first-child {
@@ -395,11 +406,21 @@
       }
 
       /* Grade Styling in Summary */
-      .summary-value.grade-a { color: #38a169; }
-      .summary-value.grade-b { color: #3182ce; }
-      .summary-value.grade-c { color: #d69e2e; }
-      .summary-value.grade-d { color: #dd6b20; }
-      .summary-value.grade-e { color: #e53e3e; }
+      .summary-value.grade-a {
+        color: #38a169;
+      }
+      .summary-value.grade-b {
+        color: #3182ce;
+      }
+      .summary-value.grade-c {
+        color: #d69e2e;
+      }
+      .summary-value.grade-d {
+        color: #dd6b20;
+      }
+      .summary-value.grade-e {
+        color: #e53e3e;
+      }
 
       .student-details {
         background: rgba(0, 43, 54, 0.4);
@@ -561,7 +582,7 @@
         /* Single page setup with minimal margins */
         @page {
           size: A4 portrait;
-          margin: 0.5cm;
+          margin: 0.4cm;
           /* Remove headers and footers completely */
           @top-left {
             content: "";
@@ -594,18 +615,39 @@
           margin: 0 !important;
           padding: 0 !important;
           height: auto !important;
-          font-size: 10pt !important;
+          font-size: 8.8pt !important;
         }
 
         .report-container {
           max-width: none !important;
           margin: 0 !important;
-          padding: 10px !important;
+          padding: 4px 6px !important;
           background: white !important;
           box-shadow: none !important;
           border: none !important;
           border-radius: 0 !important;
           page-break-inside: avoid;
+        }
+
+        /* Compact header for print */
+        .marksheet-header {
+          padding: 8px 10px !important;
+          gap: 8px !important;
+        }
+        .school-logo {
+          width: 56px !important;
+          height: 56px !important;
+        }
+        .school-name {
+          font-size: 16pt !important;
+          margin: 0 0 4px 0 !important;
+        }
+        .school-address {
+          font-size: 8pt !important;
+        }
+        .marksheet-title {
+          font-size: 11pt !important;
+          padding: 4px 8px !important;
         }
 
         .header {
@@ -637,19 +679,19 @@
 
         table {
           margin-bottom: 8px !important;
-          font-size: 9pt !important;
+          font-size: 8.2pt !important;
           page-break-inside: avoid;
         }
 
         th,
         td {
-          padding: 4px 3px !important;
-          font-size: 9pt !important;
+          padding: 2px 2px !important;
+          font-size: 8.2pt !important;
         }
 
         .remarks {
           margin-top: 8px !important;
-          padding: 8px !important;
+          padding: 6px !important;
           page-break-inside: avoid;
         }
 
@@ -666,7 +708,7 @@
 
         .footer {
           margin-top: 8px !important;
-          padding: 5px !important;
+          padding: 4px !important;
           page-break-inside: avoid;
         }
 
@@ -681,6 +723,12 @@
 
         /* Ensure no page breaks within critical sections */
         .header,
+
+        /* Hide non-essential sections to ensure single-page print */
+        .summary-section,
+        .remarks {
+          display: none !important;
+        }
         .student-details,
         table,
         .remarks,
@@ -832,6 +880,44 @@
           text-align: left;
         }
       }
+      /* Force high-contrast readability for the marks table */
+      .marksheet-container .marks-table {
+        background: #ffffff !important;
+      }
+      .marksheet-container .marks-table tbody td {
+        color: #1f2937 !important; /* slate-800 */
+      }
+      .marksheet-container .marks-table tbody tr {
+        background: #ffffff !important;
+      }
+      .marksheet-container .marks-table tbody tr:nth-child(even) {
+        background: #f9fafb !important; /* very light zebra */
+      }
+      .marksheet-container .marks-table tbody tr:hover {
+        background: #f3f4f6 !important; /* light hover */
+      }
+      .marksheet-container .marks-table tbody tr.composite-subject {
+        background: #f0f8ff !important;
+        border-left: 4px solid #2b6cb0 !important;
+      }
+      .marksheet-container .marks-table tbody tr.subject-component {
+        background: #f9fafb !important;
+        border-left: 3px solid #cbd5e0 !important;
+      }
+      /* Make Subject Remarks and Teacher columns left-aligned for readability */
+      .marksheet-container .marks-table tbody td:nth-last-child(2),
+      .marksheet-container .marks-table tbody td:last-child {
+        text-align: left !important;
+        color: #111827 !important; /* near-black for readability */
+      }
+      .marksheet-container .marks-table tbody td.component-label {
+        color: #111827 !important;
+        font-weight: 600;
+      }
+      /* Improve contrast in the narrative remarks section */
+      .remarks p {
+        color: #e6f1f5 !important;
+      }
     </style>
   </head>
   <body class="analytics-page">
@@ -876,24 +962,6 @@
         >
           <span style="font-size: 16px">🖨️</span> Print Report
         </button>
-        <a
-          href="{{ url_for('classteacher.preview_individual_report', grade=grade, stream=stream, term=term, assessment_type=assessment_type, student_name=student_data.student, show_all=(0 if show_all else 1)) }}"
-          style="
-            padding: 10px 20px;
-            background: linear-gradient(
-              135deg,
-              var(--blue, #268bd2),
-              var(--cyan, #2aa198)
-            );
-            color: var(--text-white, #fdf6e3);
-            border: 1px solid var(--blue, #268bd2);
-            border-radius: 8px;
-            text-decoration: none;
-          "
-        >
-          {% if show_all %}Show Only Subjects With Marks{% else %}Show All
-          Expected Subjects{% endif %}
-        </a>
       </div>
       <!-- Professional Marksheet Header -->
       <div class="marksheet-header">
@@ -923,11 +991,14 @@
 
         <!-- School Information Center -->
         <div class="school-info-center">
-          <h1 class="school-name">{{ school_info.school_name|default('Hillview School')|title }}</h1>
+          <h1 class="school-name">
+            {{ school_info.school_name|default('Hillview School')|title }}
+          </h1>
           <p class="school-address">
-            {{ school_info.postal_address|default('Kiambu Road Runda Estate Nairobi Kenya') }} | 
-            {{ school_info.school_phone|default('+254705204870') }} | 
-            {{ school_info.school_email|default('info@hillviewschool.ac.ke') }}
+            {{ school_info.postal_address|default('Kiambu Road Runda Estate
+            Nairobi Kenya') }} | {{
+            school_info.school_phone|default('+254705204870') }} | {{
+            school_info.school_email|default('info@hillviewschool.ac.ke') }}
           </p>
         </div>
 
@@ -950,11 +1021,16 @@
           </div>
           <div class="info-group">
             <span class="info-label">TERM:</span>
-            <span class="info-value info-term">{{ term.replace('_', ' ').upper() }}</span>
+            <span class="info-value info-term"
+              >{{ term.replace('_', ' ').upper() }}</span
+            >
           </div>
           <div class="info-group">
             <span class="info-label">ASSESSMENT:</span>
-            <span class="info-value info-assessment">{{ assessment_type.replace('_', ' ').upper() }} {{ academic_year|default('2025') }}</span>
+            <span class="info-value info-assessment"
+              >{{ assessment_type.replace('_', ' ').upper() }} {{
+              academic_year|default('2025') }}</span
+            >
           </div>
         </div>
       </div>
@@ -974,7 +1050,7 @@
         <table class="marks-table">
           <thead>
             <tr>
-              <th>Subjects</th>
+              <th>Subject</th>
               {% if assessment_type.lower() == 'end_term' or
               assessment_type.lower() == 'endterm' %}
               <!-- Show all assessment columns for end term comparison -->
@@ -992,8 +1068,10 @@
           </thead>
           <tbody>
             {% for row in table_data %}
-            <tr class="{% if composite_data and composite_data.get(row.subject) %}composite-subject{% endif %}">
-              <td style="text-align: left;">
+            <tr
+              class="{% if composite_data and composite_data.get(row.subject) %}composite-subject{% endif %}"
+            >
+              <td style="text-align: left">
                 <div class="subject-name">
                   <span class="subject-icon"></span>
                   {{ row.subject }}
@@ -1002,15 +1080,33 @@
               {% if assessment_type.lower() == 'end_term' or
               assessment_type.lower() == 'endterm' %}
               <!-- Show all assessment columns for end term comparison -->
-              <td><span class="mark-value">{{ row.entrance | int if row.entrance != 0 else '-' }}</span></td>
-              <td><span class="mark-value">{{ row.mid_term | int if row.mid_term != 0 else '-' }}</span></td>
-              <td><span class="mark-value">{{ row.end_term | int if row.end_term != 0 else '-' }}</span></td>
-              <td><span class="mark-value">{{ row.avg | int if row.avg != 0 else '-' }}</span></td>
+              <td>
+                <span class="mark-value"
+                  >{{ row.entrance | int if row.entrance != 0 else '-' }}</span
+                >
+              </td>
+              <td>
+                <span class="mark-value"
+                  >{{ row.mid_term | int if row.mid_term != 0 else '-' }}</span
+                >
+              </td>
+              <td>
+                <span class="mark-value"
+                  >{{ row.end_term | int if row.end_term != 0 else '-' }}</span
+                >
+              </td>
+              <td>
+                <span class="mark-value"
+                  >{{ row.avg | int if row.avg != 0 else '-' }}</span
+                >
+              </td>
               {% else %}
               <!-- Show only current assessment mark for single assessments -->
               <td>
-                <span class="mark-value">{{ row.current_assessment | int if row.current_assessment != 0
-                else '-' }}</span>
+                <span class="mark-value"
+                  >{{ row.current_assessment | int if row.current_assessment !=
+                  0 else '-' }}</span
+                >
               </td>
               {% endif %}
               <td>
@@ -1030,7 +1126,7 @@
             components = composite_data[row.subject].components %} {% for
             component_name, component_data in components.items() %}
             <tr class="subject-component">
-              <td style="text-align: left;">
+              <td style="text-align: left">
                 <div class="subject-name">
                   <span class="subject-icon"></span>
                   {{ component_name }}
@@ -1039,48 +1135,75 @@
               {% if assessment_type.lower() == 'end_term' or
               assessment_type.lower() == 'endterm' %}
               <!-- Show component marks for all assessment columns -->
-              <td><span class="mark-value">{{ component_data.mark if component_data.mark != 0 else '-' }}</span></td>
-              <td><span class="mark-value">{{ component_data.mark if component_data.mark != 0 else '-' }}</span></td>
-              <td><span class="mark-value">{{ component_data.mark if component_data.mark != 0 else '-' }}</span></td>
-              <td><span class="mark-value">{{ component_data.mark if component_data.mark != 0 else '-' }}</span></td>
+              <td>
+                <span class="mark-value"
+                  >{{ component_data.mark if component_data.mark != 0 else '-'
+                  }}</span
+                >
+              </td>
+              <td><span class="mark-value">-</span></td>
+              <td>
+                <span class="mark-value"
+                  >{{ component_data.mark if component_data.mark != 0 else '-'
+                  }}</span
+                >
+              </td>
+              <td>
+                <span class="mark-value"
+                  >{{ component_data.mark if component_data.mark != 0 else '-'
+                  }}</span
+                >
+              </td>
               {% else %}
               <!-- Show component mark for current assessment only -->
-              <td><span class="mark-value">{{ component_data.mark if component_data.mark != 0 else '-' }}</span></td>
+              <td>
+                <span class="mark-value"
+                  >{{ component_data.mark if component_data.mark != 0 else '-'
+                  }}</span
+                >
+              </td>
               {% endif %}
-              <td class="component-label">
+              <td
+                class="component-label"
+                style="
+                  text-align: left;
+                  white-space: normal;
+                  word-break: break-word;
+                  overflow-wrap: anywhere;
+                "
+              >
                 {{ component_data.remarks | replace(' (TBD)', '') }}
               </td>
-              <td class="component-teacher">
-                <!-- Empty cell for component rows -->
+              <td>
+                {% if subject_teachers and subject_teachers.get(row.subject) %}
+                {{ subject_teachers.get(row.subject).full_name or
+                subject_teachers.get(row.subject).username }} {% else %} Not
+                Assigned {% endif %}
               </td>
             </tr>
             {% endfor %} {% endif %} {% endfor %}
-            <tr>
-              <td>Totals</td>
-              {% if assessment_type.lower() == 'end_term' or
-              assessment_type.lower() == 'endterm' %}
-              <!-- Show totals for all assessment columns -->
-              <td></td>
-              <td></td>
-              <td>{{ total | int }}</td>
-              <td>{{ total | int }}</td>
-              {% else %}
-              <!-- Show total for current assessment only -->
-              <td>{{ total | int }}</td>
-              {% endif %}
-              <td></td>
-              <td></td>
-            </tr>
           </tbody>
         </table>
-        
+
         <!-- Professional Summary Section -->
         <div class="summary-section">
-          <h3 style="margin: 0 0 15px 0; color: #2c5f7a; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;">Academic Performance Summary</h3>
+          <h3
+            style="
+              margin: 0 0 15px 0;
+              color: #2c5f7a;
+              font-weight: 900;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            "
+          >
+            Academic Performance Summary
+          </h3>
           <div class="summary-grid">
             <div class="summary-item">
               <div class="summary-label">Total Marks</div>
-              <div class="summary-value">{{ total | int }}/{{ total_possible_marks }}</div>
+              <div class="summary-value">
+                {{ total | int }}/{{ total_possible_marks }}
+              </div>
             </div>
             <div class="summary-item">
               <div class="summary-label">Average</div>
@@ -1092,8 +1215,12 @@
             </div>
             <div class="summary-item">
               <div class="summary-label">Grade</div>
-              <div class="summary-value grade-{% if avg_percentage >= 80 %}a{% elif avg_percentage >= 60 %}b{% elif avg_percentage >= 40 %}c{% elif avg_percentage >= 20 %}d{% else %}e{% endif %}">
-                {% if avg_percentage >= 80 %}A{% elif avg_percentage >= 60 %}B{% elif avg_percentage >= 40 %}C{% elif avg_percentage >= 20 %}D{% else %}E{% endif %}
+              <div
+                class="summary-value grade-{% if avg_percentage >= 80 %}a{% elif avg_percentage >= 60 %}b{% elif avg_percentage >= 40 %}c{% elif avg_percentage >= 20 %}d{% else %}e{% endif %}"
+              >
+                {% if avg_percentage >= 80 %}A{% elif avg_percentage >= 60 %}B{%
+                elif avg_percentage >= 40 %}C{% elif avg_percentage >= 20 %}D{%
+                else %}E{% endif %}
               </div>
             </div>
           </div>
