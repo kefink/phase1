@@ -3,6 +3,10 @@ Report generation services for the Hillview School Management System.
 """
 from ..models import Student, Mark, Subject, Stream, Grade, Term, AssessmentType
 from ..utils import get_performance_category, get_grade_and_points
+from ..config import get_config
+from .mark_calculator import MarkCalculator, AssessmentEntry, CalculationInput
+from .mark_calculator_adapter import get_default_weights, get_default_missing_policies
+from .grading_service import GradingService
 from ..extensions import db
 from collections import defaultdict
 import os
@@ -96,6 +100,34 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
     class_data = []
     default_total_marks = 100  # Default total marks if not specified
 
+    # Feature-flagged: prepare calculator data for combined assessments (OPENER/MIDTERM/ENDTERM)
+    cfg = get_config()
+    use_calculator: bool = getattr(cfg, 'REPORTS_USE_MARK_CALCULATOR', False)
+    is_final_assessment = (assessment_type or '').strip().lower() in { 'end_term', 'endterm', 'final', 'overall' }
+
+    # Pre-resolve assessment type IDs for opener/midterm/endterm aliases
+    at_code_by_id = {}
+    student_ids = [s.id for s in students]
+    calc_marks_index = {}
+    if use_calculator and is_final_assessment and students:
+        try:
+            alias_to_code = {
+                'opener': 'OPENER', 'entrance': 'OPENER',
+                'mid_term': 'MIDTERM', 'midterm': 'MIDTERM',
+                'end_term': 'ENDTERM', 'endterm': 'ENDTERM', 'final': 'ENDTERM', 'overall': 'ENDTERM',
+            }
+            alias_names = list(alias_to_code.keys())
+            at_candidates = AssessmentType.query.filter(db.func.lower(AssessmentType.name).in_(alias_names)).all()
+            at_ids = []
+            for at in at_candidates:
+                code = alias_to_code.get(at.name.lower())
+                if code:
+                    at_code_by_id[at.id] = code
+                    at_ids.append(at.id)
+        except Exception:
+            at_code_by_id = {}
+
+
     for student in students:
         student_marks = {}
         student_raw_marks = {}
@@ -121,15 +153,74 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
                 continue
 
             # Handle regular subjects
-            mark = Mark.query.filter_by(
-                student_id=student.id,
-                subject_id=subject.id,
-                term_id=term_obj.id,
-                assessment_type_id=assessment_type_obj.id
-            ).first()
-
-            if mark:
-                processed_subjects[subject.name] = mark.percentage
+            if use_calculator and is_final_assessment and at_code_by_id:
+                # Collect marks across assessments and compute combined
+                try:
+                    # Bulk fetch marks for this student/subject across prepared types (single query per subject)
+                    calc_marks = Mark.query.filter(
+                        Mark.student_id == student.id,
+                        Mark.subject_id == subject.id,
+                        Mark.term_id == term_obj.id,
+                        Mark.assessment_type_id.in_(list(at_code_by_id.keys())),
+                    ).all()
+                    entries = []
+                    codes_seen = set()
+                    for m in calc_marks:
+                        code = at_code_by_id.get(m.assessment_type_id)
+                        if not code:
+                            continue
+                        codes_seen.add(code)
+                        # Normalize to 0..100 percentage
+                        if getattr(m, 'percentage', None) is not None:
+                            pct = m.percentage
+                        else:
+                            raw = getattr(m, 'raw_mark', None)
+                            if raw is None:
+                                raw = getattr(m, 'mark', 0)
+                            max_raw = getattr(m, 'max_raw_mark', None)
+                            if max_raw is None or max_raw <= 0:
+                                max_raw = getattr(m, 'total_marks', 100) or 100
+                            pct = (raw / max_raw) * 100 if max_raw else 0
+                            if pct > 100:
+                                pct = 100.0
+                        entries.append(AssessmentEntry(code, pct, 100.0, None))
+                    # For missing codes, add NA to respect exclude policy
+                    for code in ('OPENER', 'MIDTERM', 'ENDTERM'):
+                        if code not in codes_seen:
+                            entries.append(AssessmentEntry(code, None, None, 'NA'))
+                    calc = MarkCalculator()
+                    ci = CalculationInput(
+                        school_id=0,
+                        subject_id=subject.id,
+                        level=education_level,
+                        rounding_mode=GradingService.get_rounding_mode(),
+                        weights=get_default_weights(),
+                        grade_bands=GradingService.get_calculator_grade_bands(),
+                        missing_policies=get_default_missing_policies(),
+                        entries=entries,
+                    )
+                    out = calc.compute(ci)
+                    if out.final_numeric is not None:
+                        processed_subjects[subject.name] = float(out.final_numeric)
+                except Exception:
+                    # Fallback to legacy single-assessment percentage
+                    mark = Mark.query.filter_by(
+                        student_id=student.id,
+                        subject_id=subject.id,
+                        term_id=term_obj.id,
+                        assessment_type_id=assessment_type_obj.id
+                    ).first()
+                    if mark:
+                        processed_subjects[subject.name] = mark.percentage
+            else:
+                mark = Mark.query.filter_by(
+                    student_id=student.id,
+                    subject_id=subject.id,
+                    term_id=term_obj.id,
+                    assessment_type_id=assessment_type_obj.id
+                ).first()
+                if mark:
+                    processed_subjects[subject.name] = mark.percentage
 
         # Handle composite subjects using the new architecture
         student_component_marks = {}
