@@ -30,6 +30,10 @@ from ..services.staff_assignment_service import StaffAssignmentService
 from ..services.school_config_service import SchoolConfigService
 from ..services.report_config_service import ReportConfigService
 from ..services.mark_calculator_adapter import build_legends
+from ..config import get_config
+from ..services.mark_calculator import MarkCalculator, AssessmentEntry, CalculationInput
+from ..services.mark_calculator_adapter import get_default_weights, get_default_missing_policies
+from ..services.grading_service import GradingService
 
 # Reuse existing helper used by original route
 from ..utils.cache_utils import invalidate_cache  # type: ignore
@@ -291,6 +295,61 @@ class ClassReportBuilder:
                     pct = 100.0
             marks_index[mark.student_id][mark.subject_id] = pct
 
+        # Feature-flagged: prepare calculator data for combined assessments (OPENER/MIDTERM/ENDTERM)
+        cfg = get_config()
+        use_calculator: bool = getattr(cfg, 'REPORTS_USE_MARK_CALCULATOR', False)
+        is_final_assessment = (assessment_type or '').strip().lower() in { 'end_term', 'endterm', 'final', 'overall' }
+
+        calc_marks_index: Dict[tuple, float] = {}
+        at_code_by_id: Dict[int, str] = {}
+        subject_by_name: Dict[str, Subject] = {s.name: s for s in all_education_subjects}
+        if use_calculator and is_final_assessment and all_subject_ids:
+            try:
+                # Resolve assessment types by aliases
+                alias_to_code = {
+                    'opener': 'OPENER', 'entrance': 'OPENER',
+                    'mid_term': 'MIDTERM', 'midterm': 'MIDTERM',
+                    'end_term': 'ENDTERM', 'endterm': 'ENDTERM', 'final': 'ENDTERM', 'overall': 'ENDTERM',
+                }
+                alias_names = list(alias_to_code.keys())
+                at_candidates = AssessmentType.query.filter(db.func.lower(AssessmentType.name).in_(alias_names)).all()
+                at_ids: List[int] = []
+                for at in at_candidates:
+                    code = alias_to_code.get(at.name.lower())
+                    if code:
+                        at_code_by_id[at.id] = code
+                        at_ids.append(at.id)
+
+                if at_ids:
+                    calc_marks = (
+                        Mark.query.filter(
+                            Mark.student_id.in_(student_ids),
+                            Mark.subject_id.in_(all_subject_ids),
+                            Mark.term_id == term_obj.id,
+                            Mark.assessment_type_id.in_(at_ids),
+                        ).all()
+                    )
+                    for m in calc_marks:
+                        # Normalize to percentage (0..100)
+                        if getattr(m, 'percentage', None) is not None:
+                            pct = m.percentage
+                        else:
+                            raw = getattr(m, 'raw_mark', None)
+                            if raw is None:
+                                raw = getattr(m, 'mark', 0)
+                            max_raw = getattr(m, 'max_raw_mark', None)
+                            if max_raw is None or max_raw <= 0:
+                                max_raw = getattr(m, 'total_marks', 100) or 100
+                            pct = (raw / max_raw) * 100 if max_raw else 0
+                            if pct > 100:
+                                pct = 100.0
+                        code = at_code_by_id.get(m.assessment_type_id)
+                        if code:
+                            calc_marks_index[(m.student_id, m.subject_id, code)] = pct
+            except Exception:
+                # Non-fatal; fallback to legacy per-assessment path
+                calc_marks_index = {}
+
         class_data = report_data.get("class_data", [])
 
         # Augment each student entry with processed marks (including composite totals)
@@ -333,7 +392,35 @@ class ClassReportBuilder:
                     # Handle standalone subject
                     subj = next((s for s in standalone_subjects if s.name == subject_name), None)
                     if subj:
-                        val = marks_index.get(stud.id, {}).get(subj.id, 0)
+                        # If calculator is enabled for final assessment, compute combined value; else legacy value
+                        if use_calculator and is_final_assessment and calc_marks_index:
+                            entries: List[AssessmentEntry] = []
+                            for code in ('OPENER', 'MIDTERM', 'ENDTERM'):
+                                pct = calc_marks_index.get((stud.id, subj.id, code))
+                                if pct is None:
+                                    # Mark as not assessed -> excluded by default policy
+                                    entries.append(AssessmentEntry(code, None, None, 'NA'))
+                                else:
+                                    entries.append(AssessmentEntry(code, pct, 100.0, None))
+                            try:
+                                calc = MarkCalculator()
+                                ci = CalculationInput(
+                                    school_id=0,
+                                    subject_id=subj.id,
+                                    level=education_level,
+                                    rounding_mode=GradingService.get_rounding_mode(),
+                                    weights=get_default_weights(),
+                                    grade_bands=GradingService.get_calculator_grade_bands(),
+                                    missing_policies=get_default_missing_policies(),
+                                    entries=entries,
+                                )
+                                out = calc.compute(ci)
+                                val = float(out.final_numeric) if out.final_numeric is not None else 0.0
+                            except Exception:
+                                # On failure, fallback to legacy per-assessment value
+                                val = marks_index.get(stud.id, {}).get(subj.id, 0)
+                        else:
+                            val = marks_index.get(stud.id, {}).get(subj.id, 0)
                         filtered_marks[subject_name] = val
                         if val > 0:
                             total_val += val
