@@ -3501,6 +3501,13 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         'academic_year': academic_year
     }
 
+    # Legends for grading/weights/status (non-invasive; templates may opt-in)
+    try:
+        from ..services.mark_calculator_adapter import build_legends  # local import to avoid cycles
+        _calc_legends = build_legends()
+    except Exception:
+        _calc_legends = None
+
     return render_template(
         'preview_individual_report.html',
         student=student,
@@ -3526,7 +3533,9 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         logo_url=logo_url,
         staff_info=staff_info,
         term_info=term_info,
-        subject_teachers=subject_teachers
+        subject_teachers=subject_teachers,
+        # Optional legends for templates
+        calculator_legends=_calc_legends
     )
 
 @classteacher_bp.route('/preview_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
@@ -3768,6 +3777,13 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
         'academic_year': academic_year
     }
 
+    # Legends for grading/weights/status (non-invasive; templates may opt-in)
+    try:
+        from ..services.mark_calculator_adapter import build_legends  # local import to avoid cycles
+        _calc_legends = build_legends()
+    except Exception:
+        _calc_legends = None
+
     return render_template(
         'preview_individual_report.html',
         student=student,
@@ -3793,7 +3809,9 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
         logo_url=logo_url,       # Pass dynamic logo URL
         staff_info=staff_info,   # Pass staff information
         term_info=term_info,     # Pass term information
-        subject_teachers=subject_teachers  # Pass subject teachers mapping
+        subject_teachers=subject_teachers,  # Pass subject teachers mapping
+        # Optional legends for templates
+        calculator_legends=_calc_legends
     )
 
 @classteacher_bp.route('/api/check_stream_status/<grade>/<term>/<assessment_type>', methods=['GET'])
