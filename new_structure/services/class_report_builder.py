@@ -29,6 +29,7 @@ from ..models.academic import (
 from ..services.staff_assignment_service import StaffAssignmentService
 from ..services.school_config_service import SchoolConfigService
 from ..services.report_config_service import ReportConfigService
+from ..services.mark_calculator_adapter import build_legends
 
 # Reuse existing helper used by original route
 from ..utils.cache_utils import invalidate_cache  # type: ignore
@@ -486,6 +487,8 @@ class ClassReportBuilder:
             is_aggregated=report_data.get("is_aggregated", False),
             education_level_code=education_level_code,
             composite_structure=ctx_composite_structure,
+            # Non-invasive: provide legends for templates (not used unless template references them)
+            calculator_legends=build_legends(),
         )
         # Store in cache (simple LRU eviction)
         if len(ClassReportBuilder._cache) >= ClassReportBuilder._CACHE_MAX:

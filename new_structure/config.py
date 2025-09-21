@@ -132,6 +132,10 @@ class Config:
     APP_NAME = 'Hillview School Management System'
     APP_VERSION = '2.0.0'
 
+    # Feature Flags (non-invasive defaults)
+    # When enabled, reports may use the new MarkCalculator pipeline. Kept False by default.
+    REPORTS_USE_MARK_CALCULATOR = os.environ.get('REPORTS_USE_MARK_CALCULATOR', 'false').lower() == 'true'
+
     @classmethod
     def init_app(cls, app):
         """Initialize application with configuration"""

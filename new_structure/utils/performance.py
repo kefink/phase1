@@ -1,6 +1,23 @@
 """
 Performance calculation utilities for the Hillview School Management System.
+
+Feature-flagged enhancement:
+- When `Config.REPORTS_USE_MARK_CALCULATOR` is enabled, `get_grade_and_points`
+    will use database-configured grading bands via `GradingService`.
+- Default behavior remains unchanged.
 """
+
+from __future__ import annotations
+
+from typing import Optional, Tuple
+
+try:
+        # Optional imports to avoid hard dependency when used outside app context
+        from ..services.grading_service import GradingService  # type: ignore
+        from ..config import get_config  # type: ignore
+except Exception:  # pragma: no cover - fallback when imports not available
+        GradingService = None  # type: ignore
+        get_config = None  # type: ignore
 
 def get_performance_category(percentage):
     """
@@ -29,7 +46,36 @@ def get_performance_category(percentage):
     else:
         return "BE2"  # Below Expectation 2
 
-def get_grade_and_points(average):
+def _map_with_configured_bands(average: float) -> Optional[Tuple[str, float]]:
+    """Attempt to map using DB-configured bands via GradingService.
+
+    Returns (grade, points) or None if unavailable.
+    """
+    # Guard if optional imports not available
+    if not (GradingService and get_config):
+        return None
+    try:
+        # Respect feature flag; default off
+        cfg = get_config()
+        use_calc = getattr(cfg, 'REPORTS_USE_MARK_CALCULATOR', False)
+        if not use_calc:
+            return None
+        # Fetch calculator bands and map
+        bands = GradingService.get_calculator_grade_bands()
+        for b in bands:
+            if b.min_inclusive <= average <= b.max_inclusive:
+                # Prefer remark if present and resembles a grade code; else use grade field
+                grade = getattr(b, 'grade', None) or getattr(b, 'remark', None) or 'GRADE'
+                points = getattr(b, 'points', None)
+                if grade is not None and points is not None:
+                    return str(grade), float(points)
+        return None
+    except Exception:
+        # On any failure, silently fall back to legacy mapping
+        return None
+
+
+def get_grade_and_points(average: float):
     """
     Convert an average score to a performance level and points.
 
@@ -39,6 +85,10 @@ def get_grade_and_points(average):
     Returns:
         Tuple of (performance_level, points)
     """
+    mapped = _map_with_configured_bands(average)
+    if mapped is not None:
+        return mapped
+    # Legacy CBC thresholds (default path)
     if average >= 90:
         return "EE1", 4.0
     elif average >= 75:
