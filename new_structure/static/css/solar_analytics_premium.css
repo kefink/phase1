@@ -1,29 +1,155 @@
 /* 
  * Solar Analytics Premium Styling
- * Premium dark theme with solar color palette for Analytics Dashboard
+ * Theme-aware styling with Solar color palette for Analytics Dashboard
  */
 
-/* Essential CSS Variables - Inline to guarantee availability */
+/* Essential CSS Variables + Theme Tokens */
 :root {
+  /* Spacing scale */
+  --spacing-2xs: 0.125rem;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.75rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Radii */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+
+  /* Shadows */
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  /* Default (fallback) theme variables — dark by default */
   --bg-primary: #002b36;
   --bg-secondary: #073642;
   --bg-tertiary: #586e75;
   --bg-card: rgba(0, 43, 54, 0.95);
   --bg-card-hover: rgba(7, 54, 66, 0.98);
   --primary-color: #b58900;
+  --primary-dark: #7c6000;
+  --primary-light: #d8a200;
   --secondary-color: #2aa198;
   --text-white: #fdf6e3;
   --text-secondary: #93a1a1;
+  --text-accent: #93a1a1;
+  --text-emphasis: var(--text-white);
   --glass-border: rgba(253, 246, 227, 0.1);
+  --glass-border-strong: rgba(253, 246, 227, 0.18);
   --glass-bg-strong: rgba(0, 43, 54, 0.9);
+  --glass-backdrop: blur(8px);
   --glass-backdrop-strong: blur(20px);
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --radius-lg: 1rem;
-  --radius-md: 0.75rem;
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --status-success: #859900; /* Solar green */
+  --status-error: #dc322f;   /* Solar red */
+
+  /* Aliases used by template utilities */
+  --border-color: var(--glass-border);
+  --card-bg: var(--bg-card);
+}
+
+/* Explicit dark theme override (when toggled) */
+html[data-theme="dark"], body[data-theme="dark"] {
+  --bg-primary: #002b36;
+  --bg-secondary: #073642;
+  --bg-tertiary: #586e75;
+  --bg-card: rgba(0, 43, 54, 0.95);
+  --bg-card-hover: rgba(7, 54, 66, 0.98);
+  --primary-color: #b58900;
+  --primary-dark: #7c6000;
+  --primary-light: #d8a200;
+  --secondary-color: #2aa198;
+  --text-white: #fdf6e3;
+  --text-secondary: #93a1a1;
+  --text-accent: #93a1a1;
+  --text-emphasis: var(--text-white);
+  --glass-border: rgba(253, 246, 227, 0.1);
+  --glass-border-strong: rgba(253, 246, 227, 0.18);
+  --glass-bg-strong: rgba(0, 43, 54, 0.9);
+  --glass-backdrop: blur(8px);
+  --glass-backdrop-strong: blur(20px);
+  --status-success: #859900;
+  --status-error: #dc322f;
+  --border-color: var(--glass-border);
+  --card-bg: var(--bg-card);
+}
+
+/* Light theme override (when toggled) */
+html[data-theme="light"], body[data-theme="light"] {
+  --bg-primary: #f5f7fb;
+  --bg-secondary: #eef2f7;
+  --bg-tertiary: #e2e8f0;
+  --bg-card: rgba(255, 255, 255, 0.96);
+  --bg-card-hover: rgba(255, 255, 255, 1);
+  --primary-color: #b58900;   /* keep brand gold */
+  --primary-dark: #7c6000;
+  --primary-light: #d8a200;
+  --secondary-color: #2aa198; /* teal accent */
+  --text-white: #0f172a;      /* repurpose as primary text on light */
+  --text-secondary: #475569;  /* slate-600 */
+  --text-accent: #334155;
+  --text-emphasis: var(--text-white);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-strong: rgba(0, 0, 0, 0.12);
+  --glass-bg-strong: rgba(255, 255, 255, 0.85);
+  --glass-backdrop: blur(6px);
+  --glass-backdrop-strong: blur(10px);
+  --status-success: #15803d;  /* green-700 */
+  --status-error: #dc2626;    /* red-600 */
+  --border-color: var(--glass-border);
+  --card-bg: var(--bg-card);
+}
+
+/* Ensure analytics page base respects theme variables */
+body.analytics-premium {
+  background: var(--bg-primary) !important;
+  color: var(--text-white) !important;
+}
+
+/* Theme-aware root background override to counter earlier hard-coded html styles */
+html[data-theme="light"] {
+  background: var(--bg-primary) !important;
+  background-image: radial-gradient(
+      circle at 20% 80%,
+      rgba(181, 137, 0, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(42, 161, 152, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 40%,
+      rgba(59, 130, 246, 0.06) 0%,
+      transparent 50%
+    ) !important;
+  color: var(--text-white) !important;
+}
+
+html[data-theme="dark"] {
+  background: var(--bg-primary) !important;
+  background-image: radial-gradient(
+      circle at 20% 80%,
+      rgba(181, 137, 0, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(42, 161, 152, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 40%,
+      rgba(211, 54, 130, 0.05) 0%,
+      transparent 50%
+    ) !important;
+  color: var(--text-white) !important;
 }
 
 /* EMERGENCY NUCLEAR OVERRIDE - Kill base template completely */

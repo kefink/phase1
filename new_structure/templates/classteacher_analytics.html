@@ -33,6 +33,90 @@
   }
   /* Cyan value color for quick insights data */
   .insight-value { color: #00bcd4; }
+  /* Small utility classes to reduce inline styles */
+  .mt-1 { margin-top: .25rem; }
+  .mt-2 { margin-top: .5rem; }
+  .mt-3 { margin-top: 1rem; }
+  .mb-1 { margin-bottom: .25rem; }
+  .mb-2 { margin-bottom: .5rem; }
+  .mb-3 { margin-bottom: 1rem; }
+  .m-0 { margin: 0; }
+  .p-2 { padding: .5rem; }
+  .p-3 { padding: 1rem; }
+  .is-disabled { pointer-events: none; opacity: .5; }
+  .flex { display:flex; }
+  .flex-1 { flex: 1; }
+  .items-center { align-items:center; }
+  .justify-between { justify-content: space-between; }
+  .gap-1 { gap: .35rem; }
+  .gap-2 { gap: .5rem; }
+  .gap-3 { gap: .75rem; }
+  .text-secondary { color: var(--text-secondary); }
+  .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .inline-flex { display: inline-flex; }
+  .icon-inline { display: inline-flex; vertical-align: -2px; }
+  .ml-1 { margin-left: .25rem; }
+  .ml-2 { margin-left: .5rem; }
+  .mr-2 { margin-right: .5rem; }
+  .text-sm { font-size: .85rem; }
+  .text-0_8 { font-size: .8rem; }
+  .grid { display: grid; }
+  .list-unstyled { list-style: none; }
+  .p-0 { padding: 0; }
+  .pl-5 { padding-left: 1.25rem; }
+  .mt-md { margin-top: var(--spacing-md); }
+  .mb-sm { margin-bottom: var(--spacing-sm); }
+  .fw-600 { font-weight: 600; }
+  .hidden { display: none; }
+  .radius-sm { border-radius: 4px; }
+  .bg-card { background: var(--card-bg); }
+  .border-default { border: 1px solid var(--border-color); }
+  .pos-abs { position: absolute; }
+  .badge-mini { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; font-size:.6rem; font-weight:600; background:var(--primary-color); color:#fff; border-radius:4px; }
+  .toolbar-right { display:flex; justify-content:flex-end; margin:-10px 0 15px; }
+  .btn-theme { position:relative; appearance:none; border:1px solid rgba(255,255,255,0.14); background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)); color:var(--text-emphasis,#93a1a1); border-radius:14px; width:46px; height:46px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 20px -4px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,0.05) inset; transition:.25s background,.25s border-color,.25s transform; }
+  .my-0_15 { margin-top: .15rem; margin-bottom: .15rem; }
+  .min-h-260 { min-height: 260px; }
+  .radius { border-radius: var(--radius); }
+  .pos-rel { position: relative; }
+  .overflow-hidden { overflow: hidden; }
+  .text-center { text-align: center; }
+  .fs-2 { font-size: 2rem; }
+  .fs-1 { font-size: 1rem; }
+  .fs-0_9 { font-size: .9rem; }
+  .fs-0_7 { font-size: .7rem; }
+  .fw-500 { font-weight: 500; }
+  .lh-1_2 { line-height: 1.2; }
+  .abs-br { position: absolute; bottom: 2px; right: 4px; }
+  .abs-bl { position: absolute; bottom: 0; left: 0; }
+  .h-100 { height: 100%; }
+  .bg-primary { background: var(--primary-color); }
+  .text-white { color: #fff; }
+  .text-shadow-soft { text-shadow: 0 0 2px rgba(0,0,0,.6); }
+  .text-muted { color: #666; }
+  /* width dynamic via style remains; utility reserved if needed: .w-pct-XX */
+  /* Simple table utilities (used for printable learners) */
+  .font-sans { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, sans-serif; }
+  .p-1 { padding: 1rem; }
+  .mb-0 { margin-bottom: 0; }
+  .mb-0_25 { margin-bottom: .25rem; }
+  .mb-0_75 { margin-bottom: .75rem; }
+  .mb-1 { margin-bottom: 1rem; }
+  .table-plain { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .th, .td { padding: .5rem; border: 1px solid #ccc; }
+  .ta-center { text-align: center; }
+  .ta-right { text-align: right; }
+  .w-80 { width: 80px; }
+  .w-120 { width: 120px; }
+  .w-140 { width: 140px; }
+  .bg-f5 { background: #f5f5f5; }
+
+  /* Print optimization: show only printable learners section when printing */
+  @media print {
+    body * { visibility: hidden !important; }
+    #printable-learners, #printable-learners * { visibility: visible !important; }
+    #printable-learners { position: absolute; left: 0; top: 0; width: 100%; }
+  }
 </style>
 {% endblock %}
 
@@ -42,13 +126,13 @@
 
 {% block content %}
 <div class="analytics-container">
-  <div style="display:flex; justify-content:flex-end; margin:-10px 0 15px;">
-    <button id="analyticsThemeToggle" aria-label="Toggle theme" title="Toggle theme" style="position:relative; appearance:none; border:1px solid rgba(255,255,255,0.14); background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)); color:var(--text-emphasis,#93a1a1); border-radius:14px; width:46px; height:46px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 20px -4px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,0.05) inset; transition:.25s background,.25s border-color,.25s transform;"></button>
+  <div class="toolbar-right">
+    <button id="analyticsThemeToggle" aria-label="Toggle theme" title="Toggle theme" class="btn-theme"></button>
   </div>
   <!-- Breadcrumb Navigation -->
   <div class="analytics-breadcrumb">
     <a href="{{ url_for('classteacher.dashboard') }}" class="breadcrumb-link">
-      <span class="icon" aria-hidden="true" style="display:inline-flex;align-items:center;gap:.25rem;">
+      <span class="icon inline-flex items-center gap-1" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
           <path d="M12 3.172 3 10.172V20a1 1 0 0 0 1 1h6v-5h4v5h6a1 1 0 0 0 1-1V10.172l-9-7Z"/>
         </svg>
@@ -62,7 +146,7 @@
   <!-- Quick Insights Summary -->
   <div class="analytics-insights-section">
     <h3 class="insights-title">
-      <span class="icon" aria-hidden="true" style="display:inline-flex;vertical-align:-2px;">
+      <span class="icon icon-inline" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
           <path d="M12 3a9 9 0 1 0 9 9 9.01 9.01 0 0 0-9-9Zm1 10.5V9a1 1 0 1 0-2 0v4.5a1 1 0 0 0 2 0Z"/>
         </svg>
@@ -129,7 +213,7 @@
   <div class="analytics-filters-section">
     <div class="filters-header">
       <h2 class="filters-title">
-        <span class="icon" aria-hidden="true" style="display:inline-flex;vertical-align:-2px;">
+        <span class="icon icon-inline" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
             <path d="M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 .76 1.65L14 12.5V18a1 1 0 0 1-1.447.894l-3-1.5A1 1 0 0 1 9 16.5V12.5L3.24 5.65A1 1 0 0 1 3 5Z"/>
           </svg>
@@ -137,6 +221,22 @@
         Analytics Filters
       </h2>
       <div class="filters-actions">
+        <div class="filter-inline">
+          <label class="filter-label mr-2" for="subject-view-mode">Subject View</label>
+          <select id="subject-view-mode" class="filter-select" onchange="updateSubjectView(this.value)">
+            <option value="average" {% if (subject_view or 'average') == 'average' %}selected{% endif %}>Show Averages</option>
+            <option value="rank" {% if subject_view == 'rank' %}selected{% endif %}>Show Ranks</option>
+          </select>
+        </div>
+        <div class="filter-inline">
+          <label class="filter-label mr-2" for="top-subjects">Top N Subjects</label>
+          <select id="top-subjects" class="filter-select" onchange="updateTopSubjects(this.value)">
+            <option value="">All</option>
+            <option value="3" {% if (top_subjects|default(0)|int) == 3 %}selected{% endif %}>Top 3</option>
+            <option value="5" {% if (top_subjects|default(0)|int) == 5 %}selected{% endif %}>Top 5</option>
+            <option value="10" {% if (top_subjects|default(0)|int) == 10 %}selected{% endif %}>Top 10</option>
+          </select>
+        </div>
         <button
           class="btn btn-outline btn-reset"
           onclick="resetAnalyticsFilters()"
@@ -198,10 +298,8 @@
         </select>
       </div>
 
-      <div class="filter-group"
-        id="analytics-grade-filter-group"
-        style="display: none"
-      >
+      <div class="filter-group hidden"
+        id="analytics-grade-filter-group">
         <label class="filter-label">Grade</label>
         <select
           id="analytics-grade-filter"
@@ -213,10 +311,8 @@
         </select>
       </div>
 
-      <div class="filter-group"
-        id="analytics-stream-filter-group"
-        style="display: none"
-      >
+      <div class="filter-group hidden"
+        id="analytics-stream-filter-group">
         <label class="filter-label">Stream</label>
         <select
           id="analytics-stream-filter"
@@ -232,6 +328,30 @@
 
   <!-- Main Analytics Content -->
   <div>
+  <div id="top-subject-spotlight" class="premium-card mt-3 p-3 {% if not analytics_data.top_subject %}hidden{% endif %}">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="flex items-center gap-2 m-0">
+          <span aria-hidden="true">🏆</span>
+          <span>Top Performing Subject: <span id="top-subject-name">{{ analytics_data.top_subject.subject_name if analytics_data.top_subject else '' }}</span></span>
+        </h3>
+        <div id="top-subject-avg" class="text-secondary">{% if analytics_data.top_subject %}Avg: {{ analytics_data.top_subject.average_percentage|float|round(1) }}%{% endif %}</div>
+      </div>
+      <div id="top-subject-teacher" class="mb-2 text-secondary">{% if analytics_data.top_subject %}Teacher: {{ analytics_data.top_subject.teacher_name or 'Not Assigned' }}{% endif %}</div>
+      <div id="top-subject-learners" class="{% if not (analytics_data.top_subject and analytics_data.top_subject.top_learners) %}hidden{% endif %}">
+        <div class="mb-1 fw-600">Top 3 Learners</div>
+        <ol id="top-subject-learners-list" class="m-0 pl-5">
+          {% if analytics_data.top_subject and analytics_data.top_subject.top_learners %}
+            {% for tl in analytics_data.top_subject.top_learners %}
+            <li class="flex justify-between gap-3 my-0_15">
+              <span class="flex-1 truncate">{{ tl.student_name }}</span>
+              <span class="text-secondary">{{ tl.percentage|float|round(1) }}%</span>
+            </li>
+            {% endfor %}
+          {% endif %}
+        </ol>
+      </div>
+    </div>
+
     <!-- Top Performers Component - SIMPLIFIED VERSION -->
       <!-- Results per page (Top Performers) -->
       <div class="filter-group">
@@ -260,7 +380,7 @@
     </div>
       <div class="section-header">
         <h3 class="section-title">
-          <span class="icon" aria-hidden="true" style="display:inline-flex;vertical-align:-2px;">
+          <span class="icon icon-inline" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
               <path d="M8 3a1 1 0 0 0-1 1v2H6a3 3 0 0 0-3 3v.5A4.5 4.5 0 0 0 7.5 14h.3A6 6 0 0 0 12 15.9 6 6 0 0 0 16.2 14h.3A4.5 4.5 0 0 0 21 9.5V9a3 3 0 0 0-3-3h-1V4a1 1 0 0 0-1-1H8Zm8 3v2H8V6h8Z"/>
             </svg>
@@ -279,6 +399,40 @@
             </span>
             Refresh
           </button>
+          <!-- Export PDF Controls -->
+          <div class="filter-inline ml-2">
+            <label class="filter-label mr-2" for="export-pdf-select">Export PDF</label>
+            <select id="export-pdf-select" class="filter-select" onchange="handleExportPdfSelect(this.value)">
+              <option value="">Select...</option>
+              <optgroup label="Top Performers">
+                <option value="top-3">Top 3</option>
+                <option value="top-5">Top 5</option>
+                <option value="top-10">Top 10</option>
+              </optgroup>
+              <optgroup label="Least Performers">
+                <option value="bottom-3">Least 3</option>
+                <option value="bottom-5">Least 5</option>
+                <option value="bottom-10">Least 10</option>
+              </optgroup>
+            </select>
+          </div>
+          <!-- Print Learners Controls -->
+          <div class="filter-inline ml-2">
+            <label class="filter-label mr-2" for="print-learners-select">Print Learners</label>
+            <select id="print-learners-select" class="filter-select" onchange="handlePrintSelect(this.value)">
+              <option value="">Select...</option>
+              <optgroup label="Top Performers">
+                <option value="top-3">Top 3</option>
+                <option value="top-5">Top 5</option>
+                <option value="top-10">Top 10</option>
+              </optgroup>
+              <optgroup label="Least Performers">
+                <option value="bottom-3">Least 3</option>
+                <option value="bottom-5">Least 5</option>
+                <option value="bottom-10">Least 10</option>
+              </optgroup>
+            </select>
+          </div>
           {% set _params = {
             'term': effective_term_filter or current_term_filter,
             'assessment_type': effective_assessment_filter or current_assessment_filter,
@@ -387,7 +541,7 @@
             <!-- actions removed by request -->
             
             <!-- Enhanced Details Section (Initially Hidden) -->
-            <div class="details-section premium-card" id="details-enhanced-{{ student.student_id or loop.index }}" style="display: none;">
+            <div class="details-section premium-card hidden" id="details-enhanced-{{ student.student_id or loop.index }}">
               <div>
                 <span class="icon" aria-hidden="true">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
@@ -510,23 +664,41 @@
           {% set nextUrl = basePath ~ (('?' ~ '&'.join(query_items)) if query_items else '') ~ (('&' if query_items else '?') ~ 'page=' ~ (page + 1)) %}
           <div class="pagination-controls">
             <div class="pagination-left">
-              <a class="btn btn-outline" href="{{ prevUrl }}#top-performers" style="visibility: {{ 'visible' if page > 1 else 'hidden' }}">
+              {% if page > 1 %}
+              <a class="btn btn-outline" href="{{ prevUrl }}#top-performers">
                 <span class="icon" aria-hidden="true">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.7 5.3a1 1 0 0 1 0 1.4L11.41 11l4.3 4.3a1 1 0 0 1-1.42 1.4l-5-5a1 1 0 0 1 0-1.4l5-5a1 1 0 0 1 1.42 0Z"/></svg>
                 </span>
                 Previous
               </a>
+              {% else %}
+              <span class="btn btn-outline is-disabled" aria-disabled="true" tabindex="-1">
+                <span class="icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.7 5.3a1 1 0 0 1 0 1.4L11.41 11l4.3 4.3a1 1 0 0 1-1.42 1.4l-5-5a1 1 0 0 1 0-1.4l5-5a1 1 0 0 1 1.42 0Z"/></svg>
+                </span>
+                Previous
+              </span>
+              {% endif %}
             </div>
             <div class="pagination-center">
               Page {{ page }} of {{ total_pages }} • Showing {{ start + 1 }}–{{ [start + performers|length, total_count]|min }} of {{ total_count }}
             </div>
             <div class="pagination-right">
-              <a class="btn btn-outline" href="{{ nextUrl }}#top-performers" style="visibility: {{ 'visible' if page < total_pages else 'hidden' }}">
+              {% if page < total_pages %}
+              <a class="btn btn-outline" href="{{ nextUrl }}#top-performers">
                 Next
                 <span class="icon" aria-hidden="true">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8.3 18.7a1 1 0 0 1 0-1.4l4.3-4.3-4.3-4.3A1 1 0 0 1 9.7 7.3l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 0 1-1.4 0Z"/></svg>
                 </span>
               </a>
+              {% else %}
+              <span class="btn btn-outline is-disabled" aria-disabled="true" tabindex="-1">
+                Next
+                <span class="icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8.3 18.7a1 1 0 0 1 0-1.4l4.3-4.3-4.3-4.3A1 1 0 0 1 9.7 7.3l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 0 1-1.4 0Z"/></svg>
+                </span>
+              </span>
+              {% endif %}
             </div>
           </div>
         {% endif %}
@@ -545,10 +717,10 @@
     </div>
 
     <!-- Subject Performance Component -->
-    <div class="analytics-section subject-performance-section">
+  <div class="analytics-section subject-performance-section" id="subject-performance">
       <div class="section-header">
         <h3 class="section-title">
-          <span class="icon" aria-hidden="true" style="display:inline-flex;vertical-align:-2px;">
+          <span class="icon icon-inline" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v15a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2V5Z"/></svg>
           </span>
           Subject Performance Analysis
@@ -570,7 +742,11 @@
         <div id="subject-performance-container">
           {% if analytics_data.summary.has_sufficient_data and analytics_data.subject_analytics %}
           <div class="subject-performance-grid">
-            {% for subject in analytics_data.subject_analytics[:6] %}
+            {% set sliced_subjects = analytics_data.subject_analytics %}
+            {% if top_subjects %}
+              {% set sliced_subjects = analytics_data.subject_analytics[:top_subjects] %}
+            {% endif %}
+            {% for subject in sliced_subjects %}
             {% set avg = (subject.average_percentage|float) %}
             {% set status_class = 'status-below' %}
             {% if avg >= 80 %}
@@ -583,11 +759,18 @@
             <div class="subject-item premium-card" data-average="{{ avg|round(1) }}">
               <div class="subject-header">
                 <div class="subject-name">{{ subject.subject_name or subject.name }}</div>
-                <div class="subject-performance">{{ avg|round(1) }}%</div>
+                <div class="subject-performance">
+                  {% if (subject_view or 'average') == 'rank' and subject.rank %}
+                    #{{ subject.rank }}
+                  {% else %}
+                    {{ avg|round(1) }}%
+                  {% endif %}
+                </div>
               </div>
               <div class="subject-details">
-                {{ subject.student_count or subject.students_count or 0 }} students •
-                {{ subject.total_marks or subject.total_assessments or 0 }} assessments
+          {{ subject.student_count or subject.students_count or subject.students_with_marks or 0 }} students •
+          {{ subject.total_marks or subject.total_assessments or 0 }} assessments
+          <span class="ml-2 text-secondary">Teacher: {{ subject.teacher_name or 'Not Assigned' }}</span>
               </div>
               <div class="progress-bar" aria-label="Average percentage">
                 <div class="progress-fill" data-width="{{ [avg, 100]|min }}"></div>
@@ -598,6 +781,31 @@
                 {% elif avg >= 50 %}Approaching Expectation
                 {% else %}Below Expectation{% endif %}
               </div>
+              {% if subject.previous_average is defined %}
+              <div class="subject-trend mt-1 text-secondary text-sm flex items-center gap-1">
+                {% set delta = subject.trend_delta|default(0)|float %}
+                {% set dir = subject.trend_direction|default('flat') %}
+                <span>{% if dir == 'up' %}⬆{% elif dir == 'down' %}⬇{% else %}↔{% endif %}</span>
+                <span>
+                  {% if dir == 'flat' %}No change{% else %}{{ delta|round(1) }} pts{% endif %}
+                  vs prev term ({{ subject.previous_average|float|round(1) }}%)
+                </span>
+              </div>
+              {% endif %}
+              {% if subject.top_learners %}
+              <div class="subject-top-learners mt-2">
+                <div class="text-sm text-secondary mb-1">Top Learners</div>
+                <ul class="list-unstyled m-0 p-0 grid gap-1">
+                  {% for tl in subject.top_learners %}
+                  <li class="flex items-center gap-2">
+                    <span class="badge-mini">{{ tl.rank }}</span>
+                    <span class="flex-1 truncate">{{ tl.student_name }}</span>
+                    <span class="fw-600 text-0_8 text-secondary">{{ tl.percentage|float|round(1) }}%</span>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
             </div>
             {% endfor %}
           </div>
@@ -618,7 +826,7 @@
   <div class="analytics-section detailed-breakdown-section">
     <div class="section-header">
       <h3 class="section-title">
-        <span class="icon" aria-hidden="true" style="display:inline-flex;vertical-align:-2px;">
+        <span class="icon icon-inline" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M5 6h14v2H5Zm0 5h14v2H5Zm0 5h10v2H5Z"/></svg>
         </span>
         Detailed Performance Breakdown
@@ -633,6 +841,19 @@
           </span>
           Export Data
         </button>
+        <div class="dropdown">
+          <select id="export-subjects-pdf-select" class="btn btn-outline btn-export" onchange="handleExportSubjectsPdfSelect(this.value)">
+            <option value="">Export Subject PDF…</option>
+            <option value="avg-all">Averages - All</option>
+            <option value="avg-3">Averages - Top 3</option>
+            <option value="avg-5">Averages - Top 5</option>
+            <option value="avg-10">Averages - Top 10</option>
+            <option value="rank-all">Ranks - All</option>
+            <option value="rank-3">Ranks - Top 3</option>
+            <option value="rank-5">Ranks - Top 5</option>
+            <option value="rank-10">Ranks - Top 10</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -645,14 +866,19 @@
               <tr>
                 <th>#</th>
                 <th>Subject</th>
-                <th>Average</th>
+                <th>{% if (subject_view or 'average') == 'rank' %}Rank{% else %}Average{% endif %}</th>
                 <th>Students</th>
                 <th>Assessments</th>
+                <th>Trend</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {% for subject in analytics_data.subject_analytics %}
+              {% set table_subjects = analytics_data.subject_analytics %}
+              {% if top_subjects %}
+                {% set table_subjects = analytics_data.subject_analytics[:top_subjects] %}
+              {% endif %}
+              {% for subject in table_subjects %}
               {% set avg = (subject.average_percentage|float) %}
               {% set status = 'Below Expectation' %}
               {% if avg >= 80 %}
@@ -668,13 +894,27 @@
                   <div class="subject-name">{{ subject.subject_name or subject.name }}</div>
                 </td>
                 <td>
-                  <div class="performer-percentage">
-                    <div class="percentage-value">{{ avg|round(1) }}%</div>
-                    <div class="percentage-bar"><div class="percentage-fill" data-width="{{ [avg, 100]|min }}"></div></div>
-                  </div>
+                  {% if (subject_view or 'average') == 'rank' and subject.rank %}
+                    <div class="fw-600">#{{ subject.rank }}</div>
+                  {% else %}
+                    <div class="performer-percentage">
+                      <div class="percentage-value">{{ avg|round(1) }}%</div>
+                      <div class="percentage-bar"><div class="percentage-fill" data-width="{{ [avg, 100]|min }}"></div></div>
+                    </div>
+                  {% endif %}
                 </td>
-                <td>{{ subject.student_count or subject.students_count or 0 }}</td>
+                <td>{{ subject.student_count or subject.students_count or subject.students_with_marks or 0 }}</td>
                 <td>{{ subject.total_marks or subject.total_assessments or 0 }}</td>
+                <td>
+                  {% if subject.previous_average is defined %}
+                    {% set delta = subject.trend_delta|default(0)|float %}
+                    {% set dir = subject.trend_direction|default('flat') %}
+                    <span>{% if dir == 'up' %}⬆{% elif dir == 'down' %}⬇{% else %}↔{% endif %}</span>
+                    <span class="ml-1">{% if dir == 'flat' %}0.0{% else %}{{ delta|round(1) }}{% endif %}</span>
+                  {% else %}
+                    <span class="text-secondary">—</span>
+                  {% endif %}
+                </td>
                 <td>
                   <span class="subject-status 
                     {% if avg >= 80 %}status-exceeding
@@ -703,8 +943,8 @@
             {% set dist.below = dist.below + 1 %}
           {% endif %}
         {% endfor %}
-        <div class="premium-card" style="margin-top: var(--spacing-md)">
-          <h4 style="margin-bottom: var(--spacing-sm)">Student Performance Distribution</h4>
+        <div class="premium-card mt-md">
+          <h4 class="mb-sm">Student Performance Distribution</h4>
           <ul class="distribution-list">
             <li>Exceeding (80%+): <strong>{{ dist.exceeding }}</strong></li>
             <li>Meeting (65–79%): <strong>{{ dist.meeting }}</strong></li>
@@ -725,7 +965,7 @@
   </div>
 
   <!-- No Data State -->
-  <div id="no-data-state" style="display: none">
+  <div id="no-data-state" class="hidden">
     <div>
       <span class="icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
@@ -784,20 +1024,20 @@
       const chartWrap = document.createElement('div');
       chartWrap.className = 'analytics-chart-wrapper';
       chartWrap.innerHTML = `
-        <h3 style="margin-top:2rem;display:flex;align-items:center;gap:.5rem;">
-          <span style="display:inline-flex;">📈</span>
+        <h3 class="mt-3 flex items-center gap-2">
+          <span class="inline-flex">📈</span>
           Subject Performance (Live)
         </h3>
-        <div id="subject-performance-chart" style="min-height:260px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:var(--radius);padding:1rem;position:relative;overflow:hidden;">
-          <div class="chart-empty" style="text-align:center;color:var(--text-secondary);font-size:.9rem;">
-            <div style="font-size:2rem;line-height:1.2;">📊</div>
+        <div id="subject-performance-chart" class="bg-card border-default p-3 min-h-260 radius pos-rel overflow-hidden">
+          <div class="chart-empty text-secondary text-center fs-0_9">
+            <div class="fs-2 lh-1_2">📊</div>
             <div>Loading subject performance...</div>
           </div>
         </div>
-        <div id="top-performers-mini" style="margin-top:1.5rem;background:var(--card-bg);border:1px solid var(--border-color);border-radius:var(--radius);padding:1rem;">
-          <h4 style="margin:0 0 .75rem;font-size:1rem;display:flex;align-items:center;gap:.4rem;">🏅 Top Students (Live)</h4>
-          <ul id="top-performers-mini-list" style="list-style:none;margin:0;padding:0;display:grid;gap:.4rem;font-size:.85rem;">
-            <li style="color:var(--text-secondary);">Loading...</li>
+        <div id="top-performers-mini" class="mt-2 bg-card border-default p-3 radius">
+          <h4 class="m-0 mb-1 flex items-center gap-2 fs-1">🏅 Top Students (Live)</h4>
+          <ul id="top-performers-mini-list" class="list-unstyled m-0 p-0 grid gap-2 text-sm">
+            <li class="text-secondary">Loading...</li>
           </ul>
         </div>`;
       insightsSection.appendChild(chartWrap);
@@ -817,7 +1057,7 @@
   let subjectChartInstance = null;
   function buildSimpleBarChart(container, subjects) {
     if (!subjects.length) {
-      container.innerHTML = '<div style="text-align:center;color:var(--text-secondary);">No subject data.</div>';
+  container.innerHTML = '<div class="text-secondary text-center">No subject data.</div>';
       return;
     }
     // Prepare or reuse canvas
@@ -866,17 +1106,18 @@
       });
     } catch(err) {
       // Fallback if Chart.js not available
-      container.innerHTML = '<div style="text-align:center;color:var(--text-secondary);">Chart unavailable. Rendering simple bars...</div>';
+  container.innerHTML = '<div class="text-secondary text-center">Chart unavailable. Rendering simple bars...</div>';
       const wrap = document.createElement('div');
       wrap.style.cssText = 'margin-top:.75rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.75rem;';
       subjects.slice(0,12).forEach(s => {
         const val = parseFloat(s.average_percentage || 0);
         const card = document.createElement('div');
-        card.style.cssText='background:var(--card-hover);border:1px solid var(--border-color);padding:.5rem .6rem;border-radius:.5rem;display:flex;flex-direction:column;gap:.4rem;';
-        card.innerHTML = `<div style="font-size:.7rem;font-weight:500;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.subject_name || s.subject || 'Subject'}</div>
-          <div style="height:46px;position:relative;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:.25rem;overflow:hidden;">
-            <div style="position:absolute;bottom:0;left:0;width:${Math.min(val,100)}%;height:100%;background:var(--primary-color);"></div>
-            <span style="position:absolute;bottom:2px;right:4px;font-size:.6rem;font-weight:600;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.6);">${val.toFixed(1)}%</span>
+        card.className = 'bg-card border-default p-2 radius-sm';
+        card.style.cssText='display:flex;flex-direction:column;gap:.4rem;';
+        card.innerHTML = `<div class="text-secondary truncate fs-0_7 fw-500">${s.subject_name || s.subject || 'Subject'}</div>
+          <div class="pos-rel overflow-hidden" style="height:46px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:.25rem;">
+            <div class="abs-bl h-100 bg-primary" style="width:${Math.min(val,100)}%"></div>
+            <span class="abs-br fs-0_7 fw-600 text-white text-shadow-soft">${val.toFixed(1)}%</span>
           </div>`;
         wrap.appendChild(card);
       });
@@ -887,15 +1128,15 @@
   function updateTopMini(listEl, performers) {
     listEl.innerHTML = '';
     if (!performers.length) {
-      listEl.innerHTML = '<li style="color:var(--text-secondary);">No top performers.</li>';
+  listEl.innerHTML = '<li class="text-secondary">No top performers.</li>';
       return;
     }
     performers.slice(0,8).forEach((p,i) => {
       const li = document.createElement('li');
-      li.style.cssText = 'display:flex;align-items:center;gap:.5rem;background:var(--card-hover);border:1px solid var(--border-color);padding:.4rem .55rem;border-radius:.45rem;';
-      li.innerHTML = `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;font-size:.6rem;font-weight:600;background:var(--primary-color);color:#fff;border-radius:4px;">${i+1}</span>
-        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.student_name || p.name || 'Student'}</span>
-        <span style="font-weight:600;font-size:.7rem;color:var(--text-secondary);">${parseFloat(p.average_percentage||0).toFixed(1)}%</span>`;
+      li.className = 'flex items-center gap-2 bg-card border-default p-2 radius-sm';
+      li.innerHTML = `<span class="badge-mini">${i+1}</span>
+        <span class="flex-1 truncate">${p.student_name || p.name || 'Student'}</span>
+        <span class="fw-600 text-secondary fs-0_7">${parseFloat(p.average_percentage||0).toFixed(1)}%</span>`;
       listEl.appendChild(li);
     });
   }
@@ -905,11 +1146,15 @@
     const assessment = document.getElementById('analytics-assessment-filter')?.value || '';
     const grade = document.getElementById('analytics-grade-filter')?.value || '';
     const stream = document.getElementById('analytics-stream-filter')?.value || '';
+    const topSubjects = document.getElementById('top-subjects')?.value || '';
+    const subjectView = document.getElementById('subject-view-mode')?.value || '';
     const params = new URLSearchParams();
     if (term) params.append('term', term);
     if (assessment) params.append('assessment_type', assessment);
     if (grade) params.append('grade', grade);
     if (stream) params.append('stream', stream);
+    if (topSubjects) params.append('top_subjects', topSubjects);
+    if (subjectView) params.append('subject_view', subjectView);
     const url = '/classteacher/analytics/data' + (params.toString() ? ('?' + params.toString()) : '');
     const chartContainer = document.getElementById('subject-performance-chart');
     const miniList = document.getElementById('top-performers-mini-list');
@@ -933,9 +1178,46 @@
         if (chartContainer) buildSimpleBarChart(chartContainer, subjects);
         const performers = data.top_performers || data.top_students || [];
         if (miniList) updateTopMini(miniList, performers);
+
+        // Update Top Subject spotlight
+        const spot = document.getElementById('top-subject-spotlight');
+        if (spot) {
+          const ts = data.top_subject || data.topSubject;
+          if (ts && (ts.subject_name || ts.name)) {
+            spot.classList.remove('hidden');
+            const nameEl = document.getElementById('top-subject-name');
+            const avgEl = document.getElementById('top-subject-avg');
+            const teacherEl = document.getElementById('top-subject-teacher');
+            const listWrap = document.getElementById('top-subject-learners');
+            const listEl = document.getElementById('top-subject-learners-list');
+            if (nameEl) nameEl.textContent = ts.subject_name || ts.name || '';
+            const avgVal = (parseFloat(ts.average_percentage || 0)).toFixed(1);
+            if (avgEl) avgEl.textContent = `Avg: ${avgVal}%`;
+            if (teacherEl) teacherEl.textContent = `Teacher: ${ts.teacher_name || 'Not Assigned'}`;
+            if (Array.isArray(ts.top_learners) && ts.top_learners.length && listWrap && listEl) {
+              listWrap.classList.remove('hidden');
+              listEl.innerHTML = '';
+              ts.top_learners.forEach(tl => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between gap-3 my-0_15';
+                const nm = document.createElement('span');
+                nm.className = 'flex-1 truncate';
+                nm.textContent = tl.student_name || '';
+                const pc = document.createElement('span');
+                pc.className = 'text-secondary';
+                pc.textContent = `${parseFloat(tl.percentage||0).toFixed(1)}%`;
+                li.appendChild(nm); li.appendChild(pc); listEl.appendChild(li);
+              });
+            } else if (listWrap) {
+              listWrap.classList.add('hidden');
+            }
+          } else {
+            spot.classList.add('hidden');
+          }
+        }
       })
       .catch(err => {
-        if (chartContainer) chartContainer.innerHTML = '<div style="color:var(--text-secondary);text-align:center;">Failed to load.</div>';
+  if (chartContainer) chartContainer.innerHTML = '<div class="text-secondary text-center">Failed to load.</div>';
       })
       .finally(()=>{ if (chartContainer) chartContainer.classList.remove('loading'); });
   }
@@ -1027,6 +1309,8 @@
     const assessmentFilter = document.getElementById('analytics-assessment-filter').value;
     const gradeFilter = document.getElementById('analytics-grade-filter')?.value || '';
     const streamFilter = document.getElementById('analytics-stream-filter')?.value || '';
+    const topSubjects = document.getElementById('top-subjects')?.value || '';
+    const subjectView = document.getElementById('subject-view-mode')?.value || '';
 
     // Build URL with filters
     const params = new URLSearchParams();
@@ -1034,6 +1318,8 @@
     if (assessmentFilter) params.append('assessment_type', assessmentFilter);
     if (gradeFilter) params.append('grade', gradeFilter);
     if (streamFilter) params.append('stream', streamFilter);
+  if (topSubjects) params.append('top_subjects', topSubjects);
+  if (subjectView) params.append('subject_view', subjectView);
 
     // Reload page with filters
     const baseUrl = window.location.pathname;
@@ -1044,6 +1330,170 @@
     
     // Navigate to filtered URL
     window.location.href = newUrl;
+  }
+
+  function updateTopSubjects(val){
+    const url = new URL(window.location.href);
+    if (val) url.searchParams.set('top_subjects', String(val)); else url.searchParams.delete('top_subjects');
+    window.location.href = url.toString() + '#subject-performance';
+  }
+
+  function updateSubjectView(val){
+    const url = new URL(window.location.href);
+    if (val) url.searchParams.set('subject_view', String(val)); else url.searchParams.delete('subject_view');
+    window.location.href = url.toString() + '#subject-performance';
+  }
+
+  function buildExportPdfUrl(kind, n) {
+    const base = new URL(window.location.origin + '/classteacher/analytics/export_pdf');
+    const cur = new URL(window.location.href);
+    ['term','assessment_type','grade','stream'].forEach(k => {
+      const v = cur.searchParams.get(k);
+      if (v) base.searchParams.set(k, v);
+    });
+    base.searchParams.set('kind', kind);
+    base.searchParams.set('n', String(n));
+    return base.toString();
+  }
+
+  function handleExportPdfSelect(val) {
+    if (!val) return;
+    const [which, numStr] = val.split('-');
+    const n = Number(numStr || 0);
+    if (!n) return;
+    const url = buildExportPdfUrl(which === 'bottom' ? 'bottom' : 'top', n);
+    // Navigate to trigger download
+    window.location.href = url;
+    // Reset selection shortly after
+    setTimeout(() => {
+      const sel = document.getElementById('export-pdf-select');
+      if (sel) sel.value = '';
+    }, 400);
+  }
+
+  // Build analytics data URL for printing with current filters and high limit
+  function buildPrintDataUrl() {
+    const base = new URL(window.location.origin + '/classteacher/analytics/data');
+    const cur = new URL(window.location.href);
+    ['term','assessment_type','grade','stream'].forEach(k => {
+      const v = cur.searchParams.get(k);
+      if (v) base.searchParams.set(k, v);
+    });
+    base.searchParams.set('limit', '999');
+    return base.toString();
+  }
+
+  async function fetchAllPerformersForPrint() {
+    try {
+      const url = buildPrintDataUrl();
+      const res = await fetch(url, { credentials: 'same-origin' });
+      const data = await res.json();
+      if (data && data.top_performers && data.top_performers.length) {
+        return data;
+      }
+      throw new Error(data && data.error ? data.error : 'No data');
+    } catch (e) {
+      showNotification('Unable to load full learners list for printing.', 'error');
+      return null;
+    }
+  }
+
+  function buildExportSubjectsPdfUrl(view, n) {
+    const base = new URL(window.location.origin + '/classteacher/analytics/export_subjects_pdf');
+    const cur = new URL(window.location.href);
+    ['term','assessment_type','grade','stream'].forEach(k => { const v = cur.searchParams.get(k); if (v) base.searchParams.set(k, v); });
+    if (n) base.searchParams.set('top_subjects', String(n));
+    if (view) base.searchParams.set('subject_view', view);
+    return base.toString();
+  }
+
+  function handleExportSubjectsPdfSelect(val) {
+    if (!val) return;
+    const [view, size] = val.split('-');
+    const n = size === 'all' ? '' : Number(size || 0);
+    const url = buildExportSubjectsPdfUrl(view === 'rank' ? 'rank' : 'average', n);
+    window.location.href = url;
+    setTimeout(() => { const sel = document.getElementById('export-subjects-pdf-select'); if (sel) sel.value = ''; }, 400);
+  }
+
+  function buildPrintableLearnersHTML(title, items, context) {
+    const today = new Date().toLocaleString();
+    const headerCtx = context ? `${context.grade || ''} ${context.stream ? ('Stream ' + context.stream) : ''} • ${context.term || ''} • ${context.assessment_type || ''}`.trim() : '';
+    const rows = (items || []).map(it => `
+      <tr>
+        <td class="td ta-center">${it.rank ?? ''}</td>
+        <td class="td">${it.name || it.student_name || ''}</td>
+        <td class="td ta-right">${Number(it.average_percentage || 0).toFixed(1)}%</td>
+        <td class="td ta-center">${it.grade_letter || ''}</td>
+      </tr>
+    `).join('');
+    return `
+      <div class="p-1 font-sans">
+        <h2 class="mb-0_25">${title}</h2>
+  <div class="text-muted mb-0_75">${headerCtx}</div>
+  <div class="text-muted mb-1">Generated: ${today}</div>
+        <table class="table-plain">
+          <thead>
+            <tr>
+              <th class="th bg-f5 ta-center w-80">Rank</th>
+              <th class="th bg-f5">Student</th>
+              <th class="th bg-f5 ta-right w-140">Average %</th>
+              <th class="th bg-f5 ta-center w-120">Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows || '<tr><td colspan="4" class="td ta-center text-muted" style="padding:.75rem;">No learners</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  async function printTopLearners(n) {
+    const data = await fetchAllPerformersForPrint();
+    if (!data) return;
+    const all = data.top_performers || [];
+    const items = all.slice(0, Number(n));
+    const html = buildPrintableLearnersHTML(`Top ${n} Learners`, items, data.context || {});
+    renderAndPrint(html);
+  }
+
+  async function printBottomLearners(n) {
+    const data = await fetchAllPerformersForPrint();
+    if (!data) return;
+    const all = data.top_performers || [];
+    // Bottom are the lowest averages; data is sorted desc, so take last n and sort asc by average
+    const items = all.slice(-Number(n)).sort((a,b) => (a.average_percentage||0) - (b.average_percentage||0));
+    const html = buildPrintableLearnersHTML(`Least ${n} Performing Learners`, items, data.context || {});
+    renderAndPrint(html);
+  }
+
+  function handlePrintSelect(val) {
+    if (!val) return;
+    const [which, numStr] = val.split('-');
+    const n = Number(numStr);
+    if (which === 'top') {
+      printTopLearners(n);
+    } else if (which === 'bottom') {
+      printBottomLearners(n);
+    }
+    // reset selection after action
+    setTimeout(() => {
+      const sel = document.getElementById('print-learners-select');
+      if (sel) sel.value = '';
+    }, 300);
+  }
+
+  function renderAndPrint(innerHTML) {
+    let container = document.getElementById('printable-learners');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'printable-learners';
+      document.body.appendChild(container);
+    }
+    container.innerHTML = innerHTML;
+    // trigger print
+    window.print();
   }
 
   // Reset filters function
@@ -1553,49 +2003,6 @@
       }
     }, 4000);
   }
-    
-    if (topPerformersContainer) {
-      // Protect the container
-      topPerformersContainer.style.display = 'block';
-      topPerformersContainer.style.visibility = 'visible';
-      topPerformersContainer.style.opacity = '1';
-      
-      // Protect each performer item
-      performerItems.forEach((item, index) => {
-        if (item) {
-          item.style.display = 'grid';
-          item.style.visibility = 'visible';
-          item.style.opacity = '1';
-          item.setAttribute('data-protected', 'true');
-          
-          // Ensure grid layout is maintained
-          item.style.gridTemplateColumns = 'auto 1fr auto';
-          item.style.gap = 'var(--spacing-md)';
-          item.style.alignItems = 'flex-start';
-        }
-      });
-      
-      // Protect toggle buttons
-      const toggleButtons = document.querySelectorAll('.details-toggle-btn');
-      toggleButtons.forEach(btn => {
-        if (btn) {
-          btn.style.display = 'flex';
-          btn.style.visibility = 'visible';
-          btn.style.opacity = '1';
-        }
-      });
-      
-      // Protect badges and other elements
-      const badges = document.querySelectorAll('.class-badge, .subjects-badge');
-      badges.forEach(badge => {
-        if (badge) {
-          badge.style.display = 'inline-flex';
-          badge.style.visibility = 'visible';
-          badge.style.opacity = '1';
-        }
-      });
-    }
-  }
 
   function togglePerformerDetails(studentId) {
     const detailsSection = document.getElementById(`details-${studentId}`);
@@ -1681,11 +2088,16 @@
     (function(){
       var btn=document.getElementById('analyticsThemeToggle'); if(!btn) return;
       var KEY='ctTheme';
+      var LEGACY_KEY='solar-theme-mode';
       function sys(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
-      function setTheme(t){document.documentElement.setAttribute('data-theme',t); document.body&&document.body.setAttribute('data-theme',t); btn.innerHTML = t==='dark' ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 7.07-1.41-1.41M6.46 6.46 5.05 5.05m12.02-1.41-1.41 1.41M6.46 17.54l-1.41 1.41"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'; btn.title='Switch to '+(t==='dark'?'light':'dark')+' theme'; }
-      var saved; try{saved=localStorage.getItem(KEY);}catch(e){}
-      setTheme(saved||sys());
-      btn.addEventListener('click',function(){ var cur=document.documentElement.getAttribute('data-theme')||sys(); var next=cur==='dark'?'light':'dark'; try{localStorage.setItem(KEY,next);}catch(e){} setTheme(next); });
+      function normalize(v){ if(!v) return v; v=String(v).toLowerCase(); if(v==='solar-dark') return 'dark'; if(v==='solar-light') return 'light'; return (v==='dark'||v==='light')?v:undefined; }
+      function persist(t){ try{ localStorage.setItem(KEY,t); localStorage.setItem(LEGACY_KEY, t==='dark'?'solar-dark':'solar-light'); }catch(e){} }
+      function applyAttrs(t){ document.documentElement.setAttribute('data-theme',t); if(document.body){ document.body.setAttribute('data-theme',t); } }
+      function setTheme(t){ applyAttrs(t); btn.innerHTML = t==='dark' ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 7.07-1.41-1.41M6.46 6.46 5.05 5.05m12.02-1.41-1.41 1.41M6.46 17.54l-1.41 1.41"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'; btn.title='Switch to '+(t==='dark'?'light':'dark')+' theme'; }
+      var saved, legacy; try{ saved=localStorage.getItem(KEY); legacy=localStorage.getItem(LEGACY_KEY); }catch(e){}
+      var initial = normalize(saved) || normalize(legacy) || normalize(document.documentElement.getAttribute('data-theme')) || sys();
+      setTheme(initial); persist(initial);
+      btn.addEventListener('click',function(){ var cur = normalize(document.documentElement.getAttribute('data-theme')) || sys(); var next=cur==='dark'?'light':'dark'; persist(next); setTheme(next); });
     })();
   });
 

@@ -3329,3 +3329,95 @@ RuntimeError: The current Flask app is not registered with this 'SQLAlchemy' ins
 2025-09-21 21:18:21,885 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 2025-09-21 21:18:22,414 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-21 22:48:10,987 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-21 22:48:13,353 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-21 22:50:23,592 - INFO - 679de79728bc4d59846d83220cb49fbf - new_structure.services.auth_service - POST /classteacher_login - Authentication successful for joylorna with role classteacher
+2025-09-21 22:50:37,171 - WARNING - c3c302b5d4b64d5c99ed496ceaef2995 - new_structure.utils.cache_manager - GET /classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025 - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-09-21 22:50:37,718 - INFO - c3c302b5d4b64d5c99ed496ceaef2995 - new_structure - GET /classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025 - {'event': 'report.class.preview:metrics', 'correlation_id': 'f553e1e4-1ca0-4b01-8237-e2e73ec3b185', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025', 'role': 'classteacher', 'teacher_id': 9, 'elapsed_ms': 4732, 'students': 0, 'subjects': 0}
+2025-09-21 22:50:37,862 - INFO - c3c302b5d4b64d5c99ed496ceaef2995 - new_structure - GET /classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025 - {'event': 'report.class.preview:success', 'correlation_id': 'a436664e-72de-4cba-a553-a19086e6e5fd', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025', 'role': 'classteacher', 'teacher_id': 9, 'status': 200}
+2025-09-21 22:51:20,182 - INFO - 940f0ae566684beca9d783e185bc3633 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-21 23:12:04,997 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-21 23:12:07,037 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 06:31:43,955 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 06:31:50,178 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 06:32:18,489 - INFO - 0beb1dff0eb74ea88ca2f419e0c53e14 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-22 06:38:10,564 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 06:38:10,936 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-09-22 06:38:10,963 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-22 06:38:11,501 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 06:42:17,696 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 06:42:19,820 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 07:07:59,526 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 07:07:59,804 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-09-22 07:07:59,821 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-22 07:08:01,538 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 08:17:27,669 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 08:17:30,184 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 08:18:06,049 - INFO - 4422cc4a37954f08908866b7f88142a1 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-22 08:24:03,214 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 08:24:06,245 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-09-22 08:24:08,518 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '2494' ([Errno 11001] getaddrinfo failed)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-22 08:24:09,008 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 08:27:43,404 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 08:27:46,400 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-09-22 08:27:48,679 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '2494' ([Errno 11001] getaddrinfo failed)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-22 08:27:49,425 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 08:49:18,877 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 08:49:21,886 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-09-22 08:49:24,163 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '2494' ([Errno 11001] getaddrinfo failed)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-22 08:49:26,090 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 08:49:27,588 - INFO - n/a - new_structure -   - Application logging configured (json=False)
+2025-09-22 08:49:28,182 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 08:49:31,179 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-09-22 08:49:33,469 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '2494' ([Errno 11001] getaddrinfo failed)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-22 08:49:35,269 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 08:49:35,302 - INFO - n/a - new_structure -   - Application initialized
+2025-09-22 08:49:35,336 - WARNING - n/a - werkzeug -   -  * Debugger is active!
+2025-09-22 08:50:19,085 - INFO - n/a - new_structure -   - Application logging configured (json=False)
+2025-09-22 08:50:19,632 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 08:50:21,466 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 08:50:21,492 - INFO - n/a - new_structure -   - Application initialized
+2025-09-22 08:50:21,514 - WARNING - n/a - werkzeug -   -  * Debugger is active!
+2025-09-22 08:59:29,195 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 08:59:31,273 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 08:59:59,618 - INFO - 529ff0a575c143688c9a9581f8747ddc - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-22 09:30:50,628 - WARNING - 0080d948980c41cf98c1ed61ca635022 - new_structure.services.auth_service - POST /admin_login - Authentication failed for headteacher with role headteacher
+2025-09-22 09:31:01,864 - INFO - f30ddc00fb734d2d8aab4acaa979500f - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-22 10:09:08,973 - INFO - 2211d1d49a7a40c29a8121f2736d30b6 - new_structure.services.auth_service - POST /classteacher_login - Authentication successful for joylorna with role classteacher
+2025-09-22 10:09:45,976 - INFO - 4feb282550ee46a6a4146d54f5673895 - new_structure - GET /classteacher/subject_report/28/58/85/5/5 - subject_report.no_marks
+2025-09-22 10:09:45,979 - INFO - 4feb282550ee46a6a4146d54f5673895 - new_structure - GET /classteacher/subject_report/28/58/85/5/5 - {'event': 'report.subject.view:success', 'correlation_id': '30dd1257-53bc-4800-88a0-18626b37438f', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/subject_report/28/58/85/5/5', 'role': 'classteacher', 'teacher_id': 9, 'status': 302}
+2025-09-22 10:10:26,022 - INFO - 718b48946db740a695bfcd56cb434325 - new_structure - GET /classteacher/subject_report/28/58/85/5/5 - subject_report.render
+2025-09-22 10:10:26,024 - INFO - 718b48946db740a695bfcd56cb434325 - new_structure - GET /classteacher/subject_report/28/58/85/5/5 - {'event': 'report.subject.view:metrics', 'correlation_id': '169817a2-39cc-4a5b-8f30-b8a0e30e4e51', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/subject_report/28/58/85/5/5', 'role': 'classteacher', 'teacher_id': 9, 'elapsed_ms': 28, 'students': 4}
+2025-09-22 10:10:26,103 - INFO - 718b48946db740a695bfcd56cb434325 - new_structure - GET /classteacher/subject_report/28/58/85/5/5 - {'event': 'report.subject.view:success', 'correlation_id': '8710d320-2da7-4896-a7a9-59c38d7ae4d1', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/subject_report/28/58/85/5/5', 'role': 'classteacher', 'teacher_id': 9, 'status': 200}
+2025-09-22 10:11:24,746 - WARNING - 42443106c7b54b03bde3209463a2dafa - new_structure.utils.cache_manager - GET /classteacher/preview_class_report/Grade 9/B/term 3/midterm 3 2025 - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-09-22 10:11:25,226 - INFO - 42443106c7b54b03bde3209463a2dafa - new_structure - GET /classteacher/preview_class_report/Grade 9/B/term 3/midterm 3 2025 - {'event': 'report.class.preview:metrics', 'correlation_id': 'ee656506-f6a3-44f4-b14d-984d3d3faea2', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/preview_class_report/Grade 9/B/term 3/midterm 3 2025', 'role': 'classteacher', 'teacher_id': 9, 'elapsed_ms': 5058, 'students': 0, 'subjects': 0}
+2025-09-22 10:11:25,372 - INFO - 42443106c7b54b03bde3209463a2dafa - new_structure - GET /classteacher/preview_class_report/Grade 9/B/term 3/midterm 3 2025 - {'event': 'report.class.preview:success', 'correlation_id': '1c649a05-6e31-4f95-aade-738db70997e8', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/preview_class_report/Grade 9/B/term 3/midterm 3 2025', 'role': 'classteacher', 'teacher_id': 9, 'status': 200}
+2025-09-22 11:10:20,975 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 11:10:22,992 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 11:11:02,473 - INFO - 11957a98bdc34ec899cd5fdedd5307b8 - new_structure.services.auth_service - POST /classteacher_login - Authentication successful for joylorna with role classteacher
+2025-09-22 11:12:34,774 - WARNING - 482c9ad9bf69491abd54a88043f393a5 - new_structure.utils.cache_manager - GET /classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025 - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-09-22 11:12:35,259 - INFO - 482c9ad9bf69491abd54a88043f393a5 - new_structure - GET /classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025 - {'event': 'report.class.preview:metrics', 'correlation_id': '6c35a55c-76d4-4ac4-867e-2382fa50c68c', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025', 'role': 'classteacher', 'teacher_id': 9, 'elapsed_ms': 4706, 'students': 0, 'subjects': 0}
+2025-09-22 11:12:35,409 - INFO - 482c9ad9bf69491abd54a88043f393a5 - new_structure - GET /classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025 - {'event': 'report.class.preview:success', 'correlation_id': '042fcd53-[REDACTED-PHONE]b4b7-dff7a6debeee', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025', 'role': 'classteacher', 'teacher_id': 9, 'status': 200}
+2025-09-22 11:19:19,666 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 11:19:20,496 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 13:18:59,550 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 13:19:02,185 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 13:31:23,780 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 13:31:26,031 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 13:32:27,105 - INFO - 587c9a36f820423c85e88bab59a7887b - new_structure.services.auth_service - POST /classteacher_login - Authentication successful for joylorna with role classteacher
+2025-09-22 13:32:36,066 - WARNING - 59acd1ad21e14d86affdf23fcf0cb2ea - new_structure.utils.cache_manager - GET /classteacher/analytics - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-09-22 13:33:02,676 - INFO - da12387d347b46dc96be40672c4f1107 - new_structure - GET /classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025 - {'event': 'report.class.preview:metrics', 'correlation_id': 'baa06ab8-8572-4d5d-952e-f11a4724f718', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025', 'role': 'classteacher', 'teacher_id': 9, 'elapsed_ms': 582, 'students': 0, 'subjects': 0}
+2025-09-22 13:33:03,008 - INFO - da12387d347b46dc96be40672c4f1107 - new_structure - GET /classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025 - {'event': 'report.class.preview:success', 'correlation_id': 'b3c25f44-4f31-429e-a90b-212d31457b52', 'ip': '127.0.0.1', 'method': 'GET', 'path': '/classteacher/preview_class_report/Grade 9/Stream B/term 3/midterm 3 2025', 'role': 'classteacher', 'teacher_id': 9, 'status': 200}
+2025-09-22 15:19:37,021 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 15:19:39,662 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 15:20:04,215 - INFO - 54e81e88065a44259f075d8983af7e82 - new_structure.services.auth_service - POST /classteacher_login - Authentication successful for joylorna with role classteacher
+2025-09-22 15:20:11,501 - WARNING - a5bd728d1f2d4c9d8a0cd661361a22f4 - new_structure.utils.cache_manager - GET /classteacher/analytics - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-09-22 16:17:15,601 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 16:17:17,995 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 16:17:50,066 - INFO - 1be2b487f05346a0aaef5b806524210f - new_structure.services.auth_service - POST /classteacher_login - Authentication successful for joylorna with role classteacher

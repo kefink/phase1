@@ -371,8 +371,10 @@ class AcademicAnalyticsService:
                 }
                 subject_analytics.append(analytics)
             
-            # Sort by average percentage
+            # Sort by average percentage and add rank
             subject_analytics.sort(key=lambda x: x['average_percentage'], reverse=True)
+            for idx, item in enumerate(subject_analytics, 1):
+                item['rank'] = idx
             
             # Identify top and least performing subjects
             top_subject = subject_analytics[0] if subject_analytics else None
@@ -773,6 +775,307 @@ class AcademicAnalyticsService:
                     'has_sufficient_data': False
                 },
                 'error': str(e)
+            }
+
+    @classmethod
+    def get_comprehensive_analytics_from_report(
+        cls,
+        grade_id: int,
+        stream_id: int,
+        term_id: Optional[int] = None,
+        assessment_type_id: Optional[int] = None,
+        top_performers_limit: int = 5,
+        top_subjects_limit: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """Build analytics derived from the Class Report builder so analytics
+        matches the generated class report (composite subjects, calculator,
+        rounding and missing policies).
+
+        Args mirror get_comprehensive_analytics but compute from report context.
+        """
+        try:
+            # Resolve human-readable names for the builder
+            g_obj = db.session.get(Grade, grade_id)
+            s_obj = db.session.get(Stream, stream_id)
+            t_obj = db.session.get(Term, term_id) if term_id else None
+            at_obj = db.session.get(AssessmentType, assessment_type_id) if assessment_type_id else None
+
+            if not (g_obj and s_obj):
+                return {
+                    'top_performers': [],
+                    'subject_analytics': [],
+                    'summary': {
+                        'total_students_analyzed': 0,
+                        'total_subjects_analyzed': 0,
+                        'students_analyzed': 0,
+                        'subjects_analyzed': 0,
+                        'best_subject_average': 0.0,
+                        'top_student_average': 0.0,
+                        'has_sufficient_data': False
+                    },
+                    'error': 'Invalid grade or stream'
+                }
+
+            grade_name = g_obj.name
+            stream_param = f"Stream {s_obj.name}"
+            # Default to current term/first active assessment when not provided
+            if not t_obj:
+                t_obj = Term.query.filter_by(is_current=True).first() or Term.query.first()
+            if not at_obj:
+                at_obj = AssessmentType.query.filter_by(is_active=True).order_by(AssessmentType.id.asc()).first() or AssessmentType.query.first()
+            term_name = t_obj.name if t_obj else 'Term 1'
+            assessment_name = at_obj.name if at_obj else 'End Term Exam'
+
+            # Local import to avoid circulars
+            from .class_report_builder import ClassReportBuilder
+
+            ctx = ClassReportBuilder.build(grade_name, stream_param, term_name, assessment_name, selected_subject_ids=None, invalidate=False)
+            if not ctx or ctx.get('error'):
+                return {
+                    'top_performers': [],
+                    'subject_analytics': [],
+                    'summary': {
+                        'total_students_analyzed': 0,
+                        'total_subjects_analyzed': 0,
+                        'students_analyzed': 0,
+                        'subjects_analyzed': 0,
+                        'best_subject_average': 0.0,
+                        'top_student_average': 0.0,
+                        'has_sufficient_data': False
+                    },
+                    'error': ctx.get('error', 'Could not build class report')
+                }
+
+            class_data: List[Dict[str, Any]] = ctx.get('class_data', []) or []
+            subject_averages: Dict[str, float] = ctx.get('subject_averages', {}) or {}
+
+            # Compute previous term trend if a previous term exists
+            prev_subject_averages: Dict[str, float] = {}
+            try:
+                if t_obj:
+                    terms = Term.query.order_by(Term.id.asc()).all()
+                    prev_t = None
+                    for i, t in enumerate(terms):
+                        if t.id == t_obj.id and i > 0:
+                            prev_t = terms[i-1]
+                            break
+                    if prev_t is not None:
+                        from .class_report_builder import ClassReportBuilder as _CB
+                        prev_ctx = _CB.build(grade_name, stream_param, prev_t.name, assessment_name, selected_subject_ids=None, invalidate=False)
+                        if prev_ctx and not prev_ctx.get('error'):
+                            prev_subject_averages = prev_ctx.get('subject_averages', {}) or {}
+            except Exception as _trend_exc:
+                # Non-fatal if we cannot compute trends
+                prev_subject_averages = {}
+
+            # Derive top performers from per-student filtered averages used by report
+            ranked = sorted(
+                [
+                    {
+                        'student_id': sd.get('student_id'),
+                        'name': sd.get('student'),
+                        'average_percentage': round(float(sd.get('filtered_average', 0) or 0), 2),
+                        'total_marks_obtained': int(round(float(sd.get('filtered_total', 0) or 0))),
+                        'total_marks_possible': int(sd.get('total_possible_marks') or (len((sd.get('filtered_marks') or {})) * 100)),
+                        'performance_category': cls._get_performance_category(float(sd.get('filtered_average', 0) or 0)),
+                        'grade_letter': cls._get_grade_letter(float(sd.get('filtered_average', 0) or 0)),
+                        'assessment_type': assessment_name,
+                        'term': term_name,
+                    }
+                    for sd in class_data
+                ],
+                key=lambda x: x['average_percentage'],
+                reverse=True,
+            )
+            for i, item in enumerate(ranked, 1):
+                item['rank'] = i
+            if top_performers_limit and top_performers_limit > 0:
+                ranked = ranked[:top_performers_limit]
+
+            # Subject analytics from subject_averages and per-student filtered marks
+            subject_perf: List[Dict[str, Any]] = []
+            per_subject_stats: Dict[str, Dict[str, Any]] = {}
+            for name in subject_averages.keys():
+                vals: List[float] = []
+                for sd in class_data:
+                    v = (sd.get('filtered_marks') or {}).get(name)
+                    try:
+                        vv = float(v)
+                    except Exception:
+                        vv = 0.0
+                    if vv and vv > 0:
+                        vals.append(vv)
+                per_subject_stats[name] = {
+                    'count': len(vals),
+                    'min': round(min(vals), 2) if vals else 0.0,
+                    'max': round(max(vals), 2) if vals else 0.0,
+                }
+            # Pre-resolve teacher per subject
+            subject_teacher_map: Dict[str, str] = {}
+            try:
+                # Resolve education level to narrow down subjects by grade level
+                grade_obj = Grade.query.get(grade_id)
+                edu_level = getattr(grade_obj, 'education_level', None)
+            except Exception:
+                grade_obj = None
+                edu_level = None
+
+            def _resolve_subject_by_name(subj_name: str):
+                try:
+                    q = Subject.query.filter(Subject.name == subj_name)
+                    if edu_level:
+                        q = q.filter(Subject.education_level == edu_level)
+                    return q.first()
+                except Exception:
+                    return None
+
+            try:
+                from ..models import Teacher as _Teacher
+            except Exception:
+                _Teacher = None  # pragma: no cover
+
+            def _resolve_teacher_name(subj_id: Optional[int]) -> str:
+                if not subj_id:
+                    return 'Not Assigned'
+                try:
+                    # Prefer stream-specific assignment, fallback to grade-level
+                    tsa = TeacherSubjectAssignment.query \
+                        .filter(TeacherSubjectAssignment.subject_id == subj_id) \
+                        .filter(TeacherSubjectAssignment.grade_id == grade_id) \
+                        .filter((TeacherSubjectAssignment.stream_id == stream_id) | (TeacherSubjectAssignment.stream_id.is_(None))) \
+                        .order_by(TeacherSubjectAssignment.stream_id.desc()) \
+                        .first()
+                    if not tsa:
+                        return 'Not Assigned'
+                    if _Teacher:
+                        t = _Teacher.query.get(getattr(tsa, 'teacher_id', None))
+                        if t and getattr(t, 'first_name', None):
+                            last = getattr(t, 'last_name', '') or ''
+                            return f"{t.first_name} {last}".strip()
+                        if t and getattr(t, 'username', None):
+                            return t.username
+                    return 'Assigned'
+                except Exception:
+                    return 'Not Assigned'
+
+            # Compute subject-level items
+            for name, avg in subject_averages.items():
+                st = per_subject_stats.get(name, {'count': 0, 'min': 0.0, 'max': 0.0})
+                prev_avg = float(prev_subject_averages.get(name, 0.0) or 0.0)
+                delta = round(float(avg or 0) - prev_avg, 2) if prev_subject_averages else 0.0
+                # Resolve teacher once per subject
+                subj_row = _resolve_subject_by_name(name)
+                teacher_name = _resolve_teacher_name(getattr(subj_row, 'id', None))
+                subject_item = {
+                    'subject_name': name,
+                    'average_percentage': round(float(avg or 0), 2),
+                    'students_with_marks': st['count'],
+                    'min_percentage': st['min'],
+                    'max_percentage': st['max'],
+                    'performance_category': cls._get_performance_category(float(avg or 0)),
+                    'grade_letter': cls._get_grade_letter(float(avg or 0)),
+                    'teacher_name': teacher_name,
+                }
+                if prev_subject_averages:
+                    subject_item.update({
+                        'previous_average': round(prev_avg, 2),
+                        'trend_delta': delta,
+                        'trend_direction': ('up' if delta > 0 else ('down' if delta < 0 else 'flat')),
+                    })
+                subject_perf.append(subject_item)
+
+            # Sort subjects by performance and assign ranks
+            subject_perf.sort(key=lambda s: s['average_percentage'], reverse=True)
+            for idx, s in enumerate(subject_perf, 1):
+                s['rank'] = idx
+
+            # For each subject, compute top 3 learners from class_data
+            subject_top_learners_map: Dict[str, List[Dict[str, Any]]] = {}
+            for subj in subject_perf:
+                sname = subj.get('subject_name')
+                ranked_learners = []
+                for sd in class_data:
+                    marks = sd.get('filtered_marks') or {}
+                    if sname in marks:
+                        try:
+                            perc = float(marks.get(sname) or 0)
+                        except Exception:
+                            perc = 0.0
+                        if perc > 0:
+                            ranked_learners.append({
+                                'student_id': sd.get('student_id'),
+                                'student_name': sd.get('student'),
+                                'percentage': round(perc, 2),
+                            })
+                ranked_learners.sort(key=lambda x: x['percentage'], reverse=True)
+                # Assign rank and slice top 3
+                for idx, rl in enumerate(ranked_learners, 1):
+                    rl['rank'] = idx
+                top3 = ranked_learners[:3]
+                subj['top_learners'] = top3
+                subject_top_learners_map[sname] = top3
+
+            # Apply Top N slicing if requested
+            if isinstance(top_subjects_limit, int) and top_subjects_limit > 0:
+                subject_perf = subject_perf[:top_subjects_limit]
+
+            best_subject_average = round(max([float(s['average_percentage']) for s in subject_perf], default=0.0), 1)
+            top_student_average = round(max([float(s['average_percentage']) for s in ranked], default=0.0), 1)
+
+            top_subject = subject_perf[0] if subject_perf else None
+            least_subject = subject_perf[-1] if subject_perf else None
+
+            result = {
+                'top_performers': ranked,
+                'topPerformers': ranked,
+                'subject_analytics': subject_perf,
+                'subjectAnalytics': subject_perf,
+                'top_subject': top_subject,
+                'topSubject': top_subject,
+                'least_performing_subject': least_subject,
+                'leastPerformingSubject': least_subject,
+                'subject_top_learners': subject_top_learners_map,
+                'context': {
+                    'grade': grade_name,
+                    'stream': s_obj.name,
+                    'term': term_name,
+                    'assessment_type': assessment_name,
+                },
+                'summary': {
+                    'total_students_analyzed': len(class_data),
+                    'total_subjects_analyzed': len(subject_averages),
+                    'students_analyzed': len(class_data),
+                    'subjects_analyzed': len(subject_averages),
+                    'best_subject_average': best_subject_average,
+                    'top_student_average': top_student_average,
+                    'has_sufficient_data': (len(class_data) > 0 and len(subject_averages) > 0),
+                },
+                'generated_at': time.time(),
+            }
+            return result
+        except Exception as e:
+            print(f"Error building analytics from report: {e}")
+            return {
+                'top_performers': [],
+                'topPerformers': [],
+                'subject_analytics': [],
+                'subjectAnalytics': [],
+                'top_subject': None,
+                'topSubject': None,
+                'least_performing_subject': None,
+                'leastPerformingSubject': None,
+                'context': {},
+                'summary': {
+                    'total_students_analyzed': 0,
+                    'total_subjects_analyzed': 0,
+                    'students_analyzed': 0,
+                    'subjects_analyzed': 0,
+                    'best_subject_average': 0.0,
+                    'top_student_average': 0.0,
+                    'has_sufficient_data': False,
+                },
+                'generated_at': time.time(),
+                'error': str(e),
             }
 
     @staticmethod

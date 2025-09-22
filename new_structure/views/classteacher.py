@@ -971,16 +971,41 @@ def analytics_dashboard():
                 requested_limit = request.args.get('limit', type=int)
                 top_limit = requested_limit if requested_limit else (999 if show_all else 5)
 
+                # Subject controls: top N and view (rank vs average)
+                top_subjects = request.args.get('top_subjects', type=int)
+                view_mode = request.args.get('subject_view', default='average')  # 'rank' or 'average'
+
                 print(f"🔍 Filters -> term_id: {selected_term_id}, assessment_type_id: {selected_assessment_type_id}, grade_id: {selected_grade_id}, stream_id: {selected_stream_id}")
 
-                # Get comprehensive analytics for the teacher's class with filters
-                comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics(
-                    grade_id=selected_grade_id,
-                    stream_id=selected_stream_id,
-                    term_id=selected_term_id,  # None = current/all depending on service
-                    assessment_type_id=selected_assessment_type_id,  # None = all assessments
-                    top_performers_limit=top_limit
-                )
+                # Prefer analytics derived from the Class Report (single source of truth)
+                try:
+                    comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics_from_report(
+                        grade_id=selected_grade_id,
+                        stream_id=selected_stream_id,
+                        term_id=selected_term_id,
+                        assessment_type_id=selected_assessment_type_id,
+                        top_performers_limit=top_limit,
+                        top_subjects_limit=top_subjects,
+                    )
+                    # If report-based path yields no data, fall back to legacy DB-driven method
+                    if not comprehensive_analytics or comprehensive_analytics.get('error') or not comprehensive_analytics.get('summary', {}).get('has_sufficient_data'):
+                        print("ℹ️ Falling back to legacy analytics computation")
+                        comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics(
+                            grade_id=selected_grade_id,
+                            stream_id=selected_stream_id,
+                            term_id=selected_term_id,
+                            assessment_type_id=selected_assessment_type_id,
+                            top_performers_limit=top_limit,
+                        )
+                except Exception as _e:
+                    print(f"⚠️ Report-based analytics failed: {_e}")
+                    comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics(
+                        grade_id=selected_grade_id,
+                        stream_id=selected_stream_id,
+                        term_id=selected_term_id,
+                        assessment_type_id=selected_assessment_type_id,
+                        top_performers_limit=top_limit,
+                    )
 
                 print(f"🔍 Comprehensive analytics result: {comprehensive_analytics}")
                 print(f"🔍 Analytics keys: {list(comprehensive_analytics.keys()) if comprehensive_analytics else 'None'}")
@@ -1081,6 +1106,10 @@ def analytics_dashboard():
             analytics_data.setdefault('top_performers', analytics_data.get('topPerformers', []))
             analytics_data.setdefault('subject_analytics', analytics_data.get('subjectAnalytics', []))
 
+            # Ensure safe defaults for optional UI controls
+            top_subjects_safe = top_subjects if 'top_subjects' in locals() and isinstance(top_subjects, int) else 0
+            view_mode_safe = view_mode if 'view_mode' in locals() and view_mode in ('average', 'rank') else 'average'
+
             return render_template(
                 'classteacher_analytics.html',
                 teacher=teacher,
@@ -1098,6 +1127,8 @@ def analytics_dashboard():
                 current_grade_filter=request.args.get('grade', type=int),
                 show_all=show_all if 'show_all' in locals() else False,
                 current_limit=(requested_limit if 'requested_limit' in locals() else None),
+                top_subjects=top_subjects_safe,
+                subject_view=view_mode_safe,
                 page_title="Academic Performance Analytics",
             )
         except Exception as render_err:
@@ -1164,18 +1195,44 @@ def analytics_data_api():
         show_all = request.args.get('show_all', type=int) == 1
         top_limit = limit if limit else (999 if show_all else 5)
 
-        data = AcademicAnalyticsService.get_comprehensive_analytics(
-            grade_id=grade_id,
-            stream_id=stream_id,
-            term_id=term_id,
-            assessment_type_id=assessment_type_id,
-            top_performers_limit=top_limit
-        )
+        # Subject controls
+        top_subjects = request.args.get('top_subjects', type=int)
+        view_mode = request.args.get('subject_view', default='average')
+
+        # Prefer report-driven analytics; fall back to legacy
+        try:
+            data = AcademicAnalyticsService.get_comprehensive_analytics_from_report(
+                grade_id=grade_id,
+                stream_id=stream_id,
+                term_id=term_id,
+                assessment_type_id=assessment_type_id,
+                top_performers_limit=top_limit,
+                top_subjects_limit=top_subjects,
+            )
+            if (not data) or data.get('error') or not data.get('summary', {}).get('has_sufficient_data'):
+                data = AcademicAnalyticsService.get_comprehensive_analytics(
+                    grade_id=grade_id,
+                    stream_id=stream_id,
+                    term_id=term_id,
+                    assessment_type_id=assessment_type_id,
+                    top_performers_limit=top_limit
+                )
+        except Exception:
+            data = AcademicAnalyticsService.get_comprehensive_analytics(
+                grade_id=grade_id,
+                stream_id=stream_id,
+                term_id=term_id,
+                assessment_type_id=assessment_type_id,
+                top_performers_limit=top_limit
+            )
 
         if data and not data.get('error'):
             # Normalize field names for front-end
             if 'top_students' not in data and 'top_performers' in data:
                 data['top_students'] = data.get('top_performers', [])
+            # Ensure alias for top_subject for clients that use camelCase
+            if 'topSubject' not in data and 'top_subject' in data:
+                data['topSubject'] = data.get('top_subject')
             summary = data.get('summary', {})
             data['has_data'] = summary.get('has_sufficient_data', False)
             data['applied_filters'] = {
@@ -1183,7 +1240,9 @@ def analytics_data_api():
                 'stream_id': stream_id,
                 'term_id': term_id,
                 'assessment_type_id': assessment_type_id,
-                'top_limit': top_limit
+                'top_limit': top_limit,
+                'top_subjects': top_subjects,
+                'subject_view': view_mode,
             }
             return jsonify(data)
         else:
@@ -1192,6 +1251,307 @@ def analytics_data_api():
         logger.exception("Analytics data API error")
         return jsonify({'error': str(e), 'has_data': False}), 500
 
+@classteacher_bp.route('/analytics/export_pdf')
+@limiter.limit("20 per minute")
+@classteacher_required()
+def analytics_export_pdf():
+    """Generate a PDF of Top/Bottom N learners for the current filters.
+
+    Query params:
+    - kind: 'top' or 'bottom'
+    - n: integer (e.g., 3,5,10)
+    - term, assessment_type, grade, stream: same as analytics filters
+    """
+    try:
+        # Inputs
+        kind = request.args.get('kind', 'top')
+        n = request.args.get('n', type=int) or 5
+        if kind not in ('top', 'bottom'):
+            kind = 'top'
+        if not isinstance(n, int) or n <= 0:
+            n = 5
+        n = min(max(n, 1), 100)
+
+        teacher_id = session.get('teacher_id')
+        if not teacher_id:
+            return jsonify({'error': 'Not authenticated'}), 401
+
+        from ..services.role_based_data_service import RoleBasedDataService
+        from ..services.academic_analytics_service import AcademicAnalyticsService
+
+        assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
+        if 'error' in assignment_summary:
+            return jsonify({'error': assignment_summary['error']}), 400
+        assigned_classes = assignment_summary.get('class_teacher_assignments', [])
+        if not assigned_classes:
+            # Still return a small PDF explaining no data
+            empty_buf = BytesIO()
+            from reportlab.lib.pagesizes import A4
+            from reportlab.lib.styles import getSampleStyleSheet
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+            doc = SimpleDocTemplate(empty_buf, pagesize=A4)
+            styles = getSampleStyleSheet()
+            story = [Paragraph('No assigned classes found', styles['Title']), Paragraph('Cannot generate analytics PDF.', styles['Normal'])]
+            story.append(Spacer(1, 12))
+            doc.build(story)
+            empty_buf.seek(0)
+            return send_file(empty_buf, mimetype='application/pdf', as_attachment=True, download_name='Analytics_No_Data.pdf')
+
+        first_class = assigned_classes[0]
+        default_grade_id = first_class.get('grade_id')
+        default_stream_id = first_class.get('stream_id')
+
+        grade_id = request.args.get('grade', type=int) or default_grade_id
+        stream_id = request.args.get('stream', type=int) or default_stream_id
+        term_id = request.args.get('term', type=int)
+        assessment_type_id = request.args.get('assessment_type', type=int)
+
+        # Fetch analytics with no performer slicing to get full rank list
+        try:
+            data = AcademicAnalyticsService.get_comprehensive_analytics_from_report(
+                grade_id=grade_id,
+                stream_id=stream_id,
+                term_id=term_id,
+                assessment_type_id=assessment_type_id,
+                top_performers_limit=None,
+                top_subjects_limit=None,
+            )
+            if (not data) or data.get('error') or not data.get('summary', {}).get('has_sufficient_data'):
+                data = AcademicAnalyticsService.get_comprehensive_analytics(
+                    grade_id=grade_id,
+                    stream_id=stream_id,
+                    term_id=term_id,
+                    assessment_type_id=assessment_type_id,
+                    top_performers_limit=999
+                )
+        except Exception:
+            data = AcademicAnalyticsService.get_comprehensive_analytics(
+                grade_id=grade_id,
+                stream_id=stream_id,
+                term_id=term_id,
+                assessment_type_id=assessment_type_id,
+                top_performers_limit=999
+            )
+
+        performers = (data or {}).get('top_performers') or []
+        context = (data or {}).get('context') or {}
+
+        # Select items
+        if kind == 'top':
+            selected = performers[:n]
+            title = f"Top {n} Learners"
+        else:
+            # bottom n by average asc
+            selected = sorted(performers, key=lambda x: float(x.get('average_percentage', 0)))[:n]
+            title = f"Least {n} Performing Learners"
+
+        # Build PDF
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
+        styles = getSampleStyleSheet()
+        story = []
+
+        story.append(Paragraph(title, styles['Title']))
+        try:
+            ctx_line = f"{context.get('grade','')} {('Stream ' + context.get('stream')) if context.get('stream') else ''} • {context.get('term','')} • {context.get('assessment_type','')}"
+            story.append(Paragraph(ctx_line, styles['Normal']))
+        except Exception:
+            pass
+        story.append(Spacer(1, 12))
+
+        table_data = [["Rank", "Student", "Average %", "Grade"]]
+        for it in selected:
+            try:
+                rank_val = it.get('rank') if it.get('rank') is not None else ''
+                name_val = it.get('name') or it.get('student_name') or ''
+                avg_val = f"{float(it.get('average_percentage', 0)):.1f}%"
+                grade_letter = it.get('grade_letter', '')
+            except Exception:
+                rank_val, name_val, avg_val, grade_letter = '', '', '0.0%', ''
+            table_data.append([rank_val, name_val, avg_val, grade_letter])
+
+        tbl = Table(table_data, colWidths=[50, 280, 90, 60])
+        tbl.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f5f5f5')),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.black),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('ALIGN', (1,1), (1,-1), 'LEFT'),
+            ('GRID', (0,0), (-1,-1), 0.4, colors.grey),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0,0), (-1,0), 8),
+        ]))
+        story.append(tbl)
+
+        # Footer
+        story.append(Spacer(1, 12))
+        try:
+            gen_time = datetime.now().strftime('%Y-%m-%d %H:%M')
+            story.append(Paragraph(f"Generated on {gen_time}", styles['Italic']))
+        except Exception:
+            pass
+
+        doc.build(story)
+        buffer.seek(0)
+        filename = f"{title.replace(' ', '_')}.pdf"
+        return send_file(buffer, mimetype='application/pdf', as_attachment=True, download_name=filename)
+    except Exception as e:  # pragma: no cover
+        logger.exception("Analytics export PDF error")
+        return jsonify({'error': str(e)}), 500
+
+@classteacher_bp.route('/analytics/export_subjects_pdf')
+@limiter.limit("20 per minute")
+@classteacher_required()
+def analytics_export_subjects_pdf():
+    """Generate a PDF of the Subject Performance grid for the current filters.
+
+    Query params:
+    - top_subjects: optional integer to slice Top N subjects (3,5,10)
+    - subject_view: 'average' (default) or 'rank' to control first column
+    - term, assessment_type, grade, stream: same as analytics filters
+    """
+    try:
+        teacher_id = session.get('teacher_id')
+        if not teacher_id:
+            return jsonify({'error': 'Not authenticated'}), 401
+
+        top_subjects = request.args.get('top_subjects', type=int)
+        subject_view = request.args.get('subject_view', default='average')
+        if subject_view not in ('average', 'rank'):
+            subject_view = 'average'
+
+        from ..services.role_based_data_service import RoleBasedDataService
+        from ..services.academic_analytics_service import AcademicAnalyticsService
+
+        assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
+        if 'error' in assignment_summary:
+            return jsonify({'error': assignment_summary['error']}), 400
+        assigned_classes = assignment_summary.get('class_teacher_assignments', [])
+        if not assigned_classes:
+            empty_buf = BytesIO()
+            from reportlab.lib.pagesizes import A4
+            from reportlab.lib.styles import getSampleStyleSheet
+            from reportlab.platypus import SimpleDocTemplate, Paragraph
+            doc = SimpleDocTemplate(empty_buf, pagesize=A4)
+            styles = getSampleStyleSheet()
+            doc.build([Paragraph('No assigned classes found', styles['Title'])])
+            empty_buf.seek(0)
+            return send_file(empty_buf, mimetype='application/pdf', as_attachment=True, download_name='Subject_Performance_No_Data.pdf')
+
+        first_class = assigned_classes[0]
+        default_grade_id = first_class.get('grade_id')
+        default_stream_id = first_class.get('stream_id')
+
+        grade_id = request.args.get('grade', type=int) or default_grade_id
+        stream_id = request.args.get('stream', type=int) or default_stream_id
+        term_id = request.args.get('term', type=int)
+        assessment_type_id = request.args.get('assessment_type', type=int)
+
+        # Fetch analytics; apply top_subjects slicing using service support
+        try:
+            data = AcademicAnalyticsService.get_comprehensive_analytics_from_report(
+                grade_id=grade_id,
+                stream_id=stream_id,
+                term_id=term_id,
+                assessment_type_id=assessment_type_id,
+                top_performers_limit=None,
+                top_subjects_limit=top_subjects,
+            )
+            if (not data) or data.get('error') or not data.get('summary', {}).get('has_sufficient_data'):
+                # Legacy fallback doesn't support per-subject enrichments fully
+                data = AcademicAnalyticsService.get_comprehensive_analytics(
+                    grade_id=grade_id,
+                    stream_id=stream_id,
+                    term_id=term_id,
+                    assessment_type_id=assessment_type_id,
+                    top_performers_limit=None
+                )
+        except Exception:
+            data = AcademicAnalyticsService.get_comprehensive_analytics(
+                grade_id=grade_id,
+                stream_id=stream_id,
+                term_id=term_id,
+                assessment_type_id=assessment_type_id,
+                top_performers_limit=None
+            )
+
+        subjects = (data or {}).get('subject_analytics') or []
+        context = (data or {}).get('context') or {}
+
+        # Build PDF
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
+        styles = getSampleStyleSheet()
+        story = []
+
+        story.append(Paragraph('Subject Performance', styles['Title']))
+        try:
+            ctx_line = f"{context.get('grade','')} {('Stream ' + context.get('stream')) if context.get('stream') else ''} • {context.get('term','')} • {context.get('assessment_type','')}"
+            story.append(Paragraph(ctx_line, styles['Normal']))
+        except Exception:
+            pass
+        story.append(Paragraph(f"View: {'Rank' if subject_view=='rank' else 'Average'}" + (f" • Top {top_subjects}" if top_subjects else ''), styles['Normal']))
+        story.append(Spacer(1, 12))
+
+        # Table header depends on subject_view
+        first_col = 'Rank' if subject_view == 'rank' else 'Average %'
+        table_data = [[first_col, 'Subject', 'Teacher', 'Students', 'Assessments', 'Prev Term %', 'Δ', 'Status']]
+
+        for s in subjects:
+            try:
+                avg = float(s.get('average_percentage', 0) or 0.0)
+                rank_val = s.get('rank') if s.get('rank') is not None else ''
+                prev = s.get('previous_average')
+                delta = s.get('trend_delta') if s.get('trend_delta') is not None else ''
+                status = s.get('performance_category') or ''
+                teacher = s.get('teacher_name') or ''
+                subject_name = s.get('subject_name') or s.get('name') or ''
+                students_count = s.get('student_count') or s.get('students_count') or s.get('students_with_marks') or 0
+                assess_count = s.get('total_marks') or s.get('total_assessments') or 0
+                first_val = (f"#{rank_val}" if subject_view == 'rank' and rank_val != '' else f"{avg:.1f}%")
+                prev_val = (f"{float(prev):.1f}%" if prev is not None else '')
+                delta_val = (f"{float(delta):.1f}" if isinstance(delta, (float, int)) else '')
+                table_data.append([first_val, subject_name, teacher, students_count, assess_count, prev_val, delta_val, status])
+            except Exception:
+                continue
+
+        col_widths = [70, 170, 130, 60, 80, 80, 40, 80]
+        tbl = Table(table_data, colWidths=col_widths)
+        tbl.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f5f5f5')),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.black),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('ALIGN', (1,1), (1,-1), 'LEFT'),
+            ('ALIGN', (2,1), (2,-1), 'LEFT'),
+            ('GRID', (0,0), (-1,-1), 0.4, colors.grey),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0,0), (-1,0), 8),
+        ]))
+        story.append(tbl)
+
+        story.append(Spacer(1, 12))
+        try:
+            gen_time = datetime.now().strftime('%Y-%m-%d %H:%M')
+            story.append(Paragraph(f"Generated on {gen_time}", styles['Italic']))
+        except Exception:
+            pass
+
+        doc.build(story)
+        buffer.seek(0)
+        filename = 'Subject_Performance.pdf' if not top_subjects else f'Subject_Performance_Top_{top_subjects}.pdf'
+        return send_file(buffer, mimetype='application/pdf', as_attachment=True, download_name=filename)
+    except Exception as e:  # pragma: no cover
+        logger.exception("Subject analytics export PDF error")
+        return jsonify({'error': str(e)}), 500
 
 @classteacher_bp.route('/', methods=['GET', 'POST'])
 @limiter.limit("30 per minute")
