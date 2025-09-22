@@ -11,6 +11,7 @@ from ..services.admin_cache_service import (
     cache_subject_list, get_cached_subject_list,
     invalidate_admin_cache
 )
+# Removed assessment configuration imports (feature deprecated)
 # Temporarily disable security imports to fix startup issue
 def sql_injection_protection(f):
     return f
@@ -1251,6 +1252,7 @@ def manage_grades_streams():
                           streams=streams,
                           error_message=error_message,
                           success_message=success_message)
+
 @admin_bp.route('/manage_terms_assessments', methods=['GET', 'POST'])
 @admin_required
 def manage_terms_assessments():

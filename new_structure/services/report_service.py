@@ -5,7 +5,10 @@ from ..models import Student, Mark, Subject, Stream, Grade, Term, AssessmentType
 from ..utils import get_performance_category, get_grade_and_points
 from ..config import get_config
 from .mark_calculator import MarkCalculator, AssessmentEntry, CalculationInput
-from .mark_calculator_adapter import get_default_weights, get_default_missing_policies
+from .mark_calculator_adapter import (
+    get_default_weights, get_default_missing_policies,
+    get_effective_weights, get_effective_missing_policies,
+)
 from .grading_service import GradingService
 from ..extensions import db
 from collections import defaultdict
@@ -103,7 +106,7 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
     # Feature-flagged: prepare calculator data for combined assessments (OPENER/MIDTERM/ENDTERM)
     cfg = get_config()
     use_calculator: bool = getattr(cfg, 'REPORTS_USE_MARK_CALCULATOR', False)
-    is_final_assessment = (assessment_type or '').strip().lower() in { 'end_term', 'endterm', 'final', 'overall' }
+    is_final_assessment = (assessment_type or '').strip().lower() in { 'end_term', 'endterm', 'end term', 'final', 'overall' }
 
     # Pre-resolve assessment type IDs for opener/midterm/endterm aliases
     at_code_by_id = {}
@@ -113,8 +116,8 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
         try:
             alias_to_code = {
                 'opener': 'OPENER', 'entrance': 'OPENER',
-                'mid_term': 'MIDTERM', 'midterm': 'MIDTERM',
-                'end_term': 'ENDTERM', 'endterm': 'ENDTERM', 'final': 'ENDTERM', 'overall': 'ENDTERM',
+                'mid_term': 'MIDTERM', 'midterm': 'MIDTERM', 'mid term': 'MIDTERM',
+                'end_term': 'ENDTERM', 'endterm': 'ENDTERM', 'end term': 'ENDTERM', 'final': 'ENDTERM', 'overall': 'ENDTERM',
             }
             alias_names = list(alias_to_code.keys())
             at_candidates = AssessmentType.query.filter(db.func.lower(AssessmentType.name).in_(alias_names)).all()
@@ -193,10 +196,10 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
                         school_id=0,
                         subject_id=subject.id,
                         level=education_level,
-                        rounding_mode=GradingService.get_rounding_mode(),
-                        weights=get_default_weights(),
+                        rounding_mode=GradingService.get_rounding_mode_for_level(education_level),
+                        weights=get_effective_weights(education_level),
                         grade_bands=GradingService.get_calculator_grade_bands(),
-                        missing_policies=get_default_missing_policies(),
+                        missing_policies=get_effective_missing_policies(education_level),
                         entries=entries,
                     )
                     out = calc.compute(ci)

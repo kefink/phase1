@@ -7,6 +7,7 @@ import os
 from typing import Optional
 from pathlib import Path
 from sqlalchemy.pool import StaticPool
+from urllib.parse import quote_plus
 
 class Config:
     """Base configuration class with settings common to all environments.
@@ -66,8 +67,10 @@ class Config:
     if DATABASE_URL:
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
     else:
+        # URL-encode password to safely handle special characters like '@' or '/'
+        _ENC_PWD = quote_plus(MYSQL_PASSWORD) if MYSQL_PASSWORD else ''
         SQLALCHEMY_DATABASE_URI = (
-            f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+            f"mysql+pymysql://{MYSQL_USER}:{_ENC_PWD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
             "?charset=utf8mb4"
         )
     

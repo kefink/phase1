@@ -19,6 +19,8 @@ def create_all_tables() -> bool:
         from ..models import user  # noqa: F401
         from ..models import academic  # noqa: F401
         from ..models import assignment  # noqa: F401
+        # Include assessment configuration models so tables are created
+        from ..models import assessment_config  # noqa: F401
         try:
             from ..models import permission  # noqa: F401
         except Exception:
@@ -30,6 +32,10 @@ def create_all_tables() -> bool:
         from ..models import parent  # noqa: F401
         from ..models import report_config  # noqa: F401
         from ..models import school_setup  # noqa: F401
+        # Include grading system models so tables are created
+        from ..models import grading_system  # noqa: F401
+        # Include rounding configuration table
+        from ..models import rounding_config  # noqa: F401
 
         db.create_all()
         logger.info("✅ Tables ensured (SQLAlchemy metadata create_all)")
@@ -40,19 +46,58 @@ def create_all_tables() -> bool:
 
 
 def initialize_default_data() -> bool:
-    """Seed baseline data only if empty."""
+    """Seed baseline data if empty; always ensure assessment defaults exist."""
     try:
         from ..models.user import Teacher
-        if Teacher.query.first():
-            logger.info("Database already seeded; skipping defaults")
-            return True
+        from ..models.assessment_config import AssessmentWeightsConfig, MissingPolicyConfig
+        from ..models.grading_system import initialize_default_grading_systems
+        import json
 
-        _create_default_users()
-        _create_default_academic_structure()
-        _create_default_subjects()
-        _create_default_school_config()
+        teacher_exists = bool(Teacher.query.first())
+        if not teacher_exists:
+            _create_default_users()
+            _create_default_academic_structure()
+            _create_default_subjects()
+            _create_default_school_config()
+
+        # Seed assessment config defaults per education level to avoid 1146 queries
+        levels = ['lower_primary', 'upper_primary', 'junior_secondary']
+        default_weights = {
+            "CAT 1": 20.0,
+            "CAT 2": 30.0,
+            "End Term Exam": 50.0
+        }
+        default_policies = {
+            "ABS": "exclude",
+            "EXC": "exclude",
+            "MED": "exclude",
+            "NA": "exclude",
+            "INC": "zero"
+        }
+        for lvl in levels:
+            if not AssessmentWeightsConfig.query.filter_by(education_level=lvl, is_active=True).first():
+                db.session.add(AssessmentWeightsConfig(
+                    education_level=lvl,
+                    weights_json=json.dumps(default_weights),
+                    is_active=True
+                ))
+            if not MissingPolicyConfig.query.filter_by(education_level=lvl, is_active=True).first():
+                db.session.add(MissingPolicyConfig(
+                    education_level=lvl,
+                    policies_json=json.dumps(default_policies),
+                    is_active=True
+                ))
+
+        # Seed default grading systems (idempotent)
+        try:
+            initialize_default_grading_systems()
+        except Exception as _e:
+            logger.warning(f"Grading systems init skipped: {_e}")
+
         db.session.commit()
-        logger.info("🎉 Default data seeded successfully")
+        if not teacher_exists:
+            logger.info("🎉 Default base data seeded successfully")
+        logger.info("🧮 Ensured assessment defaults exist")
         return True
     except Exception as e:  # pragma: no cover
         logger.error("Error seeding defaults: %s", e)

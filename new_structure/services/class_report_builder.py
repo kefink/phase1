@@ -32,7 +32,10 @@ from ..services.report_config_service import ReportConfigService
 from ..services.mark_calculator_adapter import build_legends
 from ..config import get_config
 from ..services.mark_calculator import MarkCalculator, AssessmentEntry, CalculationInput
-from ..services.mark_calculator_adapter import get_default_weights, get_default_missing_policies
+from ..services.mark_calculator_adapter import (
+    get_default_weights, get_default_missing_policies,
+    get_effective_weights, get_effective_missing_policies,
+)
 from ..services.grading_service import GradingService
 
 # Reuse existing helper used by original route
@@ -298,7 +301,7 @@ class ClassReportBuilder:
         # Feature-flagged: prepare calculator data for combined assessments (OPENER/MIDTERM/ENDTERM)
         cfg = get_config()
         use_calculator: bool = getattr(cfg, 'REPORTS_USE_MARK_CALCULATOR', False)
-        is_final_assessment = (assessment_type or '').strip().lower() in { 'end_term', 'endterm', 'final', 'overall' }
+        is_final_assessment = (assessment_type or '').strip().lower() in { 'end_term', 'endterm', 'end term', 'final', 'overall' }
 
         calc_marks_index: Dict[tuple, float] = {}
         at_code_by_id: Dict[int, str] = {}
@@ -308,8 +311,8 @@ class ClassReportBuilder:
                 # Resolve assessment types by aliases
                 alias_to_code = {
                     'opener': 'OPENER', 'entrance': 'OPENER',
-                    'mid_term': 'MIDTERM', 'midterm': 'MIDTERM',
-                    'end_term': 'ENDTERM', 'endterm': 'ENDTERM', 'final': 'ENDTERM', 'overall': 'ENDTERM',
+                    'mid_term': 'MIDTERM', 'midterm': 'MIDTERM', 'mid term': 'MIDTERM',
+                    'end_term': 'ENDTERM', 'endterm': 'ENDTERM', 'end term': 'ENDTERM', 'final': 'ENDTERM', 'overall': 'ENDTERM',
                 }
                 alias_names = list(alias_to_code.keys())
                 at_candidates = AssessmentType.query.filter(db.func.lower(AssessmentType.name).in_(alias_names)).all()
@@ -408,10 +411,10 @@ class ClassReportBuilder:
                                     school_id=0,
                                     subject_id=subj.id,
                                     level=education_level,
-                                    rounding_mode=GradingService.get_rounding_mode(),
-                                    weights=get_default_weights(),
+                                    rounding_mode=GradingService.get_rounding_mode_for_level(education_level_code),
+                                    weights=get_effective_weights(education_level_code),
                                     grade_bands=GradingService.get_calculator_grade_bands(),
-                                    missing_policies=get_default_missing_policies(),
+                                    missing_policies=get_effective_missing_policies(education_level_code),
                                     entries=entries,
                                 )
                                 out = calc.compute(ci)

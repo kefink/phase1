@@ -18,6 +18,8 @@ from .school_setup import SchoolSetup, SchoolBranding, SchoolCustomization
 from .permission import ClassTeacherPermission, PermissionRequest
 from .function_permission import FunctionPermission, DefaultFunctionPermissions
 from .access_audit import AccessAudit
+from .assessment_config import AssessmentWeightsConfig, MissingPolicyConfig
+from .rounding_config import RoundingModeConfig
 
 # Import parent portal models (with error handling for backward compatibility)
 try:

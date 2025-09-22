@@ -232,9 +232,9 @@
               <div class="navbar-menu-item">
                 <button class="navbar-menu-btn notification-btn">
                   <i class="fas fa-bell"></i>
-                  {% if notifications_count > 0 %}
+                  {% if (notifications_count|default(0)) > 0 %}
                   <span class="badge badge-danger"
-                    >{{ notifications_count }}</span
+                    >{{ notifications_count|default(0) }}</span
                   >
                   {% endif %}
                 </button>

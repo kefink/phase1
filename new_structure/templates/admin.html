@@ -264,9 +264,9 @@
               <div class="navbar-menu-item">
                 <button class="navbar-menu-btn notification-btn">
                   <i class="fas fa-bell"></i>
-                  {% if notifications_count > 0 %}
+                  {% if (notifications_count|default(0)) > 0 %}
                   <span class="badge badge-danger"
-                    >{{ notifications_count }}</span
+                    >{{ notifications_count|default(0) }}</span
                   >
                   {% endif %}
                 </button>
@@ -313,13 +313,15 @@
 
               <div class="navbar-user">
                 <img
-                  src="{{ admin.avatar|default('/static/images/avatar.jpg') }}"
-                  alt="{{ admin.name }}"
+                  src="{{ (admin|default({})).get('avatar', '/static/images/avatar.jpg') }}"
+                  alt="{{ (admin|default({})).get('name', 'Administrator') }}"
                   class="navbar-user-avatar"
                 />
 
                 <div class="navbar-user-info d-none d-md-block">
-                  <p class="navbar-user-name">{{ admin.name }}</p>
+                  <p class="navbar-user-name">
+                    {{ (admin|default({})).get('name', 'Administrator') }}
+                  </p>
                   <p class="navbar-user-role">Administrator</p>
                 </div>
               </div>
@@ -331,7 +333,9 @@
         <div class="main-content">
           {% block content %}
           <div class="page-header">
-            <h1 class="page-title">Welcome, {{ admin.name }}</h1>
+            <h1 class="page-title">
+              Welcome, {{ (admin|default({})).get('name', 'Administrator') }}
+            </h1>
             <p class="page-subtitle">System Overview</p>
           </div>
 

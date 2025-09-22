@@ -792,6 +792,50 @@ def create_app(config_name='default'):
                 }
             }
 
+    # Provide safe default UI context used by base templates (e.g., admin.html)
+    @app.context_processor
+    def inject_ui_defaults():
+        try:
+            # If a route provided explicit values, don't override them; Jinja merges dicts with later ones winning
+            return {
+                'notifications_count': 0,
+                'notifications': [],
+                'admin': {
+                    'name': 'Administrator',
+                    'avatar': '/static/images/avatar.jpg'
+                }
+            }
+        except Exception:
+            return {
+                'notifications_count': 0,
+                'notifications': [],
+                'admin': {'name': 'Administrator', 'avatar': '/static/images/avatar.jpg'}
+            }
+
+    # Override defaults with real logged-in admin info when available
+    @app.context_processor
+    def inject_admin_user():
+        try:
+            if 'teacher_id' in session:
+                from .models.user import Teacher
+                tid = session.get('teacher_id')
+                teacher = Teacher.query.get(tid)
+                if teacher:
+                    display_name = getattr(teacher, 'full_name', None) or teacher.username
+                    # Avatar support: use a field if exists, else default
+                    avatar = getattr(teacher, 'avatar', None) if hasattr(teacher, 'avatar') else None
+                    if not avatar:
+                        avatar = '/static/images/avatar.jpg'
+                    return {
+                        'admin': {
+                            'name': display_name,
+                            'avatar': avatar,
+                        }
+                    }
+        except Exception:
+            pass
+        return {}
+
     # Register custom Jinja2 filters
     @app.template_filter('get_education_level')
     def get_education_level(grade):

@@ -1,3 +1,13 @@
+## Assessment Configuration Page Removed
+
+The legacy page at `/headteacher/manage_assessment_config` has been removed. Schools should now configure grading systems via School Setup (Admin → School Setup → Academic Configuration → Primary Grading System). Assessment weights, rounding, and missing-marks policies are managed by defaults and can be advanced-configured later via School Setup enhancements.
+
+Impacts:
+
+- The navigation link to “Assessment Configuration” has been removed from the headteacher navbar.
+- The route and template `manage_assessment_config.html` have been deleted.
+- Class reports continue to respect the active grading system from School Setup and the default assessment policies.
+
 # Hillview School Management System
 
 ## Enterprise-Grade School Management Platform
