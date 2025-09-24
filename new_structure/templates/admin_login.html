@@ -77,9 +77,7 @@
         font-family: "Inter", system-ui, -apple-system, sans-serif;
         background: var(--solar-body-bg);
         min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        display: block; /* switched to block to support grid wrapper */
         margin: 0;
         padding: 1rem;
         position: relative;
@@ -101,6 +99,70 @@
           align-items: flex-start;
           padding-top: var(--space-8);
         }
+      }
+
+      /* Left brand + right login grid layout (harmonized with main login) */
+      .login-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: center;
+        min-height: calc(100vh - 2rem);
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .brand-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .brand-card {
+        width: 100%;
+        max-width: 520px;
+        background: rgba(7, 54, 66, 0.85);
+        border: 1px solid rgba(131, 148, 150, 0.28);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
+          0 0 0 1px rgba(131, 148, 150, 0.25) inset;
+        padding: 2rem;
+        text-align: center;
+        backdrop-filter: blur(16px);
+      }
+
+      .brand-logo-hero {
+        width: 220px;
+        height: auto;
+        display: block;
+        margin: 0 auto 1rem;
+        filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.35));
+      }
+
+      .brand-heading {
+        font-size: 1.4rem;
+        font-weight: 900;
+        letter-spacing: 0.4px;
+        margin: 0.25rem 0 0.25rem 0;
+        background: linear-gradient(135deg, #fefefe, #dcdcdc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .brand-subheading {
+        font-size: 0.95rem;
+        color: rgba(234, 234, 234, 0.9);
+        letter-spacing: 0.2px;
+        margin: 0.25rem 0 0;
+      }
+
+      .login-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
       }
 
       /* Premium animated background */
@@ -140,6 +202,21 @@
         }
         66% {
           transform: translateY(10px) rotate(-1deg);
+        }
+      }
+
+      /* Responsive grid adjustments */
+      @media (max-width: 992px) {
+        .login-grid {
+          grid-template-columns: 1fr;
+          gap: 1.25rem;
+          align-items: start;
+        }
+        .brand-card {
+          max-width: 640px;
+        }
+        .brand-logo-hero {
+          width: 200px;
         }
       }
 
@@ -797,7 +874,23 @@
     </style>
   </head>
   <body>
-    <div class="login-container">
+    <div class="login-grid">
+      <aside class="brand-panel">
+        <div class="brand-card">
+          <img
+            class="brand-logo-hero"
+            src="{{ url_for('static', filename='sta.png') }}"
+            alt="STEM-ED ARCHITECTS logo"
+            loading="lazy"
+          />
+          <h2 class="brand-heading">STEM-ED ARCHITECTS</h2>
+          <div class="brand-subheading">
+            Engineering Teaching & Learning Solutions
+          </div>
+        </div>
+      </aside>
+      <main class="login-panel">
+        <div class="login-container">
       <!-- Login Header -->
       <div class="login-header">
         <div class="login-icon">
@@ -1033,7 +1126,9 @@
           Back to Home
         </a>
       </div>
-    </div>
+          </div>
+        </main>
+      </div>
 
     <!-- JavaScript for Enhanced Interactions -->
     <script>
