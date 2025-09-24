@@ -851,6 +851,7 @@ class AcademicAnalyticsService:
 
             # Compute previous term trend if a previous term exists
             prev_subject_averages: Dict[str, float] = {}
+            prev_class_avg_by_student: Dict[int, float] = {}
             try:
                 if t_obj:
                     terms = Term.query.order_by(Term.id.asc()).all()
@@ -864,9 +865,18 @@ class AcademicAnalyticsService:
                         prev_ctx = _CB.build(grade_name, stream_param, prev_t.name, assessment_name, selected_subject_ids=None, invalidate=False)
                         if prev_ctx and not prev_ctx.get('error'):
                             prev_subject_averages = prev_ctx.get('subject_averages', {}) or {}
+                            # Map previous term averages per student for at-risk detection
+                            prev_cd = prev_ctx.get('class_data') or []
+                            for sd in prev_cd:
+                                try:
+                                    sid = int(sd.get('student_id'))
+                                    prev_class_avg_by_student[sid] = float(sd.get('filtered_average') or 0.0)
+                                except Exception:
+                                    continue
             except Exception as _trend_exc:
                 # Non-fatal if we cannot compute trends
                 prev_subject_averages = {}
+                prev_class_avg_by_student = {}
 
             # Derive top performers from per-student filtered averages used by report
             ranked = sorted(
@@ -958,6 +968,48 @@ class AcademicAnalyticsService:
                 except Exception:
                     return 'Not Assigned'
 
+            # Helper for series over recent terms
+            def _compute_subject_trend_series(subj_id: Optional[int], max_terms: int = 4) -> Dict[str, Any]:
+                """Return { 'terms': [labels], 'values': [averages] } for the last up to max_terms including current.
+                Uses direct DB aggregation for efficiency.
+                """
+                out_terms: list = []
+                out_vals: list = []
+                if not subj_id:
+                    return {'terms': out_terms, 'values': out_vals}
+                try:
+                    all_terms = Term.query.order_by(Term.id.asc()).all() if t_obj else []
+                    if not all_terms:
+                        return {'terms': out_terms, 'values': out_vals}
+                    # Find current index
+                    cur_idx = 0
+                    for i, t in enumerate(all_terms):
+                        if t_obj and t.id == t_obj.id:
+                            cur_idx = i
+                            break
+                    start_idx = max(0, cur_idx - (max_terms - 1))
+                    window = all_terms[start_idx:cur_idx + 1]
+                    from ..models import Student, Stream as _Stream, Mark as _Mark
+                    for t in window:
+                        # Average of student percentages for this subject in this class (stream)
+                        q = db.session.query(db.func.avg(_Mark.percentage)).join(Student, Student.id == _Mark.student_id)
+                        if stream_id:
+                            q = q.filter(Student.stream_id == stream_id)
+                        elif grade_id:
+                            q = q.join(_Stream, Student.stream_id == _Stream.id).filter(_Stream.grade_id == grade_id)
+                        q = q.filter(
+                            _Mark.term_id == t.id,
+                            _Mark.assessment_type_id == (assessment_type_id or _Mark.assessment_type_id),
+                            _Mark.subject_id == subj_id,
+                            _Mark.percentage.isnot(None)
+                        )
+                        val = q.scalar()
+                        out_terms.append(getattr(t, 'name', f'Term {t.id}'))
+                        out_vals.append(round(float(val), 2) if val is not None else None)
+                except Exception:
+                    pass
+                return {'terms': out_terms, 'values': out_vals}
+
             # Compute subject-level items
             for name, avg in subject_averages.items():
                 st = per_subject_stats.get(name, {'count': 0, 'min': 0.0, 'max': 0.0})
@@ -966,8 +1018,78 @@ class AcademicAnalyticsService:
                 # Resolve teacher once per subject
                 subj_row = _resolve_subject_by_name(name)
                 teacher_name = _resolve_teacher_name(getattr(subj_row, 'id', None))
+                # Subject distribution (current term)
+                vals_list: List[float] = []
+                for sd in class_data:
+                    v = (sd.get('filtered_marks') or {}).get(name)
+                    try:
+                        vv = float(v)
+                    except Exception:
+                        vv = 0.0
+                    if vv and vv >= 0:
+                        vals_list.append(vv)
+                # Histogram bins (0-9.9, 10-19.9, ..., 90-100)
+                bins = [0] * 10
+                for v in vals_list:
+                    idx = int(min(max(v, 0.0), 99.999) // 10)
+                    bins[idx] += 1
+                # Quartiles
+                q_stats = {'min': 0.0, 'q1': 0.0, 'median': 0.0, 'q3': 0.0, 'max': 0.0}
+                if vals_list:
+                    svals = sorted(vals_list)
+                    n = len(svals)
+                    def _pct(p: float) -> float:
+                        if n == 1:
+                            return svals[0]
+                        k = (n - 1) * p
+                        f = int(k)
+                        c = min(f + 1, n - 1)
+                        return svals[f] + (svals[c] - svals[f]) * (k - f)
+                    q_stats = {
+                        'min': round(svals[0], 2),
+                        'q1': round(_pct(0.25), 2),
+                        'median': round(_pct(0.5), 2),
+                        'q3': round(_pct(0.75), 2),
+                        'max': round(svals[-1], 2),
+                    }
+                # 4-band counts using configurable grading bands
+                from .grading_service import GradingService
+                try:
+                    cfg_bands = GradingService.get_calculator_grade_bands() or []
+                except Exception:
+                    cfg_bands = []
+                bands_4 = {'exceeding': 0, 'meeting': 0, 'approaching': 0, 'below': 0}
+                thresholds = None
+                if cfg_bands and len(cfg_bands) >= 4:
+                    # Split configured bands into 4 roughly equal groups by band index
+                    cfg_bands.sort(key=lambda b: (getattr(b, 'min_inclusive', 0.0)))
+                    import math
+                    n = len(cfg_bands)
+                    i1 = max(0, math.ceil(n*0.25) - 1)
+                    i2 = max(i1, math.ceil(n*0.50) - 1)
+                    i3 = max(i2, math.ceil(n*0.75) - 1)
+                    t1 = float(getattr(cfg_bands[i1], 'max_inclusive', 25.0))
+                    t2 = float(getattr(cfg_bands[i2], 'max_inclusive', 50.0))
+                    t3 = float(getattr(cfg_bands[i3], 'max_inclusive', 75.0))
+                    thresholds = (t1, t2, t3)
+                else:
+                    # Fallback classic thresholds
+                    thresholds = (40.0, 60.0, 70.0)  # below<=40, approaching<=60, meeting<=70, else exceeding
+                t1, t2, t3 = thresholds
+                for v in vals_list:
+                    if v <= t1:
+                        bands_4['below'] += 1
+                    elif v <= t2:
+                        bands_4['approaching'] += 1
+                    elif v <= t3:
+                        bands_4['meeting'] += 1
+                    else:
+                        bands_4['exceeding'] += 1
+                # Trend series (last up to 4 terms)
+                trend_series = _compute_subject_trend_series(getattr(subj_row, 'id', None), max_terms=4)
                 subject_item = {
                     'subject_name': name,
+                    'subject_id': getattr(subj_row, 'id', None),
                     'average_percentage': round(float(avg or 0), 2),
                     'students_with_marks': st['count'],
                     'min_percentage': st['min'],
@@ -975,6 +1097,10 @@ class AcademicAnalyticsService:
                     'performance_category': cls._get_performance_category(float(avg or 0)),
                     'grade_letter': cls._get_grade_letter(float(avg or 0)),
                     'teacher_name': teacher_name,
+                    'distribution_bins': bins,
+                    'quartiles': q_stats,
+                    'band_counts': bands_4,
+                    'trend_series': trend_series,
                 }
                 if prev_subject_averages:
                     subject_item.update({
@@ -1025,6 +1151,47 @@ class AcademicAnalyticsService:
             top_subject = subject_perf[0] if subject_perf else None
             least_subject = subject_perf[-1] if subject_perf else None
 
+            # At-risk learners: current <40 or drop >=10 vs previous
+            at_risk: List[Dict[str, Any]] = []
+            try:
+                for sd in class_data:
+                    try:
+                        sid = int(sd.get('student_id'))
+                    except Exception:
+                        continue
+                    curr = float(sd.get('filtered_average') or 0.0)
+                    prev = float(prev_class_avg_by_student.get(sid) or 0.0)
+                    drop = round(prev - curr, 2)
+                    if curr < 40.0 or drop >= 10.0:
+                        at_risk.append({
+                            'student_id': sid,
+                            'name': sd.get('student'),
+                            'current_average': round(curr, 2),
+                            'previous_average': round(prev, 2),
+                            'drop': drop,
+                            'reason': ('Low score' if curr < 40.0 else '') + (', ' if curr < 40.0 and drop >= 10.0 else '') + ('Big drop' if drop >= 10.0 else ''),
+                        })
+                # Sort by severity: lowest current then largest drop
+                at_risk.sort(key=lambda x: (x['current_average'], -x['drop']))
+            except Exception:
+                at_risk = []
+
+            # Improvement leaderboard: subjects with positive trend, sorted by delta desc
+            improving_subjects: List[Dict[str, Any]] = []
+            try:
+                improving_subjects = [
+                    {
+                        'subject_name': s['subject_name'],
+                        'subject_id': s.get('subject_id'),
+                        'trend_delta': float(s.get('trend_delta') or 0.0),
+                        'average_percentage': float(s.get('average_percentage') or 0.0),
+                    }
+                    for s in subject_perf if float(s.get('trend_delta') or 0.0) > 0
+                ]
+                improving_subjects.sort(key=lambda x: x['trend_delta'], reverse=True)
+            except Exception:
+                improving_subjects = []
+
             result = {
                 'top_performers': ranked,
                 'topPerformers': ranked,
@@ -1035,11 +1202,19 @@ class AcademicAnalyticsService:
                 'least_performing_subject': least_subject,
                 'leastPerformingSubject': least_subject,
                 'subject_top_learners': subject_top_learners_map,
+                'at_risk_learners': at_risk,
+                'improving_subjects': improving_subjects,
                 'context': {
                     'grade': grade_name,
                     'stream': s_obj.name,
                     'term': term_name,
                     'assessment_type': assessment_name,
+                },
+                'context_ids': {
+                    'grade_id': grade_id,
+                    'stream_id': stream_id,
+                    'term_id': getattr(t_obj, 'id', None),
+                    'assessment_type_id': getattr(at_obj, 'id', None),
                 },
                 'summary': {
                     'total_students_analyzed': len(class_data),

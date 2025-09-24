@@ -130,6 +130,7 @@ def create_missing_subjects():
         from ..extensions import db
 
         created_subjects = []
+        # Limit to levels that make sense for English/Kiswahili composites, keep order
         education_levels = ['upper_primary', 'junior_secondary']
         subjects_to_create = [
             ('ENGLISH', 'english'),

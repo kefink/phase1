@@ -820,6 +820,62 @@
       .mb-4 {
         margin-bottom: var(--spacing-lg);
       }
+
+      /* Accessibility: High-contrast overrides for better legibility */
+      .section-header h2,
+      .card-title,
+      .quick-action-title,
+      .class-name,
+      .page-title {
+        color: #073642; /* Dark solar base for stronger contrast */
+        text-shadow: none;
+      }
+
+      .stat-label,
+      .quick-action-desc,
+      .class-info,
+      .page-subtitle,
+      .loading {
+        color: #3a5258; /* Darker secondary text for readability */
+      }
+
+      .stat-number,
+      .quick-action-icon,
+      .card-icon {
+        filter: none; /* Ensure icons keep solid color without fade */
+      }
+
+      .quick-action-card,
+      .card,
+      .stat-card,
+      .class-card {
+        background: rgba(253, 246, 227, 0.98) !important; /* Slightly more opaque for text clarity */
+      }
+
+      /* Improve nav link contrast slightly while keeping theme */
+      .navbar .nav-link { color: #b3c0c1; }
+      .navbar .nav-link:hover,
+      .navbar .nav-link.active { color: #fdf6e3; }
+
+      /* Prefer more contrast if user requests it */
+      @media (prefers-contrast: more) {
+        .section-header h2,
+        .card-title,
+        .quick-action-title,
+        .class-name,
+        .page-title { color: #002b36; font-weight: 700; }
+
+        .stat-label,
+        .quick-action-desc,
+        .class-info,
+        .page-subtitle,
+        .loading { color: #21353a; }
+
+        .quick-action-card,
+        .card,
+        .stat-card,
+        .class-card { border-color: rgba(0, 43, 54, 0.35) !important; }
+      }
     </style>
   </head>
   <body class="solar-theme">

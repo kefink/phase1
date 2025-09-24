@@ -1929,6 +1929,105 @@
           margin: 0.25rem 0 !important;
         }
       }
+
+      /* ===== Accessibility & High-Contrast Text Fixes ===== */
+      /* Ensure headings and key messages remain readable on dark backgrounds */
+      .alerts-section .section-header h2,
+      .analytics-section .section-header h2,
+      .performance-section .section-header h2,
+      .drill-down-section .section-header h3,
+      .charts-section .chart-header h3 {
+        color: #fdf6e3 !important; /* Light ink on dark bg */
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+      }
+      /* Badge for alert count */
+      .alerts-section .alerts-count {
+        color: #fdf6e3 !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        padding: 0.1rem 0.5rem;
+        border-radius: 999px;
+        font-weight: 800;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      }
+      /* Make the neutral state container readable when present on dark bg */
+      .no-alerts-container {
+        background: rgba(253, 246, 227, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 16px;
+        padding: 1rem;
+        backdrop-filter: saturate(120%) blur(2px);
+      }
+      .no-alerts-content h3,
+      .no-alerts-content p {
+        color: #fdf6e3 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+        opacity: 1 !important;
+      }
+
+      /* Drill-down helper subtitle */
+      .section-subtitle {
+        color: #fdf6e3 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      }
+      /* Override gradient-clipped title text to ensure visibility */
+      .premium-header .title-text {
+        background: none !important;
+        -webkit-text-fill-color: #fdf6e3 !important;
+        color: #fdf6e3 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+      }
+
+      /* Alert details readability (works on both light cards and dark bg) */
+      .alert-message {
+        color: #073642; /* defaults for light cards */
+      }
+      .alert-time {
+        color: #586e75;
+      }
+      /* When alerts are placed directly on dark background, lighten text */
+      .alerts-section .system-alert .alert-text .alert-title,
+      .alerts-section .system-alert .alert-text .alert-message,
+      .alerts-section .system-alert .alert-text .alert-time {
+        color: #fdf6e3;
+      }
+
+      /* Performance table headers and key cells */
+      .performance-table thead th {
+        color: #073642;
+        background: rgba(253, 246, 227, 0.7);
+      }
+      .performance-table td.class-info strong {
+        color: #002b36;
+      }
+      /* Pagination info (e.g., "Showing 1 results") */
+      .pagination-info,
+      #tableInfo {
+        color: #fdf6e3 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Improve contrast when users request more contrast */
+      @media (prefers-contrast: more) {
+        .section-header h2,
+        .chart-header h3,
+        .analytics-header h3 {
+          color: #ffffff !important;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+        }
+        .alert-message {
+          color: #ffffff !important;
+        }
+        .alert-time {
+          color: #e6e6e6 !important;
+        }
+        .stat-label {
+          color: #ffffff !important;
+        }
+        .page-title p {
+          color: #ffffff !important;
+        }
+      }
     </style>
   </head>
   <body class="solar-theme">

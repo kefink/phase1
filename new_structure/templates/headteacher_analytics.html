@@ -1,9 +1,9 @@
-{% extends "responsive_base.html" %} {% block title %}Academic Performance
-Analytics - Head Teacher{% endblock %} {% block meta_description %}School-Wide
-Academic Analytics - Comprehensive performance insights and data-driven decision
-making for {{ school_info.school_name or 'Hillview School' }}{% endblock %} {%
-block page_title %}School-Wide Academic Analytics{% endblock %} {% block
-page_subtitle %}
+{% extends "modern_base.html" %} {% block title %}Academic Performance Analytics
+- Head Teacher{% endblock %} {% block meta_description %}School-Wide Academic
+Analytics - Comprehensive performance insights and data-driven decision making
+for {{ school_info.school_name or 'Hillview School' }}{% endblock %} {% block
+page_title %}School-Wide Academic Analytics{% endblock %} {% block page_subtitle
+%}
 <p class="text-lg">
   Comprehensive performance insights and data-driven decision making
 </p>
@@ -859,7 +859,8 @@ page_subtitle %}
   rel="stylesheet"
   href="{{ url_for('static', filename='css/enhanced_analytics.css') }}"
 />
-{% endblock %} {% block content %}
+{% endblock %} {% block content %} {% block breadcrumb %}{% endblock %} {% block
+base_header %}{% endblock %}
 <div class="container">
   <!-- Breadcrumb Navigation -->
   <div class="breadcrumb">
@@ -1427,8 +1428,8 @@ page_subtitle %}
   href="{{ url_for('static', filename='css/enhanced_analytics.css') }}"
 />
 {% include '_solar_theme_toggle.html' %} {% endblock %} {% block extra_js %}
-<!-- Analytics Dashboard JavaScript -->
-<script src="{{ url_for('static', filename='js/analytics_dashboard.js') }}?v=20250609"></script>
+<!-- Analytics Dashboard JavaScript (fixed) -->
+<script src="{{ url_for('static', filename='js/analytics_dashboard_fixed.js') }}?v=20250609"></script>
 
 <script>
   // Tab switching functionality
@@ -1740,8 +1741,15 @@ page_subtitle %}
   // Initialize analytics when page loads
   document.addEventListener("DOMContentLoaded", function () {
     console.log("Headteacher analytics page - initializing dashboard");
-    // The analytics dashboard will be initialized by the main analytics_dashboard.js file
-    // which now checks for analytics page elements before initializing
+    // Ensure the analytics dashboard is initialized using the fixed JS bundle
+    if (typeof initializeAnalyticsDashboard === "function") {
+      try {
+        initializeAnalyticsDashboard();
+      } catch (e) {
+        console.warn("initializeAnalyticsDashboard failed:", e);
+      }
+    }
+
     loadSchoolOverview();
   });
 

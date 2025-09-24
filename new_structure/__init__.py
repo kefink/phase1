@@ -839,17 +839,12 @@ def create_app(config_name='default'):
     # Register custom Jinja2 filters
     @app.template_filter('get_education_level')
     def get_education_level(grade):
-        """Filter to determine the education level for a grade."""
-        education_level_mapping = {
-            'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
-            'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
-            'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
-        }
-
-        for level, grades in education_level_mapping.items():
-            if grade in grades:
-                return level
-        return ''
+        """Filter to determine the canonical education level for a grade name."""
+        try:
+            from .utils.constants import get_education_level_for_grade_name
+            return get_education_level_for_grade_name(grade)
+        except Exception:
+            return ''
 
     @app.template_filter('tojsonhtml')
     def tojsonhtml_filter(obj):
@@ -1700,6 +1695,8 @@ def create_app(config_name='default'):
         """Debug route to manually initialize the database."""
         try:
             from .utils.database_init import initialize_database_completely, check_database_integrity
+            from flask import request as _req
+            from .models.academic import Grade, Stream
 
             # Check current status
             current_status = check_database_integrity()
@@ -1715,6 +1712,58 @@ def create_app(config_name='default'):
             result += f"<li>Streams: {current_status.get('stream_count', 0)}</li>"
             result += f"<li>Status: {current_status['status']}</li>"
             result += f"</ul>"
+
+            # Optionally ensure required grades exist (PP1, PP2, Grade 1-9)
+            ensure_param = _req.args.get('ensure')
+            if ensure_param == '1':
+                # Define the full required set and create any missing ones
+                required = [
+                    ("PP1", "lower_primary"),
+                    ("PP2", "lower_primary"),
+                    ("Grade 1", "lower_primary"),
+                    ("Grade 2", "lower_primary"),
+                    ("Grade 3", "lower_primary"),
+                    ("Grade 4", "upper_primary"),
+                    ("Grade 5", "upper_primary"),
+                    ("Grade 6", "upper_primary"),
+                    ("Grade 7", "junior_secondary"),
+                    ("Grade 8", "junior_secondary"),
+                    ("Grade 9", "junior_secondary"),
+                ]
+                existing_names = {g.name for g in Grade.query.all()}
+                created = []
+                for name, level in required:
+                    if name not in existing_names:
+                        g = Grade(name=name, education_level=level)
+                        db.session.add(g)
+                        db.session.flush()
+                        # Create default streams A, B
+                        for stream_name in ("A", "B"):
+                            db.session.add(Stream(name=stream_name, grade_id=g.id))
+                        created.append(name)
+                if created:
+                    db.session.commit()
+                    result += f"<p style='color: green;'>✅ Ensured grades created: {', '.join(created)}</p>"
+                else:
+                    result += "<p>No missing grades needed to be created.</p>"
+
+                # Refresh status after ensuring
+                current_status = check_database_integrity()
+
+            # Show current grade names for visibility
+            try:
+                _grades = Grade.query.all()
+                if _grades:
+                    result += "<h3>📘 Current Grades:</h3><ul>" + "\n".join(
+                        f"<li>{g.name} (level: {g.education_level})</li>" for g in _grades
+                    ) + "</ul>"
+                else:
+                    result += "<p>No grades found.</p>"
+            except Exception:
+                pass
+
+            # Provide helper links
+            result += "<p><a href='/debug/initialize_database?ensure=1'>➕ Ensure PP1/PP2 and Grades 1-9 exist</a></p>"
 
             if current_status['status'] != 'healthy':
                 result += f"<h3>🔧 Initializing Database...</h3>"
@@ -1748,6 +1797,90 @@ def create_app(config_name='default'):
 
         except Exception as e:
             return f"❌ Error during database initialization: {str(e)}"
+
+    @app.route('/debug/add_missing_grades')
+    def debug_add_missing_grades():
+        """Debug route to add PP1 and PP2 grades if missing."""
+        try:
+            from .models.academic import Grade, Stream
+            
+            result = "<h2>📚 Add Missing Pre-Primary Grades</h2>"
+            
+            # Check current grades
+            existing_grades = Grade.query.all()
+            grade_names = [g.name for g in existing_grades]
+            
+            result += f"<h3>Current Grades ({len(existing_grades)}):</h3>"
+            result += f"<p>{', '.join(grade_names)}</p>"
+            
+            changes_made = []
+            
+            # Add PP1 if missing
+            if "PP1" not in grade_names:
+                pp1 = Grade(name="PP1", education_level="lower_primary")
+                db.session.add(pp1)
+                db.session.flush()  # Get the ID
+                
+                # Add streams for PP1
+                for stream_name in ["A", "B"]:
+                    stream = Stream(name=stream_name, grade_id=pp1.id)
+                    db.session.add(stream)
+                
+                changes_made.append("Added PP1 with streams A and B")
+            else:
+                changes_made.append("PP1 already exists")
+            
+            # Add PP2 if missing  
+            if "PP2" not in grade_names:
+                pp2 = Grade(name="PP2", education_level="lower_primary")
+                db.session.add(pp2)
+                db.session.flush()  # Get the ID
+                
+                # Add streams for PP2
+                for stream_name in ["A", "B"]:
+                    stream = Stream(name=stream_name, grade_id=pp2.id)
+                    db.session.add(stream)
+                    
+                changes_made.append("Added PP2 with streams A and B")
+            else:
+                changes_made.append("PP2 already exists")
+            
+            # Commit changes
+            db.session.commit()
+            
+            # Verify final state
+            final_grades = Grade.query.all()
+            final_grade_names = [g.name for g in final_grades]
+            
+            result += f"<h3>Changes Made:</h3><ul>"
+            for change in changes_made:
+                result += f"<li>{change}</li>"
+            result += f"</ul>"
+            
+            result += f"<h3>Final Grades ({len(final_grades)}):</h3>"
+            result += f"<p>{', '.join(sorted(final_grade_names))}</p>"
+            
+            # Show educational level distribution
+            levels = {}
+            for grade in final_grades:
+                level = grade.education_level
+                if level not in levels:
+                    levels[level] = []
+                levels[level].append(grade.name)
+            
+            result += f"<h3>Grades by Educational Level:</h3><ul>"
+            for level, grade_list in levels.items():
+                result += f"<li><strong>{level}:</strong> {', '.join(sorted(grade_list))}</li>"
+            result += f"</ul>"
+            
+            result += f"<p><a href='/debug/initialize_database'>🔄 Database Status</a></p>"
+            result += f"<p><a href='/'>🏠 Go to Login Page</a></p>"
+            
+            return result
+            
+        except Exception as e:
+            import traceback
+            return f"❌ Error adding missing grades: {str(e)}<br><pre>{traceback.format_exc()}</pre>"
 
     @app.route('/debug/repair_database')
     def debug_repair_database():

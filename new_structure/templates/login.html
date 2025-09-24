@@ -76,6 +76,12 @@
         --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
           0 8px 10px -6px rgb(0 0 0 / 0.1);
         --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        /* Premium additions */
+        --aurora-1: rgba(181, 137, 0, 0.25);
+        --aurora-2: rgba(38, 139, 210, 0.25);
+        --glass: rgba(7, 54, 66, 0.85);
+        --glass-border: rgba(131, 148, 150, 0.28);
+        --card-radius: 1.25rem;
       }
 
       /* Premium Solar Theme Login */
@@ -83,14 +89,76 @@
         font-family: "Inter", system-ui, -apple-system, sans-serif;
         background: var(--solar-body-bg);
         min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        display: block;
         margin: 0;
         padding: 1rem;
         position: relative;
         overflow-x: hidden;
         color: var(--solar-body-color);
+      }
+
+      /* Page grid: left brand panel + right login panel */
+      .login-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: center;
+        min-height: calc(100vh - 2rem);
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .brand-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .brand-card {
+        width: 100%;
+        max-width: 520px;
+        background: rgba(7, 54, 66, 0.85);
+        border: 1px solid rgba(131, 148, 150, 0.28);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
+          0 0 0 1px rgba(131, 148, 150, 0.25) inset;
+        padding: 2rem;
+        text-align: center;
+        backdrop-filter: blur(16px);
+      }
+
+      .brand-logo-hero {
+        width: 220px;
+        height: auto;
+        display: block;
+        margin: 0 auto 1rem;
+        filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.35));
+      }
+
+      .brand-heading {
+        font-size: 1.4rem;
+        font-weight: 900;
+        letter-spacing: 0.4px;
+        margin: 0.25rem 0 0.25rem 0;
+        background: linear-gradient(135deg, #fefefe, #dcdcdc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .brand-subheading {
+        font-size: 0.95rem;
+        color: rgba(234, 234, 234, 0.9);
+        letter-spacing: 0.2px;
+        margin: 0.25rem 0 0;
+      }
+
+      .login-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
       }
 
       /* Premium animated background */
@@ -138,14 +206,13 @@
         z-index: 2;
         width: 100%;
         max-width: 480px;
-        background: rgba(7, 54, 66, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 24px;
+        background: var(--glass);
+        backdrop-filter: blur(22px);
+        border-radius: 28px;
         padding: 3rem 2.5rem;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
-          0 0 0 1px rgba(131, 148, 150, 0.3),
-          inset 0 1px 0 rgba(131, 148, 150, 0.1);
-        border: 1px solid rgba(131, 148, 150, 0.3);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.55),
+          0 0 0 1px var(--glass-border), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--glass-border);
         animation: slideUp 0.8s ease-out;
         margin: 2rem auto;
         min-height: auto;
@@ -176,24 +243,38 @@
       }
 
       .school-logo {
-        width: 90px;
-        height: 90px;
+        width: 96px;
+        height: 96px;
         background: linear-gradient(
           135deg,
-          var(--solar-primary) 0%,
-          var(--solar-warning) 100%
+          var(--solar-primary),
+          var(--solar-warning)
         );
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1.5rem;
-        box-shadow: 0 15px 35px rgba(181, 137, 0, 0.3),
-          0 5px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(253, 246, 227, 0.2);
-        border: 2px solid rgba(253, 246, 227, 0.1);
+        box-shadow: 0 18px 40px rgba(181, 137, 0, 0.35),
+          0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(253, 246, 227, 0.2);
+        border: 2px solid rgba(253, 246, 227, 0.15);
         position: relative;
         overflow: hidden;
         animation: pulse 3s ease-in-out infinite;
+        isolation: isolate;
+      }
+      .school-logo::after {
+        content: "";
+        position: absolute;
+        inset: -14px;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(181, 137, 0, 0.25),
+          transparent 60%
+        );
+        filter: blur(10px);
+        z-index: -1;
+        pointer-events: none;
       }
 
       @keyframes pulse {
@@ -216,24 +297,110 @@
       }
 
       .school-name {
-        font-size: 1.75rem; /* Smaller title */
+        font-size: 1.9rem;
         font-weight: 800;
         background: var(--primary-gradient);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 0.5rem; /* Reduced margin */
-        line-height: 1.2;
+        margin-bottom: 0.5rem;
+        line-height: 1.15;
+        text-shadow: 0 2px 12px rgba(181, 137, 0, 0.15);
       }
 
       .school-tagline {
-        font-size: 0.9rem; /* Smaller tagline */
+        font-size: 0.95rem;
         color: var(--gray-600);
         font-weight: 500;
-        margin-bottom: 1.5rem; /* Reduced margin */
+        margin-bottom: 1.75rem;
         overflow-wrap: anywhere;
         word-break: normal;
         hyphens: auto;
+        opacity: 0.95;
+      }
+
+      /* Brand badge (Powered by / Vendor mark) */
+      .brand-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(8px);
+        color: #eaeaea;
+        margin: 0 auto 1.25rem;
+      }
+
+      .brand-logo {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        box-shadow: 0 6px 14px rgba(16, 185, 129, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+      }
+
+      /* When using an image instead of initials */
+      .brand-logo-img {
+        height: 24px;
+        width: auto;
+        display: block;
+        border-radius: 4px;
+      }
+
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+        text-align: left;
+      }
+
+      .brand-name {
+        font-weight: 800;
+        font-size: 0.95rem;
+        letter-spacing: 0.3px;
+        background: linear-gradient(135deg, #fefefe, #dcdcdc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .brand-tagline {
+        font-size: 0.78rem;
+        color: rgba(234, 234, 234, 0.9);
+        letter-spacing: 0.2px;
+        opacity: 0.95;
+      }
+
+      @media (max-width: 480px) {
+        .brand-badge {
+          gap: 0.6rem;
+          padding: 0.45rem 0.7rem;
+        }
+        .brand-logo {
+          width: 26px;
+          height: 26px;
+          font-size: 0.85rem;
+        }
+        .brand-logo-img {
+          height: 22px;
+        }
+        .brand-name {
+          font-size: 0.9rem;
+        }
+        .brand-tagline {
+          font-size: 0.75rem;
+        }
       }
 
       .login-options {
@@ -249,15 +416,19 @@
       }
 
       .login-card {
-        background: linear-gradient(135deg, #ffffff, #f8f9fa);
-        border-radius: 1rem; /* Fixed value */
-        padding: 1rem; /* Reduced padding */
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #ffffff, #fafafa);
+        border-radius: var(--card-radius);
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        transition: transform 0.25s ease, box-shadow 0.3s ease,
+          border-color 0.25s ease;
         text-decoration: none;
         color: inherit;
         position: relative;
         overflow: hidden;
+        isolation: isolate;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12),
+          inset 0 1px 0 rgba(255, 255, 255, 0.5);
       }
 
       .login-card::before {
@@ -271,13 +442,32 @@
         transform: scaleX(0);
         transition: transform 0.3s ease;
       }
+      .login-card::after {
+        content: "";
+        position: absolute;
+        inset: -30% -10% auto auto;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(255, 255, 255, 0.6),
+          transparent 60%
+        );
+        opacity: 0.25;
+        transform: translate3d(0, 0, 0);
+        pointer-events: none;
+      }
 
       .login-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-xl);
-        border-color: rgba(102, 126, 234, 0.2);
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+        border-color: rgba(102, 126, 234, 0.25);
         text-decoration: none;
         color: inherit;
+      }
+      .login-card:focus-visible {
+        outline: 3px solid rgba(181, 137, 0, 0.5);
+        outline-offset: 2px;
       }
 
       .login-card:hover::before {
@@ -292,16 +482,19 @@
       }
 
       .login-icon {
-        width: 40px; /* Smaller icon */
-        height: 40px;
+        width: 44px;
+        height: 44px;
         background: var(--primary-gradient);
-        border-radius: 0.75rem; /* Fixed value */
+        border-radius: 0.9rem;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1.25rem; /* Smaller icon */
-        box-shadow: var(--shadow-md);
+        font-size: 1.25rem;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18),
+          inset 0 1px 0 rgba(255, 255, 255, 0.35);
+        position: relative;
+        overflow: hidden;
       }
       .login-icon svg {
         width: 22px;
@@ -310,10 +503,11 @@
       }
 
       .login-title {
-        font-size: 1.1rem; /* Smaller title */
-        font-weight: 700;
+        font-size: 1.1rem;
+        font-weight: 800;
         color: var(--gray-800);
         margin: 0;
+        letter-spacing: 0.2px;
         overflow-wrap: anywhere;
         word-break: normal;
         hyphens: auto;
@@ -333,7 +527,7 @@
         margin-left: auto;
         color: var(--gray-400);
         font-size: 1.2rem;
-        transition: all 0.3s ease;
+        transition: transform 0.3s ease, color 0.3s ease;
       }
       .login-arrow svg {
         width: 20px;
@@ -343,16 +537,15 @@
 
       .login-card:hover .login-arrow {
         color: var(--gray-600);
-        transform: translateX(4px);
+        transform: translateX(6px);
       }
 
       .admin-card {
-        background: linear-gradient(
-          135deg,
-          var(--solar-danger),
-          var(--solar-warning)
-        );
+        background: linear-gradient(135deg, #ef476f, #f3722c);
         color: white;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 16px 36px rgba(243, 114, 44, 0.28),
+          0 6px 14px rgba(0, 0, 0, 0.18);
       }
 
       .admin-card .login-icon {
@@ -366,7 +559,7 @@
       }
 
       .admin-card .login-arrow {
-        color: rgba(255, 255, 255, 0.7);
+        color: rgba(255, 255, 255, 0.8);
       }
 
       .admin-card:hover .login-arrow {
@@ -377,6 +570,9 @@
       .subject-teacher-card {
         background: linear-gradient(135deg, #10b981, #059669) !important;
         color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 16px 36px rgba(16, 185, 129, 0.28),
+          0 6px 14px rgba(0, 0, 0, 0.18);
         /* Force visibility */
         display: block !important;
         visibility: visible !important;
@@ -436,18 +632,34 @@
       }
 
       /* Responsive Design */
+      @media (max-width: 992px) {
+        .login-grid {
+          grid-template-columns: 1fr;
+          gap: 1.25rem;
+          align-items: start;
+        }
+        .brand-card {
+          max-width: 640px;
+        }
+        .brand-logo-hero {
+          width: 200px;
+        }
+      }
+
       @media (max-width: 768px) {
         .login-container {
           margin: var(--space-4);
           padding: var(--space-8);
+          border-radius: 24px;
         }
 
         .school-name {
-          font-size: 1.75rem;
+          font-size: 1.65rem;
         }
 
         .login-card {
           padding: var(--space-5);
+          border-radius: 1.1rem;
         }
 
         .login-card-header {
@@ -455,8 +667,8 @@
         }
 
         .login-icon {
-          width: 45px;
-          height: 45px;
+          width: 42px;
+          height: 42px;
           font-size: 1.25rem;
         }
 
@@ -498,147 +710,40 @@
     </style>
   </head>
   <body>
-    <div class="login-container">
-      <!-- School Header -->
-      <div class="school-header">
-        <div class="school-logo">
-          {% if school_info.logo_url and school_info.logo_url !=
-          '/static/images/default_logo.png' %}
+    <div class="login-grid">
+      <aside class="brand-panel">
+        <div class="brand-card">
           <img
-            src="{{ school_info.logo_url }}"
-            alt="School Logo"
-            style="
-              width: 60px;
-              height: 60px;
-              border-radius: 50%;
-              object-fit: cover;
-            "
+            class="brand-logo-hero"
+            src="{{ url_for('static', filename='sta.png') }}"
+            alt="STEM-ED ARCHITECTS logo"
+            loading="lazy"
           />
-          {% else %}
-          <!-- Academic Cap Icon (Heroicons) -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden="true"
-            role="img"
-          >
-            <path
-              d="M11.7 1.551a.75.75 0 0 1 .6 0l9 4a.75.75 0 0 1 0 1.367l-3.115 1.384a.75.75 0 0 0-.435.682v3.389a4.5 4.5 0 0 1-3.75 4.43v2.447l2.426.606a.75.75 0 1 1-.362 1.456l-2.75-.687a.75.75 0 0 1-.564-.73v-3.092a4.493 4.493 0 0 1-1.2 0v3.092a.75.75 0 0 1-.564.73l-2.75.687a.75.75 0 1 1-.362-1.456l2.426-.606v-2.447a4.5 4.5 0 0 1-3.75-4.43V8.984a.75.75 0 0 0-.435-.682L2.7 6.918a.75.75 0 0 1 0-1.367l9-4Z"
-            />
-          </svg>
-          {% endif %}
+          <h2 class="brand-heading">STEM-ED ARCHITECTS</h2>
+          <div class="brand-subheading">
+            Engineering Teaching & Learning Solutions
+          </div>
         </div>
-        <h1 class="school-name">
-          {{ school_info.school_name or 'Hillview School' }}
-        </h1>
-        <p class="school-tagline">
-          {{ school_info.school_motto or 'Excellence in Education • Modern
-          Learning' }}
-        </p>
-      </div>
-
-      <!-- Login Options -->
-      <div class="login-options">
-        <!-- Admin Login -->
-        <a
-          href="{{ url_for('auth.admin_login') }}"
-          class="login-card admin-card"
-        >
-          <div class="login-card-header">
-            <div class="login-icon">
-              <!-- Shield Check Icon -->
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-                role="img"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M11.48 2.024a.75.75 0 0 1 .54 0l7.5 3a.75.75 0 0 1 .48.698V11a10.5 10.5 0 0 1-5.633 9.333l-1.867.98a.75.75 0 0 1-.7 0l-1.867-.98A10.5 10.5 0 0 1 3 11V5.722a.75.75 0 0 1 .48-.698l7.5-3Zm3.53 6.97a.75.75 0 1 0-1.06-1.06l-3.97 3.97-1.47-1.47a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l4.5-4.5Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 class="login-title">Admin Portal</h3>
-              <p class="login-description">
-                Headteacher & Administrative Access
-              </p>
-            </div>
-            <div class="login-arrow">
-              <!-- Chevron Right Icon -->
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-                role="img"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M8.47 4.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06L13.94 12 8.47 6.53a.75.75 0 0 1 0-1.06Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </div>
-          </div>
-        </a>
-
-        <!-- Class Teacher Login -->
-        <a href="{{ url_for('auth.classteacher_login') }}" class="login-card">
-          <div class="login-card-header">
-            <div class="login-icon">
-              <!-- Presentation Chart Bar Icon for Class Teacher -->
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-                role="img"
-              >
-                <path
-                  d="M3 4.5A1.5 1.5 0 0 1 4.5 3h15A1.5 1.5 0 0 1 21 4.5V9a.75.75 0 0 1-1.5 0V4.5h-6.75v9.563l2.908 2.908a.75.75 0 1 1-1.06 1.06L12 15.06l-2.598 2.97a.75.75 0 0 1-1.156-.952l2.904-3.32V4.5H4.5V9A.75.75 0 0 1 3 9V4.5Z"
-                />
-                <path
-                  d="M3.75 20.25a.75.75 0 0 1 0-1.5h16.5a.75.75 0 0 1 0 1.5H3.75Z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 class="login-title">Class Teacher</h3>
-              <p class="login-description">
-                Class management, marks upload & reports
-              </p>
-            </div>
-            <div class="login-arrow">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-                role="img"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M8.47 4.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06L13.94 12 8.47 6.53a.75.75 0 0 1 0-1.06Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </div>
-          </div>
-        </a>
-
-        <!-- Subject Teacher Login -->
-        <a
-          href="{{ url_for('auth.teacher_login') }}"
-          class="login-card subject-teacher-card"
-        >
-          <div class="login-card-header">
-            <div class="login-icon">
-              <!-- Academic Cap Icon for Subject Teacher -->
+      </aside>
+      <main class="login-panel">
+        <div class="login-container">
+          <!-- School Header -->
+          <div class="school-header">
+            <div class="school-logo">
+              {% if school_info.logo_url and school_info.logo_url !=
+              '/static/images/default_logo.png' %}
+              <img
+                src="{{ school_info.logo_url }}"
+                alt="School Logo"
+                style="
+                  width: 60px;
+                  height: 60px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                "
+              />
+              {% else %}
+              <!-- Academic Cap Icon (Heroicons) -->
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -650,44 +755,172 @@
                   d="M11.7 1.551a.75.75 0 0 1 .6 0l9 4a.75.75 0 0 1 0 1.367l-3.115 1.384a.75.75 0 0 0-.435.682v3.389a4.5 4.5 0 0 1-3.75 4.43v2.447l2.426.606a.75.75 0 1 1-.362 1.456l-2.75-.687a.75.75 0 0 1-.564-.73v-3.092a4.493 4.493 0 0 1-1.2 0v3.092a.75.75 0 0 1-.564.73l-2.75.687a.75.75 0 1 1-.362-1.456l2.426-.606v-2.447a4.5 4.5 0 0 1-3.75-4.43V8.984a.75.75 0 0 0-.435-.682L2.7 6.918a.75.75 0 0 1 0-1.367l9-4Z"
                 />
               </svg>
+              {% endif %}
             </div>
-            <div>
-              <h3 class="login-title">Subject Teacher</h3>
-              <p class="login-description">
-                Subject-specific teaching & assessment
-              </p>
-            </div>
-            <div class="login-arrow">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-                role="img"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M8.47 4.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06L13.94 12 8.47 6.53a.75.75 0 0 1 0-1.06Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
+            <h1 class="school-name">
+              {{ school_info.school_name or 'Hillview School' }}
+            </h1>
+            <p class="school-tagline">
+              {{ school_info.school_motto or 'Excellence in Education • Modern
+              Learning' }}
+            </p>
+          </div>
+
+          <!-- Login Options -->
+          <div class="login-options">
+            <!-- Admin Login -->
+            <a
+              href="{{ url_for('auth.admin_login') }}"
+              class="login-card admin-card"
+            >
+              <div class="login-card-header">
+                <div class="login-icon">
+                  <!-- Shield Check Icon -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                    role="img"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M11.48 2.024a.75.75 0 0 1 .54 0l7.5 3a.75.75 0 0 1 .48.698V11a10.5 10.5 0 0 1-5.633 9.333l-1.867.98a.75.75 0 0 1-.7 0l-1.867-.98A10.5 10.5 0 0 1 3 11V5.722a.75.75 0 0 1 .48-.698l7.5-3Zm3.53 6.97a.75.75 0 1 0-1.06-1.06l-3.97 3.97-1.47-1.47a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l4.5-4.5Z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="login-title">Admin Portal</h3>
+                  <p class="login-description">
+                    Headteacher & Administrative Access
+                  </p>
+                </div>
+                <div class="login-arrow">
+                  <!-- Chevron Right Icon -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                    role="img"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M8.47 4.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06L13.94 12 8.47 6.53a.75.75 0 0 1 0-1.06Z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </a>
+
+            <!-- Class Teacher Login -->
+            <a
+              href="{{ url_for('auth.classteacher_login') }}"
+              class="login-card"
+            >
+              <div class="login-card-header">
+                <div class="login-icon">
+                  <!-- Presentation Chart Bar Icon for Class Teacher -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                    role="img"
+                  >
+                    <path
+                      d="M3 4.5A1.5 1.5 0 0 1 4.5 3h15A1.5 1.5 0 0 1 21 4.5V9a.75.75 0 0 1-1.5 0V4.5h-6.75v9.563l2.908 2.908a.75.75 0 1 1-1.06 1.06L12 15.06l-2.598 2.97a.75.75 0 0 1-1.156-.952l2.904-3.32V4.5H4.5V9A.75.75 0 0 1 3 9V4.5Z"
+                    />
+                    <path
+                      d="M3.75 20.25a.75.75 0 0 1 0-1.5h16.5a.75.75 0 0 1 0 1.5H3.75Z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="login-title">Class Teacher</h3>
+                  <p class="login-description">
+                    Class management, marks upload & reports
+                  </p>
+                </div>
+                <div class="login-arrow">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                    role="img"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M8.47 4.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06L13.94 12 8.47 6.53a.75.75 0 0 1 0-1.06Z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </a>
+
+            <!-- Subject Teacher Login -->
+            <a
+              href="{{ url_for('auth.teacher_login') }}"
+              class="login-card subject-teacher-card"
+            >
+              <div class="login-card-header">
+                <div class="login-icon">
+                  <!-- Academic Cap Icon for Subject Teacher -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                    role="img"
+                  >
+                    <path
+                      d="M11.7 1.551a.75.75 0 0 1 .6 0l9 4a.75.75 0 0 1 0 1.367l-3.115 1.384a.75.75 0 0 0-.435.682v3.389a4.5 4.5 0 0 1-3.75 4.43v2.447l2.426.606a.75.75 0 1 1-.362 1.456l-2.75-.687a.75.75 0 0 1-.564-.73v-3.092a4.493 4.493 0 0 1-1.2 0v3.092a.75.75 0 0 1-.564.73l-2.75.687a.75.75 0 1 1-.362-1.456l2.426-.606v-2.447a4.5 4.5 0 0 1-3.75-4.43V8.984a.75.75 0 0 0-.435-.682L2.7 6.918a.75.75 0 0 1 0-1.367l9-4Z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="login-title">Subject Teacher</h3>
+                  <p class="login-description">
+                    Subject-specific teaching & assessment
+                  </p>
+                </div>
+                <div class="login-arrow">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                    role="img"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M8.47 4.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06L13.94 12 8.47 6.53a.75.75 0 0 1 0-1.06Z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <!-- Footer -->
+          <div class="footer">
+            <p class="footer-text">
+              © 2025 {{ school_info.school_name or 'Hillview School' }}. All
+              rights reserved.
+            </p>
+            <div class="footer-links">
+              <a href="#" class="footer-link">Help</a>
+              <a href="#" class="footer-link">Support</a>
+              <a href="#" class="footer-link">Privacy</a>
             </div>
           </div>
-        </a>
-      </div>
-
-      <!-- Footer -->
-      <div class="footer">
-        <p class="footer-text">
-          © 2025 {{ school_info.school_name or 'Hillview School' }}. All rights
-          reserved.
-        </p>
-        <div class="footer-links">
-          <a href="#" class="footer-link">Help</a>
-          <a href="#" class="footer-link">Support</a>
-          <a href="#" class="footer-link">Privacy</a>
         </div>
-      </div>
+      </main>
     </div>
 
     <!-- JavaScript for Enhanced Interactions -->

@@ -53,6 +53,17 @@
         --solar-body-color: #839496;
         --solar-glass: rgba(7, 54, 66, 0.95);
         --solar-glass-border: rgba(131, 148, 150, 0.3);
+        --white: #ffffff;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
         --space-2: 0.5rem;
         --space-3: 0.75rem;
         --space-4: 1rem;
@@ -305,13 +316,13 @@
         transition: all 0.3s ease;
         background: rgba(7, 54, 66, 0.6);
         backdrop-filter: blur(10px);
-        color: var(--solar-light);
+        color: var(--solar-light); /* ensure strong contrast on dark */
         position: relative;
       }
 
       .form-input::placeholder {
         color: var(--solar-secondary);
-        opacity: 0.7;
+        opacity: 0.9; /* increase placeholder visibility */
       }
 
       .form-input:focus {
@@ -352,6 +363,29 @@
 
       .form-input.with-icon {
         padding-left: var(--space-12);
+      }
+
+      .form-input.with-end-icon {
+        padding-right: var(--space-12);
+      }
+
+      .toggle-password {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: var(--solar-secondary);
+        width: 1.5rem;
+        height: 1.5rem;
+        padding: 0;
+        cursor: pointer;
+        z-index: 2;
+      }
+
+      .toggle-password:hover {
+        color: var(--solar-primary);
       }
 
       .login-button {
@@ -608,7 +642,7 @@
             type="password"
             id="password"
             name="password"
-            class="form-input with-icon"
+            class="form-input with-icon with-end-icon"
             placeholder="Enter your password"
             required
             autocomplete="current-password"
@@ -629,6 +663,33 @@
               />
             </svg>
           </span>
+          <button
+            type="button"
+            id="togglePassword"
+            class="toggle-password"
+            aria-label="Show password"
+            aria-pressed="false"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.75"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.577 3.01 9.964 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.577-3.01-9.964-7.178Z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+            </svg>
+          </button>
         </div>
 
         <button type="submit" class="login-button" id="loginBtn">
@@ -699,6 +760,8 @@
         const form = document.getElementById("loginForm");
         const loginBtn = document.getElementById("loginBtn");
         const inputs = document.querySelectorAll(".form-input");
+        const pwd = document.getElementById("password");
+        const toggle = document.getElementById("togglePassword");
 
         // Enhanced form submission
         form.addEventListener("submit", function (e) {
@@ -729,6 +792,22 @@
           container.style.opacity = "1";
           container.style.transform = "translateY(0)";
         }, 100);
+
+        // Password visibility toggle
+        if (toggle && pwd) {
+          toggle.addEventListener("click", () => {
+            const isHidden = pwd.getAttribute("type") === "password";
+            pwd.setAttribute("type", isHidden ? "text" : "password");
+            toggle.setAttribute("aria-pressed", String(isHidden));
+            toggle.setAttribute(
+              "aria-label",
+              isHidden ? "Hide password" : "Show password"
+            );
+            toggle.innerHTML = isHidden
+              ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c1.46 0 2.847-.277 4.116-.78M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.066 7.5a10.525 10.525 0 0 1-4.197 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m0 0a3 3 0 1 0 4.243 4.243m-4.243-4.243 4.243 4.243M21 21l-3.182-3.182"/></svg>'
+              : '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.577 3.01 9.964 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.577-3.01-9.964-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>';
+          });
+        }
       });
     </script>
   </body>

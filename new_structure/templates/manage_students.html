@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, viewport-fit=cover">
     <meta name="description" content="Manage Students - {{ school_info.school_name or 'Hillview School' }} Class Teacher Portal">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
@@ -70,11 +70,16 @@
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: var(--text-primary);
             line-height: 1.55;
-            padding: 20px 20px 60px;
+            padding: 20px 20px calc(60px + env(safe-area-inset-bottom, 0px));
             overflow-x: hidden;
         }
 
         body, html, .container, .container-fluid { background: var(--bg-color) !important; }
+
+        /* When keyboard is open, add extra bottom space */
+        body.keyboard-open {
+            padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+        }
 
         /* Icon (Heroicons) semantic fills */
         .heroicon-solar-blue { fill: var(--blue); }
@@ -150,6 +155,13 @@
         }
         .form-control:focus, select:focus, input[type=text]:focus, input[type=file]:focus { outline:none; border-color: var(--blue); box-shadow: var(--focus-ring); background: #0d5664; color: var(--text-emphasis); }
         select option { background: var(--bg-secondary); color: var(--text-primary); }
+
+        /* Ensure critical labels are visible on dark background */
+        .level-selector label,
+        .template-links p strong {
+            color: var(--text-emphasis) !important;
+        }
+        .level-selector label { font-weight: 700; }
 
         /* Buttons */
         .btn, .search-btn, .clear-search-btn, .add-btn, .upload-btn, .manage-btn, .filter-btn, .download-btn, .update-btn, .delete-all-btn, .delete-selected-btn, .reset-btn {
@@ -556,6 +568,44 @@
             #students-table th:nth-child(2),
             #students-table td:nth-child(2) { display: none; }
         }
+
+        /* Mobile fixes for Bulk Actions overlap */
+        @media (max-width: 768px) {
+            .bulk-actions-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+            .bulk-action-group {
+                width: 100% !important;
+                box-sizing: border-box;
+                box-shadow: none !important; /* avoid visual overlap of shadows */
+                padding: 14px !important;
+                margin: 0 !important;
+                position: static !important;
+                z-index: auto !important;
+            }
+            .bulk-actions-section { overflow: visible !important; }
+            /* Mobile helper input to filter large grade lists */
+            .grade-filter-input { display:block; width:100%; margin:6px 0 10px; padding:10px 12px; border-radius:10px; border:1px solid var(--border-color); background: var(--card-alt); color: var(--text-primary); }
+            .grade-filter-input:focus { outline:none; border-color: var(--blue); box-shadow: var(--focus-ring); background:#0d5664; color: var(--text-emphasis); }
+        }
+
+        @media (max-width: 480px) {
+            .bulk-action-group { padding: 12px !important; }
+        }
+        /* Floating dismiss keyboard button */
+        #kbDismiss {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+            z-index: 1000;
+            display: none;
+            padding: 10px 16px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            color: #fff;
+            border: none;
+            box-shadow: 0 6px 16px rgba(0,0,0,.35);
+            font-weight: 700;
+        }
     </style>
 </head>
 <body class="solar-theme">
@@ -618,7 +668,7 @@
                 <select name="educational_level" id="educational_level" onchange="updateAllForms()">
                     <option value="">Select Educational Level</option>
                     {% for level in educational_levels %}
-                        <option value="{{ level }}" {% if selected_level == level %}selected{% endif %}>{{ level }}</option>
+                        <option value="{{ level }}" {% if selected_level == level %}selected{% endif %}>{{ level|replace('_', ' ')|title }}</option>
                     {% endfor %}
                 </select>
             </form>
@@ -636,11 +686,11 @@
                     <input type="hidden" name="educational_level" id="educational_level_student">
                     <div class="form-group">
                         <label for="name">Student Name:</label>
-                        <input type="text" name="name" id="name" required>
+                            <input type="text" name="name" id="name" required autocomplete="off" autocapitalize="words" enterkeyhint="next" autocorrect="off" spellcheck="false">
                     </div>
                     <div class="form-group">
                         <label for="admission_number">Admission Number:</label>
-                        <input type="text" name="admission_number" id="admission_number" required>
+                        <input type="text" name="admission_number" id="admission_number" required autocomplete="off" autocorrect="off" spellcheck="false" inputmode="numeric" pattern="[0-9A-Za-z- ]*" enterkeyhint="next">
                     </div>
                     <div class="form-group">
                         <label for="grade">Grade:</label>
@@ -775,7 +825,7 @@
                     <div class="filter-grid">
                         <div class="form-group">
                             <label for="search">Search:</label>
-                            <input type="text" name="search" id="search" placeholder="Search by name or admission number" value="{{ request.args.get('search', '') }}">
+                            <input type="search" name="search" id="search" placeholder="Search by name or admission number" value="{{ request.args.get('search', '') }}" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" inputmode="search">
                         </div>
                         <div class="form-group">
                             <label for="filter_educational_level">Educational Level:</label>
@@ -794,7 +844,7 @@
                                 <option value="">All Grades</option>
                                 {% for grade_obj in grades %}
                                     <option value="{{ grade_obj.id }}" {% if request.args.get('grade_id')|int == grade_obj.id %}selected{% endif %}>
-                                        {{ grade_obj.level }}
+                                        {{ grade_obj.name }}
                                     </option>
                                 {% endfor %}
                             </select>
@@ -882,7 +932,7 @@
                                             <select name="bulk_grade" id="bulk_grade" onchange="updateBulkEditStreams()">
                                                 <option value="">Select Grade</option>
                                                 {% for grade_obj in grades %}
-                                                    <option value="{{ grade_obj.id }}">{{ grade_obj.level }}</option>
+                                                    <option value="{{ grade_obj.id }}">{{ grade_obj.name }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
@@ -924,7 +974,7 @@
                             <select id="download_grade" onchange="updateDownloadStreams()">
                                 <option value="">Select Grade to Download</option>
                                 {% for grade_obj in grades %}
-                                    <option value="{{ grade_obj.id }}">{{ grade_obj.level }}</option>
+                                    <option value="{{ grade_obj.id }}">{{ grade_obj.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -1042,11 +1092,71 @@
         </div>
     </div>
 
+    <!-- Dismiss keyboard button (mobile) -->
+    <button id="kbDismiss" type="button" aria-label="Dismiss keyboard">Done</button>
+
+    <!-- JSON data for JS to consume safely -->
+    <script id="js-all-grades" type="application/json">{{ (grades or []) | tojson }}</script>
+    <script id="js-educational-level-mapping" type="application/json">{{ (educational_level_mapping or {}) | tojson }}</script>
+    <div id="js-messages" data-success="{{ (success_message or '') | e }}" data-error="{{ (error_message or '') | e }}" style="display:none"></div>
+
     <script>
-    // Data injected by Jinja at runtime; enclosed in quotes so static analyzers don't choke.
-    // Jinja will render valid JSON which we then JSON.parse.
-    const allGrades = JSON.parse('{% filter tojson %}{{ (grades or []) }}{% endfilter %}');
-    const educationalLevelMapping = JSON.parse('{% filter tojson %}{{ (educational_level_mapping or {}) }}{% endfilter %}');
+    // Parse embedded JSON safely (keeps JS valid in editors and avoids double-encoding)
+    const allGrades = (() => {
+        const el = document.getElementById('js-all-grades');
+        try { return el ? JSON.parse(el.textContent) : []; } catch { return []; }
+    })();
+    const educationalLevelMapping = (() => {
+        const el = document.getElementById('js-educational-level-mapping');
+        try { return el ? JSON.parse(el.textContent) : {}; } catch { return {}; }
+    })();
+
+        // Helper: Normalize streams from API, filter by grade when possible, de-duplicate and sort
+        function normalizeStreamsFromResponse(data, gradeId) {
+            let streams = [];
+            if (data && Array.isArray(data.streams)) {
+                streams = data.streams;
+            } else if (data && data.success && Array.isArray(data.streams)) {
+                streams = data.streams;
+            }
+
+            const gid = parseInt(gradeId, 10);
+            const filtered = streams.filter(s => {
+                // If backend sends grade_id, ensure it matches; otherwise trust server-side filtering
+                if (s && Object.prototype.hasOwnProperty.call(s, 'grade_id')) {
+                    // accept string or number equality
+                    return String(s.grade_id) === String(gid);
+                }
+                return true;
+            });
+
+            // De-duplicate by id if present, otherwise by name
+            const map = new Map();
+            for (const s of filtered) {
+                if (!s) continue;
+                const key = (s.id !== undefined && s.id !== null) ? `id:${s.id}` : `name:${s.name}`;
+                if (!map.has(key)) map.set(key, s);
+            }
+            const unique = Array.from(map.values());
+
+            // Sort by name (locale-aware)
+            unique.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+            return unique;
+        }
+
+        // Helper: append <option> elements for streams; supports pre-select via currentStreamId
+        function appendStreamOptions(selectEl, streams, currentStreamId) {
+            if (!selectEl || !Array.isArray(streams)) return;
+            streams.forEach(stream => {
+                const option = document.createElement('option');
+                option.value = stream.id;
+                option.textContent = stream.name;
+                if (currentStreamId && String(stream.id) === String(currentStreamId)) {
+                    option.selected = true;
+                }
+                selectEl.appendChild(option);
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             // Wire up action buttons and select-all
@@ -1065,8 +1175,10 @@
             const btnDownloadClass = document.getElementById('btn-download-class');
             if (btnDownloadClass) btnDownloadClass.addEventListener('click', downloadSelectedClass);
 
-            const successMessage = "{{ success_message|safe if success_message else '' }}";
-            const errorMessage = "{{ error_message|safe if error_message else '' }}";
+            // Read messages from hidden data attributes (avoids inline Jinja in JS)
+            const msgEl = document.getElementById('js-messages');
+            const successMessage = msgEl ? msgEl.dataset.success : '';
+            const errorMessage = msgEl ? msgEl.dataset.error : '';
 
             if (successMessage) {
                 showNotification(successMessage, 'success');
@@ -1087,7 +1199,7 @@
             }, 5000);
 
             const urlParams = new URLSearchParams(window.location.search);
-            const savedLevel = urlParams.get('level') || localStorage.getItem('selectedEducationalLevel') || '';
+            const savedLevel = urlParams.get('educational_level') || urlParams.get('level') || localStorage.getItem('selectedEducationalLevel') || '';
 
             if (savedLevel) {
                 document.getElementById('educational_level').value = savedLevel;
@@ -1108,7 +1220,109 @@
             if (downloadGradeSelect) {
                 downloadGradeSelect.addEventListener('change', updateDownloadStreams);
             }
+
+            // Keyboard-aware adjustments (mobile)
+            setupKeyboardAwareUI();
+
+            // Add grade filter inputs for mobile to reduce long lists
+            try {
+                attachGradeFilter('grade');
+                attachGradeFilter('grade_bulk');
+                attachGradeFilter('filter_grade');
+            } catch(e) { console.warn('Grade filter setup warning:', e); }
         });
+
+        // Visual viewport handling and keyboard dismiss
+        function setupKeyboardAwareUI() {
+            const vv = window.visualViewport;
+            const dismissBtn = document.getElementById('kbDismiss');
+            const inputSelectors = 'input, select, textarea';
+
+            function updatePadding() {
+                if (!vv) return;
+                const kb = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
+                if (kb > 120) {
+                    document.body.classList.add('keyboard-open');
+                    if (dismissBtn) dismissBtn.style.display = 'inline-flex';
+                } else {
+                    document.body.classList.remove('keyboard-open');
+                    if (dismissBtn) dismissBtn.style.display = 'none';
+                }
+            }
+
+            if (vv) {
+                vv.addEventListener('resize', updatePadding);
+                vv.addEventListener('scroll', updatePadding);
+                window.addEventListener('orientationchange', updatePadding);
+                updatePadding();
+            }
+
+            // Ensure focused field is scrolled into view and not hidden behind keyboard
+            document.addEventListener('focusin', (e) => {
+                const el = e.target;
+                if (!(el instanceof HTMLElement)) return;
+                if (!el.matches(inputSelectors)) return;
+                setTimeout(() => {
+                    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(_) {}
+                }, 50);
+            });
+
+            // Tap outside to dismiss
+            document.addEventListener('click', (e) => {
+                const ae = document.activeElement;
+                if (!ae) return;
+                if (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA') {
+                    if (!e.target.closest('input, textarea, select')) {
+                        ae.blur();
+                    }
+                }
+            });
+
+            // Manual dismiss button
+            if (dismissBtn) {
+                dismissBtn.addEventListener('click', () => {
+                    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                        document.activeElement.blur();
+                    }
+                    window.scrollBy({ top: -1, behavior: 'smooth' });
+                    window.scrollBy({ top: 1, behavior: 'smooth' });
+                });
+            }
+        }
+
+        // Adds a small filter input above a grade <select> on mobile to quickly narrow options
+        function attachGradeFilter(selectId) {
+            const sel = document.getElementById(selectId);
+            if (!sel) return;
+            if (window.matchMedia('(min-width: 769px)').matches) return; // mobile only
+            if (sel.dataset.filterAttached === '1') return;
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Filter grades…';
+            input.className = 'grade-filter-input';
+            sel.parentElement.insertBefore(input, sel);
+            sel.dataset.filterAttached = '1';
+
+            function filterOptions() {
+                const q = input.value.trim().toLowerCase();
+                // Build from current options each time to play well with dynamic updates
+                for (const opt of sel.options) {
+                    if (!opt.value) { opt.hidden = false; continue; }
+                    const txt = (opt.textContent || '').toLowerCase();
+                    opt.hidden = q && !txt.includes(q);
+                }
+            }
+
+            input.addEventListener('input', filterOptions);
+            // Re-apply filtering whenever options list changes (e.g., level change repopulates options)
+            try {
+                const mo = new MutationObserver(() => filterOptions());
+                mo.observe(sel, { childList: true, subtree: false });
+            } catch(_) {}
+            // Run once on attach
+            filterOptions();
+        }
 
         function showNotification(message, type) {
             const container = document.getElementById('message-container');
@@ -1144,11 +1358,15 @@
 
             if (educationalLevel) {
                 const allowedGrades = educationalLevelMapping[educationalLevel] || [];
+                console.log('[ManageStudents] Selected level:', educationalLevel);
+                console.log('[ManageStudents] Allowed grades for level:', allowedGrades);
+                console.log('[ManageStudents] All grades from server:', allGrades);
 
                 gradeSelects.forEach(gradeSelect => {
                     if (gradeSelect) {
                         gradeSelect.innerHTML = '<option value="">Select Grade</option>';
 
+                        let populated = 0;
                         allGrades.forEach(grade => {
                             if (allowedGrades.includes(grade.name)) {
                                 const option = document.createElement('option');
@@ -1156,8 +1374,21 @@
                                 option.textContent = grade.name;
                                 option.setAttribute('data-level', grade.name);
                                 gradeSelect.appendChild(option);
+                                populated++;
                             }
                         });
+
+                        // Fallback: if mapping mismatch yields no options, show all grades
+                        if (populated === 0) {
+                            console.warn('[ManageStudents] No grades matched mapping for', educationalLevel, '- falling back to all grades.');
+                            allGrades.forEach(grade => {
+                                const option = document.createElement('option');
+                                option.value = grade.id;
+                                option.textContent = grade.name;
+                                option.setAttribute('data-level', grade.name);
+                                gradeSelect.appendChild(option);
+                            });
+                        }
                     }
                 });
             } else {
@@ -1208,22 +1439,8 @@
                         return response.json();
                     })
                     .then(data => {
-                        // Handle different response formats
-                        let streams = [];
-                        if (data.success && data.streams) {
-                            streams = data.streams;
-                        } else if (data.streams) {
-                            streams = data.streams;
-                        }
-
-                        if (streams && streams.length > 0) {
-                            streams.forEach(stream => {
-                                const option = document.createElement('option');
-                                option.value = stream.id;
-                                option.textContent = stream.name;
-                                streamSelect.appendChild(option);
-                            });
-                        }
+                        const streams = normalizeStreamsFromResponse(data, gradeId);
+                        appendStreamOptions(streamSelect, streams);
                     })
                     .catch(error => {
                         console.error('Error fetching streams:', error);
@@ -1261,22 +1478,8 @@
                         return response.json();
                     })
                     .then(data => {
-                        // Handle different response formats
-                        let streams = [];
-                        if (data.success && data.streams) {
-                            streams = data.streams;
-                        } else if (data.streams) {
-                            streams = data.streams;
-                        }
-
-                        if (streams && streams.length > 0) {
-                            streams.forEach(stream => {
-                                const option = document.createElement('option');
-                                option.value = stream.id;
-                                option.textContent = stream.name;
-                                streamSelect.appendChild(option);
-                            });
-                        }
+                        const streams = normalizeStreamsFromResponse(data, gradeId);
+                        appendStreamOptions(streamSelect, streams);
                     })
                     .catch(error => {
                         console.error('Error fetching streams:', error);
@@ -1302,14 +1505,27 @@
                 const allowedGrades = educationalLevelMapping[educationalLevel] || [];
                 console.log('Allowed grades for', educationalLevel, ':', allowedGrades);
 
+                let populated = 0;
                 allGrades.forEach(grade => {
                     if (allowedGrades.includes(grade.name)) {
                         const option = document.createElement('option');
                         option.value = grade.id;
                         option.textContent = grade.name;
                         gradeSelect.appendChild(option);
+                        populated++;
                     }
                 });
+
+                // Fallback: if no matches due to mapping mismatch, show all grades
+                if (populated === 0) {
+                    console.warn('[ManageStudents] No filter grades matched mapping for', educationalLevel, '- falling back to all grades.');
+                    allGrades.forEach(grade => {
+                        const option = document.createElement('option');
+                        option.value = grade.id;
+                        option.textContent = grade.name;
+                        gradeSelect.appendChild(option);
+                    });
+                }
 
                 console.log('Updated filter grade dropdown with', gradeSelect.options.length - 1, 'grades');
             } else {
@@ -1361,31 +1577,9 @@
                     })
                     .then(data => {
                         console.log('Streams data received:', data);
-
-                        // Handle different response formats
-                        let streams = [];
-                        if (data.success && data.streams) {
-                            // Headteacher API format
-                            streams = data.streams;
-                        } else if (data.streams) {
-                            // Classteacher API format
-                            streams = data.streams;
-                        }
-
-                        if (streams && streams.length > 0) {
-                            streams.forEach(stream => {
-                                const option = document.createElement('option');
-                                option.value = stream.id;
-                                option.textContent = stream.name;
-                                if (stream.id.toString() === currentStreamId) {
-                                    option.selected = true;
-                                }
-                                streamSelect.appendChild(option);
-                            });
-                            console.log(`Added ${streams.length} streams to dropdown`);
-                        } else {
-                            console.log('No streams found for this grade');
-                        }
+                        const streams = normalizeStreamsFromResponse(data, gradeId);
+                        appendStreamOptions(streamSelect, streams, currentStreamId);
+                        console.log(`Added ${streams.length} streams to dropdown`);
                     })
                     .catch(error => {
                         console.error('Error fetching streams:', error);
@@ -1410,7 +1604,7 @@
             }
         }
 
-        // We're now using server-side filtering instead of client-side filtering
+    // Streams are filtered server-side; we also defensively filter/dedupe client-side
 
         function updateDownloadStreams() {
             const gradeId = document.getElementById('download_grade').value;
@@ -1444,22 +1638,8 @@
                         return response.json();
                     })
                     .then(data => {
-                        // Handle different response formats
-                        let streams = [];
-                        if (data.success && data.streams) {
-                            streams = data.streams;
-                        } else if (data.streams) {
-                            streams = data.streams;
-                        }
-
-                        if (streams && streams.length > 0) {
-                            streams.forEach(stream => {
-                                const option = document.createElement('option');
-                                option.value = stream.id;
-                                option.textContent = stream.name;
-                                streamSelect.appendChild(option);
-                            });
-                        }
+                        const streams = normalizeStreamsFromResponse(data, gradeId);
+                        appendStreamOptions(streamSelect, streams);
                     })
                     .catch(error => {
                         console.error('Error fetching streams:', error);
@@ -1485,17 +1665,19 @@
             if (gradeId) {
                 streamSelect.disabled = false;
 
-                fetch(`/classteacher/get_streams/${gradeId}`)
+                // Determine the correct API endpoint based on current user role and session
+                const isHeadteacher = window.location.pathname.includes('/headteacher/') ||
+                                    window.location.pathname.includes('/universal/') ||
+                                    '{{ session.headteacher_universal_access }}' === 'True';
+                const apiEndpoint = isHeadteacher ?
+                    `/universal/api/streams/${gradeId}` :
+                    `/classteacher/get_streams/${gradeId}`;
+
+                fetch(apiEndpoint)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.streams && data.streams.length > 0) {
-                            data.streams.forEach(stream => {
-                                const option = document.createElement('option');
-                                option.value = stream.id;
-                                option.textContent = stream.name;
-                                streamSelect.appendChild(option);
-                            });
-                        }
+                        const streams = normalizeStreamsFromResponse(data, gradeId);
+                        appendStreamOptions(streamSelect, streams);
                     })
                     .catch(error => {
                         console.error('Error fetching streams:', error);

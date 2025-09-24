@@ -270,9 +270,9 @@ class StudentPromotionService:
     def get_filter_options() -> Dict:
         """Get available filter options for the promotion interface."""
         try:
-            # Get education levels (include all levels including Grade 9 for graduation)
-            education_levels_raw = db.session.query(Grade.education_level).distinct().all()
-            education_levels = [level[0] for level in education_levels_raw if level[0]]
+            # Use canonical ordered education levels (UI consistency)
+            from ..utils.constants import EDUCATION_LEVELS_ORDER
+            education_levels = EDUCATION_LEVELS_ORDER
 
             # Get grades (include all grades including Grade 9) - order by name since there's no level field
             grades_raw = Grade.query.order_by(Grade.name).all()

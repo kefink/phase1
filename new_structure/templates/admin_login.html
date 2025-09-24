@@ -38,6 +38,18 @@
         --solar-body-color: #839496;
         --solar-glass: rgba(7, 54, 66, 0.95);
         --solar-glass-border: rgba(131, 148, 150, 0.3);
+        /* Neutral palette (tailwind gray scale) for consistent contrast */
+        --white: #ffffff;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
         --space-2: 0.5rem;
         --space-3: 0.75rem;
         --space-4: 1rem;
@@ -380,23 +392,31 @@
       .form-label {
         display: block;
         font-weight: 600;
-        color: var(--gray-700);
+        color: var(--solar-light);
         font-size: 0.875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-bottom: var(--space-2);
+        opacity: 0.9;
       }
 
       .form-input {
         width: 100%;
         padding: var(--space-4) var(--space-5);
-        border: 2px solid var(--gray-200);
+        border: 2px solid var(--solar-glass-border);
         border-radius: var(--radius-lg);
         font-size: 1rem;
         font-family: inherit;
         transition: all 0.2s ease;
-        background: var(--white);
+        background: rgba(7, 54, 66, 0.6);
+        backdrop-filter: blur(10px);
+        color: var(--solar-light);
         position: relative;
+      }
+
+      .form-input::placeholder {
+        color: var(--solar-secondary);
+        opacity: 0.9;
       }
 
       /* Mobile responsive form elements */
@@ -455,13 +475,16 @@
 
       .form-input:focus {
         outline: none;
-        border-color: #dc2626;
-        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-        transform: translateY(-1px);
+        border-color: var(--solar-primary);
+        box-shadow: 0 0 0 3px rgba(181, 137, 0, 0.2),
+          0 8px 25px rgba(181, 137, 0, 0.15);
+        transform: translateY(-2px);
+        background: rgba(7, 54, 66, 0.8);
       }
 
       .form-input:not(:placeholder-shown) {
-        border-color: var(--gray-300);
+        border-color: var(--solar-success);
+        background: rgba(42, 161, 152, 0.1);
       }
 
       .input-icon {
@@ -469,7 +492,7 @@
         left: var(--space-4);
         top: 50%;
         transform: translateY(-50%);
-        color: var(--gray-400);
+        color: var(--solar-secondary);
         transition: color 0.2s ease;
         width: 1.25rem;
         height: 1.25rem;
@@ -483,28 +506,59 @@
       }
 
       .form-input:focus + .input-icon {
-        color: #dc2626;
+        color: var(--solar-primary);
       }
 
       .form-input.with-icon {
         padding-left: var(--space-12);
       }
 
-      .login-button {
-        background: linear-gradient(135deg, #dc2626, #991b1b);
-        color: white;
+      /* Add space for right-end control (password toggle) */
+      .form-input.with-end-icon {
+        padding-right: var(--space-12);
+      }
+
+      .toggle-password {
+        position: absolute;
+        right: var(--space-4);
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
         border: none;
+        color: var(--solar-secondary);
+        width: 1.5rem;
+        height: 1.5rem;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .toggle-password:hover {
+        color: var(--solar-primary);
+      }
+
+      .login-button {
+        background: linear-gradient(
+          135deg,
+          var(--solar-primary) 0%,
+          var(--solar-warning) 100%
+        );
+        color: var(--solar-light);
+        border: 1px solid rgba(253, 246, 227, 0.2);
         border-radius: var(--radius-lg);
         padding: var(--space-4) var(--space-6);
         font-family: inherit;
         font-size: 1rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
         width: 100%;
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
-        margin-top: var(--space-4);
+        margin-top: var(--space-6);
+        box-shadow: 0 8px 25px rgba(181, 137, 0, 0.3),
+          0 3px 10px rgba(0, 0, 0, 0.2);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       /* Mobile responsive login button */
@@ -593,22 +647,23 @@
         text-align: center;
         margin-top: var(--space-8);
         padding-top: var(--space-6);
-        border-top: 1px solid var(--gray-200);
+        border-top: 1px solid var(--solar-glass-border);
       }
 
       .back-link a {
-        color: var(--gray-600);
+        color: var(--solar-secondary);
         text-decoration: none;
         font-weight: 500;
-        transition: color 0.2s ease;
+        transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
         gap: var(--space-2);
       }
 
       .back-link a:hover {
-        color: var(--gray-800);
+        color: var(--solar-primary);
         text-decoration: none;
+        transform: translateX(-2px);
       }
 
       /* Mobile responsive back link */
@@ -851,7 +906,7 @@
             type="password"
             id="password"
             name="password"
-            class="form-input with-icon"
+            class="form-input with-icon with-end-icon"
             placeholder="Enter admin password"
             required
             autocomplete="current-password"
@@ -872,6 +927,33 @@
               />
             </svg>
           </span>
+          <button
+            type="button"
+            id="togglePassword"
+            class="toggle-password"
+            aria-label="Show password"
+            aria-pressed="false"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.75"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.577 3.01 9.964 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.577-3.01-9.964-7.178Z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+            </svg>
+          </button>
         </div>
 
         <button type="submit" class="login-button" id="loginBtn">
@@ -959,6 +1041,8 @@
         const form = document.getElementById("loginForm");
         const loginBtn = document.getElementById("loginBtn");
         const inputs = document.querySelectorAll(".form-input");
+        const pwd = document.getElementById("password");
+        const toggle = document.getElementById("togglePassword");
 
         // Enhanced form submission
         form.addEventListener("submit", function (e) {
@@ -989,6 +1073,23 @@
           container.style.opacity = "1";
           container.style.transform = "translateY(0)";
         }, 100);
+
+        // Password visibility toggle
+        if (toggle && pwd) {
+          toggle.addEventListener("click", () => {
+            const isHidden = pwd.getAttribute("type") === "password";
+            pwd.setAttribute("type", isHidden ? "text" : "password");
+            toggle.setAttribute("aria-pressed", String(isHidden));
+            toggle.setAttribute(
+              "aria-label",
+              isHidden ? "Hide password" : "Show password"
+            );
+            // Swap icon between eye and eye-slash
+            toggle.innerHTML = isHidden
+              ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c1.46 0 2.847-.277 4.116-.78M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.066 7.5a10.525 10.525 0 0 1-4.197 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m0 0a3 3 0 1 0 4.243 4.243m-4.243-4.243 4.243 4.243M21 21l-3.182-3.182"/></svg>'
+              : '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.577 3.01 9.964 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.577-3.01-9.964-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>';
+          });
+        }
       });
     </script>
   </body>

@@ -8,6 +8,11 @@ from __future__ import annotations
 
 import logging
 from ..extensions import db
+from ..utils.constants import (
+    EDUCATION_LEVELS_ORDER,
+    educational_level_mapping,
+    get_education_level_for_grade_name,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +56,7 @@ def initialize_default_data() -> bool:
         from ..models.user import Teacher
         from ..models.assessment_config import AssessmentWeightsConfig, MissingPolicyConfig
         from ..models.grading_system import initialize_default_grading_systems
+        from ..models.academic import Grade, Stream
         import json
 
         teacher_exists = bool(Teacher.query.first())
@@ -59,9 +65,12 @@ def initialize_default_data() -> bool:
             _create_default_academic_structure()
             _create_default_subjects()
             _create_default_school_config()
+        else:
+            # Even if teachers already exist, ensure required grades/streams exist (idempotent)
+            _ensure_required_grades_and_streams()
 
         # Seed assessment config defaults per education level to avoid 1146 queries
-        levels = ['lower_primary', 'upper_primary', 'junior_secondary']
+        levels = [lvl for lvl in EDUCATION_LEVELS_ORDER if lvl in educational_level_mapping]
         default_weights = {
             "CAT 1": 20.0,
             "CAT 2": 30.0,
@@ -125,17 +134,11 @@ def _create_default_users() -> None:
 def _create_default_academic_structure() -> None:
     from ..models.academic import Grade, Stream, Term, AssessmentType
 
-    grade_level_map = [
-        ("Grade 1", "lower_primary"),
-        ("Grade 2", "lower_primary"),
-        ("Grade 3", "lower_primary"),
-        ("Grade 4", "upper_primary"),
-        ("Grade 5", "upper_primary"),
-        ("Grade 6", "upper_primary"),
-        ("Grade 7", "junior_secondary"),
-        ("Grade 8", "junior_secondary"),
-        ("Grade 9", "junior_secondary"),
-    ]
+    # Build grades from canonical mapping (pre_primary through senior_secondary)
+    grade_level_map = []
+    for lvl in EDUCATION_LEVELS_ORDER:
+        for gname in educational_level_mapping.get(lvl, []):
+            grade_level_map.append((gname, lvl))
 
     grades = []
     for name, level in grade_level_map:
@@ -168,6 +171,38 @@ def _create_default_academic_structure() -> None:
         db.session.add(AssessmentType(**a))
 
     logger.info("🏗️ Academic structure seeded")
+
+
+def _ensure_required_grades_and_streams() -> None:
+    """Ensure PP1, PP2, and Grades 1–9 exist with default streams A,B (idempotent)."""
+    try:
+        from ..models.academic import Grade, Stream
+        required = []
+        for lvl in EDUCATION_LEVELS_ORDER:
+            for gname in educational_level_mapping.get(lvl, []):
+                required.append((gname, lvl))
+        existing = {g.name: g for g in Grade.query.all()}
+        created = []
+        for name, level in required:
+            g = existing.get(name)
+            if not g:
+                g = Grade(name=name, education_level=level)
+                db.session.add(g)
+                db.session.flush()
+                created.append(name)
+            # Ensure streams A,B exist for this grade
+            try:
+                # Fetch streams lazily via relationship if available
+                existing_streams = {s.name for s in getattr(g, 'streams', [])}
+            except Exception:
+                existing_streams = set()
+            for sname in ("A", "B"):
+                if sname not in existing_streams:
+                    db.session.add(Stream(name=sname, grade_id=g.id))
+        if created:
+            logger.info("➕ Created missing grades: %s", ", ".join(created))
+    except Exception as e:
+        logger.warning("Ensure required grades skipped: %s", e)
 
 
 def _create_default_subjects() -> None:
@@ -217,6 +252,13 @@ def check_database_integrity() -> dict:
         subject_count = Subject.query.count()
         grade_count = Grade.query.count()
         stream_count = Stream.query.count()
+        # Verify required grade names exist
+        required_names = set()
+        for lvl in EDUCATION_LEVELS_ORDER:
+            required_names.update(educational_level_mapping.get(lvl, []))
+        existing_names = {g.name for g in Grade.query.all()}
+        required_ok = required_names.issubset(existing_names)
+        status = "healthy" if (teacher_count and subject_count and required_ok) else "needs_initialization"
         return {
             "tables_exist": True,
             "has_data": teacher_count > 0 and subject_count > 0,
@@ -224,7 +266,8 @@ def check_database_integrity() -> dict:
             "subject_count": subject_count,
             "grade_count": grade_count,
             "stream_count": stream_count,
-            "status": "healthy" if teacher_count and subject_count else "needs_initialization",
+            "required_grades_ok": required_ok,
+            "status": status,
         }
     except Exception as e:  # pragma: no cover
         return {"tables_exist": False, "has_data": False, "error": str(e), "status": "error"}

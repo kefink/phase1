@@ -37,6 +37,7 @@ from ..services.mark_calculator_adapter import (
     get_effective_weights, get_effective_missing_policies,
 )
 from ..services.grading_service import GradingService
+from ..utils.constants import get_education_level_for_grade_name
 
 # Reuse existing helper used by original route
 from ..utils.cache_utils import invalidate_cache  # type: ignore
@@ -52,25 +53,27 @@ class ClassReportBuilder:
 
     @staticmethod
     def _derive_education_level(grade_name: str, report_data: Dict[str, Any]) -> str:
+        # Prefer server-provided code if present
         if report_data.get("education_level"):
             code = report_data["education_level"]
             mapping = {
+                "pre_primary": "pre primary",
                 "lower_primary": "lower primary",
                 "upper_primary": "upper primary",
                 "junior_secondary": "junior secondary",
+                "senior_secondary": "senior secondary",
             }
             return mapping.get(code, "")
-        try:
-            grade_num = int(grade_name.split()[1]) if len(grade_name.split()) > 1 else int(grade_name)
-        except Exception:
-            return ""
-        if 1 <= grade_num <= 3:
-            return "lower primary"
-        if 4 <= grade_num <= 6:
-            return "upper primary"
-        if 7 <= grade_num <= 9:
-            return "junior secondary"
-        return ""
+        # Fallback: use centralized helper to derive code from grade name, then map to label
+        code = get_education_level_for_grade_name(grade_name)
+        label_map = {
+            "pre_primary": "pre primary",
+            "lower_primary": "lower primary",
+            "upper_primary": "upper primary",
+            "junior_secondary": "junior secondary",
+            "senior_secondary": "senior secondary",
+        }
+        return label_map.get(code, "")
 
     @staticmethod
     def build(
@@ -131,14 +134,14 @@ class ClassReportBuilder:
         education_level = ClassReportBuilder._derive_education_level(grade, report_data)
 
         # Convert education level to code for subject queries
-        if education_level == "lower primary":
-            education_level_code = "lower_primary"
-        elif education_level == "upper primary":
-            education_level_code = "upper_primary"
-        elif education_level == "junior secondary":
-            education_level_code = "junior_secondary"
-        else:
-            education_level_code = ""
+        label_to_code = {
+            "pre primary": "pre_primary",
+            "lower primary": "lower_primary",
+            "upper primary": "upper_primary",
+            "junior secondary": "junior_secondary",
+            "senior secondary": "senior_secondary",
+        }
+        education_level_code = label_to_code.get(education_level, "")
 
         # Students for target stream
         students = Student.query.filter_by(stream_id=stream_obj.id).all()

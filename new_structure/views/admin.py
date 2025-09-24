@@ -82,64 +82,216 @@ def admin_required(f):
 @admin_bp.route('/analytics')
 @admin_required
 def analytics_dashboard():
-    """Dedicated analytics page for headteachers."""
+    """Headteacher analytics uses the exact Class-Teacher analytics UI.
+
+    This route renders the shared `classteacher_analytics.html` template and
+    enables Grade/Stream selection for headteachers. Live data is hydrated via
+    the existing `/classteacher/analytics/data` JSON endpoint and export routes.
+    """
     try:
-        # Get comprehensive analytics data - prioritize report-based analytics
+        # Resolve current user (headteacher) as a Teacher object if possible
+        teacher_obj = None
         try:
-            from ..services.report_based_analytics_service import ReportBasedAnalyticsService
+            teacher_id = session.get('teacher_id')
+            if teacher_id:
+                teacher_obj = Teacher.query.get(teacher_id)
+        except Exception:
+            teacher_obj = None
 
-            # Try report-based analytics first
-            analytics_data = ReportBasedAnalyticsService.get_analytics_dashboard_data(
-                role='headteacher',
-                teacher_id=None
-            )
+    # Filters from query string (mirrors Class-Teacher route params)
+        selected_term_id = request.args.get('term', type=int)
+        selected_assessment_type_id = request.args.get('assessment_type', type=int)
+        selected_grade_id = request.args.get('grade', type=int)
+        selected_stream_id = request.args.get('stream', type=int)
 
-            # If no report data available, fall back to traditional analytics
-            if not analytics_data.get('has_data', False):
-                from ..services.analytics_service import AnalyticsService
-                fallback_data = AnalyticsService.get_headteacher_analytics()
+        show_all = request.args.get('show_all', type=int) == 1
+        requested_limit = request.args.get('limit', type=int)
+        top_subjects = request.args.get('top_subjects', type=int)
+        view_mode = request.args.get('subject_view', default='average')
+        if view_mode not in ('average', 'rank'):
+            view_mode = 'average'
 
-                # Merge the data, prioritizing report-based structure
-                analytics_data.update({
-                    'grade_performance': fallback_data.get('grade_performance', []),
-                    'subject_performance': fallback_data.get('subject_performance', []),
-                    'top_students': fallback_data.get('top_students', []),
-                    'teacher_performance': fallback_data.get('teacher_performance', []),
-                    'summary': fallback_data.get('summary', {}),
-                    'has_data': fallback_data.get('has_data', False),
-                    'data_source': 'live_calculation'
-                })
+        # If grade/stream present but term/assessment missing, default to latest mark
+        if (selected_grade_id or selected_stream_id) and (not selected_term_id or not selected_assessment_type_id):
+            try:
+                latest_mark_query = Mark.query.join(Student, Mark.student_id == Student.id) \
+                    .join(Stream, Student.stream_id == Stream.id)
+                if selected_grade_id:
+                    latest_mark_query = latest_mark_query.filter(Stream.grade_id == selected_grade_id)
+                if selected_stream_id:
+                    latest_mark_query = latest_mark_query.filter(Student.stream_id == selected_stream_id)
+                latest_mark = latest_mark_query.order_by(Mark.created_at.desc(), Mark.id.desc()).first()
+                if latest_mark:
+                    if not selected_term_id and getattr(latest_mark, 'term_id', None):
+                        selected_term_id = latest_mark.term_id
+                    if not selected_assessment_type_id and getattr(latest_mark, 'assessment_type_id', None):
+                        selected_assessment_type_id = latest_mark.assessment_type_id
+            except Exception as _e:
+                print(f"Headteacher fallback to latest report failed: {_e}")
 
-                flash('Analytics based on live data calculation. Encourage teachers to generate reports for more accurate insights.', 'info')
-            else:
-                flash('Analytics based on teacher-generated reports - reflecting actual academic workflow.', 'success')
+        # Get filter option objects (ORM instances expected by template)
+        terms = Term.query.all()
+        assessment_types = AssessmentType.query.all()
+        grades = Grade.query.all()
 
-        except Exception as e:
-            print(f"Error loading report-based analytics: {e}")
-            # Fall back to traditional analytics
-            from ..services.analytics_service import AnalyticsService
-            analytics_data = AnalyticsService.get_headteacher_analytics()
+        # If grade/stream filters are present, compute analytics immediately so page isn't empty
+        analytics_data = None
+        if selected_grade_id or selected_stream_id or selected_term_id or selected_assessment_type_id:
+            try:
+                from ..services.academic_analytics_service import AcademicAnalyticsService
+                comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics_from_report(
+                    grade_id=selected_grade_id,
+                    stream_id=selected_stream_id,
+                    term_id=selected_term_id,
+                    assessment_type_id=selected_assessment_type_id,
+                    top_performers_limit=(requested_limit if requested_limit else (999 if show_all else 5)),
+                    top_subjects_limit=top_subjects,
+                ) or {}
+                # Fallback to legacy if needed
+                if not comprehensive_analytics.get('summary', {}).get('has_sufficient_data'):
+                    comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics(
+                        grade_id=selected_grade_id,
+                        stream_id=selected_stream_id,
+                        term_id=selected_term_id,
+                        assessment_type_id=selected_assessment_type_id,
+                        top_performers_limit=(requested_limit if requested_limit else (999 if show_all else 5)),
+                    ) or {}
+                analytics_data = comprehensive_analytics or None
+                if analytics_data is not None:
+                    analytics_data['top_students'] = analytics_data.get('top_performers', [])
+                    analytics_data['has_data'] = analytics_data.get('summary', {}).get('has_sufficient_data', False)
+                    analytics_data.setdefault('subject_analytics', analytics_data.get('subjectAnalytics', []))
 
-        if 'error' in analytics_data:
-            flash(f'Error loading analytics: {analytics_data["error"]}', 'error')
-            analytics_data = {'has_data': False, 'summary': {}, 'grade_performance': [], 'subject_performance': [], 'data_source': 'error'}
+                    # Compute Class vs Grade vs School benchmarks when filters are sufficient
+                    try:
+                        if selected_term_id and selected_assessment_type_id:
+                            from sqlalchemy import func
+                            # Build subquery of student averages within optional scope
+                            student_avg = db.session.query(
+                                Student.id.label('student_id'),
+                                func.avg(Mark.percentage).label('avg_percentage')
+                            ).join(Mark, Student.id == Mark.student_id)
+                            if selected_stream_id:
+                                student_avg = student_avg.filter(Student.stream_id == selected_stream_id)
+                            elif selected_grade_id:
+                                student_avg = student_avg.join(Stream, Student.stream_id == Stream.id).filter(Stream.grade_id == selected_grade_id)
+                            student_avg = student_avg.filter(
+                                Mark.term_id == selected_term_id,
+                                Mark.assessment_type_id == selected_assessment_type_id,
+                                Mark.percentage.isnot(None)
+                            ).group_by(Student.id).subquery()
 
-        # Get filter options
-        terms = [term.name for term in Term.query.all()]
-        assessment_types = [at.name for at in AssessmentType.query.all()]
-        grades = [grade.name for grade in Grade.query.all()]
+                            # Class average (requires stream)
+                            class_avg = None
+                            if selected_stream_id:
+                                class_avg = db.session.query(func.avg(student_avg.c.avg_percentage)).scalar()
 
-        return render_template('headteacher_analytics.html',
-                             analytics_data=analytics_data,
-                             terms=terms,
-                             assessment_types=assessment_types,
-                             grades=grades,
-                             page_title="School-Wide Academic Analytics")
+                            # Grade average (requires grade)
+                            grade_avg = None
+                            if selected_grade_id:
+                                grade_student_avg = db.session.query(
+                                    Student.id.label('student_id'), func.avg(Mark.percentage).label('avg_percentage')
+                                ).join(Mark, Student.id == Mark.student_id).join(Stream, Student.stream_id == Stream.id).filter(
+                                    Stream.grade_id == selected_grade_id,
+                                    Mark.term_id == selected_term_id,
+                                    Mark.assessment_type_id == selected_assessment_type_id,
+                                    Mark.percentage.isnot(None)
+                                ).group_by(Student.id).subquery()
+                                grade_avg = db.session.query(func.avg(grade_student_avg.c.avg_percentage)).scalar()
 
+                            # School average (all students for this term/assessment)
+                            school_student_avg = db.session.query(
+                                Student.id.label('student_id'), func.avg(Mark.percentage).label('avg_percentage')
+                            ).join(Mark, Student.id == Mark.student_id).filter(
+                                Mark.term_id == selected_term_id,
+                                Mark.assessment_type_id == selected_assessment_type_id,
+                                Mark.percentage.isnot(None)
+                            ).group_by(Student.id).subquery()
+                            school_avg = db.session.query(func.avg(school_student_avg.c.avg_percentage)).scalar()
+
+                            analytics_data['benchmarks'] = {
+                                'class_avg': float(class_avg) if class_avg is not None else None,
+                                'grade_avg': float(grade_avg) if grade_avg is not None else None,
+                                'school_avg': float(school_avg) if school_avg is not None else None,
+                            }
+                    except Exception as _be:
+                        print(f"Benchmark computation failed: {_be}")
+            except Exception as _e:
+                print(f"Headteacher inline analytics failed: {_e}")
+                analytics_data = None
+
+        # Safe default if nothing computed yet
+        if analytics_data is None:
+            analytics_data = {
+                'summary': {
+                    'students_analyzed': 0,
+                    'subjects_analyzed': 0,
+                    'best_subject_average': 0,
+                    'top_student_average': 0,
+                    'has_sufficient_data': False
+                },
+                'top_performers': [],
+                'top_students': [],  # alias for template compatibility
+                'subject_analytics': [],
+                'has_data': False,
+                'data_source': 'report_or_live',
+            }
+
+        # Render the shared Class-Teacher analytics template
+        return render_template(
+            'classteacher_analytics.html',
+            teacher=teacher_obj,
+            analytics_data=analytics_data,
+            terms=terms,
+            assessment_types=assessment_types,
+            grades=grades,
+            # Effective filters reflect current query params (if any)
+            effective_term_filter=selected_term_id,
+            effective_assessment_filter=selected_assessment_type_id,
+            effective_grade_filter=selected_grade_id,
+            effective_stream_filter=selected_stream_id,
+            current_term_filter=selected_term_id,
+            current_assessment_filter=selected_assessment_type_id,
+            current_grade_filter=selected_grade_id,
+            show_all=show_all,
+            current_limit=requested_limit,
+            top_subjects=top_subjects if isinstance(top_subjects, int) else 0,
+            subject_view=view_mode,
+            page_title="Academic Performance Analytics"
+        )
     except Exception as e:
-        print(f"Error loading analytics dashboard: {e}")
-        flash('Error loading analytics dashboard.', 'error')
-        return redirect(url_for('admin.dashboard'))
+        # Graceful fallback: render with safe defaults so client JS can hydrate via JSON endpoint
+        print(f"Error loading headteacher analytics (shared UI): {e}")
+        try:
+            terms = Term.query.all()
+            assessment_types = AssessmentType.query.all()
+            grades = Grade.query.all()
+        except Exception:
+            terms, assessment_types, grades = [], [], []
+
+        analytics_data = {
+            'summary': {
+                'students_analyzed': 0,
+                'subjects_analyzed': 0,
+                'best_subject_average': 0,
+                'top_student_average': 0,
+                'has_sufficient_data': False
+            },
+            'top_performers': [],
+            'top_students': [],
+            'subject_analytics': [],
+            'has_data': False,
+            'data_source': 'error'
+        }
+        return render_template(
+            'classteacher_analytics.html',
+            teacher=None,
+            analytics_data=analytics_data,
+            terms=terms,
+            assessment_types=assessment_types,
+            grades=grades,
+            page_title="Academic Performance Analytics"
+        )
 
 
 @admin_bp.route('/test_simple')
@@ -853,9 +1005,9 @@ def manage_subjects():
         'iter_pages': list(pagination_obj.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2))
     }
 
-    # Get all subjects for education levels (not filtered)
-    all_subjects = Subject.query.all()
-    education_levels = list(set([subject.education_level for subject in all_subjects]))
+    # Use canonical ordered education levels for filter dropdowns
+    from ..utils.constants import EDUCATION_LEVELS_ORDER
+    education_levels = EDUCATION_LEVELS_ORDER
 
     # Handle form submissions
     if request.method == 'POST':
@@ -892,9 +1044,8 @@ def manage_subjects():
                             query = query.filter(Subject.education_level == education_level_filter)
                         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
                         subjects = pagination.items
-                        # Update education levels
-                        all_subjects = Subject.query.all()
-                        education_levels = list(set([subject.education_level for subject in all_subjects]))
+                        # Ensure canonical order in UI after changes
+                        education_levels = EDUCATION_LEVELS_ORDER
                     except Exception as e:
                         db.session.rollback()
                         error_message = f"Error adding subject: {str(e)}"
@@ -924,9 +1075,8 @@ def manage_subjects():
                                 query = query.filter(Subject.education_level == education_level_filter)
                             pagination = query.paginate(page=page, per_page=per_page, error_out=False)
                             subjects = pagination.items
-                            # Update education levels
-                            all_subjects = Subject.query.all()
-                            education_levels = list(set([subject.education_level for subject in all_subjects]))
+                            # Ensure canonical order in UI after changes
+                            education_levels = EDUCATION_LEVELS_ORDER
                         except Exception as e:
                             db.session.rollback()
                             error_message = f"Error deleting subject: {str(e)}"
@@ -960,8 +1110,8 @@ def manage_subjects():
                         success_message = f"Subject '{subject_name}' updated successfully."
                         # Refresh subjects list
                         subjects = Subject.query.all()
-                        # Update education levels
-                        education_levels = list(set([subject.education_level for subject in subjects]))
+                        # Ensure canonical order in UI after changes
+                        education_levels = EDUCATION_LEVELS_ORDER
                     except Exception as e:
                         db.session.rollback()
                         error_message = f"Error updating subject: {str(e)}"

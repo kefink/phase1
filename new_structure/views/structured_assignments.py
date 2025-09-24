@@ -8,6 +8,7 @@ from ..extensions import db
 from ..models import Teacher, Subject, Grade, Stream
 from ..models.assignment import TeacherSubjectAssignment
 from .classteacher import classteacher_required
+from ..utils.constants import EDUCATION_LEVELS_ORDER
 
 # Create a blueprint for structured assignments
 structured_assignments_bp = Blueprint('structured_assignments', __name__, url_prefix='/classteacher')
@@ -103,8 +104,8 @@ def structured_bulk_assign():
     assignments_skipped = 0
     class_teacher_conflicts = 0
 
-    # Process each education level
-    for level in ['lower_primary', 'upper_primary', 'junior_secondary']:
+    # Process each education level (canonical order; safe if some levels absent in form)
+    for level in EDUCATION_LEVELS_ORDER:
         # Get subjects for this level
         subject_ids = request.form.getlist(f'{level}_subjects')
         if not subject_ids:

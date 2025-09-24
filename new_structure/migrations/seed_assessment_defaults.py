@@ -38,7 +38,11 @@ def main() -> int:
         db.init_app(app)
         with app.app_context():
             import json
-            levels = ['lower_primary', 'upper_primary', 'junior_secondary']
+            try:
+                from new_structure.utils.constants import EDUCATION_LEVELS_ORDER
+                levels = [lvl for lvl in EDUCATION_LEVELS_ORDER if lvl in {'lower_primary','upper_primary','junior_secondary'}]
+            except Exception:
+                levels = ['lower_primary', 'upper_primary', 'junior_secondary']
             default_weights = {"CAT 1": 20.0, "CAT 2": 30.0, "End Term Exam": 50.0}
             default_policies = {"ABS": "exclude", "EXC": "exclude", "MED": "exclude", "NA": "exclude", "INC": "zero"}
             inserted = []

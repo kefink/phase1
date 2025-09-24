@@ -111,12 +111,84 @@
   .w-140 { width: 140px; }
   .bg-f5 { background: #f5f5f5; }
 
+  /* Enhanced dropdown visibility and styling */
+  .filter-select {
+    position: relative;
+    z-index: 1000;
+    min-height: 40px;
+    background: var(--bg-card, #1e3a5f);
+    border: 1px solid var(--border-color, #2a4a6b);
+    color: var(--text-primary, #ffffff);
+    border-radius: 6px;
+    padding: 10px 14px;
+    min-width: 160px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: #4a9eff;
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.15);
+    z-index: 1001;
+    transform: translateY(-1px);
+  }
+
+  .filter-select:hover {
+    border-color: #4a9eff;
+    transform: translateY(-1px);
+  }
+
+  .filter-select option {
+    background: var(--bg-card, #1e3a5f);
+    color: var(--text-primary, #ffffff);
+    padding: 10px 14px;
+    border: none;
+    font-size: 14px;
+  }
+
+  .filter-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 100;
+  }
+
+  .filter-group.focus-within {
+    z-index: 1002;
+  }
+
+  .filter-label {
+    display: block;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    color: var(--text-secondary, #8b949e);
+  }
+
   /* Print optimization: show only printable learners section when printing */
   @media print {
     body * { visibility: hidden !important; }
     #printable-learners, #printable-learners * { visibility: visible !important; }
     #printable-learners { position: absolute; left: 0; top: 0; width: 100%; }
   }
+
+  /* Sticky filters */
+  .analytics-filters-section.sticky { position: sticky; top: 0; z-index: 1100; backdrop-filter: blur(8px); background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.08); }
+
+  /* Comparison banner */
+  .benchmarks-banner { display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:.75rem; margin:.75rem 0 1.25rem; }
+  .benchmark-card { background: var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:.75rem; display:flex; flex-direction:column; gap:.35rem; }
+  .benchmark-label { color: var(--text-secondary); font-size:.8rem; }
+  .benchmark-value { font-size:1.25rem; font-weight:700; }
+  .benchmark-pill { display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .4rem; border-radius:999px; border:1px solid rgba(255,255,255,0.12); font-size:.72rem; color:var(--text-secondary); }
+
+  /* Skeleton loaders */
+  .skeleton { position:relative; overflow:hidden; background:linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 37%, rgba(255,255,255,0.06) 63%); background-size:400% 100%; animation: shimmer 1.25s infinite; }
+  @keyframes shimmer { 0% { background-position:100% 0 } 100% { background-position:-100% 0 } }
+
 </style>
 {% endblock %}
 
@@ -131,7 +203,7 @@
   </div>
   <!-- Breadcrumb Navigation -->
   <div class="analytics-breadcrumb">
-    <a href="{{ url_for('classteacher.dashboard') }}" class="breadcrumb-link">
+  <a href="{{ url_for('admin.dashboard') if (session.get('role') == 'headteacher' or session.get('headteacher_universal_access')) else url_for('classteacher.dashboard') }}" class="breadcrumb-link">
       <span class="icon inline-flex items-center gap-1" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
           <path d="M12 3.172 3 10.172V20a1 1 0 0 0 1 1h6v-5h4v5h6a1 1 0 0 0 1-1V10.172l-9-7Z"/>
@@ -153,6 +225,23 @@
       </span>
       Quick Insights
     </h3>
+    {% if analytics_data.benchmarks %}
+    <div class="benchmarks-banner" id="benchmarks-banner">
+      <div class="benchmark-card">
+        <div class="benchmark-label">Class Average</div>
+        <div class="benchmark-value" id="benchmark-class-avg">{{ analytics_data.benchmarks.class_avg|float|round(1) }}%</div>
+        <div class="benchmark-pill">Selected</div>
+      </div>
+      <div class="benchmark-card">
+        <div class="benchmark-label">Grade Average</div>
+        <div class="benchmark-value" id="benchmark-grade-avg">{{ analytics_data.benchmarks.grade_avg|float|round(1) }}%</div>
+      </div>
+      <div class="benchmark-card">
+        <div class="benchmark-label">School Average</div>
+        <div class="benchmark-value" id="benchmark-school-avg">{{ analytics_data.benchmarks.school_avg|float|round(1) }}%</div>
+      </div>
+    </div>
+    {% endif %}
     <div class="insights-grid">
       <div class="insight-card premium-card">
         <div class="insight-icon students-icon">
@@ -209,6 +298,8 @@
     </div>
   </div>
 
+  
+
   <!-- Analytics Filters -->
   <div class="analytics-filters-section">
     <div class="filters-header">
@@ -221,6 +312,15 @@
         Analytics Filters
       </h2>
       <div class="filters-actions">
+        <div class="filter-inline">
+          <label class="filter-label mr-2" for="saved-presets-select">Saved Presets</label>
+          <select id="saved-presets-select" class="filter-select" onchange="applySavedPreset(this.value)">
+            <option value="">Select preset…</option>
+          </select>
+        </div>
+        <button class="btn btn-outline ml-2" onclick="saveCurrentPreset()">Save Preset</button>
+        <button class="btn btn-outline ml-2" onclick="editSelectedPreset()">Rename Preset</button>
+        <button class="btn btn-outline ml-2" onclick="deleteSelectedPreset()">Delete Preset</button>
         <div class="filter-inline">
           <label class="filter-label mr-2" for="subject-view-mode">Subject View</label>
           <select id="subject-view-mode" class="filter-select" onchange="updateSubjectView(this.value)">
@@ -298,21 +398,20 @@
         </select>
       </div>
 
-      <div class="filter-group hidden"
-        id="analytics-grade-filter-group">
+      <div class="filter-group" id="analytics-grade-filter-group" style="display: none;">
         <label class="filter-label">Grade</label>
         <select
           id="analytics-grade-filter"
           class="filter-select"
-          onchange="updateAnalytics()"
         >
           <option value="">All Grades</option>
-          <!-- Grades will be populated by JavaScript -->
+          {% for g in grades %}
+          <option value="{{ g.id }}" {% if (request.args.get('grade')|int) == g.id %}selected{% endif %}>{{ g.name }}</option>
+          {% endfor %}
         </select>
       </div>
 
-      <div class="filter-group hidden"
-        id="analytics-stream-filter-group">
+      <div class="filter-group" id="analytics-stream-filter-group" style="display: none;">
         <label class="filter-label">Stream</label>
         <select
           id="analytics-stream-filter"
@@ -332,7 +431,19 @@
       <div class="flex items-center justify-between mb-2">
         <h3 class="flex items-center gap-2 m-0">
           <span aria-hidden="true">🏆</span>
-          <span>Top Performing Subject: <span id="top-subject-name">{{ analytics_data.top_subject.subject_name if analytics_data.top_subject else '' }}</span></span>
+          <span>
+            Top Performing Subject:
+            {% set _ctx = analytics_data.context_ids if analytics_data and analytics_data.context_ids is defined else {} %}
+            {% if analytics_data.top_subject and analytics_data.top_subject.subject_id and _ctx and _ctx.grade_id and _ctx.stream_id and _ctx.term_id and _ctx.assessment_type_id %}
+              <a id="top-subject-name"
+                 href="/classteacher/subject_report/{{ _ctx.grade_id }}/{{ _ctx.stream_id }}/{{ analytics_data.top_subject.subject_id }}/{{ _ctx.term_id }}/{{ _ctx.assessment_type_id }}"
+                 title="Open subject report">
+                {{ analytics_data.top_subject.subject_name }}
+              </a>
+            {% else %}
+              <span id="top-subject-name">{{ analytics_data.top_subject.subject_name if analytics_data.top_subject else '' }}</span>
+            {% endif %}
+          </span>
         </h3>
         <div id="top-subject-avg" class="text-secondary">{% if analytics_data.top_subject %}Avg: {{ analytics_data.top_subject.average_percentage|float|round(1) }}%{% endif %}</div>
       </div>
@@ -399,6 +510,8 @@
             </span>
             Refresh
           </button>
+          <button class="btn btn-outline ml-2" onclick="copyCurrentViewLink('#top-performers')">Copy Link</button>
+          <button class="btn btn-outline ml-2" onclick="exportTopPerformersCSV()">Export CSV</button>
           <!-- Export PDF Controls -->
           <div class="filter-inline ml-2">
             <label class="filter-label mr-2" for="export-pdf-select">Export PDF</label>
@@ -735,6 +848,8 @@
             </span>
             Refresh
           </button>
+          <button class="btn btn-outline ml-2" onclick="copyCurrentViewLink('#subject-performance')">Copy Link</button>
+          <button class="btn btn-outline ml-2" onclick="exportSubjectPerformanceCSV()">Export CSV</button>
         </div>
       </div>
 
@@ -758,7 +873,16 @@
             {% endif %}
             <div class="subject-item premium-card" data-average="{{ avg|round(1) }}">
               <div class="subject-header">
-                <div class="subject-name">{{ subject.subject_name or subject.name }}</div>
+                <div class="subject-name">
+                  {% set _ctx = analytics_data.context_ids if analytics_data and analytics_data.context_ids is defined else {} %}
+                  {% if subject.subject_id and _ctx and _ctx.grade_id and _ctx.stream_id and _ctx.term_id and _ctx.assessment_type_id %}
+                    <a href="/classteacher/subject_report/{{ _ctx.grade_id }}/{{ _ctx.stream_id }}/{{ subject.subject_id }}/{{ _ctx.term_id }}/{{ _ctx.assessment_type_id }}" title="Open subject report">
+                      {{ subject.subject_name or subject.name }}
+                    </a>
+                  {% else %}
+                    {{ subject.subject_name or subject.name }}
+                  {% endif %}
+                </div>
                 <div class="subject-performance">
                   {% if (subject_view or 'average') == 'rank' and subject.rank %}
                     #{{ subject.rank }}
@@ -891,7 +1015,16 @@
               <tr>
                 <td>{{ loop.index }}</td>
                 <td>
-                  <div class="subject-name">{{ subject.subject_name or subject.name }}</div>
+                  <div class="subject-name">
+                    {% set _ctx = analytics_data.context_ids if analytics_data and analytics_data.context_ids is defined else {} %}
+                    {% if subject.subject_id and _ctx and _ctx.grade_id and _ctx.stream_id and _ctx.term_id and _ctx.assessment_type_id %}
+                      <a href="/classteacher/subject_report/{{ _ctx.grade_id }}/{{ _ctx.stream_id }}/{{ subject.subject_id }}/{{ _ctx.term_id }}/{{ _ctx.assessment_type_id }}" title="Open subject report">
+                        {{ subject.subject_name or subject.name }}
+                      </a>
+                    {% else %}
+                      {{ subject.subject_name or subject.name }}
+                    {% endif %}
+                  </div>
                 </td>
                 <td>
                   {% if (subject_view or 'average') == 'rank' and subject.rank %}
@@ -997,7 +1130,7 @@
           </svg>
         </span> Reset Filters
       </button>
-      <a href="{{ url_for('classteacher.dashboard') }}">
+  <a href="{{ url_for('admin.dashboard') if (session.get('role') == 'headteacher' or session.get('headteacher_universal_access')) else url_for('classteacher.dashboard') }}">
         <span class="icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 9.75l9-6 9 6V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z"/>
@@ -1016,6 +1149,214 @@
 <!-- Analytics page uses server-side rendered data, no external JS needed -->
 
 <script>
+  // --- Enhanced Headteacher/Admin controls: show Grade/Stream and populate streams ---
+  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      const bodyIsHeadteacher = document.body.getAttribute('data-is-headteacher') === 'true';
+      const sessionRole = '{{ session.get("role") }}';
+      const sessionHeadteacher = '{{ session.get("headteacher_universal_access") }}';
+      const currentUrl = window.location.pathname;
+      
+      // Multiple ways to detect headteacher/admin access
+      const isHeadteacherOrAdmin = (
+        bodyIsHeadteacher || 
+        sessionRole === 'headteacher' || 
+        sessionRole === 'admin' ||
+        sessionHeadteacher === 'True' ||
+        currentUrl.includes('/admin/analytics') ||
+        currentUrl.includes('/headteacher')
+      );
+      
+      const gradeGroup = document.getElementById('analytics-grade-filter-group');
+      const streamGroup = document.getElementById('analytics-stream-filter-group');
+      const gradeSelect = document.getElementById('analytics-grade-filter');
+      const streamSelect = document.getElementById('analytics-stream-filter');
+      
+      // Enhanced debug logging
+      console.log('🔍 Analytics Controls Debug:', {
+        bodyIsHeadteacher: bodyIsHeadteacher,
+        sessionRole: sessionRole,
+        sessionHeadteacher: sessionHeadteacher,
+        currentUrl: currentUrl,
+        isHeadteacherOrAdmin: isHeadteacherOrAdmin,
+        gradeGroup: !!gradeGroup,
+        streamGroup: !!streamGroup,
+        gradeSelect: !!gradeSelect,
+        streamSelect: !!streamSelect
+      });
+      
+  if (isHeadteacherOrAdmin) {
+        console.log('✅ Showing Grade/Stream filters for headteacher/admin');
+        
+        // Force show Grade/Stream filters
+        if (gradeGroup) {
+          gradeGroup.style.display = 'block';
+          gradeGroup.classList.remove('hidden');
+          console.log('✅ Grade filter group displayed');
+        }
+        if (streamGroup) {
+          streamGroup.style.display = 'block';
+          streamGroup.classList.remove('hidden');
+          console.log('✅ Stream filter group displayed');
+        }
+
+        // Add enhanced focus handling for better dropdown UX
+        const allSelects = document.querySelectorAll('.filter-select');
+        allSelects.forEach(select => {
+          select.addEventListener('focus', function() {
+            this.closest('.filter-group')?.classList.add('focus-within');
+            console.log('🎯 Focus on:', this.id);
+          });
+          select.addEventListener('blur', function() {
+            this.closest('.filter-group')?.classList.remove('focus-within');
+          });
+        });
+
+        // Initialize stream population if a grade is already selected
+        if (gradeSelect && gradeSelect.value) {
+          console.log('🔄 Auto-populating streams for pre-selected grade:', gradeSelect.value);
+          populateStreams(gradeSelect.value);
+        }
+
+        // Helper to populate stream options for a given grade
+        async function populateStreams(gradeId, preselectId) {
+          if (!streamSelect) {
+            console.warn('❌ Stream select not found');
+            return;
+          }
+          
+          // Reset streams
+          streamSelect.innerHTML = '<option value="">All Streams</option>';
+          
+          if (!gradeId) {
+            console.log('ℹ️ No grade selected, showing "All Streams" only');
+            return;
+          }
+          
+          try {
+            console.log('🔄 Fetching streams for grade ID:', gradeId);
+            const res = await fetch(`/headteacher/api/streams/${gradeId}`, { credentials: 'same-origin' });
+            
+            if (!res.ok) {
+              console.error('❌ Stream fetch failed:', res.status, res.statusText);
+              return;
+            }
+            
+            const data = await res.json();
+            console.log('✅ Stream data received:', data);
+            
+            const seen = new Set();
+            const streams = (data && data.streams) ? data.streams : [];
+            streams.forEach(s => {
+              const key = `${s.id}|${(s.name||'').trim().toLowerCase()}`;
+              if (seen.has(key)) return; // de-duplicate
+              seen.add(key);
+              const opt = document.createElement('option');
+              opt.value = String(s.id);
+              opt.textContent = s.name;
+              if (preselectId && String(preselectId) === String(s.id)) {
+                opt.selected = true;
+              }
+              streamSelect.appendChild(opt);
+            });
+          } catch (e) {
+            console.error('Failed to load streams for grade', gradeId, e);
+          }
+        }
+
+        // On initial load, if a grade is already selected (query param), load its streams
+        const url = new URL(window.location.href);
+        const selectedGrade = url.searchParams.get('grade') || (gradeSelect && gradeSelect.value) || '';
+        const selectedStream = url.searchParams.get('stream') || '';
+        if (selectedGrade) {
+          populateStreams(selectedGrade, selectedStream).then(() => {
+            // After preselecting stream, hydrate live analytics once
+            try { window.fetchLiveAnalytics && window.fetchLiveAnalytics(); } catch(_) {}
+          });
+        } else {
+          // Even without grade/stream, hydrate with whatever filters are present
+          try { window.fetchLiveAnalytics && window.fetchLiveAnalytics(); } catch(_) {}
+        }
+        
+        // Add grade change handler
+        if (gradeSelect) {
+          gradeSelect.addEventListener('change', async (e) => {
+            const gradeId = e.target.value;
+            if (gradeId) {
+              await populateStreams(gradeId, '');
+              // After streams populate, if a stream is selected, update analytics
+              setTimeout(() => {
+                if (streamSelect && streamSelect.value) {
+                  updateAnalytics();
+                }
+              }, 0);
+            } else {
+              // Reset streams to "All Streams" only
+              streamSelect.innerHTML = '<option value="">All Streams</option>';
+            }
+          });
+          // When stream changes, immediately update analytics
+          if (streamSelect) {
+            streamSelect.addEventListener('change', () => {
+              updateAnalytics();
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Headteacher controls initialization failed:', e);
+    }
+  });
+
+  // Enhanced global function to handle grade changes
+  async function handleGradeChange(gradeId) {
+    console.log('🔄 handleGradeChange called with:', gradeId);
+    
+    const streamSelect = document.getElementById('analytics-stream-filter');
+    if (!streamSelect) {
+      console.error('❌ Stream select element not found');
+      return;
+    }
+    
+    // Clear streams first
+    streamSelect.innerHTML = '<option value="">All Streams</option>';
+    
+    if (gradeId) {
+      try {
+        console.log('🔄 Fetching streams for grade:', gradeId);
+        const response = await fetch(`/headteacher/api/streams/${gradeId}`, { credentials: 'same-origin' });
+        
+        if (!response.ok) {
+          console.error('❌ Stream fetch failed:', response.status, response.statusText);
+          return;
+        }
+        
+        const data = await response.json();
+        console.log('✅ Received stream data:', data);
+        
+        const streams = (data && data.streams) ? data.streams : [];
+        if (streams.length === 0) {
+          console.log('ℹ️ No streams found for grade:', gradeId);
+        } else {
+          streams.forEach(stream => {
+            const option = document.createElement('option');
+            option.value = String(stream.id);
+            option.textContent = stream.name;
+            streamSelect.appendChild(option);
+          });
+          console.log(`✅ Added ${streams.length} streams to dropdown`);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching streams:', error);
+      }
+    } else {
+      console.log('ℹ️ No grade selected, showing "All Streams" only');
+    }
+    
+    // Update analytics after stream population
+    updateAnalytics();
+  }
+
   // --- Lightweight async analytics enhancement (placeholder charts) ---
   // Containers (insert near insights section via DOMContentLoaded if absent)
   document.addEventListener('DOMContentLoaded', () => {
@@ -1043,6 +1384,13 @@
       insightsSection.appendChild(chartWrap);
     }
     hydrateProgressWidths();
+    // Initialize sticky filters if header is present
+    const filtersEl = document.querySelector('.analytics-filters-section');
+    if (filtersEl) filtersEl.classList.add('sticky');
+
+    // Load saved presets into dropdown
+    try { loadSavedPresets(); } catch (e) { console.warn('Presets load failed', e); }
+
     fetchLiveAnalytics();
   });
 
@@ -1065,15 +1413,40 @@
     if (!canvas) {
       container.innerHTML = '';
       canvas = document.createElement('canvas');
-      canvas.height = 240;
+      canvas.height = 300; // taller for better tick readability
       container.appendChild(canvas);
     }
     const labels = subjects.map(s => s.subject_name || s.subject || 'Subject').slice(0,12);
     const dataVals = subjects.map(s => parseFloat(s.average_percentage || 0)).slice(0,12);
     try {
+      // Subtle chart background plugin to improve contrast with dark themes
+      const chartBg = {
+        id: 'chartBg',
+        beforeDraw(chart, args, pluginOptions) {
+          const {ctx, chartArea} = chart;
+          if (!chartArea) return;
+          ctx.save();
+          ctx.fillStyle = pluginOptions && pluginOptions.color ? pluginOptions.color : 'rgba(0,0,0,0.25)';
+          ctx.fillRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+          ctx.restore();
+        }
+      };
       if (subjectChartInstance) {
         subjectChartInstance.data.labels = labels;
         subjectChartInstance.data.datasets[0].data = dataVals;
+        // Update tick styles for better visibility on reuse
+        subjectChartInstance.options.scales.x.ticks.color = '#e5e7eb';
+        subjectChartInstance.options.scales.x.ticks.font = { size: 12, weight: '600' };
+        subjectChartInstance.options.scales.x.ticks.maxRotation = 60;
+        subjectChartInstance.options.scales.x.ticks.minRotation = 30;
+        subjectChartInstance.options.scales.x.ticks.autoSkip = true;
+        subjectChartInstance.options.scales.x.ticks.autoSkipPadding = 8;
+        subjectChartInstance.options.scales.x.grid.display = false;
+        subjectChartInstance.options.scales.x.border = { color: 'rgba(255,255,255,0.3)' };
+        subjectChartInstance.options.scales.y.ticks.color = '#e5e7eb';
+        subjectChartInstance.options.scales.y.ticks.font = { size: 12, weight: '600' };
+        subjectChartInstance.options.scales.y.grid.color = 'rgba(255,255,255,0.15)';
+        subjectChartInstance.options.scales.y.border = { color: 'rgba(255,255,255,0.3)' };
         subjectChartInstance.update();
         return;
       }
@@ -1095,14 +1468,26 @@
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            y: { beginAtZero:true, max:100, ticks:{ color:'var(--text-secondary)', font:{size:10}}, grid:{color:'rgba(255,255,255,0.08)'} },
-            x: { ticks:{ color:'var(--text-secondary)', font:{size:10}, maxRotation:45, minRotation:0 }, grid:{display:false} }
+            y: {
+              beginAtZero:true,
+              max:100,
+              ticks:{ color:'#e5e7eb', font:{size:12, weight:'600'} },
+              grid:{ color:'rgba(255,255,255,0.15)' },
+              border: { color:'rgba(255,255,255,0.3)' }
+            },
+            x: {
+              ticks:{ color:'#e5e7eb', font:{size:12, weight:'600'}, maxRotation:60, minRotation:30, autoSkip:true, autoSkipPadding:8 },
+              grid:{ display:false },
+              border: { color:'rgba(255,255,255,0.3)' }
+            }
           },
           plugins: {
             legend: { display:false },
             tooltip: { callbacks: { label: (ctx)=> `${ctx.parsed.y.toFixed(1)}%` } }
-          }
-        }
+          },
+          chartBg: { color: 'rgba(0,0,0,0.25)' }
+        },
+        plugins: [chartBg]
       });
     } catch(err) {
       // Fallback if Chart.js not available
@@ -1142,10 +1527,17 @@
   }
 
   function fetchLiveAnalytics() {
-    const term = document.getElementById('analytics-term-filter')?.value || '';
-    const assessment = document.getElementById('analytics-assessment-filter')?.value || '';
-    const grade = document.getElementById('analytics-grade-filter')?.value || '';
-    const stream = document.getElementById('analytics-stream-filter')?.value || '';
+    const termSel = document.getElementById('analytics-term-filter');
+    const assessSel = document.getElementById('analytics-assessment-filter');
+    const gradeSel = document.getElementById('analytics-grade-filter');
+    const streamSel = document.getElementById('analytics-stream-filter');
+
+    // Prefer select values; if empty, fall back to URL params
+    const curUrl = new URL(window.location.href);
+    const term = (termSel && termSel.value) || curUrl.searchParams.get('term') || '';
+    const assessment = (assessSel && assessSel.value) || curUrl.searchParams.get('assessment_type') || '';
+    const grade = (gradeSel && gradeSel.value) || curUrl.searchParams.get('grade') || '';
+    const stream = (streamSel && streamSel.value) || curUrl.searchParams.get('stream') || '';
     const topSubjects = document.getElementById('top-subjects')?.value || '';
     const subjectView = document.getElementById('subject-view-mode')?.value || '';
     const params = new URLSearchParams();
@@ -1158,10 +1550,11 @@
     const url = '/classteacher/analytics/data' + (params.toString() ? ('?' + params.toString()) : '');
     const chartContainer = document.getElementById('subject-performance-chart');
     const miniList = document.getElementById('top-performers-mini-list');
-    if (chartContainer) chartContainer.classList.add('loading');
+    if (chartContainer) { chartContainer.classList.add('loading'); chartContainer.classList.add('skeleton'); }
     fetch(url, { credentials:'same-origin' })
       .then(r => r.json())
       .then(data => {
+        window.lastAnalyticsData = data;
         if (!data || data.error) {
           if (chartContainer) chartContainer.innerHTML = `<div style='color:var(--text-secondary);text-align:center;'>${data?.error || 'Error loading analytics.'}</div>`;
           return;
@@ -1174,10 +1567,21 @@
             const el3 = document.getElementById('top-subject-performance'); if (el3) el3.textContent = (s.best_subject_average || 0) + '%';
             const el4 = document.getElementById('top-student-performance'); if (el4) el4.textContent = (s.top_student_average || 0) + '%';
         }
-        const subjects = data.subject_analytics || [];
-        if (chartContainer) buildSimpleBarChart(chartContainer, subjects);
+    const subjects = data.subject_analytics || [];
+  if (chartContainer) buildSimpleBarChart(chartContainer, subjects);
         const performers = data.top_performers || data.top_students || [];
         if (miniList) updateTopMini(miniList, performers);
+
+        // Update benchmarks banner if present
+        if (data.benchmarks) {
+          const b = data.benchmarks;
+          const cEl = document.getElementById('benchmark-class-avg');
+          const gEl = document.getElementById('benchmark-grade-avg');
+          const sEl = document.getElementById('benchmark-school-avg');
+          if (cEl && (b.class_avg !== undefined)) cEl.textContent = (b.class_avg != null ? Number(b.class_avg).toFixed(1) + '%' : '—');
+          if (gEl && (b.grade_avg !== undefined)) gEl.textContent = (b.grade_avg != null ? Number(b.grade_avg).toFixed(1) + '%' : '—');
+          if (sEl && (b.school_avg !== undefined)) sEl.textContent = (b.school_avg != null ? Number(b.school_avg).toFixed(1) + '%' : '—');
+        }
 
         // Update Top Subject spotlight
         const spot = document.getElementById('top-subject-spotlight');
@@ -1191,6 +1595,13 @@
             const listWrap = document.getElementById('top-subject-learners');
             const listEl = document.getElementById('top-subject-learners-list');
             if (nameEl) nameEl.textContent = ts.subject_name || ts.name || '';
+            // If the top-subject name is an anchor, set its href using current context ids
+            try {
+              if (nameEl && nameEl.tagName === 'A') {
+                const href = buildSubjectReportLink(ts);
+                if (href && href !== '#') nameEl.setAttribute('href', href);
+              }
+            } catch(_) {}
             const avgVal = (parseFloat(ts.average_percentage || 0)).toFixed(1);
             if (avgEl) avgEl.textContent = `Avg: ${avgVal}%`;
             if (teacherEl) teacherEl.textContent = `Teacher: ${ts.teacher_name || 'Not Assigned'}`;
@@ -1215,11 +1626,13 @@
             spot.classList.add('hidden');
           }
         }
+
+  // Insights removed
       })
       .catch(err => {
   if (chartContainer) chartContainer.innerHTML = '<div class="text-secondary text-center">Failed to load.</div>';
       })
-      .finally(()=>{ if (chartContainer) chartContainer.classList.remove('loading'); });
+    .finally(()=>{ if (chartContainer) { chartContainer.classList.remove('loading'); chartContainer.classList.remove('skeleton'); } });
   }
 
   // Expose manual refresh hook
@@ -1332,6 +1745,28 @@
     window.location.href = newUrl;
   }
 
+  // Insightful Analytics removed
+
+  function buildSubjectReportLink(s) {
+    const data = window.lastAnalyticsData || {};
+    const ids = data.context_ids || {};
+    const subjectId = s.subject_id || (s.subject && s.subject.id);
+    if (!ids.grade_id || !ids.stream_id || !ids.term_id || !ids.assessment_type_id || !subjectId) return '#';
+    return `/classteacher/subject_report/${ids.grade_id}/${ids.stream_id}/${subjectId}/${ids.term_id}/${ids.assessment_type_id}`;
+  }
+
+  function buildStudentReportLink(s) {
+    // Use list route with current filters so the teacher can quickly find the student
+    const data = window.lastAnalyticsData || {};
+    const ctx = (data.context || {});
+    const grade = encodeURIComponent(ctx.grade || '');
+    const stream = encodeURIComponent('Stream ' + (ctx.stream || ''));
+    const term = encodeURIComponent(ctx.term || '');
+    const at = encodeURIComponent(ctx.assessment_type || '');
+    if (!grade || !stream || !term || !at) return '#';
+    return `/classteacher/view_student_reports/${grade}/${stream}/${term}/${at}?search=${encodeURIComponent(s.name || '')}`;
+  }
+
   function updateTopSubjects(val){
     const url = new URL(window.location.href);
     if (val) url.searchParams.set('top_subjects', String(val)); else url.searchParams.delete('top_subjects');
@@ -1354,6 +1789,164 @@
     base.searchParams.set('kind', kind);
     base.searchParams.set('n', String(n));
     return base.toString();
+  }
+
+  // Copy current view link with optional anchor
+  function copyCurrentViewLink(anchor = '') {
+    const url = new URL(window.location.href);
+    const text = url.toString().split('#')[0] + (anchor || '');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => showNotification('Link copied to clipboard', 'success'))
+      .catch(() => fallbackCopyText(text));
+    } else {
+      fallbackCopyText(text);
+    }
+  }
+
+  function fallbackCopyText(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showNotification('Link copied to clipboard', 'success'); }
+    catch(_) { showNotification('Copy failed', 'error'); }
+    document.body.removeChild(ta);
+  }
+
+  // CSV export helpers
+  function exportTopPerformersCSV() {
+    const rows = [];
+    const header = ['Rank','Student','Average %','Grade Letter'];
+    const container = document.querySelector('.performers-table');
+    if (!container) { showNotification('No performers data', 'warning'); return; }
+    const items = container.querySelectorAll('.performer-row');
+    items.forEach((row, idx) => {
+      const rank = row.querySelector('.rank-number')?.textContent.trim() || (idx+1);
+      const name = row.querySelector('.student-name')?.textContent.trim() || '';
+      const avg = row.querySelector('.performance-score')?.textContent.trim().replace('%','') || '';
+      const letter = row.querySelector('.grade-letter')?.textContent.replace('Grade','').trim() || '';
+      rows.push([rank, name, avg, letter]);
+    });
+    if (!rows.length) { showNotification('No performers data', 'warning'); return; }
+    const csv = [header.join(',')].concat(rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
+    const today = new Date().toISOString().slice(0,10);
+    downloadCSV(csv, `Top_Performers_${today}.csv`);
+  }
+
+  function exportSubjectPerformanceCSV() {
+    const grid = document.querySelector('.subject-performance-grid');
+    if (!grid) { showNotification('No subject data', 'warning'); return; }
+    const header = ['Subject','Average %','Students','Assessments','Status'];
+    const rows = [];
+    grid.querySelectorAll('.subject-item').forEach(item => {
+      const subject = item.querySelector('.subject-name')?.textContent.trim() || '';
+      const avg = item.getAttribute('data-average') || item.querySelector('.subject-performance')?.textContent.replace('%','').trim() || '';
+      const details = item.querySelector('.subject-details')?.textContent || '';
+      // Try to parse students and assessments numbers from details
+      const m = details.match(/(\d+) students .*?(\d+) assessments/i);
+      const students = m ? m[1] : '';
+      const assessments = m ? m[2] : '';
+      const status = item.querySelector('.subject-status')?.textContent.trim() || '';
+      rows.push([subject, avg, students, assessments, status]);
+    });
+    if (!rows.length) { showNotification('No subject data', 'warning'); return; }
+    const csv = [header.join(',')].concat(rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
+    const today = new Date().toISOString().slice(0,10);
+    downloadCSV(csv, `Subject_Performance_${today}.csv`);
+  }
+
+  // Presets management
+  const PRESETS_KEY = 'analytics_saved_presets_v1';
+  function loadSavedPresets() {
+    const sel = document.getElementById('saved-presets-select');
+    if (!sel) return;
+    const arr = JSON.parse(localStorage.getItem(PRESETS_KEY) || '[]');
+    // clear existing (keep first placeholder)
+    sel.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+    arr.forEach((p, idx) => {
+      const opt = document.createElement('option');
+      opt.value = String(idx);
+      opt.textContent = p.name || `Preset ${idx+1}`;
+      sel.appendChild(opt);
+    });
+  }
+
+  function saveCurrentPreset() {
+    const term = document.getElementById('analytics-term-filter')?.value || '';
+    const assessment = document.getElementById('analytics-assessment-filter')?.value || '';
+    const grade = document.getElementById('analytics-grade-filter')?.value || '';
+    const stream = document.getElementById('analytics-stream-filter')?.value || '';
+    const topSubjects = document.getElementById('top-subjects')?.value || '';
+    const subjectView = document.getElementById('subject-view-mode')?.value || '';
+    const name = prompt('Preset name:', buildPresetName({term,assessment,grade,stream,topSubjects,subjectView}));
+    if (!name) return;
+    const arr = JSON.parse(localStorage.getItem(PRESETS_KEY) || '[]');
+    arr.push({ name, term, assessment, grade, stream, topSubjects, subjectView });
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(arr));
+    loadSavedPresets();
+    showNotification('Preset saved', 'success');
+  }
+
+  function buildPresetName(p) {
+    const parts = [];
+    if (p.term) parts.push(`Term ${p.term}`);
+    if (p.assessment) parts.push(`Assess ${p.assessment}`);
+    if (p.grade) parts.push(`Grade ${p.grade}`);
+    if (p.stream) parts.push(`Stream ${p.stream}`);
+    if (p.topSubjects) parts.push(`Top ${p.topSubjects}`);
+    if (p.subjectView) parts.push(p.subjectView);
+    return parts.join(' • ') || 'Preset';
+  }
+
+  function applySavedPreset(indexStr) {
+    if (!indexStr) return;
+    const idx = Number(indexStr);
+    const arr = JSON.parse(localStorage.getItem(PRESETS_KEY) || '[]');
+    const p = arr[idx];
+    if (!p) return;
+    // Apply to selects
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+    setVal('analytics-term-filter', p.term);
+    setVal('analytics-assessment-filter', p.assessment);
+    setVal('analytics-grade-filter', p.grade);
+    // Populate streams if grade present before setting stream
+    if (p.grade) {
+      const evt = new Event('change');
+      document.getElementById('analytics-grade-filter')?.dispatchEvent(evt);
+      setTimeout(() => { setVal('analytics-stream-filter', p.stream); updateAnalytics(); }, 400);
+    } else {
+      setVal('analytics-stream-filter', p.stream);
+      updateAnalytics();
+    }
+    setVal('top-subjects', p.topSubjects);
+    setVal('subject-view-mode', p.subjectView);
+  }
+
+  function editSelectedPreset() {
+    const sel = document.getElementById('saved-presets-select');
+    if (!sel || !sel.value) { showNotification('Choose a preset to rename', 'warning'); return; }
+    const idx = Number(sel.value);
+    const arr = JSON.parse(localStorage.getItem(PRESETS_KEY) || '[]');
+    const p = arr[idx]; if (!p) return;
+    const newName = prompt('New preset name:', p.name || `Preset ${idx+1}`);
+    if (!newName) return;
+    p.name = newName.trim();
+    arr[idx] = p; localStorage.setItem(PRESETS_KEY, JSON.stringify(arr));
+    loadSavedPresets();
+    sel.value = String(idx);
+    showNotification('Preset renamed', 'success');
+  }
+
+  function deleteSelectedPreset() {
+    const sel = document.getElementById('saved-presets-select');
+    if (!sel || !sel.value) { showNotification('Choose a preset to delete', 'warning'); return; }
+    const idx = Number(sel.value);
+    const arr = JSON.parse(localStorage.getItem(PRESETS_KEY) || '[]');
+    if (!(idx >= 0 && idx < arr.length)) return;
+    if (!confirm('Delete this preset?')) return;
+    arr.splice(idx, 1);
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(arr));
+    loadSavedPresets();
+    sel.value = '';
+    showNotification('Preset deleted', 'success');
   }
 
   function handleExportPdfSelect(val) {
@@ -2060,24 +2653,34 @@
     // This would typically trigger a CSV/PDF export
   }
 
-  // Show notification function
-  function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-      <span>${message}</span>
-    `;
-    
-    // Add to page
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 3 seconds
-    setTimeout(() => {
-      notification.style.opacity = '0';
-      notification.style.transform = 'translateX(100%)';
-      setTimeout(() => notification.remove(), 300);
-    }, 3000);
+  // Toast notifications
+  function ensureToastContainer() {
+    let c = document.getElementById('toast-container');
+    if (!c) {
+      c = document.createElement('div');
+      c.id = 'toast-container';
+      c.style.position = 'fixed';
+      c.style.top = '12px';
+      c.style.right = '12px';
+      c.style.zIndex = '2000';
+      c.style.display = 'flex';
+      c.style.flexDirection = 'column';
+      c.style.gap = '8px';
+      document.body.appendChild(c);
+    }
+    return c;
+  }
+
+  function showNotification(message, type = 'info', timeoutMs = 3000) {
+    const container = ensureToastContainer();
+    const toast = document.createElement('div');
+    const bg = type === 'success' ? 'rgba(16,185,129,0.2)' : type === 'error' ? 'rgba(239,68,68,0.2)' : type === 'warning' ? 'rgba(234,179,8,0.2)' : 'rgba(59,130,246,0.2)';
+    const border = type === 'success' ? 'rgba(16,185,129,0.4)' : type === 'error' ? 'rgba(239,68,68,0.4)' : type === 'warning' ? 'rgba(234,179,8,0.4)' : 'rgba(59,130,246,0.4)';
+    toast.style.cssText = `min-width:260px;max-width:420px;padding:10px 12px;border-radius:8px;background:${bg};border:1px solid ${border};backdrop-filter: blur(8px);color:var(--text-primary, #111);box-shadow:0 6px 16px rgba(0,0,0,0.3);transform:translateY(-8px);opacity:0;transition:opacity .2s ease, transform .2s ease;`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-8px)'; setTimeout(() => toast.remove(), 200); }, timeoutMs);
   }
 
   // Initialize analytics when page loads
@@ -2101,25 +2704,7 @@
     })();
   });
 
-  // Utility function for notifications
-  function showNotification(message, type = "info") {
-    // Create notification element
-    const notification = document.createElement("div");
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-            <span>${message}</span>
-        `;
-
-    // Add to page
-    document.body.appendChild(notification);
-
-    // Auto-remove after 3 seconds
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    }, 3000);
-  }
+  
 
   // Enhanced Top Performers Layout Protection
   function protectTopPerformersLayout() {

@@ -3421,3 +3421,127 @@ RuntimeError: The current Flask app is not registered with this 'SQLAlchemy' ins
 2025-09-22 16:17:15,601 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
 2025-09-22 16:17:17,995 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
 2025-09-22 16:17:50,066 - INFO - 1be2b487f05346a0aaef5b806524210f - new_structure.services.auth_service - POST /classteacher_login - Authentication successful for joylorna with role classteacher
+2025-09-22 16:17:56,219 - WARNING - 42bbcbacddbf4bdbbb3f41e4b09a848f - new_structure.utils.cache_manager - GET /classteacher/analytics - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-09-22 16:55:33,350 - WARNING - 1d47f907edbe4c6d87ef42af2bde260e - new_structure.services.auth_service - POST /admin_login - Authentication failed for headteacher with role headteacher
+2025-09-22 16:55:43,388 - INFO - 0112259d5b394b38adf7b863446986b7 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-22 19:38:13,911 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 19:38:16,474 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 19:38:37,356 - INFO - e5e2e8eab72e45b7969b13ff79f58b63 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-22 19:43:52,891 - INFO - e4b6e9306a6a4ab28a489479b662a86d - new_structure - GET /api/analytics/top_subject_performers - Starting get_top_subject_performers request
+2025-09-22 19:43:53,049 - INFO - e4b6e9306a6a4ab28a489479b662a86d - new_structure - GET /api/analytics/top_subject_performers - Database stats - Marks: 64, Students: 5, Subjects: 32
+2025-09-22 19:43:53,099 - INFO - e4b6e9306a6a4ab28a489479b662a86d - new_structure - GET /api/analytics/top_subject_performers - Starting with Mark query
+2025-09-22 19:43:53,107 - INFO - e4b6e9306a6a4ab28a489479b662a86d - new_structure - GET /api/analytics/top_subject_performers - Joined with Student
+2025-09-22 19:43:53,111 - INFO - e4b6e9306a6a4ab28a489479b662a86d - new_structure - GET /api/analytics/top_subject_performers - Joined with Subject
+2025-09-22 19:43:53,124 - INFO - e4b6e9306a6a4ab28a489479b662a86d - new_structure - GET /api/analytics/top_subject_performers - Joined with Stream
+2025-09-22 19:43:53,158 - INFO - e4b6e9306a6a4ab28a489479b662a86d - new_structure - GET /api/analytics/top_subject_performers - Joined with Grade
+2025-09-22 19:43:53,167 - INFO - e4b6e9306a6a4ab28a489479b662a86d - new_structure - GET /api/analytics/top_subject_performers - Joined with Term
+2025-09-22 19:43:53,170 - INFO - e4b6e9306a6a4ab28a489479b662a86d - new_structure - GET /api/analytics/top_subject_performers - All joins completed successfully
+2025-09-22 19:43:53,183 - INFO - e4b6e9306a6a4ab28a489479b662a86d - new_structure - GET /api/analytics/top_subject_performers - Found 12 combinations
+2025-09-22 20:13:45,253 - INFO - 934b3b68e51e4f468e5243ce3f19eaed - new_structure - GET /api/analytics/top_subject_performers - Starting get_top_subject_performers request
+2025-09-22 20:13:45,362 - INFO - 934b3b68e51e4f468e5243ce3f19eaed - new_structure - GET /api/analytics/top_subject_performers - Database stats - Marks: 64, Students: 5, Subjects: 32
+2025-09-22 20:13:45,365 - INFO - 934b3b68e51e4f468e5243ce3f19eaed - new_structure - GET /api/analytics/top_subject_performers - Starting with Mark query
+2025-09-22 20:13:45,381 - INFO - 934b3b68e51e4f468e5243ce3f19eaed - new_structure - GET /api/analytics/top_subject_performers - Joined with Student
+2025-09-22 20:13:45,399 - INFO - 934b3b68e51e4f468e5243ce3f19eaed - new_structure - GET /api/analytics/top_subject_performers - Joined with Subject
+2025-09-22 20:13:45,416 - INFO - 934b3b68e51e4f468e5243ce3f19eaed - new_structure - GET /api/analytics/top_subject_performers - Joined with Stream
+2025-09-22 20:13:45,423 - INFO - 934b3b68e51e4f468e5243ce3f19eaed - new_structure - GET /api/analytics/top_subject_performers - Joined with Grade
+2025-09-22 20:13:45,445 - INFO - 934b3b68e51e4f468e5243ce3f19eaed - new_structure - GET /api/analytics/top_subject_performers - Joined with Term
+2025-09-22 20:13:45,468 - INFO - 934b3b68e51e4f468e5243ce3f19eaed - new_structure - GET /api/analytics/top_subject_performers - All joins completed successfully
+2025-09-22 20:13:45,491 - INFO - 934b3b68e51e4f468e5243ce3f19eaed - new_structure - GET /api/analytics/top_subject_performers - Found 12 combinations
+2025-09-22 20:13:53,863 - INFO - 3708cfb05d954241aed19b483392ae43 - new_structure - GET /api/analytics/top_subject_performers - Starting get_top_subject_performers request
+2025-09-22 20:13:53,936 - INFO - 3708cfb05d954241aed19b483392ae43 - new_structure - GET /api/analytics/top_subject_performers - Database stats - Marks: 64, Students: 5, Subjects: 32
+2025-09-22 20:13:53,940 - INFO - 3708cfb05d954241aed19b483392ae43 - new_structure - GET /api/analytics/top_subject_performers - Starting with Mark query
+2025-09-22 20:13:53,957 - INFO - 3708cfb05d954241aed19b483392ae43 - new_structure - GET /api/analytics/top_subject_performers - Joined with Student
+2025-09-22 20:13:53,964 - INFO - 3708cfb05d954241aed19b483392ae43 - new_structure - GET /api/analytics/top_subject_performers - Joined with Subject
+2025-09-22 20:13:53,976 - INFO - 3708cfb05d954241aed19b483392ae43 - new_structure - GET /api/analytics/top_subject_performers - Joined with Stream
+2025-09-22 20:13:53,989 - INFO - 3708cfb05d954241aed19b483392ae43 - new_structure - GET /api/analytics/top_subject_performers - Joined with Grade
+2025-09-22 20:13:54,005 - INFO - 3708cfb05d954241aed19b483392ae43 - new_structure - GET /api/analytics/top_subject_performers - Joined with Term
+2025-09-22 20:13:54,012 - INFO - 3708cfb05d954241aed19b483392ae43 - new_structure - GET /api/analytics/top_subject_performers - All joins completed successfully
+2025-09-22 20:13:54,025 - INFO - 3708cfb05d954241aed19b483392ae43 - new_structure - GET /api/analytics/top_subject_performers - Found 12 combinations
+2025-09-22 20:14:45,814 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 20:14:47,065 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 20:15:10,240 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 20:15:11,064 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 20:16:36,835 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 20:16:39,514 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 20:42:36,158 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 20:42:36,914 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 20:46:23,518 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 20:46:25,238 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 20:47:15,529 - INFO - 6fa3fdb7487c488da491eab311d8095a - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-22 20:50:22,867 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 20:50:24,699 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 20:59:37,700 - ERROR - n/a - werkzeug -   - Error on request:
+Traceback (most recent call last):
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\werkzeug\serving.py", line 364, in run_wsgi
+    execute(self.server.app)
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\werkzeug\serving.py", line 349, in execute
+    data = self.rfile.read(10_000_000)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MemoryError
+2025-09-22 21:28:26,082 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 21:28:30,979 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 22:03:14,760 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-22 22:03:16,932 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-22 22:06:32,153 - WARNING - 6603bb08c99f4503b6954a35f51b3bfe - new_structure.utils.cache_manager - GET /headteacher/analytics - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-09-23 07:29:27,655 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 07:29:29,335 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 07:29:32,874 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 07:29:33,674 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 07:37:00,154 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 07:37:01,053 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 07:38:02,095 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 07:38:06,818 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 07:46:47,112 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 07:46:49,826 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 08:50:31,484 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 08:50:33,356 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 08:51:15,219 - INFO - ff85a85d481b4ac18579a5520dd11d7b - new_structure.services.auth_service - POST /classteacher_login - Authentication successful for joylorna with role classteacher
+2025-09-23 08:51:22,348 - WARNING - b49ca28804ac40fdaab8daa48b6ffb2e - new_structure.utils.cache_manager - GET /classteacher/analytics - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-09-23 09:08:50,179 - INFO - d27dfab1f7d1438cb3931c2b5db97117 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-23 09:27:35,108 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 09:27:41,978 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 09:29:27,655 - INFO - e164fb60cc8442ebbe9fa83ca697b792 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-23 10:57:06,203 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 10:57:08,344 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 10:57:30,528 - INFO - 5e548d1da09b43f189ede2ab0dcec059 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-23 13:05:23,993 - INFO - e7e950faeecc47b0b98bf2ba85d966c7 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-23 13:59:13,846 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 13:59:16,250 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 14:16:57,806 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 14:16:59,904 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 14:23:36,538 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 14:23:39,526 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 14:36:08,157 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 14:36:10,423 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 15:26:24,138 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 15:26:26,795 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 15:29:25,159 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 15:29:28,135 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 15:49:13,669 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 15:49:15,716 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 16:06:43,323 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 16:06:44,958 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 16:15:35,077 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 16:15:35,386 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-09-23 16:15:35,417 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-23 16:15:36,894 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 16:20:15,490 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 16:20:16,114 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-09-23 16:20:16,376 - INFO - n/a - new_structure.utils.database_init -   - ? Tables ensured (SQLAlchemy metadata create_all)
+2025-09-23 16:20:16,605 - INFO - n/a - new_structure.utils.database_init -   - ? Ensured assessment defaults exist
+2025-09-23 16:20:18,841 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 16:21:20,540 - WARNING - 2318eb58e1b24c04a88fb84517219601 - new_structure.services.auth_service - POST /classteacher_login - Authentication failed for headteacher with role classteacher
+2025-09-23 16:21:20,550 - WARNING - 2318eb58e1b24c04a88fb84517219601 - new_structure.services.auth_service - POST /classteacher_login - Authentication failed for headteacher with role teacher
+2025-09-23 16:21:42,621 - INFO - 44fa9cb8623949a1b37b99239672a2f0 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-09-23 16:41:13,143 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 16:41:15,726 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 18:23:06,030 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 18:23:06,372 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-09-23 18:23:06,599 - INFO - n/a - new_structure.utils.database_init -   - ? Tables ensured (SQLAlchemy metadata create_all)
+2025-09-23 18:23:06,775 - INFO - n/a - new_structure.utils.database_init -   - ? Ensured assessment defaults exist
+2025-09-23 18:23:08,844 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 18:23:49,841 - INFO - 4b20bfd9809b483eb236802e4bdb50df - new_structure.services.auth_service - POST /classteacher_login - Authentication successful for joylorna with role classteacher
+2025-09-23 19:42:44,742 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-09-23 19:42:46,966 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-09-23 19:43:12,208 - INFO - da27977fb4884f1a93caaa22d0ac26ee - new_structure.services.auth_service - POST /classteacher_login - Authentication successful for joylorna with role classteacher

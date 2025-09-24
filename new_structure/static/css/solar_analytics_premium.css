@@ -21,7 +21,8 @@
   --radius-lg: 1rem;
 
   /* Shadows */
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -46,7 +47,7 @@
   --glass-backdrop: blur(8px);
   --glass-backdrop-strong: blur(20px);
   --status-success: #859900; /* Solar green */
-  --status-error: #dc322f;   /* Solar red */
+  --status-error: #dc322f; /* Solar red */
 
   /* Aliases used by template utilities */
   --border-color: var(--glass-border);
@@ -54,7 +55,8 @@
 }
 
 /* Explicit dark theme override (when toggled) */
-html[data-theme="dark"], body[data-theme="dark"] {
+html[data-theme="dark"],
+body[data-theme="dark"] {
   --bg-primary: #002b36;
   --bg-secondary: #073642;
   --bg-tertiary: #586e75;
@@ -80,18 +82,19 @@ html[data-theme="dark"], body[data-theme="dark"] {
 }
 
 /* Light theme override (when toggled) */
-html[data-theme="light"], body[data-theme="light"] {
+html[data-theme="light"],
+body[data-theme="light"] {
   --bg-primary: #f5f7fb;
   --bg-secondary: #eef2f7;
   --bg-tertiary: #e2e8f0;
   --bg-card: rgba(255, 255, 255, 0.96);
   --bg-card-hover: rgba(255, 255, 255, 1);
-  --primary-color: #b58900;   /* keep brand gold */
+  --primary-color: #b58900; /* keep brand gold */
   --primary-dark: #7c6000;
   --primary-light: #d8a200;
   --secondary-color: #2aa198; /* teal accent */
-  --text-white: #0f172a;      /* repurpose as primary text on light */
-  --text-secondary: #475569;  /* slate-600 */
+  --text-white: #0f172a; /* repurpose as primary text on light */
+  --text-secondary: #475569; /* slate-600 */
   --text-accent: #334155;
   --text-emphasis: var(--text-white);
   --glass-border: rgba(0, 0, 0, 0.08);
@@ -99,8 +102,8 @@ html[data-theme="light"], body[data-theme="light"] {
   --glass-bg-strong: rgba(255, 255, 255, 0.85);
   --glass-backdrop: blur(6px);
   --glass-backdrop-strong: blur(10px);
-  --status-success: #15803d;  /* green-700 */
-  --status-error: #dc2626;    /* red-600 */
+  --status-success: #15803d; /* green-700 */
+  --status-error: #dc2626; /* red-600 */
   --border-color: var(--glass-border);
   --card-bg: var(--bg-card);
 }

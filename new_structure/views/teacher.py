@@ -9,6 +9,7 @@ from ..services import is_authenticated, get_role, RoleBasedDataService
 from ..extensions import db
 from ..utils import get_performance_category, get_performance_summary
 from functools import wraps
+from ..utils.constants import EDUCATION_LEVELS_ORDER, educational_level_mapping
 # Security utilities: role/resource checks without changing existing behavior
 try:
     from ..security.access_control import AccessControlProtection
@@ -242,10 +243,10 @@ def dashboard():
     accessible_streams = RoleBasedDataService.get_accessible_streams(teacher_id, role)
 
     # Organize subjects by education level (only accessible ones)
+    # Organize subjects by education level (canonical order; include empty lists for levels with no subjects)
     subjects_by_education_level = {
-        'lower_primary': [s.name for s in accessible_subjects if s.education_level == 'lower_primary'],
-        'upper_primary': [s.name for s in accessible_subjects if s.education_level == 'upper_primary'],
-        'junior_secondary': [s.name for s in accessible_subjects if s.education_level == 'junior_secondary']
+        lvl: [s.name for s in accessible_subjects if s.education_level == lvl]
+        for lvl in EDUCATION_LEVELS_ORDER
     }
 
     # Get form data (only accessible options)
@@ -805,12 +806,24 @@ def dashboard():
     print(f"  - stream: {stream}")
     print(f"  - use_mobile: {use_mobile}")
 
+    # Human-friendly labels for education levels (UI only)
+    education_level_labels = {
+        'pre_primary': 'Pre Primary (PP1–PP2)',
+        'lower_primary': 'Lower Primary (Grades 1–3)',
+        'upper_primary': 'Upper Primary (Grades 4–6)',
+        'junior_secondary': 'Junior Secondary (Grades 7–9)',
+        'senior_secondary': 'Senior Secondary (Grades 10–12)'
+    }
+
     # Render the teacher dashboard
     return render_template(
         template_name,
         grades=grades,
         grades_dict=grades_dict,
         subjects_by_education_level=subjects_by_education_level,
+        education_levels_order=EDUCATION_LEVELS_ORDER,
+        educational_level_mapping=educational_level_mapping,
+        education_level_labels=education_level_labels,
         terms=terms,
         school_info=school_info,
         assessment_types=assessment_types,

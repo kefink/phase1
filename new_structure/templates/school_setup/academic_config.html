@@ -232,6 +232,22 @@
             margin-top: 0.25rem;
         }
 
+        /* Minimal icon and color utilities */
+        .hi { width: 1.25rem; height: 1.25rem; stroke: currentColor; stroke-width: 2; fill: none; vertical-align: middle; }
+        .h-4 { height: 1rem; } .w-4 { width: 1rem; }
+        .h-5 { height: 1.25rem; } .w-5 { width: 1.25rem; }
+        .h-7 { height: 1.75rem; } .w-7 { width: 1.75rem; }
+        .text-accent { color: var(--accent-color); }
+        .text-primary { color: var(--primary-color); }
+        .text-success { color: var(--success-color); }
+        .text-error { color: var(--error-color); }
+
+    /* Icon sizing normalization for this page */
+    .setup-header h1 .hi { width: 1.5rem; height: 1.5rem; }
+    .form-section h3 .hi { width: 1.25rem; height: 1.25rem; }
+    .step-number .hi { width: 1rem; height: 1rem; }
+    .btn .hi { width: 1rem; height: 1rem; }
+
         .back-link {
             display: inline-block;
             margin-bottom: 2rem;
@@ -303,13 +319,6 @@
             color: #92400e;
         }
 
-        @media (max-width: 768px) {
-            .setup-container {
-                padding: 1rem;
-            }
-
-            .setup-card {
-
         /* Dark mode (solar variant) */
         body[data-theme='solar-dark'] { background: linear-gradient(135deg,#0d1f17 0%,#0b1209 100%); color: var(--gray-100); }
         body[data-theme='solar-dark'] .setup-header { color: var(--gray-100); }
@@ -332,32 +341,19 @@
         body[data-theme='solar-dark'] .form-actions { border-top-color:#1f2d28; }
         body[data-theme='solar-dark'] .step-number { background:rgba(255,255,255,0.15); color: var(--gray-100); }
         body[data-theme='solar-dark'] .step.active .step-number { background: var(--accent-color); color:#052e16; }
-    </style>
-                padding: 2rem;
-<body data-theme="solar-light">
-    <div id="theme-toggle-container" style="position:fixed;top:10px;right:10px;z-index:50;"></div>
 
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .checkbox-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-actions {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .step-indicator {
-                flex-wrap: wrap;
-                gap: 0.5rem;
-            }
+        @media (max-width: 768px) {
+            .setup-container { padding: 1rem; }
+            .setup-card { padding: 2rem; }
+            .form-grid { grid-template-columns: 1fr; }
+            .checkbox-grid { grid-template-columns: 1fr; }
+            .form-actions { flex-direction: column; gap: 1rem; }
+            .step-indicator { flex-wrap: wrap; gap: 0.5rem; }
         }
     </style>
 </head>
-<body>
+<body data-theme="solar-light">
+    <div id="theme-toggle-container" style="position:fixed;top:10px;right:10px;z-index:50;"></div>
     <div class="setup-container">
         <a href="{{ url_for('school_setup.setup_dashboard') }}" class="back-link">
             <svg class="hi h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M10 5l-5 5m0 0l5 5m-5-5h10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>

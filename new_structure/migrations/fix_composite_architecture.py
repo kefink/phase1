@@ -17,6 +17,10 @@ from app import create_app
 from extensions import db
 from models.academic import Subject, SubjectComponent, Mark, ComponentMark
 from services.enhanced_composite_service import EnhancedCompositeService
+try:
+    from new_structure.utils.constants import EDUCATION_LEVELS_ORDER
+except Exception:
+    EDUCATION_LEVELS_ORDER = ['pre_primary', 'lower_primary', 'upper_primary', 'junior_secondary', 'senior_secondary']
 from sqlalchemy import text
 
 
@@ -202,9 +206,7 @@ def setup_enhanced_architecture():
     print("\n🚀 Setting up enhanced composite architecture...")
     
     # Ensure all education levels have proper component subjects
-    education_levels = ['lower_primary', 'upper_primary', 'junior_secondary']
-    
-    for education_level in education_levels:
+    for education_level in [lvl for lvl in EDUCATION_LEVELS_ORDER if lvl in ('lower_primary','upper_primary','junior_secondary')]:
         print(f"   📚 Setting up {education_level}...")
         EnhancedCompositeService.ensure_component_subjects_exist(education_level)
     

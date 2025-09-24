@@ -196,8 +196,9 @@ def dashboard():
         # Get filter options
         all_grades = Grade.query.order_by(Grade.name).all()
         all_streams = Stream.query.order_by(Stream.name).all()
-        education_levels = db.session.query(Grade.education_level).distinct().filter(Grade.education_level.isnot(None)).all()
-        education_levels = [level[0] for level in education_levels if level[0]]
+        # Use canonical ordered education levels for UI
+        from ..utils.constants import EDUCATION_LEVELS_ORDER
+        education_levels = EDUCATION_LEVELS_ORDER
         
         # Get summary counts for filtered data
         total_students_without_parents = students_without_parents_query.count()

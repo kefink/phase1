@@ -49,20 +49,15 @@ classteacher_bp = Blueprint('classteacher', __name__, url_prefix='/classteacher'
 # Set up logger
 logger = logging.getLogger(__name__)
 
-# Register template filter for education level
+# Register template filter for education level (blueprint scope)
 @classteacher_bp.app_template_filter('get_education_level')
 def get_education_level_blueprint(grade):
-    """Filter to determine the education level for a grade (blueprint version)."""
-    education_level_mapping = {
-        'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
-        'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
-        'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
-    }
-
-    for level, grades in education_level_mapping.items():
-        if grade in grades:
-            return level
-    return ''
+    """Return canonical education level code for a given grade name."""
+    try:
+        from ..utils.constants import get_education_level_for_grade_name
+        return get_education_level_for_grade_name(grade)
+    except Exception:
+        return ''
 
 def classteacher_required(_func=None, *, allowed_roles=("classteacher", "headteacher")):
     """Decorator enforcing authentication, role restriction & session integrity.
@@ -391,19 +386,12 @@ def preview_class_report(grade, stream, term, assessment_type):
         except Exception:
             pass
         # Provide robust fallback context so legacy template variables resolve
-        # Derive a simple education_level guess from grade string
-        level_code = ''
+        # Derive education_level using centralized helper
         try:
-            if isinstance(grade, str) and grade.lower().startswith('grade '):
-                num = int(grade.split()[-1])
-                if 1 <= num <= 3:
-                    level_code = 'lower_primary'
-                elif 4 <= num <= 6:
-                    level_code = 'upper_primary'
-                elif 7 <= num <= 9:
-                    level_code = 'junior_secondary'
+            from ..utils.constants import get_education_level_for_grade_name
+            level_code = get_education_level_for_grade_name(grade) if isinstance(grade, str) else ''
         except Exception:
-            pass
+            level_code = ''
         education_level = level_code.replace('_', ' ').title() if level_code else ''
         placeholder_ctx = dict(
             education_level=education_level,
@@ -543,21 +531,22 @@ def test_component_upload():
         results.append("🧪 Testing Component Subject Upload Availability")
         results.append("=" * 60)
 
-        # Check each education level
-        education_levels = ['lower_primary', 'upper_primary', 'junior_secondary']
+        # Check each education level in canonical order (limited to supported flows)
+        from ..utils.constants import EDUCATION_LEVELS_ORDER
+        education_levels = [lv for lv in EDUCATION_LEVELS_ORDER if lv in {'lower_primary', 'upper_primary', 'junior_secondary'}]
 
+        from ..services.enhanced_composite_service import EnhancedCompositeService
         for education_level in education_levels:
             results.append(f"\n📚 {education_level}:")
 
             # Get uploadable subjects (components + regular subjects)
-            from ..services.enhanced_composite_service import EnhancedCompositeService
             uploadable_subjects = EnhancedCompositeService.get_subjects_for_upload(education_level)
 
             results.append(f"   📝 Uploadable subjects ({len(uploadable_subjects)}):")
 
             for subject in uploadable_subjects:
-                if subject.is_component:
-                    results.append(f"      ✅ {subject.name} (component of {subject.composite_parent})")
+                if getattr(subject, 'is_component', False):
+                    results.append(f"      ✅ {subject.name} (component of {getattr(subject, 'composite_parent', 'N/A')})")
                 else:
                     results.append(f"      📄 {subject.name} (regular subject)")
 
@@ -578,7 +567,6 @@ def test_component_upload():
             # Check if there are any existing marks
             existing_marks = Mark.query.filter_by(subject_id=english_grammar.id).count()
             results.append(f"   📈 Existing marks: {existing_marks}")
-
         else:
             results.append(f"   ❌ English Grammar subject not found!")
 
@@ -599,7 +587,6 @@ def test_component_upload():
             # Check if there are any existing marks
             existing_marks = Mark.query.filter_by(subject_id=english_composition.id).count()
             results.append(f"   📈 Existing marks: {existing_marks}")
-
         else:
             results.append(f"   ❌ English Composition subject not found!")
 
@@ -613,9 +600,8 @@ def test_component_upload():
 
         # Content negotiation: JSON summary if requested
         if 'application/json' in (request.headers.get('Accept') or '').lower():
-            return jsonify({'status':'ok','lines': results[:15], 'total_lines': len(results)})
+            return jsonify({'status': 'ok', 'lines': results[:15], 'total_lines': len(results)})
         return f"<pre>{'<br>'.join(results)}</pre>"
-
     except Exception as e:
         return f"<pre>❌ Error during testing: {str(e)}</pre>"
 
@@ -1156,39 +1142,41 @@ def analytics_data_api():
     """
     try:
         teacher_id = session.get('teacher_id')
-        if not teacher_id:
+        role = (session.get('role') or '').lower()
+        # Allow headteachers to query without a bound teacher_id (shared UI scenario)
+        if not teacher_id and role != 'headteacher':
             return jsonify({'error': 'Not authenticated'}), 401
 
         from ..services.role_based_data_service import RoleBasedDataService
         from ..services.academic_analytics_service import AcademicAnalyticsService
 
-        assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
-        if 'error' in assignment_summary:
-            return jsonify({'error': assignment_summary['error']}), 400
+        # Determine role; headteacher can query any class via params (no assignment required)
+    # role already computed above
 
-        assigned_classes = assignment_summary.get('class_teacher_assignments', [])
-        if not assigned_classes:
-            return jsonify({
-                'top_performers': [],
-                'subject_analytics': [],
-                'summary': {
-                    'students_analyzed': 0,
-                    'subjects_analyzed': 0,
-                    'best_subject_average': 0,
-                    'top_student_average': 0,
-                    'has_sufficient_data': False
-                },
-                'has_data': False
-            })
+        # Default values from first assignment (classteacher), but don't block headteacher when none
+        assigned_classes = []
+        if teacher_id:
+            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
+            if 'error' in assignment_summary:
+                # For headteacher, proceed with provided params; otherwise return error
+                if role != 'headteacher':
+                    return jsonify({'error': assignment_summary['error']}), 400
+                assigned_classes = []
+            else:
+                assigned_classes = assignment_summary.get('class_teacher_assignments', [])
 
-        # Default to first assignment
-        first_class = assigned_classes[0]
-        default_grade_id = first_class.get('grade_id')
-        default_stream_id = first_class.get('stream_id')
+        # Defaults from first assignment (classteacher only)
+        default_grade_id = None
+        default_stream_id = None
+        if assigned_classes:
+            first_class = assigned_classes[0]
+            default_grade_id = first_class.get('grade_id')
+            default_stream_id = first_class.get('stream_id')
 
-        # Query params
-        grade_id = request.args.get('grade', type=int) or default_grade_id
-        stream_id = request.args.get('stream', type=int) or default_stream_id
+        # Query params (ensure consistent indentation inside route)
+        # For headteacher, do not fall back to classteacher defaults unless present
+        grade_id = request.args.get('grade', type=int) or (default_grade_id if default_grade_id and role != 'headteacher' else None)
+        stream_id = request.args.get('stream', type=int) or (default_stream_id if default_stream_id and role != 'headteacher' else None)
         term_id = request.args.get('term', type=int)
         assessment_type_id = request.args.get('assessment_type', type=int)
         limit = request.args.get('limit', type=int)
@@ -1226,6 +1214,31 @@ def analytics_data_api():
                 top_performers_limit=top_limit
             )
 
+        # If critical identifiers are missing, return a friendly empty payload
+        if not grade_id or not stream_id:
+            return jsonify({
+                'top_performers': [],
+                'top_students': [],
+                'subject_analytics': [],
+                'summary': {
+                    'students_analyzed': 0,
+                    'subjects_analyzed': 0,
+                    'best_subject_average': 0,
+                    'top_student_average': 0,
+                    'has_sufficient_data': False
+                },
+                'has_data': False,
+                'applied_filters': {
+                    'grade_id': grade_id,
+                    'stream_id': stream_id,
+                    'term_id': term_id,
+                    'assessment_type_id': assessment_type_id,
+                    'top_limit': top_limit,
+                    'top_subjects': top_subjects,
+                    'subject_view': view_mode,
+                }
+            })
+
         if data and not data.get('error'):
             # Normalize field names for front-end
             if 'top_students' not in data and 'top_performers' in data:
@@ -1244,6 +1257,65 @@ def analytics_data_api():
                 'top_subjects': top_subjects,
                 'subject_view': view_mode,
             }
+            # Also provide IDs directly for building drill-down links
+            data['context_ids'] = {
+                'grade_id': grade_id,
+                'stream_id': stream_id,
+                'term_id': term_id,
+                'assessment_type_id': assessment_type_id,
+            }
+
+            # Compute Class vs Grade vs School benchmarks if filters sufficient
+            try:
+                if term_id and assessment_type_id:
+                    from sqlalchemy import func
+                    # Student-level averages scoped by optional class/grade
+                    student_avg = db.session.query(
+                        Student.id.label('student_id'),
+                        func.avg(Mark.percentage).label('avg_percentage')
+                    ).join(Mark, Student.id == Mark.student_id)
+                    if stream_id:
+                        student_avg = student_avg.filter(Student.stream_id == stream_id)
+                    elif grade_id:
+                        student_avg = student_avg.join(Stream, Student.stream_id == Stream.id).filter(Stream.grade_id == grade_id)
+                    student_avg = student_avg.filter(
+                        Mark.term_id == term_id,
+                        Mark.assessment_type_id == assessment_type_id,
+                        Mark.percentage.isnot(None)
+                    ).group_by(Student.id).subquery()
+
+                    class_avg = None
+                    if stream_id:
+                        class_avg = db.session.query(func.avg(student_avg.c.avg_percentage)).scalar()
+
+                    grade_avg = None
+                    if grade_id:
+                        grade_student_avg = db.session.query(
+                            Student.id.label('student_id'), func.avg(Mark.percentage).label('avg_percentage')
+                        ).join(Mark, Student.id == Mark.student_id).join(Stream, Student.stream_id == Stream.id).filter(
+                            Stream.grade_id == grade_id,
+                            Mark.term_id == term_id,
+                            Mark.assessment_type_id == assessment_type_id,
+                            Mark.percentage.isnot(None)
+                        ).group_by(Student.id).subquery()
+                        grade_avg = db.session.query(func.avg(grade_student_avg.c.avg_percentage)).scalar()
+
+                    school_student_avg = db.session.query(
+                        Student.id.label('student_id'), func.avg(Mark.percentage).label('avg_percentage')
+                    ).join(Mark, Student.id == Mark.student_id).filter(
+                        Mark.term_id == term_id,
+                        Mark.assessment_type_id == assessment_type_id,
+                        Mark.percentage.isnot(None)
+                    ).group_by(Student.id).subquery()
+                    school_avg = db.session.query(func.avg(school_student_avg.c.avg_percentage)).scalar()
+
+                    data['benchmarks'] = {
+                        'class_avg': float(class_avg) if class_avg is not None else None,
+                        'grade_avg': float(grade_avg) if grade_avg is not None else None,
+                        'school_avg': float(school_avg) if school_avg is not None else None,
+                    }
+            except Exception as _be:
+                logger.debug(f"Benchmark computation (JSON) failed: {_be}")
             return jsonify(data)
         else:
             return jsonify({'error': data.get('error', 'No data'), 'has_data': False}), 200
@@ -1280,31 +1352,33 @@ def analytics_export_pdf():
         from ..services.academic_analytics_service import AcademicAnalyticsService
 
         assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
-        if 'error' in assignment_summary:
+        role = (session.get('role') or '').lower()
+        if 'error' in assignment_summary and role != 'headteacher':
             return jsonify({'error': assignment_summary['error']}), 400
-        assigned_classes = assignment_summary.get('class_teacher_assignments', [])
-        if not assigned_classes:
-            # Still return a small PDF explaining no data
+        assigned_classes = [] if 'error' in assignment_summary else assignment_summary.get('class_teacher_assignments', [])
+
+        # Defaults when classteacher; headteacher can pass params directly
+        default_grade_id = assigned_classes[0].get('grade_id') if assigned_classes else None
+        default_stream_id = assigned_classes[0].get('stream_id') if assigned_classes else None
+
+        grade_id = request.args.get('grade', type=int) or default_grade_id
+        stream_id = request.args.get('stream', type=int) or default_stream_id
+        term_id = request.args.get('term', type=int)
+        assessment_type_id = request.args.get('assessment_type', type=int)
+
+        # If identifiers are missing, return an informative empty PDF
+        if not grade_id or not stream_id:
             empty_buf = BytesIO()
             from reportlab.lib.pagesizes import A4
             from reportlab.lib.styles import getSampleStyleSheet
             from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
             doc = SimpleDocTemplate(empty_buf, pagesize=A4)
             styles = getSampleStyleSheet()
-            story = [Paragraph('No assigned classes found', styles['Title']), Paragraph('Cannot generate analytics PDF.', styles['Normal'])]
+            story = [Paragraph('Missing selection', styles['Title']), Paragraph('Please choose Grade and Stream to export.', styles['Normal'])]
             story.append(Spacer(1, 12))
             doc.build(story)
             empty_buf.seek(0)
-            return send_file(empty_buf, mimetype='application/pdf', as_attachment=True, download_name='Analytics_No_Data.pdf')
-
-        first_class = assigned_classes[0]
-        default_grade_id = first_class.get('grade_id')
-        default_stream_id = first_class.get('stream_id')
-
-        grade_id = request.args.get('grade', type=int) or default_grade_id
-        stream_id = request.args.get('stream', type=int) or default_stream_id
-        term_id = request.args.get('term', type=int)
-        assessment_type_id = request.args.get('assessment_type', type=int)
+            return send_file(empty_buf, mimetype='application/pdf', as_attachment=True, download_name='Analytics_Select_Class.pdf')
 
         # Fetch analytics with no performer slicing to get full rank list
         try:
@@ -1428,28 +1502,29 @@ def analytics_export_subjects_pdf():
         from ..services.academic_analytics_service import AcademicAnalyticsService
 
         assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
-        if 'error' in assignment_summary:
+        role = (session.get('role') or '').lower()
+        if 'error' in assignment_summary and role != 'headteacher':
             return jsonify({'error': assignment_summary['error']}), 400
-        assigned_classes = assignment_summary.get('class_teacher_assignments', [])
-        if not assigned_classes:
+        assigned_classes = [] if 'error' in assignment_summary else assignment_summary.get('class_teacher_assignments', [])
+
+        default_grade_id = assigned_classes[0].get('grade_id') if assigned_classes else None
+        default_stream_id = assigned_classes[0].get('stream_id') if assigned_classes else None
+
+        grade_id = request.args.get('grade', type=int) or default_grade_id
+        stream_id = request.args.get('stream', type=int) or default_stream_id
+        term_id = request.args.get('term', type=int)
+        assessment_type_id = request.args.get('assessment_type', type=int)
+
+        if not grade_id or not stream_id:
             empty_buf = BytesIO()
             from reportlab.lib.pagesizes import A4
             from reportlab.lib.styles import getSampleStyleSheet
             from reportlab.platypus import SimpleDocTemplate, Paragraph
             doc = SimpleDocTemplate(empty_buf, pagesize=A4)
             styles = getSampleStyleSheet()
-            doc.build([Paragraph('No assigned classes found', styles['Title'])])
+            doc.build([Paragraph('Missing selection', styles['Title']), Paragraph('Choose Grade and Stream to export.', styles['Normal'])])
             empty_buf.seek(0)
-            return send_file(empty_buf, mimetype='application/pdf', as_attachment=True, download_name='Subject_Performance_No_Data.pdf')
-
-        first_class = assigned_classes[0]
-        default_grade_id = first_class.get('grade_id')
-        default_stream_id = first_class.get('stream_id')
-
-        grade_id = request.args.get('grade', type=int) or default_grade_id
-        stream_id = request.args.get('stream', type=int) or default_stream_id
-        term_id = request.args.get('term', type=int)
-        assessment_type_id = request.args.get('assessment_type', type=int)
+            return send_file(empty_buf, mimetype='application/pdf', as_attachment=True, download_name='Subject_Performance_Select_Class.pdf')
 
         # Fetch analytics; apply top_subjects slicing using service support
         try:
@@ -2565,6 +2640,59 @@ def all_reports():
             logger.error(f"all_reports fallback failed: {inner}")
             return jsonify({"error":"Unable to load reports"}), 500
 
+@classteacher_bp.route('/debug_grades', methods=['GET'])
+def debug_grades_route():
+    """Debug route to check what grades are in the database"""
+    try:
+        from ..models.academic import Grade
+        grades = Grade.query.all()
+        
+        result = "<h2>Grades in Database</h2><ul>"
+        for grade in grades:
+            result += f"<li>ID: {grade.id}, Name: '{grade.name}', Level: {grade.education_level}</li>"
+        result += f"</ul><p>Total: {len(grades)} grades</p>"
+        
+        # Check educational level mapping
+        from ..utils.constants import educational_level_mapping
+        educational_level_mapping_ui = educational_level_mapping.copy()
+        educational_level_mapping_ui['pre_primary'] = ['PP1', 'PP2']
+        educational_level_mapping_ui['lower_primary'] = ['Grade 1', 'Grade 2', 'Grade 3']
+        
+        result += "<h2>Educational Level Mapping Results</h2>"
+        grade_names = [g.name for g in grades]
+        for level, expected_grades in educational_level_mapping_ui.items():
+            matches = [name for name in expected_grades if name in grade_names]
+            result += f"<p><strong>{level}:</strong> Expected {expected_grades} → Found {matches}</p>"
+        
+        return result
+        
+    except Exception as e:
+        return f"<h2>Error</h2><p>{str(e)}</p>"
+
+@classteacher_bp.route('/debug_reinitialize', methods=['GET'])
+def debug_reinitialize_db():
+    """Debug route to reinitialize database with updated structure"""
+    try:
+        from ..models.academic import Grade, Stream
+        from ..utils.database_init import initialize_database_completely
+        
+        # Drop and recreate all tables
+        initialize_database_completely()
+        
+        # Check what grades we now have
+        grades = Grade.query.all()
+        grades_data = [(g.name, g.education_level) for g in grades]
+        
+        return f"""
+        <h1>Database Reinitialized Successfully</h1>
+        <p>Grades available: {grades_data}</p>
+        <p>Total grades: {len(grades)}</p>
+        <a href="/classteacher/debug_grades">Check Grades Now</a>
+        """
+    except Exception as e:
+        import traceback
+        return f"Error reinitializing database: {str(e)}<br><pre>{traceback.format_exc()}</pre>"
+
 @classteacher_bp.route('/manage_students', methods=['GET', 'POST'])
 @limiter.limit("30 per minute")
 @classteacher_required()
@@ -2584,12 +2712,9 @@ def manage_students():
         flash("Teacher not found.", "error")
         return redirect(url_for('classteacher.dashboard'))
 
-    # Define educational level mapping (moved to top to avoid UnboundLocalError)
-    educational_level_mapping = {
-        "lower_primary": ["Grade 1", "Grade 2", "Grade 3"],
-        "upper_primary": ["Grade 4", "Grade 5", "Grade 6"],
-        "junior_secondary": ["Grade 7", "Grade 8", "Grade 9"]
-    }
+    # Define canonical educational level mapping and order for UI
+    from ..utils.constants import educational_level_mapping, EDUCATION_LEVELS_ORDER
+    educational_level_mapping_ui = educational_level_mapping
 
     # Initialize variables
     stream = None
@@ -2652,7 +2777,7 @@ def manage_students():
     # Filter by educational level if specified
     if educational_level:
         # Get all grades for this educational level
-        allowed_grades = educational_level_mapping.get(educational_level, [])
+        allowed_grades = educational_level_mapping_ui.get(educational_level, [])
         grades = Grade.query.filter(Grade.name.in_(allowed_grades)).all()
         grade_ids = [g.id for g in grades]
 
@@ -2673,6 +2798,12 @@ def manage_students():
 
     # Get all grades for the template
     grades = [{"id": grade.id, "name": grade.name} for grade in Grade.query.all()]
+    
+    # DEBUG: Print what grades we're sending to the template
+    print("=== DEBUG: manage_students grades data ===")
+    print(f"Grades being sent to template: {grades}")
+    print(f"Educational level mapping: {educational_level_mapping_ui}")
+    print("===========================================")
 
     # Handle form submissions
     if request.method == 'POST':
@@ -3123,8 +3254,9 @@ def manage_students():
         grade=grade.name if grade else "",
         stream=stream.name if stream else "",
         grades=grades,
-        educational_level_mapping=educational_level_mapping,
-        educational_levels=list(educational_level_mapping.keys())
+        educational_level_mapping=educational_level_mapping_ui,
+        educational_levels=EDUCATION_LEVELS_ORDER,
+        selected_level=educational_level
     )
 
 
@@ -4853,8 +4985,15 @@ def get_streams(grade_id):
     """API endpoint to get streams for a specific grade."""
     try:
         grade_id = int(grade_id)
-        streams = Stream.query.filter_by(grade_id=grade_id).all()
-        return jsonify({"streams": [{"id": stream.id, "name": stream.name} for stream in streams]})
+        # Return only streams for this grade, sorted by name
+        streams = Stream.query.filter_by(grade_id=grade_id).order_by(Stream.name.asc()).all()
+        # Include grade_id for client-side validation if needed
+        return jsonify({
+            "streams": [
+                {"id": stream.id, "name": stream.name, "grade_id": stream.grade_id}
+                for stream in streams
+            ]
+        })
     except ValueError:
         return jsonify({"error": "Invalid grade ID"}), 400
     except Exception as e:
@@ -5868,12 +6007,8 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
 def download_class_list():
     """Route to download class lists as CSV files."""
 
-    # Define educational level mapping
-    educational_level_mapping = {
-        "lower_primary": ["Grade 1", "Grade 2", "Grade 3"],
-        "upper_primary": ["Grade 4", "Grade 5", "Grade 6"],
-        "junior_secondary": ["Grade 7", "Grade 8", "Grade 9"]
-    }
+    # Use centralized canonical mapping
+    from ..utils.constants import educational_level_mapping as educational_level_mapping_ui
 
     # Get filter parameters
     educational_level = request.args.get('educational_level', '')
@@ -5913,7 +6048,7 @@ def download_class_list():
     # Filter by educational level if specified
     elif educational_level:
         # Get all grades for this educational level
-        allowed_grades = educational_level_mapping.get(educational_level, [])
+        allowed_grades = educational_level_mapping_ui.get(educational_level, [])
         grades = Grade.query.filter(Grade.name.in_(allowed_grades)).all()
         grade_ids = [g.id for g in grades]
 
@@ -6092,10 +6227,14 @@ def bulk_import_subjects(_validated):
             raise ValidationError('Missing required columns', {'missing': missing})
         added_count = 0
         skipped_count = 0
+        # Accept only canonical levels; normalize simple variants
+        from ..utils.constants import EDUCATION_LEVELS_ORDER
+        canonical_levels = set(EDUCATION_LEVELS_ORDER)  # includes pre_primary and senior_secondary too
         for _, row in df.iterrows():
             name = str(row['name']).strip()
-            edu = str(row['education_level']).strip()
-            if edu not in ['lower_primary','upper_primary','junior_secondary']:
+            edu_raw = str(row['education_level']).strip()
+            edu = edu_raw.replace(' ', '_').lower()
+            if edu not in canonical_levels:
                 skipped_count += 1
                 continue
             existing = Subject.query.filter_by(name=name, education_level=edu).first()
@@ -6159,9 +6298,14 @@ def manage_subjects():
     pagination = subjects_query.paginate(page=page, per_page=per_page, error_out=False)
     subjects = pagination.items
 
-    # Get all unique education levels for the filter dropdown
+    # Get all unique education levels for the filter dropdown (ordered canonically)
     all_education_levels = db.session.query(Subject.education_level).distinct().all()
     education_levels = [level[0] for level in all_education_levels if level[0]]
+    try:
+        from ..utils.constants import order_levels
+        education_levels = order_levels(education_levels)
+    except Exception:
+        pass
 
     # Calculate statistics
     total_subjects = Subject.query.count()
