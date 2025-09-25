@@ -65,6 +65,22 @@ def create_app(config_name='default'):
     except Exception:
         app.config['ENV'] = config_name
 
+    # Development-friendly CSP policy to ensure inline styles and Google Fonts work on mobile
+    # Only set this automatically for non-production; production should explicitly set CSP_POLICY via env/config
+    if config_name != 'production':
+        app.config.setdefault('CSP_POLICY', (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "img-src 'self' data: blob:; "
+            "font-src 'self' https://fonts.gstatic.com data:; "
+            "connect-src 'self'; "
+            "object-src 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self'; "
+            "frame-ancestors 'none'"
+        ))
+
     # Early HTTPS redirect & CORS placeholder setup (before blueprints)
     from urllib.parse import urlparse
 
@@ -216,16 +232,18 @@ def create_app(config_name='default'):
         response.headers.setdefault('Permissions-Policy', "geolocation=(), microphone=(), camera=(), usb=(), payment=()")
         # Basic CSP - adjust as frontend asset strategy evolves
         # Allow inline styles only if absolutely required; here we disallow by default
-        csp = (
-            "default-src 'self'; "
-            "script-src 'self'; "
-            "style-src 'self'; "
-            "img-src 'self' data:; "
-            "object-src 'none'; "
-            "base-uri 'self'; "
-            "frame-ancestors 'none'"
-        )
-        response.headers.setdefault('Content-Security-Policy', csp)
+        # Only apply a strict default CSP automatically in production if none provided; in dev we rely on CSP_POLICY
+        if (app.config.get('ENV') == 'production' or config_name == 'production') and 'Content-Security-Policy' not in response.headers:
+            csp = (
+                "default-src 'self'; "
+                "script-src 'self'; "
+                "style-src 'self'; "
+                "img-src 'self' data:; "
+                "object-src 'none'; "
+                "base-uri 'self'; "
+                "frame-ancestors 'none'"
+            )
+            response.headers.setdefault('Content-Security-Policy', csp)
         if app.config.get('FORCE_HTTPS'):
             # 1 year, include subdomains, preload hint
             response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
@@ -413,11 +431,14 @@ def create_app(config_name='default'):
         # Enable XSS protection
         response.headers['X-XSS-Protection'] = '1; mode=block'
 
-        # Enforce HTTPS (HSTS)
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+        # Enforce HTTPS (HSTS) only when configured and meaningful
+        if app.config.get('FORCE_HTTPS'):
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
 
         # Content Security Policy (configurable)
-        response.headers['Content-Security-Policy'] = app.config.get('CSP_POLICY')
+        csp_policy = app.config.get('CSP_POLICY')
+        if csp_policy:
+            response.headers['Content-Security-Policy'] = csp_policy
 
         # Control referrer information
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
@@ -425,11 +446,12 @@ def create_app(config_name='default'):
         # Control browser features
         response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=(), payment=(), usb=()'
 
-        # Additional security headers
+        # Additional security headers (relaxed in development to avoid blocking external fonts/resources)
         response.headers['X-Permitted-Cross-Domain-Policies'] = 'none'
-        response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
-        response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
-        response.headers['Cross-Origin-Resource-Policy'] = 'same-origin'
+        if app.config.get('ENV') == 'production' or config_name == 'production':
+            response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+            response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+            response.headers['Cross-Origin-Resource-Policy'] = 'same-origin'
 
         # Cache control for sensitive pages
         if request.endpoint and any(sensitive in request.endpoint for sensitive in
@@ -694,6 +716,9 @@ def create_app(config_name='default'):
         response.headers.pop('Content-Security-Policy-Report-Only', None)
         # Also remove HSTS header in development
         response.headers.pop('Strict-Transport-Security', None)
+        # Also relax COOP/COEP in development for cross-origin resources like Google Fonts
+        response.headers.pop('Cross-Origin-Embedder-Policy', None)
+        response.headers.pop('Cross-Origin-Opener-Policy', None)
         return response
 
     # HTTPS ENFORCEMENT
@@ -1104,10 +1129,10 @@ def create_app(config_name='default'):
         @csrf.exempt
         def debug_simple_login():
             """Simple login test without CSRF protection. DEVELOPMENT/TESTING ONLY."""
-        if request.method == 'GET':
-            return '''
-            <h2>🔐 Simple Login Tester (No CSRF)</h2>
-            <form method="POST">
+            if request.method == 'GET':
+                return '''
+                <h2>🔐 Simple Login Tester (No CSRF)</h2>
+                <form method="POST">
                 <h3>Test Login:</h3>
                 <p>Username: <input type="text" name="username" value="headteacher"></p>
                 <p>Password: <input type="password" name="password" value="admin123"></p>
@@ -1123,41 +1148,41 @@ def create_app(config_name='default'):
             <p><em>Note: This form bypasses CSRF protection for debugging.</em></p>
             '''
 
-        # Handle POST request
-        try:
-            from .services.auth_service import authenticate_teacher
+            # Handle POST request
+            try:
+                from .services.auth_service import authenticate_teacher
 
-            username = request.form.get('username')
-            password = request.form.get('password')
-            role = request.form.get('role')
+                username = request.form.get('username')
+                password = request.form.get('password')
+                role = request.form.get('role')
 
-            result = f"<h2>🧪 Simple Login Test Results</h2>"
-            result += f"<p><strong>Username:</strong> {username}</p>"
-            result += f"<p><strong>Password:</strong> {password}</p>"
-            result += f"<p><strong>Role:</strong> {role}</p>"
+                result = f"<h2>🧪 Simple Login Test Results</h2>"
+                result += f"<p><strong>Username:</strong> {username}</p>"
+                result += f"<p><strong>Password:</strong> {password}</p>"
+                result += f"<p><strong>Role:</strong> {role}</p>"
 
-            auth_result = authenticate_teacher(username, password, role)
+                auth_result = authenticate_teacher(username, password, role)
 
-            if auth_result:
-                result += f"<p>✅ <strong>Authentication Successful!</strong></p>"
-                result += f"<p>User details: {auth_result}</p>"
+                if auth_result:
+                    result += f"<p>✅ <strong>Authentication Successful!</strong></p>"
+                    result += f"<p>User details: {auth_result}</p>"
 
-                # Set session for testing
-                session['teacher_id'] = auth_result.id
-                session['role'] = role
-                session.permanent = True
+                    # Set session for testing
+                    session['teacher_id'] = auth_result.id
+                    session['role'] = role
+                    session.permanent = True
 
-                result += f"<p>✅ <strong>Session Set!</strong></p>"
-                result += f"<p>Session data: {dict(session)}</p>"
-                result += f"<p><a href='/headteacher/' target='_blank'>🎯 Try Dashboard</a></p>"
-            else:
-                result += f"<p>❌ <strong>Authentication Failed!</strong></p>"
+                    result += f"<p>✅ <strong>Session Set!</strong></p>"
+                    result += f"<p>Session data: {dict(session)}</p>"
+                    result += f"<p><a href='/headteacher/' target='_blank'>🎯 Try Dashboard</a></p>"
+                else:
+                    result += f"<p>❌ <strong>Authentication Failed!</strong></p>"
 
-            result += f"<p><a href='/debug/simple_login'>🔄 Test Again</a></p>"
-            return result
+                result += f"<p><a href='/debug/simple_login'>🔄 Test Again</a></p>"
+                return result
 
-        except Exception as e:
-            return f"<h2>❌ Simple Login Test Error</h2><p>{str(e)}</p>"
+            except Exception as e:
+                return f"<h2>❌ Simple Login Test Error</h2><p>{str(e)}</p>"
 
     # Add debug route to test admin dashboard directly
     @app.route('/debug/test_admin_dashboard')
@@ -1204,23 +1229,23 @@ def create_app(config_name='default'):
 
             Use this from a mobile device to verify which cookies/headers are received
             by the server when you attempt to login from the phone.
-        """
-        try:
-            from flask_wtf.csrf import generate_csrf
-            import json
+            """
+            try:
+                from flask_wtf.csrf import generate_csrf
+                import json
 
-            info = {
-                'remote_addr': request.remote_addr,
-                'url': request.url,
-                'headers': dict(request.headers),
-                'cookies': dict(request.cookies),
-                'session': dict(session),
-                'csrf_token': generate_csrf()
-            }
+                info = {
+                    'remote_addr': request.remote_addr,
+                    'url': request.url,
+                    'headers': dict(request.headers),
+                    'cookies': dict(request.cookies),
+                    'session': dict(session),
+                    'csrf_token': generate_csrf()
+                }
 
-            return app.response_class(json.dumps(info, default=str, indent=2), mimetype='application/json')
-        except Exception as e:
-            return app.response_class('{"error": "%s"}' % str(e), mimetype='application/json')
+                return app.response_class(json.dumps(info, default=str, indent=2), mimetype='application/json')
+            except Exception as e:
+                return app.response_class('{"error": "%s"}' % str(e), mimetype='application/json')
 
     # Add fallback root route in case blueprint route fails
     @app.route('/', methods=['GET'])

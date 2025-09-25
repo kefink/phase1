@@ -918,11 +918,13 @@
         <div class="login-container">
           <!-- Login Header -->
           <div class="login-header">
-            <div class="login-icon">
-              {% if school_info.logo_url and school_info.logo_url !=
-              '/static/images/default_logo.png' %}
+            <div class="login-icon" style="overflow: hidden">
+              {% set logo_src = school_info.logo_url or url_for('static',
+              filename='images/default_logo.png') %}
               <img
-                src="{{ school_info.logo_url }}"
+                src="{{ logo_src }}"
+                data-fallback="{{ url_for('static', filename='images/default_logo.png') }}"
+                onerror="this.onerror=null; this.src=this.getAttribute('data-fallback');"
                 alt="School Logo"
                 style="
                   width: 60px;
@@ -931,29 +933,6 @@
                   object-fit: cover;
                 "
               />
-              {% else %}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.75"
-                aria-hidden="true"
-                width="44"
-                height="44"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 6.75c-2.625 0-4.875-.75-6.75-2.25v6.75c0 4.5 3.375 7.5 6.75 8.25 3.375-.75 6.75-3.75 6.75-8.25V4.5C16.875 6 14.625 6.75 12 6.75Z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m9.75 12 1.5 1.5 3-3"
-                />
-              </svg>
-              {% endif %}
             </div>
             <h1 class="login-title">Administrator</h1>
             <p class="login-subtitle">Secure administrative access portal</p>

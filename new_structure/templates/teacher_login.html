@@ -649,11 +649,13 @@
         <div class="login-container">
           <!-- Login Header -->
           <div class="login-header">
-            <div class="login-icon">
-              {% if school_info.logo_url and school_info.logo_url !=
-              '/static/images/default_logo.png' %}
+            <div class="login-icon" style="overflow: hidden">
+              {% set logo_src = school_info.logo_url or url_for('static',
+              filename='images/default_logo.png') %}
               <img
-                src="{{ school_info.logo_url }}"
+                src="{{ logo_src }}"
+                data-fallback="{{ url_for('static', filename='images/default_logo.png') }}"
+                onerror="this.onerror=null; this.src=this.getAttribute('data-fallback');"
                 alt="School Logo"
                 style="
                   width: 60px;
@@ -662,24 +664,6 @@
                   object-fit: cover;
                 "
               />
-              {% else %}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.75"
-                aria-hidden="true"
-                width="44"
-                height="44"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M3 4.5h12.75a1.5 1.5 0 0 1 1.5 1.5V9M3 4.5v9.75A1.5 1.5 0 0 0 4.5 15.75H12m-9-11.25 9 6.75 9-6.75M12 15.75v3.75M8.25 19.5h7.5"
-                />
-              </svg>
-              {% endif %}
             </div>
             <h1 class="login-title">Subject Teacher</h1>
             <p class="login-subtitle">Access your subject teaching portal</p>
