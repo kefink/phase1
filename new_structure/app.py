@@ -35,7 +35,7 @@ def _load_env_file():
 _load_env_file()
 
 # Import the application factory
-from new_structure import create_app
+from __init__ import create_app
 
 # Set production environment if not set
 if not os.environ.get('FLASK_ENV'):
