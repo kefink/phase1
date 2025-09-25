@@ -40,172 +40,200 @@ if not os.environ.get('FLASK_ENV'):
 
 # Create a simple Flask app for Render deployment
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 import logging
 
 def initialize_database_self_contained():
-    """Self-contained database initialization without importing new_structure modules."""
+    """Self-contained database initialization using direct SQL commands."""
     try:
-        # Create SQLAlchemy instance
-        db = SQLAlchemy()
+        import psycopg2
+        from urllib.parse import urlparse
         
-        # Define models inline for database creation
-        class Teacher(db.Model):
-            __tablename__ = 'teachers'
-            id = db.Column(db.Integer, primary_key=True)
-            username = db.Column(db.String(80), unique=True, nullable=False)
-            password_hash = db.Column(db.String(120), nullable=False)
-            role = db.Column(db.String(20), nullable=False)
-            first_name = db.Column(db.String(50), nullable=False)
-            last_name = db.Column(db.String(50), nullable=False)
-            employee_id = db.Column(db.String(20), unique=True)
-            
-            def set_password(self, password):
-                # Simple hash for initialization (not secure for production)
-                self.password_hash = str(hash(password))
+        # Parse DATABASE_URL
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
+            return {"success": False, "error": "DATABASE_URL not found"}
         
-        class Grade(db.Model):
-            __tablename__ = 'grades'
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(50), unique=True, nullable=False)
-            education_level = db.Column(db.String(50), nullable=False)
+        # Parse the URL
+        url = urlparse(database_url)
         
-        class Stream(db.Model):
-            __tablename__ = 'streams'
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(10), nullable=False)
-            grade_id = db.Column(db.Integer, db.ForeignKey('grades.id'), nullable=False)
+        # Connect directly to PostgreSQL
+        conn = psycopg2.connect(
+            host=url.hostname,
+            port=url.port,
+            database=url.path[1:],  # Remove leading slash
+            user=url.username,
+            password=url.password
+        )
+        cur = conn.cursor()
         
-        class Subject(db.Model):
-            __tablename__ = 'subjects'
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(100), nullable=False)
-            education_level = db.Column(db.String(50), nullable=False)
-            is_composite = db.Column(db.Boolean, default=False)
-        
-        class Term(db.Model):
-            __tablename__ = 'terms'
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(50), nullable=False)
-            academic_year = db.Column(db.String(10), nullable=False)
-            is_current = db.Column(db.Boolean, default=False)
-        
-        class AssessmentType(db.Model):
-            __tablename__ = 'assessment_types'
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(100), nullable=False)
-        
-        class SchoolConfiguration(db.Model):
-            __tablename__ = 'school_configurations'
-            id = db.Column(db.Integer, primary_key=True)
-            school_name = db.Column(db.String(200), nullable=False)
-            school_motto = db.Column(db.String(200))
-            current_academic_year = db.Column(db.String(10))
-            current_term = db.Column(db.String(50))
-            headteacher_name = db.Column(db.String(100))
-        
-        # Initialize database with app context
-        from flask import current_app
-        
-        db.init_app(current_app)
-        
-        with current_app.app_context():
-            # Create all tables
-            db.create_all()
-            
-            # Check if data already exists
-            if Teacher.query.first() is not None:
+        # Check if tables already exist
+        cur.execute("SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'teachers'")
+        if cur.fetchone()[0] > 0:
+            # Check if data exists
+            cur.execute("SELECT COUNT(*) FROM teachers")
+            teacher_count = cur.fetchone()[0]
+            cur.close()
+            conn.close()
+            if teacher_count > 0:
                 return {"success": True, "message": "Database already initialized"}
-            
-            # Create default users
-            default_users = [
-                {"username": "headteacher", "password": "admin123", "role": "headteacher", 
-                 "first_name": "Head", "last_name": "Teacher", "employee_id": "HT001"},
-                {"username": "kevin", "password": "kev123", "role": "classteacher", 
-                 "first_name": "Kevin", "last_name": "Teacher", "employee_id": "CT002"},
-                {"username": "telvo", "password": "telvo123", "role": "teacher", 
-                 "first_name": "Telvo", "last_name": "Subject Teacher", "employee_id": "ST001"},
-            ]
-            for data in default_users:
-                pwd = data.pop("password")
-                t = Teacher(**data)
-                t.set_password(pwd)
-                db.session.add(t)
-            
-            # Create grades and streams
-            grade_configs = [
-                ("PP1", "pre_primary"), ("PP2", "pre_primary"),
-                ("Grade 1", "lower_primary"), ("Grade 2", "lower_primary"), ("Grade 3", "lower_primary"),
-                ("Grade 4", "upper_primary"), ("Grade 5", "upper_primary"), ("Grade 6", "upper_primary"),
-                ("Grade 7", "junior_secondary"), ("Grade 8", "junior_secondary"), ("Grade 9", "junior_secondary")
-            ]
-            
-            grades = []
-            for name, level in grade_configs:
-                g = Grade(name=name, education_level=level)
-                db.session.add(g)
-                grades.append(g)
-            
-            db.session.flush()  # Get IDs
-            
-            # Create streams for each grade
-            for g in grades:
-                for stream_name in ("A", "B"):
-                    db.session.add(Stream(name=stream_name, grade_id=g.id))
-            
-            # Create subjects
-            subjects = [
-                ("English", "lower_primary", True),
-                ("Kiswahili", "lower_primary", True),
-                ("Mathematics", "lower_primary", False),
-                ("Environmental Activities", "lower_primary", False),
-                ("English", "upper_primary", True),
-                ("Kiswahili", "upper_primary", True),
-                ("Mathematics", "upper_primary", False),
-                ("Science & Technology", "upper_primary", False),
-                ("English", "junior_secondary", True),
-                ("Kiswahili", "junior_secondary", True),
-                ("Mathematics", "junior_secondary", False),
-                ("Integrated Science", "junior_secondary", False),
-            ]
-            for name, level, composite in subjects:
-                db.session.add(Subject(name=name, education_level=level, is_composite=composite))
-            
-            # Create terms
-            terms = [
-                {"name": "Term 1", "academic_year": "2024", "is_current": True},
-                {"name": "Term 2", "academic_year": "2024", "is_current": False},
-                {"name": "Term 3", "academic_year": "2024", "is_current": False},
-            ]
-            for t in terms:
-                db.session.add(Term(**t))
-            
-            # Create assessment types
-            assessments = [
-                {"name": "CAT 1"},
-                {"name": "CAT 2"},
-                {"name": "End Term Exam"},
-                {"name": "Assignment"},
-                {"name": "Project"},
-            ]
-            for a in assessments:
-                db.session.add(AssessmentType(**a))
-            
-            # Create school configuration
-            cfg = SchoolConfiguration(
-                school_name="Hillview School",
-                school_motto="Excellence in Education",
-                current_academic_year="2024",
-                current_term="Term 1",
-                headteacher_name="Head Teacher",
+        
+        # Create tables using direct SQL
+        sql_commands = [
+            # Teachers table
+            """
+            CREATE TABLE IF NOT EXISTS teachers (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(80) UNIQUE NOT NULL,
+                password_hash VARCHAR(120) NOT NULL,
+                role VARCHAR(20) NOT NULL,
+                first_name VARCHAR(50) NOT NULL,
+                last_name VARCHAR(50) NOT NULL,
+                employee_id VARCHAR(20) UNIQUE
             )
-            db.session.add(cfg)
+            """,
             
-            # Commit all changes
-            db.session.commit()
+            # Grades table
+            """
+            CREATE TABLE IF NOT EXISTS grades (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(50) UNIQUE NOT NULL,
+                education_level VARCHAR(50) NOT NULL
+            )
+            """,
             
-            return {"success": True, "message": "Database initialized successfully"}
+            # Streams table
+            """
+            CREATE TABLE IF NOT EXISTS streams (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(10) NOT NULL,
+                grade_id INTEGER REFERENCES grades(id)
+            )
+            """,
             
+            # Subjects table
+            """
+            CREATE TABLE IF NOT EXISTS subjects (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                education_level VARCHAR(50) NOT NULL,
+                is_composite BOOLEAN DEFAULT FALSE
+            )
+            """,
+            
+            # Terms table
+            """
+            CREATE TABLE IF NOT EXISTS terms (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(50) NOT NULL,
+                academic_year VARCHAR(10) NOT NULL,
+                is_current BOOLEAN DEFAULT FALSE
+            )
+            """,
+            
+            # Assessment types table
+            """
+            CREATE TABLE IF NOT EXISTS assessment_types (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL
+            )
+            """,
+            
+            # School configurations table
+            """
+            CREATE TABLE IF NOT EXISTS school_configurations (
+                id SERIAL PRIMARY KEY,
+                school_name VARCHAR(200) NOT NULL,
+                school_motto VARCHAR(200),
+                current_academic_year VARCHAR(10),
+                current_term VARCHAR(50),
+                headteacher_name VARCHAR(100)
+            )
+            """
+        ]
+        
+        # Execute table creation
+        for sql in sql_commands:
+            cur.execute(sql)
+        
+        # Insert default data
+        # Users (simple hash for demo - not production secure)
+        users = [
+            ('headteacher', str(hash('admin123')), 'headteacher', 'Head', 'Teacher', 'HT001'),
+            ('kevin', str(hash('kev123')), 'classteacher', 'Kevin', 'Teacher', 'CT002'),
+            ('telvo', str(hash('telvo123')), 'teacher', 'Telvo', 'Subject Teacher', 'ST001')
+        ]
+        
+        for user in users:
+            cur.execute(
+                "INSERT INTO teachers (username, password_hash, role, first_name, last_name, employee_id) VALUES (%s, %s, %s, %s, %s, %s)",
+                user
+            )
+        
+        # Grades
+        grades = [
+            ('PP1', 'pre_primary'), ('PP2', 'pre_primary'),
+            ('Grade 1', 'lower_primary'), ('Grade 2', 'lower_primary'), ('Grade 3', 'lower_primary'),
+            ('Grade 4', 'upper_primary'), ('Grade 5', 'upper_primary'), ('Grade 6', 'upper_primary'),
+            ('Grade 7', 'junior_secondary'), ('Grade 8', 'junior_secondary'), ('Grade 9', 'junior_secondary')
+        ]
+        
+        grade_ids = []
+        for name, level in grades:
+            cur.execute("INSERT INTO grades (name, education_level) VALUES (%s, %s) RETURNING id", (name, level))
+            grade_ids.append(cur.fetchone()[0])
+        
+        # Streams (A and B for each grade)
+        for grade_id in grade_ids:
+            cur.execute("INSERT INTO streams (name, grade_id) VALUES (%s, %s)", ('A', grade_id))
+            cur.execute("INSERT INTO streams (name, grade_id) VALUES (%s, %s)", ('B', grade_id))
+        
+        # Subjects
+        subjects = [
+            ('English', 'lower_primary', True),
+            ('Kiswahili', 'lower_primary', True),
+            ('Mathematics', 'lower_primary', False),
+            ('Environmental Activities', 'lower_primary', False),
+            ('English', 'upper_primary', True),
+            ('Kiswahili', 'upper_primary', True),
+            ('Mathematics', 'upper_primary', False),
+            ('Science & Technology', 'upper_primary', False),
+            ('English', 'junior_secondary', True),
+            ('Kiswahili', 'junior_secondary', True),
+            ('Mathematics', 'junior_secondary', False),
+            ('Integrated Science', 'junior_secondary', False)
+        ]
+        
+        for name, level, composite in subjects:
+            cur.execute("INSERT INTO subjects (name, education_level, is_composite) VALUES (%s, %s, %s)", (name, level, composite))
+        
+        # Terms
+        terms = [
+            ('Term 1', '2024', True),
+            ('Term 2', '2024', False),
+            ('Term 3', '2024', False)
+        ]
+        
+        for name, year, current in terms:
+            cur.execute("INSERT INTO terms (name, academic_year, is_current) VALUES (%s, %s, %s)", (name, year, current))
+        
+        # Assessment types
+        assessments = ['CAT 1', 'CAT 2', 'End Term Exam', 'Assignment', 'Project']
+        for assessment in assessments:
+            cur.execute("INSERT INTO assessment_types (name) VALUES (%s)", (assessment,))
+        
+        # School configuration
+        cur.execute(
+            "INSERT INTO school_configurations (school_name, school_motto, current_academic_year, current_term, headteacher_name) VALUES (%s, %s, %s, %s, %s)",
+            ('Hillview School', 'Excellence in Education', '2024', 'Term 1', 'Head Teacher')
+        )
+        
+        # Commit all changes
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return {"success": True, "message": "Database initialized successfully with direct SQL"}
+        
     except Exception as e:
         return {"success": False, "error": str(e)}
 
