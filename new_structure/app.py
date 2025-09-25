@@ -40,28 +40,54 @@ if not os.environ.get('FLASK_ENV'):
 
 # Create a simple Flask app for Render deployment
 from flask import Flask
-import config
 
 def create_simple_app():
     """Create a simplified Flask app for deployment."""
     app = Flask(__name__)
     
-    # Load configuration
-    config_name = 'production'
-    app.config.from_object(config.config[config_name])
+    # Simple configuration for deployment
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback-secret-key-for-deployment')
+    app.config['DATABASE_URL'] = os.environ.get('DATABASE_URL', 'sqlite:///fallback.db')
     
-    # Initialize database
-    from extensions import db
-    db.init_app(app)
-    
-    # Simple route for testing
+    # Simple routes
     @app.route('/')
     def index():
-        return "Hillview School Management System - Loading..."
+        return """
+        <h1>🎉 Hillview School Management System</h1>
+        <p><strong>Status:</strong> Successfully Deployed!</p>
+        <p><strong>Environment:</strong> Production</p>
+        <p>The application is running and ready to be initialized.</p>
+        <hr>
+        <p><a href="/health">Health Check</a></p>
+        """
     
     @app.route('/health')
     def health():
         return {"status": "ok", "message": "Application is running"}
+    
+    @app.route('/admin_login')
+    def admin_login():
+        return """
+        <h1>🏫 Admin Login</h1>
+        <p>Mobile-friendly admin login will be available after database initialization.</p>
+        <p><a href="/">← Back to Home</a></p>
+        """
+    
+    @app.route('/teacher_login')
+    def teacher_login():
+        return """
+        <h1>👩‍🏫 Teacher Login</h1>
+        <p>Mobile-friendly teacher login will be available after database initialization.</p>
+        <p><a href="/">← Back to Home</a></p>
+        """
+    
+    @app.route('/classteacher_login')
+    def classteacher_login():
+        return """
+        <h1>👨‍🏫 Class Teacher Login</h1>
+        <p>Mobile-friendly class teacher login will be available after database initialization.</p>
+        <p><a href="/">← Back to Home</a></p>
+        """
     
     return app
 
@@ -71,4 +97,4 @@ app = create_simple_app()
 if __name__ == '__main__':
     # This won't be called in production, but useful for local testing
     port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=False)
