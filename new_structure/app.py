@@ -43,40 +43,45 @@ from flask import Flask
 import logging
 
 def initialize_database_self_contained():
-    """Self-contained database initialization using direct SQL commands."""
+    """Self-contained database initialization for PostgreSQL using direct connection."""
     try:
         import psycopg2
         from urllib.parse import urlparse
+        import os
         
-        # Parse DATABASE_URL
-        database_url = os.environ.get('DATABASE_URL')
-        if not database_url:
-            return {"success": False, "error": "DATABASE_URL not found"}
+        # Get database URL from environment
+        db_url = os.environ.get('DATABASE_URL')
+        if not db_url:
+            return {"success": False, "error": "DATABASE_URL not found in environment"}
         
-        # Parse the URL
-        url = urlparse(database_url)
+        # Parse PostgreSQL URL
+        parsed = urlparse(db_url)
         
-        # Connect directly to PostgreSQL
+        # Create direct database connection (bypass SQLAlchemy entirely)
         conn = psycopg2.connect(
-            host=url.hostname,
-            port=url.port,
-            database=url.path[1:],  # Remove leading slash
-            user=url.username,
-            password=url.password
+            host=parsed.hostname,
+            port=parsed.port,
+            database=parsed.path[1:],  # Remove leading slash
+            user=parsed.username,
+            password=parsed.password
         )
         conn.autocommit = True  # Enable autocommit for easier table management
         cur = conn.cursor()
         
-        # Check if tables already exist
-        cur.execute("SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'teachers'")
-        if cur.fetchone()[0] > 0:
-            # Check if data exists
-            cur.execute("SELECT COUNT(*) FROM teachers")
-            teacher_count = cur.fetchone()[0]
-            cur.close()
-            conn.close()
-            if teacher_count > 0:
-                return {"success": True, "message": "Database already initialized"}
+        # Check if tables already exist and have data
+        try:
+            cur.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'teachers')")
+            tables_exist = cur.fetchone()[0]
+            
+            if tables_exist:
+                cur.execute("SELECT COUNT(*) FROM teachers")
+                teacher_count = cur.fetchone()[0]
+                if teacher_count > 0:
+                    conn.close()
+                    return {"success": True, "message": "Database already initialized with data"}
+        except Exception:
+            # Tables don't exist yet, continue with creation
+            pass
         
         # Create tables using direct SQL
         sql_commands = [
@@ -156,80 +161,84 @@ def initialize_database_self_contained():
         for sql in sql_commands:
             cur.execute(sql)
         
-        # Insert default data
-        # Users (simple hash for demo - not production secure)
-        users = [
-            ('headteacher', str(hash('admin123')), 'headteacher', 'Head', 'Teacher', 'HT001'),
-            ('kevin', str(hash('kev123')), 'classteacher', 'Kevin', 'Teacher', 'CT002'),
-            ('telvo', str(hash('telvo123')), 'teacher', 'Telvo', 'Subject Teacher', 'ST001')
-        ]
+        # Insert default data only if tables are empty
+        # Check if we already have users
+        cur.execute("SELECT COUNT(*) FROM teachers")
+        existing_teachers = cur.fetchone()[0]
         
-        for user in users:
+        if existing_teachers == 0:
+            # Insert default users
+            users = [
+                ('headteacher', str(hash('admin123')), 'headteacher', 'Head', 'Teacher', 'HT001'),
+                ('kevin', str(hash('kev123')), 'classteacher', 'Kevin', 'Teacher', 'CT002'),
+                ('telvo', str(hash('telvo123')), 'teacher', 'Telvo', 'Subject Teacher', 'ST001')
+            ]
+            
+            for user in users:
+                cur.execute(
+                    "INSERT INTO teachers (username, password_hash, role, first_name, last_name, employee_id) VALUES (%s, %s, %s, %s, %s, %s)",
+                    user
+                )
+            
+            # Grades
+            grades = [
+                ('PP1', 'pre_primary'), ('PP2', 'pre_primary'),
+                ('Grade 1', 'lower_primary'), ('Grade 2', 'lower_primary'), ('Grade 3', 'lower_primary'),
+                ('Grade 4', 'upper_primary'), ('Grade 5', 'upper_primary'), ('Grade 6', 'upper_primary'),
+                ('Grade 7', 'junior_secondary'), ('Grade 8', 'junior_secondary'), ('Grade 9', 'junior_secondary')
+            ]
+            
+            grade_ids = []
+            for name, level in grades:
+                cur.execute("INSERT INTO grades (name, education_level) VALUES (%s, %s) RETURNING id", (name, level))
+                grade_ids.append(cur.fetchone()[0])
+            
+            # Streams (A and B for each grade)
+            for grade_id in grade_ids:
+                cur.execute("INSERT INTO streams (name, grade_id) VALUES (%s, %s)", ('A', grade_id))
+                cur.execute("INSERT INTO streams (name, grade_id) VALUES (%s, %s)", ('B', grade_id))
+            
+            # Subjects
+            subjects = [
+                ('English', 'lower_primary', True),
+                ('Kiswahili', 'lower_primary', True),
+                ('Mathematics', 'lower_primary', False),
+                ('Environmental Activities', 'lower_primary', False),
+                ('English', 'upper_primary', True),
+                ('Kiswahili', 'upper_primary', True),
+                ('Mathematics', 'upper_primary', False),
+                ('Science & Technology', 'upper_primary', False),
+                ('English', 'junior_secondary', True),
+                ('Kiswahili', 'junior_secondary', True),
+                ('Mathematics', 'junior_secondary', False),
+                ('Integrated Science', 'junior_secondary', False)
+            ]
+            
+            for name, level, composite in subjects:
+                cur.execute("INSERT INTO subjects (name, education_level, is_composite) VALUES (%s, %s, %s)", (name, level, composite))
+            
+            # Terms
+            terms = [
+                ('Term 1', '2024', True),
+                ('Term 2', '2024', False),
+                ('Term 3', '2024', False)
+            ]
+            
+            for name, year, current in terms:
+                cur.execute("INSERT INTO terms (name, academic_year, is_current) VALUES (%s, %s, %s)", (name, year, current))
+            
+            # Assessment types
+            assessments = ['CAT 1', 'CAT 2', 'End Term Exam', 'Assignment', 'Project']
+            for assessment in assessments:
+                cur.execute("INSERT INTO assessment_types (name) VALUES (%s)", (assessment,))
+            
+            # School configuration
             cur.execute(
-                "INSERT INTO teachers (username, password_hash, role, first_name, last_name, employee_id) VALUES (%s, %s, %s, %s, %s, %s)",
-                user
+                "INSERT INTO school_configurations (school_name, school_motto, current_academic_year, current_term, headteacher_name) VALUES (%s, %s, %s, %s, %s)",
+                ('Hillview School', 'Excellence in Education', '2024', 'Term 1', 'Head Teacher')
             )
         
-        # Grades
-        grades = [
-            ('PP1', 'pre_primary'), ('PP2', 'pre_primary'),
-            ('Grade 1', 'lower_primary'), ('Grade 2', 'lower_primary'), ('Grade 3', 'lower_primary'),
-            ('Grade 4', 'upper_primary'), ('Grade 5', 'upper_primary'), ('Grade 6', 'upper_primary'),
-            ('Grade 7', 'junior_secondary'), ('Grade 8', 'junior_secondary'), ('Grade 9', 'junior_secondary')
-        ]
-        
-        grade_ids = []
-        for name, level in grades:
-            cur.execute("INSERT INTO grades (name, education_level) VALUES (%s, %s) RETURNING id", (name, level))
-            grade_ids.append(cur.fetchone()[0])
-        
-        # Streams (A and B for each grade)
-        for grade_id in grade_ids:
-            cur.execute("INSERT INTO streams (name, grade_id) VALUES (%s, %s)", ('A', grade_id))
-            cur.execute("INSERT INTO streams (name, grade_id) VALUES (%s, %s)", ('B', grade_id))
-        
-        # Subjects
-        subjects = [
-            ('English', 'lower_primary', True),
-            ('Kiswahili', 'lower_primary', True),
-            ('Mathematics', 'lower_primary', False),
-            ('Environmental Activities', 'lower_primary', False),
-            ('English', 'upper_primary', True),
-            ('Kiswahili', 'upper_primary', True),
-            ('Mathematics', 'upper_primary', False),
-            ('Science & Technology', 'upper_primary', False),
-            ('English', 'junior_secondary', True),
-            ('Kiswahili', 'junior_secondary', True),
-            ('Mathematics', 'junior_secondary', False),
-            ('Integrated Science', 'junior_secondary', False)
-        ]
-        
-        for name, level, composite in subjects:
-            cur.execute("INSERT INTO subjects (name, education_level, is_composite) VALUES (%s, %s, %s)", (name, level, composite))
-        
-        # Terms
-        terms = [
-            ('Term 1', '2024', True),
-            ('Term 2', '2024', False),
-            ('Term 3', '2024', False)
-        ]
-        
-        for name, year, current in terms:
-            cur.execute("INSERT INTO terms (name, academic_year, is_current) VALUES (%s, %s, %s)", (name, year, current))
-        
-        # Assessment types
-        assessments = ['CAT 1', 'CAT 2', 'End Term Exam', 'Assignment', 'Project']
-        for assessment in assessments:
-            cur.execute("INSERT INTO assessment_types (name) VALUES (%s)", (assessment,))
-        
-        # School configuration
-        cur.execute(
-            "INSERT INTO school_configurations (school_name, school_motto, current_academic_year, current_term, headteacher_name) VALUES (%s, %s, %s, %s, %s)",
-            ('Hillview School', 'Excellence in Education', '2024', 'Term 1', 'Head Teacher')
-        )
-        
-        # Commit all changes
-        # conn.commit()  # Not needed with autocommit=True
+        # Close connection
         cur.close()
         conn.close()
         
