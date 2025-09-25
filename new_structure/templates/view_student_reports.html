@@ -213,7 +213,8 @@
           View Class Report
         </a>
         <button
-          onclick="downloadAllIndividualReports('{{ grade }}', '{{ stream }}', '{{ term }}', '{{ assessment_type }}')"
+          onclick="event.preventDefault(); event.stopPropagation(); downloadAllIndividualReports('{{ grade }}', '{{ stream }}', '{{ term }}', '{{ assessment_type }}'); return false;"
+          ondblclick="event.preventDefault(); event.stopPropagation(); return false;"
           class="download-all-btn"
           id="downloadAllBtn"
         >
@@ -321,22 +322,62 @@
     </div>
 
     <script>
+        // Global flag and timestamp to prevent multiple simultaneous requests
+        let isDownloading = false;
+        let lastDownloadTime = 0;
+        const DOWNLOAD_COOLDOWN = 10000; // 10 seconds cooldown
+
         // Function to download all individual reports as ZIP
-    async function downloadAllIndividualReports(grade, stream, term, assessmentType) {
-      const downloadBtn = document.getElementById('downloadAllBtn');
-      const originalText = downloadBtn.innerHTML;
-      let fallbackAnchor = null;
+        function downloadAllIndividualReports(grade, stream, term, assessmentType) {
+            const now = Date.now();
+            
+            // Check timestamp-based cooldown
+            if (now - lastDownloadTime < DOWNLOAD_COOLDOWN) {
+                const remaining = Math.ceil((DOWNLOAD_COOLDOWN - (now - lastDownloadTime)) / 1000);
+                console.log(`Download blocked - cooldown active (${remaining}s remaining)`);
+                showNotification(`Please wait ${remaining} seconds before downloading again`, 'warning');
+                return false;
+            }
+            
+            // Prevent duplicate requests - exit immediately if already downloading
+            if (isDownloading) {
+                console.log('Download already in progress - blocking duplicate request');
+                showNotification('Download already in progress, please wait...', 'warning');
+                return false;
+            }
 
-      try {
-        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating ZIP...';
-        downloadBtn.disabled = true;
+            // Set the flag and timestamp immediately to block any other requests
+            isDownloading = true;
+            lastDownloadTime = now;
+            
+            const downloadBtn = document.getElementById('downloadAllBtn');
+            if (!downloadBtn) {
+                isDownloading = false;
+                return false;
+            }
+            
+            const originalText = downloadBtn.innerHTML;
+            
+            // Disable button immediately
+            downloadBtn.disabled = true;
+            downloadBtn.style.pointerEvents = 'none';
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating ZIP...';
+            
+            // Use setTimeout to ensure UI updates before starting the async operation
+            setTimeout(async () => {
+                let fallbackAnchor = null;
 
-        const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
-        const response = await fetch(url, {
-          method: 'GET',
-          credentials: 'same-origin',
-          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/zip,application/json,text/plain,*/*' }
-        });
+                try {
+                    console.log('Starting ZIP download request');
+                    const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: { 
+                            'X-Requested-With': 'XMLHttpRequest', 
+                            'Accept': 'application/zip,application/json,text/plain,*/*' 
+                        }
+                    });
 
         if (!response.ok) {
           let serverMessage = '';
@@ -353,6 +394,7 @@
         }
 
         const contentType = response.headers.get('Content-Type') || '';
+        console.log('Response Content-Type:', contentType);
         if (!contentType.includes('application/zip')) {
           throw new Error('Unexpected response type (expected ZIP). Ensure students have marks and try again.');
         }
@@ -365,6 +407,7 @@
         }
 
         const blob = await response.blob();
+        console.log('Blob created, size:', blob.size);
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = blobUrl;
@@ -392,10 +435,17 @@
           downloadBtn.insertAdjacentElement('afterend', fallbackAnchor);
         } catch { /* ignore */ }
       } finally {
+        // Reset everything
         downloadBtn.innerHTML = originalText;
         downloadBtn.disabled = false;
+        downloadBtn.style.pointerEvents = 'auto';
+        isDownloading = false; // Reset the global flag
+        console.log('Download process completed, flag reset');
       }
-    }
+            }, 100); // Small delay to ensure UI updates
+            
+            return false; // Prevent any default action
+        }
 
         // Notification function
         function showNotification(message, type = 'info') {
@@ -406,8 +456,8 @@
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
-                color: white;
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+                color: ${type === 'warning' ? 'black' : 'white'};
                 padding: 15px 20px;
                 border-radius: 5px;
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);

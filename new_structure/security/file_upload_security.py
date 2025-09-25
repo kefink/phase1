@@ -63,14 +63,63 @@ class FileUploadSecurity:
         '.html', '.htm', '.xml', '.svg', '.swf'
     ]
     
-    # Maximum file sizes (in bytes)
+    # Maximum file sizes (in bytes) - Enhanced security limits
     MAX_FILE_SIZES = {
-        'image': 5 * 1024 * 1024,      # 5MB for images
-        'document': 10 * 1024 * 1024,  # 10MB for documents
-        'archive': 50 * 1024 * 1024,   # 50MB for archives
-        'media': 100 * 1024 * 1024,    # 100MB for media files
-        'default': 16 * 1024 * 1024    # 16MB default
+        '.pdf': 25 * 1024 * 1024,    # 25MB for PDF
+        '.doc': 10 * 1024 * 1024,    # 10MB for DOC
+        '.docx': 10 * 1024 * 1024,   # 10MB for DOCX
+        '.xls': 15 * 1024 * 1024,    # 15MB for XLS
+        '.xlsx': 15 * 1024 * 1024,   # 15MB for XLSX
+        '.ppt': 25 * 1024 * 1024,    # 25MB for PPT
+        '.pptx': 25 * 1024 * 1024,   # 25MB for PPTX
+        '.txt': 1 * 1024 * 1024,     # 1MB for text files
+        '.rtf': 5 * 1024 * 1024,     # 5MB for RTF
+        '.jpg': 10 * 1024 * 1024,    # 10MB for JPEG
+        '.jpeg': 10 * 1024 * 1024,   # 10MB for JPEG
+        '.png': 10 * 1024 * 1024,    # 10MB for PNG
+        '.gif': 5 * 1024 * 1024,     # 5MB for GIF
+        '.bmp': 15 * 1024 * 1024,    # 15MB for BMP
+        '.webp': 8 * 1024 * 1024,    # 8MB for WebP
+        '.zip': 50 * 1024 * 1024,    # 50MB for ZIP (with content validation)
+        '.rar': 50 * 1024 * 1024,    # 50MB for RAR
+        '.mp3': 20 * 1024 * 1024,    # 20MB for MP3
+        '.mp4': 100 * 1024 * 1024,   # 100MB for MP4
+        '.csv': 10 * 1024 * 1024     # 10MB for CSV files
     }
+
+    # SECURITY ENHANCEMENT: Dangerous file signatures and content patterns
+    DANGEROUS_SIGNATURES = [
+        b'\x4D\x5A',           # PE/EXE files (Windows executables)
+        b'\x7F\x45\x4C\x46',   # ELF executables (Linux)
+        b'\xCF\xFA\xED\xFE',   # Mach-O executables (macOS)
+        b'#!/bin/',            # Shell scripts
+        b'#!/usr/',            # Shell scripts  
+        b'<?php',              # PHP scripts
+        b'<%',                 # ASP scripts
+        b'<script',            # JavaScript in files
+        b'javascript:',         # JavaScript URLs
+        b'vbscript:',          # VBScript URLs
+        b'data:text/html',     # Data URLs with HTML
+        b'\x00\x00\x01\x00',  # ICO files (can be disguised executables)
+    ]
+
+    # Suspicious content patterns to detect in file content
+    MALICIOUS_PATTERNS = [
+        r'<script[^>]*>.*?</script>',
+        r'<iframe[^>]*>.*?</iframe>',
+        r'<object[^>]*>.*?</object>',
+        r'<embed[^>]*>.*?</embed>',
+        r'on\w+\s*=\s*["\'][^"\']*["\']',  # Event handlers
+        r'javascript\s*:',
+        r'vbscript\s*:',
+        r'data\s*:\s*text/html',
+        r'eval\s*\(',
+        r'document\s*\.\s*write',
+        r'window\s*\.\s*location',
+        r'<\?php',
+        r'<%.*?%>',  # ASP tags
+        r'#!/bin/[a-z]*sh',  # Shell shebang lines
+    ]
     
     # Virus signatures (simple patterns)
     VIRUS_SIGNATURES = [

@@ -1098,11 +1098,12 @@ def create_app(config_name='default'):
         except Exception as e:
             return f"<h2>❌ Login Test Error</h2><p>{str(e)}</p>"
 
-    # Add CSRF-exempt debug route for easier testing
-    @app.route('/debug/simple_login', methods=['GET', 'POST'])
-    @csrf.exempt
-    def debug_simple_login():
-        """Simple login test without CSRF protection."""
+    # Add CSRF-exempt debug route for easier testing (DEVELOPMENT/TESTING ONLY)
+    if app.debug or app.config.get('TESTING') or config_name in ['development', 'testing']:
+        @app.route('/debug/simple_login', methods=['GET', 'POST'])
+        @csrf.exempt
+        def debug_simple_login():
+            """Simple login test without CSRF protection. DEVELOPMENT/TESTING ONLY."""
         if request.method == 'GET':
             return '''
             <h2>🔐 Simple Login Tester (No CSRF)</h2>
@@ -1194,14 +1195,15 @@ def create_app(config_name='default'):
             <p><a href='/debug/simple_login'>🔄 Try Simple Login</a></p>
             """
 
-    # Add a CSRF-exempt debug endpoint that returns request headers, cookies and session
-    @app.route('/debug/session-info', methods=['GET'])
-    @csrf.exempt
-    def debug_session_info():
-        """Return JSON with headers, cookies, session and a generated CSRF token.
+    # Add a CSRF-exempt debug endpoint that returns request headers, cookies and session (DEVELOPMENT/TESTING ONLY)
+    if app.debug or app.config.get('TESTING') or config_name in ['development', 'testing']:
+        @app.route('/debug/session-info', methods=['GET'])
+        @csrf.exempt
+        def debug_session_info():
+            """Return JSON with headers, cookies, session and a generated CSRF token. DEVELOPMENT/TESTING ONLY.
 
-        Use this from a mobile device to verify which cookies/headers are received
-        by the server when you attempt to login from the phone.
+            Use this from a mobile device to verify which cookies/headers are received
+            by the server when you attempt to login from the phone.
         """
         try:
             from flask_wtf.csrf import generate_csrf
@@ -1305,21 +1307,80 @@ def create_app(config_name='default'):
             """
 
     # Register error handlers
+    # Enhanced error handlers for security and production readiness
+    import logging
+    security_logger = logging.getLogger('security')
+    
+    @app.errorhandler(400)
+    def bad_request(e):
+        """Handle bad requests with generic message for security."""
+        security_logger.warning(f"Bad request: {request.url} - {request.remote_addr}")
+        if app.debug or app.config.get('TESTING'):
+            return f"Bad Request: {str(e)}", 400
+        return "Bad Request", 400
+    
+    @app.errorhandler(401)
+    def unauthorized(e):
+        """Handle unauthorized access attempts."""
+        security_logger.warning(f"Unauthorized access attempt: {request.url} - {request.remote_addr}")
+        if app.debug or app.config.get('TESTING'):
+            return f"Unauthorized: {str(e)}", 401
+        return "Unauthorized Access", 401
+    
+    @app.errorhandler(403)
+    def forbidden(e):
+        """Handle forbidden access attempts."""
+        security_logger.warning(f"Forbidden access attempt: {request.url} - {request.remote_addr}")
+        if app.debug or app.config.get('TESTING'):
+            return f"Forbidden: {str(e)}", 403
+        return "Access Denied", 403
+    
+    @app.errorhandler(404)
+    def not_found(e):
+        """Handle page not found with generic message for security."""
+        app.logger.info(f"Page not found: {request.url} - {request.remote_addr}")
+        if app.debug or app.config.get('TESTING'):
+            return f"Not Found: {str(e)}", 404
+        return "Page Not Found", 404
+    
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        """Handle method not allowed with generic message for security."""
+        security_logger.warning(f"Method not allowed: {request.method} {request.url} - {request.remote_addr}")
+        if app.debug or app.config.get('TESTING'):
+            return f"Method Not Allowed: {str(e)}", 405
+        return "Method Not Allowed", 405
+    
+    @app.errorhandler(429)
+    def rate_limit_exceeded(e):
+        """Handle rate limiting with security logging."""
+        security_logger.warning(f"Rate limit exceeded: {request.url} - {request.remote_addr}")
+        if app.debug or app.config.get('TESTING'):
+            return f"Rate Limit Exceeded: {str(e)}", 429
+        return "Too Many Requests", 429
+
     @app.errorhandler(500)
     def internal_server_error(e):
-        app.logger.error(f"Internal Server Error: {str(e)}")
-        # Check if it's a database error and provide helpful message
-        error_str = str(e)
-        if "no such table" in error_str.lower() or "database" in error_str.lower():
-            return f"""
-            <h2>🔧 Database Error Detected</h2>
-            <p>It looks like there's a database issue. This usually means the database tables haven't been created yet.</p>
-            <p><strong>Quick Fix:</strong></p>
-            <p><a href="/debug/initialize_database" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">🔄 Initialize Database</a></p>
-            <p><a href="/debug/check_tables" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">📋 Check Database Tables</a></p>
-            <hr>
-            <p><strong>Error Details:</strong> {error_str}</p>
-            """, 500
+        """Handle internal server errors with enhanced security and logging."""
+        # Log full error details for debugging but return generic message in production
+        app.logger.error(f"Internal Server Error: {str(e)} - URL: {request.url} - IP: {request.remote_addr}")
+        
+        # In development/testing, provide helpful database error information
+        if app.debug or app.config.get('TESTING'):
+            error_str = str(e)
+            if "no such table" in error_str.lower() or "database" in error_str.lower():
+                return f"""
+                <h2>🔧 Database Error Detected</h2>
+                <p>It looks like there's a database issue. This usually means the database tables haven't been created yet.</p>
+                <p><strong>Quick Fix:</strong></p>
+                <p><a href="/debug/initialize_database" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">🔄 Initialize Database</a></p>
+                <p><a href="/debug/check_tables" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">📋 Check Database Tables</a></p>
+                <hr>
+                <p><strong>Error Details:</strong> {error_str}</p>
+                """, 500
+            return f"Internal Server Error: {error_str}", 500
+        
+        # Production: Return generic error message for security
         return "Internal Server Error", 500
 
 

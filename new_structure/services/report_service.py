@@ -546,12 +546,87 @@ def generate_class_report_pdf_from_html(grade, stream, term, assessment_type, cl
             'encoding': 'UTF-8',
             'no-outline': None,
             'enable-local-file-access': True,  # Enable local file access for images
-            'print-media-type': None
+            'print-media-type': None,
+            # SECURITY: Disable JavaScript execution in PDF generation
+            'disable-javascript': None,
+            'disable-plugins': None,
+            # Prevent external resource loading
+            'disable-external-links': None,
+            'disable-internal-links': None
         }
 
         # Convert HTML to PDF
         import pdfkit
-        pdfkit.from_string(html_content, pdf_path, options=options)
+        import os
+        
+        # Configure pdfkit with explicit wkhtmltopdf path for Windows
+        WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+        
+        if os.path.exists(WKHTMLTOPDF_PATH):
+            config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
+            print(f"Class report using wkhtmltopdf at: {WKHTMLTOPDF_PATH}")
+        else:
+            # Fallback to default configuration
+            config = pdfkit.configuration()
+            print("Class report using default pdfkit configuration")
+        
+        # SECURITY: Sanitize HTML content before PDF generation
+        def sanitize_html_for_pdf(html_content):
+            """Sanitize HTML content to prevent command injection in PDF generation."""
+            import html
+            import re
+            
+            # HTML escape any potential script injections
+            html_content = html.escape(html_content, quote=False)
+            
+            # Remove potentially dangerous HTML elements/attributes
+            dangerous_patterns = [
+                r'<script[^>]*>.*?</script>',
+                r'<iframe[^>]*>.*?</iframe>', 
+                r'<object[^>]*>.*?</object>',
+                r'<embed[^>]*>.*?</embed>',
+                r'on\w+\s*=\s*["\'][^"\']*["\']',  # onclick, onload, etc.
+                r'javascript\s*:',
+                r'vbscript\s*:',
+                r'data\s*:\s*text/html'
+            ]
+            
+            for pattern in dangerous_patterns:
+                html_content = re.sub(pattern, '', html_content, flags=re.IGNORECASE | re.DOTALL)
+            
+            return html_content
+        
+        # Sanitize HTML content before PDF conversion
+        safe_html_content = sanitize_html_for_pdf(html_content)
+        
+        # SECURITY: Use secure PDF generation with temporary file
+        def secure_pdf_generation(html_content, output_path, pdf_options, pdf_config):
+            """Securely generate PDF with additional validation."""
+            import tempfile
+            import os
+            
+            # Create temporary HTML file with restricted permissions
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as temp_html:
+                temp_html.write(html_content)
+                temp_html_path = temp_html.name
+            
+            try:
+                # Set restrictive file permissions (Windows compatible)
+                if hasattr(os, 'chmod'):
+                    os.chmod(temp_html_path, 0o600)  # Read/write for owner only
+                
+                # Generate PDF from temporary file (safer than from_string)
+                pdfkit.from_file(temp_html_path, output_path, options=pdf_options, configuration=pdf_config)
+                
+            finally:
+                # Always clean up temporary file
+                try:
+                    os.unlink(temp_html_path)
+                except OSError:
+                    pass
+        
+        # Use secure PDF generation
+        secure_pdf_generation(safe_html_content, pdf_path, options, config)
 
         return pdf_path
     except Exception as e:

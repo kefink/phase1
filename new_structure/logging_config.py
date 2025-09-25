@@ -110,6 +110,18 @@ def setup_logging(app):
     file_handler.addFilter(RequestContextFilter())
     root_logger.addHandler(file_handler)
     
+    # Create file handler for security logs (NEW)
+    security_log_file = os.path.join(logs_dir, 'security.log')
+    security_handler = RotatingFileHandler(security_log_file, maxBytes=10485760, backupCount=10)
+    security_handler.setLevel(logging.WARNING)  # Security events are typically warnings or errors
+    security_handler.setFormatter(formatter)
+    security_handler.addFilter(SensitiveDataFilter())
+    security_handler.addFilter(SafeEncodingFilter())
+    security_handler.addFilter(RequestContextFilter())
+    security_logger = logging.getLogger('security')
+    security_logger.setLevel(logging.WARNING)
+    security_logger.addHandler(security_handler)
+    
     # Create file handler for audit logs
     audit_log_file = os.path.join(logs_dir, 'audit.log')
     audit_handler = RotatingFileHandler(audit_log_file, maxBytes=10485760, backupCount=10)

@@ -50,6 +50,100 @@ classteacher_bp = Blueprint('classteacher', __name__, url_prefix='/classteacher'
 # Set up logger
 logger = logging.getLogger(__name__)
 
+# --- Flexible resolvers for Term and AssessmentType names ---
+def _resolve_term_object(term_input):
+    """Resolve a Term row from flexible input like 'term 3', 'Term 3', 'T3', etc.
+
+    Strategy:
+    - Try exact (case-insensitive) match
+    - Try to extract a term number and match any Term containing that number
+    - Fallback: partial case-insensitive contains
+    Returns (term_obj, canonical_name) where canonical_name is term_obj.name if found else None.
+    """
+    try:
+        if not term_input:
+            return None, None
+        term_raw = (term_input or '').strip()
+        term_lc = term_raw.lower()
+        # Exact (case-insensitive)
+        term_obj = Term.query.filter(db.func.lower(Term.name) == term_lc).first()
+        if term_obj:
+            return term_obj, term_obj.name
+        # Extract a number (e.g., 'term 3' -> 3)
+        import re
+        m = re.search(r'(?:term\s*)?(\d+)', term_lc)
+        if m:
+            num = m.group(1)
+            cand = Term.query.filter(db.func.lower(Term.name).like(f"%{num}%")).first()
+            if cand:
+                return cand, cand.name
+        # Fallback: partial contains
+        cand = Term.query.filter(db.func.lower(Term.name).like(f"%{term_lc}%")).first()
+        if cand:
+            return cand, cand.name
+    except Exception:
+        pass
+    return None, None
+
+def _normalize_assessment_bucket(text: str):
+    """Map arbitrary assessment text to a canonical bucket: 'entrance' | 'midterm' | 'endterm'."""
+    if not text:
+        return None
+    t = (text or '').lower()
+    import re
+    # Remove years and numbers; unify separators
+    t = re.sub(r'\d{4}', ' ', t)  # remove likely years
+    t = re.sub(r'\d+', ' ', t)
+    t = t.replace('_', ' ').replace('-', ' ')
+    tokens = set([tok for tok in t.split() if tok])
+    # Entrance/opener
+    if {'opener'} & tokens or {'entrance'} & tokens or {'opening'} & tokens or ({'start', 'term'} <= tokens):
+        return 'entrance'
+    # Midterm
+    if {'midterm'} & tokens or ({'mid', 'term'} <= tokens):
+        return 'midterm'
+    # Endterm/final
+    if {'endterm'} & tokens or ({'end', 'term'} <= tokens) or {'final'} & tokens or {'overall'} & tokens or {'closing'} & tokens:
+        return 'endterm'
+    # Last resort: simple heuristics
+    s = ' '.join(tokens)
+    if 'mid' in s:
+        return 'midterm'
+    if 'end' in s or 'final' in s or 'overall' in s:
+        return 'endterm'
+    if 'open' in s or 'entrance' in s or 'start' in s:
+        return 'entrance'
+    return None
+
+def _resolve_assessment_type_object(assessment_input):
+    """Resolve an AssessmentType row from flexible input like 'midterm 3 2025', 'Mid Term', 'final', etc.
+
+    Strategy:
+    - Compute bucket for input (entrance/midterm/endterm)
+    - For all AssessmentType rows, compute bucket from their name and pick the first matching
+    - Fallback: case-insensitive exact or contains
+    Returns (assessment_obj, canonical_name) where canonical_name is assessment_obj.name if found else None.
+    """
+    try:
+        if not assessment_input:
+            return None, None
+        bucket = _normalize_assessment_bucket(assessment_input)
+        types = AssessmentType.query.all()
+        for at in types:
+            if _normalize_assessment_bucket(at.name) == bucket and bucket is not None:
+                return at, at.name
+        # Fallbacks
+        at_lc = (assessment_input or '').strip().lower()
+        at = AssessmentType.query.filter(db.func.lower(AssessmentType.name) == at_lc).first()
+        if at:
+            return at, at.name
+        at = AssessmentType.query.filter(db.func.lower(AssessmentType.name).like(f"%{at_lc}%")).first()
+        if at:
+            return at, at.name
+    except Exception:
+        pass
+    return None, None
+
 # Register template filter for education level (blueprint scope)
 @classteacher_bp.app_template_filter('get_education_level')
 def get_education_level_blueprint(grade):
@@ -629,8 +723,8 @@ def debug_marks_data(grade, stream, term, assessment_type):
 
         # Get objects
         stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_name).first()
-        term_obj = Term.query.filter_by(name=term).first()
-        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+        term_obj, term_name = _resolve_term_object(term)
+        assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
 
         results.append(f"\nDatabase Objects:")
         results.append(f"  Stream Object: {stream_obj}")
@@ -4319,8 +4413,8 @@ def check_stream_status(grade, term, assessment_type):
             return jsonify({"success": False, "message": f"Grade {grade} not found", "streams": []})
 
         # Get the term and assessment type objects
-        term_obj = Term.query.filter_by(name=term).first()
-        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+        term_obj, term_name = _resolve_term_object(term)
+        assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
 
         if not term_obj or not assessment_type_obj:
             return jsonify({"success": False, "message": "Invalid term or assessment type", "streams": []})
@@ -4894,16 +4988,20 @@ def delete_marksheet(grade, stream, term, assessment_type):
     """Route for deleting a class marksheet (all marks for a grade/stream/term/assessment combination)."""
     try:
         # Get the stream object
-        stream_letter = stream[-1] if stream.startswith("Stream ") else stream[-1]
-        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
+        stream_letter = stream.split()[-1] if " " in stream else stream[-1]
+        stream_obj = (
+            Stream.query.join(Grade)
+            .filter(Grade.name == grade, Stream.name == stream_letter)
+            .first()
+        )
 
         if not stream_obj:
             flash(f"Stream {stream} not found for grade {grade}", "error")
             return redirect(url_for('classteacher.dashboard'))
 
-        # Get the term and assessment type objects
-        term_obj = Term.query.filter_by(name=term).first()
-        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+        # Get the term and assessment type objects (flexible resolution)
+        term_obj, term_name = _resolve_term_object(term)
+        assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
 
         if not (term_obj and assessment_type_obj):
             flash("Invalid term or assessment type", "error")
@@ -4937,20 +5035,20 @@ def delete_marksheet(grade, stream, term, assessment_type):
         subject_ids = [subject.id for subject in subjects]
 
         # Get marks to delete first (to handle component marks)
-        marks_to_delete = Mark.query.filter(
-            Mark.student_id.in_(student_ids),
-            Mark.subject_id.in_(subject_ids),
-            Mark.term_id == term_obj.id,
-            Mark.assessment_type_id == assessment_type_obj.id
-        ).all()
+        marks_to_delete = (
+            Mark.query.filter(
+                Mark.student_id.in_(student_ids),
+                Mark.subject_id.in_(subject_ids),
+                Mark.term_id == term_obj.id,
+                Mark.assessment_type_id == assessment_type_obj.id,
+            ).all()
+        )
 
         deleted_count = len(marks_to_delete)
 
         # Delete component marks first, then marks
         for mark in marks_to_delete:
-            # Delete component marks first
             ComponentMark.query.filter_by(mark_id=mark.id).delete()
-            # Delete the mark
             db.session.delete(mark)
 
         # Commit the changes
@@ -4961,19 +5059,24 @@ def delete_marksheet(grade, stream, term, assessment_type):
 
         # Create a detailed success message
         if deleted_count > 0:
-            success_message = f"Successfully deleted {deleted_count} marks for {grade} Stream {stream_letter} in {term} {assessment_type}. The marksheet has been completely removed."
-            # Store a session variable to indicate a successful deletion
+            success_message = (
+                f"Successfully deleted {deleted_count} marks for {grade} Stream {stream_letter} in {term} {assessment_type}. "
+                f"The marksheet has been completely removed."
+            )
             session['marksheet_deleted'] = True
             session['deleted_marksheet_info'] = {
                 'grade': grade,
                 'stream': stream,
                 'term': term,
                 'assessment_type': assessment_type,
-                'count': deleted_count
+                'count': deleted_count,
             }
             flash(success_message, "success")
         else:
-            flash(f"No marks were found to delete for {grade} Stream {stream_letter} in {term} {assessment_type}.", "info")
+            flash(
+                f"No marks were found to delete for {grade} Stream {stream_letter} in {term} {assessment_type}.",
+                "info",
+            )
 
         return redirect(url_for('classteacher.dashboard'))
 
@@ -5065,8 +5168,8 @@ def view_student_reports(grade, stream, term, assessment_type):
     """Route for viewing a list of students with options to view their individual reports."""
     # Get the stream object
     stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
-    term_obj = Term.query.filter_by(name=term).first()
-    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+    term_obj, _ = _resolve_term_object(term)
+    assessment_type_obj, _ = _resolve_assessment_type_object(assessment_type)
 
     if not (stream_obj and term_obj and assessment_type_obj):
         flash("Invalid grade, stream, term, or assessment type", "error")
@@ -5130,8 +5233,8 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
 
     # If no cache or cache miss, generate the report
     stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
-    term_obj = Term.query.filter_by(name=term).first()
-    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+    term_obj, term_name = _resolve_term_object(term)
+    assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
 
     if not (stream_obj and term_obj and assessment_type_obj):
         flash("Invalid grade, stream, term, or assessment type", "error")
@@ -5144,7 +5247,7 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
 
     # Generate PDF using the same format as preview
     pdf_file = generate_individual_report_pdf_like_preview(
-        student, grade, stream, term, assessment_type,
+        student, grade, stream, (term_name or term), (at_name or assessment_type),
         stream_obj, term_obj, assessment_type_obj
     )
 
@@ -5185,7 +5288,10 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
             education_level = "junior secondary"
 
         # Get class report data first (same as preview)
-        class_data_result = get_class_report_data(grade, stream, term, assessment_type)
+        # Normalize names to match service expectations
+        _, term_name = _resolve_term_object(term)
+        _, at_name = _resolve_assessment_type_object(assessment_type)
+        class_data_result = get_class_report_data(grade, stream, (term_name or term), (at_name or assessment_type))
 
         if class_data_result.get("error"):
             return None
@@ -5472,7 +5578,10 @@ def generate_simple_individual_report_pdf(student, grade, stream, term, assessme
         from datetime import datetime
 
         # Get class report data first (same as preview)
-        class_data_result = get_class_report_data(grade, stream, term, assessment_type)
+        # Normalize names for resilience
+        _, term_name = _resolve_term_object(term)
+        _, at_name = _resolve_assessment_type_object(assessment_type)
+        class_data_result = get_class_report_data(grade, stream, (term_name or term), (at_name or assessment_type))
 
         if class_data_result.get("error"):
             return None
@@ -5766,6 +5875,20 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
         logo_path = SchoolConfigService.get_school_logo_path()
         logo_url = url_for('static', filename=logo_path)
 
+        # Prepare term_info for template (required by preview_individual_report.html)
+        term_info = {
+            'next_term_opening_date': 'TBD'  # Default value since this is for individual reports
+        }
+
+        # Get staff info for template (required by preview_individual_report.html)
+        staff_info = {
+            'class_teacher': None,
+            'headteacher': None
+        }
+
+        # Get subject teachers info (required by template)
+        subject_teachers = {}
+
         # Read the template file and render it (same as preview)
         template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'preview_individual_report.html')
         with open(template_path, 'r', encoding='utf-8') as f:
@@ -5792,6 +5915,9 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
             total_points=total_points,
             admission_no=admission_no,
             academic_year=academic_year,
+            term_info=term_info,  # Add missing term_info
+            staff_info=staff_info,  # Add missing staff_info
+            subject_teachers=subject_teachers,  # Add missing subject_teachers
             print_mode=True,  # Enable print mode for clean output
             school_info=school_info,  # Pass school information
             logo_url=logo_url  # Pass dynamic logo URL
@@ -5804,7 +5930,6 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
         if pdf_available:
             # Try to generate PDF
             try:
-                import pdfkit
                 filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}_{timestamp}.pdf"
                 pdf_path = os.path.join(temp_dir, filename)
 
@@ -5812,25 +5937,120 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
                 print_css = """
                 <style>
                 @page { size: A4; margin: 1cm; }
-                body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; background: white; }
                 .action-buttons, .print-controls, .delete-btn, .modal { display: none !important; }
-                .report-container { max-width: none; margin: 0; padding: 20px; }
+                .report-container { max-width: none; margin: 0; padding: 20px; background: white; }
+                table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+                th, td { border: 1px solid #333; padding: 8px; text-align: center; color: #000; }
+                th { background-color: #f0f0f0; }
                 </style>
                 """
-                html_with_css = rendered_html.replace('</head>', f'{print_css}</head>')
+                
+                # SECURITY: Sanitize HTML content before PDF generation
+                def sanitize_html_for_pdf(html_content):
+                    """Sanitize HTML content to prevent command injection in PDF generation."""
+                    import html
+                    import re
+                    
+                    # HTML escape any potential script injections
+                    html_content = html.escape(html_content, quote=False)
+                    
+                    # Remove potentially dangerous HTML elements/attributes
+                    dangerous_patterns = [
+                        r'<script[^>]*>.*?</script>',
+                        r'<iframe[^>]*>.*?</iframe>', 
+                        r'<object[^>]*>.*?</object>',
+                        r'<embed[^>]*>.*?</embed>',
+                        r'on\w+\s*=\s*["\'][^"\']*["\']',  # onclick, onload, etc.
+                        r'javascript\s*:',
+                        r'vbscript\s*:',
+                        r'data\s*:\s*text/html'
+                    ]
+                    
+                    for pattern in dangerous_patterns:
+                        html_content = re.sub(pattern, '', html_content, flags=re.IGNORECASE | re.DOTALL)
+                    
+                    return html_content
+                
+                # Sanitize the HTML before adding CSS
+                safe_html = sanitize_html_for_pdf(rendered_html)
+                html_with_css = safe_html.replace('</head>', f'{print_css}</head>')
 
-                options = {
-                    'page-size': 'A4',
-                    'orientation': 'Portrait',
-                    'margin-top': '0.75in',
-                    'margin-right': '0.75in',
-                    'margin-bottom': '0.75in',
-                    'margin-left': '0.75in',
-                    'encoding': 'UTF-8',
-                    'no-outline': None
-                }
-                pdfkit.from_string(html_with_css, pdf_path, options=options)
-                return pdf_path
+                # Use pdfkit (same as class reports) for better Windows compatibility
+                try:
+                    import pdfkit
+                    import os
+                    
+                    # Configure pdfkit with explicit wkhtmltopdf path for Windows
+                    WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+                    
+                    if os.path.exists(WKHTMLTOPDF_PATH):
+                        config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
+                        print(f"Using wkhtmltopdf at: {WKHTMLTOPDF_PATH}")
+                    else:
+                        # Fallback to default configuration
+                        config = pdfkit.configuration()
+                        print("Using default pdfkit configuration")
+                    
+                    options = {
+                        'page-size': 'A4',
+                        'orientation': 'Portrait',
+                        'margin-top': '0.75in',
+                        'margin-right': '0.75in',
+                        'margin-bottom': '0.75in',
+                        'margin-left': '0.75in',
+                        'encoding': 'UTF-8',
+                        'no-outline': None,
+                        'enable-local-file-access': True,
+                        'print-media-type': None,
+                        # SECURITY: Disable JavaScript execution in PDF generation
+                        'disable-javascript': None,
+                        'disable-plugins': None,
+                        # Prevent external resource loading
+                        'disable-external-links': None,
+                        'disable-internal-links': None
+                    }
+                    
+                    # SECURITY: Use secure PDF generation with input validation
+                    def secure_pdf_generation(html_content, output_path, pdf_options, pdf_config):
+                        """Securely generate PDF with additional validation."""
+                        import tempfile
+                        import os
+                        
+                        # Create temporary HTML file with restricted permissions
+                        with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as temp_html:
+                            temp_html.write(html_content)
+                            temp_html_path = temp_html.name
+                        
+                        try:
+                            # Set restrictive file permissions (Windows compatible)
+                            if hasattr(os, 'chmod'):
+                                os.chmod(temp_html_path, 0o600)  # Read/write for owner only
+                            
+                            # Generate PDF from temporary file (safer than from_string)
+                            pdfkit.from_file(temp_html_path, output_path, options=pdf_options, configuration=pdf_config)
+                            
+                        finally:
+                            # Always clean up temporary file
+                            try:
+                                os.unlink(temp_html_path)
+                            except OSError:
+                                pass
+                    
+                    # Use secure PDF generation
+                    secure_pdf_generation(html_with_css, pdf_path, options, config)
+                    print(f"Created PDF report (pdfkit): {pdf_path}")
+                    return pdf_path
+                except Exception as pdfkit_error:
+                    print(f"pdfkit failed: {pdfkit_error}")
+                    # Fallback to WeasyPrint if pdfkit fails
+                    try:
+                        import weasyprint
+                        weasyprint.HTML(string=html_with_css).write_pdf(pdf_path)
+                        print(f"Created PDF report (WeasyPrint fallback): {pdf_path}")
+                        return pdf_path
+                    except Exception as weasy_error:
+                        print(f"WeasyPrint also failed: {weasy_error}")
             except Exception as e:
                 print(f"PDF generation failed: {e}")
                 # Fall through to HTML generation
@@ -5883,30 +6103,56 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         flash(message, 'error')
         return redirect(url_for('classteacher.dashboard'))
 
+    # Prevent duplicate requests with session-based locking
+    request_key = f"zip_generation_{grade}_{stream}_{term}_{assessment_type}"
+    lock_timestamp_key = f"{request_key}_timestamp"
+    current_time = time.time()
+    
+    print(f"🔒 Checking session lock for key: {request_key}")
+    print(f"🔒 Current session keys: {list(session.keys())}")
+    
+    # Check if request is in progress or was very recently completed (within 10 seconds)
+    existing_lock = session.get(request_key)
+    last_request_time = session.get(lock_timestamp_key, 0)
+    time_since_last = current_time - last_request_time
+    
+    if existing_lock or time_since_last < 10:  # 10-second cooldown
+        if existing_lock:
+            print(f"🚫 Request blocked - already in progress for key: {request_key}")
+        else:
+            print(f"🚫 Request blocked - too recent ({time_since_last:.1f}s ago) for key: {request_key}")
+        return json_or_flash("Request already in progress or too recent. Please wait.", 429)
+    
+    print(f"✅ Setting session lock for key: {request_key}")
+    session[request_key] = True
+    session[lock_timestamp_key] = current_time
+    
     try:
-        print(f"🚀 Starting ZIP generation for grade='{grade}', stream='{stream}', term='{term}', assessment='{assessment_type}'")
+        print(
+            f"🚀 Starting ZIP generation for grade='{grade}', stream='{stream}', term='{term}', assessment='{assessment_type}'"
+        )
 
         # Attempt to resolve the stream more intelligently instead of using stream[-1]
         raw_stream = stream
         stream_name_candidates = {raw_stream}
-        # If the provided stream includes spaces, add last token (e.g. "Stream A" -> "A")
         parts = raw_stream.split()
         if len(parts) > 1:
             stream_name_candidates.add(parts[-1])
-        # Add uppercase variant of last token and original
         if parts:
             stream_name_candidates.add(parts[-1].upper())
             stream_name_candidates.add(parts[-1].lower())
 
         print(f"🔍 Stream name candidates: {stream_name_candidates}")
 
-        stream_obj = Stream.query.join(Grade).filter(
-            Grade.name == grade,
-            Stream.name.in_(stream_name_candidates)
-        ).first()
+        stream_obj = (
+            Stream.query.join(Grade)
+            .filter(Grade.name == grade, Stream.name.in_(stream_name_candidates))
+            .first()
+        )
 
-        term_obj = Term.query.filter_by(name=term).first()
-        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+        # Resolve term and assessment type flexibly
+        term_obj, term_name = _resolve_term_object(term)
+        assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
 
         if not (stream_obj and term_obj and assessment_type_obj):
             return json_or_flash("Invalid grade, stream, term, or assessment type", 400)
@@ -5917,24 +6163,15 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         if not students:
             return json_or_flash(f"No students found for {grade} Stream {stream_obj.name}", 400)
 
-        # Detect PDF generation capability (optional)
-        pdf_available = False
-        try:
-            import pdfkit, os
-            test_html = "<html><body><h1>Test</h1></body></html>"
-            temp_test_file = os.path.join(tempfile.gettempdir(), "wkhtmltopdf_test.pdf")
-            pdfkit.from_string(test_html, temp_test_file, options={'page-size': 'A4'})
-            if os.path.exists(temp_test_file):
-                os.remove(temp_test_file)
-                pdf_available = True
-                print("✅ PDF generation available")
-        except Exception as e:
-            print(f"⚠️ PDF generation not available: {e}; proceeding with fallback formats")
+        # Detect PDF generation capability
+        pdf_available = True  # Re-enable PDF generation using pdfkit like class reports
+        print("ℹ️ PDF generation enabled - using pdfkit like class reports")
 
-        import zipfile, tempfile, os
+        import zipfile
+        import tempfile as tmp_module2  # Use different alias for second import
         from datetime import datetime
 
-        temp_dir = tempfile.mkdtemp()
+        temp_dir = tmp_module2.mkdtemp()
         print(f"📁 Using temp directory: {temp_dir}")
 
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -5951,7 +6188,7 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
                 try:
                     print(f"📄 ({i}/{len(students)}) Generating report for: {student.name}")
                     report_file = generate_individual_report_like_preview_for_zip(
-                        student, grade, stream, term, assessment_type,
+                        student, grade, stream, (term_name or term), (at_name or assessment_type),
                         stream_obj, term_obj, assessment_type_obj, pdf_available
                     )
                     if report_file and os.path.exists(report_file):
@@ -5985,15 +6222,34 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         if not is_ajax():
             flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", 'success')
 
+        # Ensure proper response headers for ZIP download
         response = send_file(
             zip_path,
             as_attachment=True,
             download_name=zip_filename,
             mimetype='application/zip'
         )
-        # Anti-caching & security headers
-        response.headers['Cache-Control'] = 'no-store'
+        
+        # Set comprehensive headers for ZIP download
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
         response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Content-Type'] = 'application/zip'
+        response.headers['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+        
+        # Add cleanup callback to remove temp file after download
+        @response.call_on_close
+        def cleanup_temp_files():
+            try:
+                if os.path.exists(zip_path):
+                    os.remove(zip_path)
+                if os.path.exists(temp_dir):
+                    import shutil
+                    shutil.rmtree(temp_dir, ignore_errors=True)
+            except Exception as cleanup_error:
+                print(f"Warning: Could not cleanup temp files: {cleanup_error}")
+        
         return response
 
     except Exception as e:
@@ -6004,6 +6260,12 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
             return jsonify({'error': f'Error generating reports: {str(e)}'}), 500
         flash(f"Error generating reports: {str(e)}", 'error')
         return redirect(url_for('classteacher.dashboard'))
+    finally:
+        # Remove the active lock but keep timestamp for cooldown period
+        print(f"🔓 Cleaning up session lock for key: {request_key}")
+        session.pop(request_key, None)
+        # Keep timestamp to prevent immediate duplicate requests
+        session[lock_timestamp_key] = time.time()
 
 @classteacher_bp.route('/download_class_list', methods=['GET'])
 @classteacher_required
