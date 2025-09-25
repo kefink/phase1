@@ -1216,6 +1216,11 @@
     </style>
     <script>
       function confirmDelete(grade, stream, term, assessmentType) {
+        const sessionRole = '{{ session.get("role") }}';
+        if (sessionRole !== "admin" && sessionRole !== "headteacher") {
+          alert("Only admin is allowed to do so.");
+          return;
+        }
         // Set up the delete form action
         const deleteForm = document.getElementById("deleteForm");
         deleteForm.action = `/classteacher/delete_marksheet/${grade}/${stream}/${term}/${assessmentType}`;
@@ -1552,12 +1557,22 @@
           class="edit-btn"
           >Edit Marks</a
         >
+        {% set session_role = session.get('role') %} {% if session_role in
+        ['admin','headteacher'] %}
         <button
           onclick="confirmDelete('{{ grade }}', '{{ stream }}', '{{ term }}', '{{ assessment_type }}')"
           class="delete-btn"
         >
           Delete Marksheet
         </button>
+        {% else %}
+        <button
+          onclick="alert('Only admin is allowed to do so.'); return false;"
+          class="delete-btn"
+        >
+          Delete Marksheet
+        </button>
+        {% endif %}
       </div>
 
       <!-- Subject Selection Form -->

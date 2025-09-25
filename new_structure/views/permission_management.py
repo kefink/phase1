@@ -25,7 +25,7 @@ permission_bp = Blueprint('permission', __name__, url_prefix='/permission')
 FEATURE_FLAGS = {
     'CLASS_PERMISSION_MANAGEMENT': False,       # /permission/manage
     'FUNCTION_PERMISSION_MANAGEMENT': False,    # /permission/manage_functions
-    'PERMISSION_REQUESTS_REVIEW': False         # /permission/requests
+    'PERMISSION_REQUESTS_REVIEW': True          # /permission/requests (enable lightweight review UI)
 }
 
 def feature_required(flag_key):
@@ -243,40 +243,7 @@ def my_permissions_api():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error getting permissions: {str(e)}'})
 
-@permission_bp.route('/request', methods=['POST'])
-def request_permission():
-    """Submit a permission request from a classteacher."""
-    try:
-        if not is_authenticated(session):
-            return jsonify({'success': False, 'message': 'Not authenticated'})
-
-        teacher_id = session.get('teacher_id')
-        role = get_role(session)
-
-        # Only classteachers can request permissions
-        if role != 'classteacher':
-            return jsonify({'success': False, 'message': 'Only classteachers can request permissions'})
-
-        data = request.get_json()
-        grade_name = data.get('grade_name')
-        stream_name = data.get('stream_name')
-        reason = data.get('reason', '')
-
-        if not grade_name:
-            return jsonify({'success': False, 'message': 'Grade is required'})
-
-        # Submit the request
-        success, message = PermissionService.submit_permission_request(
-            teacher_id=teacher_id,
-            grade_name=grade_name,
-            stream_name=stream_name,
-            reason=reason
-        )
-
-        return jsonify({'success': success, 'message': message})
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error submitting request: {str(e)}'})
+## NOTE: Removed earlier duplicate '/permission/request' endpoint to avoid routing ambiguity.
 
 @permission_bp.route('/requests')
 @require_roles('headteacher')
@@ -284,8 +251,24 @@ def request_permission():
 def get_pending_requests():
     """Get all pending permission requests for headteacher review."""
     try:
-        requests = PermissionService.get_pending_requests()
-        return jsonify({'success': True, 'requests': requests})
+        requests = PermissionService.get_pending_requests() or []
+        # Normalize fields expected by UI
+        normalized = []
+        for r in requests:
+            try:
+                normalized.append({
+                    'id': r.get('id') if isinstance(r, dict) else getattr(r, 'id', None),
+                    'teacher_id': r.get('teacher_id') if isinstance(r, dict) else getattr(r, 'teacher_id', None),
+                    'teacher_name': r.get('teacher_name') if isinstance(r, dict) else getattr(r, 'teacher_name', None),
+                    'grade_name': r.get('grade_name') if isinstance(r, dict) else getattr(r, 'grade_name', None),
+                    'stream_name': r.get('stream_name') if isinstance(r, dict) else getattr(r, 'stream_name', None),
+                    'reason': r.get('reason') if isinstance(r, dict) else getattr(r, 'reason', ''),
+                })
+            except Exception:
+                # Fallback to raw dict if unknown
+                if isinstance(r, dict):
+                    normalized.append(r)
+        return jsonify({'success': True, 'requests': normalized})
 
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error getting requests: {str(e)}'})
@@ -609,6 +592,7 @@ def get_class_structure():
         return jsonify({'success': False, 'message': f'Error getting class structure: {str(e)}'})
 
 @permission_bp.route('/request', methods=['POST'])
+@csrf.exempt
 def submit_permission_request():
     """Submit a permission request from classteacher."""
     try:

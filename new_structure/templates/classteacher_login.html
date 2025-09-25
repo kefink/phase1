@@ -13,7 +13,7 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#b58900" />
 
     <title>
       Class Teacher Login - {{ school_info.school_name or 'Hillview School' }}
@@ -36,6 +36,11 @@
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='bootstrap.min.css') }}"
+    />
+    <!-- Shared Solar Theme tokens/utilities -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
     />
 
     <style>
@@ -636,7 +641,24 @@
       }
     </style>
   </head>
-  <body>
+  <body class="solar-theme">
+    <!-- Theme Toggle Button -->
+    <button
+      class="solar-theme-toggle"
+      id="themeToggle"
+      title="Toggle theme"
+      aria-label="Toggle theme"
+      type="button"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M12 18a6 6 0 100-12 6 6 0 000 12z" />
+      </svg>
+    </button>
     <div class="login-grid">
       <aside class="brand-panel">
         <div class="brand-card">
@@ -654,226 +676,280 @@
       </aside>
       <main class="login-panel">
         <div class="login-container">
-      <!-- Login Header -->
-      <div class="login-header">
-        <div class="login-icon">
-          {% if school_info.logo_url and school_info.logo_url !=
-          '/static/images/default_logo.png' %}
-          <img
-            src="{{ school_info.logo_url }}"
-            alt="School Logo"
-            style="
-              width: 60px;
-              height: 60px;
-              border-radius: 50%;
-              object-fit: cover;
-            "
-          />
-          {% else %}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-            aria-hidden="true"
-            width="44"
-            height="44"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M3 4.5h12.75a1.5 1.5 0 0 1 1.5 1.5V9M3 4.5v9.75A1.5 1.5 0 0 0 4.5 15.75H12m-9-11.25 9 6.75 9-6.75M12 15.75v3.75M8.25 19.5h7.5"
-            />
-          </svg>
-          {% endif %}
-        </div>
-        <h1 class="login-title">Class Teacher</h1>
-        <p class="login-subtitle">Access your classroom management portal</p>
-      </div>
+          <!-- Login Header -->
+          <div class="login-header">
+            <div class="login-icon">
+              {% if school_info.logo_url and school_info.logo_url !=
+              '/static/images/default_logo.png' %}
+              <img
+                src="{{ school_info.logo_url }}"
+                alt="School Logo"
+                style="
+                  width: 60px;
+                  height: 60px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                "
+              />
+              {% else %}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                aria-hidden="true"
+                width="44"
+                height="44"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 4.5h12.75a1.5 1.5 0 0 1 1.5 1.5V9M3 4.5v9.75A1.5 1.5 0 0 0 4.5 15.75H12m-9-11.25 9 6.75 9-6.75M12 15.75v3.75M8.25 19.5h7.5"
+                />
+              </svg>
+              {% endif %}
+            </div>
+            <h1 class="login-title">Class Teacher</h1>
+            <p class="login-subtitle">
+              Access your classroom management portal
+            </p>
+          </div>
 
-      <!-- Flash Messages -->
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %} {% for category, message in messages %}
-      <div class="error-message">
-        <span
-          aria-hidden="true"
-          class="icon"
-          style="
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            vertical-align: -0.15rem;
-          "
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 9v4m0 4h.01M10.29 3.86l-8.48 14.7A1.7 1.7 0 0 0 3.17 21h17.66a1.7 1.7 0 0 0 1.46-2.44l-8.48-14.7a1.7 1.7 0 0 0-2.92 0z"
-            />
-          </svg>
-        </span>
-        {{ message }}
-      </div>
-      {% endfor %} {% endif %} {% endwith %}
-
-      <!-- Login Form -->
-      <form method="POST" class="modern-form" id="loginForm">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-
-        <div class="form-group">
-          <label for="username" class="form-label">Username</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            class="form-input with-icon"
-            placeholder="Enter your username"
-            required
-            autocomplete="username"
-          />
-          <span class="input-icon" aria-hidden="true">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.75"
-              stroke="currentColor"
+          <!-- Flash Messages -->
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %} {% for category, message in messages %}
+          <div class="error-message">
+            <span
               aria-hidden="true"
+              class="icon"
+              style="
+                display: inline-block;
+                width: 1rem;
+                height: 1rem;
+                vertical-align: -0.15rem;
+              "
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 19.5a7.5 7.5 0 0 1 15 0"
-              />
-            </svg>
-          </span>
-        </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 9v4m0 4h.01M10.29 3.86l-8.48 14.7A1.7 1.7 0 0 0 3.17 21h17.66a1.7 1.7 0 0 0 1.46-2.44l-8.48-14.7a1.7 1.7 0 0 0-2.92 0z"
+                />
+              </svg>
+            </span>
+            {{ message }}
+          </div>
+          {% endfor %} {% endif %} {% endwith %}
 
-        <div class="form-group">
-          <label for="password" class="form-label">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            class="form-input with-icon with-end-icon"
-            placeholder="Enter your password"
-            required
-            autocomplete="current-password"
-          />
-          <span class="input-icon" aria-hidden="true">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.75"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M16.5 10.5V7.5a4.5 4.5 0 1 0-9 0v3M6.75 10.5h10.5a1.5 1.5 0 0 1 1.5 1.5v6.75a1.5 1.5 0 0 1-1.5 1.5H6.75a1.5 1.5 0 0 1-1.5-1.5V12a1.5 1.5 0 0 1 1.5-1.5Z"
-              />
-            </svg>
-          </span>
-          <button
-            type="button"
-            id="togglePassword"
-            class="toggle-password"
-            aria-label="Show password"
-            aria-pressed="false"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.75"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.577 3.01 9.964 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.577-3.01-9.964-7.178Z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-            </svg>
-          </button>
-        </div>
+          <!-- Login Form -->
+          <form method="POST" class="modern-form" id="loginForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
-        <button type="submit" class="login-button" id="loginBtn">
-          <span
-            class="btn-icon"
-            aria-hidden="true"
-            style="
-              display: inline-block;
-              width: 1rem;
-              height: 1rem;
-              margin-right: 0.5rem;
-              vertical-align: -0.15rem;
-            "
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.75"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3H5.25A2.25 2.25 0 0 0 3 5.25v13.5A2.25 2.25 0 0 0 5.25 21H13.5a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H6"
+            <div class="form-group">
+              <label for="username" class="form-label">Username</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                class="form-input with-icon"
+                placeholder="Enter your username"
+                required
+                autocomplete="username"
               />
-            </svg>
-          </span>
-          Sign In
-        </button>
-      </form>
+              <span class="input-icon" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.75"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 19.5a7.5 7.5 0 0 1 15 0"
+                  />
+                </svg>
+              </span>
+            </div>
 
-      <!-- Back Link -->
-      <div class="back-link">
-        <a href="{{ url_for('auth.index') }}">
-          <span
-            class="link-icon"
-            aria-hidden="true"
-            style="display: inline-block; width: 0.95rem; height: 0.95rem"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.75"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+            <div class="form-group">
+              <label for="password" class="form-label">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-input with-icon with-end-icon"
+                placeholder="Enter your password"
+                required
+                autocomplete="current-password"
               />
-            </svg>
-          </span>
-          Back to Home
-        </a>
-      </div>
+              <span class="input-icon" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.75"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M16.5 10.5V7.5a4.5 4.5 0 1 0-9 0v3M6.75 10.5h10.5a1.5 1.5 0 0 1 1.5 1.5v6.75a1.5 1.5 0 0 1-1.5 1.5H6.75a1.5 1.5 0 0 1-1.5-1.5V12a1.5 1.5 0 0 1 1.5-1.5Z"
+                  />
+                </svg>
+              </span>
+              <button
+                type="button"
+                id="togglePassword"
+                class="toggle-password"
+                aria-label="Show password"
+                aria-pressed="false"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.75"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.577 3.01 9.964 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.577-3.01-9.964-7.178Z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <button type="submit" class="login-button" id="loginBtn">
+              <span
+                class="btn-icon"
+                aria-hidden="true"
+                style="
+                  display: inline-block;
+                  width: 1rem;
+                  height: 1rem;
+                  margin-right: 0.5rem;
+                  vertical-align: -0.15rem;
+                "
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.75"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3H5.25A2.25 2.25 0 0 0 3 5.25v13.5A2.25 2.25 0 0 0 5.25 21H13.5a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H6"
+                  />
+                </svg>
+              </span>
+              Sign In
+            </button>
+          </form>
+
+          <!-- Back Link -->
+          <div class="back-link">
+            <a href="{{ url_for('auth.index') }}">
+              <span
+                class="link-icon"
+                aria-hidden="true"
+                style="display: inline-block; width: 0.95rem; height: 0.95rem"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.75"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                  />
+                </svg>
+              </span>
+              Back to Home
+            </a>
+          </div>
         </div>
       </main>
     </div>
 
     <!-- JavaScript for Enhanced Interactions -->
     <script>
+      // Theme init and toggle (unified)
+      (function () {
+        function getVar(name, fallback) {
+          return (
+            getComputedStyle(document.documentElement)
+              .getPropertyValue(name)
+              .trim() || fallback
+          );
+        }
+        function applyTheme(mode) {
+          const themeAttr = mode === "dark" ? "solar-dark" : "";
+          document.documentElement.setAttribute("data-theme", themeAttr);
+          const meta = document.querySelector('meta[name="theme-color"]');
+          if (meta)
+            meta.setAttribute(
+              "content",
+              mode === "dark"
+                ? getVar("--solar-base03", "#002b36")
+                : getVar("--solar-base3", "#fdf6e3")
+            );
+        }
+        try {
+          const saved =
+            localStorage.getItem("solar-theme") ||
+            localStorage.getItem("theme");
+          const systemDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const mode = saved
+            ? saved === "dark"
+              ? "dark"
+              : "light"
+            : systemDark
+            ? "dark"
+            : "light";
+          applyTheme(mode);
+          localStorage.setItem("solar-theme", mode);
+        } catch (e) {}
+
+        document.addEventListener("DOMContentLoaded", function () {
+          const btn = document.getElementById("themeToggle");
+          if (!btn) return;
+          btn.addEventListener("click", function () {
+            const current = localStorage.getItem("solar-theme") || "light";
+            const next = current === "dark" ? "light" : "dark";
+            localStorage.setItem("solar-theme", next);
+            localStorage.setItem("theme", next);
+            applyTheme(next);
+          });
+        });
+      })();
+
       document.addEventListener("DOMContentLoaded", function () {
         const form = document.getElementById("loginForm");
         const loginBtn = document.getElementById("loginBtn");

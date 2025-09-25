@@ -379,35 +379,49 @@ def link_parent_student():
     """Link a parent to a student."""
     if request.method == 'POST':
         try:
+            # Support linking a single student to multiple parents
+            parent_ids = request.form.getlist('parent_ids[]')
+            parent_ids = [int(pid) for pid in parent_ids if str(pid).isdigit()]
             parent_id = request.form.get('parent_id', type=int)
             student_id = request.form.get('student_id', type=int)
             relationship_type = request.form.get('relationship_type', 'parent')
             is_primary_contact = request.form.get('is_primary_contact') == 'on'
             
+            # Normalize parents list
+            if not parent_ids and parent_id:
+                parent_ids = [parent_id]
+
             # Validation
-            if not parent_id or not student_id:
-                flash('Please select both parent and student.', 'error')
+            if not student_id or not parent_ids:
+                flash('Please select at least one parent and a student.', 'error')
                 return redirect(url_for('parent_management.link_parent_student'))
-            
-            # Check if link already exists
-            existing_link = ParentStudent.query.filter_by(parent_id=parent_id, student_id=student_id).first()
-            if existing_link:
-                flash('This parent is already linked to this student.', 'error')
-                return redirect(url_for('parent_management.link_parent_student'))
-            
-            # Create the link
-            link = ParentStudent(
-                parent_id=parent_id,
-                student_id=student_id,
-                relationship_type=relationship_type,
-                is_primary_contact=is_primary_contact,
-                created_by=session.get('teacher_id')
-            )
-            
-            db.session.add(link)
+
+            linked = 0
+            skipped = 0
+            for pid in parent_ids:
+                # Check if link already exists
+                existing_link = ParentStudent.query.filter_by(parent_id=pid, student_id=student_id).first()
+                if existing_link:
+                    skipped += 1
+                    continue
+
+                # Create the link
+                link = ParentStudent(
+                    parent_id=pid,
+                    student_id=student_id,
+                    relationship_type=relationship_type,
+                    is_primary_contact=is_primary_contact if len(parent_ids) == 1 else False,
+                    created_by=session.get('teacher_id')
+                )
+                db.session.add(link)
+                linked += 1
+
             db.session.commit()
-            
-            flash('Parent and student linked successfully!', 'success')
+
+            msg = f'Linked {linked} parent(s) to the student.'
+            if skipped:
+                msg += f' Skipped {skipped} already-linked parent(s).'
+            flash(msg, 'success' if linked else 'warning')
             return redirect(url_for('parent_management.dashboard'))
         
         except Exception as e:
@@ -475,6 +489,31 @@ def unlink_parent_student(link_id):
     
     return redirect(url_for('parent_management.dashboard'))
 
+@parent_management_bp.route('/delete_parent/<int:parent_id>', methods=['POST'])
+@headteacher_required
+def delete_parent(parent_id):
+    """Delete a parent account and any associated links/logs."""
+    try:
+        parent = Parent.query.get_or_404(parent_id)
+
+        # Remove parent-student links first to satisfy FK constraints
+        ParentStudent.query.filter_by(parent_id=parent.id).delete(synchronize_session=False)
+
+        # Remove optional email logs if the model exists
+        if ParentEmailLog:
+            ParentEmailLog.query.filter_by(parent_id=parent.id).delete(synchronize_session=False)
+
+        # Finally delete the parent
+        db.session.delete(parent)
+        db.session.commit()
+
+        flash('Parent account deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting parent: {str(e)}', 'error')
+
+    return redirect(url_for('parent_management.dashboard'))
+
 @parent_management_bp.route('/toggle_parent_status/<int:parent_id>')
 @headteacher_required
 def toggle_parent_status(parent_id):
@@ -498,33 +537,43 @@ def toggle_parent_status(parent_id):
 @headteacher_required
 def search_parents():
     """Search parents by name or email."""
+    # Support direct lookup by id for preselection
+    parent_id = request.args.get('id', type=int)
     query = request.args.get('q', '').strip()
-    
-    if not query:
-        return jsonify({'parents': []})
-    
+
     try:
-        parents = Parent.query.filter(
-            db.or_(
-                Parent.first_name.ilike(f'%{query}%'),
-                Parent.last_name.ilike(f'%{query}%'),
-                Parent.email.ilike(f'%{query}%')
-            )
-        ).limit(10).all()
-        
         parent_list = []
-        for parent in parents:
-            parent_list.append({
-                'id': parent.id,
-                'name': parent.get_full_name(),
-                'email': parent.email,
-                'phone': parent.phone,
-                'is_active': parent.is_active,
-                'is_verified': parent.is_verified
-            })
-        
+        if parent_id:
+            parent = Parent.query.get(parent_id)
+            if parent:
+                parent_list.append({
+                    'id': parent.id,
+                    'name': parent.get_full_name(),
+                    'email': parent.email,
+                    'phone': parent.phone,
+                    'is_active': parent.is_active,
+                    'is_verified': parent.is_verified
+                })
+        elif query:
+            parents = Parent.query.filter(
+                db.or_(
+                    Parent.first_name.ilike(f'%{query}%'),
+                    Parent.last_name.ilike(f'%{query}%'),
+                    Parent.email.ilike(f'%{query}%')
+                )
+            ).limit(10).all()
+            for parent in parents:
+                parent_list.append({
+                    'id': parent.id,
+                    'name': parent.get_full_name(),
+                    'email': parent.email,
+                    'phone': parent.phone,
+                    'is_active': parent.is_active,
+                    'is_verified': parent.is_verified
+                })
+
         return jsonify({'parents': parent_list})
-    
+
     except Exception as e:
         return jsonify({'error': str(e)})
 
@@ -532,36 +581,50 @@ def search_parents():
 @headteacher_required
 def search_students():
     """Search students by name or admission number."""
+    # Support direct lookup by id for preselection
+    student_id = request.args.get('id', type=int)
     query = request.args.get('q', '').strip()
-    
-    if not query:
-        return jsonify({'students': []})
-    
+
     try:
-        students_query = db.session.query(
-            Student, Grade, Stream
-        ).join(Grade, Student.grade_id == Grade.id)\
-         .join(Stream, Student.stream_id == Stream.id)\
-         .filter(
-            db.or_(
-                Student.name.ilike(f'%{query}%'),
-                Student.admission_number.ilike(f'%{query}%')
-            )
-        ).limit(10)
-        
         student_list = []
-        for student, grade, stream in students_query:
-            student_list.append({
-                'id': student.id,
-                'name': student.name,
-                'admission_number': student.admission_number,
-                'class': f'{grade.name} {stream.name}',
-                'grade_id': grade.id,
-                'stream_id': stream.id
-            })
-        
+        if student_id:
+            result = db.session.query(Student, Grade, Stream)\
+                .join(Grade, Student.grade_id == Grade.id)\
+                .join(Stream, Student.stream_id == Stream.id)\
+                .filter(Student.id == student_id).first()
+            if result:
+                student, grade, stream = result
+                student_list.append({
+                    'id': student.id,
+                    'name': student.name,
+                    'admission_number': student.admission_number,
+                    'class': f'{grade.name} {stream.name}',
+                    'grade_id': grade.id,
+                    'stream_id': stream.id
+                })
+        elif query:
+            students_query = db.session.query(
+                Student, Grade, Stream
+            ).join(Grade, Student.grade_id == Grade.id)\
+             .join(Stream, Student.stream_id == Stream.id)\
+             .filter(
+                db.or_(
+                    Student.name.ilike(f'%{query}%'),
+                    Student.admission_number.ilike(f'%{query}%')
+                )
+            ).limit(10)
+            for student, grade, stream in students_query:
+                student_list.append({
+                    'id': student.id,
+                    'name': student.name,
+                    'admission_number': student.admission_number,
+                    'class': f'{grade.name} {stream.name}',
+                    'grade_id': grade.id,
+                    'stream_id': stream.id
+                })
+
         return jsonify({'students': student_list})
-    
+
     except Exception as e:
         return jsonify({'error': str(e)})
 
@@ -573,18 +636,18 @@ def bulk_link_students():
         parent_id = request.form.get('parent_id', type=int)
         student_ids = request.form.getlist('student_ids[]')
         relationship_type = request.form.get('relationship_type', 'parent')
-        
+
         if not parent_id or not student_ids:
             return jsonify({'success': False, 'message': 'Please select a parent and at least one student.'})
-        
+
         # Verify parent exists
         parent = Parent.query.get(parent_id)
         if not parent:
             return jsonify({'success': False, 'message': 'Parent not found.'})
-        
+
         linked_count = 0
         errors = []
-        
+
         for student_id in student_ids:
             try:
                 # Check if link already exists
@@ -593,7 +656,7 @@ def bulk_link_students():
                     student = Student.query.get(student_id)
                     errors.append(f'{student.name if student else f"Student {student_id}"} is already linked to this parent.')
                     continue
-                
+
                 # Create the link
                 link = ParentStudent(
                     parent_id=parent_id,
@@ -602,78 +665,21 @@ def bulk_link_students():
                     is_primary_contact=False,
                     created_by=session.get('teacher_id')
                 )
-                
                 db.session.add(link)
                 linked_count += 1
-                
             except Exception as e:
                 errors.append(f'Error linking student {student_id}: {str(e)}')
-        
+
         db.session.commit()
-        
+
         message = f'Successfully linked {linked_count} student(s) to {parent.get_full_name()}.'
         if errors:
             message += f' {len(errors)} error(s): ' + '; '.join(errors[:3])
             if len(errors) > 3:
                 message += f' and {len(errors) - 3} more...'
-        
+
         return jsonify({'success': True, 'message': message})
-    
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Error: {str(e)}'})
-
-@parent_management_bp.route('/export_unlinked_data')
-@headteacher_required
-def export_unlinked_data():
-    """Export unlinked students and parents data as CSV."""
-    try:
-        import csv
-        from io import StringIO
-        from flask import make_response
-        
-        # Get unlinked students with class information
-        students_query = db.session.query(Student, Grade, Stream)\
-            .join(Grade, Student.grade_id == Grade.id)\
-            .join(Stream, Student.stream_id == Stream.id)\
-            .outerjoin(ParentStudent, Student.id == ParentStudent.student_id)\
-            .filter(ParentStudent.student_id.is_(None))\
-            .order_by(Grade.name, Stream.name, Student.name)
-        
-        students_data = students_query.all()
-        
-        # Get unlinked parents
-        parents_data = db.session.query(Parent)\
-            .outerjoin(ParentStudent)\
-            .filter(ParentStudent.parent_id.is_(None))\
-            .order_by(Parent.first_name, Parent.last_name).all()
-        
-        # Create CSV content
-        output = StringIO()
-        
-        # Write students data
-        output.write("=== STUDENTS WITHOUT PARENTS ===\n")
-        output.write("Name,Admission Number,Grade,Stream,Education Level\n")
-        
-        for student, grade, stream in students_data:
-            output.write(f'"{student.name}","{student.admission_number}","{grade.name}","{stream.name}","{grade.education_level or ""}"\n')
-        
-        output.write("\n=== PARENTS WITHOUT CHILDREN ===\n")
-        output.write("First Name,Last Name,Email,Phone,Status,Verified\n")
-        
-        for parent in parents_data:
-            status = "Active" if parent.is_active else "Inactive"
-            verified = "Yes" if parent.is_verified else "No"
-            phone = parent.phone or ""
-            output.write(f'"{parent.first_name}","{parent.last_name}","{parent.email}","{phone}","{status}","{verified}"\n')
-        
-        # Create response
-        response = make_response(output.getvalue())
-        response.headers["Content-Disposition"] = "attachment; filename=unlinked_data.csv"
-        response.headers["Content-type"] = "text/csv"
-        
-        return response
-    
-    except Exception as e:
-        flash(f'Error exporting data: {str(e)}', 'error')
-        return redirect(url_for('parent_management.dashboard'))

@@ -14,766 +14,26 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <!-- Heroicons (inline SVGs) -->
-    <style>
-      .icon-hero {
-        width: 2.5rem;
-        height: 2.5rem;
-        margin-bottom: 1rem;
-        stroke-width: 1.75;
-      }
-      /* Contextual colors */
-      .icon-dashboard {
-        stroke: #fdf6e3;
-      }
-      .icon-upload {
-        stroke: var(--cyan);
-      }
-      .icon-reports {
-        stroke: var(--violet);
-      }
-      .icon-generate {
-        stroke: var(--orange);
-      }
-      .icon-students {
-        stroke: var(--green);
-      }
-      .icon-analytics {
-        stroke: var(--blue);
-      }
-      .icon-settings {
-        stroke: var(--magenta);
-      }
-      .action-card.primary .icon-dashboard {
-        stroke: #fdf6e3;
-      }
-    </style>
-
-    <!-- Solar Theme CSS -->
-    <style>
-      :root {
-        /* Solar Theme Colors */
-        --primary-color: #268bd2;
-        --secondary-color: #2aa198;
-        --success-color: #859900;
-        --warning-color: #b58900;
-        --danger-color: #dc322f;
-        --info-color: #6c71c4;
-
-        /* Solar Background Colors */
-        --bg-color: #002b36;
-        --bg-secondary: #073642;
-        --card-bg: #073642;
-        --card-hover: #0e4a58;
-
-        /* Solar Text Colors */
-        --text-primary: #839496;
-        --text-secondary: #586e75;
-        --text-bright: #93a1a1;
-        --text-emphasis: #eee8d5;
-
-        /* Solar Accent Colors */
-        --orange: #cb4b16;
-        --red: #dc322f;
-        --magenta: #d33682;
-        --violet: #6c71c4;
-        --blue: #268bd2;
-        --cyan: #2aa198;
-        --green: #859900;
-
-        /* UI Elements */
-        --border-color: #0e4a58;
-        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4),
-          0 2px 4px -1px rgba(0, 0, 0, 0.25);
-        --radius: 0.5rem;
-        --glass-border: rgba(147, 161, 161, 0.1);
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: "Inter", sans-serif;
-        background: var(--bg-color);
-        color: var(--text-primary);
-        line-height: 1.6;
-        min-height: 100vh;
-        overflow-x: hidden; /* prevent horizontal scroll */
-      }
-
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 1.5rem; /* tightened */
-        width: 100%;
-      }
-
-      .header {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        padding: 1.25rem; /* tightened */
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        margin-bottom: 1.25rem; /* tightened */
-      }
-
-      .header h1 {
-        font-size: 1.875rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: var(--text-emphasis);
-      }
-
-      .header p {
-        color: var(--text-secondary);
-      }
-
-      .alert {
-        padding: 1rem;
-        border-radius: var(--radius);
-        margin-bottom: 1rem;
-        border-left: 4px solid;
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-      }
-
-      .alert-success {
-        background: rgba(133, 153, 0, 0.1);
-        color: var(--green);
-        border-left-color: var(--green);
-      }
-
-      .alert-info {
-        background: rgba(38, 139, 210, 0.1);
-        color: var(--blue);
-        border-left-color: var(--blue);
-      }
-
-      .alert-warning {
-        background: rgba(181, 137, 0, 0.1);
-        color: var(--orange);
-        border-left-color: var(--orange);
-      }
-
-      .alert-danger {
-        background: rgba(220, 50, 47, 0.1);
-        color: var(--red);
-        border-left-color: var(--red);
-      }
-
-      .actions-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.25rem; /* tightened */
-        margin-bottom: 1.5rem; /* tightened */
-      }
-
-      .action-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        padding: 2rem;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        text-decoration: none;
-        color: var(--text-bright);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .action-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(
-          135deg,
-          rgba(147, 161, 161, 0.05) 0%,
-          rgba(88, 110, 117, 0.05) 100%
-        );
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .action-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-        background: var(--card-hover);
-        text-decoration: none;
-        color: var(--text-bright);
-        border-color: var(--primary-color);
-      }
-
-      .action-card:hover::before {
-        opacity: 1;
-      }
-
-      .action-card.primary {
-        background: linear-gradient(
-          135deg,
-          var(--primary-color) 0%,
-          var(--cyan) 100%
-        );
-        color: var(--text-emphasis);
-        border-color: var(--primary-color);
-      }
-
-      .action-card.primary:hover {
-        color: var(--text-emphasis);
-        background: linear-gradient(135deg, #1e6ba8 0%, #238e86 100%);
-      }
-
-      .action-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        display: block;
-        color: inherit;
-      }
-
-      .action-card h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-      }
-
-      .action-card p {
-        color: var(--text-secondary);
-        font-size: 0.875rem;
-      }
-
-      .action-card.primary p {
-        color: rgba(238, 232, 213, 0.9);
-      }
-
-      .stats-overview {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        padding: 1.25rem; /* tightened */
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        margin-bottom: 1.5rem; /* tightened */
-      }
-
-      .stats-overview h3 {
-        color: var(--text-emphasis);
-        margin-bottom: 1rem;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1.5rem;
-      }
-
-      .stat-item {
-        text-align: center;
-        padding: 1.5rem;
-        background: linear-gradient(
-          135deg,
-          rgba(147, 161, 161, 0.03),
-          rgba(38, 139, 210, 0.05)
-        );
-        border-radius: var(--radius);
-        border: 1px solid var(--glass-border);
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0, 43, 54, 0.1);
-      }
-
-      .stat-item:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(38, 139, 210, 0.15);
-        border-color: var(--primary-color);
-        background: linear-gradient(
-          135deg,
-          rgba(147, 161, 161, 0.05),
-          rgba(38, 139, 210, 0.1)
-        );
-      }
-
-      .stat-icon {
-        font-size: 2rem;
-        margin-bottom: 0.75rem;
-        display: block;
-        opacity: 0.8;
-      }
-
-      .stat-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--cyan);
-        margin-bottom: 0.5rem;
-        text-shadow: 0 0 10px rgba(42, 161, 152, 0.3);
-        line-height: 1;
-      }
-
-      .stat-label {
-        color: var(--text-secondary);
-        font-size: 0.875rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      /* Enhanced Subjects Container */
-      .subjects-stat {
-        position: relative;
-        overflow: visible;
-      }
-
-      .subjects-container {
-        margin-top: 0.75rem;
-        max-height: 200px;
-        position: relative;
-      }
-
-      .subjects-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 0.5rem;
-        max-height: 140px;
-        overflow-y: auto;
-        padding-right: 4px;
-        transition: max-height 0.3s ease;
-      }
-
-      .subjects-grid.expanded {
-        max-height: 300px;
-      }
-
-      /* Custom Scrollbar */
-      .subjects-grid::-webkit-scrollbar {
-        width: 6px;
-      }
-
-      .subjects-grid::-webkit-scrollbar-track {
-        background: rgba(147, 161, 161, 0.1);
-        border-radius: 3px;
-      }
-
-      .subjects-grid::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, var(--primary-color), var(--cyan));
-        border-radius: 3px;
-        transition: background 0.3s ease;
-      }
-
-      .subjects-grid::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, var(--cyan), var(--primary-color));
-      }
-
-      /* Subject Tags */
-      .subject-tag {
-        background: linear-gradient(
-          135deg,
-          rgba(38, 139, 210, 0.1),
-          rgba(42, 161, 152, 0.1)
-        );
-        border: 1px solid rgba(38, 139, 210, 0.2);
-        border-radius: 8px;
-        padding: 0.5rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        min-height: 50px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-
-      .subject-tag::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(38, 139, 210, 0.1),
-          transparent
-        );
-        transition: left 0.5s ease;
-      }
-
-      .subject-tag:hover::before {
-        left: 100%;
-      }
-
-      .subject-tag:hover {
-        transform: translateY(-2px);
-        border-color: var(--primary-color);
-        background: linear-gradient(
-          135deg,
-          rgba(38, 139, 210, 0.15),
-          rgba(42, 161, 152, 0.15)
-        );
-        box-shadow: 0 4px 12px rgba(38, 139, 210, 0.2);
-      }
-
-      .subject-name {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 0.25rem;
-        line-height: 1.2;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .subject-grade {
-        font-size: 0.65rem;
-        color: var(--text-secondary);
-        opacity: 0.8;
-        font-weight: 500;
-      }
-
-      .stream {
-        background: var(--primary-color);
-        color: white;
-        padding: 1px 4px;
-        border-radius: 4px;
-        margin-left: 0.25rem;
-        font-size: 0.6rem;
-        font-weight: 600;
-      }
-
-      /* Toggle Button */
-      .subjects-toggle {
-        text-align: center;
-        margin-top: 0.5rem;
-        padding-top: 0.5rem;
-        border-top: 1px solid rgba(147, 161, 161, 0.2);
-      }
-
-      .toggle-btn {
-        background: linear-gradient(135deg, var(--primary-color), var(--cyan));
-        color: white;
-        border: none;
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-        margin: 0 auto;
-        min-width: 80px;
-        justify-content: center;
-      }
-
-      .toggle-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(38, 139, 210, 0.3);
-      }
-
-      .toggle-icon {
-        transition: transform 0.3s ease;
-        font-size: 0.6rem;
-      }
-
-      .toggle-btn.expanded .toggle-icon {
-        transform: rotate(180deg);
-      }
-
-      /* Students Styling */
-      .students-stat {
-        overflow: visible;
-      }
-
-      .students-container {
-        margin-top: 0.75rem;
-        max-width: 100%;
-      }
-
-      .students-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 0.35rem;
-        max-height: 200px;
-        overflow-y: auto;
-        padding: 0.4rem;
-        border-top: 1px solid rgba(147, 161, 161, 0.2);
-        background: rgba(0, 43, 54, 0.02);
-        border-radius: 8px;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(38, 139, 210, 0.3) transparent;
-        /* Ensure no empty space when few students */
-        grid-auto-rows: min-content;
-        justify-content: start;
-      }
-
-      /* Responsive grid adjustments */
-      .students-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      }
-
-      /* Compact layout for fewer students */
-      .students-grid.compact {
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        max-width: 100%;
-        justify-content: center;
-      }
-
-      @media (max-width: 1200px) {
-        .students-grid {
-          grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
-          gap: 0.3rem;
-        }
-        .students-grid.compact {
-          grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-        }
-      }
-
-      @media (max-width: 900px) {
-        .students-grid {
-          grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-          gap: 0.25rem;
-        }
-        .students-grid.compact {
-          grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-        }
-      }
-
-      @media (max-width: 600px) {
-        .students-grid {
-          grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-          max-height: 160px;
-        }
-        .students-grid.compact {
-          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        }
-      }
-
-      .students-grid::-webkit-scrollbar {
-        width: 6px;
-      }
-
-      .students-grid::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      .students-grid::-webkit-scrollbar-thumb {
-        background: rgba(38, 139, 210, 0.3);
-        border-radius: 3px;
-      }
-
-      .students-grid::-webkit-scrollbar-thumb:hover {
-        background: rgba(38, 139, 210, 0.5);
-      }
-
-      .student-card {
-        background: linear-gradient(
-          135deg,
-          rgba(238, 232, 213, 0.1),
-          rgba(147, 161, 161, 0.05)
-        );
-        border: 1px solid rgba(147, 161, 161, 0.2);
-        border-radius: 6px;
-        padding: 0.4rem;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        min-height: 60px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        /* Prevent stretching */
-        align-self: start;
-      }
-
-      .student-card:hover {
-        transform: translateY(-2px);
-        border-color: var(--green);
-        background: linear-gradient(
-          135deg,
-          rgba(133, 153, 0, 0.1),
-          rgba(181, 137, 0, 0.1)
-        );
-        box-shadow: 0 4px 12px rgba(133, 153, 0, 0.2);
-      }
-
-      .student-name {
-        font-size: 0.72rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 0.25rem;
-        line-height: 1.2;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .student-details {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.6rem;
-        color: var(--text-secondary);
-        gap: 0.25rem;
-      }
-
-      .student-admission {
-        font-family: "Courier New", monospace;
-        background: rgba(42, 161, 152, 0.1);
-        padding: 1px 4px;
-        border-radius: 3px;
-        font-weight: 500;
-      }
-
-      .student-class {
-        background: rgba(38, 139, 210, 0.1);
-        padding: 1px 4px;
-        border-radius: 3px;
-        font-weight: 500;
-        white-space: nowrap;
-      }
-
-      .students-toggle {
-        background: linear-gradient(135deg, var(--green), var(--yellow));
-        color: var(--base03);
-        border: none;
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-        margin: 0.5rem auto 0;
-        min-width: 100px;
-        justify-content: center;
-      }
-
-      .students-toggle:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(133, 153, 0, 0.3);
-      }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .subjects-grid {
-          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          gap: 0.4rem;
-          max-height: 120px;
-        }
-
-        .subject-tag {
-          padding: 0.4rem;
-          min-height: 45px;
-        }
-
-        .subject-name {
-          font-size: 0.7rem;
-        }
-
-        .subject-grade {
-          font-size: 0.6rem;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .subjects-grid {
-          grid-template-columns: 1fr 1fr;
-          gap: 0.3rem;
-        }
-
-        .subject-tag {
-          padding: 0.3rem;
-          min-height: 40px;
-        }
-      }
-
-      .notice {
-        background: rgba(181, 137, 0, 0.1);
-        border: 1px solid var(--warning-color);
-        color: var(--warning-color);
-        padding: 1rem;
-        border-radius: var(--radius);
-        margin-bottom: 2rem;
-      }
-
-      @media (max-width: 768px) {
-        .container {
-          padding: 1rem;
-        }
-
-        .actions-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .action-card {
-          padding: 1.5rem;
-        }
-
-        .header h1 {
-          font-size: 1.5rem;
-        }
-      }
-    </style>
+    <!-- Shared Solar tokens and page stylesheet -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/classteacher.css') }}"
+    />
   </head>
 
   <body data-ct-auto-open="true">
     {% include 'classteacher/_hamburger_nav.html' %}
     <!-- Desktop Navbar -->
-    <nav
-      id="ctDesktopNav"
-      style="
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        justify-content: space-between;
-        padding: 0.75rem 2rem;
-        margin: 0 0 1.5rem 0;
-        border: 1px solid var(--border-color);
-        background: var(--card-bg);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        position: sticky;
-        top: 0;
-        z-index: 500;
-        backdrop-filter: blur(6px);
-      "
-    >
-      <div
-        style="
-          display: flex;
-          align-items: center;
-          gap: 1.25rem;
-          flex-wrap: wrap;
-        "
-      >
-        <a
-          href="{{ url_for('classteacher.dashboard') }}"
-          class="ctd-brand"
-          style="
-            font-weight: 600;
-            color: var(--text-emphasis);
-            text-decoration: none;
-            font-size: 1rem;
-          "
+    <nav id="ctDesktopNav">
+      <div class="ctd-left">
+        <a href="{{ url_for('classteacher.dashboard') }}" class="ctd-brand"
           >Class Teacher</a
         >
-        <div
-          class="ctd-links"
-          style="
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-          "
-        >
+        <div class="ctd-links">
           <a
             href="{{ url_for('classteacher.class_overview') }}"
             class="ctd-link"
@@ -784,6 +44,11 @@
           >
           <a href="{{ url_for('classteacher.all_reports') }}" class="ctd-link"
             >Reports</a
+          >
+          <a
+            href="{{ url_for('classteacher.grade_marksheets') }}"
+            class="ctd-link"
+            >Grade Marksheets</a
           >
           <a
             href="{{ url_for('classteacher.manage_students') }}"
@@ -808,21 +73,7 @@
         </div>
       </div>
       <div style="display: flex; align-items: center; gap: 0.75rem">
-        <button
-          id="desktopThemeToggleMini"
-          aria-label="Toggle theme"
-          style="
-            background: var(--card-hover);
-            border: 1px solid var(--border-color);
-            color: var(--text-bright);
-            padding: 0.5rem 0.75rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-          "
-        >
+        <button id="desktopThemeToggleMini" aria-label="Toggle theme">
           <svg
             id="desktopThemeIconMini"
             xmlns="http://www.w3.org/2000/svg"
@@ -839,102 +90,12 @@
             />
           </svg>
         </button>
-        <a
-          href="{{ url_for('auth.logout_route') }}"
-          class="ctd-logout"
-          style="
-            background: linear-gradient(135deg, var(--red), #8b1a18);
-            color: #fff;
-            padding: 0.55rem 1rem;
-            border-radius: var(--radius);
-            text-decoration: none;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(220, 50, 47, 0.4);
-            transition: background 0.3s;
-          "
+        <a href="{{ url_for('auth.logout_route') }}" class="ctd-logout"
           >Logout</a
         >
       </div>
     </nav>
-    <style>
-      @media (max-width: 900px) {
-        #ctDesktopNav {
-          padding: 0.5rem 0.75rem !important;
-          gap: 0.5rem !important;
-        }
-        #ctDesktopNav > div:first-child {
-          display: flex;
-          gap: 0.75rem;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-          flex-wrap: nowrap;
-        }
-        #ctDesktopNav .ctd-links {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: nowrap;
-        }
-        #ctDesktopNav .ctd-link {
-          flex: 0 0 auto;
-          white-space: nowrap;
-          font-size: 0.75rem;
-          padding: 0.35rem 0.55rem;
-        }
-        #ctDesktopNav .ctd-brand {
-          font-size: 0.8rem !important;
-        }
-        #ctDesktopNav .ctd-logout {
-          padding: 0.35rem 0.6rem !important;
-          font-size: 0.65rem;
-        }
-        #ctDesktopNav::-webkit-scrollbar,
-        #ctDesktopNav .ctd-links::-webkit-scrollbar {
-          display: none;
-        }
-        body {
-          overflow-x: hidden;
-        }
-        .container,
-        #ctDesktopNav,
-        #ctDrawer,
-        #ctDrawer * {
-          max-width: 100%;
-        }
-      }
-      @media (min-width: 901px) {
-        .ct-menu-btn,
-        #ctOverlay,
-        #ctDrawer {
-          display: none !important;
-        }
-      }
-      #ctDesktopNav .ctd-link {
-        position: relative;
-        padding: 0.45rem 0.85rem;
-        border-radius: 6px;
-        text-decoration: none;
-        color: var(--text-primary);
-        font-weight: 500;
-        font-size: 0.85rem;
-        letter-spacing: 0.3px;
-        border: 1px solid transparent;
-        transition: all 0.25s;
-        white-space: nowrap; /* keep label intact */
-      }
-      #ctDesktopNav .ctd-link:hover {
-        color: var(--text-emphasis);
-        border-color: var(--border-color);
-        background: var(--card-hover);
-      }
-      #ctDesktopNav .ctd-link.active {
-        background: linear-gradient(135deg, var(--primary-color), var(--cyan));
-        color: var(--text-emphasis);
-        box-shadow: 0 4px 14px rgba(38, 139, 210, 0.35);
-      }
-      #ctDesktopNav .ctd-logout:hover {
-        background: linear-gradient(135deg, #b92d29, #721210);
-      }
-    </style>
+
     <script>
       (function () {
         const links = document.querySelectorAll("#ctDesktopNav .ctd-link");
@@ -949,12 +110,17 @@
         const mql =
           window.matchMedia &&
           window.matchMedia("(prefers-color-scheme: dark)");
-        const system = () => (mql && mql.matches ? "dark" : "light");
+        const system = () => (mql && mql.matches ? "solar-dark" : "light");
         const apply = (t) => {
-          document.documentElement.setAttribute("data-theme", t);
-          document.body.setAttribute("data-theme", t);
+          if (t === "solar-dark") {
+            document.documentElement.setAttribute("data-theme", t);
+            document.body.setAttribute("data-theme", t);
+          } else {
+            document.documentElement.removeAttribute("data-theme");
+            document.body.removeAttribute("data-theme");
+          }
           icon.innerHTML =
-            t === "dark"
+            t === "solar-dark"
               ? '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364-1.414-1.414M8.05 8.05 6.636 6.636m0 10.728 1.414-1.414M17.95 8.05l1.414-1.414" /><circle cx="12" cy="12" r="5" />'
               : '<path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 0 1 11.21 3 9 9 0 1 0 21 12.79Z" />';
         };
@@ -966,7 +132,8 @@
         themeBtn.addEventListener("click", () => {
           const cur =
             document.documentElement.getAttribute("data-theme") || system();
-          const next = cur === "dark" ? "light" : "dark";
+          const isDark = cur === "solar-dark";
+          const next = isDark ? "light" : "solar-dark";
           try {
             localStorage.setItem(KEY, next);
           } catch (e) {}
@@ -978,7 +145,7 @@
             try {
               s = localStorage.getItem(KEY);
             } catch (_e) {}
-            if (!s) apply(e.matches ? "dark" : "light");
+            if (!s) apply(e.matches ? "solar-dark" : "light");
           });
         }
       })();
@@ -1467,35 +634,15 @@
 
       <!-- Upload Section (hidden by default) -->
       <div id="upload-section" style="display: none; margin-top: 2rem">
-        <div
-          style="
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-          "
-        >
+        <div class="panel-card">
           <h3 style="margin-bottom: 1rem">Quick Upload Access</h3>
           <p style="color: var(--text-secondary); margin-bottom: 1.5rem">
             Choose your upload method or access template downloads.
           </p>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-              gap: 1rem;
-            "
-          >
+          <div class="tiles-grid">
             <a
               href="{{ url_for('classteacher.download_marks_template') }}"
-              style="
-                padding: 1rem;
-                background: var(--primary-color);
-                color: white;
-                text-decoration: none;
-                border-radius: var(--radius);
-                text-align: center;
-              "
+              class="tile-link tile-primary"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1515,14 +662,7 @@
             </a>
             <a
               href="{{ url_for('classteacher.download_student_template') }}"
-              style="
-                padding: 1rem;
-                background: var(--success-color);
-                color: white;
-                text-decoration: none;
-                border-radius: var(--radius);
-                text-align: center;
-              "
+              class="tile-link tile-success"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1542,14 +682,7 @@
             </a>
             <a
               href="{{ url_for('classteacher.download_subject_template') }}"
-              style="
-                padding: 1rem;
-                background: var(--warning-color);
-                color: white;
-                text-decoration: none;
-                border-radius: var(--radius);
-                text-align: center;
-              "
+              class="tile-link tile-warning"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1573,36 +706,16 @@
 
       <!-- Generate Section (hidden by default) -->
       <div id="generate-section" style="display: none; margin-top: 2rem">
-        <div
-          style="
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-          "
-        >
+        <div class="panel-card">
           <h3 style="margin-bottom: 1rem">Quick Generate Access</h3>
           <p style="color: var(--text-secondary); margin-bottom: 1.5rem">
             Generate reports and marksheets for different terms and grades.
           </p>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-              gap: 1rem;
-            "
-          >
+          <div class="tiles-grid">
             <a
-              href="{{ url_for('classteacher.dashboard') }}"
-              onclick="alert('Please use the main dashboard to access grade marksheet generation with proper parameters.'); return false;"
-              style="
-                padding: 1rem;
-                background: var(--primary-color);
-                color: white;
-                text-decoration: none;
-                border-radius: var(--radius);
-                text-align: center;
-              "
+              href="{{ url_for('classteacher.grade_marksheets') }}"
+              class="tile-link tile-primary"
+              title="Generate combined marksheets for entire grades (all streams)"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1622,14 +735,7 @@
             </a>
             <a
               href="{{ url_for('classteacher.download_class_list') }}"
-              style="
-                padding: 1rem;
-                background: var(--success-color);
-                color: white;
-                text-decoration: none;
-                border-radius: var(--radius);
-                text-align: center;
-              "
+              class="tile-link tile-success"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1653,35 +759,15 @@
 
       <!-- Settings Section (hidden by default) -->
       <div id="settings-section" style="display: none; margin-top: 2rem">
-        <div
-          style="
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-          "
-        >
+        <div class="panel-card">
           <h3 style="margin-bottom: 1rem">Quick Settings</h3>
           <p style="color: var(--text-secondary); margin-bottom: 1.5rem">
             Access system configuration and preferences.
           </p>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-              gap: 1rem;
-            "
-          >
+          <div class="tiles-grid">
             <a
               href="{{ url_for('classteacher.clear_cache') }}"
-              style="
-                padding: 1rem;
-                background: var(--warning-color);
-                color: white;
-                text-decoration: none;
-                border-radius: var(--radius);
-                text-align: center;
-              "
+              class="tile-link tile-warning"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1829,3 +915,458 @@
     </script>
   </body>
 </html>
+<!-- Permission Request Modal for Manage Students (classteacher only) -->
+{% set _role = session.get('role') %}
+<div
+  id="permissionRequestModal"
+  style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  "
+>
+  <div
+    style="
+      background: #fff;
+      width: min(560px, 92vw);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    "
+  >
+    <div
+      style="
+        padding: 16px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f8fafc;
+      "
+    >
+      <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #111827">
+        Request access to Manage Students
+      </h3>
+      <p style="margin: 6px 0 0; color: #4b5563; font-size: 13px">
+        Only headteacher/admin can grant access. Submit a request and you'll be
+        notified once approved.
+      </p>
+    </div>
+    <div style="padding: 16px 20px">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+        <div>
+          <label
+            for="prm-grade"
+            style="font-size: 13px; color: #374151; font-weight: 600"
+            >Grade</label
+          >
+          <select
+            id="prm-grade"
+            style="
+              width: 100%;
+              padding: 8px 10px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+            "
+          >
+            <option value="">Select grade…</option>
+          </select>
+        </div>
+        <div>
+          <label
+            for="prm-stream"
+            style="font-size: 13px; color: #374151; font-weight: 600"
+            >Stream (optional)</label
+          >
+          <select
+            id="prm-stream"
+            style="
+              width: 100%;
+              padding: 8px 10px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+            "
+          >
+            <option value="">All streams</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top: 12px">
+        <label
+          for="prm-reason"
+          style="font-size: 13px; color: #374151; font-weight: 600"
+          >Reason</label
+        >
+        <textarea
+          id="prm-reason"
+          rows="3"
+          style="
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            resize: vertical;
+          "
+          placeholder="E.g., Need to enroll a new student, correct details, or update class list."
+        ></textarea>
+      </div>
+      <div
+        id="prm-feedback"
+        style="display: none; margin-top: 10px; font-size: 13px"
+      ></div>
+    </div>
+    <div
+      style="
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        padding: 12px 20px;
+        border-top: 1px solid #e5e7eb;
+        background: #f9fafb;
+      "
+    >
+      <button
+        type="button"
+        id="prm-cancel"
+        style="
+          padding: 8px 12px;
+          border: 1px solid #d1d5db;
+          background: #fff;
+          color: #111827;
+          border-radius: 8px;
+          cursor: pointer;
+        "
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        id="prm-submit"
+        style="
+          padding: 8px 12px;
+          border: 0;
+          background: #2563eb;
+          color: #fff;
+          border-radius: 8px;
+          cursor: pointer;
+        "
+      >
+        Submit Request
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    const role = '{{ session.get("role") }}';
+    const manageStudentsUrl = '{{ url_for("classteacher.manage_students") }}';
+    const csrfToken =
+      (document.querySelector('meta[name="csrf-token"]') &&
+        document
+          .querySelector('meta[name="csrf-token"]')
+          .getAttribute("content")) ||
+      "";
+    let interceptEnabled = true; // will be disabled once access is detected
+    if (role === "classteacher") {
+      document.addEventListener("DOMContentLoaded", () => {
+        // Intercept all links pointing to Manage Students
+        const links = Array.from(
+          document.querySelectorAll(`a[href='${manageStudentsUrl}']`)
+        );
+        links.forEach((a) => {
+          a.addEventListener("click", (e) => {
+            if (!interceptEnabled) {
+              // Let default navigation occur once we have access
+              return;
+            }
+            e.preventDefault();
+            // Before showing modal, check if permission now exists (e.g., just approved)
+            preCheckAndNavigate().catch(() => openPermModal());
+          });
+        });
+
+        // Begin polling to detect newly granted access and show a toast
+        startAccessPolling();
+      });
+    }
+
+    let classStructure = null;
+    const modal = document.getElementById("permissionRequestModal");
+    const gradeSel = document.getElementById("prm-grade");
+    const streamSel = document.getElementById("prm-stream");
+    const reasonEl = document.getElementById("prm-reason");
+    const feedback = document.getElementById("prm-feedback");
+    const btnCancel = document.getElementById("prm-cancel");
+    const btnSubmit = document.getElementById("prm-submit");
+
+    async function preCheckAndNavigate() {
+      try {
+        // If a grade is preselected in the modal, use it; otherwise, just check if any permission exists
+        const currentGrade = gradeSel ? gradeSel.value || "" : "";
+        const currentStream = streamSel ? streamSel.value || "" : "";
+        let url = '{{ url_for("permission.my_permissions_api") }}';
+        // Simple check: if teacher has any permissions, let them through
+        const res = await fetch(url, {
+          headers: { Accept: "application/json" },
+        });
+        const data = await res.json();
+        if (data && data.success && data.has_permissions) {
+          interceptEnabled = false;
+          window.location.href = manageStudentsUrl;
+          return true;
+        }
+        // If no general permissions, try a targeted check when grade is selected
+        if (currentGrade) {
+          const qs = new URLSearchParams({
+            grade: currentGrade,
+            stream: currentStream,
+          }).toString();
+          const r2 = await fetch(
+            `{{ url_for("permission.check_class_access") }}?${qs}`
+          );
+          const d2 = await r2.json();
+          if (d2 && d2.success && d2.has_access) {
+            interceptEnabled = false;
+            window.location.href = manageStudentsUrl;
+            return true;
+          }
+        }
+        // Otherwise show modal
+        openPermModal();
+        return false;
+      } catch (e) {
+        openPermModal();
+        return false;
+      }
+    }
+
+    function showToast(message) {
+      try {
+        const toast = document.createElement("div");
+        toast.textContent = message;
+        Object.assign(toast.style, {
+          position: "fixed",
+          left: "50%",
+          bottom: "24px",
+          transform: "translateX(-50%)",
+          background: "#065f46",
+          color: "#fff",
+          padding: "10px 14px",
+          borderRadius: "10px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+          zIndex: "10000",
+          fontSize: "14px",
+          opacity: "0",
+          transition: "opacity .25s ease",
+        });
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => {
+          toast.style.opacity = "1";
+        });
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          setTimeout(() => toast.remove(), 300);
+        }, 2500);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
+    function highlightManageStudentsCard() {
+      try {
+        const sel = `a[href='${manageStudentsUrl}']`;
+        document.querySelectorAll(sel).forEach((el) => {
+          el.style.outline = "2px solid #10b981";
+          el.style.outlineOffset = "2px";
+          el.style.transition = "outline-color .3s ease";
+          setTimeout(() => {
+            el.style.outlineColor = "#34d399";
+          }, 800);
+        });
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
+    function startAccessPolling() {
+      let lastHasPermissions = null;
+      const poll = async () => {
+        try {
+          const r = await fetch(
+            '{{ url_for("permission.my_permissions_api") }}',
+            { headers: { Accept: "application/json" } }
+          );
+          const data = await r.json();
+          const has = !!(data && data.success && data.has_permissions);
+          if (lastHasPermissions === null) {
+            lastHasPermissions = has;
+          } else if (!lastHasPermissions && has) {
+            // Access just got granted
+            interceptEnabled = false;
+            showToast("You now have access to Manage Students");
+            highlightManageStudentsCard();
+          }
+          lastHasPermissions = has;
+        } catch (e) {
+          // ignore transient errors
+        }
+      };
+      // initial call and interval
+      poll();
+      setInterval(poll, 15000); // every 15s
+    }
+
+    function openPermModal() {
+      if (!modal) return;
+      if (feedback) {
+        feedback.style.display = "none";
+        feedback.textContent = "";
+      }
+      if (!classStructure) {
+        fetch('{{ url_for("permission.get_class_structure") }}')
+          .then(async (r) => {
+            // Some servers may return HTML error if not authenticated; try to parse JSON safely
+            const text = await r.text();
+            try {
+              return JSON.parse(text);
+            } catch {
+              throw new Error("Bad JSON");
+            }
+          })
+          .then((data) => {
+            if (data && data.success) {
+              classStructure = data.structure || {};
+              populateGrades();
+              modal.style.display = "flex";
+            } else {
+              alert("Could not load class structure.");
+            }
+          })
+          .catch(() => alert("Network error loading class structure."));
+      } else {
+        modal.style.display = "flex";
+      }
+    }
+
+    function populateGrades() {
+      // Reset
+      gradeSel.innerHTML = '<option value="">Select grade…</option>';
+      Object.keys(classStructure || {})
+        .sort()
+        .forEach((g) => {
+          const opt = document.createElement("option");
+          opt.value = g;
+          opt.textContent = g;
+          gradeSel.appendChild(opt);
+        });
+      populateStreams("");
+    }
+
+    function populateStreams(grade) {
+      streamSel.innerHTML = '<option value="">All streams</option>';
+      const streams =
+        classStructure && classStructure[grade] ? classStructure[grade] : [];
+      streams.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s.name;
+        opt.textContent = s.name;
+        streamSel.appendChild(opt);
+      });
+    }
+
+    if (gradeSel) {
+      gradeSel.addEventListener("change", () =>
+        populateStreams(gradeSel.value)
+      );
+    }
+    if (btnCancel) {
+      btnCancel.addEventListener("click", () => {
+        if (modal) modal.style.display = "none";
+      });
+    }
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+      });
+    }
+    if (btnSubmit) {
+      btnSubmit.addEventListener("click", () => {
+        const grade = gradeSel.value.trim();
+        const stream = streamSel.value.trim();
+        const reason = reasonEl.value.trim();
+        if (!grade) {
+          if (feedback) {
+            feedback.style.display = "block";
+            feedback.style.color = "#b91c1c";
+            feedback.textContent = "Please select a grade.";
+          }
+          return;
+        }
+        if (!reason) {
+          if (feedback) {
+            feedback.style.display = "block";
+            feedback.style.color = "#b91c1c";
+            feedback.textContent = "Please provide a brief reason.";
+          }
+          return;
+        }
+        if (feedback) {
+          feedback.style.display = "block";
+          feedback.style.color = "#111827";
+          feedback.textContent = "Submitting request…";
+        }
+        fetch('{{ url_for("permission.submit_permission_request") }}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+            "X-CSRF-Token": csrfToken,
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            grade_name: grade,
+            stream_name: stream || null,
+            reason,
+          }),
+        })
+          .then(async (r) => {
+            const text = await r.text();
+            try {
+              return JSON.parse(text);
+            } catch {
+              return { success: false, message: text || "Unexpected response" };
+            }
+          })
+          .then((data) => {
+            if (data && data.success) {
+              if (feedback) {
+                feedback.style.color = "#065f46";
+                feedback.textContent =
+                  data.message || "Request submitted successfully.";
+              }
+              setTimeout(() => {
+                if (modal) modal.style.display = "none";
+                // After successful submit, optionally navigate if access was granted elsewhere meanwhile
+                preCheckAndNavigate();
+              }, 1200);
+            } else {
+              if (feedback) {
+                feedback.style.color = "#b91c1c";
+                feedback.textContent =
+                  data && data.message
+                    ? data.message
+                    : "Failed to submit request.";
+              }
+            }
+          })
+          .catch(() => {
+            if (feedback) {
+              feedback.style.color = "#b91c1c";
+              feedback.textContent = "Network error submitting request.";
+            }
+          });
+      });
+    }
+  })();
+</script>

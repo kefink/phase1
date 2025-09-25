@@ -307,7 +307,7 @@ def create_app(config_name='default'):
     # multi-app test scenarios. Engine has already been warmed up for this app instance.
 
     # Initialize database with tables and default data (skip in explicit test context; tests manage schema)
-    # Runtime schema mutation removed: all structural changes must be handled via Alembic migrations.
+    # Also run lightweight idempotent migrations to heal missing columns used by permissions flows.
     if not app.testing:
         with app.app_context():
             try:
@@ -319,6 +319,24 @@ def create_app(config_name='default'):
                         print(f"⚠️ Database initialization failed: {result.get('error', 'Unknown error')}")
             except Exception as e:
                 print(f"⚠️ Database error: {e}")
+
+            # Run minimal, safe migrations needed for current permission workflow
+            try:
+                from .migrations.add_revoked_at_to_permissions import run_migration as _m_revoked
+                _m_revoked(app)
+            except Exception as _e:
+                try:
+                    app.logger.warning(f"revoked_at migration skipped: {_e}")
+                except Exception:
+                    print(f"⚠️ revoked_at migration skipped: {_e}")
+            try:
+                from .migrations.add_grade_stream_to_permission_requests import run_migration as _m_pr_cols
+                _m_pr_cols(app)
+            except Exception as _e:
+                try:
+                    app.logger.warning(f"permission_requests grade/stream migration skipped: {_e}")
+                except Exception:
+                    print(f"⚠️ permission_requests grade/stream migration skipped: {_e}")
 
     # Initialize optional data protection (field encryption) early so tests that
     # set DATA_ENCRYPTION_KEY before app creation get listeners installed.

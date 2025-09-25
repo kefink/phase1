@@ -683,9 +683,16 @@
         <a href="#" id="btn-export-csv" class="btn btn-warning">
           <i class="fas fa-download"></i> Export CSV
         </a>
+        {% set session_role = session.get('role') %} {% if session_role in
+        ['admin','headteacher'] %}
         <button id="btn-delete-report" class="btn btn-danger">
           <i class="fas fa-trash"></i> Delete Report
         </button>
+        {% else %}
+        <button id="btn-delete-report" class="btn btn-danger">
+          <i class="fas fa-trash"></i> Delete Report
+        </button>
+        {% endif %}
       </div>
       {% endif %}
     </div>
@@ -694,6 +701,7 @@
     <script>
       // Attach delegated event listeners instead of inline handlers
       document.addEventListener('DOMContentLoaded', function() {
+        const sessionRole = '{{ session.get("role") }}';
         const printBtn = document.getElementById('btn-print-report');
         const exportBtn = document.getElementById('btn-export-csv');
         const deleteBtn = document.getElementById('btn-delete-report');
@@ -715,6 +723,10 @@
         if (deleteBtn) {
           deleteBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            if (sessionRole !== 'admin' && sessionRole !== 'headteacher') {
+              alert('Only admin is allowed to do so.');
+              return false;
+            }
             deleteSubjectReport();
           });
         }

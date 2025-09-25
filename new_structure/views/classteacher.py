@@ -40,6 +40,7 @@ from ..utils.database_health import check_database_health, create_missing_tables
 from ..services.permission_service import PermissionService
 from ..models.function_permission import DefaultFunctionPermissions
 from ..services.flexible_marks_service import FlexibleMarksService
+from ..services.grade_marksheet_service import GradeMarksheetService
 from functools import wraps
 from .decorators import dev_only
 
@@ -4886,7 +4887,9 @@ def download_grade_marksheet(grade, term, assessment_type):
                            action='download'))
 
 @classteacher_bp.route('/delete_marksheet/<grade>/<stream>/<term>/<assessment_type>', methods=['POST'])
-@enforce('marksheet', 'delete', class_scope=True, grade_arg='grade', stream_arg='stream')
+@enforce('marksheet', 'delete', class_scope=True, grade_arg='grade', stream_arg='stream', roles=(
+    'headteacher', 'admin'
+))
 def delete_marksheet(grade, stream, term, assessment_type):
     """Route for deleting a class marksheet (all marks for a grade/stream/term/assessment combination)."""
     try:
@@ -9619,7 +9622,9 @@ def delete_report(grade, stream, term, assessment_type):
         return redirect(url_for('classteacher.dashboard'))
 
 @classteacher_bp.route('/delete_subject_report', methods=['POST'])
-@classteacher_required
+@enforce('marks', 'delete', class_scope=True, roles=(
+    'headteacher', 'admin'
+))
 def delete_subject_report():
     """Route for deleting marks for a specific subject in a grade/stream/term/assessment combination."""
     try:
@@ -11307,3 +11312,208 @@ def test_analytics_dashboard():
         import traceback
         traceback.print_exc()
         return f"<h1>Error in Test Analytics</h1><pre>{str(e)}</pre><pre>{traceback.format_exc()}</pre>"
+
+
+# ============================================================================
+# GRADE MARKSHEET GENERATION (Combined streams for assigned grades)
+# ============================================================================
+
+@classteacher_bp.route('/grade_marksheets')
+@classteacher_required()
+def grade_marksheets():
+    """Show available grade marksheets for the classteacher's assigned grades."""
+    try:
+        teacher_id = session.get('teacher_id')
+        if not teacher_id:
+            flash('Session expired. Please log in again.', 'error')
+            return redirect(url_for('auth.classteacher_login'))
+        
+        # Get grades accessible by this teacher
+        accessible_grades = GradeMarksheetService.get_teacher_accessible_grades(teacher_id)
+        
+        # Get available terms and assessment types for filters
+        terms = Term.query.all()
+        assessment_types = AssessmentType.query.all()
+        
+        return render_template(
+            'classteacher_grade_marksheets.html',
+            accessible_grades=accessible_grades,
+            terms=terms,
+            assessment_types=assessment_types,
+            teacher_id=teacher_id
+        )
+        
+    except Exception as e:
+        logger.error(f"Error loading grade marksheets: {e}")
+        flash(f'Error loading grade marksheets: {str(e)}', 'error')
+        return redirect(url_for('classteacher.dashboard'))
+
+
+@classteacher_bp.route('/api/check_grade_marksheet_eligibility')
+@classteacher_required()
+def check_grade_marksheet_eligibility():
+    """Check if a teacher can generate a grade marksheet for given parameters."""
+    try:
+        teacher_id = session.get('teacher_id')
+        grade_id = request.args.get('grade_id', type=int)
+        term = request.args.get('term')
+        assessment_type = request.args.get('assessment_type')
+        
+        if not all([teacher_id, grade_id, term, assessment_type]):
+            return jsonify({
+                'success': False,
+                'message': 'Missing required parameters'
+            })
+        
+        can_generate, details = GradeMarksheetService.can_generate_grade_marksheet(
+            teacher_id, grade_id, term, assessment_type
+        )
+        
+        if can_generate:
+            return jsonify({
+                'success': True,
+                'can_generate': True,
+                'message': 'Grade marksheet can be generated',
+                'details': details
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'can_generate': False,
+                'message': details.get('error', 'Cannot generate marksheet'),
+                'reason': details.get('reason'),
+                'details': details
+            })
+            
+    except Exception as e:
+        logger.error(f"Error checking grade marksheet eligibility: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'System error: {str(e)}'
+        })
+
+
+@classteacher_bp.route('/api/grade_marksheet_preview')
+@classteacher_required()
+def grade_marksheet_preview():
+    """Get preview data for a grade marksheet."""
+    try:
+        teacher_id = session.get('teacher_id')
+        grade_id = request.args.get('grade_id', type=int)
+        term = request.args.get('term')
+        assessment_type = request.args.get('assessment_type')
+        
+        if not all([teacher_id, grade_id, term, assessment_type]):
+            return jsonify({
+                'success': False,
+                'message': 'Missing required parameters'
+            })
+        
+        # Check permission first
+        can_generate, details = GradeMarksheetService.can_generate_grade_marksheet(
+            teacher_id, grade_id, term, assessment_type
+        )
+        
+        if not can_generate:
+            return jsonify({
+                'success': False,
+                'message': details.get('error', 'Cannot generate marksheet'),
+                'reason': details.get('reason')
+            })
+        
+        # Get marksheet data
+        marksheet_data = GradeMarksheetService.get_grade_marksheet_data(
+            grade_id, term, assessment_type
+        )
+        
+        if not marksheet_data:
+            return jsonify({
+                'success': False,
+                'message': 'Failed to retrieve grade data'
+            })
+        
+        return jsonify({
+            'success': True,
+            'data': marksheet_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting grade marksheet preview: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'System error: {str(e)}'
+        })
+
+
+@classteacher_bp.route('/generate_combined_grade_marksheet')
+@classteacher_required()
+def generate_combined_grade_marksheet():
+    """Generate and download a grade marksheet (all streams combined)."""
+    try:
+        teacher_id = session.get('teacher_id')
+        grade_id = request.args.get('grade_id', type=int)
+        term = request.args.get('term')
+        assessment_type = request.args.get('assessment_type')
+        format_type = request.args.get('format', 'pdf').lower()
+        
+        if not all([teacher_id, grade_id, term, assessment_type]):
+            flash('Missing required parameters for grade marksheet generation', 'error')
+            return redirect(url_for('classteacher.grade_marksheets'))
+        
+        # Generate the marksheet
+        success, result = GradeMarksheetService.generate_grade_marksheet(
+            teacher_id, grade_id, term, assessment_type, format_type
+        )
+        
+        if success and isinstance(result, dict) and 'file_path' in result:
+            try:
+                # For now, just redirect back with success message
+                # In real implementation, this would send the actual file
+                flash(f'Grade marksheet generated successfully for {result["marksheet_data"]["grade_name"]}', 'success')
+                return redirect(url_for('classteacher.grade_marksheets'))
+            except Exception as e:
+                logger.error(f"Error sending grade marksheet file: {e}")
+                flash('Generated file could not be sent', 'error')
+        else:
+            error_msg = result if isinstance(result, str) else 'Failed to generate grade marksheet'
+            flash(error_msg, 'error')
+        
+        return redirect(url_for('classteacher.grade_marksheets'))
+        
+    except Exception as e:
+        logger.error(f"Error generating grade marksheet: {e}")
+        flash(f'Error generating grade marksheet: {str(e)}', 'error')
+        return redirect(url_for('classteacher.grade_marksheets'))
+
+
+@classteacher_bp.route('/api/grade_report_status')
+@classteacher_required()
+def grade_report_status():
+    """Get the status of individual class reports for a grade."""
+    try:
+        grade_id = request.args.get('grade_id', type=int)
+        term = request.args.get('term')
+        assessment_type = request.args.get('assessment_type')
+        
+        if not all([grade_id, term, assessment_type]):
+            return jsonify({
+                'success': False,
+                'message': 'Missing required parameters'
+            })
+        
+        reports_exist, report_status = GradeMarksheetService.check_class_reports_exist(
+            grade_id, term, assessment_type
+        )
+        
+        return jsonify({
+            'success': True,
+            'reports_exist': reports_exist,
+            'status': report_status
+        })
+        
+    except Exception as e:
+        logger.error(f"Error checking grade report status: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'System error: {str(e)}'
+        })

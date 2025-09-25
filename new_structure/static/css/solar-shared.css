@@ -62,6 +62,15 @@ body.solar-theme,
   width: 1.55rem;
   height: 1.55rem;
 }
+.heroicon-xl {
+  width: 2rem;
+  height: 2rem;
+}
+/* Larger icons inside stat-icon containers */
+.stat-icon .heroicon {
+  width: 1.8rem;
+  height: 1.8rem;
+}
 .heroicon-solar-yellow {
   color: var(--solar-yellow);
 }
@@ -151,6 +160,58 @@ body.solar-theme,
 .solar-btn-outline:hover {
   background: var(--solar-yellow);
   color: #fff;
+}
+
+/* Generic outline button (shared) */
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.9rem;
+  background: transparent;
+  color: var(--solar-yellow);
+  border: 2px solid var(--solar-yellow);
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s ease;
+}
+.btn-outline:hover,
+.btn-outline:focus-visible {
+  background: var(--solar-yellow);
+  color: #002b36;
+}
+
+/* Small button variant */
+.btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+  line-height: 1.1;
+  cursor: pointer;
+  border: 1px solid rgba(181, 137, 0, 0.45);
+  background: var(--solar-base3);
+  color: var(--solar-base02);
+}
+.btn-sm .heroicon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.btn-sm.btn-outline {
+  background: transparent;
+  color: var(--solar-yellow);
+  border: 1px solid var(--solar-yellow);
+}
+.btn-sm.btn-outline:hover,
+.btn-sm.btn-outline:focus-visible {
+  background: var(--solar-yellow);
+  color: #002b36;
 }
 
 .solar-badge {
@@ -1302,4 +1363,49 @@ body[data-theme="solar-dark"] *,
 body[data-theme="solar-dark"]::before {
   transition: background-color 0.35s ease, color 0.35s ease,
     box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+/* -------------------------------------------------- */
+/* Theme Toggle Button (reusable)                     */
+/* -------------------------------------------------- */
+.solar-theme-toggle {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 2000;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--solar-base3);
+  border: 1px solid rgba(181, 137, 0, 0.45);
+  color: var(--solar-yellow);
+  box-shadow: 0 8px 18px rgba(0, 43, 54, 0.15),
+    inset 0 1px 0 rgba(253, 246, 227, 0.6);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.solar-theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(0, 43, 54, 0.22),
+    inset 0 1px 0 rgba(253, 246, 227, 0.7);
+}
+.solar-theme-toggle svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+[data-theme="solar-dark"] .solar-theme-toggle {
+  background: rgba(0, 43, 54, 0.85);
+  color: var(--solar-base2);
+  border-color: rgba(181, 137, 0, 0.45);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+[data-theme="solar-dark"] .solar-theme-toggle:hover {
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }

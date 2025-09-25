@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#002b36" />
@@ -918,12 +919,15 @@
           <a
             href="{{ url_for('permission.manage_permissions') }}"
             class="nav-link"
+            id="nav-permissions-link"
+            style="display:inline-flex; align-items:center; gap:6px; position:relative;"
           >
             <!-- Heroicon: key (solid) - Permissions icon -->
             <svg class="heroicon heroicon-navigation" fill="currentColor" viewBox="0 0 24 24">
               <path fill-rule="evenodd" d="M15.75 1.5a6.75 6.75 0 00-6.651 7.906c.067.39-.032.717-.221.906l-6.5 6.499a3 3 0 00-.878 2.121v2.818c0 .414.336.75.75.75H6a.75.75 0 00.75-.75v-1.5h1.5A.75.75 0 009 19.5V18h1.5a.75.75 0 00.53-.22l2.658-2.658c.19-.189.517-.288.906-.22A6.75 6.75 0 1015.75 1.5zm1.5 3a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>
             </svg>
             Permissions
+            <span id="pending-requests-badge" aria-label="Pending requests" style="display:none; min-width:18px; height:18px; padding:0 6px; border-radius:999px; background:#dc2626; color:#fff; font-size:11px; line-height:18px; text-align:center;">0</span>
           </a>
         </li>
         <li>
@@ -1752,3 +1756,85 @@
     </script>
   </body>
 </html>
+{% if session.get('role') == 'headteacher' %}
+<script>
+  // Lightweight pending requests widget
+  document.addEventListener('DOMContentLoaded', function(){
+    const csrf = (document.querySelector('meta[name="csrf-token"]') && document.querySelector('meta[name="csrf-token"]').getAttribute('content')) || '';
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.right = '16px';
+    container.style.bottom = '16px';
+    container.style.zIndex = '1000';
+    container.style.maxWidth = '420px';
+    container.innerHTML = `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1);overflow:hidden;">
+        <div style="padding:10px 14px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:8px;">
+          <span style="font-weight:700;color:#111827;">Pending Permission Requests</span>
+          <button id="permRefreshBtn" style="margin-left:auto;padding:4px 8px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:12px;">Refresh</button>
+        </div>
+        <div id="permList" style="max-height:300px;overflow:auto;"></div>
+      </div>`;
+    document.body.appendChild(container);
+    const listEl = document.getElementById('permList');
+    const refreshBtn = document.getElementById('permRefreshBtn');
+    function load() {
+      fetch('{{ url_for("permission.get_pending_requests") }}').then(r=>r.json()).then(data=>{
+        listEl.innerHTML='';
+        // Update badge
+        try {
+          const badge = document.getElementById('pending-requests-badge');
+          const count = Array.isArray(data?.requests) ? data.requests.length : (data?.count ?? 0);
+          if (badge) {
+            if (count > 0) { badge.style.display = 'inline-block'; badge.textContent = String(count); }
+            else { badge.style.display = 'none'; badge.textContent = '0'; }
+          }
+        } catch(e) { /* ignore */ }
+        if (!data || !data.success || !data.requests || !data.requests.length) {
+          listEl.innerHTML = '<div style="padding:12px;color:#6b7280;font-size:13px;">No pending requests</div>';
+          return;
+        }
+        data.requests.forEach(req=>{
+          const item = document.createElement('div');
+          item.style.padding='10px 12px';
+          item.style.borderBottom='1px solid #f1f5f9';
+          item.innerHTML = `
+            <div style="font-size:13px;color:#111827;font-weight:600;">${req.teacher_name || ('Teacher #' + req.teacher_id)}</div>
+            <div style="font-size:12px;color:#374151;margin-top:2px;">Grade: ${req.grade_name}${req.stream_name?(' | Stream: '+req.stream_name):''}</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:6px;white-space:pre-wrap;">${(req.reason||'').slice(0,240)}</div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button data-act="approve" data-id="${req.id}" class="perm-act" style="padding:6px 10px;border:0;background:#16a34a;color:#fff;border-radius:6px;cursor:pointer;font-size:12px;">Approve</button>
+              <button data-act="deny" data-id="${req.id}" class="perm-act" style="padding:6px 10px;border:1px solid #e5e7eb;background:#fff;color:#111827;border-radius:6px;cursor:pointer;font-size:12px;">Deny</button>
+            </div>`;
+          listEl.appendChild(item);
+        });
+        listEl.querySelectorAll('.perm-act').forEach(btn=>{
+          btn.addEventListener('click', ()=>{
+            const id = btn.getAttribute('data-id');
+            const action = btn.getAttribute('data-act');
+            fetch('{{ url_for("permission.process_permission_request") }}', {
+              method:'POST',
+              headers:{
+                'Content-Type':'application/json',
+                'X-CSRFToken': csrf,
+                'X-CSRF-Token': csrf
+              },
+              credentials: 'same-origin',
+              body: JSON.stringify({ request_id: id, action: action })
+            }).then(r=>r.json()).then(res=>{
+              if (res && res.success) load();
+              else alert(res && res.message ? res.message : 'Failed to process');
+            }).catch(()=>alert('Network error processing request'));
+          });
+        });
+      }).catch(()=>{
+        listEl.innerHTML = '<div style="padding:12px;color:#b91c1c;font-size:13px;">Network error loading requests</div>';
+      });
+    }
+    refreshBtn.addEventListener('click', load);
+    load();
+    // Poll every 15s to keep badge fresh
+    setInterval(load, 15000);
+  });
+</script>
+{% endif %}

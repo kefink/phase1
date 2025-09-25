@@ -248,6 +248,16 @@
             <i class="fas fa-{{ 'pause' if parent.is_active else 'play' }}"></i>
             {{ 'Deactivate' if parent.is_active else 'Activate' }}
           </a>
+          <form
+            action="/parent_management/delete_parent/{{ parent.id }}"
+            method="POST"
+            style="display: inline-block; margin-left: 10px"
+            onsubmit="return confirm('Delete {{ parent.get_full_name() }}? This cannot be undone.');"
+          >
+            <button type="submit" class="btn-danger">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </form>
         </div>
       </div>
 

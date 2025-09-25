@@ -35,6 +35,7 @@
             padding: 0;
             min-height: 100vh;
         }
+        .parent-dashboard {
             padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
@@ -950,6 +951,11 @@
                                class="btn-view" style="margin-left: 5px;">
                                 <i class="fas fa-eye"></i> View
                             </a>
+                            <form action="/parent_management/delete_parent/{{ parent.id }}" method="POST" style="display:inline-block; margin-left: 5px;" onsubmit="return confirm('Delete {{ parent.get_full_name() }}? This cannot be undone.');">
+                                <button type="submit" class="btn-view" style="background-color:#dc3545;">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}

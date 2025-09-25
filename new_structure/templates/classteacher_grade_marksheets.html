@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <title>Grade Marksheets · Class Teacher</title>
+
+    <!-- Fonts & Icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap (modals, grid) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Solar Theme Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/classteacher.css') }}"
+    />
+
+    <style>
+      /* Page-specific Solar styles */
+      .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 1rem 0 1.25rem;
+      }
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-weight: 600;
+        color: var(--text-emphasis, #eee8d5);
+      }
+      .panel-card {
+        border-radius: 14px;
+        background: var(--card-bg, #073642);
+        border: 1px solid var(--border-color, rgba(181, 137, 0, 0.2));
+        box-shadow: var(--shadow, 0 4px 12px rgba(0, 0, 0, 0.28));
+        overflow: hidden;
+        margin-bottom: 1rem;
+      }
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.25rem;
+        background: linear-gradient(
+          90deg,
+          var(--primary-color, #268bd2),
+          var(--cyan, #2aa198)
+        );
+        color: #fff;
+      }
+      .panel-body {
+        padding: 1.1rem 1.25rem;
+      }
+      .stream-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.6rem;
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text-bright, #93a1a1);
+        border: 1px solid var(--glass-border, rgba(147, 161, 161, 0.2));
+        border-radius: 999px;
+        font-size: 12px;
+        margin: 0.125rem;
+      }
+      .marksheet-form {
+        background: linear-gradient(
+          135deg,
+          rgba(147, 161, 161, 0.05),
+          rgba(38, 139, 210, 0.06)
+        );
+        border: 1px solid var(--glass-border, rgba(147, 161, 161, 0.2));
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 0.75rem;
+      }
+      .btn-preview {
+        background: var(
+          --gradient-warning,
+          linear-gradient(135deg, #b58900, #cb4b16)
+        );
+        color: #fff;
+        border: 0;
+        padding: 0.55rem 0.9rem;
+        border-radius: 10px;
+        font-weight: 600;
+        margin-right: 0.5rem;
+      }
+      .btn-generate {
+        background: var(--green-600, #16a34a);
+        color: #fff;
+        border: 0;
+        padding: 0.65rem 1.1rem;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .btn-generate.loading {
+        opacity: 0.85;
+      }
+      .status-indicator {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .status-ready {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .status-missing {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .prerequisite-check {
+        background: rgba(7, 54, 66, 0.35);
+        border: 1px solid var(--glass-border, rgba(147, 161, 161, 0.2));
+        border-radius: 10px;
+        padding: 0.75rem;
+      }
+      .prerequisite-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed var(--glass-border, rgba(147, 161, 161, 0.2));
+      }
+      .prerequisite-item:last-child {
+        border-bottom: 0;
+      }
+      .solar-toast {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 24px;
+        background: rgba(7, 54, 66, 0.95);
+        color: #fdf6e3;
+        border: 1px solid rgba(181, 137, 0, 0.35);
+        border-radius: 12px;
+        padding: 10px 14px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        z-index: 1080;
+      }
+      .solar-toast.show {
+        opacity: 1;
+        transform: translate(-50%, -6px);
+      }
+    </style>
+  </head>
+  <body data-ct-auto-open="false">
+    {% include 'classteacher/_hamburger_nav.html' %}
+    <!-- Desktop Navbar (Solar) -->
+    <nav id="ctDesktopNav">
+      <div class="ctd-left">
+        <a href="{{ url_for('classteacher.dashboard') }}" class="ctd-brand"
+          >Class Teacher</a
+        >
+        <div class="ctd-links">
+          <a
+            href="{{ url_for('classteacher.class_overview') }}"
+            class="ctd-link"
+            >Overview</a
+          >
+          <a href="{{ url_for('classteacher.upload_marks') }}" class="ctd-link"
+            >Upload</a
+          >
+          <a href="{{ url_for('classteacher.all_reports') }}" class="ctd-link"
+            >Reports</a
+          >
+          <a
+            href="{{ url_for('classteacher.grade_marksheets') }}"
+            class="ctd-link"
+            >Grade Marksheets</a
+          >
+          <a
+            href="{{ url_for('classteacher.manage_students') }}"
+            class="ctd-link"
+            >Students</a
+          >
+          <a
+            href="{{ url_for('classteacher.analytics_dashboard') }}"
+            class="ctd-link"
+            >Analytics</a
+          >
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem">
+        <button id="desktopThemeToggleMini" aria-label="Toggle theme">
+          <svg
+            id="desktopThemeIconMini"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="1.5"
+            style="width: 18px; height: 18px"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M21 12.79A9 9 0 0 1 11.21 3 9 9 0 1 0 21 12.79Z"
+            />
+          </svg>
+        </button>
+        <a href="{{ url_for('auth.logout_route') }}" class="ctd-logout"
+          >Logout</a
+        >
+      </div>
+    </nav>
+    <script>
+      (function () {
+        const links = document.querySelectorAll("#ctDesktopNav .ctd-link");
+        const path = window.location.pathname + window.location.hash;
+        links.forEach((a) => {
+          if (path.startsWith(a.getAttribute("href").replace(/#.*$/, "")))
+            a.classList.add("active");
+        });
+        const themeBtn = document.getElementById("desktopThemeToggleMini");
+        const icon = document.getElementById("desktopThemeIconMini");
+        const KEY = "ctTheme";
+        const mql =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)");
+        const system = () => (mql && mql.matches ? "solar-dark" : "light");
+        const apply = (t) => {
+          if (t === "solar-dark") {
+            document.documentElement.setAttribute("data-theme", t);
+            document.body.setAttribute("data-theme", t);
+          } else {
+            document.documentElement.removeAttribute("data-theme");
+            document.body.removeAttribute("data-theme");
+          }
+          icon.innerHTML =
+            t === "solar-dark"
+              ? '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364-1.414-1.414M8.05 8.05 6.636 6.636m0 10.728 1.414-1.414M17.95 8.05l1.414-1.414" /><circle cx="12" cy="12" r="5" />'
+              : '<path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 0 1 11.21 3 9 9 0 1 0 21 12.79Z" />';
+        };
+        let saved;
+        try {
+          saved = localStorage.getItem(KEY);
+        } catch (e) {}
+        apply(saved || system());
+        themeBtn &&
+          themeBtn.addEventListener("click", () => {
+            const cur =
+              document.documentElement.getAttribute("data-theme") || system();
+            const next = cur === "solar-dark" ? "light" : "solar-dark";
+            try {
+              localStorage.setItem(KEY, next);
+            } catch (e) {}
+            apply(next);
+          });
+        if (mql && mql.addEventListener) {
+          mql.addEventListener("change", (e) => {
+            let s;
+            try {
+              s = localStorage.getItem(KEY);
+            } catch (_e) {}
+            if (!s) apply(e.matches ? "solar-dark" : "light");
+          });
+        }
+      })();
+    </script>
+
+    <!-- Main -->
+    <main style="padding: 1rem 1.25rem; max-width: 1200px; margin: 0 auto">
+      <div class="page-header">
+        <div class="page-title">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            style="width: 18px; height: 18px"
+          >
+            <path
+              d="M3 5.25A2.25 2.25 0 0 1 5.25 3h2.5A2.25 2.25 0 0 1 10 5.25v2.5A2.25 2.25 0 0 1 7.75 10h-2.5A2.25 2.25 0 0 1 3 7.75v-2.5Z"
+            />
+            <path
+              d="M13.999 5.25A2.25 2.25 0 0 1 16.249 3h2.5a2.25 2.25 0 0 1 2.25 2.25v2.5A2.25 2.25 0 0 1 18.75 10h-2.5A2.25 2.25 0 0 1 14 7.75v-2.5Z"
+            />
+            <path
+              d="M3 16.25A2.25 2.25 0 0 1 5.25 14h2.5A2.25 2.25 0 0 1 10 16.25v2.5A2.25 2.25 0 0 1 7.75 21h-2.5A2.25 2.25 0 0 1 3 18.75v-2.5Z"
+            />
+            <path
+              d="M13.999 16.25A2.25 2.25 0 0 1 16.249 14h2.5a2.25 2.25 0 0 1 2.25 2.25v2.5A2.25 2.25 0 0 1 18.75 21h-2.5A2.25 2.25 0 0 1 14 18.75v-2.5Z"
+            />
+          </svg>
+          Grade Marksheets
+        </div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{{ url_for('classteacher.dashboard') }}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active">Grade Marksheets</li>
+          </ol>
+        </nav>
+      </div>
+
+      <div class="alert alert-info" role="alert" style="border-radius: 12px">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="me-2"
+          style="width: 18px; height: 18px; vertical-align: -3px"
+        >
+          <path
+            d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.75 6.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm-2.25 2.25a.75.75 0 0 1 .75-.75h.75v6h1.5v-6h.75a.75.75 0 0 1 0 1.5H12v4.5h-1.5v-5.25Z"
+          />
+        </svg>
+        <strong>Grade Marksheet Generation:</strong> Generate combined
+        marksheets for all streams within your assigned grades. Individual class
+        reports must be generated first.
+      </div>
+
+      {% if accessible_grades %} {% for grade in accessible_grades %}
+      <div class="panel-card">
+        <div class="panel-head">
+          <div>
+            <div
+              style="
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+              "
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                style="width: 18px; height: 18px"
+              >
+                <path
+                  d="M12 3.75a.75.75 0 0 1 .374.098l9 5.25a.75.75 0 0 1 0 1.304l-9 5.25a.75.75 0 0 1-.748 0l-7.126-4.158v3.756a.75.75 0 0 1-.375.65l-1.5.857a.75.75 0 0 1-.75-1.3l1.125-.642V9.75l-1.125-.656a.75.75 0 0 1 0-1.304l9-5.25A.75.75 0 0 1 12 3.75Z"
+                />
+                <path
+                  d="M8.25 12.43l3.002 1.751a2.25 2.25 0 0 0 2.236 0l3.012-1.757V15a3.75 3.75 0 1 1-7.5 0v-2.57Z"
+                />
+              </svg>
+              {{ grade.name }}
+            </div>
+            <div class="streams-info" style="margin-top: 0.4rem">
+              <strong
+                style="font-size: 12px; opacity: 0.9; margin-right: 0.4rem"
+                >Streams:</strong
+              >
+              {% for stream in grade.streams %}<span class="stream-chip"
+                >{{ stream.name }}</span
+              >{% endfor %}
+            </div>
+          </div>
+          <div>
+            <small style="opacity: 0.9"
+              >{{ grade.streams|length }} Stream{{ 's' if grade.streams|length
+              != 1 }}</small
+            >
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="marksheet-form" data-grade-id="{{ grade.id }}">
+            <h5 class="mb-3">Generate Grade Marksheet</h5>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label" style="font-weight: 600">Term</label>
+                <select class="form-select term-select" required>
+                  <option value="">Select Term</option>
+                  {% for term in terms %}
+                  <option value="{{ term.name }}">{{ term.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" style="font-weight: 600"
+                  >Assessment Type</label
+                >
+                <select class="form-select assessment-select" required>
+                  <option value="">Select Assessment</option>
+                  {% for assessment in assessment_types %}
+                  <option value="{{ assessment.name }}">
+                    {{ assessment.name }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" style="font-weight: 600"
+                  >Format</label
+                >
+                <select class="form-select format-select">
+                  <option value="pdf">PDF</option>
+                  <option value="excel">Excel</option>
+                </select>
+              </div>
+            </div>
+
+            <div
+              class="prerequisite-check"
+              style="display: none; margin-top: 0.75rem"
+            >
+              <h6>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="me-2"
+                  style="width: 18px; height: 18px; vertical-align: -3px"
+                >
+                  <path
+                    d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.06 11.72l-1.72-1.72a.75.75 0 1 1 1.06-1.06l1.19 1.19 3.47-3.47a.75.75 0 1 1 1.06 1.06l-4 4a.75.75 0 0 1-1.06 0Z"
+                  />
+                </svg>
+                Prerequisites Check
+              </h6>
+              <div class="prerequisites-content"></div>
+            </div>
+
+            <div class="action-buttons" style="margin-top: 0.5rem">
+              <button
+                type="button"
+                class="btn btn-preview btn-check-prerequisites"
+                disabled
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="me-1"
+                  style="width: 16px; height: 16px; vertical-align: -3px"
+                >
+                  <path
+                    d="M10.5 3.75a6.75 6.75 0 1 0 4.237 12.04l3.236 3.235a.75.75 0 1 0 1.06-1.06l-3.235-3.236A6.75 6.75 0 0 0 10.5 3.75Zm0 1.5a5.25 5.25 0 1 1 0 10.5 5.25 5.25 0 0 1 0-10.5Z"
+                  />
+                </svg>
+                Check Prerequisites
+              </button>
+              <button
+                type="button"
+                class="btn btn-preview btn-preview-data"
+                disabled
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="me-1"
+                  style="width: 16px; height: 16px; vertical-align: -3px"
+                >
+                  <path
+                    d="M12 5.25c-4.818 0-8.878 2.888-10.5 7.059 1.622 4.17 5.682 7.059 10.5 7.059s8.878-2.888 10.5-7.059C20.878 8.138 16.818 5.25 12 5.25Zm0 11.25a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Zm0-1.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                  />
+                </svg>
+                Preview Data
+              </button>
+              <button
+                type="button"
+                class="btn btn-generate btn-generate-marksheet"
+                disabled
+              >
+                <span
+                  class="loading-spinner spinner-border spinner-border-sm me-2"
+                ></span>
+                <span class="btn-text">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="me-1"
+                    style="width: 16px; height: 16px; vertical-align: -3px"
+                  >
+                    <path
+                      d="M12 3.75a.75.75 0 0 1 .75.75v7.19l2.47-2.47a.75.75 0 1 1 1.06 1.06l-3.75 3.75a.75.75 0 0 1-1.06 0l-3.75-3.75a.75.75 0 1 1 1.06-1.06l2.47 2.47V4.5a.75.75 0 0 1 .75-.75ZM4.5 18a1.5 1.5 0 0 1 1.5-1.5h12a1.5 1.5 0 0 1 1.5 1.5v1.5A1.5 1.5 0 0 1 18 21H6a1.5 1.5 0 0 1-1.5-1.5V18Z"
+                    />
+                  </svg>
+                  Generate Marksheet
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <div class="alert alert-warning text-center" role="alert">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="me-2"
+          style="width: 18px; height: 18px; vertical-align: -3px"
+        >
+          <path
+            d="M10.34 2.976a2.25 2.25 0 0 1 3.32 0l8.302 9.487c1.367 1.56.235 3.987-1.66 3.987H3.698c-1.895 0-3.027-2.427-1.66-3.987l8.302-9.487ZM12 8.25a.75.75 0 0 0-.75.75v3.75a.75.75 0 0 0 1.5 0V9A.75.75 0 0 0 12 8.25Zm0 8.25a.88.88 0 1 0 0-1.76.88.88 0 0 0 0 1.76Z"
+          />
+        </svg>
+        <strong>No Accessible Grades:</strong> You don't have permission to
+        generate marksheets for any grades yet. <br />Please contact your
+        headteacher to request appropriate permissions.
+      </div>
+      {% endif %}
+    </main>
+
+    <!-- Preview Modal (Solar restyle) -->
+    <div
+      class="modal fade"
+      id="previewModal"
+      tabindex="-1"
+      aria-labelledby="previewModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div
+          class="modal-content"
+          style="
+            border-radius: 14px;
+            background: var(--card-bg, #073642);
+            border: 1px solid var(--glass-border, rgba(147, 161, 161, 0.2));
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+            color: var(--text-bright, #93a1a1);
+          "
+        >
+          <div
+            class="modal-header"
+            style="
+              background: rgba(7, 54, 66, 0.55);
+              border-bottom: 1px solid
+                var(--glass-border, rgba(147, 161, 161, 0.2));
+            "
+          >
+            <h5 class="modal-title" id="previewModalLabel">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="me-2"
+                style="width: 18px; height: 18px; vertical-align: -3px"
+              >
+                <path
+                  d="M12 5.25c-4.818 0-8.878 2.888-10.5 7.059 1.622 4.17 5.682 7.059 10.5 7.059s8.878-2.888 10.5-7.059C20.878 8.138 16.818 5.25 12 5.25Zm0 11.25a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Zm0-1.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                />
+              </svg>
+              Grade Marksheet Preview
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body"><div id="preview-content"></div></div>
+          <div
+            class="modal-footer"
+            style="
+              border-top: 1px solid
+                var(--glass-border, rgba(147, 161, 161, 0.2));
+            "
+          >
+            <button
+              type="button"
+              class="btn btn-outline"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-success" id="confirm-generate">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="me-1"
+                style="width: 16px; height: 16px; vertical-align: -3px"
+              >
+                <path
+                  d="M12 3.75a.75.75 0 0 1 .75.75v7.19l2.47-2.47a.75.75 0 1 1 1.06 1.06l-3.75 3.75a.75.75 0 0 1-1.06 0l-3.75-3.75a.75.75 0 1 1 1.06-1.06l2.47 2.47V4.5a.75.75 0 0 1 .75-.75ZM4.5 18a1.5 1.5 0 0 1 1.5-1.5h12a1.5 1.5 0 0 1 1.5 1.5v1.5A1.5 1.5 0 0 1 18 21H6a1.5 1.5 0 0 1-1.5-1.5V18Z"
+                />
+              </svg>
+              Generate & Download
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Global variables
+      let currentGradeId = null;
+      let currentFormData = {};
+
+      // Initialize page
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeEventListeners();
+      });
+
+      function initializeEventListeners() {
+        document
+          .querySelectorAll(".term-select, .assessment-select")
+          .forEach((select) => {
+            select.addEventListener("change", handleFormChange);
+          });
+        document.querySelectorAll(".btn-check-prerequisites").forEach((btn) => {
+          btn.addEventListener("click", checkPrerequisites);
+        });
+        document.querySelectorAll(".btn-preview-data").forEach((btn) => {
+          btn.addEventListener("click", previewData);
+        });
+        document.querySelectorAll(".btn-generate-marksheet").forEach((btn) => {
+          btn.addEventListener("click", generateMarksheet);
+        });
+        document
+          .getElementById("confirm-generate")
+          .addEventListener("click", confirmGenerate);
+      }
+
+      function handleFormChange(event) {
+        const form = event.target.closest(".marksheet-form");
+        const term = form.querySelector(".term-select").value;
+        const assessment = form.querySelector(".assessment-select").value;
+        resetFormState(form);
+        if (term && assessment)
+          form.querySelector(".btn-check-prerequisites").disabled = false;
+      }
+      function resetFormState(form) {
+        form.querySelector(".prerequisite-check").style.display = "none";
+        form.querySelector(".btn-check-prerequisites").disabled = true;
+        form.querySelector(".btn-preview-data").disabled = true;
+        form.querySelector(".btn-generate-marksheet").disabled = true;
+      }
+
+      async function checkPrerequisites(event) {
+        const form = event.target.closest(".marksheet-form");
+        const gradeId = form.dataset.gradeId;
+        const term = form.querySelector(".term-select").value;
+        const assessment = form.querySelector(".assessment-select").value;
+        if (!term || !assessment) {
+          showAlert("Please select both term and assessment type", "warning");
+          return;
+        }
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerHTML =
+          '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Checking...';
+        try {
+          const eligibilityResponse = await fetch(
+            `/classteacher/api/check_grade_marksheet_eligibility?grade_id=${gradeId}&term=${encodeURIComponent(
+              term
+            )}&assessment_type=${encodeURIComponent(assessment)}`
+          );
+          const eligibilityData = await eligibilityResponse.json();
+          const statusResponse = await fetch(
+            `/classteacher/api/grade_report_status?grade_id=${gradeId}&term=${encodeURIComponent(
+              term
+            )}&assessment_type=${encodeURIComponent(assessment)}`
+          );
+          const statusData = await statusResponse.json();
+          displayPrerequisites(form, eligibilityData, statusData);
+          if (eligibilityData.success && eligibilityData.can_generate) {
+            form.querySelector(".btn-preview-data").disabled = false;
+            form.querySelector(".btn-generate-marksheet").disabled = false;
+          }
+        } catch (error) {
+          console.error("Error checking prerequisites:", error);
+          showAlert("Error checking prerequisites: " + error.message, "danger");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="me-1" style="width:16px;height:16px;vertical-align:-3px"><path d="M10.5 3.75a6.75 6.75 0 1 0 4.237 12.04l3.236 3.235a.75.75 0 1 0 1.06-1.06l-3.235-3.236A6.75 6.75 0 0 0 10.5 3.75Zm0 1.5a5.25 5.25 0 1 1 0 10.5 5.25 5.25 0 0 1 0-10.5Z"/></svg>Check Prerequisites';
+        }
+      }
+
+      function displayPrerequisites(form, eligibilityData, statusData) {
+        const prerequisiteDiv = form.querySelector(".prerequisite-check");
+        const content = prerequisiteDiv.querySelector(".prerequisites-content");
+        let html = "";
+        if (eligibilityData.success) {
+          if (eligibilityData.can_generate) {
+            html += `<div class="prerequisite-item"><span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#16a34a" class="me-2" style="width:16px;height:16px;vertical-align:-3px"><path d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.06 11.72l-1.72-1.72a.75.75 0 1 1 1.06-1.06l1.19 1.19 3.47-3.47a.75.75 0 1 1 1.06 1.06l-4 4a.75.75 0 0 1-1.06 0Z"/></svg>Permission Check</span><span class="status-indicator status-ready">Authorized</span></div>`;
+          } else {
+            html += `<div class=\"prerequisite-item\"><span><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"#dc2626\" class=\"me-2\" style=\"width:16px;height:16px;vertical-align:-3px\"><path d=\"M10.34 2.976a2.25 2.25 0 0 1 3.32 0l8.302 9.487c1.367 1.56.235 3.987-1.66 3.987H3.698c-1.895 0-3.027-2.427-1.66-3.987l8.302-9.487ZM12 8.25a.75.75 0 0 0-.75.75v3.75a.75.75 0 0 0 1.5 0V9A.75.75 0 0 0 12 8.25Zm0 8.25a.88.88 0 1 0 0-1.76.88.88 0 0 0 0 1.76Z\"/></svg>Permission Check</span><span class=\"status-indicator status-missing\">Not Authorized</span></div><div class=\"alert alert-warning mt-2\"><strong>Reason:</strong> ${eligibilityData.message}</div>`;
+          }
+        }
+        if (statusData.success && statusData.status) {
+          html +=
+            '<div class="mt-3"><strong>Class Reports Status:</strong></div>';
+          statusData.status.forEach((report) => {
+            const statusClass = report.exists
+              ? "status-ready"
+              : "status-missing";
+            const statusText = report.exists ? "Available" : "Missing";
+            const iconSvg = report.exists
+              ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#16a34a" class="me-2" style="width:16px;height:16px;vertical-align:-3px"><path d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.06 11.72l-1.72-1.72a.75.75 0 1 1 1.06-1.06l1.19 1.19 3.47-3.47a.75.75 0 1 1 1.06 1.06l-4 4a.75.75 0 0 1-1.06 0Z"/></svg>'
+              : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#dc2626" class="me-2" style="width:16px;height:16px;vertical-align:-3px"><path d="M10.34 2.976a2.25 2.25 0 0 1 3.32 0l8.302 9.487c1.367 1.56.235 3.987-1.66 3.987H3.698c-1.895 0-3.027-2.427-1.66-3.987l8.302-9.487ZM12 8.25a.75.75 0 0 0-.75.75v3.75a.75.75 0 0 0 1.5 0V9A.75.75 0 0 0 12 8.25Zm0 8.25a.88.88 0 1 0 0-1.76.88.88 0 0 0 0 1.76Z"/></svg>';
+            html += `<div class="prerequisite-item"><span>${iconSvg}${report.class_name}</span><span class="status-indicator ${statusClass}">${statusText}</span></div>`;
+          });
+        }
+        content.innerHTML = html;
+        prerequisiteDiv.style.display = "block";
+      }
+
+      async function previewData(event) {
+        const form = event.target.closest(".marksheet-form");
+        const gradeId = form.dataset.gradeId;
+        const term = form.querySelector(".term-select").value;
+        const assessment = form.querySelector(".assessment-select").value;
+        currentGradeId = gradeId;
+        currentFormData = { gradeId, term, assessment };
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerHTML =
+          '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Loading...';
+        try {
+          const response = await fetch(
+            `/classteacher/api/grade_marksheet_preview?grade_id=${gradeId}&term=${encodeURIComponent(
+              term
+            )}&assessment_type=${encodeURIComponent(assessment)}`
+          );
+          const data = await response.json();
+          if (data.success) {
+            displayPreview(data.data);
+            new bootstrap.Modal(document.getElementById("previewModal")).show();
+          } else {
+            showAlert(data.message || "Failed to load preview", "danger");
+          }
+        } catch (error) {
+          console.error("Error loading preview:", error);
+          showAlert("Error loading preview: " + error.message, "danger");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="me-1" style="width:16px;height:16px;vertical-align:-3px"><path d="M12 5.25c-4.818 0-8.878 2.888-10.5 7.059 1.622 4.17 5.682 7.059 10.5 7.059s8.878-2.888 10.5-7.059C20.878 8.138 16.818 5.25 12 5.25Zm0 11.25a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Zm0-1.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>Preview Data';
+        }
+      }
+
+      function displayPreview(data) {
+        const content = document.getElementById("preview-content");
+        let html = `<div class=\"preview-header mb-3\"><h4>${data.grade_name} - Combined Grade Marksheet</h4><p class=\"text-muted\">Term: ${data.term} | Assessment: ${data.assessment_type}</p><p><strong>Total Students:</strong> ${data.total_students} across ${data.streams.length} streams</p></div><div class=\"table-responsive\"><table class=\"table table-striped table-sm\"><thead class=\"table-dark\"><tr><th>Student Name</th><th>Class</th><th>Stream</th>`;
+        data.subjects.forEach((subject) => {
+          html += `<th>${subject}</th>`;
+        });
+        html += "<th>Total</th><th>Average</th></tr></thead><tbody>";
+        data.students.forEach((student) => {
+          html += `<tr><td>${student.name}</td><td>${student.class_name}</td><td>${student.stream}</td>`;
+          data.subjects.forEach((subject) => {
+            const grade = student.grades[subject] || "-";
+            html += `<td>${grade}</td>`;
+          });
+          html += `<td><strong>${
+            student.total || "-"
+          }</strong></td><td><strong>${
+            student.average || "-"
+          }</strong></td></tr>`;
+        });
+        html += "</tbody></table></div>";
+        content.innerHTML = html;
+      }
+
+      async function generateMarksheet(event) {
+        const form = event.target.closest(".marksheet-form");
+        const gradeId = form.dataset.gradeId;
+        const term = form.querySelector(".term-select").value;
+        const assessment = form.querySelector(".assessment-select").value;
+        const format = form.querySelector(".format-select").value;
+        const btn = event.target;
+        btn.classList.add("loading");
+        btn.disabled = true;
+        const downloadUrl = `/classteacher/generate_combined_grade_marksheet?grade_id=${gradeId}&term=${encodeURIComponent(
+          term
+        )}&assessment_type=${encodeURIComponent(assessment)}&format=${format}`;
+        try {
+          window.location.href = downloadUrl;
+          setTimeout(() => {
+            btn.classList.remove("loading");
+            btn.disabled = false;
+          }, 3000);
+        } catch (error) {
+          console.error("Error generating marksheet:", error);
+          showAlert("Error generating marksheet: " + error.message, "danger");
+          btn.classList.remove("loading");
+          btn.disabled = false;
+        }
+      }
+
+      function confirmGenerate() {
+        if (currentGradeId && currentFormData) {
+          const form = document.querySelector(
+            `[data-grade-id="${currentGradeId}"]`
+          );
+          const generateBtn = form.querySelector(".btn-generate-marksheet");
+          bootstrap.Modal.getInstance(
+            document.getElementById("previewModal")
+          ).hide();
+          generateBtn.click();
+        }
+      }
+
+      function showAlert(message, type) {
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        const container = document.querySelector("main") || document.body;
+        container.prepend(alertDiv);
+        setTimeout(() => {
+          if (alertDiv.parentNode) {
+            alertDiv.remove();
+          }
+        }, 5000);
+      }
+    </script>
+  </body>
+</html>

@@ -1,2034 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0"
-    />
-    <meta
-      name="description"
-      content="Headteacher Dashboard - {{ school_info.school_name or 'Hillview School' }} Management System"
-    />
-    <meta name="format-detection" content="telephone=no" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#b58900" />
-
-    <title>
-      Headteacher Dashboard - {{ school_info.school_name or 'Hillview School
-      Management System' }}
-    </title>
-
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-
-    <!-- Shared Solar Theme Core Styles -->
+    <title>Headteacher Dashboard</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/solar-shared.css') }}"
     />
-
-    <!-- Professional Solar Theme Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Heroicons - Premium SVG Icons (No external dependencies, guaranteed display) -->
-    <!-- Professional icons by the makers of Tailwind CSS -->
-    <style>
-      /* Heroicons SVG Icon Base Styles */
-      .heroicon {
-        display: inline-block;
-        width: 1.25rem;
-        height: 1.25rem;
-        fill: currentColor;
-        vertical-align: middle;
-      }
-
-      .heroicon-lg {
-        width: 1.8rem;
-        height: 1.8rem;
-      }
-
-      .heroicon-xl {
-        width: 2rem;
-        height: 2rem;
-      }
-
-      /* Icon color inheritance and styling */
-      .stat-icon .heroicon {
-        width: 1.8rem;
-        height: 1.8rem;
-        color: white;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-      }
-    </style>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- jsPDF for PDF export -->
-    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
-
-    <!-- html2canvas for chart capture -->
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
-    <!-- External CSS Files for Solar Theme -->
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/classteacher-base.css') }}"
+      href="{{ url_for('static', filename='css/headteacher.css') }}"
     />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/classteacher-forms.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/classteacher-buttons.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/classteacher-navbar.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/classteacher-flexbox.css') }}"
-    />
-
-    <!-- Premium Headteacher Dashboard Styling -->
-    <style>
-      /* Premium Page Header */
-      .page-header {
-        background: linear-gradient(
-          135deg,
-          rgba(253, 246, 227, 0.85) 0%,
-          rgba(238, 232, 213, 0.65) 100%
-        );
-        border: 1px solid rgba(181, 137, 0, 0.18);
-        border-radius: 16px;
-        padding: 1rem 1.25rem;
-        margin: 0 0 1.5rem 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        box-shadow: 0 6px 20px rgba(0, 43, 54, 0.08);
-      }
-
-      .page-title h1 {
-        margin: 0 0 0.25rem 0;
-        font-size: 1.6rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        background: linear-gradient(135deg, #002b36, #073642);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .page-title p {
-        margin: 0;
-        color: #586e75;
-        font-weight: 500;
-      }
-
-      .page-actions {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .page-actions .btn,
-      .page-actions .btn-outline {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        border-radius: 10px;
-        padding: 0.55rem 0.9rem;
-      }
-
-      .page-actions .btn .heroicon,
-      .page-actions .btn-outline .heroicon {
-        width: 1rem;
-        height: 1rem;
-      }
-
-      .btn-label {
-        display: inline;
-      }
-
-      /* Keyboard focus for buttons */
-      .btn:focus-visible,
-      .btn-outline:focus-visible {
-        outline: 2px solid #b58900 !important;
-        outline-offset: 2px !important;
-      }
-
-      /* Responsive: stack header, condense labels on small screens */
-      @media (max-width: 768px) {
-        .page-header {
-          flex-direction: column;
-          align-items: stretch;
-          text-align: center;
-          gap: 0.75rem;
-          padding: 0.9rem 0.9rem;
-        }
-        .page-actions {
-          justify-content: center;
-        }
-      }
-
-      /* Optional compact mode: auto-hide header subtitle on mid-sized screens */
-      @media (min-width: 900px) and (max-width: 1199px) {
-        .page-header .page-title p {
-          display: none !important;
-        }
-      }
-
-      @media (max-width: 520px) {
-        .page-actions {
-          gap: 0.4rem;
-        }
-        .page-actions .btn,
-        .page-actions .btn-outline {
-          padding: 0.5rem 0.6rem;
-          min-width: 44px;
-          min-height: 44px;
-        }
-        .btn-label {
-          display: none; /* keep icons only on very small screens */
-        }
-      }
-      /* Solar Theme Body Background */
-      body.solar-theme {
-        margin: 0;
-        padding: 0;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(
-          135deg,
-          #fdf6e3 0%,
-          #eee8d5 50%,
-          #d6d2c4 100%
-        );
-        min-height: 100vh;
-        overflow-x: hidden;
-      }
-
-      .dashboard-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
-        background: transparent;
-        min-height: 100vh;
-      }
-
-      /* Premium Stats Grid Layout */
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 3rem;
-        padding: 0;
-      }
-
-      /* Premium Stat Card Design */
-      .stat-card {
-        background: linear-gradient(
-          145deg,
-          rgba(253, 246, 227, 0.95) 0%,
-          rgba(238, 232, 213, 0.9) 100%
-        );
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(181, 137, 0, 0.2);
-        border-radius: 16px;
-        padding: 2rem;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 8px 32px rgba(0, 43, 54, 0.1),
-          0 4px 16px rgba(181, 137, 0, 0.05),
-          inset 0 1px 0 rgba(253, 246, 227, 0.5);
-        transform: translateY(0);
-      }
-
-      .stat-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(
-          90deg,
-          #b58900 0%,
-          #859900 50%,
-          #268bd2 100%
-        );
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.6s ease;
-      }
-
-      .stat-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15),
-          0 8px 24px rgba(181, 137, 0, 0.1),
-          inset 0 1px 0 rgba(253, 246, 227, 0.8);
-        border-color: rgba(181, 137, 0, 0.4);
-      }
-
-      .stat-card:hover::before {
-        transform: scaleX(1);
-      }
-
-      /* Enhanced Icon Design */
-      .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1.5rem;
-        position: relative;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        flex-shrink: 0;
-        overflow: visible;
-        z-index: 2;
-      }
-
-      .stat-icon::after {
-        content: "";
-        position: absolute;
-        inset: -2px;
-        border-radius: 18px;
-        padding: 2px;
-        background: linear-gradient(
-          45deg,
-          transparent,
-          rgba(181, 137, 0, 0.3),
-          transparent
-        );
-        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        mask-composite: subtract;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .stat-card:hover .stat-icon::after {
-        opacity: 1;
-      }
-
-      .stat-icon.primary {
-        background: linear-gradient(135deg, #268bd2 0%, #2aa198 100%);
-        color: white;
-        box-shadow: 0 6px 20px rgba(38, 139, 210, 0.4);
-      }
-
-      .stat-icon.success {
-        background: linear-gradient(135deg, #859900 0%, #b58900 100%);
-        color: white;
-        box-shadow: 0 6px 20px rgba(181, 137, 0, 0.4);
-      }
-
-      .stat-icon.info {
-        background: linear-gradient(135deg, #6c71c4 0%, #268bd2 100%);
-        color: white;
-        box-shadow: 0 6px 20px rgba(108, 113, 196, 0.4);
-      }
-
-      .stat-icon.warning {
-        background: linear-gradient(135deg, #cb4b16 0%, #dc322f 100%);
-        color: white;
-        box-shadow: 0 6px 20px rgba(220, 50, 47, 0.4);
-      }
-
-      /* Enhanced hover effects for icons */
-      .stat-card:hover .stat-icon {
-        transform: scale(1.1) rotate(5deg);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-      }
-
-      .stat-card:hover .stat-icon.primary {
-        box-shadow: 0 8px 25px rgba(38, 139, 210, 0.5);
-      }
-
-      .stat-card:hover .stat-icon.success {
-        box-shadow: 0 8px 25px rgba(181, 137, 0, 0.5);
-      }
-
-      .stat-card:hover .stat-icon.info {
-        box-shadow: 0 8px 25px rgba(108, 113, 196, 0.5);
-      }
-
-      .stat-card:hover .stat-icon.warning {
-        box-shadow: 0 8px 25px rgba(220, 50, 47, 0.5);
-      }
-
-      /* Premium Typography */
-      .stat-content {
-        flex: 1;
-      }
-
-      .stat-number {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: #002b36;
-        margin-bottom: 0.5rem;
-        background: linear-gradient(135deg, #002b36 0%, #073642 100%);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        line-height: 1.1;
-        letter-spacing: -0.02em;
-        transition: all 0.3s ease;
-      }
-
-      .stat-card:hover .stat-number {
-        transform: scale(1.05);
-        text-shadow: 0 2px 8px rgba(0, 43, 54, 0.1);
-      }
-
-      .stat-label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #586e75;
-        margin-bottom: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        transition: color 0.3s ease;
-      }
-
-      .stat-card:hover .stat-label {
-        color: #073642;
-      }
-
-      .stat-trend {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        color: #93a1a1;
-        font-weight: 500;
-        transition: all 0.3s ease;
-      }
-
-      .stat-trend i {
-        opacity: 0.8;
-        transition: all 0.3s ease;
-      }
-
-      .stat-card:hover .stat-trend {
-        color: #586e75;
-      }
-
-      .stat-card:hover .stat-trend i {
-        opacity: 1;
-        transform: scale(1.1);
-      }
-
-      /* Special styling for performance indicators */
-      .stat-trend.neutral {
-        color: #839496;
-      }
-
-      .stat-card:hover .stat-trend.neutral {
-        color: #657b83;
-      }
-
-      /* Animation keyframes */
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .animate-fade-in-up {
-        animation: fadeInUp 0.8s ease-out forwards;
-        opacity: 0;
-      }
-
-      /* Loading state for stat cards */
-      .loading-state .stat-icon {
-        position: relative;
-        overflow: hidden;
-      }
-
-      .loading-state .stat-icon::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.3),
-          transparent
-        );
-        animation: iconShimmer 2s infinite;
-        z-index: 1;
-      }
-
-      @keyframes iconShimmer {
-        0% {
-          left: -100%;
-        }
-        100% {
-          left: 100%;
-        }
-      }
-
-      /* Remove loading state after icons are enhanced */
-      .icons-loaded .loading-state .stat-icon::before {
-        display: none;
-      }
-
-      /* Premium Section Header Styling */
-      .stats-section {
-        margin: 3rem 0;
-      }
-
-      .premium-header {
-        background: linear-gradient(
-          135deg,
-          rgba(253, 246, 227, 0.8) 0%,
-          rgba(238, 232, 213, 0.6) 100%
-        );
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(181, 137, 0, 0.15);
-        border-radius: 20px;
-        padding: 2rem 2.5rem;
-        margin-bottom: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 8px 32px rgba(0, 43, 54, 0.08),
-          0 2px 16px rgba(181, 137, 0, 0.05);
-      }
-
-      .premium-header::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #b58900, transparent);
-        animation: shimmer 3s infinite;
-      }
-
-      @keyframes shimmer {
-        0% {
-          left: -100%;
-        }
-        100% {
-          left: 100%;
-        }
-      }
-
-      .header-content {
-        flex: 1;
-        min-width: 300px;
-      }
-
-      .section-title {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin: 0 0 0.5rem 0;
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #002b36;
-        letter-spacing: -0.02em;
-      }
-
-      .header-icon {
-        width: 48px;
-        height: 48px;
-        background: linear-gradient(135deg, #b58900 0%, #859900 100%);
-        color: white;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        box-shadow: 0 4px 16px rgba(181, 137, 0, 0.3);
-        position: relative;
-      }
-
-      .header-icon::after {
-        content: "";
-        position: absolute;
-        inset: -2px;
-        border-radius: 14px;
-        padding: 2px;
-        background: linear-gradient(45deg, #b58900, #859900, #268bd2);
-        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        mask-composite: subtract;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .premium-header:hover .header-icon::after {
-        opacity: 1;
-      }
-
-      .title-text {
-        background: linear-gradient(135deg, #002b36 0%, #073642 100%);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .section-subtitle {
-        margin: 0;
-        font-size: 1rem;
-        color: #586e75;
-        font-weight: 500;
-        opacity: 0.9;
-      }
-
-      .header-actions {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-      }
-
-      .premium-btn {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      }
-
-      .premium-btn::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.2),
-          transparent
-        );
-        transition: left 0.5s ease;
-      }
-
-      .premium-btn:hover::before {
-        left: 100%;
-      }
-
-      .btn-outline.premium-btn {
-        background: transparent;
-        border: 2px solid #b58900;
-        color: #b58900;
-      }
-
-      .btn-outline.premium-btn:hover {
-        background: #b58900;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(181, 137, 0, 0.3);
-      }
-
-      .btn.premium-btn {
-        background: linear-gradient(135deg, #b58900 0%, #859900 100%);
-        border: none;
-        color: white;
-      }
-
-      .btn.premium-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(181, 137, 0, 0.4);
-        background: linear-gradient(135deg, #859900 0%, #b58900 100%);
-      }
-
-      /* Responsive header design */
-      @media (max-width: 768px) {
-        .premium-header {
-          flex-direction: column;
-          text-align: center;
-          padding: 1.5rem;
-        }
-
-        .header-actions {
-          justify-content: center;
-        }
-
-        .section-title {
-          justify-content: center;
-          font-size: 1.5rem;
-        }
-      }
-      @media (max-width: 768px) {
-        .stats-grid {
-          grid-template-columns: 1fr;
-          gap: 1rem;
-        }
-
-        .stat-card {
-          padding: 1.5rem;
-        }
-
-        .stat-number {
-          font-size: 2rem;
-        }
-      }
-
-      @media (min-width: 1200px) {
-        .stats-grid {
-          grid-template-columns: repeat(4, 1fr);
-        }
-      }
-
-      /* Compact Enhanced Navigation Bar */
-      .navbar {
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 1000 !important;
-        background: linear-gradient(
-          135deg,
-          #002b36 0%,
-          #073642 100%
-        ) !important;
-        border-bottom: 1px solid #b58900 !important;
-        min-height: 70px !important;
-        height: auto !important;
-        overflow: visible !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      .navbar-container {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        flex-wrap: wrap !important;
-        padding: 0.75rem 1rem !important;
-        max-width: 1400px !important;
-        margin: 0 auto !important;
-        gap: 0.75rem !important;
-        min-height: 70px !important;
-        width: 100% !important;
-      }
-
-      .navbar-brand {
-        display: flex !important;
-        align-items: center !important;
-        gap: 0.5rem !important;
-        flex-shrink: 0 !important;
-        color: #fdf6e3 !important;
-        text-decoration: none !important;
-        padding: 0.25rem 0 !important;
-      }
-
-      .navbar-brand img {
-        width: 32px !important;
-        height: 32px !important;
-        border-radius: 6px !important;
-      }
-
-      .brand-text {
-        display: flex !important;
-        flex-direction: column !important;
-        line-height: 1.1 !important;
-      }
-
-      .school-name {
-        font-size: 1rem !important;
-        font-weight: 700 !important;
-        color: #fdf6e3 !important;
-        margin: 0 !important;
-      }
-
-      .role-text {
-        font-size: 0.75rem !important;
-        color: #b58900 !important;
-        font-weight: 500 !important;
-        margin: 0 !important;
-      }
-
-      /* Enhanced Navigation Items - All Visible */
-      .navbar-nav {
-        display: flex !important;
-        list-style: none !important;
-        flex-wrap: wrap !important;
-        gap: 0.25rem !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        align-items: center !important;
-        flex: 1 !important;
-        justify-content: flex-end !important;
-        max-width: none !important;
-        overflow: visible !important;
-      }
-
-      .navbar-nav li {
-        display: block !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        flex-shrink: 0 !important;
-      }
-
-      .nav-link {
-        display: flex !important;
-        align-items: center !important;
-        gap: 0.4rem !important;
-        padding: 0.4rem 0.6rem !important;
-        text-decoration: none !important;
-        border-radius: 6px !important;
-        transition: all 0.2s ease !important;
-        white-space: nowrap !important;
-        color: #93a1a1 !important;
-        font-size: 0.8rem !important;
-        font-weight: 500 !important;
-        border: 1px solid transparent !important;
-        background: transparent !important;
-        min-width: fit-content !important;
-      }
-
-      .nav-link .heroicon {
-        width: 1rem !important;
-        height: 1rem !important;
-        flex-shrink: 0 !important;
-      }
-
-      .nav-link span {
-        font-size: 0.8rem !important;
-        font-weight: 500 !important;
-        display: inline !important;
-      }
-
-      .nav-link:hover {
-        background-color: rgba(181, 137, 0, 0.15) !important;
-        color: #fdf6e3 !important;
-        transform: translateY(-1px) !important;
-        border-color: rgba(181, 137, 0, 0.4) !important;
-      }
-
-      /* Keyboard focus visibility */
-      .nav-link:focus-visible {
-        outline: 2px solid #b58900 !important;
-        outline-offset: 2px !important;
-      }
-
-      /* Active page link state */
-      .nav-link.active {
-        background-color: rgba(181, 137, 0, 0.2) !important;
-        color: #fdf6e3 !important;
-        border-color: rgba(181, 137, 0, 0.5) !important;
-        box-shadow: 0 2px 8px rgba(181, 137, 0, 0.15) !important;
-      }
-
-      /* Enhanced compact navigation with tooltip support */
-      .nav-link {
-        position: relative !important;
-      }
-
-      .nav-link:hover::after {
-        content: attr(title) !important;
-        position: absolute !important;
-        bottom: -35px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        background: rgba(0, 43, 54, 0.95) !important;
-        color: #fdf6e3 !important;
-        padding: 0.375rem 0.5rem !important;
-        border-radius: 4px !important;
-        font-size: 0.75rem !important;
-        white-space: nowrap !important;
-        z-index: 1001 !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
-        display: none !important;
-      }
-
-      @media (max-width: 1200px) {
-        .nav-link:hover::after {
-          display: block !important;
-        }
-      }
-
-      /* Colored Navigation Icons */
-      .nav-link .heroicon {
-        transition: all 0.3s ease;
-      }
-
-      /* Dashboard - Solar Yellow */
-      .navbar-nav li:nth-child(1) .nav-link .heroicon {
-        fill: #b58900;
-      }
-
-      /* Universal Access - Solar Blue */
-      .navbar-nav li:nth-child(2) .nav-link .heroicon {
-        fill: #268bd2;
-      }
-
-      /* Reports - Solar Green */
-      .navbar-nav li:nth-child(3) .nav-link .heroicon {
-        fill: #859900;
-      }
-
-      /* Students - Solar Cyan */
-      .navbar-nav li:nth-child(4) .nav-link .heroicon {
-        fill: #2aa198;
-      }
-
-      /* Teachers - Solar Orange */
-      .navbar-nav li:nth-child(5) .nav-link .heroicon {
-        fill: #cb4b16;
-      }
-
-      /* Subjects - Solar Violet */
-      .navbar-nav li:nth-child(6) .nav-link .heroicon {
-        fill: #6c71c4;
-      }
-
-      /* Subject Configuration - Solar Magenta */
-      .navbar-nav li:nth-child(7) .nav-link .heroicon {
-        fill: #d33682;
-      }
-
-      /* Analytics - Solar Blue (alternate) */
-      .navbar-nav li:nth-child(8) .nav-link .heroicon {
-        fill: #268bd2;
-      }
-
-      /* Student Promotion - Solar Yellow (alternate) */
-      .navbar-nav li:nth-child(9) .nav-link .heroicon {
-        fill: #b58900;
-      }
-
-      /* Parent Portal - Solar Green (alternate) */
-      .navbar-nav li:nth-child(10) .nav-link .heroicon {
-        fill: #859900;
-      }
-
-      /* Permissions - Solar Red */
-      .navbar-nav li:nth-child(11) .nav-link .heroicon {
-        fill: #dc322f;
-      }
-
-      /* Logout - Solar Red (darker) */
-      .navbar-nav li:nth-child(12) .nav-link .heroicon {
-        fill: #dc322f;
-      }
-
-      /* Hover effects for colored icons */
-      .nav-link:hover .heroicon {
-        filter: brightness(1.2) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-        transform: scale(1.1);
-      }
-
-      /* PAGE HEADER SECTION ICONS */
-      /* Page actions buttons */
-      .page-actions .btn-outline .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      .page-actions .btn .heroicon {
-        fill: #859900; /* Solar Green for primary actions */
-      }
-
-      /* Page title icon */
-      .page-title .heroicon {
-        fill: #b58900; /* Solar Yellow */
-      }
-
-      /* SYSTEM ALERTS SECTION ICONS */
-      /* Alert section header */
-      .alerts-section .section-header .heroicon {
-        fill: #dc322f; /* Solar Red for alerts */
-      }
-
-      /* System Alerts - Premium styling and responsiveness */
-      .alerts-section {
-        margin: 2rem 0;
-      }
-
-      .system-alerts-container {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      .system-alert {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 1rem 1.25rem;
-        border-radius: 14px;
-        background: linear-gradient(
-          135deg,
-          rgba(253, 246, 227, 0.85) 0%,
-          rgba(238, 232, 213, 0.6) 100%
-        );
-        border: 1px solid rgba(181, 137, 0, 0.18);
-        box-shadow: 0 4px 18px rgba(0, 43, 54, 0.06);
-      }
-
-      .system-alert.alert-critical {
-        border-left: 6px solid #dc322f;
-      }
-      .system-alert.alert-warning {
-        border-left: 6px solid #b58900;
-      }
-      .system-alert.alert-info {
-        border-left: 6px solid #268bd2;
-      }
-
-      .alert-content {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-        flex: 1;
-        min-width: 0; /* allow wrapping */
-      }
-
-      .system-alert .alert-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        flex-shrink: 0;
-      }
-
-      .system-alert.alert-critical .alert-icon {
-        background: rgba(220, 50, 47, 0.12);
-      }
-      .system-alert.alert-warning .alert-icon {
-        background: rgba(181, 137, 0, 0.12);
-      }
-      .system-alert.alert-info .alert-icon {
-        background: rgba(38, 139, 210, 0.12);
-      }
-
-      .alert-text {
-        flex: 1;
-      }
-
-      .alert-title {
-        font-weight: 700;
-        color: #002b36;
-        margin: 0 0 0.25rem 0;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-      }
-
-      .alert-message {
-        margin: 0 0 0.35rem 0;
-        color: #586e75;
-      }
-
-      .alert-time {
-        font-size: 0.8rem;
-        color: #93a1a1;
-      }
-
-      .alert-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.2rem 0.5rem;
-        border-radius: 999px;
-        font-size: 0.7rem;
-        font-weight: 800;
-        letter-spacing: 0.02em;
-        border: 1px solid transparent;
-        line-height: 1;
-      }
-      .badge-critical {
-        color: #dc322f;
-        background: rgba(220, 50, 47, 0.1);
-        border-color: rgba(220, 50, 47, 0.25);
-      }
-      .badge-warning {
-        color: #b58900;
-        background: rgba(181, 137, 0, 0.1);
-        border-color: rgba(181, 137, 0, 0.25);
-      }
-      .badge-info {
-        color: #268bd2;
-        background: rgba(38, 139, 210, 0.1);
-        border-color: rgba(38, 139, 210, 0.25);
-      }
-
-      .alert-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-      }
-
-      /* Hover & focus */
-      .system-alert:hover {
-        box-shadow: 0 8px 24px rgba(0, 43, 54, 0.1);
-      }
-      .alert-actions .btn-sm:focus-visible {
-        outline: 2px solid #b58900;
-        outline-offset: 2px;
-      }
-
-      /* Mobile responsiveness for alerts */
-      @media (max-width: 640px) {
-        .system-alert {
-          flex-direction: column;
-        }
-        .alert-actions {
-          justify-content: flex-start;
-        }
-      }
-
-      /* Alert type specific colors */
-      .system-alert .alert-icon .heroicon {
-        transition: all 0.3s ease;
-      }
-
-      .alert-critical .alert-icon .heroicon {
-        fill: #dc322f; /* Solar Red for critical */
-      }
-
-      .alert-warning .alert-icon .heroicon {
-        fill: #b58900; /* Solar Yellow for warning */
-      }
-
-      .alert-info .alert-icon .heroicon {
-        fill: #268bd2; /* Solar Blue for info */
-      }
-
-      /* FILTER PANEL ICONS */
-      .filter-panel .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      /* Advanced Filters Panel - premium layout */
-      .filter-panel {
-        background: linear-gradient(
-          135deg,
-          rgba(253, 246, 227, 0.85) 0%,
-          rgba(238, 232, 213, 0.65) 100%
-        );
-        border: 1px solid rgba(181, 137, 0, 0.18);
-        border-radius: 16px;
-        padding: 1rem 1.25rem;
-        margin: 1rem 0 2rem 0;
-        box-shadow: 0 6px 20px rgba(0, 43, 54, 0.08);
-      }
-
-      .filter-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        margin-bottom: 0.75rem;
-      }
-
-      .filter-header h3 {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 800;
-        letter-spacing: -0.01em;
-        color: #002b36;
-      }
-
-      .filter-content {
-        display: grid;
-        gap: 0.75rem 1rem;
-      }
-
-      .filter-row {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(220px, 1fr));
-        gap: 0.75rem 1rem;
-      }
-
-      .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        min-width: 0;
-      }
-
-      .filter-group label {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #073642;
-      }
-
-      .form-control,
-      .filter-group select {
-        appearance: none;
-        background: #fdf6e3;
-        border: 1px solid rgba(181, 137, 0, 0.35);
-        border-radius: 10px;
-        padding: 0.55rem 0.75rem;
-        color: #002b36;
-        min-height: 40px;
-        box-shadow: inset 0 1px 0 rgba(253, 246, 227, 0.6);
-      }
-
-      .form-control:focus,
-      .filter-group select:focus {
-        outline: 2px solid #b58900;
-        outline-offset: 2px;
-      }
-
-      .filter-group.filter-actions {
-        display: flex;
-        align-items: end;
-        justify-content: flex-start;
-      }
-
-      /* Responsive filters */
-      @media (max-width: 1024px) {
-        .filter-row {
-          grid-template-columns: repeat(2, minmax(200px, 1fr));
-        }
-      }
-      @media (max-width: 640px) {
-        .filter-row {
-          grid-template-columns: 1fr;
-        }
-        .filter-group.filter-actions {
-          justify-content: center;
-        }
-        .filter-group.filter-actions .btn {
-          width: 100%;
-        }
-      }
-
-      /* STATISTICS SECTION ICONS */
-      /* Section headers */
-      .stats-section .section-header .heroicon {
-        fill: #b58900; /* Solar Yellow */
-      }
-
-      .premium-header .header-icon .heroicon {
-        fill: #b58900; /* Solar Yellow */
-      }
-
-      .header-actions .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      /* Stat card icons by type */
-      .stat-icon.primary .heroicon {
-        fill: #ffffff; /* White for visibility on colored backgrounds */
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-      }
-
-      .stat-icon.success .heroicon {
-        fill: #ffffff;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-      }
-
-      .stat-icon.info .heroicon {
-        fill: #ffffff;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-      }
-
-      .stat-icon.warning .heroicon {
-        fill: #ffffff;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-      }
-
-      /* CHARTS SECTION ICONS */
-      .chart-actions .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      /* ANALYTICS SECTION ICONS */
-      .analytics-section .section-header .heroicon {
-        fill: #6c71c4; /* Solar Violet */
-      }
-
-      .analytics-header .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      .btn-sm .heroicon {
-        fill: #859900; /* Solar Green */
-      }
-
-      /* PERFORMANCE SECTION ICONS */
-      .performance-section .section-header .heroicon {
-        fill: #859900; /* Solar Green */
-      }
-
-      .section-actions .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      .filter-item .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      /* PAGINATION ICONS */
-      .pagination-controls .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      /* TABLE ACTION ICONS */
-      .table-actions .heroicon {
-        fill: #6c71c4; /* Solar Violet */
-      }
-
-      /* HOVER EFFECTS FOR ALL ICONS */
-      .heroicon:hover {
-        filter: brightness(1.2) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-        transform: scale(1.05);
-        transition: all 0.3s ease;
-      }
-
-      /* BUTTON ICON HOVER EFFECTS */
-      .btn:hover .heroicon,
-      .btn-outline:hover .heroicon,
-      .btn-sm:hover .heroicon {
-        transform: scale(1.1);
-        filter: brightness(1.3) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
-      }
-
-      /* RESPONSIVE ICON COLORS */
-      @media (max-width: 768px) {
-        .heroicon {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .heroicon-lg {
-          width: 1.5rem;
-          height: 1.5rem;
-        }
-      }
-
-      /* DISMISS AND CLOSE BUTTON ICONS */
-      .btn-sm.btn-outline .heroicon {
-        fill: #dc322f; /* Solar Red for dismiss actions */
-      }
-
-      /* NO DATA STATE ICONS */
-      .no-alerts-content .heroicon {
-        fill: #859900; /* Solar Green for positive states */
-      }
-
-      .no-data-message .heroicon {
-        fill: #586e75; /* Solar Gray for neutral states */
-      }
-
-      /* ADDITIONAL INTERACTIVE ELEMENT ICONS */
-      .alert-actions .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      .alert-actions .btn-sm:hover .heroicon {
-        fill: #dc322f; /* Solar Red on hover for actions */
-      }
-
-      /* VIEW DETAILS BUTTON ICONS */
-      .btn-details .heroicon {
-        fill: #6c71c4; /* Solar Violet */
-      }
-
-      /* SUCCESS STATE ICONS */
-      .success-message .heroicon {
-        fill: #859900; /* Solar Green */
-      }
-
-      /* ERROR STATE ICONS */
-      .error-message .heroicon {
-        fill: #dc322f; /* Solar Red */
-      }
-
-      /* LOADING STATE ICONS */
-      .loading .heroicon {
-        fill: #586e75; /* Solar Gray */
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* DROPDOWN AND MENU ICONS */
-      .dropdown-toggle .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      /* EXPORT AND DOWNLOAD ICONS */
-      .export-btn .heroicon {
-        fill: #859900; /* Solar Green */
-      }
-
-      /* SEARCH AND FILTER ICONS */
-      .search-btn .heroicon,
-      .filter-btn .heroicon {
-        fill: #268bd2; /* Solar Blue */
-      }
-
-      /* EDIT AND MODIFY ICONS */
-      .edit-btn .heroicon {
-        fill: #b58900; /* Solar Yellow */
-      }
-
-      /* DELETE AND REMOVE ICONS */
-      .delete-btn .heroicon {
-        fill: #dc322f; /* Solar Red */
-      }
-
-      /* ADD AND CREATE ICONS */
-      .add-btn .heroicon,
-      .create-btn .heroicon {
-        fill: #859900; /* Solar Green */
-      }
-
-      /* Improved Responsive Navigation - All Items Visible */
-      @media (min-width: 1400px) {
-        .navbar-nav {
-          flex-wrap: nowrap !important;
-        }
-
-        .navbar-container {
-          flex-wrap: nowrap !important;
-        }
-      }
-
-      /* Mobile Hamburger + Drawer (Headteacher only, mobile view) */
-      .hamburger-btn {
-        display: none;
-        align-items: center;
-        gap: 0.35rem;
-        background: transparent;
-        color: #fdf6e3;
-        border: 1px solid rgba(181, 137, 0, 0.5);
-        border-radius: 10px;
-        padding: 0.45rem 0.6rem;
-        line-height: 1;
-      }
-      .hamburger-btn .heroicon {
-        fill: #b58900;
-      }
-      .hamburger-label {
-        font-weight: 600;
-        font-size: 0.85rem;
-      }
-
-      @media (max-width: 768px) {
-        .hamburger-btn {
-          display: inline-flex;
-        }
-      }
-
-      .mobile-drawer-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.35);
-        z-index: 1500;
-        display: none;
-      }
-
-      .mobile-drawer {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100dvh;
-        width: 82%;
-        max-width: 320px;
-        background: linear-gradient(135deg, #002b36 0%, #073642 100%);
-        color: #fdf6e3;
-        border-right: 2px solid #b58900;
-        transform: translateX(-100%);
-        transition: transform 0.25s ease-out;
-        z-index: 1501;
-        display: flex;
-        flex-direction: column;
-        padding: 0.75rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-      }
-
-      .drawer-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid rgba(181, 137, 0, 0.35);
-      }
-      .drawer-brand {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        text-decoration: none;
-        color: #fdf6e3;
-      }
-      .drawer-brand img {
-        width: 28px;
-        height: 28px;
-        border-radius: 6px;
-      }
-      .drawer-title {
-        font-weight: 800;
-        font-size: 1rem;
-      }
-      .drawer-close-btn {
-        background: transparent;
-        color: #fdf6e3;
-        border: 1px solid rgba(181, 137, 0, 0.5);
-        border-radius: 8px;
-        padding: 0.35rem;
-      }
-      .drawer-close-btn .heroicon {
-        fill: #dc322f;
-      }
-
-      .drawer-nav {
-        overflow-y: auto;
-        padding: 0.5rem 0.25rem;
-      }
-      .drawer-nav-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: grid;
-        gap: 0.25rem;
-      }
-      .drawer-nav-list .nav-link {
-        width: 100%;
-        justify-content: flex-start !important;
-      }
-      .drawer-nav-list .nav-link span {
-        display: inline !important;
-      }
-      .drawer-footer {
-        margin-top: auto;
-        padding-top: 0.5rem;
-        font-size: 0.8rem;
-        color: #93a1a1;
-      }
-
-      body.drawer-open {
-        overflow: hidden;
-      }
-      body.drawer-open .mobile-drawer {
-        transform: translateX(0);
-      }
-      body.drawer-open .mobile-drawer-backdrop {
-        display: block;
-      }
-
-      /* Hide long nav row on mobile; drawer + hamburger will be primary */
-      @media (max-width: 768px) {
-        .navbar-nav {
-          display: none !important;
-        }
-      }
-
-      @media (min-width: 1200px) and (max-width: 1399px) {
-        .nav-link {
-          padding: 0.3rem 0.5rem !important;
-          font-size: 0.75rem !important;
-          gap: 0.3rem !important;
-        }
-
-        .nav-link span {
-          font-size: 0.75rem !important;
-        }
-
-        .navbar-nav {
-          gap: 0.2rem !important;
-          flex-wrap: wrap !important;
-        }
-      }
-
-      @media (min-width: 900px) and (max-width: 1199px) {
-        .navbar-container {
-          flex-direction: column !important;
-          gap: 0.5rem !important;
-          padding: 0.5rem 1rem !important;
-          min-height: auto !important;
-        }
-
-        .navbar-nav {
-          width: 100% !important;
-          justify-content: center !important;
-          flex-wrap: wrap !important;
-          gap: 0.25rem !important;
-        }
-
-        .nav-link {
-          padding: 0.25rem 0.4rem !important;
-          font-size: 0.7rem !important;
-        }
-
-        .nav-link span {
-          font-size: 0.7rem !important;
-        }
-      }
-
-      @media (max-width: 899px) {
-        .navbar-container {
-          flex-direction: column !important;
-          gap: 0.5rem !important;
-          padding: 0.5rem !important;
-        }
-
-        .navbar-nav {
-          width: 100% !important;
-          justify-content: center !important;
-          flex-wrap: wrap !important;
-          gap: 0.25rem !important;
-        }
-
-        .nav-link {
-          padding: 0.3rem 0.4rem !important;
-          font-size: 0.75rem !important;
-          gap: 0.25rem !important;
-        }
-
-        .nav-link span {
-          font-size: 0.75rem !important;
-        }
-
-        .nav-link .heroicon {
-          width: 0.9rem !important;
-          height: 0.9rem !important;
-        }
-      }
-
-      @media (max-width: 600px) {
-        /* Hide labels, keep icons */
-        .nav-link span {
-          display: none !important;
-        }
-
-        .nav-link {
-          padding: 0.4rem !important;
-          min-width: 44px !important; /* Minimum touch target width */
-          min-height: 44px !important; /* Minimum touch target height */
-          justify-content: center !important;
-        }
-
-        .nav-link .heroicon {
-          width: 1.1rem !important;
-          height: 1.1rem !important;
-        }
-
-        /* Enable horizontal swipe scrolling for nav when space is tight */
-        .navbar-nav {
-          gap: 0.1rem !important;
-          flex-wrap: nowrap !important;
-          overflow-x: auto !important;
-          -webkit-overflow-scrolling: touch !important;
-          overscroll-behavior-x: contain !important;
-          scrollbar-width: none !important; /* Firefox */
-          max-width: 100% !important;
-        }
-        .navbar-nav::-webkit-scrollbar {
-          display: none !important; /* WebKit */
-        }
-      }
-
-      /* Respect device safe areas (iOS notch, etc.) */
-      @supports (padding: max(0px)) {
-        .navbar {
-          padding-top: max(0px, env(safe-area-inset-top)) !important;
-        }
-      }
-
-      /* ===== Charts: Responsive containers and polish ===== */
-      .charts-section {
-        margin: 2rem 0;
-      }
-      .charts-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
-      }
-      @media (max-width: 900px) {
-        .charts-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      .chart-container {
-        background: linear-gradient(
-          135deg,
-          rgba(253, 246, 227, 0.9) 0%,
-          rgba(238, 232, 213, 0.75) 100%
-        );
-        border: 1px solid rgba(181, 137, 0, 0.18);
-        border-radius: 16px;
-        box-shadow: 0 6px 20px rgba(0, 43, 54, 0.08);
-        padding: 1rem;
-      }
-      .chart-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-      }
-      .chart-header h3 {
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: #002b36;
-      }
-      .chart-actions {
-        display: flex;
-        gap: 0.5rem;
-      }
-      .chart-content {
-        position: relative;
-        height: 340px;
-      }
-      @media (max-width: 640px) {
-        .chart-content {
-          height: 280px;
-        }
-      }
-
-      /* ===== Advanced analytics cards & heatmap ===== */
-      .analytics-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
-      }
-      @media (max-width: 900px) {
-        .analytics-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      .analytics-card {
-        background: linear-gradient(
-          135deg,
-          rgba(253, 246, 227, 0.9) 0%,
-          rgba(238, 232, 213, 0.75) 100%
-        );
-        border: 1px solid rgba(181, 137, 0, 0.18);
-        border-radius: 16px;
-        padding: 1rem;
-        box-shadow: 0 6px 20px rgba(0, 43, 54, 0.08);
-      }
-      .analytics-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-      }
-      .analytics-header h3 {
-        margin: 0;
-        font-size: 1.05rem;
-        font-weight: 800;
-        color: #002b36;
-      }
-      .analytics-header select {
-        border: 1px solid rgba(181, 137, 0, 0.35);
-        border-radius: 10px;
-        padding: 0.4rem 0.6rem;
-        background: #fdf6e3;
-      }
-      .heatmap-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 0.75rem;
-      }
-      .heatmap-tile {
-        border-radius: 12px;
-        padding: 0.75rem;
-        background: #fdf6e3;
-        border: 1px solid rgba(181, 137, 0, 0.25);
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        min-height: 88px;
-      }
-      .heatmap-title {
-        font-weight: 700;
-        color: #073642;
-        font-size: 0.95rem;
-      }
-      .heatmap-value {
-        font-weight: 800;
-        font-size: 1.25rem;
-      }
-      .heatmap-sub {
-        color: #586e75;
-        font-size: 0.8rem;
-      }
-      .heatmap-empty {
-        text-align: center;
-        color: #586e75;
-        opacity: 0.9;
-        padding: 1rem;
-      }
-
-      /* Inline performance filters responsive grid */
-      .performance-filters .filters-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(180px, 1fr));
-        gap: 0.75rem;
-      }
-      @media (max-width: 1024px) {
-        .performance-filters .filters-grid {
-          grid-template-columns: repeat(3, minmax(160px, 1fr));
-        }
-      }
-      @media (max-width: 768px) {
-        .performance-filters .filters-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
-      @media (max-width: 520px) {
-        .performance-filters .filters-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      /* ===== Performance table responsiveness & pagination ===== */
-      .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .pagination-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 0.75rem;
-      }
-      .pagination-controls {
-        display: flex;
-        gap: 0.4rem;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .page-numbers {
-        display: flex;
-        gap: 0.25rem;
-        flex-wrap: wrap;
-      }
-      .page-numbers button {
-        min-width: 36px;
-        min-height: 36px;
-        border-radius: 8px;
-      }
-      .page-numbers button.active {
-        background: #b58900;
-        color: #ffffff;
-        border-color: #b58900;
-      }
-      @media (max-width: 640px) {
-        .pagination-container {
-          gap: 0.4rem;
-        }
-        .pagination-controls .btn-outline {
-          min-width: 44px;
-          min-height: 36px;
-        }
-      }
-
-      /* ===== Mobile enhancements for management controls ===== */
-      .filter-actions-row {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        margin-top: 0.75rem;
-      }
-      .filter-actions-row .btn,
-      .filter-actions-row .btn-outline {
-        min-height: 40px;
-      }
-      .filter-header .btn-close {
-        display: none;
-      }
-      @media (max-width: 640px) {
-        .filter-actions-row {
-          justify-content: stretch;
-        }
-        .filter-actions-row .btn,
-        .filter-actions-row .btn-outline {
-          flex: 1 1 100%;
-        }
-        .filter-header .btn-close {
-          display: inline-flex;
-        }
-      }
-
-      @media (max-width: 520px) {
-        .performance-filters .filters-grid button {
-          width: 100%;
-          min-height: 44px;
-        }
-      }
-
-      .actions {
-        display: flex;
-        gap: 0.4rem;
-        flex-wrap: wrap;
-      }
-      .actions .btn-sm {
-        min-height: 40px;
-        padding: 0.45rem 0.6rem;
-      }
-      @media (max-width: 520px) {
-        .actions {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .actions .btn-sm {
-          width: 100%;
-        }
-      }
-
-      @media (max-width: 520px) {
-        .no-data-container .btn {
-          display: block;
-          width: 100%;
-          margin: 0.25rem 0 !important;
-        }
-      }
-
-      /* ===== Accessibility & High-Contrast Text Fixes ===== */
-      /* Ensure headings and key messages remain readable on dark backgrounds */
-      .alerts-section .section-header h2,
-      .analytics-section .section-header h2,
-      .performance-section .section-header h2,
-      .drill-down-section .section-header h3,
-      .charts-section .chart-header h3 {
-        color: #fdf6e3 !important; /* Light ink on dark bg */
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-      }
-      /* Badge for alert count */
-      .alerts-section .alerts-count {
-        color: #fdf6e3 !important;
-        background: rgba(255, 255, 255, 0.12) !important;
-        border: 1px solid rgba(255, 255, 255, 0.25) !important;
-        padding: 0.1rem 0.5rem;
-        border-radius: 999px;
-        font-weight: 800;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-      }
-      /* Make the neutral state container readable when present on dark bg */
-      .no-alerts-container {
-        background: rgba(253, 246, 227, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 16px;
-        padding: 1rem;
-        backdrop-filter: saturate(120%) blur(2px);
-      }
-      .no-alerts-content h3,
-      .no-alerts-content p {
-        color: #fdf6e3 !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-        opacity: 1 !important;
-      }
-
-      /* Drill-down helper subtitle */
-      .section-subtitle {
-        color: #fdf6e3 !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-      }
-      /* Override gradient-clipped title text to ensure visibility */
-      .premium-header .title-text {
-        background: none !important;
-        -webkit-text-fill-color: #fdf6e3 !important;
-        color: #fdf6e3 !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-      }
-
-      /* Alert details readability (works on both light cards and dark bg) */
-      .alert-message {
-        color: #073642; /* defaults for light cards */
-      }
-      .alert-time {
-        color: #586e75;
-      }
-      /* When alerts are placed directly on dark background, lighten text */
-      .alerts-section .system-alert .alert-text .alert-title,
-      .alerts-section .system-alert .alert-text .alert-message,
-      .alerts-section .system-alert .alert-text .alert-time {
-        color: #fdf6e3;
-      }
-
-      /* Performance table headers and key cells */
-      .performance-table thead th {
-        color: #073642;
-        background: rgba(253, 246, 227, 0.7);
-      }
-      .performance-table td.class-info strong {
-        color: #002b36;
-      }
-      /* Pagination info (e.g., "Showing 1 results") */
-      .pagination-info,
-      #tableInfo {
-        color: #fdf6e3 !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-      }
-
-      /* Improve contrast when users request more contrast */
-      @media (prefers-contrast: more) {
-        .section-header h2,
-        .chart-header h3,
-        .analytics-header h3 {
-          color: #ffffff !important;
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
-        }
-        .alert-message {
-          color: #ffffff !important;
-        }
-        .alert-time {
-          color: #e6e6e6 !important;
-        }
-        .stat-label {
-          color: #ffffff !important;
-        }
-        .page-title p {
-          color: #ffffff !important;
-        }
-      }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   </head>
   <body class="solar-theme">
     <!-- Navigation -->
@@ -2041,7 +26,7 @@
           <img
             src="{{ url_for('static', filename=school_info.logo_path) }}"
             alt="{{ school_info.school_name or 'Hillview School' }} Logo"
-            onerror="this.src='{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}'"
+            data-fallback-src="{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}"
           />
           {% else %}
           <img
@@ -2268,7 +253,7 @@
           <img
             src="{{ url_for('static', filename=school_info.logo_path) }}"
             alt="{{ school_info.school_name or 'Hillview School' }} Logo"
-            onerror="this.src='{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}'"
+            data-fallback-src="{{ url_for('static', filename='uploads/logos/optimized_school_logo_1750595986_hvs.jpg') }}"
           />
           {% else %}
           <img
@@ -2363,6 +348,22 @@
               />
             </svg>
             Generate Report
+          </button>
+          <button
+            class="btn-outline"
+            id="themeToggleBtn"
+            title="Toggle theme"
+            aria-label="Toggle theme"
+          >
+            <!-- Heroicon: moon (solid) -->
+            <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                fill-rule="evenodd"
+                d="M21.752 15.002A9.718 9.718 0 0112 21.75a9.75 9.75 0 01-9.75-9.75 9.718 9.718 0 016.748-9.252.75.75 0 01.904.986 8.25 8.25 0 0010.114 10.114.75.75 0 01.986.904z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <span class="btn-label">Theme</span>
           </button>
         </div>
       </div>
@@ -3363,7 +1364,7 @@
                         viewBox="0 0 24 24"
                         style="
                           font-size: 3rem;
-                          color: #586e75;
+                          color: var(--solar-base01);
                           margin-bottom: 1rem;
                         "
                       >
@@ -3371,10 +1372,15 @@
                           d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z"
                         />
                       </svg>
-                      <h3 style="color: #586e75; margin-bottom: 0.5rem">
+                      <h3
+                        style="
+                          color: var(--solar-base01);
+                          margin-bottom: 0.5rem;
+                        "
+                      >
                         No Performance Data Available
                       </h3>
-                      <p style="color: #93a1a1">
+                      <p style="color: var(--solar-base1)">
                         No assessment data has been recorded yet. Performance
                         data will appear here once assessments are completed and
                         marks are entered.
@@ -3467,310 +1473,466 @@
     </div>
 
     <!-- Template Data Bridge for External JS -->
+    <script id="performance-data" type="application/json">
+      {{ performance_data | tojson }}
+    </script>
+    <script id="performance-distribution" type="application/json">
+      {{ dashboard_stats.performance_distribution | default({}) | tojson }}
+    </script>
+    <script id="dashboard-config" type="application/json">
+      {{ {
+            'schoolName': (school_info.school_name or 'Hillview School'),
+            'totalStudents': (total_students or 0),
+            'totalTeachers': (total_teachers or 0),
+            'totalClasses': (total_classes or 0),
+            'totalSubjects': (total_subjects or 0),
+            'totalAssessments': (total_assessments or 0),
+            'schoolAverage': (dashboard_stats.avg_performance or 0),
+            'topClass': (top_class or 'N/A'),
+            'topClassScore': (top_class_score or 0),
+            'currentTerm': (current_term or 'Term 1'),
+            'currentAcademicYear': (current_academic_year or '2025/2026'),
+            'learnersByGrade': dashboard_stats.learners_per_grade,
+            'genderByGrade': dashboard_stats.gender_per_grade,
+            'streamsByGrade': dashboard_stats.streams_per_grade
+          } | tojson }}
+    </script>
     <script>
-          // Global data injection for external JS modules with real backend data
-          window.performanceData = {{ performance_data | tojson }};
-          window.dashboardConfig = {
-              schoolName: '{{ school_info.school_name or "Hillview School" }}',
-              totalStudents: {{ total_students | default(0) }},
-              totalTeachers: {{ total_teachers | default(0) }},
-              totalClasses: {{ total_classes | default(0) }},
-              totalSubjects: {{ total_subjects | default(0) }},
-              totalAssessments: {{ total_assessments | default(0) }},
-              schoolAverage: {{ dashboard_stats.avg_performance | default(0) }},
-              topClass: '{{ top_class | default("N/A") }}',
-              topClassScore: {{ top_class_score | default(0) }},
-              currentTerm: '{{ current_term | default("Term 1") }}',
-              currentAcademicYear: '{{ current_academic_year | default("2025/2026") }}',
-              learnersByGrade: {{ dashboard_stats.learners_per_grade | tojson }},
-              genderByGrade: {{ dashboard_stats.gender_per_grade | tojson }},
-              streamsByGrade: {{ dashboard_stats.streams_per_grade | tojson }}
+      // Global data injection for external JS modules with real backend data
+      (function () {
+        try {
+          const perfEl = document.getElementById("performance-data");
+          window.performanceData = perfEl
+            ? JSON.parse(perfEl.textContent || "[]")
+            : [];
+        } catch {
+          window.performanceData = [];
+        }
+        try {
+          const cfgEl = document.getElementById("dashboard-config");
+          window.dashboardConfig = cfgEl
+            ? JSON.parse(cfgEl.textContent || "{}")
+            : {};
+        } catch {
+          window.dashboardConfig = {};
+        }
+      })();
+
+      // Attach image fallback for any <img data-fallback-src>
+      document.addEventListener(
+        "error",
+        function (e) {
+          const t = e.target;
+          if (t && t.tagName === "IMG") {
+            const fb = t.getAttribute("data-fallback-src");
+            if (fb && t.src !== fb) {
+              t.src = fb;
+            }
+          }
+        },
+        true
+      );
+
+      // CSS variable reader and Solar palette helper
+      function solarVar(name, fallback = "") {
+        try {
+          const v = getComputedStyle(document.documentElement).getPropertyValue(
+            name
+          );
+          return v && v.trim() ? v.trim() : fallback;
+        } catch {
+          return fallback;
+        }
+      }
+      const Solar = {
+        base3: () => solarVar("--solar-base3", "#fdf6e3"),
+        base2: () => solarVar("--solar-base2", "#eee8d5"),
+        base1: () => solarVar("--solar-base1", "#93a1a1"),
+        base0: () => solarVar("--solar-base0", "#839496"),
+        base00: () => solarVar("--solar-base00", "#657b83"),
+        base01: () => solarVar("--solar-base01", "#586e75"),
+        base02: () => solarVar("--solar-base02", "#073642"),
+        base03: () => solarVar("--solar-base03", "#002b36"),
+        yellow: () => solarVar("--solar-yellow", "#b58900"),
+        orange: () => solarVar("--solar-orange", "#cb4b16"),
+        red: () => solarVar("--solar-red", "#dc322f"),
+        magenta: () => solarVar("--solar-magenta", "#d33682"),
+        violet: () => solarVar("--solar-violet", "#6c71c4"),
+        blue: () => solarVar("--solar-blue", "#268bd2"),
+        cyan: () => solarVar("--solar-cyan", "#2aa198"),
+        green: () => solarVar("--solar-green", "#859900"),
+      };
+
+      // Solar Theme Chart Configuration
+      const hexToRgba = (hex, alpha = 1) => {
+        try {
+          const h = hex.replace("#", "");
+          const bigint = parseInt(h, 16);
+          const r = (bigint >> 16) & 255;
+          const g = (bigint >> 8) & 255;
+          const b = bigint & 255;
+          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        } catch {
+          return hex;
+        }
+      };
+
+      Chart.defaults.color = Solar.base01();
+      Chart.defaults.backgroundColor = hexToRgba(Solar.yellow(), 0.1);
+      Chart.defaults.borderColor = Solar.yellow();
+      Chart.defaults.font.family = "Source Sans Pro";
+      // Tooltip styling to follow theme
+      Chart.defaults.plugins = Chart.defaults.plugins || {};
+      Chart.defaults.plugins.tooltip = {
+        backgroundColor: Solar.base03(),
+        titleColor: Solar.base3(),
+        bodyColor: Solar.base3(),
+        borderColor: Solar.base02(),
+        borderWidth: 1,
+      };
+
+      // Professional Solar Dashboard Functions
+      function toggleFilterPanel() {
+        const panel = document.getElementById("filterPanel");
+        if (panel.style.display === "none" || !panel.style.display) {
+          panel.style.display = "block";
+          panel.style.animation = "fadeInUp 0.3s ease-out";
+        } else {
+          panel.style.display = "none";
+        }
+      }
+
+      function refreshDashboard() {
+        // Show loading state
+        const refreshBtn = event.target.closest("button");
+        const originalHTML = refreshBtn.innerHTML;
+        refreshBtn.innerHTML = "⟳ Refreshing...";
+        refreshBtn.disabled = true;
+
+        // Simulate refresh
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      }
+
+      function generateComprehensiveReport() {
+        const reportBtn = event.target.closest("button");
+        const originalHTML = reportBtn.innerHTML;
+        reportBtn.innerHTML = "⟳ Generating...";
+        reportBtn.disabled = true;
+
+        // Simulate report generation
+        setTimeout(() => {
+          alert("Comprehensive report generated successfully!");
+          reportBtn.innerHTML = originalHTML;
+          reportBtn.disabled = false;
+        }, 2000);
+      }
+
+      function resetFilters() {
+        document.getElementById("gradeFilter").value = "";
+        document.getElementById("termFilter").value = "";
+        document.getElementById("performanceFilter").value = "";
+        document.getElementById("dateFrom").value = "";
+        document.getElementById("dateTo").value = "";
+        filterPerformanceData();
+      }
+
+      function applyFilters() {
+        filterPerformanceData();
+        toggleFilterPanel();
+      }
+
+      function filterPerformanceData() {
+        const gradeFilter =
+          document.getElementById("grade-filter")?.value ||
+          document.getElementById("gradeFilter")?.value ||
+          "";
+        const termFilter =
+          document.getElementById("term-filter")?.value ||
+          document.getElementById("termFilter")?.value ||
+          "";
+        const assessmentFilter =
+          document.getElementById("assessment-filter")?.value || "";
+
+        const rows = document.querySelectorAll(".performance-row");
+        let visibleCount = 0;
+
+        rows.forEach((row) => {
+          const grade = row.dataset.grade;
+          const term = row.dataset.term;
+          const assessment = row.dataset.assessment;
+
+          const gradeMatch = !gradeFilter || grade.includes(gradeFilter);
+          const termMatch = !termFilter || term === termFilter;
+          const assessmentMatch =
+            !assessmentFilter || assessment === assessmentFilter;
+
+          const match = gradeMatch && termMatch && assessmentMatch;
+          row.dataset.filtered = match ? "1" : "0";
+          if (match) visibleCount++;
+          // Default hide; pagination will reveal current page
+          row.style.display = "none";
+        });
+
+        // Update pagination info
+        const paginationInfo = document.getElementById("pagination-info");
+        if (paginationInfo) {
+          paginationInfo.textContent = `Showing ${visibleCount} results`;
+        }
+
+        // Re-apply pagination to filtered results
+        if (typeof applyPagination === "function") {
+          applyPagination(true);
+        }
+      }
+
+      function toggleFilters() {
+        const filtersPanel = document.getElementById("performance-filters");
+        if (
+          filtersPanel.style.display === "none" ||
+          !filtersPanel.style.display
+        ) {
+          filtersPanel.style.display = "block";
+          filtersPanel.style.animation = "fadeInUp 0.3s ease-out";
+        } else {
+          filtersPanel.style.display = "none";
+        }
+      }
+
+      function exportPerformanceData() {
+        const table = document.querySelector(".performance-table");
+        if (!table) return;
+
+        const headers = Array.from(table.querySelectorAll("thead th")).map(
+          (th) => th.textContent.trim()
+        );
+        const bodyRows = Array.from(table.querySelectorAll("tbody tr"));
+        const visibleRows = bodyRows.filter(
+          (tr) =>
+            tr.style.display !== "none" &&
+            !tr.querySelector(".no-data-container")
+        );
+        if (!visibleRows.length) {
+          showNotification("No rows to export", "info");
+          return;
+        }
+
+        const rows = [headers.join(",")];
+        visibleRows.forEach((tr) => {
+          const cells = Array.from(tr.querySelectorAll("td"))
+            .slice(0, headers.length - 1) // exclude Actions
+            .map(
+              (td) =>
+                '"' +
+                td.textContent.replace(/\s+/g, " ").trim().replace(/"/g, '""') +
+                '"'
+            );
+          rows.push(cells.join(","));
+        });
+
+        const blob = new Blob([rows.join("\n")], {
+          type: "text/csv;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `performance_data_${
+          new Date().toISOString().split("T")[0]
+        }.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showNotification("Performance data exported", "success");
+      }
+
+      function viewClassDetails(grade, stream) {
+        alert(`Viewing details for ${grade} ${stream}`);
+      }
+
+      function showAlertDetails(title) {
+        alert(`Alert Details: ${title}`);
+      }
+
+      function dismissAlert(button) {
+        const alert = button.closest(".system-alert");
+        alert.style.animation = "fadeOut 0.3s ease-out";
+        setTimeout(() => {
+          alert.remove();
+        }, 300);
+      }
+
+      function openAnalyticsDashboard() {
+        window.open('{{ url_for("admin.analytics_dashboard") }}', "_blank");
+      }
+
+      function updateHeatmap() {
+        const container = document.getElementById("heatmapContainer");
+        if (!container) return;
+        const metric =
+          document.getElementById("heatmapMetric")?.value || "average";
+        const data = Array.isArray(window.performanceData)
+          ? window.performanceData
+          : [];
+
+        const byClass = {};
+        for (const row of data) {
+          const key = `${row.grade} ${row.stream}`;
+          const total = Number(row.total_students) || 0;
+          const avg = Number(row.class_average) || 0;
+          const counts = row.performance_counts || {};
+          const ee = (Number(counts.EE1) || 0) + (Number(counts.EE2) || 0);
+          const me = (Number(counts.ME1) || 0) + (Number(counts.ME2) || 0);
+          if (!byClass[key])
+            byClass[key] = { total: 0, weighted: 0, ee: 0, me: 0 };
+          byClass[key].total += total;
+          byClass[key].weighted += avg * total;
+          byClass[key].ee += ee;
+          byClass[key].me += me;
+        }
+
+        const items = Object.entries(byClass).map(([cls, v]) => {
+          const average = v.total ? v.weighted / v.total : 0;
+          const excellence = v.total ? (v.ee / v.total) * 100 : 0;
+          const mastery = v.total ? (v.me / v.total) * 100 : 0;
+          let value = average;
+          let sub = "Class Average";
+          if (metric === "excellence") {
+            value = excellence;
+            sub = "Excellence Rate";
+          }
+          if (metric === "mastery") {
+            value = mastery;
+            sub = "Mastery Rate";
+          }
+          return {
+            cls,
+            value,
+            sub,
+            average,
+            excellence,
+            mastery,
+            total: v.total,
           };
+        });
 
-          // Solar Theme Chart Configuration
-          Chart.defaults.color = '#586e75';
-          Chart.defaults.backgroundColor = 'rgba(181, 137, 0, 0.1)';
-          Chart.defaults.borderColor = '#b58900';
-          Chart.defaults.font.family = 'Source Sans Pro';
+        container.innerHTML = "";
+        if (!items.length) {
+          container.innerHTML =
+            '<div class="heatmap-empty">No data available for heatmap yet.</div>';
+          return;
+        }
 
-          // Professional Solar Dashboard Functions
-          function toggleFilterPanel() {
-            const panel = document.getElementById('filterPanel');
-            if (panel.style.display === 'none' || !panel.style.display) {
-              panel.style.display = 'block';
-              panel.style.animation = 'fadeInUp 0.3s ease-out';
-            } else {
-              panel.style.display = 'none';
-            }
+        const toColor = (val) => {
+          const v = Math.max(0, Math.min(100, val));
+          if (v < 60) {
+            const t = v / 60; // 0..1
+            const r = 220;
+            const g = Math.round(50 + t * (137 - 50));
+            const b = Math.round(47 + t * (0 - 47));
+            return `rgba(${r}, ${g}, ${b}, 0.18)`; // reddish -> amber
+          } else {
+            const t = (v - 60) / 40; // 0..1
+            const r = Math.round(181 - t * 48);
+            const g = Math.round(137 + t * 16);
+            const b = 0;
+            return `rgba(${r}, ${g}, ${b}, 0.18)`; // amber -> green
           }
+        };
 
-          function refreshDashboard() {
-            // Show loading state
-            const refreshBtn = event.target.closest('button');
-            const originalHTML = refreshBtn.innerHTML;
-            refreshBtn.innerHTML = '⟳ Refreshing...';
-            refreshBtn.disabled = true;
-
-            // Simulate refresh
-            setTimeout(() => {
-              location.reload();
-            }, 1000);
-          }
-
-          function generateComprehensiveReport() {
-            const reportBtn = event.target.closest('button');
-            const originalHTML = reportBtn.innerHTML;
-            reportBtn.innerHTML = '⟳ Generating...';
-            reportBtn.disabled = true;
-
-            // Simulate report generation
-            setTimeout(() => {
-              alert('Comprehensive report generated successfully!');
-              reportBtn.innerHTML = originalHTML;
-              reportBtn.disabled = false;
-            }, 2000);
-          }
-
-          function resetFilters() {
-            document.getElementById('gradeFilter').value = '';
-            document.getElementById('termFilter').value = '';
-            document.getElementById('performanceFilter').value = '';
-            document.getElementById('dateFrom').value = '';
-            document.getElementById('dateTo').value = '';
-            filterPerformanceData();
-          }
-
-          function applyFilters() {
-            filterPerformanceData();
-            toggleFilterPanel();
-          }
-
-          function filterPerformanceData() {
-            const gradeFilter = document.getElementById('grade-filter')?.value || document.getElementById('gradeFilter')?.value || '';
-            const termFilter = document.getElementById('term-filter')?.value || document.getElementById('termFilter')?.value || '';
-            const assessmentFilter = document.getElementById('assessment-filter')?.value || '';
-
-            const rows = document.querySelectorAll('.performance-row');
-            let visibleCount = 0;
-
-            rows.forEach(row => {
-              const grade = row.dataset.grade;
-              const term = row.dataset.term;
-              const assessment = row.dataset.assessment;
-
-              const gradeMatch = !gradeFilter || grade.includes(gradeFilter);
-              const termMatch = !termFilter || term === termFilter;
-              const assessmentMatch = !assessmentFilter || assessment === assessmentFilter;
-
-              const match = gradeMatch && termMatch && assessmentMatch;
-              row.dataset.filtered = match ? '1' : '0';
-              if (match) visibleCount++;
-              // Default hide; pagination will reveal current page
-              row.style.display = 'none';
-            });
-
-            // Update pagination info
-            const paginationInfo = document.getElementById('pagination-info');
-            if (paginationInfo) {
-              paginationInfo.textContent = `Showing ${visibleCount} results`;
-            }
-
-            // Re-apply pagination to filtered results
-            if (typeof applyPagination === 'function') {
-              applyPagination(true);
-            }
-          }
-
-          function toggleFilters() {
-            const filtersPanel = document.getElementById('performance-filters');
-            if (filtersPanel.style.display === 'none' || !filtersPanel.style.display) {
-              filtersPanel.style.display = 'block';
-              filtersPanel.style.animation = 'fadeInUp 0.3s ease-out';
-            } else {
-              filtersPanel.style.display = 'none';
-            }
-          }
-
-          function exportPerformanceData() {
-            const table = document.querySelector('.performance-table');
-            if (!table) return;
-
-            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
-            const bodyRows = Array.from(table.querySelectorAll('tbody tr'));
-            const visibleRows = bodyRows.filter(tr => tr.style.display !== 'none' && !tr.querySelector('.no-data-container'));
-            if (!visibleRows.length) {
-              showNotification('No rows to export', 'info');
-              return;
-            }
-
-            const rows = [headers.join(',')];
-            visibleRows.forEach(tr => {
-              const cells = Array.from(tr.querySelectorAll('td'))
-                .slice(0, headers.length - 1) // exclude Actions
-                .map(td => '"' + td.textContent.replace(/\s+/g, ' ').trim().replace(/"/g, '""') + '"');
-              rows.push(cells.join(','));
-            });
-
-            const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `performance_data_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showNotification('Performance data exported', 'success');
-          }
-
-          function viewClassDetails(grade, stream) {
-            alert(`Viewing details for ${grade} ${stream}`);
-          }
-
-          function showAlertDetails(title) {
-            alert(`Alert Details: ${title}`);
-          }
-
-          function dismissAlert(button) {
-            const alert = button.closest('.system-alert');
-            alert.style.animation = 'fadeOut 0.3s ease-out';
-            setTimeout(() => {
-              alert.remove();
-            }, 300);
-          }
-
-          function openAnalyticsDashboard() {
-            window.open('{{ url_for("admin.analytics_dashboard") }}', '_blank');
-          }
-
-          function updateHeatmap() {
-            const container = document.getElementById('heatmapContainer');
-            if (!container) return;
-            const metric = document.getElementById('heatmapMetric')?.value || 'average';
-            const data = Array.isArray(window.performanceData) ? window.performanceData : [];
-
-            const byClass = {};
-            for (const row of data) {
-              const key = `${row.grade} ${row.stream}`;
-              const total = Number(row.total_students) || 0;
-              const avg = Number(row.class_average) || 0;
-              const counts = row.performance_counts || {};
-              const ee = (Number(counts.EE1) || 0) + (Number(counts.EE2) || 0);
-              const me = (Number(counts.ME1) || 0) + (Number(counts.ME2) || 0);
-              if (!byClass[key]) byClass[key] = { total: 0, weighted: 0, ee: 0, me: 0 };
-              byClass[key].total += total;
-              byClass[key].weighted += avg * total;
-              byClass[key].ee += ee;
-              byClass[key].me += me;
-            }
-
-            const items = Object.entries(byClass).map(([cls, v]) => {
-              const average = v.total ? v.weighted / v.total : 0;
-              const excellence = v.total ? (v.ee / v.total) * 100 : 0;
-              const mastery = v.total ? (v.me / v.total) * 100 : 0;
-              let value = average; let sub = 'Class Average';
-              if (metric === 'excellence') { value = excellence; sub = 'Excellence Rate'; }
-              if (metric === 'mastery') { value = mastery; sub = 'Mastery Rate'; }
-              return { cls, value, sub, average, excellence, mastery, total: v.total };
-            });
-
-            container.innerHTML = '';
-            if (!items.length) {
-              container.innerHTML = '<div class="heatmap-empty">No data available for heatmap yet.</div>';
-              return;
-            }
-
-            const toColor = (val) => {
-              const v = Math.max(0, Math.min(100, val));
-              if (v < 60) {
-                const t = v / 60; // 0..1
-                const r = 220;
-                const g = Math.round(50 + t * (137 - 50));
-                const b = Math.round(47 + t * (0 - 47));
-                return `rgba(${r}, ${g}, ${b}, 0.18)`; // reddish -> amber
-              } else {
-                const t = (v - 60) / 40; // 0..1
-                const r = Math.round(181 - t * (48));
-                const g = Math.round(137 + t * (16));
-                const b = 0;
-                return `rgba(${r}, ${g}, ${b}, 0.18)`; // amber -> green
-              }
-            };
-
-            items.sort((a,b) => b.value - a.value);
-            for (const e of items) {
-              const div = document.createElement('div');
-              div.className = 'heatmap-tile';
-              div.style.background = toColor(e.value);
-              div.innerHTML = `
+        items.sort((a, b) => b.value - a.value);
+        for (const e of items) {
+          const div = document.createElement("div");
+          div.className = "heatmap-tile";
+          div.style.background = toColor(e.value);
+          div.innerHTML = `
                 <div class="heatmap-title">${e.cls}</div>
                 <div class="heatmap-value">${e.value.toFixed(1)}%</div>
                 <div class="heatmap-sub">${e.sub} • ${e.total} students</div>
               `;
-              div.title = `${e.cls} — Avg: ${e.average.toFixed(1)}%, Excellence: ${e.excellence.toFixed(1)}%, Mastery: ${e.mastery.toFixed(1)}%`;
-              div.addEventListener('click', () => {
-                populateDrillDown(
-                  `<h4 style="margin:0 0 .25rem 0;">${e.cls}</h4>
-                   <div style="color:#586e75; margin-bottom:.5rem;">${e.sub} • ${e.value.toFixed(1)}%</div>
-                   <ul style="margin:0; padding-left:1rem; color:#073642;">
+          div.title = `${e.cls} — Avg: ${e.average.toFixed(
+            1
+          )}%, Excellence: ${e.excellence.toFixed(
+            1
+          )}%, Mastery: ${e.mastery.toFixed(1)}%`;
+          div.addEventListener("click", () => {
+            populateDrillDown(
+              `<h4 style="margin:0 0 .25rem 0;">${e.cls}</h4>
+                   <div style="color:${Solar.base01()}; margin-bottom:.5rem;">${
+                e.sub
+              } • ${e.value.toFixed(1)}%</div>
+                   <ul style="margin:0; padding-left:1rem; color:${Solar.base02()};">
                      <li>Class Average: ${e.average.toFixed(1)}%</li>
                      <li>Excellence Rate: ${e.excellence.toFixed(1)}%</li>
                      <li>Mastery Rate: ${e.mastery.toFixed(1)}%</li>
                      <li>Students: ${e.total}</li>
                    </ul>`
-                );
-              });
-              container.appendChild(div);
-            }
-          }
+            );
+          });
+          container.appendChild(div);
+        }
+      }
 
-          function viewDetailedAnalysis(grade, stream) {
-            const data = Array.isArray(window.performanceData) ? window.performanceData : [];
-            const items = data.filter(r => `${r.grade}` === `${grade}` && `${r.stream}` === `${stream}`);
-            if (!items.length) {
-              populateDrillDown(`<div class="heatmap-empty">No detailed data for ${grade} ${stream}.</div>`);
-              return;
-            }
-            let html = `<h4 style="margin:0 0 .5rem 0;">${grade} ${stream} — Detailed Analysis</h4>`;
-            html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;">';
-            for (const r of items) {
-              const c = r.performance_counts || {};
-              html += `
+      function viewDetailedAnalysis(grade, stream) {
+        const data = Array.isArray(window.performanceData)
+          ? window.performanceData
+          : [];
+        const items = data.filter(
+          (r) => `${r.grade}` === `${grade}` && `${r.stream}` === `${stream}`
+        );
+        if (!items.length) {
+          populateDrillDown(
+            `<div class="heatmap-empty">No detailed data for ${grade} ${stream}.</div>`
+          );
+          return;
+        }
+        let html = `<h4 style="margin:0 0 .5rem 0;">${grade} ${stream} — Detailed Analysis</h4>`;
+        html +=
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;">';
+        for (const r of items) {
+          const c = r.performance_counts || {};
+          html += `
                 <div class="analytics-card">
-                  <div style="font-weight:700;color:#073642;margin-bottom:.25rem;">Term ${r.term} • ${r.assessment_type}</div>
-                  <div style="display:flex;gap:1rem;flex-wrap:wrap;color:#586e75;">
+                  <div style="font-weight:700;color:${Solar.base02()};margin-bottom:.25rem;">Term ${
+            r.term
+          } • ${r.assessment_type}</div>
+                  <div style="display:flex;gap:1rem;flex-wrap:wrap;color:${Solar.base01()};">
                     <div><strong>Students:</strong> ${r.total_students}</div>
-                    <div><strong>Average:</strong> ${Number(r.class_average||0).toFixed(1)}%</div>
+                    <div><strong>Average:</strong> ${Number(
+                      r.class_average || 0
+                    ).toFixed(1)}%</div>
                   </div>
                   <div style="margin-top:.5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem;font-size:.9rem;">
-                    <div>EE1: ${c.EE1||0}</div>
-                    <div>EE2: ${c.EE2||0}</div>
-                    <div>ME1: ${c.ME1||0}</div>
-                    <div>ME2: ${c.ME2||0}</div>
-                    <div>AE1: ${c.AE1||0}</div>
-                    <div>AE2: ${c.AE2||0}</div>
-                    <div>BE1: ${c.BE1||0}</div>
-                    <div>BE2: ${c.BE2||0}</div>
+                    <div>EE1: ${c.EE1 || 0}</div>
+                    <div>EE2: ${c.EE2 || 0}</div>
+                    <div>ME1: ${c.ME1 || 0}</div>
+                    <div>ME2: ${c.ME2 || 0}</div>
+                    <div>AE1: ${c.AE1 || 0}</div>
+                    <div>AE2: ${c.AE2 || 0}</div>
+                    <div>BE1: ${c.BE1 || 0}</div>
+                    <div>BE2: ${c.BE2 || 0}</div>
                   </div>
                 </div>`;
-            }
-            html += '</div>';
-            populateDrillDown(html);
-          }
+        }
+        html += "</div>";
+        populateDrillDown(html);
+      }
 
-          function populateDrillDown(html) {
-            const el = document.getElementById('drillDownContainer');
-            if (!el) return;
-            el.innerHTML = html;
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
+      function populateDrillDown(html) {
+        const el = document.getElementById("drillDownContainer");
+        if (!el) return;
+        el.innerHTML = html;
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
 
-          function generatePerformanceAlerts() {
-            const alertsContainer = document.getElementById('performanceAlerts');
-            alertsContainer.innerHTML = '<div class="loading">Generating alerts...</div>';
+      function generatePerformanceAlerts() {
+        const alertsContainer = document.getElementById("performanceAlerts");
+        alertsContainer.innerHTML =
+          '<div class="loading">Generating alerts...</div>';
 
-            setTimeout(() => {
-              alertsContainer.innerHTML = `
+        setTimeout(() => {
+          alertsContainer.innerHTML = `
                 <div class="performance-alert alert-warning">
                   ⚠️ Grade 8A showing declining trend in Mathematics
                 </div>
@@ -3778,164 +1940,209 @@
                   ℹ️ Grade 10B exceeding expectations in Science
                 </div>
               `;
-            }, 1000);
+        }, 1000);
+      }
+
+      async function exportChartsAsPDF() {
+        const exportBtn = document.querySelector(
+          '[onclick="exportChartsAsPDF()"]'
+        );
+        const originalText = exportBtn ? exportBtn.innerHTML : "";
+        if (exportBtn) {
+          exportBtn.innerHTML = "⟳ Exporting...";
+          exportBtn.disabled = true;
+        }
+
+        try {
+          const { jsPDF } = window.jspdf || {};
+          if (!jsPDF) {
+            alert("PDF library not loaded.");
+            return;
           }
 
-          async function exportChartsAsPDF() {
-            const exportBtn = document.querySelector('[onclick="exportChartsAsPDF()"]');
-            const originalText = exportBtn ? exportBtn.innerHTML : '';
-            if (exportBtn) {
-              exportBtn.innerHTML = '⟳ Exporting...';
-              exportBtn.disabled = true;
-            }
+          const cfg = window.dashboardConfig || {};
+          const totalStudents =
+            typeof cfg.totalStudents === "number" ? cfg.totalStudents : 0;
+          const topClass = cfg.topClass || "N/A";
+          const schoolAverage =
+            typeof cfg.schoolAverage === "number" ? cfg.schoolAverage : 0;
+          const reportsGenerated = "N/A";
 
+          const doc = new jsPDF({
+            orientation: "portrait",
+            unit: "pt",
+            format: "a4",
+          });
+          const margin = 40;
+          let y = margin;
+
+          // Header
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(18);
+          doc.text(cfg.schoolName || "School Dashboard Report", margin, y);
+          y += 24;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(11);
+          doc.text(`Date: ${new Date().toLocaleString()}`, margin, y);
+          y += 20;
+          doc.text(
+            `Academic Year: ${cfg.currentAcademicYear || "N/A"}`,
+            margin,
+            y
+          );
+          y += 16;
+          doc.text(`Current Term: ${cfg.currentTerm || "N/A"}`, margin, y);
+          y += 24;
+
+          // Key stats
+          doc.setFont("helvetica", "bold");
+          doc.text("Key Statistics", margin, y);
+          y += 16;
+          doc.setFont("helvetica", "normal");
+          const stats = [
+            [`Total Students`, String(totalStudents)],
+            [
+              `School Average`,
+              `${
+                schoolAverage.toFixed ? schoolAverage.toFixed(1) : schoolAverage
+              }%`,
+            ],
+            [`Best Class`, topClass],
+            [`Reports Generated`, reportsGenerated],
+          ];
+          stats.forEach(([k, v]) => {
+            doc.text(`${k}: ${v}`, margin, y);
+            y += 16;
+          });
+
+          // Try capture charts if present
+          const donutEl = document.getElementById("performanceDonutChart");
+          const barEl = document.getElementById("classComparisonChart");
+          const addCanvas = async (canvasEl, title) => {
+            if (!canvasEl) return;
+            if (typeof html2canvas !== "function") return;
             try {
-              const { jsPDF } = window.jspdf || {};
-              if (!jsPDF) {
-                alert('PDF library not loaded.');
-                return;
-              }
-
-              const cfg = window.dashboardConfig || {};
-              const totalStudents = typeof cfg.totalStudents === 'number' ? cfg.totalStudents : 0;
-              const topClass = cfg.topClass || 'N/A';
-              const schoolAverage = typeof cfg.schoolAverage === 'number' ? cfg.schoolAverage : 0;
-              const reportsGenerated = 'N/A';
-
-              const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-              const margin = 40;
-              let y = margin;
-
-              // Header
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(18);
-              doc.text(cfg.schoolName || 'School Dashboard Report', margin, y);
-              y += 24;
-              doc.setFont('helvetica', 'normal');
-              doc.setFontSize(11);
-              doc.text(`Date: ${new Date().toLocaleString()}`, margin, y);
-              y += 20;
-              doc.text(`Academic Year: ${cfg.currentAcademicYear || 'N/A'}`, margin, y);
-              y += 16;
-              doc.text(`Current Term: ${cfg.currentTerm || 'N/A'}`, margin, y);
-              y += 24;
-
-              // Key stats
-              doc.setFont('helvetica', 'bold');
-              doc.text('Key Statistics', margin, y);
-              y += 16;
-              doc.setFont('helvetica', 'normal');
-              const stats = [
-                [`Total Students`, String(totalStudents)],
-                [`School Average`, `${schoolAverage.toFixed ? schoolAverage.toFixed(1) : schoolAverage}%`],
-                [`Best Class`, topClass],
-                [`Reports Generated`, reportsGenerated]
-              ];
-              stats.forEach(([k, v]) => {
-                doc.text(`${k}: ${v}`, margin, y);
-                y += 16;
+              const canvas = await html2canvas(canvasEl.parentElement, {
+                backgroundColor: Solar.base3(),
+                scale: 2,
               });
-
-              // Try capture charts if present
-              const donutEl = document.getElementById('performanceDonutChart');
-              const barEl = document.getElementById('classComparisonChart');
-              const addCanvas = async (canvasEl, title) => {
-                if (!canvasEl) return;
-                if (typeof html2canvas !== 'function') return;
-                try {
-                  const canvas = await html2canvas(canvasEl.parentElement, { backgroundColor: '#fff', scale: 2 });
-                  const imgData = canvas.toDataURL('image/png');
-                  const pageWidth = doc.internal.pageSize.getWidth() - margin * 2;
-                  const imgWidth = pageWidth;
-                  const ratio = canvas.height / canvas.width;
-                  const imgHeight = imgWidth * ratio;
-                  if (y + 24 + imgHeight + margin > doc.internal.pageSize.getHeight()) {
-                    doc.addPage();
-                    y = margin;
-                  }
-                  doc.setFont('helvetica', 'bold');
-                  doc.text(title, margin, y);
-                  y += 8;
-                  doc.addImage(imgData, 'PNG', margin, y, imgWidth, imgHeight);
-                  y += imgHeight + 16;
-                } catch (e) {
-                  console.warn('Chart capture failed:', e);
-                }
-              };
-
-              await addCanvas(donutEl, 'Performance Distribution');
-              await addCanvas(barEl, 'Class Comparison');
-
-              doc.save(`dashboard_report_${new Date().toISOString().split('T')[0]}.pdf`);
-            } finally {
-              if (exportBtn) {
-                exportBtn.innerHTML = originalText;
-                exportBtn.disabled = false;
+              const imgData = canvas.toDataURL("image/png");
+              const pageWidth = doc.internal.pageSize.getWidth() - margin * 2;
+              const imgWidth = pageWidth;
+              const ratio = canvas.height / canvas.width;
+              const imgHeight = imgWidth * ratio;
+              if (
+                y + 24 + imgHeight + margin >
+                doc.internal.pageSize.getHeight()
+              ) {
+                doc.addPage();
+                y = margin;
               }
+              doc.setFont("helvetica", "bold");
+              doc.text(title, margin, y);
+              y += 8;
+              doc.addImage(imgData, "PNG", margin, y, imgWidth, imgHeight);
+              y += imgHeight + 16;
+            } catch (e) {
+              console.warn("Chart capture failed:", e);
             }
+          };
+
+          await addCanvas(donutEl, "Performance Distribution");
+          await addCanvas(barEl, "Class Comparison");
+
+          doc.save(
+            `dashboard_report_${new Date().toISOString().split("T")[0]}.pdf`
+          );
+        } finally {
+          if (exportBtn) {
+            exportBtn.innerHTML = originalText;
+            exportBtn.disabled = false;
           }
+        }
+      }
 
-          // Premium Stats Functions
-          function refreshStats() {
-            // Show loading state for all stat numbers
-            const statNumbers = document.querySelectorAll('.stat-number');
-            const originalValues = [];
+      // Premium Stats Functions
+      function refreshStats() {
+        // Show loading state for all stat numbers
+        const statNumbers = document.querySelectorAll(".stat-number");
+        const originalValues = [];
 
-            statNumbers.forEach((element, index) => {
-              originalValues[index] = element.textContent;
-              element.innerHTML = '⟳';
-            });
+        statNumbers.forEach((element, index) => {
+          originalValues[index] = element.textContent;
+          element.innerHTML = "⟳";
+        });
 
-            // Simulate refresh with loading effect
-            setTimeout(() => {
-              statNumbers.forEach((element, index) => {
-                element.textContent = originalValues[index];
-                element.style.animation = 'pulse 0.5s ease-out';
-              });
+        // Simulate refresh with loading effect
+        setTimeout(() => {
+          statNumbers.forEach((element, index) => {
+            element.textContent = originalValues[index];
+            element.style.animation = "pulse 0.5s ease-out";
+          });
 
-              // Show success message
-              showNotification('Statistics refreshed successfully!', 'success');
-            }, 1500);
-          }
+          // Show success message
+          showNotification("Statistics refreshed successfully!", "success");
+        }, 1500);
+      }
 
-          function exportStats() {
-            // Create CSV content with actual data
-            const cfg = window.dashboardConfig || {};
-            const csvContent = "data:text/csv;charset=utf-8," + [
-              "Metric,Value",
-              `Total Students,${typeof cfg.totalStudents === 'number' ? cfg.totalStudents : 0}`,
-              `School Average,${(typeof cfg.schoolAverage === 'number' ? cfg.schoolAverage : 0).toFixed(1)}%`,
-              `Assessment Types,${typeof cfg.totalAssessments === 'number' ? cfg.totalAssessments : 0}`,
-              `Active Teachers,${typeof cfg.totalTeachers === 'number' ? cfg.totalTeachers : 0}`,
-              `Active Subjects,${typeof cfg.totalSubjects === 'number' ? cfg.totalSubjects : 0}`,
-              `Active Classes,${typeof cfg.totalClasses === 'number' ? cfg.totalClasses : 0}`,
-              `Current Term,${cfg.currentTerm || 'N/A'}`,
-              `Academic Year,${cfg.currentAcademicYear || 'N/A'}`
-            ].join("\n");
+      function exportStats() {
+        // Create CSV content with actual data
+        const cfg = window.dashboardConfig || {};
+        const csvContent =
+          "data:text/csv;charset=utf-8," +
+          [
+            "Metric,Value",
+            `Total Students,${
+              typeof cfg.totalStudents === "number" ? cfg.totalStudents : 0
+            }`,
+            `School Average,${(typeof cfg.schoolAverage === "number"
+              ? cfg.schoolAverage
+              : 0
+            ).toFixed(1)}%`,
+            `Assessment Types,${
+              typeof cfg.totalAssessments === "number"
+                ? cfg.totalAssessments
+                : 0
+            }`,
+            `Active Teachers,${
+              typeof cfg.totalTeachers === "number" ? cfg.totalTeachers : 0
+            }`,
+            `Active Subjects,${
+              typeof cfg.totalSubjects === "number" ? cfg.totalSubjects : 0
+            }`,
+            `Active Classes,${
+              typeof cfg.totalClasses === "number" ? cfg.totalClasses : 0
+            }`,
+            `Current Term,${cfg.currentTerm || "N/A"}`,
+            `Academic Year,${cfg.currentAcademicYear || "N/A"}`,
+          ].join("\n");
 
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csvContent));
-            link.setAttribute("download", "school_statistics_" + new Date().toISOString().split('T')[0] + ".csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute(
+          "download",
+          "school_statistics_" + new Date().toISOString().split("T")[0] + ".csv"
+        );
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-      showNotification('Statistics exported successfully!', 'success');
-          }
+        showNotification("Statistics exported successfully!", "success");
+      }
 
-          function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.innerHTML = `
-              ${type === 'success' ? '✅' : 'ℹ️'}
+      function showNotification(message, type = "info") {
+        const notification = document.createElement("div");
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+              ${type === "success" ? "✅" : "ℹ️"}
               <span>${message}</span>
             `;
 
-            notification.style.cssText = `
+        notification.style.cssText = `
               position: fixed;
               top: 20px;
               right: 20px;
-              background: ${type === 'success' ? '#859900' : '#268bd2'};
+              background: ${type === "success" ? Solar.green() : Solar.blue()};
               color: white;
               padding: 1rem 1.5rem;
               border-radius: 12px;
@@ -3948,17 +2155,17 @@
               animation: slideInRight 0.3s ease-out;
             `;
 
-            document.body.appendChild(notification);
+        document.body.appendChild(notification);
 
-            setTimeout(() => {
-              notification.style.animation = 'slideOutRight 0.3s ease-in';
-              setTimeout(() => document.body.removeChild(notification), 300);
-            }, 3000);
-          }
+        setTimeout(() => {
+          notification.style.animation = "slideOutRight 0.3s ease-in";
+          setTimeout(() => document.body.removeChild(notification), 300);
+        }, 3000);
+      }
 
-          // Add CSS for notifications
-          const notificationStyles = document.createElement('style');
-          notificationStyles.textContent = `
+      // Add CSS for notifications
+      const notificationStyles = document.createElement("style");
+      notificationStyles.textContent = `
             @keyframes slideInRight {
               from { transform: translateX(100%); opacity: 0; }
               to { transform: translateX(0); opacity: 1; }
@@ -3973,337 +2180,386 @@
               100% { transform: scale(1); }
             }
           `;
-          document.head.appendChild(notificationStyles);
+      document.head.appendChild(notificationStyles);
 
-          // Initialize Solar Theme Charts and other functionality
-          document.addEventListener('DOMContentLoaded', function() {
-            initializeSolarCharts();
-            initializePerformanceTable();
-            updateHeatmap();
-            initMobileDrawer();
-          });
+      // Initialize Solar Theme Charts and other functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeSolarCharts();
+        initializePerformanceTable();
+        updateHeatmap();
+        initMobileDrawer();
+      });
 
-          function initializeSolarCharts() {
-            // Performance Donut Chart - Use real data or show no data state
-            const donutCtx = document.getElementById('performanceDonutChart');
-            if (donutCtx) {
-              {% if dashboard_stats.performance_distribution %}
-              const performanceData = {{ dashboard_stats.performance_distribution | tojson }};
-              const chartData = [
-                performanceData['EE'] || 0,
-                performanceData['ME'] || 0,
-                performanceData['AE'] || 0,
-                performanceData['BE'] || 0
-              ];
-              const hasData = chartData.some(value => value > 0);
-              {% else %}
-              const hasData = false;
-              const chartData = [0, 0, 0, 0];
-              {% endif %}
+      function initializeSolarCharts() {
+        // Performance Donut Chart - Use real data or show no data state
+        const donutCtx = document.getElementById("performanceDonutChart");
+        if (donutCtx) {
+          const perfDistEl = document.getElementById(
+            "performance-distribution"
+          );
+          let perfDist = {};
+          try {
+            perfDist = perfDistEl
+              ? JSON.parse(perfDistEl.textContent || "{}")
+              : {};
+          } catch {
+            perfDist = {};
+          }
+          const chartData = [
+            (perfDist && perfDist["EE"]) || 0,
+            (perfDist && perfDist["ME"]) || 0,
+            (perfDist && perfDist["AE"]) || 0,
+            (perfDist && perfDist["BE"]) || 0,
+          ];
+          const hasData = chartData.some((value) => Number(value) > 0);
 
-              if (hasData) {
-                const donutChart = new Chart(donutCtx, {
-                  type: 'doughnut',
-                  data: {
-                    labels: ['Exceeds Expectations', 'Meets Expectations', 'Approaches Expectations', 'Below Expectations'],
-                    datasets: [{
-                      data: chartData,
-                      backgroundColor: [
-                        '#859900', // Solar green
-                        '#268bd2', // Solar blue
-                        '#b58900', // Solar yellow
-                        '#dc322f'  // Solar red
-                      ],
-                      borderColor: '#fdf6e3',
-                      borderWidth: 3
-                    }]
+          if (hasData) {
+            const donutChart = new Chart(donutCtx, {
+              type: "doughnut",
+              data: {
+                labels: [
+                  "Exceeds Expectations",
+                  "Meets Expectations",
+                  "Approaches Expectations",
+                  "Below Expectations",
+                ],
+                datasets: [
+                  {
+                    data: chartData,
+                    backgroundColor: [
+                      Solar.green(), // Solar green
+                      Solar.blue(), // Solar blue
+                      Solar.yellow(), // Solar yellow
+                      Solar.red(), // Solar red
+                    ],
+                    borderColor: Solar.base3(),
+                    borderWidth: 3,
                   },
-                  options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'bottom',
-                        labels: {
-                          padding: 20,
-                          usePointStyle: true,
-                          font: {
-                            family: 'Source Sans Pro',
-                            size: 12
-                          }
-                        }
-                      }
-                    }
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: {
+                      padding: 20,
+                      usePointStyle: true,
+                      font: {
+                        family: "Source Sans Pro",
+                        size: 12,
+                      },
+                    },
                   },
-                  onClick: (evt, elements) => {
-                    const idx = elements && elements[0] ? elements[0].index : undefined;
-                    if (typeof idx !== 'number') return;
-                    const label = ['Exceeds', 'Meets', 'Approaches', 'Below'][idx] || 'Performance';
-                    const value = chartData[idx] || 0;
-                    populateDrillDown(`<h4 style=\"margin:0 0 .25rem 0;\">${label} Expectations</h4><div style=\"color:#586e75;\">Count: ${value}</div>`);
-                  }
-                });
-                window.donutChart = donutChart;
-              } else {
-                // Show no data message
-                donutCtx.style.display = 'none';
-                const container = donutCtx.parentElement;
-                container.innerHTML = `
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #586e75;">
+                },
+              },
+              onClick: (evt, elements) => {
+                const idx =
+                  elements && elements[0] ? elements[0].index : undefined;
+                if (typeof idx !== "number") return;
+                const label =
+                  ["Exceeds", "Meets", "Approaches", "Below"][idx] ||
+                  "Performance";
+                const value = chartData[idx] || 0;
+                populateDrillDown(
+                  `<h4 style=\"margin:0 0 .25rem 0;\">${label} Expectations</h4><div style=\"color:${Solar.base01()}\">Count: ${value}</div>`
+                );
+              },
+            });
+            window.donutChart = donutChart;
+          } else {
+            // Show no data message
+            donutCtx.style.display = "none";
+            const container = donutCtx.parentElement;
+            container.innerHTML = `
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: ${Solar.base01()};">
                     📊
                     <h4 style="margin-bottom: 0.5rem;">No Performance Data</h4>
                     <p style="text-align: center; opacity: 0.7;">Performance distribution will appear here once assessment data is available.</p>
                   </div>
                 `;
-              }
+          }
+        }
+
+        // Class Comparison Chart - Use real performance data
+        const comparisonCtx = document.getElementById("classComparisonChart");
+        if (comparisonCtx) {
+          const performanceData = Array.isArray(window.performanceData)
+            ? window.performanceData
+            : [];
+          const classLabels = [];
+          const classAverages = [];
+          // Extract class names and averages from real data
+          performanceData.forEach((item) => {
+            const className = `${item.grade} ${item.stream}`;
+            if (!classLabels.includes(className)) {
+              classLabels.push(className);
+              classAverages.push(parseFloat(item.class_average) || 0);
             }
+          });
+          const hasClassData = classLabels.length > 0;
 
-            // Class Comparison Chart - Use real performance data
-            const comparisonCtx = document.getElementById('classComparisonChart');
-            if (comparisonCtx) {
-              {% if performance_data and performance_data|length > 0 %}
-              const performanceData = {{ performance_data | tojson }};
-              const classLabels = [];
-              const classAverages = [];
-
-              // Extract class names and averages from real data
-              performanceData.forEach(item => {
-                const className = `${item.grade} ${item.stream}`;
-                if (!classLabels.includes(className)) {
-                  classLabels.push(className);
-                  classAverages.push(parseFloat(item.class_average) || 0);
-                }
-              });
-
-              const hasClassData = classLabels.length > 0;
-              {% else %}
-              const hasClassData = false;
-              const classLabels = [];
-              const classAverages = [];
-              {% endif %}
-
-              if (hasClassData) {
-                const comparisonChart = new Chart(comparisonCtx, {
-                  type: 'bar',
-                  data: {
-                    labels: classLabels,
-                    datasets: [{
-                      label: 'Class Average',
-                      data: classAverages,
-                      backgroundColor: 'rgba(181, 137, 0, 0.8)',
-                      borderColor: '#b58900',
-                      borderWidth: 2,
-                      borderRadius: 6,
-                      borderSkipped: false,
-                    }]
+          if (hasClassData) {
+            const comparisonChart = new Chart(comparisonCtx, {
+              type: "bar",
+              data: {
+                labels: classLabels,
+                datasets: [
+                  {
+                    label: "Class Average",
+                    data: classAverages,
+                    backgroundColor: Solar.yellow(),
+                    borderColor: Solar.yellow(),
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
                   },
-                  options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        display: false
-                      }
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                      color: hexToRgba(Solar.base01(), 0.1),
                     },
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                        max: 100,
-                        grid: {
-                          color: 'rgba(88, 110, 117, 0.1)'
-                        },
-                        ticks: {
-                          font: {
-                            family: 'Source Sans Pro'
-                          }
-                        }
+                    ticks: {
+                      font: {
+                        family: "Source Sans Pro",
                       },
-                      x: {
-                        grid: {
-                          display: false
-                        },
-                        ticks: {
-                          font: {
-                            family: 'Source Sans Pro'
-                          }
-                        }
-                      }
-                    }
+                    },
                   },
-                  onClick: (evt, elements) => {
-                    const idx = elements && elements[0] ? elements[0].index : undefined;
-                    if (typeof idx !== 'number') return;
-                    const cls = classLabels[idx];
-                    const avg = classAverages[idx];
-                    populateDrillDown(`<h4 style=\"margin:0 0 .25rem 0;\">${cls}</h4><div style=\"color:#586e75;\">Class Average: ${Number(avg||0).toFixed(1)}%</div>`);
-                  }
-                });
-                window.comparisonChart = comparisonChart;
-              } else {
-                // Show no data message
-                comparisonCtx.style.display = 'none';
-                const container = comparisonCtx.parentElement;
-                container.innerHTML = `
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #586e75;">
+                  x: {
+                    grid: {
+                      display: false,
+                    },
+                    ticks: {
+                      font: {
+                        family: "Source Sans Pro",
+                      },
+                    },
+                  },
+                },
+              },
+              onClick: (evt, elements) => {
+                const idx =
+                  elements && elements[0] ? elements[0].index : undefined;
+                if (typeof idx !== "number") return;
+                const cls = classLabels[idx];
+                const avg = classAverages[idx];
+                populateDrillDown(
+                  `<h4 style=\"margin:0 0 .25rem 0;\">${cls}</h4><div style=\"color:${Solar.base01()}\">Class Average: ${Number(
+                    avg || 0
+                  ).toFixed(1)}%</div>`
+                );
+              },
+            });
+            window.comparisonChart = comparisonChart;
+          } else {
+            // Show no data message
+            comparisonCtx.style.display = "none";
+            const container = comparisonCtx.parentElement;
+            container.innerHTML = `
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: ${Solar.base01()};">
                     📊
                     <h4 style="margin-bottom: 0.5rem;">No Class Data</h4>
                     <p style="text-align: center; opacity: 0.7;">Class comparison chart will appear here once assessment data is available.</p>
                   </div>
                 `;
-              }
+          }
+        }
+      }
+
+      // Pagination state and helpers (mobile-aware)
+      const tablePagination = { currentPage: 1, pageSize: 10 };
+
+      function computePageSize() {
+        const w = window.innerWidth || 1024;
+        if (w <= 520) return 5;
+        if (w <= 768) return 8;
+        return 10;
+      }
+
+      function getFilteredRows() {
+        return Array.from(document.querySelectorAll(".performance-row")).filter(
+          (r) => r.dataset.filtered === "1" || !("filtered" in r.dataset)
+        );
+      }
+
+      function renderPagination() {
+        const rows = getFilteredRows();
+        const total = rows.length;
+        const totalPages = Math.max(
+          1,
+          Math.ceil(total / tablePagination.pageSize)
+        );
+        const pageNumbers = document.getElementById("page-numbers");
+        const paginationInfo = document.getElementById("pagination-info");
+        const prevBtn = document.getElementById("prev-btn");
+        const nextBtn = document.getElementById("next-btn");
+        if (paginationInfo)
+          paginationInfo.textContent = `Showing ${total} results`;
+        if (pageNumbers) {
+          pageNumbers.innerHTML = "";
+          for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.className =
+              "btn-outline" +
+              (i === tablePagination.currentPage ? " active" : "");
+            btn.textContent = String(i);
+            btn.addEventListener("click", () => goToPage(i));
+            pageNumbers.appendChild(btn);
+          }
+        }
+        if (prevBtn)
+          prevBtn.disabled =
+            tablePagination.currentPage <= 1 || totalPages <= 1;
+        if (nextBtn)
+          nextBtn.disabled =
+            tablePagination.currentPage >= totalPages || totalPages <= 1;
+      }
+
+      function showPage(page) {
+        const rows = getFilteredRows();
+        const totalPages = Math.max(
+          1,
+          Math.ceil(rows.length / tablePagination.pageSize)
+        );
+        const p = Math.min(Math.max(1, page), totalPages);
+        tablePagination.currentPage = p;
+
+        // hide all filtered rows first
+        rows.forEach((r) => {
+          r.style.display = "none";
+        });
+
+        const start = (p - 1) * tablePagination.pageSize;
+        const end = start + tablePagination.pageSize;
+        rows.slice(start, end).forEach((r) => {
+          r.style.display = "";
+        });
+
+        renderPagination();
+      }
+
+      function previousPage() {
+        showPage(tablePagination.currentPage - 1);
+      }
+      function nextPage() {
+        showPage(tablePagination.currentPage + 1);
+      }
+      function goToPage(n) {
+        showPage(n);
+      }
+
+      function initPagination() {
+        tablePagination.pageSize = computePageSize();
+        tablePagination.currentPage = 1;
+        renderPagination();
+        showPage(1);
+      }
+
+      function applyPagination(reset = false) {
+        if (reset) tablePagination.currentPage = 1;
+        renderPagination();
+        showPage(tablePagination.currentPage);
+      }
+
+      function initializePerformanceTable() {
+        const table = document.querySelector(".performance-table");
+        if (!table) return;
+        // Ensure default filtered state on initial load
+        document.querySelectorAll(".performance-row").forEach((r) => {
+          if (!("filtered" in r.dataset)) r.dataset.filtered = "1";
+        });
+        initPagination();
+        // Recompute page size on resize
+        let resizeTimer;
+        window.addEventListener("resize", () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(() => {
+            const newSize = computePageSize();
+            if (newSize !== tablePagination.pageSize) {
+              tablePagination.pageSize = newSize;
+              applyPagination(true);
             }
+          }, 150);
+        });
+      }
+
+      // ===== Mobile Drawer (Headteacher) =====
+      function initMobileDrawer() {
+        const btn = document.getElementById("hamburgerBtn");
+        const drawer = document.getElementById("mobileDrawer");
+        const backdrop = document.getElementById("mobileDrawerBackdrop");
+        const closeBtn = document.getElementById("drawerCloseBtn");
+        const list = document.getElementById("drawerNavList");
+        if (!btn || !drawer || !backdrop || !closeBtn || !list) return;
+
+        // Clone navbar items into drawer list
+        try {
+          const navItems = document.querySelectorAll(
+            ".navbar-nav > li > a.nav-link"
+          );
+          list.innerHTML = "";
+          navItems.forEach((a) => {
+            const li = document.createElement("li");
+            const clone = a.cloneNode(true);
+            // larger touch targets in drawer
+            clone.style.padding = "0.55rem 0.6rem";
+            clone.style.border = "1px solid rgba(181,137,0,0.25)";
+            clone.style.borderRadius = "8px";
+            clone.style.background = "rgba(0,0,0,0.1)";
+            li.appendChild(clone);
+            list.appendChild(li);
+          });
+        } catch (e) {
+          console.warn("Drawer link clone failed", e);
+        }
+
+        const openDrawer = () => {
+          document.body.classList.add("drawer-open");
+          btn.setAttribute("aria-expanded", "true");
+        };
+        const closeDrawer = () => {
+          document.body.classList.remove("drawer-open");
+          btn.setAttribute("aria-expanded", "false");
+        };
+
+        btn.addEventListener("click", openDrawer);
+        closeBtn.addEventListener("click", closeDrawer);
+        backdrop.addEventListener("click", closeDrawer);
+
+        // Trap Esc
+        document.addEventListener("keydown", (e) => {
+          if (
+            e.key === "Escape" &&
+            document.body.classList.contains("drawer-open")
+          )
+            closeDrawer();
+        });
+
+        // Auto-open on mobile immediately on page load
+        try {
+          const isMobile = (window.innerWidth || 1024) <= 768;
+          if (isMobile) {
+            setTimeout(() => openDrawer(), 150);
           }
+        } catch {}
+      }
 
-          // Pagination state and helpers (mobile-aware)
-          const tablePagination = { currentPage: 1, pageSize: 10 };
-
-          function computePageSize() {
-            const w = window.innerWidth || 1024;
-            if (w <= 520) return 5;
-            if (w <= 768) return 8;
-            return 10;
-          }
-
-          function getFilteredRows() {
-            return Array.from(document.querySelectorAll('.performance-row')).filter(r => r.dataset.filtered === '1' || (!('filtered' in r.dataset)));
-          }
-
-          function renderPagination() {
-            const rows = getFilteredRows();
-            const total = rows.length;
-            const totalPages = Math.max(1, Math.ceil(total / tablePagination.pageSize));
-            const pageNumbers = document.getElementById('page-numbers');
-            const paginationInfo = document.getElementById('pagination-info');
-            const prevBtn = document.getElementById('prev-btn');
-            const nextBtn = document.getElementById('next-btn');
-            if (paginationInfo) paginationInfo.textContent = `Showing ${total} results`;
-            if (pageNumbers) {
-              pageNumbers.innerHTML = '';
-              for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
-                btn.className = 'btn-outline' + (i === tablePagination.currentPage ? ' active' : '');
-                btn.textContent = String(i);
-                btn.addEventListener('click', () => goToPage(i));
-                pageNumbers.appendChild(btn);
-              }
-            }
-            if (prevBtn) prevBtn.disabled = tablePagination.currentPage <= 1 || totalPages <= 1;
-            if (nextBtn) nextBtn.disabled = tablePagination.currentPage >= totalPages || totalPages <= 1;
-          }
-
-          function showPage(page) {
-            const rows = getFilteredRows();
-            const totalPages = Math.max(1, Math.ceil(rows.length / tablePagination.pageSize));
-            const p = Math.min(Math.max(1, page), totalPages);
-            tablePagination.currentPage = p;
-
-            // hide all filtered rows first
-            rows.forEach(r => { r.style.display = 'none'; });
-
-            const start = (p - 1) * tablePagination.pageSize;
-            const end = start + tablePagination.pageSize;
-            rows.slice(start, end).forEach(r => { r.style.display = ''; });
-
-            renderPagination();
-          }
-
-          function previousPage() { showPage(tablePagination.currentPage - 1); }
-          function nextPage() { showPage(tablePagination.currentPage + 1); }
-          function goToPage(n) { showPage(n); }
-
-          function initPagination() {
-            tablePagination.pageSize = computePageSize();
-            tablePagination.currentPage = 1;
-            renderPagination();
-            showPage(1);
-          }
-
-          function applyPagination(reset = false) {
-            if (reset) tablePagination.currentPage = 1;
-            renderPagination();
-            showPage(tablePagination.currentPage);
-          }
-
-          function initializePerformanceTable() {
-            const table = document.querySelector('.performance-table');
-            if (!table) return;
-            // Ensure default filtered state on initial load
-            document.querySelectorAll('.performance-row').forEach(r => {
-              if (!('filtered' in r.dataset)) r.dataset.filtered = '1';
-            });
-            initPagination();
-            // Recompute page size on resize
-            let resizeTimer;
-            window.addEventListener('resize', () => {
-              clearTimeout(resizeTimer);
-              resizeTimer = setTimeout(() => {
-                const newSize = computePageSize();
-                if (newSize !== tablePagination.pageSize) {
-                  tablePagination.pageSize = newSize;
-                  applyPagination(true);
-                }
-              }, 150);
-            });
-          }
-
-          // ===== Mobile Drawer (Headteacher) =====
-          function initMobileDrawer() {
-            const btn = document.getElementById('hamburgerBtn');
-            const drawer = document.getElementById('mobileDrawer');
-            const backdrop = document.getElementById('mobileDrawerBackdrop');
-            const closeBtn = document.getElementById('drawerCloseBtn');
-            const list = document.getElementById('drawerNavList');
-            if (!btn || !drawer || !backdrop || !closeBtn || !list) return;
-
-            // Clone navbar items into drawer list
-            try {
-              const navItems = document.querySelectorAll('.navbar-nav > li > a.nav-link');
-              list.innerHTML = '';
-              navItems.forEach(a => {
-                const li = document.createElement('li');
-                const clone = a.cloneNode(true);
-                // larger touch targets in drawer
-                clone.style.padding = '0.55rem 0.6rem';
-                clone.style.border = '1px solid rgba(181,137,0,0.25)';
-                clone.style.borderRadius = '8px';
-                clone.style.background = 'rgba(0,0,0,0.1)';
-                li.appendChild(clone);
-                list.appendChild(li);
-              });
-            } catch (e) {
-              console.warn('Drawer link clone failed', e);
-            }
-
-            const openDrawer = () => {
-              document.body.classList.add('drawer-open');
-              btn.setAttribute('aria-expanded', 'true');
-            };
-            const closeDrawer = () => {
-              document.body.classList.remove('drawer-open');
-              btn.setAttribute('aria-expanded', 'false');
-            };
-
-            btn.addEventListener('click', openDrawer);
-            closeBtn.addEventListener('click', closeDrawer);
-            backdrop.addEventListener('click', closeDrawer);
-
-            // Trap Esc
-            document.addEventListener('keydown', (e) => {
-              if (e.key === 'Escape' && document.body.classList.contains('drawer-open')) closeDrawer();
-            });
-
-            // Auto-open on mobile immediately on page load
-            try {
-              const isMobile = (window.innerWidth || 1024) <= 768;
-              if (isMobile) {
-                setTimeout(() => openDrawer(), 150);
-              }
-            } catch {}
-          }
-
-          // Add fade out animation for alerts
-          const style = document.createElement('style');
-          style.textContent = `
+      // Add fade out animation for alerts
+      const style = document.createElement("style");
+      style.textContent = `
             @keyframes fadeOut {
               from { opacity: 1; transform: translateX(0); }
               to { opacity: 0; transform: translateX(100%); }
@@ -4325,7 +2581,53 @@
               padding: 2rem;
             }
           `;
-          document.head.appendChild(style);
+      document.head.appendChild(style);
+    </script>
+    <script>
+      (function () {
+        const storageKey = "solar-theme";
+        const root = document.documentElement;
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
+        const setThemeMeta = (mode) => {
+          if (!themeMeta) return;
+          // Light uses Solar Yellow; Dark uses darker base
+          themeMeta.setAttribute(
+            "content",
+            mode === "dark" ? Solar.base03() : Solar.yellow()
+          );
+        };
+        const applyTheme = (mode) => {
+          if (mode === "dark") {
+            root.setAttribute("data-theme", "solar-dark");
+            localStorage.setItem(storageKey, "dark");
+            setThemeMeta("dark");
+          } else {
+            root.removeAttribute("data-theme");
+            localStorage.setItem(storageKey, "light");
+            setThemeMeta("light");
+          }
+        };
+        // Initialize from storage or system preference
+        const saved = localStorage.getItem(storageKey);
+        if (saved === "dark") applyTheme("dark");
+        else if (saved === "light") applyTheme("light");
+        else if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
+          applyTheme("dark");
+        }
+        // Toggle button
+        document.addEventListener("DOMContentLoaded", function () {
+          const btn = document.getElementById("themeToggleBtn");
+          if (btn) {
+            btn.addEventListener("click", function () {
+              const isDark = root.getAttribute("data-theme") === "solar-dark";
+              applyTheme(isDark ? "light" : "dark");
+            });
+          }
+        });
+      })();
     </script>
   </body>
 </html>

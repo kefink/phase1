@@ -19,177 +19,9 @@
 {% block body_tag_extra %}data-is-headteacher="{{ 'true' if session.get('headteacher_universal_access') or session.get('role') == 'headteacher' else 'false' }}"{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/bootstrap.min.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/main.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='brandi-bootstrap-main/css/media-queries.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/solar-shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/solar_analytics_premium.css') }}">
-<style>
-  /* Lightweight mobile tweaks, scoped to analytics page */
-  @media (max-width: 576px) {
-    .filters-actions { display: flex; flex-direction: column; gap: 8px; }
-    .filters-actions .btn { width: 100%; }
-    .section-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-    .section-actions .btn { width: 100%; }
-  }
-  /* Cyan value color for quick insights data */
-  .insight-value { color: #00bcd4; }
-  /* Small utility classes to reduce inline styles */
-  .mt-1 { margin-top: .25rem; }
-  .mt-2 { margin-top: .5rem; }
-  .mt-3 { margin-top: 1rem; }
-  .mb-1 { margin-bottom: .25rem; }
-  .mb-2 { margin-bottom: .5rem; }
-  .mb-3 { margin-bottom: 1rem; }
-  .m-0 { margin: 0; }
-  .p-2 { padding: .5rem; }
-  .p-3 { padding: 1rem; }
-  .is-disabled { pointer-events: none; opacity: .5; }
-  .flex { display:flex; }
-  .flex-1 { flex: 1; }
-  .items-center { align-items:center; }
-  .justify-between { justify-content: space-between; }
-  .gap-1 { gap: .35rem; }
-  .gap-2 { gap: .5rem; }
-  .gap-3 { gap: .75rem; }
-  .text-secondary { color: var(--text-secondary); }
-  .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .inline-flex { display: inline-flex; }
-  .icon-inline { display: inline-flex; vertical-align: -2px; }
-  .ml-1 { margin-left: .25rem; }
-  .ml-2 { margin-left: .5rem; }
-  .mr-2 { margin-right: .5rem; }
-  .text-sm { font-size: .85rem; }
-  .text-0_8 { font-size: .8rem; }
-  .grid { display: grid; }
-  .list-unstyled { list-style: none; }
-  .p-0 { padding: 0; }
-  .pl-5 { padding-left: 1.25rem; }
-  .mt-md { margin-top: var(--spacing-md); }
-  .mb-sm { margin-bottom: var(--spacing-sm); }
-  .fw-600 { font-weight: 600; }
-  .hidden { display: none; }
-  .radius-sm { border-radius: 4px; }
-  .bg-card { background: var(--card-bg); }
-  .border-default { border: 1px solid var(--border-color); }
-  .pos-abs { position: absolute; }
-  .badge-mini { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; font-size:.6rem; font-weight:600; background:var(--primary-color); color:#fff; border-radius:4px; }
-  .toolbar-right { display:flex; justify-content:flex-end; margin:-10px 0 15px; }
-  .btn-theme { position:relative; appearance:none; border:1px solid rgba(255,255,255,0.14); background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)); color:var(--text-emphasis,#93a1a1); border-radius:14px; width:46px; height:46px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 20px -4px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,0.05) inset; transition:.25s background,.25s border-color,.25s transform; }
-  .my-0_15 { margin-top: .15rem; margin-bottom: .15rem; }
-  .min-h-260 { min-height: 260px; }
-  .radius { border-radius: var(--radius); }
-  .pos-rel { position: relative; }
-  .overflow-hidden { overflow: hidden; }
-  .text-center { text-align: center; }
-  .fs-2 { font-size: 2rem; }
-  .fs-1 { font-size: 1rem; }
-  .fs-0_9 { font-size: .9rem; }
-  .fs-0_7 { font-size: .7rem; }
-  .fw-500 { font-weight: 500; }
-  .lh-1_2 { line-height: 1.2; }
-  .abs-br { position: absolute; bottom: 2px; right: 4px; }
-  .abs-bl { position: absolute; bottom: 0; left: 0; }
-  .h-100 { height: 100%; }
-  .bg-primary { background: var(--primary-color); }
-  .text-white { color: #fff; }
-  .text-shadow-soft { text-shadow: 0 0 2px rgba(0,0,0,.6); }
-  .text-muted { color: #666; }
-  /* width dynamic via style remains; utility reserved if needed: .w-pct-XX */
-  /* Simple table utilities (used for printable learners) */
-  .font-sans { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, sans-serif; }
-  .p-1 { padding: 1rem; }
-  .mb-0 { margin-bottom: 0; }
-  .mb-0_25 { margin-bottom: .25rem; }
-  .mb-0_75 { margin-bottom: .75rem; }
-  .mb-1 { margin-bottom: 1rem; }
-  .table-plain { width: 100%; border-collapse: collapse; font-size: 14px; }
-  .th, .td { padding: .5rem; border: 1px solid #ccc; }
-  .ta-center { text-align: center; }
-  .ta-right { text-align: right; }
-  .w-80 { width: 80px; }
-  .w-120 { width: 120px; }
-  .w-140 { width: 140px; }
-  .bg-f5 { background: #f5f5f5; }
-
-  /* Enhanced dropdown visibility and styling */
-  .filter-select {
-    position: relative;
-    z-index: 1000;
-    min-height: 40px;
-    background: var(--bg-card, #1e3a5f);
-    border: 1px solid var(--border-color, #2a4a6b);
-    color: var(--text-primary, #ffffff);
-    border-radius: 6px;
-    padding: 10px 14px;
-    min-width: 160px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease;
-  }
-
-  .filter-select:focus {
-    outline: none;
-    border-color: #4a9eff;
-    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.15);
-    z-index: 1001;
-    transform: translateY(-1px);
-  }
-
-  .filter-select:hover {
-    border-color: #4a9eff;
-    transform: translateY(-1px);
-  }
-
-  .filter-select option {
-    background: var(--bg-card, #1e3a5f);
-    color: var(--text-primary, #ffffff);
-    padding: 10px 14px;
-    border: none;
-    font-size: 14px;
-  }
-
-  .filter-group {
-    margin-bottom: 1.5rem;
-    position: relative;
-    z-index: 100;
-  }
-
-  .filter-group.focus-within {
-    z-index: 1002;
-  }
-
-  .filter-label {
-    display: block;
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-    color: var(--text-secondary, #8b949e);
-  }
-
-  /* Print optimization: show only printable learners section when printing */
-  @media print {
-    body * { visibility: hidden !important; }
-    #printable-learners, #printable-learners * { visibility: visible !important; }
-    #printable-learners { position: absolute; left: 0; top: 0; width: 100%; }
-  }
-
-  /* Sticky filters */
-  .analytics-filters-section.sticky { position: sticky; top: 0; z-index: 1100; backdrop-filter: blur(8px); background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.08); }
-
-  /* Comparison banner */
-  .benchmarks-banner { display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:.75rem; margin:.75rem 0 1.25rem; }
-  .benchmark-card { background: var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:.75rem; display:flex; flex-direction:column; gap:.35rem; }
-  .benchmark-label { color: var(--text-secondary); font-size:.8rem; }
-  .benchmark-value { font-size:1.25rem; font-weight:700; }
-  .benchmark-pill { display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .4rem; border-radius:999px; border:1px solid rgba(255,255,255,0.12); font-size:.72rem; color:var(--text-secondary); }
-
-  /* Skeleton loaders */
-  .skeleton { position:relative; overflow:hidden; background:linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 37%, rgba(255,255,255,0.06) 63%); background-size:400% 100%; animation: shimmer 1.25s infinite; }
-  @keyframes shimmer { 0% { background-position:100% 0 } 100% { background-position:-100% 0 } }
-
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classteacher-analytics.css') }}">
 {% endblock %}
 
 
@@ -205,7 +37,7 @@
   <div class="analytics-breadcrumb">
   <a href="{{ url_for('admin.dashboard') if (session.get('role') == 'headteacher' or session.get('headteacher_universal_access')) else url_for('classteacher.dashboard') }}" class="breadcrumb-link">
       <span class="icon inline-flex items-center gap-1" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+        <svg class="heroicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
           <path d="M12 3.172 3 10.172V20a1 1 0 0 0 1 1h6v-5h4v5h6a1 1 0 0 0 1-1V10.172l-9-7Z"/>
         </svg>
       </span>
@@ -219,13 +51,13 @@
   <div class="analytics-insights-section">
     <h3 class="insights-title">
       <span class="icon icon-inline" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+        <svg class="heroicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
           <path d="M12 3a9 9 0 1 0 9 9 9.01 9.01 0 0 0-9-9Zm1 10.5V9a1 1 0 1 0-2 0v4.5a1 1 0 0 0 2 0Z"/>
         </svg>
       </span>
       Quick Insights
     </h3>
-    {% if analytics_data.benchmarks %}
+    {% if analytics_data and analytics_data.benchmarks %}
     <div class="benchmarks-banner" id="benchmarks-banner">
       <div class="benchmark-card">
         <div class="benchmark-label">Class Average</div>
@@ -245,7 +77,7 @@
     <div class="insights-grid">
       <div class="insight-card premium-card">
         <div class="insight-icon students-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="insight-svg">
+          <svg class="heroicon insight-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
           </svg>
         </div>
@@ -258,7 +90,7 @@
       </div>
       <div class="insight-card premium-card">
         <div class="insight-icon subjects-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="insight-svg">
+          <svg class="heroicon insight-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 1 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
           </svg>
         </div>
@@ -271,7 +103,7 @@
       </div>
       <div class="insight-card premium-card">
         <div class="insight-icon performance-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="insight-svg">
+          <svg class="heroicon insight-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.228a25.334 25.334 0 0 1 5.384-.069m-13.67 8.218a18.08 18.08 0 0 1-2.63-2.909m0 0a24.998 24.998 0 0 1-5.384-.069m0 0V4.5A2.25 2.25 0 0 1 .621 2.25H1.5v1.875C2.491 4.286 3.714 4.375 5.25 4.5" />
           </svg>
         </div>
@@ -284,7 +116,7 @@
       </div>
       <div class="insight-card premium-card">
         <div class="insight-icon achievement-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="insight-svg">
+          <svg class="heroicon insight-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0v-1.5A2.25 2.25 0 0 0 14.25 0h-4.5A2.25 2.25 0 0 0 7.5 2.25v1.5m9 0h-9" />
           </svg>
         </div>
@@ -342,18 +174,18 @@
           onclick="resetAnalyticsFilters()"
         >
           <span class="icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <svg class="heroicon heroicon-solar-orange" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
               <path d="M12 5a7 7 0 1 1-6.32 4H3a1 1 0 0 1 0-2h4a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0V9.74A5 5 0 1 0 12 5Z"/>
             </svg>
           </span>
           Reset Filters
         </button>
         <button
-          class="btn btn-primary btn-refresh"
+          class="solar-btn btn-refresh"
           onclick="refreshAnalyticsData()"
         >
           <span class="icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <svg class="heroicon heroicon-solar-green" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
               <path d="M12 5a7 7 0 1 1-6.32 4H3a1 1 0 0 1 0-2h4a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0V9.74A5 5 0 1 0 12 5Z"/>
             </svg>
           </span>
@@ -427,21 +259,21 @@
 
   <!-- Main Analytics Content -->
   <div>
-  <div id="top-subject-spotlight" class="premium-card mt-3 p-3 {% if not analytics_data.top_subject %}hidden{% endif %}">
+  <div id="top-subject-spotlight" class="premium-card mt-3 p-3 {% if not analytics_data or not analytics_data.top_subject %}hidden{% endif %}">
       <div class="flex items-center justify-between mb-2">
         <h3 class="flex items-center gap-2 m-0">
           <span aria-hidden="true">🏆</span>
           <span>
             Top Performing Subject:
             {% set _ctx = analytics_data.context_ids if analytics_data and analytics_data.context_ids is defined else {} %}
-            {% if analytics_data.top_subject and analytics_data.top_subject.subject_id and _ctx and _ctx.grade_id and _ctx.stream_id and _ctx.term_id and _ctx.assessment_type_id %}
+            {% if analytics_data and analytics_data.top_subject and analytics_data.top_subject.subject_id and _ctx and _ctx.grade_id and _ctx.stream_id and _ctx.term_id and _ctx.assessment_type_id %}
               <a id="top-subject-name"
                  href="/classteacher/subject_report/{{ _ctx.grade_id }}/{{ _ctx.stream_id }}/{{ analytics_data.top_subject.subject_id }}/{{ _ctx.term_id }}/{{ _ctx.assessment_type_id }}"
                  title="Open subject report">
                 {{ analytics_data.top_subject.subject_name }}
               </a>
             {% else %}
-              <span id="top-subject-name">{{ analytics_data.top_subject.subject_name if analytics_data.top_subject else '' }}</span>
+              <span id="top-subject-name">{{ analytics_data.top_subject.subject_name if analytics_data and analytics_data.top_subject else '' }}</span>
             {% endif %}
           </span>
         </h3>
@@ -492,7 +324,7 @@
       <div class="section-header">
         <h3 class="section-title">
           <span class="icon icon-inline" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <svg class="heroicon heroicon-solar-yellow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
               <path d="M8 3a1 1 0 0 0-1 1v2H6a3 3 0 0 0-3 3v.5A4.5 4.5 0 0 0 7.5 14h.3A6 6 0 0 0 12 15.9 6 6 0 0 0 16.2 14h.3A4.5 4.5 0 0 0 21 9.5V9a3 3 0 0 0-3-3h-1V4a1 1 0 0 0-1-1H8Zm8 3v2H8V6h8Z"/>
             </svg>
           </span>
@@ -504,7 +336,7 @@
             onclick="refreshAnalytics('top_performers')"
           >
             <span class="icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <svg class="heroicon heroicon-solar-blue" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
                 <path d="M12 5a7 7 0 1 1-6.32 4H3a1 1 0 0 1 0-2h4a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0V9.74A5 5 0 1 0 12 5Z"/>
               </svg>
             </span>
@@ -818,7 +650,7 @@
         {% else %}
         <div>
           <span class="icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+            <svg class="heroicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
               <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 9.75h.008v.008H11.25V9.75zm0 3v5.25m9-5.25a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </span>
@@ -834,7 +666,7 @@
       <div class="section-header">
         <h3 class="section-title">
           <span class="icon icon-inline" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v15a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2V5Z"/></svg>
+            <svg class="heroicon heroicon-solar-yellow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v15a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2V5Z"/></svg>
           </span>
           Subject Performance Analysis
         </h3>
@@ -1088,7 +920,7 @@
         {% else %}
         <div class="empty-state">
           <span class="icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm1 14h-2v-4h2Zm0-6h-2V8h2Z"/></svg>
+            <svg class="heroicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm1 14h-2v-4h2Zm0-6h-2V8h2Z"/></svg>
           </span>
           <p>No detailed analytics available for your selected filters.</p>
         </div>
@@ -1100,8 +932,8 @@
   <!-- No Data State -->
   <div id="no-data-state" class="hidden">
     <div>
-      <span class="icon" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+        <span class="icon" aria-hidden="true">
+          <svg class="heroicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 9.75h.008v.008H11.25V9.75zm0 3v5.25m9-5.25a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
       </span>
@@ -1125,14 +957,14 @@
     <div>
       <button onclick="resetAnalyticsFilters()">
         <span class="icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+          <svg class="heroicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0112.635-5.303L19.5 3v6h-6l2.403-2.403A5.999 5.999 0 006 12a6 6 0 006 6"/>
           </svg>
         </span> Reset Filters
       </button>
   <a href="{{ url_for('admin.dashboard') if (session.get('role') == 'headteacher' or session.get('headteacher_universal_access')) else url_for('classteacher.dashboard') }}">
         <span class="icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+          <svg class="heroicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 9.75l9-6 9 6V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z"/>
           </svg>
         </span> Back to Dashboard
@@ -1148,7 +980,83 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <!-- Analytics page uses server-side rendered data, no external JS needed -->
 
+<!-- JSON data injection to avoid Jinja in runtime JS -->
+<script id="analytics-data-json" type="application/json">{{ analytics_data|tojson if analytics_data else '{}' }}</script>
+<script id="analytics-options-json" type="application/json">{
+  "terms": {{ terms|tojson if terms else '[]' }},
+  "assessments": {{ assessments|tojson if assessments else '[]' }},
+  "grades": {{ grades|tojson if grades else '[]' }},
+  "selected": {
+    "term": {{ (request.args.get('term')|int if request.args.get('term'))|tojson if request.args.get('term') else 'null' }},
+    "assessment_type": {{ (request.args.get('assessment_type')|int if request.args.get('assessment_type'))|tojson if request.args.get('assessment_type') else 'null' }},
+    "grade": {{ (request.args.get('grade')|int if request.args.get('grade'))|tojson if request.args.get('grade') else 'null' }},
+    "stream": {{ (request.args.get('stream')|int if request.args.get('stream'))|tojson if request.args.get('stream') else 'null' }}
+  }
+}</script>
+
 <script>
+  // Solar Chart.js defaults (align with headteacher page palette)
+  (function(){
+    if (window.Chart && Chart.defaults) {
+      const cs = getComputedStyle(document.documentElement);
+      const base0 = cs.getPropertyValue('--solar-base0') || '#839496';
+      const base1 = cs.getPropertyValue('--solar-base1') || '#93a1a1';
+      const base01 = cs.getPropertyValue('--solar-base01') || '#586e75';
+      const yellow = cs.getPropertyValue('--solar-yellow') || '#b58900';
+      const blue = cs.getPropertyValue('--solar-blue') || '#268bd2';
+      const green = cs.getPropertyValue('--solar-green') || '#859900';
+      Chart.defaults.color = String(base1).trim();
+      Chart.defaults.borderColor = 'rgba(147,161,161,0.35)';
+      Chart.defaults.backgroundColor = 'rgba(238,232,213,0.15)';
+      Chart.defaults.font.family = 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, sans-serif';
+      Chart.defaults.plugins.legend.labels.color = String(base0).trim();
+      Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0,0,0,0.75)';
+      Chart.defaults.plugins.tooltip.titleColor = '#fff';
+      Chart.defaults.plugins.tooltip.bodyColor = '#fff';
+      // Provide a shared Solar palette for datasets if needed
+      window.SOLAR_PALETTE = [String(blue).trim(), String(green).trim(), String(yellow).trim(), '#dc322f', '#2aa198', '#6c71c4'];
+    }
+  })();
+
+  // Sync meta theme-color with current Solar theme
+  (function(){
+    function setMetaTheme() {
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('name','theme-color');
+        document.head.appendChild(meta);
+      }
+      var isDark = (document.documentElement.getAttribute('data-theme') === 'solar-dark') || (document.body && document.body.getAttribute('data-theme') === 'solar-dark');
+      meta.setAttribute('content', isDark ? '#002b36' : '#b58900');
+    }
+    setMetaTheme();
+    var obs = new MutationObserver(setMetaTheme);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    if (document.body) obs.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+    window.addEventListener('storage', function(e){ if (e.key === 'ctTheme') setTimeout(setMetaTheme, 0); });
+  })();
+
+  // Hydrate from JSON script tags if present (avoids mixing Jinja into runtime code)
+  (function(){
+    try {
+      var dataEl = document.getElementById('analytics-data-json');
+      var optsEl = document.getElementById('analytics-options-json');
+      if (!dataEl || !optsEl) return;
+      window.analyticsData = JSON.parse(dataEl.textContent || '{}');
+      window.analyticsOptions = JSON.parse(optsEl.textContent || '{}');
+      // If benchmarks are present but DOM didn’t render them (e.g., future tweaks), update the banner
+      if (window.analyticsData && window.analyticsData.benchmarks) {
+        var b = window.analyticsData.benchmarks;
+        var cEl = document.getElementById('benchmark-class-avg'); if (cEl && (b.class_avg !== undefined)) cEl.textContent = (b.class_avg != null ? Number(b.class_avg).toFixed(1) + '%' : '—');
+        var gEl = document.getElementById('benchmark-grade-avg'); if (gEl && (b.grade_avg !== undefined)) gEl.textContent = (b.grade_avg != null ? Number(b.grade_avg).toFixed(1) + '%' : '—');
+        var sEl = document.getElementById('benchmark-school-avg'); if (sEl && (b.school_avg !== undefined)) sEl.textContent = (b.school_avg != null ? Number(b.school_avg).toFixed(1) + '%' : '—');
+      }
+    } catch (e) {
+      console.warn('Analytics JSON hydration failed:', e);
+    }
+  })();
+
   // --- Enhanced Headteacher/Admin controls: show Grade/Stream and populate streams ---
   document.addEventListener('DOMContentLoaded', () => {
     try {
@@ -2691,16 +2599,12 @@
     (function(){
       var btn=document.getElementById('analyticsThemeToggle'); if(!btn) return;
       var KEY='ctTheme';
-      var LEGACY_KEY='solar-theme-mode';
-      function sys(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
-      function normalize(v){ if(!v) return v; v=String(v).toLowerCase(); if(v==='solar-dark') return 'dark'; if(v==='solar-light') return 'light'; return (v==='dark'||v==='light')?v:undefined; }
-      function persist(t){ try{ localStorage.setItem(KEY,t); localStorage.setItem(LEGACY_KEY, t==='dark'?'solar-dark':'solar-light'); }catch(e){} }
-      function applyAttrs(t){ document.documentElement.setAttribute('data-theme',t); if(document.body){ document.body.setAttribute('data-theme',t); } }
-      function setTheme(t){ applyAttrs(t); btn.innerHTML = t==='dark' ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 7.07-1.41-1.41M6.46 6.46 5.05 5.05m12.02-1.41-1.41 1.41M6.46 17.54l-1.41 1.41"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'; btn.title='Switch to '+(t==='dark'?'light':'dark')+' theme'; }
-      var saved, legacy; try{ saved=localStorage.getItem(KEY); legacy=localStorage.getItem(LEGACY_KEY); }catch(e){}
-      var initial = normalize(saved) || normalize(legacy) || normalize(document.documentElement.getAttribute('data-theme')) || sys();
-      setTheme(initial); persist(initial);
-      btn.addEventListener('click',function(){ var cur = normalize(document.documentElement.getAttribute('data-theme')) || sys(); var next=cur==='dark'?'light':'dark'; persist(next); setTheme(next); });
+      function sys(){return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'solar-dark':'light';}
+      function apply(t){ if(t==='solar-dark'){ document.documentElement.setAttribute('data-theme','solar-dark'); document.body&&document.body.setAttribute('data-theme','solar-dark'); } else { document.documentElement.removeAttribute('data-theme'); document.body&&document.body.removeAttribute('data-theme'); } }
+      function setBtn(t){ btn.innerHTML = t==='solar-dark' ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 7.07-1.41-1.41M6.46 6.46 5.05 5.05m12.02-1.41-1.41 1.41M6.46 17.54l-1.41 1.41"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'; btn.title='Switch to '+(t==='solar-dark'?'light':'dark')+' theme'; }
+      var saved; try{ saved=localStorage.getItem(KEY);}catch(e){}
+      var initial = saved || sys(); apply(initial); setBtn(initial);
+      btn.addEventListener('click',function(){ var cur = document.documentElement.getAttribute('data-theme') || 'light'; var next = (cur==='solar-dark') ? 'light' : 'solar-dark'; try{ localStorage.setItem(KEY,next);}catch(e){} apply(next); setBtn(next); });
     })();
   });
 

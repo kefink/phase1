@@ -4,6 +4,8 @@ Handles permission granting, revoking, and checking for classteachers.
 """
 from ..models import ClassTeacherPermission, PermissionRequest, Teacher, Grade, Stream
 from ..extensions import db
+import time
+from sqlalchemy.exc import OperationalError
 from flask import session
 
 class PermissionService:
@@ -42,11 +44,50 @@ class PermissionService:
                 return True
 
             if role in ('classteacher', 'teacher'):
-                return ClassTeacherPermission.has_permission(
+                # Primary: explicit permission record
+                if ClassTeacherPermission.has_permission(
                     teacher_id=user_id,
                     grade_id=grade_id,
                     stream_id=stream_id
-                )
+                ):
+                    return True
+
+                # Fallback A: direct stream assignment on Teacher record
+                try:
+                    teacher = Teacher.query.get(user_id)
+                except Exception:
+                    teacher = None
+                if teacher and teacher.stream_id:
+                    try:
+                        # Match exact stream when provided
+                        if stream_id and int(teacher.stream_id) == int(stream_id):
+                            return True
+                    except Exception:
+                        pass
+                    # Fallback B: if no stream specified (single-stream context), allow when grade matches
+                    if stream_id is None:
+                        try:
+                            t_stream = Stream.query.get(teacher.stream_id)
+                            if t_stream and int(t_stream.grade_id) == int(grade_id):
+                                return True
+                        except Exception:
+                            pass
+
+                # Fallback C: honor role-based class teacher assignments for classteachers
+                if role == 'classteacher':
+                    try:
+                        from ..services.role_based_data_service import RoleBasedDataService as _RBDS
+                        summary = _RBDS.get_teacher_assignments_summary(user_id, 'classteacher')
+                        if summary and not summary.get('error'):
+                            for a in summary.get('class_teacher_assignments', []) or []:
+                                if int(a.get('grade_id') or 0) == int(grade_id):
+                                    if stream_id is None or int(a.get('stream_id') or 0) == int(stream_id):
+                                        return True
+                    except Exception:
+                        pass
+
+                # No explicit permission and no recognized assignment
+                return False
             return False
         except Exception as e:  # pragma: no cover - defensive
             print(f"Error in check_class_access: {e}")
@@ -103,18 +144,48 @@ class PermissionService:
         try:
             permissions = ClassTeacherPermission.get_teacher_permissions(teacher_id)
             classes = []
-            
+
+            # Resolve grade/stream names directly to avoid relying on ORM relationships
+            try:
+                _Grade = Grade
+                _Stream = Stream
+            except Exception:
+                _Grade = _Stream = None
+
             for perm in permissions:
-                class_info = {
-                    'grade_name': perm.grade.name,
-                    'grade_id': perm.grade_id,
-                    'stream_name': perm.stream.name if perm.stream else None,
-                    'stream_id': perm.stream_id,
-                    'granted_at': perm.granted_at,
-                    'permission_id': perm.id,
-                    'display_name': f"{perm.grade.name}" + (f" Stream {perm.stream.name}" if perm.stream else "")
-                }
-                classes.append(class_info)
+                try:
+                    grade_name = None
+                    stream_name = None
+                    if _Grade and perm.grade_id:
+                        try:
+                            g = _Grade.query.get(perm.grade_id)
+                            grade_name = getattr(g, 'name', None)
+                        except Exception:
+                            pass
+                    if _Stream and perm.stream_id:
+                        try:
+                            s = _Stream.query.get(perm.stream_id)
+                            stream_name = getattr(s, 'name', None)
+                        except Exception:
+                            pass
+
+                    display = grade_name or str(perm.grade_id)
+                    if stream_name:
+                        display = f"{display} {stream_name}"
+
+                    class_info = {
+                        'grade_name': grade_name,
+                        'grade_id': perm.grade_id,
+                        'stream_name': stream_name,
+                        'stream_id': perm.stream_id,
+                        'granted_at': perm.granted_at,
+                        'permission_id': perm.id,
+                        'display_name': display
+                    }
+                    classes.append(class_info)
+                except Exception:
+                    # Skip malformed permission row gracefully
+                    continue
             
             return classes
             
@@ -125,7 +196,7 @@ class PermissionService:
     @staticmethod
     def grant_permission(teacher_id, grade_name, stream_name, granted_by_id, notes=None):
         """
-        Grant permission to a teacher for a specific class/stream.
+        Grant permission to a teacher for a specific class/stream with 1-hour expiration.
         
         Args:
             teacher_id: ID of teacher receiving permission
@@ -150,17 +221,23 @@ class PermissionService:
                 if not stream:
                     return False, f"Stream '{stream_name}' not found in {grade_name}"
             
-            # Grant permission
+            # Grant permission with 1-hour expiration
+            from datetime import datetime, timedelta
+            expires_at = datetime.utcnow() + timedelta(hours=1)
+            
             permission = ClassTeacherPermission.grant_permission(
                 teacher_id=teacher_id,
                 grade_id=grade.id,
                 stream_id=stream.id if stream else None,
                 granted_by_id=granted_by_id,
-                notes=notes
+                notes=f"{notes} (1-hour access)" if notes else "1-hour access granted",
+                expires_at=expires_at,
+                is_permanent=False
             )
             
             if permission:
-                return True, "Permission granted successfully"
+                class_name = f"{grade_name} {stream_name}" if stream_name else grade_name
+                return True, f"Permission granted successfully for {class_name} (expires in 1 hour)"
             else:
                 return False, "Failed to grant permission"
                 
@@ -347,8 +424,21 @@ class PermissionService:
             # Get all class assignments organized by education level
             class_assignments = PermissionService.get_all_class_assignments()
 
+            # Ensure runtime schema for ClassTeacherPermission.revoked_at is present (summary uses status/expiry)
+            try:
+                # no-op call that triggers potential self-heal
+                ClassTeacherPermission._ensure_revoked_at_column()
+            except Exception:
+                pass
+
             # Get current permissions
             current_permissions = ClassTeacherPermission.get_all_permissions_summary()
+
+            # Ensure core columns for permission_requests exist, then fetch pending
+            try:
+                PermissionRequest.ensure_core_columns()
+            except Exception:
+                pass
 
             # Get pending requests
             pending_requests = PermissionRequest.query.filter_by(status='pending').all()
@@ -425,62 +515,98 @@ class PermissionService:
         Returns:
             Tuple (success: bool, message: str)
         """
-        try:
-            # Get grade
-            grade = Grade.query.filter_by(name=grade_name).first()
-            if not grade:
-                return False, f"Grade '{grade_name}' not found"
+        def _is_table_changed_error(err) -> bool:
+            try:
+                if isinstance(err, OperationalError):
+                    msg = str(err)
+                    return ('Table definition has changed' in msg) or (' 1412' in msg) or ('(1412,' in msg)
+            except Exception:
+                pass
+            # Also match by message string just in case
+            try:
+                msg = str(err)
+                return 'Table definition has changed' in msg
+            except Exception:
+                return False
 
-            # Get stream if specified
-            stream = None
-            if stream_name:
-                stream = Stream.query.filter_by(name=stream_name, grade_id=grade.id).first()
-                if not stream:
-                    return False, f"Stream '{stream_name}' not found in {grade_name}"
+        for attempt in range(2):
+            try:
+                # Get grade
+                grade = Grade.query.filter_by(name=grade_name).first()
+                if not grade:
+                    return False, f"Grade '{grade_name}' not found"
 
-            # Check if request already exists
-            existing_request = PermissionRequest.query.filter_by(
-                teacher_id=teacher_id,
-                grade_id=grade.id,
-                stream_id=stream.id if stream else None,
-                status='pending'
-            ).first()
+                # Get stream if specified
+                stream = None
+                if stream_name:
+                    stream = Stream.query.filter_by(name=stream_name, grade_id=grade.id).first()
+                    if not stream:
+                        return False, f"Stream '{stream_name}' not found in {grade_name}"
 
-            if existing_request:
+                # Ensure columns exist before querying/creating
+                try:
+                    PermissionRequest.ensure_core_columns()
+                except Exception:
+                    pass
+
+                # Check if request already exists
+                existing_request = PermissionRequest.query.filter_by(
+                    teacher_id=teacher_id,
+                    grade_id=grade.id,
+                    stream_id=stream.id if stream else None,
+                    status='pending'
+                ).first()
+
+                if existing_request:
+                    class_name = f"{grade_name} {stream_name}" if stream_name else grade_name
+                    return False, f"You already have a pending request for {class_name}"
+
+                # Check if permission already exists
+                existing_permission = ClassTeacherPermission.query.filter_by(
+                    teacher_id=teacher_id,
+                    grade_id=grade.id,
+                    stream_id=stream.id if stream else None,
+                    is_active=True
+                ).first()
+
+                if existing_permission:
+                    class_name = f"{grade_name} {stream_name}" if stream_name else grade_name
+                    return False, f"You already have permission for {class_name}"
+
+                # Create the request
+                permission_request = PermissionRequest(
+                    teacher_id=teacher_id,
+                    grade_id=grade.id,
+                    stream_id=stream.id if stream else None,
+                    reason=reason,
+                    status='pending'
+                )
+
+                db.session.add(permission_request)
+                db.session.commit()
+
                 class_name = f"{grade_name} {stream_name}" if stream_name else grade_name
-                return False, f"You already have a pending request for {class_name}"
+                return True, f"Permission request for {class_name} submitted successfully"
 
-            # Check if permission already exists
-            existing_permission = ClassTeacherPermission.query.filter_by(
-                teacher_id=teacher_id,
-                grade_id=grade.id,
-                stream_id=stream.id if stream else None,
-                is_active=True
-            ).first()
-
-            if existing_permission:
-                class_name = f"{grade_name} {stream_name}" if stream_name else grade_name
-                return False, f"You already have permission for {class_name}"
-
-            # Create the request
-            permission_request = PermissionRequest(
-                teacher_id=teacher_id,
-                grade_id=grade.id,
-                stream_id=stream.id if stream else None,
-                reason=reason,
-                status='pending'
-            )
-
-            db.session.add(permission_request)
-            db.session.commit()
-
-            class_name = f"{grade_name} {stream_name}" if stream_name else grade_name
-            return True, f"Permission request for {class_name} submitted successfully"
-
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error submitting permission request: {e}")
-            return False, "Failed to submit permission request"
+            except Exception as e:
+                if _is_table_changed_error(e) and attempt == 0:
+                    try:
+                        db.session.rollback()
+                    except Exception:
+                        pass
+                    try:
+                        PermissionRequest.ensure_core_columns()
+                    except Exception:
+                        pass
+                    # Small delay to let MySQL finalize table change and invalidate prepared statements
+                    time.sleep(0.2)
+                    continue
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
+                print(f"Error submitting permission request: {e}")
+                return False, "Failed to submit permission request"
 
     @staticmethod
     def get_pending_requests():
@@ -491,6 +617,12 @@ class PermissionService:
             List of request dictionaries
         """
         try:
+            # Ensure columns used by joins exist
+            try:
+                PermissionRequest.ensure_core_columns()
+            except Exception:
+                pass
+
             requests = db.session.query(PermissionRequest, Teacher, Grade, Stream).join(
                 Teacher, PermissionRequest.teacher_id == Teacher.id
             ).join(
@@ -536,6 +668,12 @@ class PermissionService:
             Tuple (success: bool, message: str)
         """
         try:
+            # Ensure columns exist prior to processing
+            try:
+                PermissionRequest.ensure_core_columns()
+            except Exception:
+                pass
+
             # Get the request
             permission_request = PermissionRequest.query.get(request_id)
             if not permission_request:
@@ -550,17 +688,22 @@ class PermissionService:
             permission_request.processed_at = db.func.now()
             permission_request.admin_notes = admin_notes
 
-            # If approved, create the permission
+            # If approved, create the permission with 1-hour expiration
             if action == 'approve':
+                from datetime import datetime, timedelta
+                expires_at = datetime.utcnow() + timedelta(hours=1)
+                
                 permission = ClassTeacherPermission(
                     teacher_id=permission_request.teacher_id,
                     grade_id=permission_request.grade_id,
                     stream_id=permission_request.stream_id,
                     granted_by=processed_by_id,
                     granted_at=db.func.now(),
+                    expires_at=expires_at,
                     is_active=True,
+                    is_permanent=False,  # Explicitly set as temporary
                     permission_scope='full_class_admin',
-                    notes=f"Approved from request: {permission_request.reason}"
+                    notes=f"Approved from request: {permission_request.reason} (1-hour access)"
                 )
                 db.session.add(permission)
 
@@ -572,7 +715,10 @@ class PermissionService:
             class_name = f"{grade.name} {stream.name}" if stream else grade.name
 
             action_text = "approved" if action == 'approve' else "denied"
-            return True, f"Permission request for {class_name} has been {action_text}"
+            if action == 'approve':
+                return True, f"Permission request for {class_name} has been {action_text} (1-hour access granted)"
+            else:
+                return True, f"Permission request for {class_name} has been {action_text}"
 
         except Exception as e:
             db.session.rollback()

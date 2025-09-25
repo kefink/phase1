@@ -169,10 +169,23 @@ def authorize(resource: str, action: str, *, grade: Optional[Any] = None, stream
             if isinstance(stream, int) or (isinstance(stream, str) and str(stream).isdigit()):
                 stream_id = int(stream)
             else:
-                if Stream:
-                    if grade_id and isinstance(stream, str):
-                        s_obj = Stream.query.filter_by(name=stream, grade_id=grade_id).first()
-                        stream_id = s_obj.id if s_obj else None
+                # Resolve common string formats like 'B' and 'Stream B'
+                if Stream and grade_id and isinstance(stream, str):
+                    stream_str = str(stream).strip()
+                    # Try exact match first
+                    s_obj = Stream.query.filter_by(name=stream_str, grade_id=grade_id).first()
+                    if not s_obj:
+                        # Accept patterns like 'Stream B' or 'Grade 9 Stream B' by taking last token
+                        # Also tolerate lowercase 'stream b'
+                        tokens = stream_str.split()
+                        if tokens:
+                            candidate = tokens[-1]
+                            s_obj = Stream.query.filter_by(name=candidate, grade_id=grade_id).first()
+                    if not s_obj and len(stream_str) > 0:
+                        # As a last resort, try last character (legacy usage of stream[-1])
+                        candidate = stream_str[-1]
+                        s_obj = Stream.query.filter_by(name=candidate, grade_id=grade_id).first()
+                    stream_id = s_obj.id if s_obj else None
         # Fallback: if we couldn't resolve grade id, deny (classteacher must have resolvable scope)
         if grade_id is None:
             audit_event('class_scope_unresolved', actor=user_id, target=str(grade), outcome='denied', category='authorization', details={'grade_input': str(grade)})

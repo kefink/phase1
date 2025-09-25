@@ -13,7 +13,7 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#b58900" />
 
     <title>Login - {{ school_info.school_name or 'Hillview School' }}</title>
 
@@ -21,6 +21,12 @@
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='bootstrap.min.css') }}"
+    />
+
+    <!-- Shared Solar Theme tokens/utilities -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
     />
 
     <!-- Preconnect for performance -->
@@ -85,9 +91,8 @@
       }
 
       /* Premium Solar Theme Login */
-      body {
+      body.solar-theme {
         font-family: "Inter", system-ui, -apple-system, sans-serif;
-        background: var(--solar-body-bg);
         min-height: 100vh;
         display: block;
         margin: 0;
@@ -416,10 +421,14 @@
       }
 
       .login-card {
-        background: linear-gradient(135deg, #ffffff, #fafafa);
+        background: linear-gradient(
+          135deg,
+          var(--solar-base3),
+          var(--solar-base2)
+        );
         border-radius: var(--card-radius);
         padding: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(181, 137, 0, 0.25);
         transition: transform 0.25s ease, box-shadow 0.3s ease,
           border-color 0.25s ease;
         text-decoration: none;
@@ -427,8 +436,8 @@
         position: relative;
         overflow: hidden;
         isolation: isolate;
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12),
-          inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        box-shadow: 0 12px 24px rgba(0, 43, 54, 0.12),
+          inset 0 1px 0 rgba(253, 246, 227, 0.5);
       }
 
       .login-card::before {
@@ -460,8 +469,8 @@
 
       .login-card:hover {
         transform: translateY(-4px) scale(1.01);
-        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
-        border-color: rgba(102, 126, 234, 0.25);
+        box-shadow: 0 16px 36px rgba(0, 43, 54, 0.18);
+        border-color: rgba(181, 137, 0, 0.35);
         text-decoration: none;
         color: inherit;
       }
@@ -541,10 +550,14 @@
       }
 
       .admin-card {
-        background: linear-gradient(135deg, #ef476f, #f3722c);
+        background: linear-gradient(
+          135deg,
+          var(--solar-orange),
+          var(--solar-yellow)
+        );
         color: white;
         border: 1px solid rgba(255, 255, 255, 0.25);
-        box-shadow: 0 16px 36px rgba(243, 114, 44, 0.28),
+        box-shadow: 0 16px 36px rgba(181, 137, 0, 0.28),
           0 6px 14px rgba(0, 0, 0, 0.18);
       }
 
@@ -568,10 +581,14 @@
 
       /* Subject Teacher Card Styling */
       .subject-teacher-card {
-        background: linear-gradient(135deg, #10b981, #059669) !important;
+        background: linear-gradient(
+          135deg,
+          var(--solar-green),
+          var(--solar-cyan)
+        ) !important;
         color: white !important;
         border: 1px solid rgba(255, 255, 255, 0.25);
-        box-shadow: 0 16px 36px rgba(16, 185, 129, 0.28),
+        box-shadow: 0 16px 36px rgba(133, 153, 0, 0.28),
           0 6px 14px rgba(0, 0, 0, 0.18);
         /* Force visibility */
         display: block !important;
@@ -603,7 +620,7 @@
         text-align: center;
         margin-top: var(--space-8);
         padding-top: var(--space-6);
-        border-top: 1px solid var(--gray-200);
+        border-top: 1px solid rgba(147, 161, 161, 0.35);
       }
 
       .footer-text {
@@ -709,7 +726,24 @@
       }
     </style>
   </head>
-  <body>
+  <body class="solar-theme">
+    <!-- Theme Toggle Button -->
+    <button
+      class="solar-theme-toggle"
+      id="themeToggle"
+      title="Toggle theme"
+      aria-label="Toggle theme"
+      type="button"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M12 18a6 6 0 100-12 6 6 0 000 12z" />
+      </svg>
+    </button>
     <div class="login-grid">
       <aside class="brand-panel">
         <div class="brand-card">
@@ -925,6 +959,64 @@
 
     <!-- JavaScript for Enhanced Interactions -->
     <script>
+      // Theme init and toggle
+      (function () {
+        function getVar(name, fallback) {
+          return (
+            getComputedStyle(document.documentElement)
+              .getPropertyValue(name)
+              .trim() || fallback
+          );
+        }
+        function applyTheme(mode) {
+          const themeAttr = mode === "dark" ? "solar-dark" : "";
+          document.documentElement.setAttribute("data-theme", themeAttr);
+          const meta = document.querySelector('meta[name="theme-color"]');
+          if (meta)
+            meta.setAttribute(
+              "content",
+              mode === "dark"
+                ? getVar("--solar-base03", "#002b36")
+                : getVar("--solar-base3", "#fdf6e3")
+            );
+        }
+        try {
+          // Back-compat: read old key 'theme' if present
+          const saved =
+            localStorage.getItem("solar-theme") ||
+            localStorage.getItem("theme");
+          const systemDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const mode = saved
+            ? saved === "dark"
+              ? "dark"
+              : "light"
+            : systemDark
+            ? "dark"
+            : "light";
+          applyTheme(mode);
+          // Persist to new unified key
+          localStorage.setItem("solar-theme", mode);
+        } catch (e) {
+          /* no-op */
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+          const btn = document.getElementById("themeToggle");
+          if (btn) {
+            btn.addEventListener("click", function () {
+              const current = localStorage.getItem("solar-theme") || "light";
+              const next = current === "dark" ? "light" : "dark";
+              localStorage.setItem("solar-theme", next);
+              // Also keep legacy key updated one last time
+              localStorage.setItem("theme", next);
+              applyTheme(next);
+            });
+          }
+        });
+      })();
+
       document.addEventListener("DOMContentLoaded", function () {
         // Add click animation to login cards
         const loginCards = document.querySelectorAll(".login-card");
@@ -972,5 +1064,28 @@
         }, 100);
       });
     </script>
+
+    <style>
+      /* Dark mode refinements for login page */
+      [data-theme="solar-dark"] .login-card {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 43, 54, 0.85),
+          rgba(7, 54, 66, 0.8)
+        );
+        border-color: rgba(181, 137, 0, 0.35);
+        color: var(--solar-base2);
+      }
+      [data-theme="solar-dark"] .login-title {
+        color: var(--solar-base2);
+      }
+      [data-theme="solar-dark"] .login-description {
+        color: var(--solar-base1);
+      }
+      [data-theme="solar-dark"] .login-card:hover {
+        border-color: rgba(181, 137, 0, 0.5);
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+      }
+    </style>
   </body>
 </html>

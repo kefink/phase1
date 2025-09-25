@@ -173,10 +173,20 @@ def register():
 @parent_simple_bp.route('/dashboard')
 @parent_required
 def dashboard():
-    """Parent dashboard."""
+    """Parent dashboard showing aggregated children and recent notifications."""
     try:
         parent = Parent.query.get(session['parent_id'])
-        
+
+        # Get school info for header/branding
+        try:
+            from ..services.school_config_service import SchoolConfigService
+            school_info = SchoolConfigService.get_school_info_dict()
+        except Exception:
+            school_info = {
+                'school_name': 'Hillview School',
+                'logo_url': '/static/uploads/logos/optimized_school_logo_1750595986_hvs.jpg'
+            }
+
         # Get linked children with their class information
         children_query = db.session.query(
             ParentStudent, Student, Grade, Stream
@@ -189,9 +199,9 @@ def dashboard():
         ).filter(
             ParentStudent.parent_id == parent.id
         ).order_by(Grade.name, Stream.name, Student.name)
-        
+
         children = children_query.all()
-        
+
         # Get recent email notifications (if model available)
         if ParentEmailLog:
             recent_emails = ParentEmailLog.query.filter_by(
@@ -199,12 +209,15 @@ def dashboard():
             ).order_by(ParentEmailLog.created_at.desc()).limit(5).all()
         else:
             recent_emails = []
-        
-        return render_template('parent_management_dashboard_enhanced.html',
-                             parent=parent,
-                             children=children,
-                             recent_emails=recent_emails)
-    
+
+        return render_template(
+            'parent_dashboard.html',
+            parent=parent,
+            children=children,
+            recent_emails=recent_emails,
+            school_info=school_info
+        )
+
     except Exception as e:
         flash(f'Error loading dashboard: {str(e)}', 'error')
         return redirect(url_for('parent.login'))
