@@ -64,6 +64,7 @@ def initialize_database_self_contained():
             user=url.username,
             password=url.password
         )
+        conn.autocommit = True  # Enable autocommit for easier table management
         cur = conn.cursor()
         
         # Check if tables already exist
@@ -228,11 +229,11 @@ def initialize_database_self_contained():
         )
         
         # Commit all changes
-        conn.commit()
+        # conn.commit()  # Not needed with autocommit=True
         cur.close()
         conn.close()
         
-        return {"success": True, "message": "Database initialized successfully with direct SQL"}
+        return {"success": True, "message": "Database initialized successfully with PostgreSQL direct connection"}
         
     except Exception as e:
         return {"success": False, "error": str(e)}
