@@ -1,6 +1,7 @@
 # Render.com Deployment Guide for Hillview School Management System
 
 ## Prerequisites
+
 - GitHub account with your code pushed
 - Render account (free tier available)
 - Basic understanding of environment variables
@@ -8,6 +9,7 @@
 ## Step 1: Prepare Your Repository
 
 ### 1.1 Push to GitHub
+
 ```bash
 git init
 git add .
@@ -18,6 +20,7 @@ git push -u origin main
 ```
 
 ### 1.2 Files Created for Render
+
 - `app.py` - WSGI entry point
 - `requirements-render.txt` - Production dependencies
 - `gunicorn.conf.py` - Updated for Render
@@ -26,6 +29,7 @@ git push -u origin main
 ## Step 2: Create Render Services
 
 ### 2.1 Create PostgreSQL Database
+
 1. Log into [Render Dashboard](https://dashboard.render.com)
 2. Click "New +" → "PostgreSQL"
 3. Configure:
@@ -38,18 +42,21 @@ git push -u origin main
 5. **Save the connection details** - you'll need them
 
 ### 2.2 Create Web Service
+
 1. In Render Dashboard, click "New +" → "Web Service"
 2. Connect your GitHub repository
 3. Configure the service:
 
 **Basic Settings:**
+
 - Name: `hillview-sms`
 - Region: Same as database
 - Branch: `main`
 - Runtime: `Python 3`
 
 **Build & Deploy:**
-- Build Command: 
+
+- Build Command:
   ```
   pip install -r requirements-render.txt
   ```
@@ -58,7 +65,15 @@ git push -u origin main
   gunicorn --config gunicorn.conf.py app:app
   ```
 
+**Health Settings:**
+
+- Health Check Path:
+   ```
+   /health
+   ```
+
 **Advanced Settings:**
+
 - Plan: Free (for testing)
 - Auto-Deploy: Yes
 
@@ -67,6 +82,7 @@ git push -u origin main
 In your Render web service settings, add these environment variables:
 
 ### Required Variables:
+
 ```
 FLASK_ENV=production
 DATABASE_URL=[Your PostgreSQL URL from Step 2.1]
@@ -75,6 +91,7 @@ WTF_CSRF_SECRET_KEY=[Generate another secret key]
 ```
 
 ### Optional Variables:
+
 ```
 FORCE_HTTPS=true
 ALLOW_IN_MEMORY_LIMITS=true
@@ -85,6 +102,7 @@ CSP_POLICY=default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'sel
 ```
 
 ### Generate Secret Keys:
+
 ```python
 import secrets
 print("SECRET_KEY:", secrets.token_hex(32))
@@ -99,6 +117,7 @@ print("WTF_CSRF_SECRET_KEY:", secrets.token_hex(32))
    - Install dependencies
    - Start your application
 3. Monitor the deployment logs for any issues
+4. If you see repeated requests to a URL like `/your app doesn't have a specific health endpoint` returning 404, it means the Health Check Path isn't set. Go to your Render service → Settings → Health and set the Health Check Path to `/health`, Save, then click "Manual Deploy".
 
 ## Step 5: Initialize Database
 
@@ -106,6 +125,7 @@ Once deployed, you'll need to initialize the database:
 
 1. Use Render's Shell feature or create a one-time job
 2. Run database initialization:
+
 ```python
 from app import app
 from new_structure.utils.database_init import initialize_database_completely
@@ -128,7 +148,7 @@ with app.app_context():
 1. Open the URL on your phone
 2. Test all login pages:
    - `/admin_login`
-   - `/classteacher_login` 
+   - `/classteacher_login`
    - `/teacher_login`
 3. Verify logos and styling work correctly
 
@@ -137,26 +157,36 @@ with app.app_context():
 ### Common Issues:
 
 **Build Fails:**
+
 - Check `requirements-render.txt` for version conflicts
 - Ensure all dependencies are listed
 
 **App Crashes on Start:**
+
 - Check environment variables are set correctly
 - Verify DATABASE_URL format
 - Check logs for specific error messages
 
 **Database Connection Issues:**
+
 - Ensure DATABASE_URL is correctly formatted
 - Check if database service is running
 - Verify network connectivity between services
 
 **Static Files Not Loading:**
+
 - Ensure static files are in the correct directory
 - Check CSP_POLICY allows necessary resources
+
+**Health Check 404 / timeout:**
+
+- Symptom in logs: repeated `GET /your app doesn't have a specific health endpoint` with 404 followed by `Timed Out`.
+- Fix: In Render → your web service → Settings → Health, set Health Check Path to `/health`, Save, then trigger a Manual Deploy.
 
 ### Debugging Commands:
 
 Access shell in Render dashboard and run:
+
 ```bash
 # Check environment variables
 env | grep -E "(FLASK|DATABASE|SECRET)"
@@ -186,6 +216,7 @@ tail -f /opt/render/project/src/logs/app.log
 ## Scaling for Production
 
 When ready for real hosting:
+
 1. Upgrade to paid Render plans
 2. Add Redis service for session storage
 3. Configure proper backup strategy
