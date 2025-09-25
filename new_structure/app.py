@@ -45,7 +45,14 @@ import logging
 def initialize_database_self_contained():
     """Self-contained database initialization for PostgreSQL using direct connection."""
     try:
-        import psycopg2
+        # Try psycopg3 first, fallback to psycopg2
+        try:
+            import psycopg
+            use_psycopg3 = True
+        except ImportError:
+            import psycopg2 as psycopg
+            use_psycopg3 = False
+        
         from urllib.parse import urlparse
         import os
         
@@ -57,15 +64,28 @@ def initialize_database_self_contained():
         # Parse PostgreSQL URL
         parsed = urlparse(db_url)
         
-        # Create direct database connection (bypass SQLAlchemy entirely)
-        conn = psycopg2.connect(
-            host=parsed.hostname,
-            port=parsed.port,
-            database=parsed.path[1:],  # Remove leading slash
-            user=parsed.username,
-            password=parsed.password
-        )
-        conn.autocommit = True  # Enable autocommit for easier table management
+        # Create direct database connection with compatibility for both psycopg versions
+        if use_psycopg3:
+            # psycopg3 syntax
+            conn = psycopg.connect(
+                host=parsed.hostname,
+                port=parsed.port,
+                dbname=parsed.path[1:],  # Remove leading slash
+                user=parsed.username,
+                password=parsed.password,
+                autocommit=True
+            )
+        else:
+            # psycopg2 syntax
+            conn = psycopg.connect(
+                host=parsed.hostname,
+                port=parsed.port,
+                database=parsed.path[1:],  # Remove leading slash
+                user=parsed.username,
+                password=parsed.password
+            )
+            conn.autocommit = True
+        
         cur = conn.cursor()
         
         # Check if tables already exist and have data
@@ -242,7 +262,8 @@ def initialize_database_self_contained():
         cur.close()
         conn.close()
         
-        return {"success": True, "message": "Database initialized successfully with PostgreSQL direct connection"}
+        driver_used = "psycopg3" if use_psycopg3 else "psycopg2"
+        return {"success": True, "message": f"Database initialized successfully with PostgreSQL direct connection using {driver_used}"}
         
     except Exception as e:
         return {"success": False, "error": str(e)}
