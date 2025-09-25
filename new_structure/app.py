@@ -49,6 +49,17 @@ def create_simple_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback-secret-key-for-deployment')
     app.config['DATABASE_URL'] = os.environ.get('DATABASE_URL', 'sqlite:///fallback.db')
     
+    # Try to initialize database on startup (one-time)
+    with app.app_context():
+        try:
+            # Check if we can import the full app and initialize database
+            from new_structure.utils.database_init import initialize_database_completely
+            print("Attempting database initialization...")
+            result = initialize_database_completely()
+            print(f"Database initialization result: {result}")
+        except Exception as e:
+            print(f"Database initialization skipped: {e}")
+    
     # Simple routes
     @app.route('/')
     def index():
@@ -64,6 +75,22 @@ def create_simple_app():
     @app.route('/health')
     def health():
         return {"status": "ok", "message": "Application is running"}
+    
+    @app.route('/init-database')
+    def init_database():
+        try:
+            from new_structure.utils.database_init import initialize_database_completely
+            result = initialize_database_completely()
+            return {
+                "status": "success", 
+                "message": "Database initialized successfully",
+                "result": str(result)
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Database initialization failed: {str(e)}"
+            }, 500
     
     @app.route('/admin_login')
     def admin_login():
