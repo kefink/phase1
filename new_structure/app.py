@@ -34,18 +34,41 @@ def _load_env_file():
 
 _load_env_file()
 
-# Import the application factory
-from __init__ import create_app
-
 # Set production environment if not set
 if not os.environ.get('FLASK_ENV'):
     os.environ['FLASK_ENV'] = 'production'
 
-# Create the Flask application for production
-application = create_app('production')
-app = application  # Gunicorn looks for 'app' by default
+# Create a simple Flask app for Render deployment
+from flask import Flask
+import config
+
+def create_simple_app():
+    """Create a simplified Flask app for deployment."""
+    app = Flask(__name__)
+    
+    # Load configuration
+    config_name = 'production'
+    app.config.from_object(config.config[config_name])
+    
+    # Initialize database
+    from extensions import db
+    db.init_app(app)
+    
+    # Simple route for testing
+    @app.route('/')
+    def index():
+        return "Hillview School Management System - Loading..."
+    
+    @app.route('/health')
+    def health():
+        return {"status": "ok", "message": "Application is running"}
+    
+    return app
+
+# Create the application
+app = create_simple_app()
 
 if __name__ == '__main__':
     # This won't be called in production, but useful for local testing
     port = int(os.environ.get('PORT', 10000))
-    application.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port)
