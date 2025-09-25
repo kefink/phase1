@@ -8,8 +8,7 @@ backlog = 2048
 
 # Worker processes - Keep lightweight for Render
 workers = 2
-worker_class = "gevent"
-worker_connections = 1000
+worker_class = "sync"
 timeout = 120
 keepalive = 2
 
