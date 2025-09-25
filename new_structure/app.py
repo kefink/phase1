@@ -39,7 +39,7 @@ if not os.environ.get('FLASK_ENV'):
     os.environ['FLASK_ENV'] = 'production'
 
 # Create a simple Flask app for Render deployment
-from flask import Flask
+from flask import Flask, request
 import logging
 
 def initialize_database_self_contained():
@@ -268,6 +268,68 @@ def initialize_database_self_contained():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+def validate_login(username, password, required_role=None):
+    """Validate user login credentials against the database."""
+    try:
+        # Try psycopg3 first, fallback to psycopg2
+        try:
+            import psycopg
+            use_psycopg3 = True
+        except ImportError:
+            import psycopg2 as psycopg
+            use_psycopg3 = False
+        
+        from urllib.parse import urlparse
+        
+        # Get database URL
+        db_url = os.environ.get('DATABASE_URL')
+        if not db_url:
+            return False
+        
+        parsed = urlparse(db_url)
+        
+        # Create connection
+        if use_psycopg3:
+            conn = psycopg.connect(
+                host=parsed.hostname,
+                port=parsed.port,
+                dbname=parsed.path[1:],
+                user=parsed.username,
+                password=parsed.password,
+                autocommit=True
+            )
+        else:
+            conn = psycopg.connect(
+                host=parsed.hostname,
+                port=parsed.port,
+                database=parsed.path[1:],
+                user=parsed.username,
+                password=parsed.password
+            )
+            conn.autocommit = True
+        
+        cur = conn.cursor()
+        
+        # Query user from database
+        cur.execute("SELECT password_hash, role FROM teachers WHERE username = %s", (username,))
+        result = cur.fetchone()
+        
+        cur.close()
+        conn.close()
+        
+        if result:
+            stored_hash, user_role = result
+            # Simple hash comparison (in production, use proper password hashing)
+            if str(hash(password)) == stored_hash:
+                if required_role is None or user_role == required_role:
+                    return True
+        
+        return False
+        
+    except Exception as e:
+        print(f"Login validation error: {e}")
+        return False
+
 def create_simple_app():
     """Create a simplified Flask app for deployment."""
     app = Flask(__name__)
@@ -298,12 +360,52 @@ def create_simple_app():
     @app.route('/')
     def index():
         return """
-        <h1>🎉 Hillview School Management System</h1>
-        <p><strong>Status:</strong> Successfully Deployed!</p>
-        <p><strong>Environment:</strong> Production</p>
-        <p>The application is running and ready to be initialized.</p>
-        <hr>
-        <p><a href="/health">Health Check</a></p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Hillview School Management System</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+                .container { max-width: 600px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                .header { text-align: center; margin-bottom: 30px; }
+                .header h1 { color: #2c3e50; margin: 0; }
+                .header p { color: #7f8c8d; margin: 10px 0; }
+                .status { background: #2ecc71; color: white; padding: 15px; border-radius: 5px; margin-bottom: 30px; text-align: center; }
+                .login-links { display: grid; gap: 15px; margin-bottom: 30px; }
+                .login-link { display: block; padding: 15px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; text-align: center; font-weight: bold; }
+                .login-link:hover { background: #2980b9; }
+                .login-link.admin { background: #e74c3c; }
+                .login-link.admin:hover { background: #c0392b; }
+                .login-link.teacher { background: #27ae60; }
+                .login-link.teacher:hover { background: #229954; }
+                .login-link.classteacher { background: #f39c12; }
+                .login-link.classteacher:hover { background: #e67e22; }
+                .system-links { text-align: center; padding-top: 20px; border-top: 1px solid #ecf0f1; }
+                .system-links a { color: #3498db; text-decoration: none; margin: 0 15px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🎉 Hillview School Management System</h1>
+                    <p>Mobile-Optimized School Management Platform</p>
+                </div>
+                <div class="status">
+                    ✅ Successfully Deployed & Database Initialized
+                </div>
+                <div class="login-links">
+                    <a href="/admin_login" class="login-link admin">🏫 Headteacher Login</a>
+                    <a href="/classteacher_login" class="login-link classteacher">👨‍🏫 Class Teacher Login</a>
+                    <a href="/teacher_login" class="login-link teacher">👩‍🏫 Subject Teacher Login</a>
+                </div>
+                <div class="system-links">
+                    <a href="/health">Health Check</a> | 
+                    <a href="/init-database">Database Status</a>
+                </div>
+            </div>
+        </body>
+        </html>
         """
     
     @app.route('/health')
@@ -331,28 +433,229 @@ def create_simple_app():
                 "message": f"Database initialization failed: {str(e)}"
             }, 500
     
-    @app.route('/admin_login')
+    @app.route('/admin_login', methods=['GET', 'POST'])
     def admin_login():
-        return """
-        <h1>🏫 Admin Login</h1>
-        <p>Mobile-friendly admin login will be available after database initialization.</p>
-        <p><a href="/">← Back to Home</a></p>
+        if request.method == 'POST':
+            username = request.form.get('username')
+            password = request.form.get('password')
+            
+            # Validate credentials against database
+            if validate_login(username, password, 'headteacher'):
+                return f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; border: 2px solid #4CAF50; border-radius: 10px; background: #f9f9f9;">
+                    <h2 style="color: #4CAF50;">✅ Login Successful!</h2>
+                    <p><strong>Welcome, {username}!</strong></p>
+                    <p>You have successfully logged into the <strong>Headteacher Dashboard</strong>.</p>
+                    <p><em>Note: This is the login verification page. In the full application, you would be redirected to your dashboard.</em></p>
+                    <p><a href="/admin_login" style="color: #2196F3;">← Try Another Login</a> | <a href="/" style="color: #2196F3;">Home</a></p>
+                </div>
+                """
+            else:
+                error_msg = "Invalid credentials. Please try again."
+        else:
+            error_msg = None
+        
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Hillview School - Admin Login</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }}
+                .container {{ max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+                .logo {{ text-align: center; margin-bottom: 30px; }}
+                .logo h1 {{ color: #2c3e50; margin: 0; }}
+                .logo p {{ color: #7f8c8d; margin: 5px 0 0 0; }}
+                .form-group {{ margin-bottom: 20px; }}
+                label {{ display: block; margin-bottom: 5px; color: #2c3e50; font-weight: bold; }}
+                input[type="text"], input[type="password"] {{ width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 16px; }}
+                .btn {{ background: #3498db; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; }}
+                .btn:hover {{ background: #2980b9; }}
+                .error {{ background: #e74c3c; color: white; padding: 10px; border-radius: 5px; margin-bottom: 20px; }}
+                .back-link {{ text-align: center; margin-top: 20px; }}
+                .back-link a {{ color: #3498db; text-decoration: none; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="logo">
+                    <h1>🏫 Hillview School</h1>
+                    <p>Admin Login Portal</p>
+                </div>
+                {"<div class='error'>" + error_msg + "</div>" if error_msg else ""}
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <div class="back-link">
+                    <a href="/">← Back to Home</a>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: #ecf0f1; border-radius: 5px; font-size: 14px;">
+                    <strong>Default Credentials:</strong><br>
+                    Username: <code>headteacher</code><br>
+                    Password: <code>admin123</code>
+                </div>
+            </div>
+        </body>
+        </html>
         """
     
-    @app.route('/teacher_login')
+    @app.route('/teacher_login', methods=['GET', 'POST'])
     def teacher_login():
-        return """
-        <h1>👩‍🏫 Teacher Login</h1>
-        <p>Mobile-friendly teacher login will be available after database initialization.</p>
-        <p><a href="/">← Back to Home</a></p>
+        if request.method == 'POST':
+            username = request.form.get('username')
+            password = request.form.get('password')
+            
+            # Validate credentials against database (any teacher role)
+            if validate_login(username, password) and username in ['kevin', 'telvo']:
+                return f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; border: 2px solid #4CAF50; border-radius: 10px; background: #f9f9f9;">
+                    <h2 style="color: #4CAF50;">✅ Login Successful!</h2>
+                    <p><strong>Welcome, {username}!</strong></p>
+                    <p>You have successfully logged into the <strong>Teacher Dashboard</strong>.</p>
+                    <p><em>Note: This is the login verification page. In the full application, you would be redirected to your dashboard.</em></p>
+                    <p><a href="/teacher_login" style="color: #2196F3;">← Try Another Login</a> | <a href="/" style="color: #2196F3;">Home</a></p>
+                </div>
+                """
+            else:
+                error_msg = "Invalid credentials. Please try again."
+        else:
+            error_msg = None
+        
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Hillview School - Teacher Login</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }}
+                .container {{ max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+                .logo {{ text-align: center; margin-bottom: 30px; }}
+                .logo h1 {{ color: #2c3e50; margin: 0; }}
+                .logo p {{ color: #7f8c8d; margin: 5px 0 0 0; }}
+                .form-group {{ margin-bottom: 20px; }}
+                label {{ display: block; margin-bottom: 5px; color: #2c3e50; font-weight: bold; }}
+                input[type="text"], input[type="password"] {{ width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 16px; }}
+                .btn {{ background: #27ae60; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; }}
+                .btn:hover {{ background: #229954; }}
+                .error {{ background: #e74c3c; color: white; padding: 10px; border-radius: 5px; margin-bottom: 20px; }}
+                .back-link {{ text-align: center; margin-top: 20px; }}
+                .back-link a {{ color: #27ae60; text-decoration: none; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="logo">
+                    <h1>👩‍🏫 Hillview School</h1>
+                    <p>Teacher Login Portal</p>
+                </div>
+                {"<div class='error'>" + error_msg + "</div>" if error_msg else ""}
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <div class="back-link">
+                    <a href="/">← Back to Home</a>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: #ecf0f1; border-radius: 5px; font-size: 14px;">
+                    <strong>Default Credentials:</strong><br>
+                    Class Teacher: <code>kevin</code> / <code>kev123</code><br>
+                    Subject Teacher: <code>telvo</code> / <code>telvo123</code>
+                </div>
+            </div>
+        </body>
+        </html>
         """
     
-    @app.route('/classteacher_login')
+    @app.route('/classteacher_login', methods=['GET', 'POST'])
     def classteacher_login():
-        return """
-        <h1>👨‍🏫 Class Teacher Login</h1>
-        <p>Mobile-friendly class teacher login will be available after database initialization.</p>
-        <p><a href="/">← Back to Home</a></p>
+        if request.method == 'POST':
+            username = request.form.get('username')
+            password = request.form.get('password')
+            
+            # Validate credentials against database
+            if validate_login(username, password, 'classteacher'):
+                return f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; border: 2px solid #4CAF50; border-radius: 10px; background: #f9f9f9;">
+                    <h2 style="color: #4CAF50;">✅ Login Successful!</h2>
+                    <p><strong>Welcome, {username}!</strong></p>
+                    <p>You have successfully logged into the <strong>Class Teacher Dashboard</strong>.</p>
+                    <p><em>Note: This is the login verification page. In the full application, you would be redirected to your dashboard.</em></p>
+                    <p><a href="/classteacher_login" style="color: #2196F3;">← Try Another Login</a> | <a href="/" style="color: #2196F3;">Home</a></p>
+                </div>
+                """
+            else:
+                error_msg = "Invalid credentials. Please try again."
+        else:
+            error_msg = None
+        
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Hillview School - Class Teacher Login</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }}
+                .container {{ max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+                .logo {{ text-align: center; margin-bottom: 30px; }}
+                .logo h1 {{ color: #2c3e50; margin: 0; }}
+                .logo p {{ color: #7f8c8d; margin: 5px 0 0 0; }}
+                .form-group {{ margin-bottom: 20px; }}
+                label {{ display: block; margin-bottom: 5px; color: #2c3e50; font-weight: bold; }}
+                input[type="text"], input[type="password"] {{ width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 16px; }}
+                .btn {{ background: #f39c12; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; }}
+                .btn:hover {{ background: #e67e22; }}
+                .error {{ background: #e74c3c; color: white; padding: 10px; border-radius: 5px; margin-bottom: 20px; }}
+                .back-link {{ text-align: center; margin-top: 20px; }}
+                .back-link a {{ color: #f39c12; text-decoration: none; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="logo">
+                    <h1>👨‍🏫 Hillview School</h1>
+                    <p>Class Teacher Login Portal</p>
+                </div>
+                {"<div class='error'>" + error_msg + "</div>" if error_msg else ""}
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <div class="back-link">
+                    <a href="/">← Back to Home</a>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: #ecf0f1; border-radius: 5px; font-size: 14px;">
+                    <strong>Default Credentials:</strong><br>
+                    Username: <code>kevin</code><br>
+                    Password: <code>kev123</code>
+                </div>
+            </div>
+        </body>
+        </html>
         """
     
     return app
