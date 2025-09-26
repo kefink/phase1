@@ -83,6 +83,17 @@ def health_endpoint():
     """Health check for Render - always works regardless of app state."""
     return {"status": "healthy", "app": "hillview"}, 200
 
+# Add backup health endpoints with different names
+@app.route('/status', methods=['GET'])
+def status_endpoint():
+    """Backup health check endpoint."""
+    return {"status": "ok"}, 200
+
+@app.route('/ping', methods=['GET'])  
+def ping_endpoint():
+    """Simple ping endpoint."""
+    return "pong", 200
+
 # Fallback routes for error cases (only if main app failed)
 if 'initialization_error' in locals():
     @app.route('/')
