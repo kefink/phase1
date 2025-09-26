@@ -9,7 +9,40 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from security_helpers import secure_endpoint, ValidationError, wants_json, audit_log, validate_uploaded_file
 from werkzeug.security import generate_password_hash
 from sqlalchemy import text
-import pandas as pd
+
+# Optional pandas import with fallback
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
+    # Create mock pandas functions for basic functionality
+    class MockPandas:
+        @staticmethod
+        def isna(value):
+            return value is None or (isinstance(value, str) and value.strip() == '')
+        
+        @staticmethod
+        def notna(value):
+            return not MockPandas.isna(value)
+        
+        @staticmethod
+        def read_csv(file):
+            raise ImportError("pandas is not available - CSV upload functionality disabled")
+        
+        @staticmethod
+        def read_excel(file):
+            raise ImportError("pandas is not available - Excel upload functionality disabled")
+        
+        @staticmethod
+        def DataFrame(data):
+            raise ImportError("pandas is not available - DataFrame functionality disabled")
+        
+        @staticmethod
+        def ExcelWriter(*args, **kwargs):
+            raise ImportError("pandas is not available - Excel export functionality disabled")
+    
+    pd = MockPandas()
 import os
 import traceback
 from io import BytesIO
