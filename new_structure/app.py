@@ -94,6 +94,39 @@ def ping_endpoint():
     """Simple ping endpoint."""
     return "pong", 200
 
+# HARD BYPASS: WSGI-level health middleware to preempt any Flask before_request hooks
+class _HealthWSGIMiddleware:
+    """Minimal WSGI middleware that short-circuits health endpoints.
+
+    This ensures Render health checks receive 200 OK even if application-level
+    middleware would otherwise block the request.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        path = environ.get('PATH_INFO', '') or ''
+        if path in ('/health', '/status', '/ping'):
+            # Construct a tiny JSON/text response without invoking Flask app
+            if path == '/ping':
+                body = b"pong"
+                headers = [(b'Content-Type', b'text/plain; charset=utf-8')]
+            elif path == '/status':
+                body = b'{"status":"ok"}'
+                headers = [(b'Content-Type', b'application/json')]
+            else:  # /health
+                body = b'{"status":"healthy","app":"hillview"}'
+                headers = [(b'Content-Type', b'application/json')]
+
+            headers.append((b'Content-Length', str(len(body)).encode('ascii')))
+            start_response('200 OK', headers)  # type: ignore[arg-type]
+            return [body]
+        return self.app(environ, start_response)
+
+# Wrap the Flask app with the health middleware so it takes effect before Flask handlers
+app.wsgi_app = _HealthWSGIMiddleware(app.wsgi_app)  # type: ignore[attr-defined]
+
 # Fallback routes for error cases (only if main app failed)
 if 'initialization_error' in locals():
     @app.route('/')
