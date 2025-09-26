@@ -52,6 +52,10 @@ try:
     # Default: disable Redis-backed rate limiting in production unless explicitly enabled
     if not os.environ.get('FORCE_REDIS') and not os.environ.get('REDIS_DISABLED'):
         os.environ['REDIS_DISABLED'] = '1'
+    
+    # Allow in-memory rate limiting for free tier deployment
+    if not os.environ.get('ALLOW_IN_MEMORY_LIMITS'):
+        os.environ['ALLOW_IN_MEMORY_LIMITS'] = '1'
 
     # Create the Flask application using the original factory
     # Use production config for Render deployment
