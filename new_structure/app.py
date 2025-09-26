@@ -111,16 +111,16 @@ class _HealthWSGIMiddleware:
             # Construct a tiny JSON/text response without invoking Flask app
             if path == '/ping':
                 body = b"pong"
-                headers = [(b'Content-Type', b'text/plain; charset=utf-8')]
+                headers = [('Content-Type', 'text/plain; charset=utf-8')]
             elif path == '/status':
                 body = b'{"status":"ok"}'
-                headers = [(b'Content-Type', b'application/json')]
+                headers = [('Content-Type', 'application/json')]
             else:  # /health
                 body = b'{"status":"healthy","app":"hillview"}'
-                headers = [(b'Content-Type', b'application/json')]
+                headers = [('Content-Type', 'application/json')]
 
-            headers.append((b'Content-Length', str(len(body)).encode('ascii')))
-            start_response('200 OK', headers)  # type: ignore[arg-type]
+            headers.append(('Content-Length', str(len(body))))
+            start_response('200 OK', headers)
             return [body]
         return self.app(environ, start_response)
 
