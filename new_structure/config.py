@@ -224,6 +224,10 @@ class ProductionConfig(Config):
         'max_overflow': 40
     }
 
+    # Use memory-based rate limiting for free tier deployment
+    RATELIMIT_STORAGE_URL = 'memory://'
+    CACHE_TYPE = 'simple'  # Use simple cache instead of Redis
+
     @classmethod
     def init_app(cls, app):
         super().init_app(app)
