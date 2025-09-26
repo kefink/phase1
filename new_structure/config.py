@@ -65,7 +65,15 @@ class Config:
     
     # SQLAlchemy Database URI resolution
     if DATABASE_URL:
-        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+        # For PostgreSQL URLs on Render, ensure we use psycopg (version 3) driver
+        if DATABASE_URL.startswith('postgres://'):
+            # Replace postgres:// with postgresql+psycopg://
+            SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql+psycopg://', 1)
+        elif DATABASE_URL.startswith('postgresql://'):
+            # Replace postgresql:// with postgresql+psycopg://
+            SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg://', 1)
+        else:
+            SQLALCHEMY_DATABASE_URI = DATABASE_URL
     else:
         # URL-encode password to safely handle special characters like '@' or '/'
         _ENC_PWD = quote_plus(MYSQL_PASSWORD) if MYSQL_PASSWORD else ''
