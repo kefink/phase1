@@ -42,6 +42,9 @@ def _load_env_file():
 
 _load_env_file()
 
+# Global variable to store initialization error for fallback routes
+initialization_error = None
+
 try:
     # Import create_app from the original application factory
     from new_structure import create_app
@@ -59,6 +62,7 @@ try:
     print(f"🌐 Using configuration: {config_name}")
 
 except Exception as e:
+    initialization_error = str(e)
     print(f"❌ Error starting application: {e}")
     import traceback
     traceback.print_exc()
@@ -68,14 +72,14 @@ except Exception as e:
     
     @app.route('/health')
     def health():
-        return {"status": "error", "message": f"Application failed to initialize: {str(e)}"}
+        return {"status": "error", "message": f"Application failed to initialize: {initialization_error}"}
     
     @app.route('/')
     def error_page():
         return f"""
         <h1>❌ Application Error</h1>
         <p>The application failed to initialize.</p>
-        <p>Error: {str(e)}</p>
+        <p>Error: {initialization_error}</p>
         <p><a href="/health">Health Check</a></p>
         """
 
