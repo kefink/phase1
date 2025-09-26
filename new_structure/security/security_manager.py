@@ -4,7 +4,7 @@ Integrates all security modules and provides centralized security controls.
 """
 
 import logging
-from flask import Flask
+from flask import Flask, request
 try:
     from .sql_injection_protection import SQLInjectionProtection, sql_injection_protection
     from .xss_protection import XSSProtection, xss_protection
@@ -126,6 +126,10 @@ class SecurityManager:
         def security_middleware():
             """Global security middleware."""
             if not self.security_enabled:
+                return
+            
+            # Skip security checks for health endpoints and static files
+            if request.path in ['/health'] or request.path.startswith('/static'):
                 return
             
             # Log security events
