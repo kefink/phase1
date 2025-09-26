@@ -9,7 +9,33 @@ import time
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from flask import current_app
-import pandas as pd
+
+# Optional pandas import with fallback
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
+    # Create mock pandas functions for basic functionality
+    class MockPandas:
+        @staticmethod
+        def isna(value):
+            return value is None or (isinstance(value, str) and value.strip() == '')
+        
+        @staticmethod
+        def notna(value):
+            return not MockPandas.isna(value)
+        
+        @staticmethod
+        def DataFrame(data):
+            raise ImportError("pandas is not available - Excel export functionality disabled")
+        
+        @staticmethod
+        def ExcelWriter(*args, **kwargs):
+            raise ImportError("pandas is not available - Excel export functionality disabled")
+    
+    pd = MockPandas()
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
