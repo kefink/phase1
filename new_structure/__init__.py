@@ -548,12 +548,13 @@ def create_app(config_name='default'):
                 if re.search(pattern, path_str, re.IGNORECASE):
                     return False
 
-            if '..' in normalized or normalized.startswith('/'):
+            # Reject traversal segments but allow leading '/' which is normal for URLs
+            if '..' in normalized:
                 return False
 
             return True
 
-        # Check URL path
+        # Check URL path (allow normal absolute URL paths like '/')
         if not is_safe_path(request.path):
             abort(403, "Access denied: Invalid path detected")
 
@@ -596,7 +597,7 @@ def create_app(config_name='default'):
             return True
 
         # Skip for safe endpoints
-        safe_endpoints = ['/health', '/static', '/logout']
+        safe_endpoints = ['/', '/health', '/static', '/logout', '/favicon.ico']
         if any(request.path.startswith(ep) for ep in safe_endpoints):
             return
 
@@ -746,7 +747,7 @@ def create_app(config_name='default'):
             if re.search(pattern, full_url, re.IGNORECASE):
                 abort(403, "Path traversal attempt blocked")
 
-        # Block requests to sensitive paths
+        # Block requests to sensitive filesystem-like paths (not regular web paths)
         sensitive_paths = ['/etc/', '/proc/', '/sys/', '/root/', '/home/']
         for path in sensitive_paths:
             if path in request.path:
