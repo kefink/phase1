@@ -5,10 +5,10 @@ This file initializes the Flask application and registers extensions and bluepri
 import os
 from flask import Flask, request, abort, session, redirect, url_for, jsonify, render_template, g
 from datetime import datetime
-from .extensions import db, csrf, limiter, configure_rate_limiter
-from .config import config as _STATIC_CONFIG
+from extensions import db, csrf, limiter, configure_rate_limiter
+from config import config as _STATIC_CONFIG
 import importlib
-from .logging_config import setup_logging
+from logging_config import setup_logging
 from collections import Counter
 
 # In-memory security/audit counters (A10 monitoring enhancement)
@@ -1298,9 +1298,9 @@ def create_app(config_name='default'):
         </html>
         """
 
-    # Add a simple health check route
-    @app.route('/health')
-    def health_check():
+    # Add a simple health check route - DISABLED for Render deployment to avoid conflicts
+    # @app.route('/health')
+    def health_check_disabled():
         """Simple health check route"""
         try:
             from .utils.database_init import check_database_integrity

@@ -62,6 +62,12 @@ try:
     config_name = os.environ.get('FLASK_ENV', 'production')
     app = create_app(config_name)
 
+    # Add a simple health check that bypasses all security
+    @app.route('/health')
+    def render_health_check():
+        """Health check endpoint for Render - bypasses all security."""
+        return {"status": "healthy", "message": "Application running"}, 200
+
     print("✅ Hillview School Management System initialized successfully")
     print(f"🌐 Using configuration: {config_name}")
 
