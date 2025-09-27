@@ -816,11 +816,18 @@ def create_app(config_name='default'):
             app.logger.error(f"Error injecting school info: {e}")
             import traceback
             traceback.print_exc()
+            # Graceful fallback that still tries to use a bundled logo
+            try:
+                from .services.dynamic_school_info_service import DynamicSchoolInfoService as _D
+                fallback_logo = _D.get_logo_url(None)
+            except Exception:
+                fallback_logo = '/static/images/default_logo.png'
+
             return {
                 'school_info': {
                     'school_name': 'Your School Name',
                     'school_motto': 'Excellence in Education',
-                    'logo_url': '/static/images/default_logo.png',
+                    'logo_url': fallback_logo,
                     'primary_color': '#1f7d53',
                     'secondary_color': '#18230f',
                     'accent_color': '#4ade80'
