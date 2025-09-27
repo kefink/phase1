@@ -83,15 +83,49 @@ class DynamicSchoolInfoService:
     @staticmethod
     def get_logo_url(logo_filename):
         """Get the URL for the school logo."""
-        if not logo_filename:
-            return url_for('static', filename='images/default_logo.png')
-        
-        # Check if logo file exists
-        logo_path = os.path.join(current_app.static_folder, 'uploads', 'logos', logo_filename)
-        if os.path.exists(logo_path):
-            return url_for('static', filename=f'uploads/logos/{logo_filename}')
-        else:
-            return url_for('static', filename='images/default_logo.png')
+        # 1) Explicit override via environment variable (useful on Render)
+        try:
+            env_logo = os.environ.get('DEFAULT_LOGO_FILENAME')
+            if env_logo:
+                env_path = os.path.join(current_app.static_folder, 'uploads', 'logos', env_logo)
+                if os.path.exists(env_path):
+                    return url_for('static', filename=f'uploads/logos/{env_logo}')
+        except Exception:
+            pass
+
+        # 2) DB-provided filename
+        if logo_filename:
+            logo_path = os.path.join(current_app.static_folder, 'uploads', 'logos', logo_filename)
+            if os.path.exists(logo_path):
+                return url_for('static', filename=f'uploads/logos/{logo_filename}')
+
+        # 3) Repository fallback: pick the most recent image under static/uploads/logos
+        try:
+            logos_dir = os.path.join(current_app.static_folder, 'uploads', 'logos')
+            if os.path.isdir(logos_dir):
+                candidates = [
+                    f for f in os.listdir(logos_dir)
+                    if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif'))
+                ]
+                if candidates:
+                    # Prefer optimized_* then school_logo_* else newest by mtime
+                    def score(name: str) -> tuple:
+                        n = name.lower()
+                        pref = 0
+                        if n.startswith('optimized_school_logo'): pref = 2
+                        elif n.startswith('school_logo'): pref = 1
+                        # newer files first
+                        mtime = os.path.getmtime(os.path.join(logos_dir, name))
+                        return (-pref, -mtime)
+
+                    best = sorted(candidates, key=score)[0]
+                    return url_for('static', filename=f'uploads/logos/{best}')
+        except Exception:
+            # Silent fallback to default if anything goes wrong
+            pass
+
+        # 4) Ultimate fallback: internal default icon
+        return url_for('static', filename='images/default_logo.png')
     
     @staticmethod
     def get_school_colors():
