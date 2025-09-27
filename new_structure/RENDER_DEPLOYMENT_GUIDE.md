@@ -22,7 +22,7 @@ git push -u origin main
 ### 1.2 Files Created for Render
 
 - `app.py` - WSGI entry point
-- `requirements-render.txt` - Production dependencies
+- `requirements-render.txt` - Production dependencies (Python 3.13 compatible)
 - `gunicorn.conf.py` - Updated for Render
 - `.env.render` - Environment template
 
@@ -68,9 +68,9 @@ git push -u origin main
 **Health Settings:**
 
 - Health Check Path:
-   ```
-   /health
-   ```
+  ```
+  /health
+  ```
 
 **Advanced Settings:**
 
@@ -121,10 +121,16 @@ print("WTF_CSRF_SECRET_KEY:", secrets.token_hex(32))
 
 ## Step 5: Initialize Database
 
-Once deployed, you'll need to initialize the database:
+Once deployed, you can initialize the database using the built-in HTTP endpoint (no Shell access required for free tier):
 
-1. Use Render's Shell feature or create a one-time job
-2. Run database initialization:
+**Method 1: HTTP Endpoint (Recommended for Free Tier)**
+
+1. Visit: `https://your-app-name.onrender.com/init-database`
+2. This will automatically create all tables and seed default data
+3. You'll see a JSON response confirming success
+
+**Method 2: Render Shell (Requires Paid Plan)**
+If you have a paid Render plan with Shell access:
 
 ```python
 from app import app

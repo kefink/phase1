@@ -10,6 +10,31 @@
     <meta name="theme-color" content="#1e293b" />
     <title>Login - {{ school_info.school_name or 'Hillview School' }}</title>
 
+    <!-- Theme init to respect saved light/dark choice across pages -->
+    <script>
+      (function () {
+        try {
+          const saved =
+            localStorage.getItem("solar-theme") ||
+            localStorage.getItem("theme");
+          const systemDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const mode = saved
+            ? saved === "dark"
+              ? "dark"
+              : "light"
+            : systemDark
+            ? "dark"
+            : "light";
+          document.documentElement.setAttribute(
+            "data-theme",
+            mode === "dark" ? "solar-dark" : ""
+          );
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -65,6 +90,14 @@
     />
 
     <style>
+      :root {
+        --bg-overlay-alpha: 0.15;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-overlay-alpha: 0.22;
+        }
+      }
       .role-tab.active {
         background: linear-gradient(135deg, #3b82f6, #8b5cf6);
         color: white;
@@ -87,14 +120,24 @@
       .btn-glow:hover {
         box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
       }
+      /* Branded page background class */
+      .brand-bg {
+        background-color: #0f172a;
+        background-image: linear-gradient(
+            rgba(0, 0, 0, var(--bg-overlay-alpha)),
+            rgba(0, 0, 0, var(--bg-overlay-alpha))
+          ),
+          url("{{ url_for('static', filename='hilbac.png') }}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+      }
+      /* Respect explicit page theme (overrides system preference when set) */
+      [data-theme="solar-dark"] { --bg-overlay-alpha: 0.22; }
     </style>
-  </head>
-
-  <body
-    class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 font-inter relative overflow-hidden"
-  >
+  <body class="min-h-screen font-inter relative overflow-hidden brand-bg">
     <!-- Animated Background Pattern -->
-    <div class="absolute inset-0 opacity-20">
+    <div class="absolute inset-0 pointer-events-none" style="opacity: 0.08">
       <div
         class="absolute inset-0"
         style="
@@ -107,20 +150,21 @@
         "
       ></div>
       <div
-        class="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-purple-900/20"
+        class="absolute inset-0"
+        style="background: rgba(0, 0, 0, 0.06)"
       ></div>
     </div>
 
     <!-- Floating Orbs -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
       <div
-        class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-float"
+        class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl animate-float"
       ></div>
       <div
-        class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"
+        class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse-slow"
       ></div>
       <div
-        class="absolute top-3/4 left-3/4 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl animate-float"
+        class="absolute top-3/4 left-3/4 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl animate-float"
         style="animation-delay: -3s"
       ></div>
     </div>
@@ -169,11 +213,11 @@
 
         <!-- Login Card -->
         <div
-          class="bg-slate-800/50 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-slate-700/50 animate-slide-up"
+          class="bg-slate-800/40 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-slate-700/40 animate-slide-up"
           style="animation-delay: 0.2s"
         >
           <!-- Role Selection Tabs -->
-          <div class="flex bg-slate-700/50 rounded-2xl p-1 mb-8" role="tablist">
+          <div class="flex bg-slate-700/40 rounded-2xl p-1 mb-8" role="tablist">
             <button
               class="role-tab flex-1 flex items-center justify-center py-3 px-4 rounded-xl text-sm font-medium transition-all duration-300 active"
               data-role="admin"
@@ -216,7 +260,7 @@
                 <input
                   type="text"
                   id="username"
-                  class="input-glow w-full bg-slate-700/50 border border-slate-600/50 rounded-2xl py-4 pl-12 pr-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                  class="input-glow w-full bg-slate-700/40 border border-slate-600/40 rounded-2xl py-4 pl-12 pr-4 text-white placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                   placeholder="Enter your username"
                   required
                 />
@@ -237,7 +281,7 @@
                 <input
                   type="password"
                   id="password"
-                  class="input-glow w-full bg-slate-700/50 border border-slate-600/50 rounded-2xl py-4 pl-12 pr-12 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                  class="input-glow w-full bg-slate-700/40 border border-slate-600/40 rounded-2xl py-4 pl-12 pr-12 text-white placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                   placeholder="Enter your password"
                   required
                 />

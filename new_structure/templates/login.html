@@ -44,6 +44,8 @@
     <style>
       /* Solar Theme CSS Variables */
       :root {
+        /* Control background overlay alpha (light mode default) */
+        --bg-overlay-alpha: 0.15;
         --primary-gradient: linear-gradient(135deg, #b58900 0%, #cb4b16 100%);
         --solar-primary: #b58900;
         --solar-secondary: #839496;
@@ -85,9 +87,15 @@
         /* Premium additions */
         --aurora-1: rgba(181, 137, 0, 0.25);
         --aurora-2: rgba(38, 139, 210, 0.25);
-        --glass: rgba(7, 54, 66, 0.85);
+        /* Slightly lighter glass to let background show through */
+        --glass: rgba(7, 54, 66, 0.75);
         --glass-border: rgba(131, 148, 150, 0.28);
         --card-radius: 1.25rem;
+      }
+
+      /* Slightly higher overlay in dark mode for readability */
+      [data-theme="solar-dark"] {
+        --bg-overlay-alpha: 0.22;
       }
 
       /* Premium Solar Theme Login */
@@ -100,6 +108,16 @@
         position: relative;
         overflow-x: hidden;
         color: var(--solar-body-color);
+        /* Branded background image with theme-aware overlay */
+        background-color: var(--solar-body-bg);
+        background-image: linear-gradient(
+            rgba(0, 0, 0, var(--bg-overlay-alpha)),
+            rgba(0, 0, 0, var(--bg-overlay-alpha))
+          ),
+          url("{{ url_for('static', filename='hilbac.png') }}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
       }
 
       /* Page grid: left brand panel + right login panel */
@@ -123,7 +141,7 @@
       .brand-card {
         width: 100%;
         max-width: 520px;
-        background: rgba(7, 54, 66, 0.85);
+        background: rgba(7, 54, 66, 0.7);
         border: 1px solid rgba(131, 148, 150, 0.28);
         border-radius: 24px;
         box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
@@ -176,20 +194,21 @@
         height: 100%;
         background: radial-gradient(
             circle at 20% 80%,
-            rgba(181, 137, 0, 0.1) 0%,
+            rgba(181, 137, 0, 0.06) 0%,
             transparent 50%
           ),
           radial-gradient(
             circle at 80% 20%,
-            rgba(38, 139, 210, 0.1) 0%,
+            rgba(38, 139, 210, 0.06) 0%,
             transparent 50%
           ),
           radial-gradient(
             circle at 40% 40%,
-            rgba(42, 161, 152, 0.1) 0%,
+            rgba(42, 161, 152, 0.06) 0%,
             transparent 50%
           );
         z-index: -1;
+        pointer-events: none;
         animation: float 20s ease-in-out infinite;
       }
 
@@ -211,7 +230,7 @@
         z-index: 2;
         width: 100%;
         max-width: 480px;
-        background: var(--glass);
+        background: rgba(7, 54, 66, 0.7);
         backdrop-filter: blur(22px);
         border-radius: 28px;
         padding: 3rem 2.5rem;

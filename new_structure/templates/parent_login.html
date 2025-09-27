@@ -44,10 +44,16 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/solar-shared.css') }}"
     />
+    <!-- Shared login background overlay -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/login-bg.css') }}"
+    />
 
     <style>
       /* Premium Solar Theme */
       :root {
+        --bg-overlay-alpha: 0.15;
         --solar-primary: #b58900;
         --solar-secondary: #839496;
         --solar-success: #2aa198;
@@ -75,9 +81,12 @@
           0 4px 6px -4px rgb(0 0 0 / 0.35);
       }
 
-      body {
+      [data-theme="solar-dark"] {
+        --bg-overlay-alpha: 0.22;
+      }
+
+      body.solar-theme.login-bg {
         font-family: "Inter", system-ui, -apple-system, sans-serif;
-        background: var(--solar-body-bg);
         min-height: 100vh;
         display: flex;
         justify-content: center;
@@ -451,7 +460,7 @@
     </style>
   </head>
 
-  <body class="solar-theme">
+  <body class="solar-theme login-bg">
     <!-- Theme Toggle Button -->
     <button
       class="solar-theme-toggle"

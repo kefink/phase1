@@ -90,6 +90,14 @@
     />
 
     <style>
+      :root {
+        --bg-overlay-alpha: 0.15;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-overlay-alpha: 0.22;
+        }
+      }
       /* Custom glassmorphism effects and animations */
       @keyframes float-bg {
         0%,
@@ -132,13 +140,13 @@
       }
 
       .glass-card {
-        background: rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.14);
         backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.3);
       }
 
       .glass-card-light {
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
       }
@@ -168,12 +176,23 @@
       .shimmer:hover::before {
         left: 100%;
       }
+
+      /* Branded background class */
+      .brand-bg {
+        background-color: #3a3d9e;
+        background-image: linear-gradient(
+            rgba(0, 0, 0, var(--bg-overlay-alpha)),
+            rgba(0, 0, 0, var(--bg-overlay-alpha))
+          ),
+          url("{{ url_for('static', filename='hilbac.png') }}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+      }
     </style>
   </head>
 
-  <body
-    class="min-h-screen bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 font-inter bg-animated"
-  >
+  <body class="min-h-screen font-inter bg-animated brand-bg">
     <!-- Animated Background Elements -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
       <div class="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] opacity-30">

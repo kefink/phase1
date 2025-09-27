@@ -1,0 +1,39 @@
+/* Shared Login Background with Overlay
+   Applies only when body has classes: solar-theme login-bg
+   Keeps background image consistent across light/dark modes and all login pages. */
+
+:root {
+  /* Use page-provided --bg-overlay-alpha when present, fallback to 0.15 */
+  --login-bg-overlay-alpha: var(--bg-overlay-alpha, 0.15);
+}
+
+/* Slightly stronger overlay in dark mode by default unless page overrides */
+[data-theme="solar-dark"] {
+  --login-bg-overlay-alpha: var(--bg-overlay-alpha, 0.22);
+}
+
+/* Ensure we outrank solar-shared.css which targets body.solar-theme */
+body.solar-theme.login-bg {
+  background: var(--solar-body-bg) !important;
+  background-image: linear-gradient(
+      rgba(0, 0, 0, var(--login-bg-overlay-alpha)),
+      rgba(0, 0, 0, var(--login-bg-overlay-alpha))
+    ),
+    url("../hilbac.png") !important; /* static/hilbac.png */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Keep explicit dark-mode rule to outrank shared stylesheet */
+html[data-theme="solar-dark"] body.solar-theme.login-bg {
+  background: var(--solar-body-bg) !important;
+  background-image: linear-gradient(
+      rgba(0, 0, 0, var(--login-bg-overlay-alpha)),
+      rgba(0, 0, 0, var(--login-bg-overlay-alpha))
+    ),
+    url("../hilbac.png") !important;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
