@@ -65,13 +65,14 @@ class Config:
     
     # SQLAlchemy Database URI resolution
     if DATABASE_URL:
-        # For PostgreSQL URLs on Render, ensure we use psycopg (version 3) driver
+        # Normalize common provider URLs to explicit SQLAlchemy driver URLs
         if DATABASE_URL.startswith('postgres://'):
-            # Replace postgres:// with postgresql+psycopg://
             SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql+psycopg://', 1)
         elif DATABASE_URL.startswith('postgresql://'):
-            # Replace postgresql:// with postgresql+psycopg://
             SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg://', 1)
+        elif DATABASE_URL.startswith('mysql://'):
+            # Allow pasting Aiven/MySQL URIs as-is; force pymysql driver
+            SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('mysql://', 'mysql+pymysql://', 1)
         else:
             SQLALCHEMY_DATABASE_URI = DATABASE_URL
     else:
