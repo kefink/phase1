@@ -7,7 +7,7 @@ import os
 from typing import Optional
 from pathlib import Path
 from sqlalchemy.pool import StaticPool
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlsplit, urlunsplit, parse_qsl, urlencode
 
 class Config:
     """Base configuration class with settings common to all environments.
@@ -75,6 +75,18 @@ class Config:
             SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('mysql://', 'mysql+pymysql://', 1)
         else:
             SQLALCHEMY_DATABASE_URI = DATABASE_URL
+
+        # Strip unsupported query params like 'ssl-mode' that some providers include
+        if 'mysql+pymysql://' in SQLALCHEMY_DATABASE_URI:
+            try:
+                parts = urlsplit(SQLALCHEMY_DATABASE_URI)
+                qs = parse_qsl(parts.query, keep_blank_values=True)
+                qs_filtered = [(k, v) for (k, v) in qs if k.lower() not in ('ssl-mode', 'sslmode', 'ssl_mode')]
+                new_query = urlencode(qs_filtered)
+                SQLALCHEMY_DATABASE_URI = urlunsplit((parts.scheme, parts.netloc, parts.path, new_query, parts.fragment))
+            except Exception:
+                # Non-fatal: continue with original URI
+                pass
     else:
         # URL-encode password to safely handle special characters like '@' or '/'
         _ENC_PWD = quote_plus(MYSQL_PASSWORD) if MYSQL_PASSWORD else ''
