@@ -90,6 +90,22 @@ class Config:
         'pool_pre_ping': True,
         'max_overflow': 20
     }
+
+    # Optional: Enable MySQL SSL for providers like Aiven when requested
+    # If the URL includes 'ssl=true' (e.g., ...?charset=utf8mb4&ssl=true) or env MYSQL_SSL=true,
+    # pass PyMySQL SSL connect args via SQLAlchemy.
+    try:
+        _uri = locals().get('SQLALCHEMY_DATABASE_URI', '') or DATABASE_URL or ''
+        _want_ssl = ('mysql+pymysql://' in _uri) and (('ssl=true' in _uri.lower()) or os.environ.get('MYSQL_SSL', '').lower() == 'true')
+        if _want_ssl:
+            # Minimal SSL dict enables TLS without requiring CA bundle path
+            # For strict verification, provide ssl_ca in the URL and handle accordingly.
+            _engine_opts = dict(SQLALCHEMY_ENGINE_OPTIONS)
+            _engine_opts['connect_args'] = {**_engine_opts.get('connect_args', {}), 'ssl': {}}
+            SQLALCHEMY_ENGINE_OPTIONS = _engine_opts
+    except Exception:
+        # Non-fatal: default to non-SSL if detection fails
+        pass
     
     # (Removed duplicate session config block – unified above)
 
