@@ -96,7 +96,14 @@ class Config:
     # pass PyMySQL SSL connect args via SQLAlchemy.
     try:
         _uri = locals().get('SQLALCHEMY_DATABASE_URI', '') or DATABASE_URL or ''
-        _want_ssl = ('mysql+pymysql://' in _uri) and (('ssl=true' in _uri.lower()) or os.environ.get('MYSQL_SSL', '').lower() == 'true')
+        _luri = _uri.lower()
+        _want_ssl = (
+            ('mysql+pymysql://' in _uri) and (
+                ('ssl=true' in _luri) or
+                ('ssl-mode=required' in _luri) or
+                (os.environ.get('MYSQL_SSL', '').lower() == 'true')
+            )
+        )
         if _want_ssl:
             # Minimal SSL dict enables TLS without requiring CA bundle path
             # For strict verification, provide ssl_ca in the URL and handle accordingly.
