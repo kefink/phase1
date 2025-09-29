@@ -21,9 +21,14 @@ class DynamicSchoolInfoService:
         # Get logo URL
         logo_url = DynamicSchoolInfoService.get_logo_url(setup.logo_filename)
         
+        # Optional environment override for school name (useful on Render before seeding DB)
+        # Prefer explicit SCHOOL_NAME_OVERRIDE, fall back to SCHOOL_NAME if provided
+        env_school_name = os.environ.get('SCHOOL_NAME_OVERRIDE') or os.environ.get('SCHOOL_NAME')
+        school_name = (env_school_name.strip() if env_school_name else None) or setup.school_name or 'Your School Name'
+        
         return {
             # Basic Information
-            'school_name': setup.school_name or 'Your School Name',
+            'school_name': school_name,
             'school_motto': setup.school_motto or 'Excellence in Education',
             'school_vision': setup.school_vision or '',
             'school_mission': setup.school_mission or '',
