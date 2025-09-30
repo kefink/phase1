@@ -15,15 +15,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    <link id="fa-cdn" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
           crossorigin="anonymous"
-          referrerpolicy="no-referrer">
+        referrerpolicy="no-referrer"
+        onerror="document.documentElement.classList.add('no-fa')">
 
     <!-- Bootswatch Solar Theme - Main Theme (ONLY THEME) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
@@ -3661,8 +3663,8 @@
                     </label>
                     <select id="grade" name="grade" required onchange="updateStreams()">
                         <option value="">📚 Select Grade</option>
-                        {% for grade_option in grades %}
-                        <option value="{{ grade_option }}" {% if grade == grade_option %}selected{% endif %}>🎓 {{ grade_option }}</option>
+                        {% for g in grades %}
+                        <option value="{{ g.id }}" {% if grade|string == g.id|string or grade == g.name %}selected{% endif %}>🎓 {{ g.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -4096,7 +4098,7 @@
                 });
         }
 
-        // Function to update subjects and grades based on education level
+    // Function to update subjects and grades based on education level
         function updateSubjectsByEducationLevel() {
             debugLog('🔄 updateSubjectsByEducationLevel called');
             const educationLevelSelect = document.getElementById('education_level');
@@ -4135,11 +4137,20 @@
                     }
                 });
 
-                // 2) Update subjects based on education level
+                // 2) Update subjects based on education level (with safe fallback)
                 if (subjectsByEducationLevel[educationLevel]) {
                     // Sort subjects with core subjects first
                     const coreSubjects = ['MATHEMATICS', 'ENGLISH', 'KISWAHILI', 'SCIENCE', 'INTEGRATED SCIENCE'];
-                    const subjects = subjectsByEducationLevel[educationLevel].slice();
+                    let subjects = subjectsByEducationLevel[educationLevel].slice();
+
+                    // If no subjects for this level, fallback to union of all accessible subjects
+                    if (!subjects || subjects.length === 0) {
+                        try {
+                            const all = Object.values(subjectsByEducationLevel || {}).flat().filter(Boolean);
+                            const seen = new Set();
+                            subjects = all.filter(s => { if (seen.has(s)) return false; seen.add(s); return true; });
+                        } catch (e) { subjects = []; }
+                    }
 
                     subjects.sort((a, b) => {
                         const aIsCore = coreSubjects.some(core => a.toUpperCase().includes(core));
@@ -4172,6 +4183,33 @@
             // Clear subject info
             hideSubjectInfo();
         }
+
+        // When grade changes, derive education level from grade name if needed and repopulate subjects
+        (function hookGradeChange(){
+            try {
+                const gradeSelect = document.getElementById('grade');
+                const levelSelect = document.getElementById('education_level');
+                gradeSelect.addEventListener('change', function(){
+                    const selectedOpt = gradeSelect.options[gradeSelect.selectedIndex];
+                    const gradeName = selectedOpt ? (selectedOpt.textContent || '').trim() : '';
+                    if (!gradeName) return;
+
+                    // Build inverse map of gradeName -> level code
+                    const inv = {};
+                    try {
+                        Object.keys(educationLevelMapping || {}).forEach(lv => {
+                            (educationLevelMapping[lv]||[]).forEach(name => { inv[name] = lv; });
+                        });
+                    } catch(e) {}
+
+                    const derived = inv[gradeName];
+                    if (derived && levelSelect && (!levelSelect.value || levelSelect.value !== derived)) {
+                        levelSelect.value = derived;
+                        updateSubjectsByEducationLevel();
+                    }
+                });
+            } catch(e) { /* no-op */ }
+        })();
 
         // Function to handle subject selection and show composite config
         function handleSubjectSelection() {
@@ -4326,8 +4364,44 @@
             if (grade) {
                 console.log(`🔄 Fetching streams for ${grade}`);
 
-                // First try to get grade ID from mapping, if available
-                if (gradeMapping[grade]) {
+                // If grade value is a numeric ID (new desktop behavior), use directly
+                if (/^\d+$/.test(grade)) {
+                    const gradeId = parseInt(grade, 10);
+                    console.log(`📋 Using numeric grade ID: ${gradeId}`);
+
+                    fetch(`/teacher/get_streams/${gradeId}`)
+                        .then(response => {
+                            console.log(`📡 Response status: ${response.status}`);
+                            if (response.status === 403) {
+                                console.error('❌ 403 Forbidden - trying alternative endpoint');
+                                const alt = `/universal/api/streams/${gradeId}`;
+                                return fetch(alt).then(r => r.json());
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('📡 Streams response:', data);
+                            if (data.success && data.streams && data.streams.length > 0) {
+                                data.streams.forEach(stream => {
+                                    const option = document.createElement('option');
+                                    option.value = stream.id;
+                                    option.textContent = `Stream ${stream.name}`;
+                                    streamSelect.appendChild(option);
+                                });
+                                console.log(`✅ Loaded ${data.streams.length} streams`);
+                            } else if (data.message && data.success === false) {
+                                console.error('❌ Server error:', data.message);
+                                streamSelect.innerHTML = '<option value="">' + (data.message || 'No streams available') + '</option>';
+                            } else {
+                                streamSelect.innerHTML = '<option value="">No streams available</option>';
+                                console.log('⚠️ No streams found');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('❌ Error fetching streams:', error);
+                            streamSelect.innerHTML = '<option value="">Error loading streams</option>';
+                        });
+                } else if (gradeMapping[grade]) {
                     const gradeId = gradeMapping[grade];
                     console.log(`📋 Using grade ID from mapping: ${gradeId}`);
 
@@ -4420,6 +4494,22 @@
                 }
             }
         }
+
+        // Font Awesome fallback: if primary CDN fails, try jsDelivr
+        (function ensureFA(){
+            try {
+                var link = document.querySelector('link#fa-cdn');
+                if (!link) return;
+                link.addEventListener('error', function(){
+                    console.warn('FA CDN failed, loading jsDelivr fallback');
+                    var alt=document.createElement('link');
+                    alt.rel='stylesheet';
+                    alt.href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css';
+                    alt.onload=function(){ document.documentElement.classList.remove('no-fa'); };
+                    document.head.appendChild(alt);
+                });
+            } catch(e) { /* no-op */ }
+        })();
 
         // Function to setup marks table based on subject configuration
         function setupMarksTable() {

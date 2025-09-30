@@ -515,6 +515,23 @@
   </head>
 
   <body id="body">
+    <script>
+      // Font Awesome fallback to jsDelivr if CDNJS fails (helps real devices on flaky networks)
+      (function(){
+        try {
+          var link = document.getElementById('fa-cdn');
+          if (!link) return;
+          link.addEventListener('error', function(){
+            try { document.documentElement.classList.add('no-fa'); } catch(_){}
+            var alt = document.createElement('link');
+            alt.rel = 'stylesheet';
+            alt.href = 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css';
+            alt.onload = function(){ try { document.documentElement.classList.remove('no-fa'); } catch(_){} };
+            document.head.appendChild(alt);
+          });
+        } catch(e) { /* no-op */ }
+      })();
+    </script>
     <!-- Mobile Navigation -->
     <nav class="mobile-navbar">
       <div class="navbar-container">
