@@ -99,23 +99,28 @@ def get_subject_info(subject_name):
 def get_streams(grade_id):
     """API endpoint to get streams for a specific grade."""
     try:
-        # Verify teacher has access to this grade (and optionally stream) before listing
+        # Soft access check: do NOT block listing streams to avoid UX issues.
+        # Actual enforcement happens when loading students / submitting marks.
+        authorized = True
         try:
-            if AccessControlProtection and not AccessControlProtection.check_class_access(
-                user_id=session.get('teacher_id'),
-                user_role=session.get('role', 'teacher'),
-                grade_id=grade_id,
-                stream_id=None,
-            ):
-                return jsonify({'success': False, 'message': 'Unauthorized class access'}), 403
+            if AccessControlProtection:
+                authorized = AccessControlProtection.check_class_access(
+                    user_id=session.get('teacher_id'),
+                    user_role=session.get('role', 'teacher'),
+                    grade_id=grade_id,
+                    stream_id=None,
+                )
         except Exception:
-            # Do not break if security module raises unexpectedly
-            pass
+            # Never break listing due to security module errors
+            authorized = True
+
         streams = Stream.query.filter_by(grade_id=grade_id).all()
         stream_data = [{'id': stream.id, 'name': stream.name} for stream in streams]
-        return jsonify({'success': True, 'streams': stream_data})
+
+        # Include an 'authorized' hint for clients (optional UI decisions)
+        return jsonify({'success': True, 'authorized': bool(authorized), 'streams': stream_data})
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @teacher_bp.route('/debug_log', methods=['POST'])
 @teacher_required

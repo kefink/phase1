@@ -360,14 +360,12 @@ def create_app(config_name='default'):
                 csrf.exempt(blueprint)
     except Exception as e:
         print(f"⚠️ Blueprint error: {e}")
-
     # Register middleware (import lazily to avoid importing services/models at module import time)
     try:
         from .middleware import MarkSanitizerMiddleware
         MarkSanitizerMiddleware(app)
     except Exception as e:
         app.logger.warning(f"Middleware initialization skipped: {e}")
-
     # Minimize logging output
     import logging
 
@@ -908,6 +906,7 @@ def create_app(config_name='default'):
     @app.route('/debug/login_test')
     def debug_login_test():
         """Debug route to test login functionality."""
+        print("DEBUG: debug_login_test called!")
         try:
             from .models.user import Teacher
             from .services.auth_service import authenticate_teacher
@@ -1104,60 +1103,60 @@ def create_app(config_name='default'):
         @csrf.exempt
         def debug_simple_login():
             """Simple login test without CSRF protection. DEVELOPMENT/TESTING ONLY."""
-        if request.method == 'GET':
-            return '''
-            <h2>🔐 Simple Login Tester (No CSRF)</h2>
-            <form method="POST">
-                <h3>Test Login:</h3>
-                <p>Username: <input type="text" name="username" value="headteacher"></p>
-                <p>Password: <input type="password" name="password" value="admin123"></p>
-                <p>Role:
-                    <select name="role">
-                        <option value="headteacher">Headteacher</option>
-                        <option value="classteacher">Class Teacher</option>
-                        <option value="teacher">Teacher</option>
-                    </select>
-                </p>
-                <p><input type="submit" value="Test Login"></p>
-            </form>
-            <p><em>Note: This form bypasses CSRF protection for debugging.</em></p>
-            '''
+            if request.method == 'GET':
+                return '''
+                <h2>🔐 Simple Login Tester (No CSRF)</h2>
+                <form method="POST">
+                    <h3>Test Login:</h3>
+                    <p>Username: <input type="text" name="username" value="headteacher"></p>
+                    <p>Password: <input type="password" name="password" value="admin123"></p>
+                    <p>Role:
+                        <select name="role">
+                            <option value="headteacher">Headteacher</option>
+                            <option value="classteacher">Class Teacher</option>
+                            <option value="teacher">Teacher</option>
+                        </select>
+                    </p>
+                    <p><input type="submit" value="Test Login"></p>
+                </form>
+                <p><em>Note: This form bypasses CSRF protection for debugging.</em></p>
+                '''
 
-        # Handle POST request
-        try:
-            from .services.auth_service import authenticate_teacher
+            # Handle POST request
+            try:
+                from .services.auth_service import authenticate_teacher
 
-            username = request.form.get('username')
-            password = request.form.get('password')
-            role = request.form.get('role')
+                username = request.form.get('username')
+                password = request.form.get('password')
+                role = request.form.get('role')
 
-            result = f"<h2>🧪 Simple Login Test Results</h2>"
-            result += f"<p><strong>Username:</strong> {username}</p>"
-            result += f"<p><strong>Password:</strong> {password}</p>"
-            result += f"<p><strong>Role:</strong> {role}</p>"
+                result = f"<h2>🧪 Simple Login Test Results</h2>"
+                result += f"<p><strong>Username:</strong> {username}</p>"
+                result += f"<p><strong>Password:</strong> {password}</p>"
+                result += f"<p><strong>Role:</strong> {role}</p>"
 
-            auth_result = authenticate_teacher(username, password, role)
+                auth_result = authenticate_teacher(username, password, role)
 
-            if auth_result:
-                result += f"<p>✅ <strong>Authentication Successful!</strong></p>"
-                result += f"<p>User details: {auth_result}</p>"
+                if auth_result:
+                    result += f"<p>✅ <strong>Authentication Successful!</strong></p>"
+                    result += f"<p>User details: {auth_result}</p>"
 
-                # Set session for testing
-                session['teacher_id'] = auth_result.id
-                session['role'] = role
-                session.permanent = True
+                    # Set session for testing
+                    session['teacher_id'] = auth_result.id
+                    session['role'] = role
+                    session.permanent = True
 
-                result += f"<p>✅ <strong>Session Set!</strong></p>"
-                result += f"<p>Session data: {dict(session)}</p>"
-                result += f"<p><a href='/headteacher/' target='_blank'>🎯 Try Dashboard</a></p>"
-            else:
-                result += f"<p>❌ <strong>Authentication Failed!</strong></p>"
+                    result += f"<p>✅ <strong>Session Set!</strong></p>"
+                    result += f"<p>Session data: {dict(session)}</p>"
+                    result += f"<p><a href='/headteacher/' target='_blank'>🎯 Try Dashboard</a></p>"
+                else:
+                    result += f"<p>❌ <strong>Authentication Failed!</strong></p>"
 
-            result += f"<p><a href='/debug/simple_login'>🔄 Test Again</a></p>"
-            return result
+                result += f"<p><a href='/debug/simple_login'>🔄 Test Again</a></p>"
+                return result
 
-        except Exception as e:
-            return f"<h2>❌ Simple Login Test Error</h2><p>{str(e)}</p>"
+            except Exception as e:
+                return f"<h2>❌ Simple Login Test Error</h2><p>{str(e)}</p>"
 
     # Add debug route to test admin dashboard directly
     @app.route('/debug/test_admin_dashboard')
@@ -1204,42 +1203,42 @@ def create_app(config_name='default'):
 
             Use this from a mobile device to verify which cookies/headers are received
             by the server when you attempt to login from the phone.
-        """
-        try:
-            from flask_wtf.csrf import generate_csrf
-            import json
+            """
+            try:
+                from flask import has_request_context
+                from flask_wtf.csrf import generate_csrf
+                import json
+                
+                if not has_request_context():
+                    return app.response_class('{"error": "No request context"}', mimetype='application/json')
 
-            info = {
-                'remote_addr': request.remote_addr,
-                'url': request.url,
-                'headers': dict(request.headers),
-                'cookies': dict(request.cookies),
-                'session': dict(session),
-                'csrf_token': generate_csrf()
-            }
+                info = {
+                    'remote_addr': request.remote_addr,
+                    'url': request.url,
+                    'headers': dict(request.headers),
+                    'cookies': dict(request.cookies),
+                    'session': dict(session),
+                    'csrf_token': generate_csrf()
+                }
 
-            return app.response_class(json.dumps(info, default=str, indent=2), mimetype='application/json')
-        except Exception as e:
-            return app.response_class('{"error": "%s"}' % str(e), mimetype='application/json')
+                return app.response_class(json.dumps(info, default=str, indent=2), mimetype='application/json')
+            except Exception as e:
+                return app.response_class('{"error": "%s"}' % str(e), mimetype='application/json')
 
     # Add fallback root route in case blueprint route fails
     @app.route('/', methods=['GET'])
     def fallback_index():
-        """Fallback root route. Uses auth blueprint index if available, else minimal page."""
-        try:
-            from .views.auth import index
-            return index()
-        except Exception as e:
-            return f"""
-            <h2>🏠 Hillview School Management System</h2>
-            <p>Welcome! Please choose your login type:</p>
-            <ul>
-                <li><a href="/admin_login">👨‍💼 Headteacher Login</a></li>
-                <li><a href="/classteacher_login">👩‍🏫 Class Teacher Login</a></li>
-                <li><a href="/teacher_login">👨‍🎓 Teacher Login</a></li>
-            </ul>
-            <p><small>Debug: {str(e)}</small></p>
-            """
+        """Fallback root route. Simple landing page without blueprint dependency."""
+        return """
+        <h2>🏠 Hillview School Management System</h2>
+        <p>Welcome! Please choose your login type:</p>
+        <ul>
+            <li><a href="/admin_login">👨‍💼 Headteacher Login</a></li>
+            <li><a href="/classteacher_login">👩‍🏫 Class Teacher Login</a></li>
+            <li><a href="/teacher_login">👨‍🎓 Teacher Login</a></li>
+        </ul>
+        <p><a href="/debug/login_test">🧪 Debug Login Test</a></p>
+        """
 
     # Add URL debugging route
     @app.route('/debug-urls')
@@ -1704,6 +1703,34 @@ def create_app(config_name='default'):
     def debug_complete_database_setup():
         return ("<h2>🛑 Disabled</h2><p>Automated missing table creator removed. "
                 "Models + migrations manage schema.</p>")
+    
+    @app.route('/debug/test_streams_api')
+    def debug_test_streams_api():
+        """Debug endpoint to test streams functionality"""
+        from .models.academic import Grade, Stream
+        from flask import jsonify
+        
+        try:
+            # Test 1: Get all grades
+            grades = Grade.query.all()
+            grade_mapping = {grade.name: grade.id for grade in grades}
+            
+            # Test 2: Get streams for Grade 9 (ID 28 based on our earlier query)
+            streams = Stream.query.filter_by(grade_id=28).all()
+            stream_data = [{'id': stream.id, 'name': stream.name} for stream in streams]
+            
+            return jsonify({
+                'success': True,
+                'grade_mapping': grade_mapping,
+                'grade_9_streams': stream_data,
+                'total_grades': len(grades),
+                'total_streams_for_grade_9': len(streams)
+            })
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            })
 
     @app.route('/debug/test_school_config')
     def debug_test_school_config():

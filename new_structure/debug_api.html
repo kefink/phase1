@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Debug Streams API</title>
+  </head>
+  <body>
+    <h1>Debug Streams API</h1>
+
+    <button onclick="testGradeMapping()">Test Grade Mapping API</button>
+    <button onclick="testStreamsAPI()">Test Streams API (Grade 9)</button>
+
+    <div
+      id="output"
+      style="
+        margin-top: 20px;
+        padding: 10px;
+        background: #f5f5f5;
+        white-space: pre-wrap;
+      "
+    ></div>
+
+    <script>
+      function log(message) {
+        const output = document.getElementById("output");
+        output.textContent +=
+          new Date().toLocaleTimeString() + ": " + message + "\n";
+        console.log(message);
+      }
+
+      async function testGradeMapping() {
+        log("Testing grade mapping API...");
+        try {
+          const response = await fetch("/teacher/get_grade_mapping");
+          log("Response status: " + response.status);
+
+          if (response.ok) {
+            const data = await response.json();
+            log("Grade mapping data: " + JSON.stringify(data, null, 2));
+          } else {
+            log("Error: " + response.status + " " + response.statusText);
+          }
+        } catch (error) {
+          log("Fetch error: " + error.message);
+        }
+      }
+
+      async function testStreamsAPI() {
+        log("Testing streams API for Grade 9 (ID: 28)...");
+        try {
+          const response = await fetch("/teacher/get_streams/28");
+          log("Response status: " + response.status);
+
+          if (response.ok) {
+            const data = await response.json();
+            log("Streams data: " + JSON.stringify(data, null, 2));
+          } else {
+            log("Error: " + response.status + " " + response.statusText);
+          }
+        } catch (error) {
+          log("Fetch error: " + error.message);
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -3596,9 +3596,11 @@
                     </label>
                     <select id="education_level" name="education_level" required onchange="updateSubjectsByEducationLevel()">
                         <option value="">🎯 Select Education Level</option>
+                        <option value="pre_primary" {% if education_level == 'pre_primary' %}selected{% endif %}>🌱 Pre-Primary (PP1-PP2)</option>
                         <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>🎓 Lower Primary (Grades 1-3)</option>
                         <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>📚 Upper Primary (Grades 4-6)</option>
                         <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>🏫 Junior Secondary (Grades 7-9)</option>
+                        <option value="senior_secondary" {% if education_level == 'senior_secondary' %}selected{% endif %}>🎯 Senior Secondary (Grades 10-12)</option>
                     </select>
                 </div>
 
@@ -4075,26 +4077,36 @@
             }
         }
 
-        // Education level to grades mapping
+        // Education level to grades mapping (should match constants.py)
         const educationLevelGrades = {
+            'pre_primary': ['PP1', 'PP2'],
             'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
             'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
-            'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
+            'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9'],
+            'senior_secondary': ['Grade 10', 'Grade 11', 'Grade 12']
         };
 
         // Function to load grade mapping from server
         function loadGradeMapping() {
+            console.log('🔄 Loading grade mapping from server...');
             fetch('/teacher/get_grade_mapping')
-                .then(response => response.json())
+                .then(response => {
+                    console.log(`📡 Grade mapping response status: ${response.status}`);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('📡 Grade mapping response data:', data);
                     if (data.success) {
                         gradeMapping = data.mapping;
+                        console.log('✅ Grade mapping loaded successfully:', gradeMapping);
                         debugLog('✅ Grade mapping loaded: ' + JSON.stringify(gradeMapping));
                     } else {
+                        console.error('❌ Grade mapping failed:', data.message);
                         debugLog('❌ Failed to load grade mapping: ' + data.message);
                     }
                 })
                 .catch(error => {
+                    console.error('❌ Error loading grade mapping:', error);
                     debugLog('❌ Error loading grade mapping: ' + error);
                 });
         }
@@ -4304,6 +4316,10 @@
             // Clear existing options
             streamSelect.innerHTML = '<option value="">Select Stream</option>';
 
+            console.log(`🔄 DEBUG updateStreams() called`);
+            console.log(`🔍 Selected grade: "${grade}"`);
+            console.log(`🗂️ Current gradeMapping:`, gradeMapping);
+
             if (grade) {
                 console.log(`🔄 Fetching streams for ${grade}`);
 
@@ -4316,24 +4332,29 @@
                     fetch(`/teacher/get_streams/${gradeId}`)
                         .then(response => {
                             console.log(`📡 Response status: ${response.status}`);
+                            if (!response.ok) {
+                                return response.text().then(t => { throw new Error(`HTTP ${response.status}: ${t}`); });
+                            }
                             return response.json();
                         })
                         .then(data => {
                             console.log('📡 Streams response:', data);
-                            if (data.streams && data.streams.length > 0) {
-                                data.streams.forEach(stream => {
-                                    const option = document.createElement('option');
-                                    option.value = stream.name;
-                                    option.textContent = `Stream ${stream.name}`;
-                                    streamSelect.appendChild(option);
-                                });
-                                console.log(`✅ Loaded ${data.streams.length} streams`);
-                            } else if (data.error) {
-                                console.error('❌ Server error:', data.error);
-                                streamSelect.innerHTML = '<option value="">Error: ' + data.error + '</option>';
+                            if (data && data.success && Array.isArray(data.streams)) {
+                                if (data.streams.length > 0) {
+                                    data.streams.forEach(stream => {
+                                        const option = document.createElement('option');
+                                        option.value = stream.name;
+                                        option.textContent = `Stream ${stream.name}`;
+                                        streamSelect.appendChild(option);
+                                    });
+                                    console.log(`✅ Loaded ${data.streams.length} streams (authorized=${data.authorized})`);
+                                } else {
+                                    streamSelect.innerHTML = '<option value="">No streams available</option>';
+                                    console.log('⚠️ No streams found');
+                                }
                             } else {
-                                streamSelect.innerHTML = '<option value="">No streams available</option>';
-                                console.log('⚠️ No streams found');
+                                console.error('❌ Unexpected response format:', data);
+                                streamSelect.innerHTML = '<option value="">Error: Unexpected response</option>';
                             }
                         })
                         .catch(error => {
@@ -4344,9 +4365,11 @@
                     // Fallback: Use a hardcoded mapping if grade mapping isn't loaded yet
                     console.log('⚠️ Grade mapping not loaded, using fallback');
                     const fallbackMapping = {
-                        'Grade 1': 3, 'Grade 2': 4, 'Grade 3': 5,
-                        'Grade 4': 6, 'Grade 5': 7, 'Grade 6': 8,
-                        'Grade 7': 9, 'Grade 8': 1, 'Grade 9': 2
+                        'PP1': 35, 'PP2': 34,
+                        'Grade 1': 31, 'Grade 2': 36, 'Grade 3': 37,
+                        'Grade 4': 33, 'Grade 5': 38, 'Grade 6': 39,
+                        'Grade 7': 30, 'Grade 8': 29, 'Grade 9': 28,
+                        'Grade 10': 40, 'Grade 11': 41, 'Grade 12': 42
                     };
 
                     const gradeId = fallbackMapping[grade];
@@ -4363,13 +4386,17 @@
                                 console.log(`📡 Response status: ${response.status}`);
                                 if (response.status === 403) {
                                     console.error('❌ 403 Forbidden - trying alternative endpoint');
-                                    return fetch(`/universal/api/streams/${gradeId}`).then(r => r.json());
+                                    return fetch(`/universal/api/streams/${gradeId}`).then(r => {
+                                        if (!r.ok) return r.text().then(t => { throw new Error(`HTTP ${r.status}: ${t}`); });
+                                        return r.json();
+                                    });
                                 }
+                                if (!response.ok) return response.text().then(t => { throw new Error(`HTTP ${response.status}: ${t}`); });
                                 return response.json();
                             })
                             .then(data => {
                                 console.log('📡 Streams response:', data);
-                                if (data.streams && data.streams.length > 0) {
+                                if (data && Array.isArray(data.streams) && data.streams.length > 0) {
                                     data.streams.forEach(stream => {
                                         const option = document.createElement('option');
                                         option.value = stream.name;
@@ -4377,7 +4404,7 @@
                                         streamSelect.appendChild(option);
                                     });
                                     console.log(`✅ Loaded ${data.streams.length} streams`);
-                                } else if (data.error) {
+                                } else if (data && data.error) {
                                     console.error('❌ Server error:', data.error);
                                     streamSelect.innerHTML = '<option value="">Error: ' + data.error + '</option>';
                                 } else {

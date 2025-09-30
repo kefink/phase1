@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Streams Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .debug {
+        background: #f5f5f5;
+        padding: 10px;
+        margin: 10px 0;
+        white-space: pre-wrap;
+      }
+      select {
+        padding: 5px;
+        margin: 5px;
+      }
+      button {
+        padding: 8px 16px;
+        margin: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Simple Streams Test</h1>
+
+    <div>
+      <label>Grade:</label>
+      <select id="gradeSelect" onchange="testUpdateStreams()">
+        <option value="">Select Grade</option>
+        <option value="Grade 9">Grade 9</option>
+        <option value="Grade 8">Grade 8</option>
+        <option value="Grade 7">Grade 7</option>
+      </select>
+
+      <label>Stream:</label>
+      <select id="streamSelect">
+        <option value="">Select Stream</option>
+      </select>
+    </div>
+
+    <div>
+      <button onclick="loadGradeMappingTest()">Load Grade Mapping</button>
+      <button onclick="testStreamsForGrade9()">Test Streams for Grade 9</button>
+    </div>
+
+    <div id="debug" class="debug">Debug output will appear here...</div>
+
+    <script>
+      let gradeMapping = {};
+
+      function log(message) {
+        const debugDiv = document.getElementById("debug");
+        debugDiv.textContent +=
+          new Date().toLocaleTimeString() + ": " + message + "\n";
+        console.log(message);
+      }
+
+      async function loadGradeMappingTest() {
+        log("🔄 Loading grade mapping from server...");
+        try {
+          const response = await fetch("/teacher/get_grade_mapping");
+          log(`📡 Grade mapping response status: ${response.status}`);
+
+          if (response.ok) {
+            const data = await response.json();
+            log(
+              "📡 Grade mapping response data: " + JSON.stringify(data, null, 2)
+            );
+            if (data.success) {
+              gradeMapping = data.mapping;
+              log(
+                "✅ Grade mapping loaded successfully: " +
+                  JSON.stringify(gradeMapping)
+              );
+            } else {
+              log("❌ Grade mapping failed: " + data.message);
+            }
+          } else {
+            log(
+              "❌ HTTP Error: " + response.status + " " + response.statusText
+            );
+            const text = await response.text();
+            log("❌ Response body: " + text);
+          }
+        } catch (error) {
+          log("❌ Error loading grade mapping: " + error.message);
+        }
+      }
+
+      async function testStreamsForGrade9() {
+        log("🔄 Testing streams API for Grade 9 (ID: 28)...");
+        try {
+          const response = await fetch("/teacher/get_streams/28");
+          log(`📡 Streams response status: ${response.status}`);
+
+          if (response.ok) {
+            const data = await response.json();
+            log("📡 Streams response data: " + JSON.stringify(data, null, 2));
+          } else {
+            log(
+              "❌ HTTP Error: " + response.status + " " + response.statusText
+            );
+            const text = await response.text();
+            log("❌ Response body: " + text);
+          }
+        } catch (error) {
+          log("❌ Error loading streams: " + error.message);
+        }
+      }
+
+      async function testUpdateStreams() {
+        const gradeSelect = document.getElementById("gradeSelect");
+        const streamSelect = document.getElementById("streamSelect");
+        const grade = gradeSelect.value;
+
+        streamSelect.innerHTML = '<option value="">Loading...</option>';
+        log(`🔄 DEBUG updateStreams() called for grade: "${grade}"`);
+        log(`🗂️ Current gradeMapping: ${JSON.stringify(gradeMapping)}`);
+
+        if (!grade) {
+          streamSelect.innerHTML = '<option value="">Select Stream</option>';
+          return;
+        }
+
+        if (gradeMapping[grade]) {
+          const gradeId = gradeMapping[grade];
+          log(`📋 Using grade ID from mapping: ${gradeId}`);
+
+          try {
+            const response = await fetch(`/teacher/get_streams/${gradeId}`);
+            log(`📡 Response status: ${response.status}`);
+
+            if (response.ok) {
+              const data = await response.json();
+              log("📡 Streams response: " + JSON.stringify(data));
+
+              if (data.streams && data.streams.length > 0) {
+                let html = '<option value="">Select Stream</option>';
+                data.streams.forEach((stream) => {
+                  html += `<option value="${stream.name}">Stream ${stream.name}</option>`;
+                });
+                streamSelect.innerHTML = html;
+                log(`✅ Loaded ${data.streams.length} streams`);
+              } else {
+                streamSelect.innerHTML =
+                  '<option value="">No streams available</option>';
+                log("⚠️ No streams found");
+              }
+            } else {
+              streamSelect.innerHTML =
+                '<option value="">Error loading streams</option>';
+              log("❌ HTTP Error: " + response.status);
+            }
+          } catch (error) {
+            streamSelect.innerHTML =
+              '<option value="">Error loading streams</option>';
+            log("❌ Error fetching streams: " + error.message);
+          }
+        } else {
+          log("❌ Grade mapping not found for: " + grade);
+          streamSelect.innerHTML =
+            '<option value="">Grade mapping not loaded</option>';
+        }
+      }
+
+      // Load grade mapping on page load
+      window.addEventListener("load", loadGradeMappingTest);
+    </script>
+  </body>
+</html>
