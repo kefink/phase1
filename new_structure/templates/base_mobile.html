@@ -65,8 +65,10 @@
 
     <!-- Font Awesome Icons -->
     <link
+      id="fa-cdn"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       rel="stylesheet"
+      onerror="document.documentElement.classList.add('no-fa')"
     />
 
     <!-- Bootswatch Solar Theme - Main Theme -->
@@ -498,6 +500,14 @@
           transition-duration: 0.01ms !important;
         }
       }
+
+      /* If Font Awesome fails to load, hide icon boxes gracefully */
+      .no-fa i.fa,
+      .no-fa i.fas,
+      .no-fa i.far,
+      .no-fa i.fab {
+        display: none !important;
+      }
     </style>
 
     <!-- Page-specific CSS -->
@@ -513,7 +523,7 @@
           <img
             src="{{ url_for('static', filename=school_info.logo_path) }}"
             alt="{{ school_info.school_name|default('School') }} Logo"
-            onerror="this.src='{{ url_for('static', filename='images/default_logo.png') }}'"
+            onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_logo.png') }}';"
           />
           {% else %}
           <img

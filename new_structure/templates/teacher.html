@@ -3596,9 +3596,10 @@
                     </label>
                     <select id="education_level" name="education_level" required onchange="updateSubjectsByEducationLevel()">
                         <option value="">🎯 Select Education Level</option>
-                        <option value="lower_primary" {% if education_level == 'lower_primary' %}selected{% endif %}>🎓 Lower Primary (Grades 1-3)</option>
-                        <option value="upper_primary" {% if education_level == 'upper_primary' %}selected{% endif %}>📚 Upper Primary (Grades 4-6)</option>
-                        <option value="junior_secondary" {% if education_level == 'junior_secondary' %}selected{% endif %}>🏫 Junior Secondary (Grades 7-9)</option>
+                        {% for lvl in education_levels_order %}
+                            {% set label = education_level_labels.get(lvl, lvl.replace('_',' ').title()) %}
+                            <option value="{{ lvl }}" {% if education_level == lvl %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
@@ -4075,12 +4076,8 @@
             }
         }
 
-        // Education level to grades mapping
-        const educationLevelGrades = {
-            'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
-            'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
-            'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
-        };
+        // Canonical mapping from server: education level -> grade names
+        const educationLevelMapping = {{ (educational_level_mapping or {}) | tojson }};
 
         // Function to load grade mapping from server
         function loadGradeMapping() {
@@ -4115,22 +4112,34 @@
             gradeSelect.innerHTML = '<option value="">Select Grade</option>';
             streamSelect.innerHTML = '<option value="">Select Stream</option>';
 
-            if (educationLevel) {
-                // Update grades based on education level
-                if (educationLevelGrades[educationLevel]) {
-                    educationLevelGrades[educationLevel].forEach(grade => {
-                        const option = document.createElement('option');
-                        option.value = grade;
-                        option.textContent = grade;
-                        gradeSelect.appendChild(option);
-                    });
+            // Filter grades from original options to ensure we only show accessible grades
+            try {
+                if (!window.originalGradeOptions) {
+                    window.originalGradeOptions = Array.from(gradeSelect.options).map(opt => ({ value: opt.value, text: opt.textContent }));
                 }
+            } catch (e) { /* no-op */ }
 
-                // Update subjects based on education level
+            if (educationLevel) {
+                // 1) Update grades based on canonical mapping while respecting accessible set
+                const allowedGradeNames = (educationLevelMapping && educationLevelMapping[educationLevel]) ? educationLevelMapping[educationLevel] : [];
+                const sourceOptions = window.originalGradeOptions || [];
+                sourceOptions.forEach(g => {
+                    if (!g.value) return; // skip placeholder
+                    // Match against the visible grade label
+                    const gradeName = (g.text || '').trim();
+                    if (allowedGradeNames.includes(gradeName)) {
+                        const opt = document.createElement('option');
+                        opt.value = g.value; // preserve original value (name or ID)
+                        opt.textContent = g.text;
+                        gradeSelect.appendChild(opt);
+                    }
+                });
+
+                // 2) Update subjects based on education level
                 if (subjectsByEducationLevel[educationLevel]) {
                     // Sort subjects with core subjects first
                     const coreSubjects = ['MATHEMATICS', 'ENGLISH', 'KISWAHILI', 'SCIENCE', 'INTEGRATED SCIENCE'];
-                    const subjects = subjectsByEducationLevel[educationLevel];
+                    const subjects = subjectsByEducationLevel[educationLevel].slice();
 
                     subjects.sort((a, b) => {
                         const aIsCore = coreSubjects.some(core => a.toUpperCase().includes(core));
@@ -4148,6 +4157,16 @@
                         subjectSelect.appendChild(option);
                     });
                 }
+            } else {
+                // If no level selected, restore all grades (accessible set)
+                const sourceOptions = window.originalGradeOptions || [];
+                sourceOptions.forEach(g => {
+                    if (!g.value) return;
+                    const opt = document.createElement('option');
+                    opt.value = g.value;
+                    opt.textContent = g.text;
+                    gradeSelect.appendChild(opt);
+                });
             }
 
             // Clear subject info
@@ -4316,21 +4335,26 @@
                     fetch(`/teacher/get_streams/${gradeId}`)
                         .then(response => {
                             console.log(`📡 Response status: ${response.status}`);
+                            if (response.status === 403) {
+                                console.error('❌ 403 Forbidden - trying alternative endpoint');
+                                const alt = `/universal/api/streams/${gradeId}`;
+                                return fetch(alt).then(r => r.json());
+                            }
                             return response.json();
                         })
                         .then(data => {
                             console.log('📡 Streams response:', data);
-                            if (data.streams && data.streams.length > 0) {
+                            if (data.success && data.streams && data.streams.length > 0) {
                                 data.streams.forEach(stream => {
                                     const option = document.createElement('option');
-                                    option.value = stream.name;
+                                    option.value = stream.id; // use ID to be consistent with mobile and backend
                                     option.textContent = `Stream ${stream.name}`;
                                     streamSelect.appendChild(option);
                                 });
                                 console.log(`✅ Loaded ${data.streams.length} streams`);
-                            } else if (data.error) {
-                                console.error('❌ Server error:', data.error);
-                                streamSelect.innerHTML = '<option value="">Error: ' + data.error + '</option>';
+                            } else if (data.message && data.success === false) {
+                                console.error('❌ Server error:', data.message);
+                                streamSelect.innerHTML = '<option value="">' + (data.message || 'No streams available') + '</option>';
                             } else {
                                 streamSelect.innerHTML = '<option value="">No streams available</option>';
                                 console.log('⚠️ No streams found');
@@ -4369,17 +4393,17 @@
                             })
                             .then(data => {
                                 console.log('📡 Streams response:', data);
-                                if (data.streams && data.streams.length > 0) {
+                                if (data.success && data.streams && data.streams.length > 0) {
                                     data.streams.forEach(stream => {
                                         const option = document.createElement('option');
-                                        option.value = stream.name;
+                                        option.value = stream.id; // use ID like mobile
                                         option.textContent = `Stream ${stream.name}`;
                                         streamSelect.appendChild(option);
                                     });
                                     console.log(`✅ Loaded ${data.streams.length} streams`);
-                                } else if (data.error) {
-                                    console.error('❌ Server error:', data.error);
-                                    streamSelect.innerHTML = '<option value="">Error: ' + data.error + '</option>';
+                                } else if (data.message && data.success === false) {
+                                    console.error('❌ Server error:', data.message);
+                                    streamSelect.innerHTML = '<option value="">' + (data.message || 'No streams available') + '</option>';
                                 } else {
                                     streamSelect.innerHTML = '<option value="">No streams available</option>';
                                     console.log('⚠️ No streams found');
