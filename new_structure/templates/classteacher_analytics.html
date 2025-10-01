@@ -980,12 +980,38 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <!-- Analytics page uses server-side rendered data, no external JS needed -->
 
+{# Build JSON-safe lists for options to avoid serializing ORM objects directly #}
+{% set __terms = [] %}
+{% if terms %}
+  {% for t in terms %}
+    {% set _ = __terms.append({'id': t.id, 'name': t.name, 'academic_year': t.academic_year, 'is_current': t.is_current}) %}
+  {% endfor %}
+{% endif %}
+
+{% set __assessments = [] %}
+{% if assessments is defined and assessments %}
+  {% for a in assessments %}
+    {% set _ = __assessments.append({'id': a.id, 'name': a.name, 'is_active': a.is_active}) %}
+  {% endfor %}
+{% elif assessment_types %}
+  {% for a in assessment_types %}
+    {% set _ = __assessments.append({'id': a.id, 'name': a.name, 'is_active': a.is_active}) %}
+  {% endfor %}
+{% endif %}
+
+{% set __grades = [] %}
+{% if grades %}
+  {% for g in grades %}
+    {% set _ = __grades.append({'id': g.id, 'name': g.name}) %}
+  {% endfor %}
+{% endif %}
+
 <!-- JSON data injection to avoid Jinja in runtime JS -->
 <script id="analytics-data-json" type="application/json">{{ analytics_data|tojson if analytics_data else '{}' }}</script>
 <script id="analytics-options-json" type="application/json">{
-  "terms": {{ terms|tojson if terms else '[]' }},
-  "assessments": {{ assessments|tojson if assessments else '[]' }},
-  "grades": {{ grades|tojson if grades else '[]' }},
+  "terms": {{ __terms|tojson }},
+  "assessments": {{ __assessments|tojson }},
+  "grades": {{ __grades|tojson }},
   "selected": {
     "term": {{ (request.args.get('term')|int if request.args.get('term'))|tojson if request.args.get('term') else 'null' }},
     "assessment_type": {{ (request.args.get('assessment_type')|int if request.args.get('assessment_type'))|tojson if request.args.get('assessment_type') else 'null' }},

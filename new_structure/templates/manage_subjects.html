@@ -14,33 +14,54 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/manage_pages_enhanced.css') }}"
     />
-    <style>
-        /* SOLAR THEME - FORCE BACKGROUND */
-        html {
-            background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #d6d2c4 100%) !important;
-            min-height: 100vh !important;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <style>
+    /* Solar Dark Glass Theme Overrides (exact match with parent dashboard) */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body.solar-theme {
-            background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #d6d2c4 100%) !important;
-            min-height: 100vh !important;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
-            padding: 20px !important;
-            margin: 0 !important;
-            overflow-x: hidden !important;
-            background-attachment: fixed !important;
-        }
+    /* Define/override tokens for dark glass */
+    body.solar-theme[data-theme="solar-dark"] {
+      /* Core Solar colors */
+      --solar-base03: #002b36;
+      --solar-base02: #073642;
+      --solar-base01: #586e75;
+      --solar-base00: #657b83;
+      --solar-base0: #839496;
+      --solar-base1: #93a1a1;
+      --solar-base2: #eee8d5;
+      --solar-base3: #fdf6e3;
+      --solar-yellow: #b58900;
+      --solar-orange: #cb4b16;
+      --solar-red: #dc322f;
+      --solar-magenta: #d33682;
+      --solar-violet: #6c71c4;
+      --solar-blue: #268bd2;
+      --solar-cyan: #2aa198;
+      --solar-green: #859900;
+      /* Dark glass tokens */
+      --solar-body-bg: var(--solar-base03);
+      --solar-body-color: var(--solar-base0);
+      --solar-card-bg: rgba(7, 54, 66, 0.95);
+      --solar-glass-border: rgba(131, 148, 150, 0.3);
+      --radius-2xl: 1.5rem;
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.35), 0 2px 4px -2px rgb(0 0 0 / 0.35);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
+    }
 
-        /* Override any Bootstrap or external CSS backgrounds */
-  body.solar-theme, html, .container, .container-fluid {
-            background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #d6d2c4 100%) !important;
-        }
+    html, body.solar-theme[data-theme="solar-dark"],
+    body.solar-theme[data-theme="solar-dark"] .container,
+    body.solar-theme[data-theme="solar-dark"] .container-fluid {
+      background: var(--solar-body-bg) !important;
+      color: var(--solar-body-color) !important;
+      min-height: 100vh !important;
+    }
+
+    body.solar-theme[data-theme="solar-dark"] {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+      padding: 20px !important;
+      margin: 0 !important;
+      overflow-x: hidden !important;
+      background-attachment: fixed !important;
+    }
 
         /* Heroicon Colors - Solar Theme */
         .heroicon-solar-blue { fill: #268bd2; }
@@ -55,26 +76,27 @@
         .heroicon-solar-light { fill: #93a1a1; }
 
         /* Override container styles for manage pages */
-        .manage-container {
-            background: transparent !important;
-            max-width: 95% !important;
-            width: 95% !important;
-            margin: 20px auto !important;
-            padding: 0 !important;
-        }
+    .manage-container {
+      background: transparent !important;
+      max-width: 1200px !important;
+      width: 92% !important;
+      margin: 20px auto !important;
+      padding: 0 !important;
+    }
 
         /* Page header styling - Solar Theme */
-        .page-header {
-            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
-            backdrop-filter: blur(15px);
-            padding: 30px;
-            border-radius: 25px;
-            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
-            border: 2px solid rgba(181, 137, 0, 0.2);
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
+    .page-header {
+      background: var(--solar-card-bg);
+      color: var(--solar-base3);
+      border: 1px solid var(--solar-glass-border);
+      backdrop-filter: blur(15px);
+      padding: 30px;
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+    }
 
         .page-header::before {
             content: '';
@@ -101,8 +123,8 @@
             gap: 15px;
         }
 
-        .page-subtitle {
-            color: #586e75;
+    .page-subtitle {
+      color: var(--solar-base0);
             font-size: 1.1rem;
             margin-bottom: 20px;
             font-weight: 500;
@@ -114,40 +136,35 @@
             flex-wrap: wrap;
         }
 
-        .nav-links a {
-            color: #268bd2;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 12px;
-            background: rgba(38, 139, 210, 0.1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(38, 139, 210, 0.2);
-        }
-
-        .nav-links a:hover {
-            background: rgba(38, 139, 210, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(38, 139, 210, 0.15);
-            text-decoration: none;
-        }
+    .nav-links a {
+      color: var(--solar-base3);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 12px;
+      background: var(--solar-base01);
+      transition: all 0.2s ease;
+      border: 1px solid var(--solar-glass-border);
+    }
+    .nav-links a:hover { filter: brightness(1.05); transform: translateY(-1px); }
 
         /* Section styling - Solar Theme Enhanced */
-        .search-filter-section,
-        .add-subject-section,
-        .bulk-upload-section,
-        .subjects-list-section,
-        .students-section {
-            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
-            backdrop-filter: blur(15px);
-            padding: 30px;
-            border-radius: 25px;
-            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
-            border: 2px solid rgba(181, 137, 0, 0.2);
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
+    .search-filter-section,
+    .add-subject-section,
+    .bulk-upload-section,
+    .subjects-list-section,
+    .students-section {
+      background: var(--solar-card-bg);
+      color: var(--solar-base3);
+      border: 1px solid var(--solar-glass-border);
+      backdrop-filter: blur(15px);
+      padding: 30px;
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+    }
 
         .search-filter-section::before,
         .students-section::before {
@@ -161,8 +178,8 @@
             border-radius: 25px 25px 0 0;
         }
 
-        .section-title {
-            color: #002b36;
+    .section-title {
+      color: var(--solar-base3);
             margin-bottom: 25px;
             font-size: 1.6rem;
             font-weight: 700;
@@ -204,7 +221,7 @@
         }
 
         /* Button styling - Solar Theme */
-        .btn, .search-btn, .clear-search-btn, .add-btn, .upload-btn, .manage-btn {
+    .btn, .search-btn, .clear-search-btn, .add-btn, .upload-btn, .manage-btn {
             border: none;
             padding: 15px 25px;
             border-radius: 12px;
@@ -221,44 +238,32 @@
             letter-spacing: 0.5px;
         }
 
-        .btn, .search-btn, .add-btn, .upload-btn, .manage-btn {
-            background: linear-gradient(135deg, #268bd2 0%, #2c5aa0 100%);
-            color: #fdf6e3;
-            box-shadow: 0 4px 15px rgba(38, 139, 210, 0.3);
-        }
+    .btn, .search-btn, .add-btn, .upload-btn, .manage-btn {
+      background: linear-gradient(135deg, var(--solar-yellow) 0%, var(--solar-orange) 100%);
+      color: var(--solar-base3);
+      box-shadow: 0 8px 25px rgba(181, 137, 0, 0.25);
+    }
 
-        .btn:hover, .search-btn:hover, .add-btn:hover, .upload-btn:hover, .manage-btn:hover {
-            background: linear-gradient(135deg, #2c5aa0 0%, #1e3f73 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(38, 139, 210, 0.4);
-            text-decoration: none;
-            color: #fdf6e3;
-        }
+    .btn:hover, .search-btn:hover, .add-btn:hover, .upload-btn:hover, .manage-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(181, 137, 0, 0.35);
+      text-decoration: none;
+      color: var(--solar-base3);
+    }
 
-        .clear-search-btn {
-            background: linear-gradient(135deg, #dc322f 0%, #a02622 100%);
-            color: #fdf6e3;
-            box-shadow: 0 4px 15px rgba(220, 50, 47, 0.3);
-        }
-
-        .clear-search-btn:hover {
-            background: linear-gradient(135deg, #a02622 0%, #7a1c1a 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(220, 50, 47, 0.4);
-            text-decoration: none;
-            color: #fdf6e3;
-        }
+    .clear-search-btn { background: var(--solar-base01); color: var(--solar-base3); }
+    .clear-search-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
 
         /* Table improvements - Solar Theme */
-        .table-responsive {
-            overflow-x: auto;
-            margin: 25px 0;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 43, 54, 0.1);
-            background: linear-gradient(145deg, rgba(253, 246, 227, 0.98) 0%, rgba(238, 232, 213, 0.95) 100%);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(181, 137, 0, 0.15);
-        }
+    .table-responsive {
+      overflow-x: auto;
+      margin: 25px 0;
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-md);
+      background: var(--solar-card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--solar-glass-border);
+    }
 
         table {
             width: 100%;
@@ -268,23 +273,24 @@
             background: transparent;
         }
 
-        th, td {
-            padding: 18px 20px;
-            text-align: left;
-            border-bottom: 1px solid rgba(88, 110, 117, 0.15);
-        }
+    th, td {
+      padding: 18px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--solar-glass-border);
+      color: var(--solar-base0);
+    }
 
-        th {
-            background: linear-gradient(135deg, #268bd2 0%, #2c5aa0 100%);
-            color: #fdf6e3;
-            font-weight: 700;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.9rem;
-        }
+    th {
+      background: rgba(7, 54, 66, 0.7);
+      color: var(--solar-base3);
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.9rem;
+    }
 
         th:first-child {
             border-radius: 20px 0 0 0;
@@ -294,15 +300,8 @@
             border-radius: 0 20px 0 0;
         }
 
-        tr:nth-child(even) {
-            background: rgba(238, 232, 213, 0.3);
-        }
-
-        tr:hover {
-            background: rgba(181, 137, 0, 0.1);
-            transform: scale(1.01);
-            transition: all 0.3s ease;
-        }
+    tr:nth-child(even) { background: rgba(181, 137, 0, 0.06); }
+    tr:hover { background: rgba(181, 137, 0, 0.12); transition: background 0.2s ease; }
 
         tbody tr:last-child td:first-child {
             border-radius: 0 0 0 20px;
@@ -313,16 +312,17 @@
         }
 
         /* Form styling - Solar Theme Enhanced */
-        .form-card {
-            background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%);
-            backdrop-filter: blur(15px);
-            padding: 30px;
-            border-radius: 25px;
-            box-shadow: 0 20px 40px rgba(0, 43, 54, 0.15);
-            border: 2px solid rgba(181, 137, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
+    .form-card {
+      background: var(--solar-card-bg);
+      color: var(--solar-base3);
+      border: 1px solid var(--solar-glass-border);
+      backdrop-filter: blur(15px);
+      padding: 30px;
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
 
         .form-card::before {
             content: '';
@@ -335,8 +335,8 @@
             border-radius: 25px 25px 0 0;
         }
 
-        .form-card h2 {
-            color: #002b36;
+    .form-card h2 {
+      color: var(--solar-base3);
             margin-bottom: 25px;
             font-size: 1.5rem;
             font-weight: 700;
@@ -349,32 +349,24 @@
             margin-bottom: 25px;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 10px;
-            color: #002b36;
-            font-weight: 600;
-            font-size: 1rem;
-        }
+    .form-group label { display: block; margin-bottom: 10px; color: var(--solar-base3); font-weight: 600; font-size: 1rem; }
 
-        .form-control {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid rgba(88, 110, 117, 0.2);
-            border-radius: 12px;
-            font-size: 1rem;
-            color: #002b36;
-            background: rgba(253, 246, 227, 0.8);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #268bd2;
-            box-shadow: 0 0 0 4px rgba(38, 139, 210, 0.1);
-            transform: translateY(-2px);
-            background: rgba(253, 246, 227, 1);
-        }
+    .form-control {
+      width: 100%;
+      padding: 15px 20px;
+      border: 1px solid var(--solar-glass-border);
+      border-radius: 12px;
+      font-size: 1rem;
+      color: var(--solar-base3);
+      background: rgba(7, 54, 66, 0.6);
+      transition: all 0.2s ease;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--solar-blue);
+      box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.2);
+      background: rgba(7, 54, 66, 0.8);
+    }
 
         /* Search and filter styling - Solar Enhanced */
         .search-input-group {
@@ -385,62 +377,43 @@
             flex-wrap: wrap;
         }
 
-        .search-input-group input[type="text"] {
-            flex: 1;
-            min-width: 250px;
-            padding: 15px 20px;
-            border: 2px solid rgba(88, 110, 117, 0.2);
-            border-radius: 12px;
-            font-size: 1rem;
-            color: #002b36;
-            background: rgba(253, 246, 227, 0.8);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .search-input-group input[type="text"]:focus {
-            border-color: #268bd2;
-            box-shadow: 0 0 0 4px rgba(38, 139, 210, 0.1);
-            transform: translateY(-2px);
-            background: rgba(253, 246, 227, 1);
-        }
-
-        .search-input-group input[type="text"]::placeholder {
-            color: #93a1a1;
-        }
+    .search-input-group input[type="text"] {
+      flex: 1;
+      min-width: 250px;
+      padding: 15px 20px;
+      border: 1px solid var(--solar-glass-border);
+      border-radius: 12px;
+      font-size: 1rem;
+      color: var(--solar-base3);
+      background: rgba(7, 54, 66, 0.6);
+      transition: all 0.2s ease;
+    }
+    .search-input-group input[type="text"]:focus {
+      border-color: var(--solar-blue);
+      box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.2);
+      transform: translateY(-1px);
+      background: rgba(7, 54, 66, 0.8);
+    }
+    .search-input-group input[type="text"]::placeholder { color: var(--solar-base1); }
 
         .level-selector {
             margin-top: 20px;
         }
 
-        .level-selector label {
-            display: block;
-            margin-bottom: 10px;
-            color: #002b36;
-            font-weight: 600;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    .level-selector label { display: block; margin-bottom: 10px; color: var(--solar-base3); font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
 
-        .level-selector select {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid rgba(88, 110, 117, 0.2);
-            border-radius: 12px;
-            font-size: 1rem;
-            color: #002b36;
-            background: rgba(253, 246, 227, 0.8);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-        }
-
-        .level-selector select:focus {
-            border-color: #268bd2;
-            box-shadow: 0 0 0 4px rgba(38, 139, 210, 0.1);
-            transform: translateY(-2px);
-            background: rgba(253, 246, 227, 1);
-        }
+    .level-selector select {
+      width: 100%;
+      padding: 15px 20px;
+      border: 1px solid var(--solar-glass-border);
+      border-radius: 12px;
+      font-size: 1rem;
+      color: var(--solar-base3);
+      background: rgba(7, 54, 66, 0.6);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .level-selector select:focus { border-color: var(--solar-blue); box-shadow: 0 0 0 3px rgba(38,139,210,0.2); background: rgba(7,54,66,0.8); }
 
         /* Action buttons - Solar Theme */
         .delete-btn, .edit-btn {
@@ -456,55 +429,14 @@
             letter-spacing: 0.5px;
         }
 
-        .delete-btn {
-            background: linear-gradient(135deg, #dc322f 0%, #a02622 100%);
-            color: #fdf6e3;
-            box-shadow: 0 4px 15px rgba(220, 50, 47, 0.3);
-        }
-
-        .delete-btn:hover {
-            background: linear-gradient(135deg, #a02622 0%, #7a1c1a 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(220, 50, 47, 0.4);
-        }
-
-        .edit-btn {
-            background: linear-gradient(135deg, #b58900 0%, #8b6914 100%);
-            color: #fdf6e3;
-            box-shadow: 0 4px 15px rgba(181, 137, 0, 0.3);
-        }
-
-        .edit-btn:hover {
-            background: linear-gradient(135deg, #8b6914 0%, #6b4f0a 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(181, 137, 0, 0.4);
-        }
+    .delete-btn { background: linear-gradient(135deg, #dc322f 0%, #a02622 100%); color: var(--solar-base3); box-shadow: 0 4px 15px rgba(220,50,47,0.25); }
+    .delete-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(220,50,47,0.35); }
+    .edit-btn { background: var(--solar-base01); color: var(--solar-base3); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .edit-btn:hover { filter: brightness(1.06); transform: translateY(-2px); }
 
         /* Modal styling - Solar Theme */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 43, 54, 0.8);
-            backdrop-filter: blur(8px);
-        }
-
-        .modal-content {
-            background: linear-gradient(145deg, rgba(253, 246, 227, 0.98) 0%, rgba(238, 232, 213, 0.95) 100%);
-            backdrop-filter: blur(15px);
-            margin: 10% auto;
-            padding: 40px;
-            border-radius: 25px;
-            width: 80%;
-            max-width: 500px;
-            box-shadow: 0 25px 50px rgba(0, 43, 54, 0.3);
-            border: 2px solid rgba(181, 137, 0, 0.2);
-            position: relative;
-        }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 43, 54, 0.7); backdrop-filter: blur(8px); }
+    .modal-content { background: var(--solar-card-bg); color: var(--solar-base3); margin: 10% auto; padding: 32px; border-radius: var(--radius-2xl); width: 80%; max-width: 520px; box-shadow: var(--shadow-lg); border: 1px solid var(--solar-glass-border); position: relative; }
 
         .modal-content::before {
             content: '';
@@ -517,32 +449,11 @@
             border-radius: 25px 25px 0 0;
         }
 
-        .close {
-            color: #93a1a1;
-            float: right;
-            font-size: 32px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            line-height: 1;
-        }
-
-        .close:hover {
-            color: #dc322f;
-            transform: scale(1.1);
-        }
+    .close { color: var(--solar-base0); float: right; font-size: 32px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; line-height: 1; }
+    .close:hover { color: var(--solar-base3); transform: scale(1.05); }
 
         /* Pagination styling - Solar Theme */
-        .pagination-container {
-            margin-top: 30px;
-            text-align: center;
-            background: linear-gradient(145deg, rgba(253, 246, 227, 0.9) 0%, rgba(238, 232, 213, 0.8) 100%);
-            backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 43, 54, 0.1);
-            border: 2px solid rgba(181, 137, 0, 0.15);
-        }
+    .pagination-container { margin-top: 30px; text-align: center; background: var(--solar-card-bg); color: var(--solar-base3); backdrop-filter: blur(10px); padding: 25px; border-radius: var(--radius-2xl); box-shadow: var(--shadow-md); border: 1px solid var(--solar-glass-border); }
 
         .pagination {
             display: inline-flex;
@@ -552,50 +463,16 @@
             gap: 8px;
         }
 
-        .pagination li a,
-        .pagination li span {
-            display: block;
-            padding: 12px 16px;
-            text-decoration: none;
-            color: #002b36;
-            background: rgba(253, 246, 227, 0.8);
-            border: 2px solid rgba(88, 110, 117, 0.2);
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            min-width: 44px;
-            text-align: center;
-        }
-
-        .pagination li a:hover {
-            background: linear-gradient(135deg, #268bd2 0%, #2c5aa0 100%);
-            color: #fdf6e3;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(38, 139, 210, 0.3);
-        }
-
-        .pagination li.active span {
-            background: linear-gradient(135deg, #268bd2 0%, #2c5aa0 100%);
-            color: #fdf6e3;
-            border-color: #268bd2;
-            box-shadow: 0 4px 15px rgba(38, 139, 210, 0.3);
-        }
-
-        .pagination li.disabled span {
-            color: #93a1a1;
-            cursor: not-allowed;
-            background: rgba(147, 161, 161, 0.1);
-        }
-
-        .pagination-info {
-            color: #586e75;
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
+    .pagination li a,
+    .pagination li span { display: block; padding: 12px 16px; text-decoration: none; color: var(--solar-yellow); background: rgba(7,54,66,0.6); border: 1px solid var(--solar-glass-border); border-radius: 10px; font-weight: 600; transition: all 0.2s ease; min-width: 44px; text-align: center; }
+    .pagination li a:hover { background: rgba(181,137,0,0.15); color: var(--solar-base3); transform: translateY(-1px); }
+    .pagination li.active span { background: rgba(181,137,0,0.25); color: var(--solar-base3); border-color: var(--solar-glass-border); }
+    .pagination li.disabled span { color: var(--solar-base1); cursor: not-allowed; background: rgba(147,161,161,0.1); }
+    .pagination-info { color: var(--solar-base0); font-size: 0.95rem; font-weight: 500; }
 
         /* Enhanced search and filter section - Solar Theme */
-        .search-filter-section h2 {
-            color: #002b36;
+    .search-filter-section h2 {
+      color: var(--solar-base3);
             margin-bottom: 25px;
             font-size: 1.8rem;
             font-weight: 800;
@@ -613,39 +490,12 @@
         }
 
         /* Enhanced subject actions */
-        .subject-actions {
-            margin-bottom: 25px;
-            padding: 20px;
-            background: rgba(238, 232, 213, 0.3);
-            border-radius: 15px;
-            border: 1px solid rgba(181, 137, 0, 0.2);
-        }
+    .subject-actions { margin-bottom: 25px; padding: 20px; background: rgba(7,54,66,0.6); border-radius: 15px; border: 1px solid var(--solar-glass-border); }
 
-        #student-filter label {
-            font-weight: 600;
-            color: #002b36;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    #student-filter label { font-weight: 600; color: var(--solar-base3); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 
-        #subject-search {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid rgba(88, 110, 117, 0.2);
-            border-radius: 10px;
-            font-size: 1rem;
-            color: #002b36;
-            background: rgba(253, 246, 227, 0.8);
-            transition: all 0.3s ease;
-        }
-
-        #subject-search:focus {
-            border-color: #268bd2;
-            box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.1);
-            background: rgba(253, 246, 227, 1);
-        }
+    #subject-search { width: 100%; padding: 12px 16px; border: 1px solid var(--solar-glass-border); border-radius: 10px; font-size: 1rem; color: var(--solar-base3); background: rgba(7,54,66,0.6); transition: all 0.2s ease; }
+    #subject-search:focus { border-color: var(--solar-blue); box-shadow: 0 0 0 3px rgba(38,139,210,0.2); background: rgba(7,54,66,0.8); }
 
         /* Message styling - Solar Theme */
         #message-container {
@@ -661,17 +511,8 @@
             backdrop-filter: blur(10px);
         }
 
-        .message-error {
-            background: rgba(220, 50, 47, 0.1);
-            color: #dc322f;
-            border-left-color: #dc322f;
-        }
-
-        .message-success {
-            background: rgba(133, 153, 0, 0.1);
-            color: #859900;
-            border-left-color: #859900;
-        }
+    .message-error { background: rgba(220, 50, 47, 0.15); color: #ff6b6b; border-left-color: #dc322f; }
+    .message-success { background: rgba(133, 153, 0, 0.18); color: #c3e88d; border-left-color: #859900; }
 
         /* Tips content styling */
         .tips-content {
@@ -694,24 +535,11 @@
         }
 
         /* Enhanced hover effects */
-        .form-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 25px 50px rgba(0, 43, 54, 0.2);
-        }
-
-        .search-filter-section:hover,
-        .students-section:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 25px 50px rgba(0, 43, 54, 0.18);
-        }
+    .form-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .search-filter-section:hover, .students-section:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
 
         /* Checkbox styling */
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #268bd2;
-            cursor: pointer;
-        }
+    input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--solar-blue); cursor: pointer; }
 
         /* Loading animation for future use */
         @keyframes solar-pulse {
@@ -722,9 +550,9 @@
         .loading {
             animation: solar-pulse 2s infinite;
         }
-    </style>
+  </style>
   </head>
-  <body class="solar-theme">
+  <body class="solar-theme" data-theme="solar-dark">
   <div class="manage-container">
     <header class="page-header solar-card">
           <h1>

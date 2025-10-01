@@ -6,9 +6,65 @@
     <title>Teacher Subject Assignments - Hillview School</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/solar-shared.css') }}" />
 
+    <style>
+      html, body, body.solar-theme { background: var(--solar-body-bg) !important; color: var(--solar-body-color) !important; background-attachment: fixed !important; }
+
+      /* Layout */
+      .manage-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+      .page-header.solar-card { background: var(--glass-bg) !important; border: 1px solid var(--glass-border-color) !important; box-shadow: var(--glass-shadow) !important; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+      .page-header h1 { margin: 0; color: var(--solar-heading-color, #eee); }
+      .nav-links a { margin-left: 8px; }
+
+      /* Cards */
+      .form-card.solar-card, .students-section.solar-card { background: var(--glass-bg) !important; border: 1px solid var(--glass-border-color) !important; box-shadow: var(--glass-shadow) !important; }
+
+      /* Forms */
+      .form-control, select, input[type="text"], input[type="number"] { background: var(--solar-input-bg) !important; color: var(--solar-body-color) !important; border: 1px solid var(--glass-border-color) !important; }
+      label { color: var(--solar-body-color) !important; }
+
+      /* Messages */
+      .message { padding: 10px 12px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid; background: rgba(133,153,0,0.1); color: var(--solar-body-color) !important; }
+      .message-error { background: rgba(220,50,47,0.15) !important; color: #ffb3ae !important; border-left-color: #dc322f !important; }
+      .message-success { background: rgba(133,153,0,0.15) !important; color: #b8e986 !important; border-left-color: #859900 !important; }
+
+      /* Separators in bulk assignment */
+      .bulk-assignment { border-top-color: var(--glass-border-color) !important; }
+      #teacher-assignments-summary { border-top-color: var(--glass-border-color) !important; }
+
+      /* Modal */
+      .modal { background-color: rgba(0,0,0,0.5) !important; }
+      .modal .modal-content { background: var(--glass-bg-alt, var(--glass-bg)) !important; color: var(--solar-body-color) !important; border: 1px solid var(--glass-border-color) !important; box-shadow: var(--glass-shadow) !important; }
+      .modal .close { color: var(--solar-muted, #93a1a1) !important; }
+      .modal .close:hover { color: var(--solar-body-color) !important; }
+
+      /* Simple/Advanced mode panels */
+      #grade-stream-selector,
+      .education-level-section,
+      .grade-section,
+      #assignment-builder,
+      .assignment-combination,
+      .teacher-assignments-by-level .level-assignments > .assignments-grid > div {
+        background: var(--glass-bg-alt, rgba(255,255,255,0.03)) !important;
+        border-color: var(--glass-border-color) !important;
+        color: var(--solar-body-color) !important;
+      }
+      .grade-section { border: 1px solid var(--glass-border-color) !important; }
+      .streams-grid label { background: rgba(255,255,255,0.04) !important; border: 1px solid var(--glass-border-color) !important; }
+
+      /* Summary panel */
+      #assignment-summary { background: rgba(133,153,0,0.08) !important; border-left-color: #859900 !important; color: var(--solar-body-color) !important; }
+
+      /* Table */
+      .solar-table th, .solar-table td { border-color: var(--glass-border-color) !important; }
+      .table-responsive { background: transparent !important; }
+
+      /* Filter buttons injected via JS */
+      .filter-btn { background: var(--glass-bg-alt) !important; border: 1px solid var(--glass-border-color) !important; color: var(--solar-body-color) !important; }
+      .filter-btn:hover { background: rgba(255,255,255,0.06) !important; }
+    </style>
     
   </head>
-  <body class="solar-theme">
+  <body class="solar-theme" data-theme="solar-dark">
     <div class="manage-container">
         <header class="page-header solar-card">
           <h1>Teacher Subject Assignments</h1>
@@ -19,6 +75,8 @@
             <a class="solar-btn-outline" href="{{ url_for('auth.logout_route') }}">Logout</a>
           </div>
         </header>
+
+        {% include '_solar_theme_toggle.html' %}
 
         <!-- Message container for notifications -->
         <div id="message-container">
@@ -116,7 +174,7 @@
                 </label>
               </div>
 
-              <button type="submit" class="manage-btn">Assign Subject</button>
+              <button type="submit" class="solar-btn">Assign Subject</button>
             </form>
 
             <!-- Bulk Assignment Section -->
@@ -133,9 +191,8 @@
 
               <button
                 type="button"
-                class="manage-btn"
+                class="solar-btn"
                 onclick="showBulkAssignmentModal()"
-                style="background-color: #4a6741"
               >
                 Open Bulk Assignment
               </button>
@@ -200,7 +257,7 @@
                 >&times;</span
               >
               <h2>🚀 Advanced Bulk Assignment</h2>
-              <p style="color: #666; margin-bottom: 20px;">Assign multiple subjects across different education levels and specific streams</p>
+              <p style="margin-bottom: 20px;">Assign multiple subjects across different education levels and specific streams</p>
 
               <form
                 id="bulk-assignment-form"
@@ -409,7 +466,7 @@
                         <!-- Dynamic content will be added here -->
                       </div>
 
-                      <button type="button" onclick="addAssignmentCombination()" class="manage-btn" style="background: #2196f3; margin-top: 10px;">
+                      <button type="button" onclick="addAssignmentCombination()" class="solar-btn" style="margin-top: 10px;">
                         ➕ Add Assignment Combination
                       </button>
                     </div>

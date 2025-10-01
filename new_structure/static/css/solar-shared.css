@@ -26,6 +26,23 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 43, 54, 0.12);
   --shadow-lg: 0 12px 28px rgba(0, 43, 54, 0.18);
+  /* Base surface tokens */
+  --solar-body-bg: linear-gradient(
+    135deg,
+    var(--solar-base3) 0%,
+    var(--solar-base2) 50%,
+    #d6d2c4 100%
+  );
+  --solar-body-color: var(--solar-base03);
+  /* Glass tokens (light defaults) */
+  --glass-bg: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.82)
+  );
+  --glass-bg-alt: rgba(255, 255, 255, 0.85);
+  --glass-border-color: rgba(181, 137, 0, 0.25);
+  --glass-shadow: var(--shadow-md);
   --gradient-panel: linear-gradient(
     135deg,
     rgba(253, 246, 227, 0.95) 0%,
@@ -35,14 +52,8 @@
 
 body.solar-theme,
 .solar-surface {
-  background: linear-gradient(
-      135deg,
-      var(--solar-base3) 0%,
-      var(--solar-base2) 50%,
-      #d6d2c4 100%
-    )
-    fixed;
-  color: var(--solar-base03);
+  background: var(--solar-body-bg) fixed;
+  color: var(--solar-body-color);
   font-family: "Inter", "Segoe UI", Tahoma, sans-serif;
 }
 
@@ -396,14 +407,8 @@ select.solar-select option {
 /* -------------------------------------------------- */
 [data-theme="solar-dark"] body.solar-theme,
 [data-theme="solar-dark"] .solar-surface {
-  background: linear-gradient(
-      135deg,
-      var(--solar-base02) 0%,
-      var(--solar-base03) 60%,
-      #00171d 100%
-    )
-    fixed;
-  color: var(--solar-base2);
+  background: var(--solar-body-bg) fixed;
+  color: var(--solar-body-color);
 }
 [data-theme="solar-dark"] .solar-card {
   background: linear-gradient(
@@ -1179,15 +1184,28 @@ tbody tr:hover {
   color-scheme: dark;
 }
 
-[data-theme="solar-dark"] body.solar-theme,
-[data-theme="solar-dark"] .solar-surface {
-  background: radial-gradient(
-      circle at 30% 20%,
-      var(--solar-base02) 0%,
-      var(--solar-base03) 70%
-    )
-    fixed;
-  color: var(--solar-base1);
+/* Central dark theme variables (stronger, deeper background) */
+[data-theme="solar-dark"] {
+  color-scheme: dark;
+  /* Richer deep teal/ink background to avoid a "faded" look */
+  --solar-body-bg: radial-gradient(
+    circle at 28% 18%,
+    #001017 0%,
+    #00161d 46%,
+    #001b22 70%,
+    #000b0e 100%
+  );
+  --solar-body-color: var(--solar-base1);
+  /* Dark glass tokens */
+  --glass-bg: linear-gradient(
+    145deg,
+    rgba(0, 43, 54, 0.92) 0%,
+    rgba(7, 54, 66, 0.86) 100%
+  );
+  --glass-bg-alt: rgba(0, 43, 54, 0.65);
+  --glass-border-color: rgba(181, 137, 0, 0.35);
+  --glass-shadow: 0 8px 22px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 /* Card & Panel Adjustments */
@@ -1196,20 +1214,25 @@ tbody tr:hover {
 [data-theme="solar-dark"] .students-section,
 [data-theme="solar-dark"] .bulk-assignment,
 [data-theme="solar-dark"] .manage-container {
-  background: linear-gradient(
-    145deg,
-    rgba(0, 43, 54, 0.92) 0%,
-    rgba(7, 54, 66, 0.85) 100%
-  );
-  border: 1px solid rgba(181, 137, 0, 0.3);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border-color);
+  box-shadow: var(--glass-shadow);
   color: var(--solar-base1);
 }
 
 [data-theme="solar-dark"] .form-card::before,
 [data-theme="solar-dark"] .students-section::before {
   opacity: 0.6;
+}
+
+/* Improve heading contrast on dark glass surfaces */
+[data-theme="solar-dark"] .form-card h2,
+[data-theme="solar-dark"] .students-section h2 {
+  color: var(--solar-base2);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+}
+[data-theme="solar-dark"] .bulk-assignment h3 {
+  color: var(--solar-base2);
 }
 
 /* Page header gradient shifts slightly cooler */

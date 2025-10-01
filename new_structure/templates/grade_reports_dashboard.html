@@ -213,6 +213,28 @@
           grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
         }
       }
+      /* Dark glass alignment for this page */
+      [data-theme="solar-dark"] .page-shell {
+        /* Keep the global background; avoid extra light tints here */
+        background: transparent;
+      }
+      [data-theme="solar-dark"] .header-section {
+        border-bottom: 2px solid var(--glass-border-color);
+      }
+      [data-theme="solar-dark"] .features-section h3 { color: var(--solar-base2); }
+      [data-theme="solar-dark"] .feature-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--glass-shadow);
+      }
+      [data-theme="solar-dark"] .feature-title { color: var(--solar-base2); }
+      [data-theme="solar-dark"] .feature-description { color: var(--solar-base1); }
+      [data-theme="solar-dark"] .breadcrumb .active { color: var(--solar-base2); }
+      [data-theme="solar-dark"] .info-box {
+        border-color: var(--glass-border-color);
+        color: var(--solar-base1);
+      }
     </style>
   </head>
   <body class="solar-theme" data-theme="solar-dark">
@@ -563,7 +585,8 @@
           root.setAttribute('data-theme', stored);
           document.documentElement.setAttribute('data-theme', stored);
         } else {
-          root.setAttribute('data-theme','solar-light');
+          // Default to dark for consistency with Solar dark glass pages
+          root.setAttribute('data-theme','solar-dark');
         }
         document.addEventListener('DOMContentLoaded', () => {
           const btn = document.getElementById('themeToggle');

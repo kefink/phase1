@@ -1,0 +1,50 @@
+<button
+  id="solarThemeToggle"
+  class="solar-theme-toggle"
+  type="button"
+  aria-label="Toggle theme"
+  title="Toggle theme"
+>
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path
+      d="M12 18a6 6 0 100-12 6 6 0 000 12zm0 3.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75zm0-21a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75A.75.75 0 0112 .75zM3.22 4.28a.75.75 0 011.06 0l.53.53a.75.75 0 11-1.06 1.06l-.53-.53a.75.75 0 010-1.06zm15.97 15.97a.75.75 0 011.06 0l.53.53a.75.75 0 11-1.06 1.06l-.53-.53a.75.75 0 010-1.06zM.75 12a.75.75 0 01.75-.75h.75a.75.75 0 010 1.5H1.5A.75.75 0 01.75 12zm21 0a.75.75 0 01.75-.75h.75a.75.75 0 010 1.5h-.75a.75.75 0 01-.75-.75zM3.22 19.72a.75.75 0 011.06 0l.53.53a.75.75 0 11-1.06 1.06l-.53-.53a.75.75 0 010-1.06zm15.97-15.97a.75.75 0 011.06 0l.53.53a.75.75 0 11-1.06 1.06l-.53-.53a.75.75 0 010-1.06z"
+    />
+  </svg>
+</button>
+
+<script>
+  (function () {
+    try {
+      var storageKey = "solar-theme";
+      var saved = localStorage.getItem(storageKey);
+      var body = document.body;
+
+      function apply(mode) {
+        if (mode === "dark") {
+          body.setAttribute("data-theme", "solar-dark");
+        } else {
+          body.removeAttribute("data-theme");
+        }
+      }
+
+      // Initialize: default to dark if nothing set
+      if (!saved) {
+        saved = "dark";
+        localStorage.setItem(storageKey, saved);
+      }
+      apply(saved);
+
+      var btn = document.getElementById("solarThemeToggle");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          var current = localStorage.getItem(storageKey) || "dark";
+          var next = current === "dark" ? "light" : "dark";
+          localStorage.setItem(storageKey, next);
+          apply(next);
+        });
+      }
+    } catch (e) {
+      // non-blocking
+    }
+  })();
+</script>

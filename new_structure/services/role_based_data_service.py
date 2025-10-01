@@ -5,6 +5,7 @@ Provides filtered data based on user roles and permissions.
 from ..models import Teacher, TeacherSubjectAssignment, Subject, Grade, Stream, Student
 from ..extensions import db
 from sqlalchemy import and_, or_
+from typing import Optional
 
 
 class RoleBasedDataService:
@@ -404,3 +405,35 @@ class RoleBasedDataService:
                 json_safe_assignments.append(json_safe_assignment)
         
         return json_safe_assignments
+
+    # ---------------------- Subject access helpers ----------------------
+    @staticmethod
+    def subjects_for_grade(grade_id: int, stream_id: Optional[int] = None, education_level: Optional[str] = None):
+        """Return distinct Subject rows assigned to a given grade (and optional stream).
+
+        Why: Subject has no grade_id column. Class/grade context lives on TeacherSubjectAssignment
+        and Mark. To fetch subjects available for a class, join through TeacherSubjectAssignment.
+
+        Args:
+            grade_id: Grade.id of the class
+            stream_id: optional Stream.id to narrow to a specific stream
+            education_level: optional Subject.education_level filter
+
+        Returns:
+            List[Subject]: unique subjects ordered by name
+        """
+        # Build a base query joining through TeacherSubjectAssignment
+        q = (
+            db.session.query(Subject)
+            .join(TeacherSubjectAssignment, TeacherSubjectAssignment.subject_id == Subject.id)
+            .filter(TeacherSubjectAssignment.grade_id == grade_id)
+        )
+        if stream_id is not None:
+            # Include exact stream matches; accept assignments that are not tied to any stream as well
+            q = q.filter(or_(TeacherSubjectAssignment.stream_id == stream_id,
+                             TeacherSubjectAssignment.stream_id.is_(None)))
+        if education_level:
+            q = q.filter(Subject.education_level == education_level)
+
+        # Distinct by Subject.id to avoid duplicates when multiple teachers/streams map to same subject
+        return q.distinct(Subject.id).order_by(Subject.name.asc()).all()

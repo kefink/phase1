@@ -4,6 +4,7 @@ across all grades and streams with intelligent class structure detection.
 """
 from .class_structure_service import ClassStructureService
 from ..models.academic import Grade, Stream, Subject, Term, AssessmentType, Student, Mark
+from .role_based_data_service import RoleBasedDataService
 from ..models.user import Teacher
 from ..models.assignment import TeacherSubjectAssignment
 from ..extensions import db
@@ -344,8 +345,8 @@ class HeadteacherUniversalService:
             # Get students
             students = Student.query.filter_by(stream_id=stream.id).all()
             
-            # Get subjects for this grade
-            subjects = Subject.query.filter_by(grade_id=grade.id).all()
+            # Get subjects for this grade via assignments (Subject has no direct grade_id)
+            subjects = RoleBasedDataService.subjects_for_grade(grade_id=grade.id, stream_id=stream.id)
             
             # Get class teacher
             class_teacher = Teacher.query.filter_by(stream_id=stream.id, role='classteacher').first()
@@ -374,7 +375,8 @@ class HeadteacherUniversalService:
                     {
                         'id': s.id,
                         'name': s.name,
-                        'code': s.code
+                        # Some schemas may not define a code field on Subject
+                        'code': getattr(s, 'code', None)
                     }
                     for s in subjects
                 ],

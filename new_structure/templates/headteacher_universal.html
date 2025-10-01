@@ -878,8 +878,55 @@
         .class-card { border-color: rgba(0, 43, 54, 0.35) !important; }
       }
     </style>
+    <!-- Dark glass Solar overrides to match Parent Management Dashboard -->
+    <style id="solar-dark-glass-overrides">
+      :root {
+        --solar-body-bg: var(--solar-base03);
+        --solar-body-color: var(--solar-base0);
+        --solar-card-bg: rgba(7, 54, 66, 0.95);
+        --solar-glass-border: rgba(131, 148, 150, 0.3);
+        --radius-2xl: 1.5rem;
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.35), 0 2px 4px -2px rgb(0 0 0 / 0.35);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
+      }
+      html, body, body.solar-theme { background: var(--solar-body-bg) !important; color: var(--solar-body-color) !important; background-attachment: fixed !important; }
+      /* Increase specificity to beat earlier 'body.solar-theme .card' rules */
+      body.solar-theme[data-theme="solar-dark"] .card,
+      body.solar-theme[data-theme="solar-dark"] .stat-card,
+      body.solar-theme[data-theme="solar-dark"] .quick-action-card,
+      body.solar-theme[data-theme="solar-dark"] .class-card,
+      .card, .stat-card, .quick-action-card, .class-card {
+        background: var(--solar-card-bg) !important;
+        border: 1px solid var(--solar-glass-border) !important;
+        border-radius: var(--radius-2xl) !important;
+        box-shadow: var(--shadow-md) !important;
+        color: var(--solar-base3) !important;
+      }
+      body.solar-theme[data-theme="solar-dark"] .card:hover,
+      body.solar-theme[data-theme="solar-dark"] .stat-card:hover,
+      body.solar-theme[data-theme="solar-dark"] .quick-action-card:hover,
+      body.solar-theme[data-theme="solar-dark"] .class-card:hover,
+      .card:hover, .stat-card:hover, .quick-action-card:hover, .class-card:hover {
+        box-shadow: var(--shadow-lg) !important;
+        transform: translateY(-3px);
+      }
+      .page-title, .card-title, .section-header h2, .quick-action-title, .class-name { color: var(--solar-base3) !important; }
+      .page-subtitle, .class-info, .quick-action-desc, .stat-label, .loading { color: var(--solar-base0) !important; }
+      /* Ensure per-card text has contrast */
+      .class-card .class-info, .class-card .class-name, .class-card .stat-label, .class-card .stat-number { color: inherit !important; }
+      .stat-number { color: var(--solar-yellow) !important; font-weight: 800 !important; }
+      .stat-label { color: var(--solar-base0) !important; }
+      .recent-item-title, .recent-item-meta { color: var(--solar-base0) !important; }
+      .action-btn { background: linear-gradient(135deg, var(--solar-yellow) 0%, var(--solar-orange) 100%) !important; color: var(--solar-base3) !important; border: none !important; }
+      .action-btn.secondary { background: var(--solar-base01) !important; color: var(--solar-base3) !important; }
+      /* Nav and separators */
+      .navbar { background: linear-gradient(135deg, var(--solar-base03) 0%, var(--solar-base02) 100%) !important; border-bottom: 2px solid var(--solar-yellow) !important; }
+      .card-header { border-bottom: 1px solid var(--solar-glass-border) !important; }
+      /* Icons: keep readable */
+      .heroicon-navigation, .heroicon-management, .heroicon-students, .heroicon-subjects, .heroicon-teachers, .heroicon-marks, .heroicon-reports, .heroicon-config { filter: none !important; }
+    </style>
   </head>
-  <body class="solar-theme">
+  <body class="solar-theme" data-theme="solar-dark" style="background: var(--solar-body-bg) !important; color: var(--solar-body-color) !important;">
     <!-- Navigation -->
   <nav class="navbar" id="mainNavbar">
       <a href="{{ url_for('admin.dashboard') }}" class="navbar-brand">
