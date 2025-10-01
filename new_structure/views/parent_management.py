@@ -165,9 +165,10 @@ def dashboard():
         )
         
         # Get students without parents linked with filtering and pagination
+        # Include students even if they don't yet have grade/stream assigned
         students_without_parents_query = db.session.query(Student, Grade, Stream)\
-            .join(Grade, Student.grade_id == Grade.id)\
-            .join(Stream, Student.stream_id == Stream.id)\
+            .outerjoin(Grade, Student.grade_id == Grade.id)\
+            .outerjoin(Stream, Student.stream_id == Stream.id)\
             .outerjoin(ParentStudent, Student.id == ParentStudent.student_id)\
             .filter(ParentStudent.student_id.is_(None))
         
@@ -195,7 +196,7 @@ def dashboard():
             page=students_page, per_page=per_page, error_out=False
         )
         
-        # Get filter options
+    # Get filter options
         all_grades = Grade.query.order_by(Grade.name).all()
         all_streams = Stream.query.order_by(Stream.name).all()
         # Use canonical ordered education levels for UI
@@ -251,10 +252,10 @@ def export_unlinked_data():
             .order_by(Parent.created_at.desc()) \
             .all()
 
-        # Unlinked students with class info
+        # Unlinked students with class info (include those missing class assignment)
         unlinked_students = db.session.query(Student, Grade, Stream) \
-            .join(Grade, Student.grade_id == Grade.id) \
-            .join(Stream, Student.stream_id == Stream.id) \
+            .outerjoin(Grade, Student.grade_id == Grade.id) \
+            .outerjoin(Stream, Student.stream_id == Stream.id) \
             .outerjoin(ParentStudent, Student.id == ParentStudent.student_id) \
             .filter(ParentStudent.student_id.is_(None)) \
             .order_by(Grade.name, Stream.name, Student.name) \
@@ -353,10 +354,10 @@ def dashboard_enhanced():
             .order_by(Parent.created_at.desc())\
             .all()
         
-        # Get students without parents linked
+        # Get students without parents linked (include those without class assignment)
         students_without_parents = db.session.query(Student, Grade, Stream)\
-            .join(Grade, Student.grade_id == Grade.id)\
-            .join(Stream, Student.stream_id == Stream.id)\
+            .outerjoin(Grade, Student.grade_id == Grade.id)\
+            .outerjoin(Stream, Student.stream_id == Stream.id)\
             .outerjoin(ParentStudent, Student.id == ParentStudent.student_id)\
             .filter(ParentStudent.student_id.is_(None))\
             .order_by(Grade.name, Stream.name, Student.name)\
