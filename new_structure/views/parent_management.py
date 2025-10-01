@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from functools import wraps
 from ..services.auth_service import is_authenticated, get_role
 from ..models import db
+from sqlalchemy import exists, and_
 try:
     from ..models.parent import Parent, ParentStudent, ParentEmailLog, EmailTemplate
 except ImportError:
@@ -164,13 +165,18 @@ def dashboard():
             page=parents_page, per_page=per_page, error_out=False
         )
         
-        # Get students without parents linked with filtering and pagination
+        # Get students without ACTIVE parents linked with filtering and pagination
         # Include students even if they don't yet have grade/stream assigned
+        # Definition: a student is "unlinked" if there is NO ParentStudent link to an active Parent
+        active_parent_exists = db.session.query(Parent.id) \
+            .join(ParentStudent, Parent.id == ParentStudent.parent_id) \
+            .filter(and_(ParentStudent.student_id == Student.id, Parent.is_active == True)) \
+            .exists()
+
         students_without_parents_query = db.session.query(Student, Grade, Stream)\
             .outerjoin(Grade, Student.grade_id == Grade.id)\
             .outerjoin(Stream, Student.stream_id == Stream.id)\
-            .outerjoin(ParentStudent, Student.id == ParentStudent.student_id)\
-            .filter(ParentStudent.student_id.is_(None))
+            .filter(~active_parent_exists)
         
         # Apply filters
         if grade_filter:
@@ -253,11 +259,15 @@ def export_unlinked_data():
             .all()
 
         # Unlinked students with class info (include those missing class assignment)
+        active_parent_exists = db.session.query(Parent.id) \
+            .join(ParentStudent, Parent.id == ParentStudent.parent_id) \
+            .filter(and_(ParentStudent.student_id == Student.id, Parent.is_active == True)) \
+            .exists()
+
         unlinked_students = db.session.query(Student, Grade, Stream) \
             .outerjoin(Grade, Student.grade_id == Grade.id) \
             .outerjoin(Stream, Student.stream_id == Stream.id) \
-            .outerjoin(ParentStudent, Student.id == ParentStudent.student_id) \
-            .filter(ParentStudent.student_id.is_(None)) \
+            .filter(~active_parent_exists) \
             .order_by(Grade.name, Stream.name, Student.name) \
             .all()
 
@@ -358,12 +368,16 @@ def dashboard_enhanced():
             .order_by(Parent.created_at.desc())\
             .all()
         
-        # Get students without parents linked (include those without class assignment)
+        # Get students without ACTIVE parents linked (include those without class assignment)
+        active_parent_exists = db.session.query(Parent.id) \
+            .join(ParentStudent, Parent.id == ParentStudent.parent_id) \
+            .filter(and_(ParentStudent.student_id == Student.id, Parent.is_active == True)) \
+            .exists()
+
         students_without_parents = db.session.query(Student, Grade, Stream)\
             .outerjoin(Grade, Student.grade_id == Grade.id)\
             .outerjoin(Stream, Student.stream_id == Stream.id)\
-            .outerjoin(ParentStudent, Student.id == ParentStudent.student_id)\
-            .filter(ParentStudent.student_id.is_(None))\
+            .filter(~active_parent_exists)\
             .order_by(Grade.name, Stream.name, Student.name)\
             .all()
         
