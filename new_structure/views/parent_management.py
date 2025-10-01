@@ -283,7 +283,11 @@ def export_unlinked_data():
         writer.writerow(["id", "name", "admission_number", "grade", "stream"]) 
         for s, g, st in unlinked_students:
             writer.writerow([
-                s.id, s.name, s.admission_number or '', g.name, st.name
+                s.id,
+                s.name,
+                s.admission_number or '',
+                (g.name if g else ''),
+                (st.name if st else '')
             ])
 
         csv_data = buf.getvalue()
