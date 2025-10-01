@@ -8,107 +8,141 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
     <style>
-      .link-container {
-        max-width: 800px;
-        margin: 40px auto;
-        padding: 20px;
+      :root {
+        --bg: #0b1220;
+        --card: rgba(17, 24, 39, 0.6);
+        --border: rgba(148, 163, 184, 0.2);
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --primary: #22d3ee;
+        --primary-600: #06b6d4;
+        --radius: 14px;
+        --shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
       }
-
-      .form-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 15px 15px 0 0;
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, sans-serif;
+        color: var(--text);
+        background: radial-gradient(
+            1200px 800px at 10% 10%,
+            rgba(34, 211, 238, 0.12),
+            transparent 60%
+          ),
+          radial-gradient(
+            1000px 700px at 90% 20%,
+            rgba(245, 158, 11, 0.08),
+            transparent 60%
+          ),
+          linear-gradient(180deg, var(--bg) 0%, #0a0f1c 100%);
+      }
+      .hi {
+        width: 1.1em;
+        height: 1.1em;
+        vertical-align: -0.15em;
+      }
+      .container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        backdrop-filter: blur(8px);
+      }
+      .header {
+        padding: 26px 24px;
+        background: linear-gradient(
+          135deg,
+          rgba(34, 211, 238, 0.16),
+          rgba(17, 24, 39, 0)
+        );
+        border-bottom: 1px solid var(--border);
         text-align: center;
       }
-
-      .form-body {
-        background: white;
-        padding: 30px;
-        border-radius: 0 0 15px 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      .header h1 {
+        margin: 0 0 6px;
+        font-size: 22px;
+        font-weight: 700;
       }
-
-      .search-section {
+      .header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .body {
+        padding: 24px;
+      }
+      .grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        margin-bottom: 30px;
+        gap: 22px;
       }
-
-      .search-box {
-        border: 2px solid #e1e5e9;
-        border-radius: 10px;
-        padding: 20px;
+      .box {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        background: rgba(2, 6, 23, 0.45);
       }
-
-      .search-title {
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 15px;
+      .title {
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
       }
-
       .search-input {
         width: 100%;
-        padding: 12px 15px;
-        border: 2px solid #e1e5e9;
-        border-radius: 8px;
-        font-size: 16px;
-        margin-bottom: 15px;
-      }
-
-      .search-input:focus {
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(2, 6, 23, 0.45);
+        color: var(--text);
         outline: none;
-        border-color: #667eea;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        margin-bottom: 12px;
       }
-
-      .search-results {
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid #e1e5e9;
-        border-radius: 8px;
+      .search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
       }
-
-      .result-item {
-        padding: 12px 15px;
-        border-bottom: 1px solid #f0f0f0;
+      .results {
+        max-height: 220px;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+      .item {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
         cursor: pointer;
-        transition: background-color 0.3s ease;
       }
-
-      .result-item:hover {
-        background-color: #f8f9fa;
+      .item:hover {
+        background: rgba(148, 163, 184, 0.08);
       }
-
-      .result-item.selected {
-        background-color: #e3f2fd;
-        border-left: 4px solid #667eea;
+      .name {
+        font-weight: 600;
       }
-
-      .result-name {
-        font-weight: bold;
-        color: #333;
+      .details {
+        color: var(--muted);
+        font-size: 13px;
       }
-
-      .result-details {
-        color: #666;
-        font-size: 0.9em;
-      }
-
-      .selected-info {
-        background: #e8f5e8;
-        border: 2px solid #4caf50;
-        border-radius: 8px;
-        padding: 15px;
-        margin-top: 15px;
+      .selected {
+        background: rgba(34, 211, 238, 0.08);
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        border-radius: 10px;
+        padding: 12px;
+        margin-top: 10px;
       }
       .chips {
         display: flex;
@@ -116,9 +150,9 @@
         gap: 8px;
       }
       .chip {
-        background: #fff;
-        border: 1px solid #cde8cd;
-        color: #2e7d32;
+        background: rgba(148, 163, 184, 0.08);
+        border: 1px solid var(--border);
+        color: var(--text);
         padding: 6px 10px;
         border-radius: 16px;
         display: inline-flex;
@@ -128,206 +162,345 @@
       .chip button {
         border: none;
         background: transparent;
-        color: #2e7d32;
+        color: var(--muted);
         cursor: pointer;
       }
-
-      .selected-info h4 {
-        color: #2e7d32;
-        margin: 0 0 10px 0;
-      }
-
       .form-group {
-        margin-bottom: 25px;
+        margin-top: 18px;
       }
-
       .form-label {
         display: block;
         margin-bottom: 8px;
-        font-weight: bold;
-        color: #333;
+        font-weight: 600;
       }
-
       .form-control {
         width: 100%;
-        padding: 12px 15px;
-        border: 2px solid #e1e5e9;
-        border-radius: 8px;
-        font-size: 16px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(2, 6, 23, 0.45);
+        color: var(--text);
       }
-
-      .checkbox-group {
+      .checkbox {
         display: flex;
         align-items: center;
         gap: 10px;
         margin-top: 10px;
       }
-
-      .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 15px 30px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: bold;
+      .row-actions {
+        margin-top: 22px;
+        display: flex;
+        gap: 12px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        text-decoration: none;
+        transition: 0.18s ease all;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-600));
+        color: #001018;
+        box-shadow: 0 10px 20px rgba(34, 211, 238, 0.15);
         width: 100%;
       }
-
       .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 16px 26px rgba(34, 211, 238, 0.22);
       }
-
       .btn-primary:disabled {
-        background: #ccc;
+        filter: grayscale(1);
+        opacity: 0.5;
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
       }
-
       .btn-secondary {
-        background: #6c757d;
-        color: white;
-        padding: 12px 25px;
-        border: none;
-        border-radius: 8px;
-        text-decoration: none;
-        display: inline-block;
-        transition: all 0.3s ease;
+        background: rgba(148, 163, 184, 0.12);
+        color: var(--text);
+        border-color: var(--border);
       }
-
       .btn-secondary:hover {
-        background: #5a6268;
+        background: rgba(148, 163, 184, 0.2);
+        transform: translateY(-1px);
       }
-
-      .no-results {
+      .footer {
         text-align: center;
-        color: #666;
-        padding: 20px;
-        font-style: italic;
+        margin-top: 16px;
+      }
+      .flash-messages {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+      }
+      .alert {
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 12px 14px;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        min-width: 280px;
+        max-width: 420px;
+      }
+      .close {
+        float: right;
+        background: none;
+        border: none;
+        font-size: 1.2em;
+        cursor: pointer;
+        color: var(--muted);
       }
     </style>
+    <meta name="color-scheme" content="dark light" />
   </head>
   <body>
-    <div class="link-container">
-      <div class="form-header">
-        <h1><i class="fas fa-link"></i> Link Parent & Student</h1>
-        <p>Connect parents with their children in the system</p>
-      </div>
-
-      <div class="form-body">
-        <form method="POST" id="linkForm">
-          <!-- Search Section -->
-          <div class="search-section">
-            <!-- Parent Search -->
-            <div class="search-box">
-              <div class="search-title">
-                <i class="fas fa-user"></i> Select Parent
-              </div>
-              <input
-                type="text"
-                id="parentSearch"
-                class="search-input"
-                placeholder="Search by name or email..."
+    <div class="container">
+      <div class="card">
+        <div class="header">
+          <h1>
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3.75 12a.75.75 0 0 1 .75-.75h15a.75.75 0 0 1 0 1.5h-15A.75.75 0 0 1 3.75 12Zm3.22-3.53a.75.75 0 0 1 1.06 0L12 12.44l3.97-3.97a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 0-1.06Z"
+                clip-rule="evenodd"
               />
-              <div class="search-results" id="parentResults">
-                <div class="no-results">Start typing to search for parents</div>
-              </div>
-              <div
-                id="selectedParent"
-                class="selected-info"
-                style="display: none"
-              >
-                <h4><i class="fas fa-check-circle"></i> Selected Parents</h4>
-                <div id="selectedParentInfo" class="chips"></div>
-                <div style="margin-top: 10px">
-                  <button
-                    type="button"
-                    class="btn-secondary"
-                    style="padding: 6px 10px; font-size: 12px"
-                    onclick="clearSelectedParents()"
+            </svg>
+            Link Parent & Student
+          </h1>
+          <p>Connect parents with their children in the system</p>
+        </div>
+        <div class="body">
+          <form method="POST" id="linkForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <!-- Search Section -->
+            <div class="grid">
+              <!-- Parent Search -->
+              <div class="box">
+                <div class="title">
+                  <svg
+                    class="hi"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
                   >
-                    <i class="fas fa-times"></i> Clear
-                  </button>
+                    <path
+                      d="M15 14c-3.866 0-7 1.79-7 4v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1c0-2.21-3.134-4-7-4Zm-3-3a4 4 0 1 0-8 0 4 4 0 0 0 8 0Zm7.5 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
+                    />
+                  </svg>
+                  Select Parent
                 </div>
+                <input
+                  type="text"
+                  id="parentSearch"
+                  class="search-input"
+                  placeholder="Search by name or email..."
+                />
+                <div class="results" id="parentResults">
+                  <div
+                    class="item"
+                    style="text-align: center; color: var(--muted)"
+                  >
+                    Start typing to search for parents
+                  </div>
+                </div>
+                <div id="selectedParent" class="selected" style="display: none">
+                  <div
+                    class="title"
+                    style="
+                      margin: 0 0 6px 0;
+                      font-size: 14px;
+                      color: var(--muted);
+                    "
+                  >
+                    <svg
+                      class="hi"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.75 6.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12 11a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 12 11Z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Selected Parents
+                  </div>
+                  <div id="selectedParentInfo" class="chips"></div>
+                  <div style="margin-top: 10px">
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      style="padding: 6px 10px; font-size: 12px"
+                      onclick="clearSelectedParents()"
+                    >
+                      <svg
+                        class="hi"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M6.72 6.72a.75.75 0 0 1 1.06 0L12 10.94l4.22-4.22a.75.75 0 1 1 1.06 1.06L13.06 12l4.22 4.22a.75.75 0 1 1-1.06 1.06L12 13.06l-4.22 4.22a.75.75 0 0 1-1.06-1.06L10.94 12 6.72 7.78a.75.75 0 0 1 0-1.06Z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      Clear
+                    </button>
+                  </div>
+                </div>
+                <input type="hidden" id="parent_id" name="parent_id" />
               </div>
-              <input type="hidden" id="parent_id" name="parent_id" />
-              <!-- fallback single -->
+
+              <!-- Student Search -->
+              <div class="box">
+                <div class="title">
+                  <svg
+                    class="hi"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 3c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2Zm-2.25 6.75A.75.75 0 0 1 10.5 9h3a.75.75 0 0 1 .75.75v.75h1.5a.75.75 0 0 1 0 1.5h-1.568l-.36 1.8a.75.75 0 0 1-.736.6h-1.152a.75.75 0 0 1-.736-.6l-.36-1.8H8.25a.75.75 0 0 1 0-1.5h1.5v-.75Z"
+                    />
+                  </svg>
+                  Select Student
+                </div>
+                <input
+                  type="text"
+                  id="studentSearch"
+                  class="search-input"
+                  placeholder="Search by name or admission number..."
+                />
+                <div class="results" id="studentResults">
+                  <div
+                    class="item"
+                    style="text-align: center; color: var(--muted)"
+                  >
+                    Start typing to search for students
+                  </div>
+                </div>
+                <div
+                  id="selectedStudent"
+                  class="selected"
+                  style="display: none"
+                >
+                  <div
+                    class="title"
+                    style="
+                      margin: 0 0 6px 0;
+                      font-size: 14px;
+                      color: var(--muted);
+                    "
+                  >
+                    <svg
+                      class="hi"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.75 6.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12 11a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 12 11Z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Selected Student
+                  </div>
+                  <div id="selectedStudentInfo"></div>
+                </div>
+                <input type="hidden" id="student_id" name="student_id" />
+              </div>
             </div>
 
-            <!-- Student Search -->
-            <div class="search-box">
-              <div class="search-title">
-                <i class="fas fa-user-graduate"></i> Select Student
-              </div>
-              <input
-                type="text"
-                id="studentSearch"
-                class="search-input"
-                placeholder="Search by name or admission number..."
-              />
-              <div class="search-results" id="studentResults">
-                <div class="no-results">
-                  Start typing to search for students
-                </div>
-              </div>
-              <div
-                id="selectedStudent"
-                class="selected-info"
-                style="display: none"
+            <!-- Relationship Details -->
+            <div class="form-group">
+              <label for="relationship_type" class="form-label"
+                >Relationship Type</label
               >
-                <h4><i class="fas fa-check-circle"></i> Selected Student</h4>
-                <div id="selectedStudentInfo"></div>
-              </div>
-              <input type="hidden" id="student_id" name="student_id" />
+              <select
+                id="relationship_type"
+                name="relationship_type"
+                class="form-control"
+              >
+                <option value="parent">Parent</option>
+                <option value="guardian">Guardian</option>
+                <option value="relative">Relative</option>
+              </select>
             </div>
-          </div>
 
-          <!-- Relationship Details -->
-          <div class="form-group">
-            <label for="relationship_type" class="form-label"
-              >Relationship Type</label
+            <div class="checkbox">
+              <input
+                type="checkbox"
+                id="is_primary_contact"
+                name="is_primary_contact"
+              />
+              <label for="is_primary_contact"
+                >Set as primary contact for this student</label
+              >
+            </div>
+
+            <!-- Submit Button -->
+            <div class="row-actions">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                id="submitBtn"
+                disabled
+              >
+                <svg
+                  class="hi"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M3.75 12a.75.75 0 0 1 .75-.75h15a.75.75 0 0 1 0 1.5h-15A.75.75 0 0 1 3.75 12Zm3.22-3.53a.75.75 0 0 1 1.06 0L12 12.44l3.97-3.97a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 0-1.06Z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Create Link
+              </button>
+            </div>
+          </form>
+
+          <div class="footer">
+            <a
+              href="{{ url_for('parent_management.dashboard') }}"
+              class="btn btn-secondary"
             >
-            <select
-              id="relationship_type"
-              name="relationship_type"
-              class="form-control"
-            >
-              <option value="parent">Parent</option>
-              <option value="guardian">Guardian</option>
-              <option value="relative">Relative</option>
-            </select>
+              <svg
+                class="hi"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M19.5 12a.75.75 0 0 1-.75.75H7.31l3.22 3.22a.75.75 0 0 1-1.06 1.06l-4.5-4.5a.75.75 0 0 1 0-1.06l4.5-4.5a.75.75 0 1 1 1.06 1.06l-3.22 3.22h11.44a.75.75 0 0 1 .75.75Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Back to Dashboard
+            </a>
           </div>
-
-          <div class="checkbox-group">
-            <input
-              type="checkbox"
-              id="is_primary_contact"
-              name="is_primary_contact"
-            />
-            <label for="is_primary_contact"
-              >Set as primary contact for this student</label
-            >
-          </div>
-
-          <!-- Submit Button -->
-          <div style="margin-top: 30px">
-            <button type="submit" class="btn-primary" id="submitBtn" disabled>
-              <i class="fas fa-link"></i> Create Link
-            </button>
-          </div>
-        </form>
-
-        <div style="text-align: center; margin-top: 20px">
-          <a
-            href="{{ url_for('parent_management.dashboard') }}"
-            class="btn-secondary"
-          >
-            <i class="fas fa-arrow-left"></i> Back to Dashboard
-          </a>
         </div>
       </div>
     </div>
@@ -335,34 +508,16 @@
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %}
-    <div
-      class="flash-messages"
-      style="position: fixed; top: 20px; right: 20px; z-index: 1000"
-    >
+    <div class="flash-messages">
       {% for category, message in messages %}
       <div
         class="alert alert-{{ 'danger' if category == 'error' else category }}"
-        style="
-          margin-bottom: 10px;
-          padding: 15px;
-          border-radius: 8px;
-          background: white;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-          max-width: 400px;
-        "
       >
         {{ message }}
         <button
           type="button"
           class="close"
           onclick="this.parentElement.remove();"
-          style="
-            float: right;
-            background: none;
-            border: none;
-            font-size: 1.2em;
-            cursor: pointer;
-          "
         >
           &times;
         </button>
@@ -387,7 +542,7 @@
           const query = this.value.trim();
           if (query.length < 2) {
             document.getElementById("parentResults").innerHTML =
-              '<div class="no-results">Start typing to search for parents</div>';
+              '<div class="item" style="text-align:center; color: var(--muted);">Start typing to search for parents</div>';
             return;
           }
 
@@ -404,30 +559,29 @@
                   .map(
                     (parent) =>
                       `
-                            <div class=\"result-item\" onclick=\"selectParent(${
-                              parent.id
-                            }, '${parent.name.replace(
+                      <div class="item" onclick="selectParent(${
+                        parent.id
+                      }, '${parent.name.replace(
                         /'/g,
                         "'"
-                      )}', '${parent.email.replace(/'/g, "'")}')\">` +
-                      `
-                                <div class="result-name">${parent.name}</div>
-                                <div class="result-details">${parent.email} ${
-                        parent.phone ? "• " + parent.phone : ""
+                      )}', '${parent.email.replace(/'/g, "'")}')">
+                        <div class="name">${parent.name}</div>
+                        <div class="details">${parent.email} ${
+                        parent.phone ? "\u2022 " + parent.phone : ""
                       }</div>
-                            </div>
-                        `
+                      </div>
+                    `
                   )
                   .join("");
               } else {
                 resultsDiv.innerHTML =
-                  '<div class="no-results">No parents found</div>';
+                  '<div class="item" style="text-align:center; color: var(--muted);">No parents found</div>';
               }
             })
             .catch((error) => {
               console.error("Error searching parents:", error);
               document.getElementById("parentResults").innerHTML =
-                '<div class="no-results">Error searching parents</div>';
+                '<div class="item" style="text-align:center; color: var(--muted);">Error searching parents</div>';
             });
         });
 
@@ -438,7 +592,7 @@
           const query = this.value.trim();
           if (query.length < 2) {
             document.getElementById("studentResults").innerHTML =
-              '<div class="no-results">Start typing to search for students</div>';
+              '<div class="item" style="text-align:center; color: var(--muted);">Start typing to search for students</div>';
             return;
           }
 
@@ -454,22 +608,22 @@
                 resultsDiv.innerHTML = data.students
                   .map(
                     (student) => `
-                            <div class="result-item" onclick="selectStudent(${student.id}, '${student.name}', '${student.admission_number}', '${student.class}')">
-                                <div class="result-name">${student.name}</div>
-                                <div class="result-details">${student.admission_number} • ${student.class}</div>
-                            </div>
-                        `
+                    <div class="item" onclick="selectStudent(${student.id}, '${student.name}', '${student.admission_number}', '${student.class}')">
+                      <div class="name">${student.name}</div>
+                      <div class="details">${student.admission_number} \u2022 ${student.class}</div>
+                    </div>
+                  `
                   )
                   .join("");
               } else {
                 resultsDiv.innerHTML =
-                  '<div class="no-results">No students found</div>';
+                  '<div class="item" style="text-align:center; color: var(--muted);">No students found</div>';
               }
             })
             .catch((error) => {
               console.error("Error searching students:", error);
               document.getElementById("studentResults").innerHTML =
-                '<div class="no-results">Error searching students</div>';
+                '<div class="item" style="text-align:center; color: var(--muted);">Error searching students</div>';
             });
         });
 
@@ -479,7 +633,7 @@
         selectedParents.forEach((p) => {
           const div = document.createElement("div");
           div.className = "chip";
-          div.innerHTML = `<span><strong>${p.name}</strong> <small style="color:#2e7d32;opacity:.8">(${p.email})</small></span>`;
+          div.innerHTML = `<span><strong>${p.name}</strong> <small style=\"color:#9ca3af;opacity:.85\">(${p.email})</small></span>`;
           const btn = document.createElement("button");
           btn.type = "button";
           btn.innerHTML = "&times;";
@@ -507,7 +661,7 @@
         document.getElementById("parent_id").value = id;
         document.getElementById("parentSearch").value = "";
         document.getElementById("parentResults").innerHTML =
-          '<div class="no-results">Parent added</div>';
+          '<div class="item" style="text-align:center; color: var(--muted);">Parent added</div>';
         renderSelectedParents();
         checkFormComplete();
       }
@@ -529,11 +683,11 @@
         document.getElementById("student_id").value = id;
         document.getElementById(
           "selectedStudentInfo"
-        ).innerHTML = `<strong>${name}</strong><br>${admissionNumber} • ${className}`;
+        ).innerHTML = `<strong>${name}</strong><br>${admissionNumber} \u2022 ${className}`;
         document.getElementById("selectedStudent").style.display = "block";
         document.getElementById("studentSearch").value = name;
         document.getElementById("studentResults").innerHTML =
-          '<div class="no-results">Student selected</div>';
+          '<div class="item" style="text-align:center; color: var(--muted);">Student selected</div>';
         checkFormComplete();
       }
 

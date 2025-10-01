@@ -26,6 +26,11 @@
     />
 
     <style>
+      .hi {
+        width: 1.1em;
+        height: 1.1em;
+        vertical-align: -0.15em;
+      }
       /* Solar Theme Variables */
       :root {
         --solar-primary: #b58900;
@@ -66,7 +71,22 @@
       body {
         font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
-        background: var(--solar-body-bg);
+        background: radial-gradient(
+            900px 600px at 15% 85%,
+            rgba(181, 137, 0, 0.12),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 600px at 85% 15%,
+            rgba(38, 139, 210, 0.12),
+            transparent 60%
+          ),
+          radial-gradient(
+            800px 500px at 45% 45%,
+            rgba(42, 161, 152, 0.12),
+            transparent 60%
+          ),
+          var(--solar-body-bg);
         color: var(--solar-body-color);
         line-height: 1.6;
         min-height: 100vh;
@@ -97,6 +117,23 @@
       .header {
         text-align: center;
         margin-bottom: var(--space-6);
+      }
+
+      .header-icon {
+        width: 82px;
+        height: 82px;
+        border-radius: 50%;
+        margin: 0 auto var(--space-3);
+        display: grid;
+        place-items: center;
+        background: linear-gradient(
+          135deg,
+          var(--solar-primary),
+          var(--solar-warning)
+        );
+        border: 2px solid rgba(253, 246, 227, 0.12);
+        box-shadow: 0 15px 35px rgba(181, 137, 0, 0.28),
+          0 5px 15px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(253, 246, 227, 0.2);
       }
 
       .header h1 {
@@ -149,24 +186,55 @@
         color: var(--solar-secondary);
       }
 
+      .input-group {
+        position: relative;
+      }
+      .password-toggle {
+        position: absolute;
+        right: var(--space-3);
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: 1px solid rgba(131, 148, 150, 0.25);
+        color: var(--solar-secondary);
+        cursor: pointer;
+        padding: var(--space-2);
+        border-radius: var(--border-radius);
+        transition: all 0.2s ease;
+        background: rgba(7, 54, 66, 0.4);
+      }
+      .password-toggle:hover {
+        color: var(--solar-primary);
+        background: rgba(181, 137, 0, 0.1);
+      }
+
       /* Submit Button */
       .submit-btn {
         width: 100%;
         padding: var(--space-4);
-        background: var(--solar-primary);
-        color: var(--solar-dark);
-        border: none;
+        background: linear-gradient(
+          135deg,
+          var(--solar-primary),
+          var(--solar-warning)
+        );
+        color: var(--solar-light);
+        border: 1px solid transparent;
         border-radius: var(--border-radius);
         font-size: 1rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
         transition: all 0.3s ease;
         margin-bottom: var(--space-4);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 8px 25px rgba(181, 137, 0, 0.25);
       }
 
       .submit-btn:hover {
-        background: #d49600;
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(181, 137, 0, 0.35);
       }
 
       .submit-btn:active {
@@ -199,7 +267,10 @@
         padding: var(--space-3) var(--space-4);
         border-radius: var(--border-radius);
         margin-bottom: var(--space-2);
-        font-weight: 500;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
 
       .flash-success {
@@ -285,13 +356,81 @@
         messages %}
         <div class="flash-messages">
           {% for category, message in messages %}
-          <div class="flash-message flash-{{ category }}">{{ message }}</div>
+          <div
+            class="flash-message flash-{{ 'error' if category == 'danger' else category }}"
+          >
+            {% if category in ['success'] %}
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm4.28 7.47a.75.75 0 0 0-1.06-1.06L11 12.88l-1.72-1.72a.75.75 0 1 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.06 0l4.75-4.75Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            {% elif category in ['error','danger'] %}
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10.34 2.87a1.5 1.5 0 0 1 2.32 0l8.1 10.26c.69.87.06 2.16-1.16 2.16H3.4c-1.22 0-1.85-1.29-1.16-2.16l8.1-10.26ZM12 8a1 1 0 0 0-1 1v3.25a1 1 0 0 0 2 0V9a1 1 0 0 0-1-1Zm0 7.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            {% elif category in ['info'] %}
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm.75 5.5a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM11 10a1 1 0 0 1 2 0v6a1 1 0 1 1-2 0v-6Z"
+              />
+            </svg>
+            {% else %}
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 5H11v2h2V7Zm0 4H11v6h2v-6Z"
+              />
+            </svg>
+            {% endif %} {{ message }}
+          </div>
           {% endfor %}
         </div>
         {% endif %} {% endwith %}
 
         <!-- Header -->
         <div class="header">
+          <div class="header-icon">
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+              style="width: 2rem; height: 2rem; color: #001018"
+            >
+              <path
+                d="M12 13c3.866 0 7 1.79 7 4v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2c0-2.21 3.134-4 7-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"
+              />
+              <path
+                d="M19 8a1 1 0 1 1 2 0v2h2a1 1 0 1 1 0 2h-2v2a1 1 0 1 1-2 0v-2h-2a1 1 0 1 1 0-2h2V8Z"
+              />
+            </svg>
+          </div>
           <h1>Parent Registration</h1>
           <p>
             Create your parent account to access your children's academic
@@ -301,6 +440,7 @@
 
         <!-- Registration Form -->
         <form method="POST" action="{{ url_for('parent.register') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <div class="form-group">
             <label for="first_name" class="form-label required"
               >First Name</label
@@ -356,14 +496,46 @@
 
           <div class="form-group">
             <label for="password" class="form-label required">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              class="form-input"
-              placeholder="Create a strong password"
-              required
-            />
+            <div class="input-group">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-input"
+                placeholder="Create a strong password"
+                required
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                onclick="togglePassword('password','eye-open-1','eye-closed-1')"
+                aria-label="Toggle password visibility"
+              >
+                <svg
+                  id="eye-open-1"
+                  class="hi"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 5c4.5 0 8.59 2.69 10 6.5C20.59 15.31 16.5 18 12 18S3.41 15.31 2 11.5C3.41 7.69 7.5 5 12 5Zm0 2c-3.34 0-6.59 1.86-7.93 4.5C5.41 14.14 8.66 16 12 16s6.59-1.86 7.93-4.5C18.59 8.86 15.34 7 12 7Zm0 1.5A3.5 3.5 0 1 1 8.5 12 3.5 3.5 0 0 1 12 8.5Zm0 2A1.5 1.5 0 1 0 13.5 12 1.5 1.5 0 0 0 12 10.5Z"
+                  />
+                </svg>
+                <svg
+                  id="eye-closed-1"
+                  class="hi"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                  style="display: none"
+                >
+                  <path
+                    d="M3.28 2.22a.75.75 0 0 0-1.06 1.06l2.26 2.26C2.99 7 2.07 8.16 1.5 9.5 2.91 13.31 7 16 11.5 16c1.17 0 2.3-.17 3.35-.48l2.87 2.87a.75.75 0 1 0 1.06-1.06l-15.5-15.5ZM12.5 7c-1.04 0-1.99.4-2.7 1.05l4.15 4.15c.65-.71 1.05-1.66 1.05-2.7A2.5 2.5 0 0 0 12.5 7Zm7.93 4.5c-.42.9-1.04 1.71-1.8 2.39l1.11 1.11C21 13.8 22.09 12.77 22.5 11.5 21.09 7.69 17 5 12.5 5c-.8 0-1.58.08-2.32.23l1.47 1.47c.28-.03.56-.05.85-.05 3.34 0 6.59 1.86 7.93 4.5Z"
+                  />
+                </svg>
+              </button>
+            </div>
             <div class="password-requirements">
               <h4>Password Requirements:</h4>
               <ul>
@@ -378,17 +550,64 @@
             <label for="confirm_password" class="form-label required"
               >Confirm Password</label
             >
-            <input
-              type="password"
-              id="confirm_password"
-              name="confirm_password"
-              class="form-input"
-              placeholder="Confirm your password"
-              required
-            />
+            <div class="input-group">
+              <input
+                type="password"
+                id="confirm_password"
+                name="confirm_password"
+                class="form-input"
+                placeholder="Confirm your password"
+                required
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                onclick="togglePassword('confirm_password','eye-open-2','eye-closed-2')"
+                aria-label="Toggle confirm password visibility"
+              >
+                <svg
+                  id="eye-open-2"
+                  class="hi"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 5c4.5 0 8.59 2.69 10 6.5C20.59 15.31 16.5 18 12 18S3.41 15.31 2 11.5C3.41 7.69 7.5 5 12 5Zm0 2c-3.34 0-6.59 1.86-7.93 4.5C5.41 14.14 8.66 16 12 16s6.59-1.86 7.93-4.5C18.59 8.86 15.34 7 12 7Zm0 1.5A3.5 3.5 0 1 1 8.5 12 3.5 3.5 0 0 1 12 8.5Zm0 2A1.5 1.5 0 1 0 13.5 12 1.5 1.5 0 0 0 12 10.5Z"
+                  />
+                </svg>
+                <svg
+                  id="eye-closed-2"
+                  class="hi"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                  style="display: none"
+                >
+                  <path
+                    d="M3.28 2.22a.75.75 0 0 0-1.06 1.06l2.26 2.26C2.99 7 2.07 8.16 1.5 9.5 2.91 13.31 7 16 11.5 16c1.17 0 2.3-.17 3.35-.48l2.87 2.87a.75.75 0 1 0 1.06-1.06l-15.5-15.5ZM12.5 7c-1.04 0-1.99.4-2.7 1.05l4.15 4.15c.65-.71 1.05-1.66 1.05-2.7A2.5 2.5 0 0 0 12.5 7Zm7.93 4.5c-.42.9-1.04 1.71-1.8 2.39l1.11 1.11C21 13.8 22.09 12.77 22.5 11.5 21.09 7.69 17 5 12.5 5c-.8 0-1.58.08-2.32.23l1.47 1.47c.28-.03.56-.05.85-.05 3.34 0 6.59 1.86 7.93 4.5Z"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
-          <button type="submit" class="submit-btn">Create Account</button>
+          <button type="submit" class="submit-btn">
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 13c3.866 0 7 1.79 7 4v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2c0-2.21 3.134-4 7-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"
+              />
+              <path
+                d="M19 8a1 1 0 1 1 2 0v2h2a1 1 0 1 1 0 2h-2v2a1 1 0 1 1-2 0v-2h-2a1 1 0 1 1 0-2h2V8Z"
+              />
+            </svg>
+            Create Account
+          </button>
 
           <div class="form-links">
             <p>
@@ -418,6 +637,15 @@
     </div>
 
     <script>
+      function togglePassword(inputId, openId, closedId) {
+        const input = document.getElementById(inputId);
+        const open = document.getElementById(openId);
+        const closed = document.getElementById(closedId);
+        const reveal = input.type === "password";
+        input.type = reveal ? "text" : "password";
+        open.style.display = reveal ? "none" : "inline";
+        closed.style.display = reveal ? "inline" : "none";
+      }
       // Password confirmation validation
       document
         .getElementById("confirm_password")

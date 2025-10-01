@@ -26,13 +26,6 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
 
     <!-- Optional: Bootswatch Solar (used by other pages) -->
     <link
@@ -46,6 +39,11 @@
     />
 
     <style>
+      .hi {
+        width: 1.1em;
+        height: 1.1em;
+        vertical-align: -0.15em;
+      }
       /* Premium Solar Theme */
       :root {
         --solar-primary: #b58900;
@@ -207,12 +205,7 @@
         }
       }
 
-      .login-icon i {
-        font-size: 2.2rem;
-        color: var(--solar-light);
-        position: relative;
-        z-index: 2;
-      }
+      /* .login-icon i (legacy icon style) not used anymore */
 
       .login-title {
         font-size: 1.75rem;
@@ -428,9 +421,7 @@
           width: 70px;
           height: 70px;
         }
-        .login-icon i {
-          font-size: 1.8rem;
-        }
+        /* legacy icon size rule removed */
       }
 
       @media (max-width: 480px) {
@@ -537,14 +528,52 @@
               type="button"
               class="password-toggle"
               onclick="togglePassword()"
+              aria-label="Toggle password visibility"
             >
-              <i class="fas fa-eye" id="password-eye"></i>
+              <!-- Eye (open) icon -->
+              <svg
+                id="eye-open"
+                class="hi"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 5c4.5 0 8.59 2.69 10 6.5C20.59 15.31 16.5 18 12 18S3.41 15.31 2 11.5C3.41 7.69 7.5 5 12 5Zm0 2c-3.34 0-6.59 1.86-7.93 4.5C5.41 14.14 8.66 16 12 16s6.59-1.86 7.93-4.5C18.59 8.86 15.34 7 12 7Zm0 1.5A3.5 3.5 0 1 1 8.5 12 3.5 3.5 0 0 1 12 8.5Zm0 2A1.5 1.5 0 1 0 13.5 12 1.5 1.5 0 0 0 12 10.5Z"
+                />
+              </svg>
+              <!-- Eye (slash) icon -->
+              <svg
+                id="eye-closed"
+                class="hi"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                style="display: none"
+              >
+                <path
+                  d="M3.28 2.22a.75.75 0 0 0-1.06 1.06l2.26 2.26C2.99 7 2.07 8.16 1.5 9.5 2.91 13.31 7 16 11.5 16c1.17 0 2.3-.17 3.35-.48l2.87 2.87a.75.75 0 1 0 1.06-1.06l-15.5-15.5ZM12.5 7c-1.04 0-1.99.4-2.7 1.05l4.15 4.15c.65-.71 1.05-1.66 1.05-2.7A2.5 2.5 0 0 0 12.5 7Zm7.93 4.5c-.42.9-1.04 1.71-1.8 2.39l1.11 1.11C21 13.8 22.09 12.77 22.5 11.5 21.09 7.69 17 5 12.5 5c-.8 0-1.58.08-2.32.23l1.47 1.47c.28-.03.56-.05.85-.05 3.34 0 6.59 1.86 7.93 4.5Z"
+                />
+              </svg>
             </button>
           </div>
         </div>
 
         <button type="submit" class="login-button">
-          <i class="fas fa-sign-in-alt" style="margin-right: 0.5rem"></i>
+          <svg
+            class="hi"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            style="margin-right: 0.5rem"
+          >
+            <path
+              d="M11 3a1 1 0 1 0-2 0v4a1 1 0 1 0 2 0V3ZM9 17a1 1 0 1 1 2 0v4a1 1 0 1 1-2 0v-4Z"
+            />
+            <path
+              d="M21 12a1 1 0 0 1-1 1h-9.586l2.293 2.293a1 1 0 1 1-1.414 1.414l-4.001-4a1 1 0 0 1 0-1.414l4-4.001a1 1 0 1 1 1.415 1.414L10.413 11H20a1 1 0 0 1 1 1Z"
+            />
+          </svg>
           Sign In
         </button>
       </form>
@@ -555,13 +584,36 @@
 
       <div class="form-links">
         <a href="{{ url_for('parent.forgot_password') }}" class="form-link">
-          <i class="fas fa-key" style="margin-right: 0.3rem"></i>
+          <svg
+            class="hi"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            style="margin-right: 0.3rem"
+          >
+            <path
+              d="M18 8a6 6 0 1 0-11.473 2.121l-3.353 3.353a2.5 2.5 0 1 0 3.536 3.536L10 13.536A6 6 0 0 0 18 8Zm-6-4a4 4 0 0 1 4 4c0 .636-.148 1.238-.41 1.771a1 1 0 0 1-.196.28L8.05 17.394a.5.5 0 0 1-.707 0 .5.5 0 0 1 0-.707l6.96-6.96A2 2 0 1 0 12 6Z"
+            />
+          </svg>
           Forgot Password?
         </a>
         <br />
         <br />
         <a href="{{ url_for('parent.register') }}" class="form-link">
-          <i class="fas fa-user-plus" style="margin-right: 0.3rem"></i>
+          <svg
+            class="hi"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            style="margin-right: 0.3rem"
+          >
+            <path
+              d="M12 13c3.866 0 7 1.79 7 4v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2c0-2.21 3.134-4 7-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"
+            />
+            <path
+              d="M19 8a1 1 0 1 1 2 0v2h2a1 1 0 1 1 0 2h-2v2a1 1 0 1 1-2 0v-2h-2a1 1 0 1 1 0-2h2V8Z"
+            />
+          </svg>
           Create Parent Account
         </a>
       </div>
@@ -623,16 +675,16 @@
 
       function togglePassword() {
         const passwordInput = document.getElementById("password");
-        const passwordEye = document.getElementById("password-eye");
-
-        if (passwordInput.type === "password") {
-          passwordInput.type = "text";
-          passwordEye.classList.remove("fa-eye");
-          passwordEye.classList.add("fa-eye-slash");
+        const eyeOpen = document.getElementById("eye-open");
+        const eyeClosed = document.getElementById("eye-closed");
+        const isHidden = passwordInput.type === "password";
+        passwordInput.type = isHidden ? "text" : "password";
+        if (isHidden) {
+          eyeOpen.style.display = "none";
+          eyeClosed.style.display = "inline";
         } else {
-          passwordInput.type = "password";
-          passwordEye.classList.remove("fa-eye-slash");
-          passwordEye.classList.add("fa-eye");
+          eyeOpen.style.display = "inline";
+          eyeClosed.style.display = "none";
         }
       }
 

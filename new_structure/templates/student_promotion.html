@@ -22,41 +22,66 @@
   {# Theme toggle handled by reusable include #}
 
     <style>
-      /* Solar Theme Tokens + Premium Styling */
+      /* Solar Theme Tokens (exactly match parent_management dashboard) */
       :root {
-        /* Solar palette */
-        --solar-bg-1: #fdf6e3;
-        --solar-bg-2: #eee8d5;
-        --solar-bg-3: #d6d2c4;
-        --solar-primary: #b58900;
-        --solar-secondary: #268bd2;
-        --solar-green: #859900;
+        /* Solar Theme Colors */
+        --solar-base03: #002b36;
+        --solar-base02: #073642;
+        --solar-base01: #586e75;
+        --solar-base00: #657b83;
+        --solar-base0: #839496;
+        --solar-base1: #93a1a1;
+        --solar-base2: #eee8d5;
+        --solar-base3: #fdf6e3;
+        --solar-yellow: #b58900;
+        --solar-orange: #cb4b16;
         --solar-red: #dc322f;
-        --solar-text-primary: #002b36;
-        --solar-text-secondary: #073642;
+        --solar-magenta: #d33682;
+        --solar-violet: #6c71c4;
+        --solar-blue: #268bd2;
+        --solar-cyan: #2aa198;
+        --solar-green: #859900;
 
-        /* Map promotion colors to Solar */
+        /* Additional glass variables from parent dashboard */
+        --solar-body-bg: var(--solar-base03);
+        --solar-body-color: var(--solar-base0);
+        --solar-card-bg: rgba(7, 54, 66, 0.95);
+        --solar-glass-border: rgba(131, 148, 150, 0.3);
+        --radius-xl: 1rem;
+        --radius-2xl: 1.5rem;
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.35), 0 2px 4px -2px rgb(0 0 0 / 0.35);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
+
+        /* Map local tokens to Solar for compatibility */
+        --solar-primary: var(--solar-yellow);
+        --solar-secondary: var(--solar-blue);
+        --text-primary: var(--solar-base3) !important;
+        --text-secondary: var(--solar-base0) !important;
+        --page-bg: var(--solar-body-bg) !important;
+        --card: var(--solar-card-bg) !important;
+        --border-color: var(--solar-glass-border) !important;
+        --border-radius: 12px !important;
+        --border-radius-lg: var(--radius-2xl) !important;
+        --transition: all 0.3s ease !important;
+
+        /* Legacy mapping used in inline styles */
         --promotion-primary: var(--solar-primary) !important;
         --promotion-secondary: var(--solar-secondary) !important;
         --promotion-primary-rgb: 181, 137, 0 !important;
-        
-        /* Enhanced Solar variables for consistency */
         --primary-color: var(--solar-primary) !important;
         --secondary-color: var(--solar-secondary) !important;
-        --background-color: var(--solar-bg-2) !important;
-        --text-primary: var(--solar-text-primary) !important;
-        --text-secondary: var(--solar-text-secondary) !important;
-        --border-color: rgba(238, 232, 213, 0.5) !important;
-        --shadow-md: 0 20px 40px rgba(0, 43, 54, 0.15) !important;
-        --border-radius: 12px !important;
-        --border-radius-lg: 20px !important;
-        --transition: all 0.3s ease !important;
+        --background-color: var(--solar-body-bg) !important;
+
+        /* Semantic colors */
+        --info-color: var(--solar-blue);
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
       }
 
       /* Inter font override */
       body {
         font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-        color: var(--solar-text-primary) !important;
+        color: var(--text-primary) !important;
       }
 
       /* Inline Heroicon utilities */
@@ -74,23 +99,67 @@
       .heroicon-solar-red { color: var(--solar-red); }
 
       /* Premium Solar backgrounds and glass effects */
-      .page-container {
-        background: linear-gradient(135deg, var(--solar-bg-1) 0%, var(--solar-bg-2) 60%, var(--solar-bg-3) 100%) !important;
-        min-height: 100vh;
-      }
+      .page-container { background: var(--solar-body-bg) !important; min-height: 100vh; }
       
       .content-wrapper, .promotion-header, .batch-controls, .promotion-controls, .analytics-section-compact, .grade-section {
-        background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%) !important;
-        backdrop-filter: blur(15px);
-        box-shadow: var(--shadow-md) !important;
-        border: 1px solid var(--border-color) !important;
-        border-radius: var(--border-radius-lg) !important;
+        background: var(--solar-card-bg) !important;
+        backdrop-filter: blur(8px);
+        box-shadow: var(--shadow-lg) !important;
+        border: 1px solid var(--solar-glass-border) !important;
+        border-radius: var(--radius-2xl) !important;
       }
       
       .content-wrapper {
         max-width: 95%;
         margin: 40px auto 60px;
         padding: 0;
+      }
+
+      /* Slim top navbar (Solar glass) */
+      .top-navbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(10px);
+        background: rgba(17, 24, 39, 0.65);
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+      }
+      .top-navbar .nav-content {
+        max-width: 95%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+      }
+      .top-navbar .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-primary);
+        font-weight: 700;
+      }
+      .top-navbar .brand .subtitle {
+        color: var(--text-secondary);
+        font-weight: 500;
+        font-size: .9rem;
+      }
+      .chip-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-primary);
+        background: rgba(148, 163, 184, 0.10);
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--border-color);
+        text-decoration: none;
+        transition: var(--transition);
+      }
+      .chip-link:hover {
+        background: rgba(148, 163, 184, 0.18);
+        transform: translateY(-1px);
       }
 
       /* Enhanced header styling */
@@ -102,11 +171,12 @@
         display: flex !important;
         align-items: center !important;
         gap: 12px !important;
-        color: var(--solar-text-primary) !important;
+        color: var(--solar-base3) !important;
         margin: 0 0 12px 0 !important;
         font-size: 2.2rem !important;
         font-weight: 800 !important;
       }
+      .promotion-header p { color: var(--solar-base0) !important; }
 
       /* Premium button styling */
       .btn-promotion, .btn-primary, .btn-success, .btn-warning, .btn-danger {
@@ -122,46 +192,57 @@
         font-weight: 600 !important;
         font-family: "Inter", sans-serif !important;
       }
-      .btn-promotion {
-        background: var(--solar-secondary) !important;
-        color: #fff !important;
-      }
+      .btn-promotion { background: linear-gradient(135deg, var(--solar-yellow) 0%, var(--solar-orange) 100%) !important; color: var(--solar-base3) !important; }
       .btn-promotion:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 8px 20px rgba(38, 139, 210, 0.3) !important;
+        box-shadow: 0 8px 25px rgba(181, 137, 0, 0.25) !important;
       }
 
       /* Enhanced stats cards */
       .promotion-stats {
         display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-        gap: 20px !important;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+        gap: 24px !important;
         margin-top: 24px !important;
       }
       .stat-card {
-        background: rgba(253, 246, 227, 0.8) !important;
-        border: 1px solid rgba(238, 232, 213, 0.6) !important;
-        border-radius: 16px !important;
-        padding: 20px !important;
-        transition: var(--transition) !important;
+        position: relative; overflow: hidden;
+        background: linear-gradient(180deg, rgba(7,54,66,0.96) 0%, rgba(7,54,66,0.9) 100%) !important;
+        color: var(--solar-base3) !important;
+        padding: 24px !important; text-align: center !important;
+        border-radius: var(--radius-2xl) !important;
+        border: 1px solid var(--solar-glass-border) !important;
+        box-shadow: var(--shadow-md) !important;
+        transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease !important;
+      }
+      .stat-card:before {
+        content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+        background: linear-gradient(180deg, var(--solar-yellow), #e0a400);
+        box-shadow: 0 0 18px rgba(181,137,0,.25);
+      }
+      .stat-card:after {
+        content: ""; position: absolute; right: -40px; bottom: -40px; width: 140px; height: 140px; border-radius: 50%;
+        background: radial-gradient(closest-side, rgba(181,137,0,.15), transparent 70%);
+        pointer-events: none;
       }
       .stat-card:hover {
-        transform: translateY(-4px) !important;
-        box-shadow: 0 12px 28px rgba(0, 43, 54, 0.15) !important;
+        transform: translateY(-6px) !important;
+        box-shadow: 0 16px 28px -6px rgba(0,0,0,.45), 0 8px 16px -8px rgba(0,0,0,.35) !important;
+        border-color: rgba(181,137,0,.35) !important;
       }
       .stat-icon {
-        margin-bottom: 12px !important;
+        width: 44px; height: 44px; margin: 0 auto 12px auto !important;
+        border-radius: 999px; display: flex; align-items: center; justify-content: center;
+        background: rgba(38,139,210,0.14); border: 1px solid var(--solar-glass-border);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
       }
+      .stat-icon .heroicon { width: 22px; height: 22px; }
       .stat-number {
-        font-size: 2rem !important;
-        font-weight: 800 !important;
-        color: var(--solar-primary) !important;
-        margin-bottom: 8px !important;
+        font-size: 2.4rem !important; font-weight: 800 !important;
+        color: var(--solar-yellow) !important; margin-bottom: 6px !important;
+        text-shadow: 0 2px 10px rgba(181,137,0,0.15);
       }
-      .stat-label {
-        color: var(--solar-text-secondary) !important;
-        font-weight: 500 !important;
-      }
+      .stat-label { color: var(--solar-base0) !important; font-weight: 600 !important; letter-spacing: .02em; }
 
       /* Enhanced analytics section */
       .analytics-section-compact {
@@ -182,26 +263,14 @@
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
         gap: 20px !important;
       }
-      .analytics-card-compact {
-        background: rgba(253, 246, 227, 0.6) !important;
-        border: 1px solid rgba(238, 232, 213, 0.5) !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
-        transition: var(--transition) !important;
-      }
+      .analytics-card-compact { background: var(--solar-card-bg) !important; border: 1px solid var(--solar-glass-border) !important; border-radius: var(--radius-xl) !important; padding: 20px !important; transition: var(--transition) !important; }
       .analytics-card-compact:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 8px 20px rgba(0, 43, 54, 0.1) !important;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
       }
 
       /* Enhanced grade sections */
-      .grade-header {
-        background: linear-gradient(135deg, var(--solar-primary), var(--solar-secondary)) !important;
-        color: #fff !important;
-        padding: 20px 24px !important;
-        border-radius: 16px 16px 0 0 !important;
-        margin: 0 !important;
-      }
+      .grade-header { background: var(--solar-card-bg) !important; color: var(--solar-base3) !important; padding: 20px 24px !important; border-radius: var(--radius-2xl) var(--radius-2xl) 0 0 !important; margin: 0 !important; border-bottom: 2px solid var(--solar-glass-border) !important; }
       .grade-title {
         margin: 0 !important;
         font-size: 1.4rem !important;
@@ -228,19 +297,12 @@
         border-collapse: collapse !important;
         margin-top: 0 !important;
       }
-      .students-table th {
-        background: var(--solar-primary) !important;
-        color: #fff !important;
-        padding: 16px 12px !important;
-        font-weight: 600 !important;
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 10 !important;
-      }
+      .students-table th { background: rgba(7,54,66,0.7) !important; color: var(--solar-base3) !important; padding: 16px 12px !important; font-weight: 700 !important; position: sticky !important; top: 0 !important; z-index: 10 !important; border-bottom: 2px solid var(--solar-glass-border) !important; }
       .students-table td {
         padding: 12px !important;
-        border-bottom: 1px solid var(--border-color) !important;
+        border-bottom: 1px solid var(--solar-glass-border) !important;
         vertical-align: middle !important;
+        color: var(--solar-base0) !important;
       }
       .table-responsive {
         width: 100%;
@@ -254,12 +316,36 @@
         background: rgba(0,0,0,0.2);
         border-radius: 4px;
       }
-      .students-table tbody tr:nth-child(even) {
-        background: rgba(181, 137, 0, 0.04) !important;
+      .students-table tbody tr:nth-child(even) { background: rgba(7,54,66,0.45) !important; }
+      .students-table tbody tr:hover { background: rgba(181,137,0,0.08) !important; transform: scale(1.001) !important; }
+
+      /* Compact status badges */
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: .01em;
+        border: 1px solid transparent;
+        white-space: nowrap;
       }
-      .students-table tbody tr:hover {
-        background: rgba(38, 139, 210, 0.08) !important;
-        transform: scale(1.001) !important;
+      .status-eligible {
+        background: rgba(34, 197, 94, 0.12);
+        color: #86efac;
+        border-color: rgba(34, 197, 94, 0.35);
+      }
+      .status-final {
+        background: rgba(245, 158, 11, 0.14);
+        color: #fbbf24;
+        border-color: rgba(245, 158, 11, 0.35);
+      }
+      .status-inactive {
+        background: rgba(239, 68, 68, 0.12);
+        color: #fca5a5;
+        border-color: rgba(239, 68, 68, 0.35);
       }
 
       /* Enhanced pagination */
@@ -270,57 +356,56 @@
         align-items: center !important;
         gap: 12px !important;
       }
-      .btn-pagination {
-        background: rgba(253, 246, 227, 0.8) !important;
-        border: 1px solid var(--solar-primary) !important;
-        color: var(--solar-text-primary) !important;
-        padding: 8px 16px !important;
-        border-radius: 8px !important;
-        text-decoration: none !important;
-        transition: var(--transition) !important;
-        font-weight: 500 !important;
-      }
-      .btn-pagination:hover, .btn-pagination.active {
-        background: var(--solar-primary) !important;
-        color: #fff !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 12px rgba(181, 137, 0, 0.3) !important;
-      }
+      .btn-pagination { background: rgba(7,54,66,0.6) !important; border: 1px solid var(--solar-glass-border) !important; color: var(--solar-yellow) !important; padding: 8px 16px !important; border-radius: 8px !important; text-decoration: none !important; transition: var(--transition) !important; font-weight: 500 !important; }
+      .btn-pagination:hover, .btn-pagination.active { background: rgba(181,137,0,0.25) !important; color: var(--solar-base3) !important; transform: translateY(-1px) !important; box-shadow: 0 4px 12px rgba(181, 137, 0, 0.3) !important; }
 
       /* Enhanced batch controls */
-      .batch-controls {
-        padding: 24px !important;
-        margin: 24px 0 !important;
-      }
+      .batch-controls { padding: 24px !important; margin: 24px 0 !important; }
       .batch-controls h3 {
         display: flex !important;
         align-items: center !important;
         gap: 12px !important;
-        color: var(--solar-text-primary) !important;
+        color: var(--solar-base3) !important;
         margin-bottom: 20px !important;
         font-size: 1.3rem !important;
         font-weight: 700 !important;
       }
+      .batch-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+      .batch-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 14px; border-radius: 10px;
+        border: 1px solid var(--solar-glass-border);
+        background: rgba(7,54,66,0.6); color: var(--solar-base3);
+        font-weight: 700; cursor: pointer; transition: all .2s ease;
+      }
+      .batch-btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+      .batch-btn-primary { background: linear-gradient(135deg, var(--solar-yellow) 0%, var(--solar-orange) 100%); color: var(--solar-base3); border: none; }
+      .batch-btn-success { background: var(--solar-green); color: var(--solar-base3); border: none; }
+      .batch-btn-warning { background: var(--solar-orange); color: var(--solar-base3); border: none; }
+      .batch-btn-danger { background: var(--solar-base01); color: var(--solar-base3); border: none; }
+
+      .batch-summary { margin-top: 12px; padding: 10px 14px; background: rgba(38,139,210,0.12); border-radius: 12px; border: 1px solid var(--solar-glass-border); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+      .batch-summary .summary-item { color: var(--solar-blue); font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+      .batch-summary .summary-item .value { color: var(--solar-base3); font-weight: 800; }
+      .batch-summary .divider { color: var(--solar-base0); opacity: .7; }
 
       /* Remove any conflicting CSS from modern_classteacher.css */
       .promotion-header,
       .batch-controls,
       .analytics-section-compact,
-      .grade-section {
-        background: linear-gradient(145deg, rgba(253, 246, 227, 0.95) 0%, rgba(238, 232, 213, 0.9) 100%) !important;
-      }
+      .grade-section { background: var(--solar-card-bg) !important; }
 
       /* Navigation link hover effects */
-      .promotion-header a[style*="rgba(253, 246, 227, 0.5)"]:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08) !important;
-        background: rgba(253, 246, 227, 0.8) !important;
-      }
-      .promotion-header a[style*="linear-gradient"]:hover {
+      .promotion-header a.chip-link:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 8px 20px rgba(133, 153, 0, 0.3) !important;
         filter: brightness(1.05) !important;
       }
+
+      /* Navbar + chip link align to parent theme */
+      .top-navbar { background: rgba(7, 54, 66, 0.85); border-bottom: 1px solid var(--solar-glass-border); box-shadow: var(--shadow-lg); }
+      .chip-link { color: var(--solar-base3); background: rgba(7,54,66,0.6); border: 1px solid var(--solar-glass-border); }
+      .chip-link:hover { background: rgba(7,54,66,0.75); }
 
       /* Mobile-first responsiveness */
       @media (max-width: 960px) {
@@ -359,6 +444,18 @@
 
       /* Utility to visually indicate horizontal scroll */
       .scroll-hint { font-size: .7rem; text-align: right; color: var(--text-secondary); margin-top: 4px; opacity: .7; }
+
+  /* Filter form polish (match parent dashboard) */
+  .promotion-controls .control-group { padding: 20px; }
+  .filter-form { margin: 0; }
+  .filter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .filter-item label { display: block; font-weight: 700; color: var(--solar-base3); margin-bottom: 6px; font-size: 0.9em; }
+  .filter-item select { width: 100%; padding: 10px 12px; border: 1px solid var(--solar-glass-border); background: rgba(7,54,66,0.6); color: var(--solar-base3); border-radius: 10px; font-size: 14px; }
+  .filter-item select:focus { outline: none; border-color: var(--solar-blue); }
+  .btn-filter { background: linear-gradient(135deg, var(--solar-yellow) 0%, var(--solar-orange) 100%); color: var(--solar-base3); padding: 10px 16px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 700; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+  .btn-filter:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(181,137,0,0.25); }
+  .btn-clear { background: var(--solar-base01); color: var(--solar-base3); padding: 10px 16px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-clear:hover { filter: brightness(1.05); transform: translateY(-1px); }
     </style>
   </head>
   <body>
@@ -366,6 +463,30 @@
     <script id="promotion-data" type="application/json">{{ promotion_data_json | tojson }}</script>
 
     <div class="page-container">
+      <!-- Slim top navbar -->
+      <div class="top-navbar">
+        <div class="nav-content">
+          <div class="brand">
+            <svg class="heroicon heroicon-lg heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path d="M11.7 2.37a.75.75 0 01.6 0l8.25 3.75a.75.75 0 010 1.36L12.3 11.23a.75.75 0 01-.6 0L3.45 7.48a.75.75 0 010-1.36L11.7 2.37z"/><path d="M4.5 12.75v3.38a.75.75 0 00.44.68l6.75 3.05a.75.75 0 00.62 0l6.75-3.05a.75.75 0 00.44-.68v-3.38l-6.59 2.99a2.25 2.25 0 01-1.92 0L4.5 12.75z"/></svg>
+            <span>{{ school_info.school_name or 'Hillview School' }}</span>
+            <span class="subtitle">Headteacher • Promotions</span>
+          </div>
+          <div class="nav-actions" style="display:flex; gap:10px; align-items:center; flex-wrap: wrap;">
+            <a href="{{ url_for('admin.dashboard') }}" class="chip-link">
+              <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.5 12a.75.75 0 01-.75.75H7.56l3.22 3.22a.75.75 0 11-1.06 1.06l-4.5-4.5a.75.75 0 010-1.06l4.5-4.5a.75.75 0 111.06 1.06L7.56 11.25h11.19c.414 0 .75.336.75.75z" clip-rule="evenodd"/></svg>
+              Dashboard
+            </a>
+            <a href="{{ url_for('admin.manage_terms_assessments') }}" class="chip-link">
+              <svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5m-9-6h.008v.008H12V12z"/></svg>
+              Terms & Assessments
+            </a>
+            <a href="{{ url_for('admin.manage_grades_streams') }}" class="chip-link">
+              <svg class="heroicon heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 19.5H6A2.25 2.25 0 013.75 17.25V6zM6 5.25a.75.75 0 00-.75.75v11.25c0 .414.336.75.75.75h11.25a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H16.5V6a.75.75 0 00-.75-.75H6z" clip-rule="evenodd"/></svg>
+              Grades & Streams
+            </a>
+          </div>
+        </div>
+      </div>
       <div class="content-wrapper">
         <!-- Header -->
         <div class="promotion-header">
@@ -379,21 +500,21 @@
           
           <!-- Navigation Links -->
           <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
-            <a href="{{ url_for('admin.dashboard') }}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--solar-text-secondary); background: rgba(253, 246, 227, 0.5); padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(238, 232, 213, 0.6); text-decoration: none; transition: var(--transition);">
+            <a href="{{ url_for('admin.dashboard') }}" class="chip-link">
               <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.5 12a.75.75 0 01-.75.75H7.56l3.22 3.22a.75.75 0 11-1.06 1.06l-4.5-4.5a.75.75 0 010-1.06l4.5-4.5a.75.75 0 111.06 1.06L7.56 11.25h11.19c.414 0 .75.336.75.75z" clip-rule="evenodd"/></svg>
               Dashboard
             </a>
-            <a href="{{ url_for('admin.manage_terms_assessments') }}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--solar-text-secondary); background: rgba(253, 246, 227, 0.5); padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(238, 232, 213, 0.6); text-decoration: none; transition: var(--transition);">
+            <a href="{{ url_for('admin.manage_terms_assessments') }}" class="chip-link">
               <svg class="heroicon heroicon-solar-green" viewBox="0 0 24 24" fill="currentColor"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5m-9-6h.008v.008H12V12z"/></svg>
               Terms & Assessments
             </a>
-            <a href="{{ url_for('admin.manage_grades_streams') }}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--solar-text-secondary); background: rgba(253, 246, 227, 0.5); padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(238, 232, 213, 0.6); text-decoration: none; transition: var(--transition);">
+            <a href="{{ url_for('admin.manage_grades_streams') }}" class="chip-link">
               <svg class="heroicon heroicon-solar-yellow" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 19.5H6A2.25 2.25 0 013.75 17.25V6zM6 5.25a.75.75 0 00-.75.75v11.25c0 .414.336.75.75.75h11.25a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H16.5V6a.75.75 0 00-.75-.75H6z" clip-rule="evenodd"/></svg>
               Grades & Streams
             </a>
             <a
               href="{{ url_for('admin.create_sample_promotion_data') }}"
-              style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--solar-green), #059669); color: white; padding: 8px 14px; border-radius: 999px; text-decoration: none; transition: var(--transition);"
+              class="chip-link"
               data-action="create-sample-data"
             >
               <svg class="heroicon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 1.343-9 3s4.03 3 9 3 9-1.343 9-3-4.03-3-9-3z"/><path d="M21 9.75c0 1.657-4.03 3-9 3s-9-1.343-9-3V12c0 1.657 4.03 3 9 3s9-1.343 9-3V9.75z"/><path d="M21 14.25c0 1.657-4.03 3-9 3s-9-1.343-9-3V16.5c0 1.657 4.03 3 9 3s9-1.343 9-3v-2.25z"/></svg>
@@ -407,9 +528,7 @@
               <div class="stat-icon">
                 <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path d="M1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 007 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/></svg>
               </div>
-              <div class="stat-number">
-                {{ promotion_data.promotion_summary.total_students or 0 }}
-              </div>
+              <div class="stat-number">{{ promotion_data.promotion_summary.total_students or 0 }}</div>
               <div class="stat-label">Total Students</div>
             </div>
             <div class="stat-card">
@@ -435,11 +554,7 @@
                 <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3.75 6A2.25 2.25 0 016 3.75h8.25A2.25 2.25 0 0116.5 6v.75h.75A2.25 2.25 0 0119.5 9v7.5A2.25 2.25 0 0117.25 19.5H6A2.25 2.25 0 013.75 17.25V6zM6 5.25a.75.75 0 00-.75.75v11.25c0 .414.336.75.75.75h11.25a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H16.5V6a.75.75 0 00-.75-.75H6z" clip-rule="evenodd"/></svg>
               </div>
               <div class="stat-number">
-                {% if promotion_data.students_by_grade %}
-                  {{ promotion_data.students_by_grade|list|length }}
-                {% else %}
-                  0
-                {% endif %}
+                {{ promotion_data.promotion_summary.grade_levels_total or 0 }}
               </div>
               <div class="stat-label">Grade Levels</div>
             </div>
@@ -558,11 +673,15 @@
               Preview Changes
             </button>
           </div>
-          <div style="margin-top: var(--space-4); padding: var(--space-3); background: rgba(59, 130, 246, 0.1); border-radius: var(--radius-lg); border-left: 4px solid var(--info-color);">
-            <p style="margin: 0; color: var(--info-color); font-weight: 500; display: flex; align-items: center; gap: 8px;">
+          <div class="batch-summary">
+            <span class="summary-item">
               <svg class="heroicon heroicon-solar-blue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 109.75 9.75A9.76 9.76 0 0012 2.25zm0 1.5a8.25 8.25 0 11-8.25 8.25A8.26 8.26 0 0112 3.75z" clip-rule="evenodd"/></svg>
-              Selected: <span id="selected-count">0</span> students | Ready for promotion: <span id="promotion-ready">0</span> | Requires review: <span id="review-required">0</span>
-            </p>
+              Selected: <span class="value" id="selected-count">0</span> students
+            </span>
+            <span class="divider">|</span>
+            <span class="summary-item">Ready for promotion: <span class="value" id="promotion-ready">0</span></span>
+            <span class="divider">|</span>
+            <span class="summary-item">Requires review: <span class="value" id="review-required">0</span></span>
           </div>
         </div>
 
@@ -704,7 +823,7 @@
             </div>
           </div>
 
-          <div style="padding: var(--space-6)">
+          <div class="grade-body" style="padding: var(--space-6)">
             <div class="table-responsive">
             <table class="students-table">
               <thead>
@@ -897,9 +1016,9 @@
               <p style="margin-bottom: var(--space-4);">
                 No active students available for promotion with the current filters.
               </p>
-              <div style="background: rgba(255, 193, 7, 0.1); padding: var(--space-4); border-radius: var(--radius-lg); margin: var(--space-4) 0; text-align: left;">
-                <p style="margin: 0; color: #856404; font-weight: 600;">Possible reasons:</p>
-                <ul style="margin: var(--space-2) 0 0 var(--space-4); color: #856404;">
+              <div style="background: rgba(245, 158, 11, 0.10); padding: var(--space-4); border-radius: var(--radius-lg); margin: var(--space-4) 0; text-align: left;">
+                <p style="margin: 0; color: var(--warning-color); font-weight: 600;">Possible reasons:</p>
+                <ul style="margin: var(--space-2) 0 0 var(--space-4); color: var(--warning-color);">
                   <li>No students have been added to the system yet</li>
                   <li>Students don't have grade assignments</li>
                   <li>All students are in Grade 9 (final grade - no promotion needed)</li>
@@ -1346,8 +1465,8 @@
                                     labels: {
                                         padding: 15,
                                         usePointStyle: true,
-                                        font: { size: 12 },
-                                        color: '#374151'
+                    font: { size: 12 },
+                    color: '#e5e7eb'
                                     }
                                 },
                                 tooltip: {
@@ -1450,8 +1569,8 @@
                               labels: {
                                   padding: 15,
                                   usePointStyle: true,
-                                  font: { size: 12 },
-                                  color: '#374151'
+                  font: { size: 12 },
+                  color: '#e5e7eb'
                               }
                           },
                           tooltip: {

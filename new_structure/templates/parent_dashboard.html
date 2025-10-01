@@ -36,29 +36,56 @@
       href="{{ url_for('static', filename='css/mobile_responsive_dashboard.css') }}"
     />
 
-    <!-- Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
     <style>
+      :root {
+        --bg: #0b1220;
+        --card: rgba(17, 24, 39, 0.6);
+        --glass: rgba(255, 255, 255, 0.06);
+        --border: rgba(148, 163, 184, 0.2);
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --primary: #22d3ee;
+        --primary-600: #06b6d4;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --radius: 14px;
+        --shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+      }
+      html,
       body {
-        background: #f8f9fa;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        height: 100%;
+      }
+      body {
         margin: 0;
-        padding: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, sans-serif;
+        color: var(--text);
+        background: radial-gradient(
+            1200px 800px at 10% 10%,
+            rgba(34, 211, 238, 0.12),
+            transparent 60%
+          ),
+          radial-gradient(
+            1000px 700px at 90% 20%,
+            rgba(245, 158, 11, 0.08),
+            transparent 60%
+          ),
+          linear-gradient(180deg, var(--bg) 0%, #0a0f1c 100%);
       }
-
+      .hi {
+        width: 1.1em;
+        height: 1.1em;
+        vertical-align: -0.15em;
+      }
       .navbar {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 15px 0;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background: rgba(2, 6, 23, 0.55);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        color: var(--text);
+        padding: 14px 0;
       }
-
       .navbar-content {
         max-width: 1200px;
         margin: 0 auto;
@@ -67,250 +94,256 @@
         align-items: center;
         padding: 0 20px;
       }
-
       .navbar-brand {
-        font-size: 1.5em;
-        font-weight: bold;
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
-
       .navbar-menu {
         display: flex;
-        gap: 20px;
+        gap: 10px;
         align-items: center;
       }
-
       .navbar-menu a {
-        color: white;
+        color: var(--text);
         text-decoration: none;
-        padding: 8px 15px;
-        border-radius: 5px;
-        transition: background-color 0.3s ease;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        transition: 0.18s ease all;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(148, 163, 184, 0.06);
       }
-
       .navbar-menu a:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background: rgba(148, 163, 184, 0.12);
+        border-color: var(--border);
       }
-
+      .mobile-nav-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--text);
+        font-size: 1.1em;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(148, 163, 184, 0.06);
+      }
+      @media (max-width: 768px) {
+        .navbar-content {
+          position: relative;
+        }
+        .navbar-menu {
+          display: none;
+          position: absolute;
+          top: 54px;
+          right: 20px;
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 10px;
+          flex-direction: column;
+          min-width: 220px;
+          box-shadow: var(--shadow);
+        }
+        .navbar-menu.show {
+          display: flex;
+        }
+      }
       .dashboard-container {
         max-width: 1200px;
         margin: 30px auto;
         padding: 0 20px;
       }
-
+      .welcome-section,
+      .dashboard-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
       .welcome-section {
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        margin-bottom: 30px;
+        padding: 24px;
+        margin-bottom: 24px;
         text-align: center;
       }
-
       .welcome-title {
-        font-size: 2em;
-        color: #333;
-        margin-bottom: 10px;
+        font-size: 1.6rem;
+        margin: 0 0 6px;
+        color: var(--text);
       }
-
       .welcome-subtitle {
-        color: #666;
-        font-size: 1.1em;
+        color: var(--muted);
+        font-size: 1rem;
+        margin: 0;
       }
-
       .dashboard-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 30px;
+        gap: 22px;
       }
-
       .dashboard-card {
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        padding: 24px;
       }
-
       .card-header {
         display: flex;
         align-items: center;
-        gap: 15px;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f0f0f0;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
       }
-
       .card-icon {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        width: 50px;
-        height: 50px;
+        width: 44px;
+        height: 44px;
         border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-600));
+        color: #001018;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5em;
       }
-
       .card-title {
-        font-size: 1.3em;
-        font-weight: bold;
-        color: #333;
+        font-size: 1.15rem;
+        font-weight: 700;
         margin: 0;
       }
-
       .children-list {
         list-style: none;
         padding: 0;
         margin: 0;
       }
-
       .child-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 15px;
-        border: 1px solid #e1e5e9;
-        border-radius: 10px;
-        margin-bottom: 15px;
-        transition: all 0.3s ease;
+        padding: 14px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 12px;
+        background: rgba(2, 6, 23, 0.45);
+        transition: 0.18s ease all;
       }
-
       .child-item:hover {
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
+        background: rgba(148, 163, 184, 0.08);
+        transform: translateY(-1px);
       }
-
-      .child-info {
-        flex: 1;
-      }
-
       .child-name {
-        font-weight: bold;
-        color: #333;
-        font-size: 1.1em;
-        margin-bottom: 5px;
+        font-weight: 700;
+        color: var(--text);
+        font-size: 1.05rem;
+        margin-bottom: 4px;
       }
-
       .child-details {
-        color: #666;
-        font-size: 0.9em;
+        color: var(--muted);
+        font-size: 0.92rem;
       }
-
       .child-actions {
         display: flex;
         gap: 10px;
       }
-
       .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 8px 15px;
-        border: none;
-        border-radius: 6px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-600));
+        color: #001018;
+        padding: 8px 12px;
+        border: 1px solid transparent;
+        border-radius: 10px;
         text-decoration: none;
-        font-size: 0.9em;
-        transition: all 0.3s ease;
+        font-weight: 600;
+        transition: 0.18s ease all;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
       }
-
       .btn-primary:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 12px 20px rgba(34, 211, 238, 0.18);
       }
-
       .no-children {
         text-align: center;
-        color: #666;
-        padding: 40px 20px;
+        color: var(--muted);
+        padding: 30px 20px;
       }
-
-      .no-children i {
-        font-size: 4em;
-        color: #ddd;
-        margin-bottom: 20px;
-      }
-
       .email-list {
         list-style: none;
         padding: 0;
         margin: 0;
       }
-
       .email-item {
-        padding: 15px;
-        border-left: 4px solid #667eea;
-        background: #f8f9fa;
+        padding: 14px;
+        border-left: 4px solid var(--primary);
+        background: rgba(148, 163, 184, 0.06);
         margin-bottom: 10px;
-        border-radius: 0 8px 8px 0;
+        border-radius: 0 10px 10px 0;
       }
-
       .email-subject {
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 5px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 4px;
       }
-
       .email-meta {
-        color: #666;
-        font-size: 0.9em;
+        color: var(--muted);
+        font-size: 0.92rem;
+        display: flex;
+        gap: 10px;
+        align-items: center;
       }
-
       .no-emails {
         text-align: center;
-        color: #666;
-        padding: 30px 20px;
+        color: var(--muted);
+        padding: 24px 16px;
         font-style: italic;
       }
-
       .quick-actions {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-        margin-top: 20px;
+        gap: 14px;
+        margin-top: 12px;
       }
-
       .quick-action {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
+        background: rgba(148, 163, 184, 0.08);
+        padding: 18px;
+        border-radius: 12px;
         text-align: center;
         text-decoration: none;
-        color: #333;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+        transition: 0.18s ease all;
+        display: grid;
+        place-items: center;
+        gap: 10px;
       }
-
       .quick-action:hover {
-        background: #e9ecef;
-        border-color: #667eea;
-        transform: translateY(-2px);
+        background: rgba(148, 163, 184, 0.14);
+        transform: translateY(-1px);
       }
-
-      .quick-action i {
-        font-size: 2em;
-        color: #667eea;
-        margin-bottom: 10px;
-      }
-
       .quick-action-title {
-        font-weight: bold;
+        font-weight: 700;
         margin: 0;
       }
-
       .status-badge {
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 0.8em;
-        font-weight: bold;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
       }
-
       .status-verified {
-        background-color: #d4edda;
-        color: #155724;
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.35);
       }
-
       .status-unverified {
-        background-color: #fff3cd;
-        color: #856404;
+        background: rgba(245, 158, 11, 0.16);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.35);
       }
 
       /* Mobile-First Responsive Enhancements for Parent Portal */
@@ -615,38 +648,87 @@
     <nav class="navbar">
       <div class="navbar-content">
         <div class="navbar-brand">
-          <i class="fas fa-graduation-cap"></i> {{ school_info.school_name or
-          'Hillview School' }} - Parent Portal
+          <svg
+            class="hi"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              d="M3 7a1 1 0 0 1 .553-.894l8-4a1 1 0 0 1 .894 0l8 4A1 1 0 0 1 21 7v3a1 1 0 1 1-2 0V7.618l-7-3.5-7 3.5V17h6a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1V7Z"
+            />
+            <path d="M13 13a1 1 0 1 0-2 0v6a1 1 0 1 0 2 0v-6Z" />
+          </svg>
+          {{ school_info.school_name or 'Hillview School' }} - Parent Portal
         </div>
 
         <!-- Mobile Navigation Toggle -->
         <button
           class="mobile-nav-toggle"
           onclick="toggleParentNav()"
-          style="
-            display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5em;
-            cursor: pointer;
-          "
+          aria-label="Toggle navigation"
         >
-          <i class="fas fa-bars"></i>
+          <span id="navToggleIcon">☰</span>
         </button>
 
         <div class="navbar-menu" id="parentNav">
           <a href="{{ url_for('parent.dashboard') }}">
-            <i class="fas fa-home"></i> Dashboard
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M12.97 2.72a1.5 1.5 0 0 0-1.94 0l-7 5.833A1.5 1.5 0 0 0 3.5 10.7V20a1 1 0 0 0 1 1h5.5v-6h4v6H19a1 1 0 0 0 1-1v-9.3a1.5 1.5 0 0 0-.53-1.147l-7-5.833Z"
+              />
+            </svg>
+            Dashboard
           </a>
           <a href="{{ url_for('parent.children') }}">
-            <i class="fas fa-users"></i> My Children
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M8 10a3 3 0 1 0-6 0 3 3 0 0 0 6 0Zm14 0a3 3 0 1 0-6 0 3 3 0 0 0 6 0ZM12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
+              />
+              <path
+                d="M2 20a4 4 0 0 1 4-4h2.5a4 4 0 0 1 4 4v1H2v-1Zm12.5-4H17a4 4 0 0 1 4 4v1h-6.5v-1a4 4 0 0 0-1.5-3.107c.472-.562 1.17-.893 2.5-.893Z"
+              />
+            </svg>
+            My Children
           </a>
           <a href="{{ url_for('parent.profile') }}">
-            <i class="fas fa-user"></i> Profile
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 13c3.866 0 7 1.79 7 4v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2c0-2.21 3.134-4 7-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"
+              />
+            </svg>
+            Profile
           </a>
           <a href="{{ url_for('parent.logout') }}">
-            <i class="fas fa-sign-out-alt"></i> Logout
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M13 4a1 1 0 1 0-2 0v6H6a1 1 0 1 0 0 2h5v6a1 1 0 1 0 2 0V4Z"
+              />
+              <path
+                d="M18.364 7.636a1 1 0 0 1 1.414 1.414L18.828 10H21a1 1 0 1 1 0 2h-2.172l.95.95a1 1 0 1 1-1.414 1.414L15 12l3.364-3.364Z"
+              />
+            </svg>
+            Logout
           </a>
         </div>
       </div>
@@ -660,11 +742,35 @@
           Stay connected with your children's academic progress {% if not
           parent.is_verified %}
           <span class="status-badge status-unverified">
-            <i class="fas fa-exclamation-triangle"></i> Email not verified
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10.34 2.87a1.5 1.5 0 0 1 2.32 0l8.1 10.26c.69.87.06 2.16-1.16 2.16H3.4c-1.22 0-1.85-1.29-1.16-2.16l8.1-10.26ZM12 8a1 1 0 0 0-1 1v3.25a1 1 0 0 0 2 0V9a1 1 0 0 0-1-1Zm0 7.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            Email not verified
           </span>
           {% else %}
           <span class="status-badge status-verified">
-            <i class="fas fa-check-circle"></i> Account verified
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm4.28 7.47a.75.75 0 0 0-1.06-1.06L11 12.88l-1.72-1.72a.75.75 0 1 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.06 0l4.75-4.75Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            Account verified
           </span>
           {% endif %}
         </p>
@@ -697,7 +803,17 @@
         <div class="dashboard-card">
           <div class="card-header">
             <div class="card-icon">
-              <i class="fas fa-users"></i>
+              <svg
+                class="hi"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+                <path
+                  d="M2 20a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v1H2v-1Zm14.5-7a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
+                />
+              </svg>
             </div>
             <h2 class="card-title">My Children ({{ children|length }})</h2>
           </div>
@@ -715,7 +831,17 @@
               </div>
               <div class="child-actions">
                 <a href="#" class="btn-primary">
-                  <i class="fas fa-chart-line"></i> View Progress
+                  <svg
+                    class="hi"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 13a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1v5H4v-5Zm5.5-4a1 1 0 0 1 1-1H12a1 1 0 0 1 1 1v9H9.5V9Zm5-3a1 1 0 0 1 1-1H17a1 1 0 0 1 1 1v12h-3.5V6Z"
+                    />
+                  </svg>
+                  View Progress
                 </a>
               </div>
             </li>
@@ -737,7 +863,16 @@
         <div class="dashboard-card">
           <div class="card-header">
             <div class="card-icon">
-              <i class="fas fa-bell"></i>
+              <svg
+                class="hi"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2a5 5 0 0 0-5 5v2.586l-.707.707A1 1 0 0 0 6 12h12a1 1 0 0 0 .707-1.707L18 9.586V7a5 5 0 0 0-5-5Zm0 20a3 3 0 0 0 2.995-2.824L15 19h-2a3 3 0 0 0 3 3Z"
+                />
+              </svg>
             </div>
             <h2 class="card-title">Recent Notifications</h2>
           </div>
@@ -748,16 +883,54 @@
             <li class="email-item">
               <div class="email-subject">{{ email.subject }}</div>
               <div class="email-meta">
-                <i class="fas fa-calendar"></i> {{ email.created_at.strftime('%B
-                %d, %Y') }} • <i class="fas fa-tag"></i> {{
-                email.email_type.replace('_', ' ').title() }}
+                <span
+                  style="display: inline-flex; align-items: center; gap: 6px"
+                >
+                  <svg
+                    class="hi"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 2a1 1 0 0 0-1 1v1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1V3a1 1 0 1 0-2 0v1H7V3a1 1 0 0 0-1-1Zm0 6h12v10H6V8Z"
+                    />
+                  </svg>
+                  {{ email.created_at.strftime('%B %d, %Y') }}
+                </span>
+                <span style="opacity: 0.7">•</span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 6px"
+                >
+                  <svg
+                    class="hi"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 6a2 2 0 0 1 2-2h3l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Z"
+                    />
+                  </svg>
+                  {{ email.email_type.replace('_', ' ').title() }}
+                </span>
               </div>
             </li>
             {% endfor %}
           </ul>
           {% else %}
           <div class="no-emails">
-            <i class="fas fa-envelope"></i>
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+              style="width: 2em; height: 2em; opacity: 0.6"
+            >
+              <path
+                d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.5l-10 6.25L2 6.5V6Zm0 2.618V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.618l-9.445 5.89a2 2 0 0 1-2.11 0L2 8.618Z"
+              />
+            </svg>
             <p>No recent notifications</p>
           </div>
           {% endif %}
@@ -768,26 +941,72 @@
       <div class="dashboard-card" style="margin-top: 30px">
         <div class="card-header">
           <div class="card-icon">
-            <i class="fas fa-bolt"></i>
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
+            </svg>
           </div>
           <h2 class="card-title">Quick Actions</h2>
         </div>
 
         <div class="quick-actions">
           <a href="{{ url_for('parent.children') }}" class="quick-action">
-            <i class="fas fa-users"></i>
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M8 10a3 3 0 1 0-6 0 3 3 0 0 0 6 0Zm14 0a3 3 0 1 0-6 0 3 3 0 0 0 6 0ZM12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
+              />
+              <path
+                d="M2 20a4 4 0 0 1 4-4h2.5a4 4 0 0 1 4 4v1H2v-1Zm12.5-4H17a4 4 0 0 1 4 4v1h-6.5v-1a4 4 0 0 0-1.5-3.107c.472-.562 1.17-.893 2.5-.893Z"
+              />
+            </svg>
             <p class="quick-action-title">View Children</p>
           </a>
           <a href="{{ url_for('parent.profile') }}" class="quick-action">
-            <i class="fas fa-user-edit"></i>
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 13c3.866 0 7 1.79 7 4v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2c0-2.21 3.134-4 7-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"
+              />
+            </svg>
             <p class="quick-action-title">Update Profile</p>
           </a>
           <a href="#" class="quick-action">
-            <i class="fas fa-download"></i>
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 20a1 1 0 0 1-1-1v-4a2 2 0 0 1 2-2h3V6a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-7l-3 3H5Z"
+              />
+            </svg>
             <p class="quick-action-title">Download Reports</p>
           </a>
           <a href="#" class="quick-action">
-            <i class="fas fa-envelope"></i>
+            <svg
+              class="hi"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M2 6a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-2-3H4a2 2 0 0 1-2-2V6Z"
+              />
+            </svg>
             <p class="quick-action-title">Contact School</p>
           </a>
         </div>
@@ -808,15 +1027,9 @@
       // Mobile Navigation Toggle for Parent Portal
       function toggleParentNav() {
         const parentNav = document.getElementById("parentNav");
-        const toggleBtn = document.querySelector(".mobile-nav-toggle i");
-
-        if (parentNav.classList.contains("show")) {
-          parentNav.classList.remove("show");
-          toggleBtn.className = "fas fa-bars";
-        } else {
-          parentNav.classList.add("show");
-          toggleBtn.className = "fas fa-times";
-        }
+        const iconSpan = document.getElementById("navToggleIcon");
+        const open = parentNav.classList.toggle("show");
+        iconSpan.textContent = open ? "✕" : "☰";
       }
 
       // Close mobile nav when clicking outside

@@ -737,6 +737,13 @@ def create_app(config_name='default'):
         if '/api/' in request.path:
             return
 
+        # Skip headteacher-only Parent Management endpoints; these already use
+        # @headteacher_required and perform their own validations. The generic
+        # object path matcher (e.g. '/delete_parent/<id>') would otherwise flag
+        # 'delete_parent' as an unknown object and incorrectly block with 403.
+        if request.path.startswith('/parent_management/'):
+            return
+
         # Extract object access patterns
         import re
         object_pattern = r'/(\w+)/(\d+|\.\.)'

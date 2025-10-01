@@ -4016,7 +4016,7 @@
         // Enhanced JavaScript with education level filtering and composite subject support
         let gradeMapping = {};
         let currentSubjectInfo = null;
-        const subjectsByEducationLevel = {{ (subjects_by_education_level or {}) | tojson }};
+    const subjectsByEducationLevel = {{ (subjects_by_education_level or {}) | tojson }};
 
         // Debug functions
         function debugLog(message) {
@@ -4224,14 +4224,7 @@
 
             console.log(`🎯 showCompositeConfig called for subject: ${subject}, education level: ${educationLevel}`);
 
-            // Force independent upload for English and Kiswahili
-            const subjectUpper = (subject || '').toString().toUpperCase();
-            if (subjectUpper === 'ENGLISH' || subjectUpper === 'KISWAHILI') {
-                if (compositeConfig) compositeConfig.style.display = 'none';
-                totalMarksGroup.style.display = 'block';
-                totalMarksInput.setAttribute('required', 'required');
-                return;
-            }
+            // No special-casing for English/Kiswahili here; subjects are listed as independent components.
 
             if (!educationLevel) {
                 console.log('⚠️ No education level selected, hiding composite config');
@@ -4455,10 +4448,7 @@
                         currentSubjectInfo = data.subject;
                         debugLog('📚 Updated currentSubjectInfo: ' + JSON.stringify(currentSubjectInfo));
 
-                        // Force regular mode for English/Kiswahili
-                        const subj = (document.getElementById('subject').value || '').toUpperCase();
-                        const forceRegular = subj === 'ENGLISH' || subj === 'KISWAHILI';
-                        if (data.is_composite && !forceRegular) {
+                        if (data.is_composite) {
                             debugLog('🎯 Setting up composite subject marks entry');
                             setupCompositeMarksEntry(marksCells, data);
                         } else {

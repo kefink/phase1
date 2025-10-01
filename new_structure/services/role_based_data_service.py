@@ -260,12 +260,47 @@ class RoleBasedDataService:
             elif role in ['teacher', 'classteacher']:
                 # Get subjects from teacher's assignments
                 assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher_id).all()
-                subject_ids = [assignment.subject_id for assignment in assignments]
-                
-                if subject_ids:
-                    return Subject.query.filter(Subject.id.in_(subject_ids)).all()
-                else:
+                subject_ids = [assignment.subject_id for assignment in assignments if assignment.subject_id]
+
+                if not subject_ids:
                     return []
+
+                assigned_subjects = Subject.query.filter(Subject.id.in_(subject_ids)).all()
+
+                # For subject teachers, expand composite parents into their component subjects
+                # so English/Kiswahili appear as independent upload options (Grammar/Composition, Lugha/Insha)
+                expanded_subjects = []
+                if role == 'teacher':
+                    for subj in assigned_subjects:
+                        try:
+                            if getattr(subj, 'is_composite', False):
+                                # Fetch component subjects for this composite parent within same education level
+                                components = Subject.query.filter_by(
+                                    composite_parent=subj.name,
+                                    education_level=subj.education_level
+                                ).all()
+                                if components:
+                                    expanded_subjects.extend(components)
+                                else:
+                                    # Fallback: if no components exist yet, include the composite parent
+                                    expanded_subjects.append(subj)
+                            else:
+                                expanded_subjects.append(subj)
+                        except Exception:
+                            # Defensive: on any error, fall back to adding the subject itself
+                            expanded_subjects.append(subj)
+
+                    # De-duplicate by id while preserving order
+                    seen = set()
+                    deduped = []
+                    for s in expanded_subjects:
+                        if s and s.id not in seen:
+                            seen.add(s.id)
+                            deduped.append(s)
+                    return deduped
+
+                # For classteachers keep current behavior (return assigned subjects as-is)
+                return assigned_subjects
             
             return []
             

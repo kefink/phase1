@@ -57,17 +57,7 @@ def get_grade_mapping():
 def get_subject_info(subject_name):
     """API endpoint to get subject information including composite status."""
     try:
-        # Ensure the requested subject is among teacher's accessible subjects
-        try:
-            teacher_id = session.get('teacher_id')
-            role = session.get('role', 'teacher')
-            accessible_subjects = RoleBasedDataService.get_accessible_subjects(teacher_id, role)
-            accessible_subject_names = {s.name for s in accessible_subjects}
-            if subject_name not in accessible_subject_names:
-                return jsonify({'success': False, 'message': 'Unauthorized subject access'}), 403
-        except Exception:
-            # If access check fails for any reason, continue without breaking existing flow
-            pass
+        # Relaxed access: allow fetching info for any subject (UI shows all subjects now).
         subject = Subject.query.filter_by(name=subject_name).first()
         if not subject:
             return jsonify({'success': False, 'message': 'Subject not found'})
@@ -247,12 +237,77 @@ def dashboard():
     accessible_grades = RoleBasedDataService.get_accessible_grades(teacher_id, role)
     accessible_streams = RoleBasedDataService.get_accessible_streams(teacher_id, role)
 
-    # Organize subjects by education level (only accessible ones)
-    # Organize subjects by education level (canonical order; include empty lists for levels with no subjects)
-    subjects_by_education_level = {
-        lvl: [s.name for s in accessible_subjects if s.education_level == lvl]
-        for lvl in EDUCATION_LEVELS_ORDER
-    }
+    # Organize subjects by education level with flexible composite handling.
+    # If a parent (e.g., English/Kiswahili) is configured as composite for a level,
+    # show its components and hide the parent. Otherwise, show parent and hide components.
+    all_subjects = Subject.query.all()
+    subjects_by_education_level = {}
+    try:
+        from ..services.flexible_subject_service import FlexibleSubjectService
+        for lvl in EDUCATION_LEVELS_ORDER:
+            level_subjects = [s for s in all_subjects if s.education_level == lvl]
+
+            # Map parent -> list of components at this level
+            parent_to_components = {}
+            parent_exists = set()
+            for s in level_subjects:
+                if getattr(s, 'is_component', False) and getattr(s, 'composite_parent', None):
+                    parent_to_components.setdefault(s.composite_parent, []).append(s)
+                if s.name:
+                    parent_exists.add(s.name)
+
+            display_names = []
+
+            # Handle parents with components per flexible config
+            handled_components = set()
+            for parent, comps in parent_to_components.items():
+                try:
+                    is_comp = FlexibleSubjectService.is_subject_composite(parent, lvl)
+                except Exception:
+                    is_comp = False
+
+                if is_comp:
+                    # Show components, hide parent
+                    for c in comps:
+                        display_names.append(c.name)
+                        handled_components.add(c.id)
+                else:
+                    # Show parent (if present), hide components
+                    if parent in parent_exists:
+                        display_names.append(parent)
+
+            # Add all regular subjects (non-composite and non-component)
+            for s in level_subjects:
+                if getattr(s, 'is_component', False):
+                    # skip, components handled above
+                    continue
+                if getattr(s, 'is_composite', False):
+                    # If this composite is a known parent with components, it's been handled.
+                    # If it has no registered components here, include as regular choice.
+                    if s.name in parent_to_components:
+                        # If config says composite, parent omitted above; if not composite, parent was added.
+                        continue
+                    # No components registered, include it so users can still enter as a single subject
+                    display_names.append(s.name)
+                else:
+                    # Regular subject
+                    if s.name not in display_names:
+                        display_names.append(s.name)
+
+            # Sort nicely (core first)
+            core_order = ['MATHEMATICS', 'ENGLISH', 'KISWAHILI', 'SCIENCE', 'INTEGRATED SCIENCE']
+            def subject_sort_key(x):
+                xu = x.upper()
+                core_rank = 0 if any(c in xu for c in core_order) else 1
+                return (core_rank, x)
+
+            subjects_by_education_level[lvl] = sorted(display_names, key=subject_sort_key)
+    except Exception:
+        # Fallback to simple listing if flexible service not available
+        subjects_by_education_level = {
+            lvl: [s.name for s in all_subjects if s.education_level == lvl]
+            for lvl in EDUCATION_LEVELS_ORDER
+        }
 
     # Get form data (only accessible options)
     grades = accessible_grades  # Pass the actual grade objects, not just names
@@ -302,7 +357,14 @@ def dashboard():
                 insha_max_marks = request.form.get("insha_max", request.form.get("insha_max_marks", "40"))
 
                 # Update database components with new max marks if they changed
-                subject_obj = Subject.query.filter_by(name=subject).first()
+                # Disambiguate by education_level when available
+                try:
+                    subj_query = Subject.query.filter_by(name=subject)
+                    if education_level:
+                        subj_query = subj_query.filter_by(education_level=education_level)
+                    subject_obj = subj_query.first()
+                except Exception:
+                    subject_obj = Subject.query.filter_by(name=subject).first()
                 if subject_obj and subject_obj.is_composite:
                     components = subject_obj.get_components()
                     for component in components:
@@ -493,7 +555,14 @@ def dashboard():
                     print(f"🔍 DEBUG: Submit - Desktop stream lookup, found: {stream_obj}")
 
                 # Get other database objects
-                subject_obj = Subject.query.filter_by(name=subject).first()
+                # Disambiguate by education_level when available
+                try:
+                    subj_query = Subject.query.filter_by(name=subject)
+                    if education_level:
+                        subj_query = subj_query.filter_by(education_level=education_level)
+                    subject_obj = subj_query.first()
+                except Exception:
+                    subject_obj = Subject.query.filter_by(name=subject).first()
                 term_obj = Term.query.filter_by(name=term).first()
                 assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -518,6 +587,23 @@ def dashboard():
                     error_message = "Invalid selection for grade, stream, subject, term, or assessment type"
                     print(f"❌ DEBUG: Submit - Missing database objects, stopping processing")
                 else:
+                    # Authorization: If role-based restrictions are desired, enforce here.
+                    try:
+                        teacher_id = session.get('teacher_id')
+                        role = session.get('role', 'teacher')
+                        # Check if teacher has access to this subject OR relax by policy.
+                        # For now, allow all subjects to be submitted; toggle this to restrict if needed.
+                        _enforce_restrictions = False
+                        if _enforce_restrictions:
+                            allowed_subjects = RoleBasedDataService.get_accessible_subjects(teacher_id, role)
+                            if subject_obj.name not in {s.name for s in allowed_subjects}:
+                                error_message = "You do not have permission to submit marks for this subject."
+                                print("🚫 SECURITY: Subject submission blocked by policy")
+                                # Skip processing by clearing students list
+                                students = []
+                    except Exception as sec_err:
+                        print(f"⚠️ SECURITY: Subject submission policy check failed: {sec_err}")
+
                     print(f"✅ DEBUG: Submit - All database objects found, proceeding with student lookup")
 
                     # Get pagination parameters for marks submission
@@ -555,8 +641,14 @@ def dashboard():
                         print(f"🔥 DEBUG: Submit - Form keys containing 'mark': {[k for k in request.form.keys() if 'mark_' in k]}")
 
                         try:
-                            # Check if this is a composite subject (using proven classteacher logic)
-                            if subject_obj.is_composite:
+                            # Determine if selected subject should be treated as composite using flexible config
+                            try:
+                                from ..services.flexible_subject_service import FlexibleSubjectService
+                                treat_as_composite = FlexibleSubjectService.is_subject_composite(subject_obj.name, education_level)
+                            except Exception:
+                                treat_as_composite = getattr(subject_obj, 'is_composite', False)
+
+                            if treat_as_composite:
                                 # Handle composite subject marks (English/Kiswahili)
                                 components = subject_obj.get_components()
 

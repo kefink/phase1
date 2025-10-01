@@ -16,6 +16,8 @@ from ..models.user import Teacher
 from datetime import datetime
 import secrets
 import string
+import io
+import csv
 
 # Create blueprint for parent management
 parent_management_bp = Blueprint('parent_management', __name__, url_prefix='/parent_management')
@@ -231,6 +233,74 @@ def dashboard():
         db.session.rollback()
         flash(f'Error loading parent management dashboard: {str(e)}', 'error')
         return redirect(url_for('admin.dashboard'))
+
+@parent_management_bp.route('/export_unlinked_data')
+@headteacher_required
+def export_unlinked_data():
+    """Export unlinked parents and students as a CSV download.
+
+    This endpoint is referenced in the dashboard template. Previously missing,
+    it caused a BuildError during render and a redirect loop. We generate a
+    simple CSV with two sections: unlinked parents and unlinked students.
+    """
+    try:
+        # Unlinked parents
+        unlinked_parents = db.session.query(Parent) \
+            .outerjoin(ParentStudent) \
+            .filter(ParentStudent.parent_id.is_(None)) \
+            .order_by(Parent.created_at.desc()) \
+            .all()
+
+        # Unlinked students with class info
+        unlinked_students = db.session.query(Student, Grade, Stream) \
+            .join(Grade, Student.grade_id == Grade.id) \
+            .join(Stream, Student.stream_id == Stream.id) \
+            .outerjoin(ParentStudent, Student.id == ParentStudent.student_id) \
+            .filter(ParentStudent.student_id.is_(None)) \
+            .order_by(Grade.name, Stream.name, Student.name) \
+            .all()
+
+        # Build CSV in memory
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+
+        # Section 1: Parents without children
+        writer.writerow(["Section", "Parents without linked children"])
+        writer.writerow(["id", "first_name", "last_name", "email", "phone", "is_verified", "is_active", "created_at"])
+        for p in unlinked_parents:
+            writer.writerow([
+                p.id, p.first_name, p.last_name, p.email, p.phone or '',
+                'yes' if p.is_verified else 'no',
+                'yes' if p.is_active else 'no',
+                p.created_at.strftime('%Y-%m-%d %H:%M:%S') if p.created_at else ''
+            ])
+
+        writer.writerow([])  # blank line between sections
+
+        # Section 2: Students without parents
+        writer.writerow(["Section", "Students without linked parents"])
+        writer.writerow(["id", "name", "admission_number", "grade", "stream"]) 
+        for s, g, st in unlinked_students:
+            writer.writerow([
+                s.id, s.name, s.admission_number or '', g.name, st.name
+            ])
+
+        csv_data = buf.getvalue()
+
+        from flask import Response
+        filename = f"unlinked_parents_students_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+        return Response(
+            csv_data,
+            mimetype='text/csv',
+            headers={
+                'Content-Disposition': f'attachment; filename="{filename}"'
+            }
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error exporting unlinked data: {str(e)}', 'error')
+        return redirect(url_for('parent_management.dashboard'))
 
 @parent_management_bp.route('/dashboard_enhanced')
 @headteacher_required

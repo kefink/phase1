@@ -6,7 +6,7 @@ Handles flexible subject configuration for English and Kiswahili
 from flask import Blueprint, request, jsonify, render_template
 from ..services.flexible_subject_service import FlexibleSubjectService
 from .admin import admin_required
-from ..extensions import db
+from ..extensions import db, csrf
 from sqlalchemy import text
 
 subject_config_api = Blueprint('subject_config_api', __name__)
@@ -238,55 +238,53 @@ def initialize_default_configurations():
 @subject_config_api.route('/subject-configuration')
 @admin_required
 def subject_configuration_page():
-    """Display subject configuration management page."""
+    """Display subject configuration management page (DB-backed)."""
     try:
-        # Only Upper Primary and Junior Secondary configurations (no Lower Primary)
-        configurations = [
-            # Upper Primary configurations
-            {
-                'subject_name': 'english',
-                'education_level': 'upper_primary',
-                'is_composite': True,
-                'component_1_name': 'Grammar',
-                'component_1_weight': 60.0,
-                'component_2_name': 'Composition',
-                'component_2_weight': 40.0
-            },
-            {
-                'subject_name': 'kiswahili',
-                'education_level': 'upper_primary',
-                'is_composite': True,
-                'component_1_name': 'Lugha',
-                'component_1_weight': 50.0,
-                'component_2_name': 'Insha',
-                'component_2_weight': 50.0
-            },
-            # Junior Secondary configurations
-            {
-                'subject_name': 'english',
-                'education_level': 'junior_secondary',
-                'is_composite': True,
-                'component_1_name': 'Grammar',
-                'component_1_weight': 60.0,
-                'component_2_name': 'Composition',
-                'component_2_weight': 40.0
-            },
-            {
-                'subject_name': 'kiswahili',
-                'education_level': 'junior_secondary',
-                'is_composite': True,
-                'component_1_name': 'Lugha',
-                'component_1_weight': 50.0,
-                'component_2_name': 'Insha',
-                'component_2_weight': 50.0
-            }
-        ]
+        # Ensure backing table exists
+        create_subject_configuration_table()
 
-        print(f"✅ Loaded {len(configurations)} configurations (English & Kiswahili only)")
+        # Helper to ensure default exists, then fetch
+        def ensure_and_get(subject: str, level: str):
+            cfg = FlexibleSubjectService.get_subject_configuration(subject, level)
+            if not cfg:
+                # Initialize sane defaults for English/Kiswahili only
+                if subject.lower() == 'english':
+                    FlexibleSubjectService.update_subject_configuration(
+                        subject, level, True, 'Grammar', 60.0, 'Composition', 40.0
+                    )
+                elif subject.lower() == 'kiswahili':
+                    FlexibleSubjectService.update_subject_configuration(
+                        subject, level, True, 'Lugha', 50.0, 'Insha', 50.0
+                    )
+                # Re-fetch after insert
+                cfg = FlexibleSubjectService.get_subject_configuration(subject, level)
+            return cfg
 
-        return render_template('subject_configuration.html',
-                             configurations=configurations,
-                             school_name="School Management System")
+        # Build configurations for Upper Primary and Junior Secondary
+        configs = []
+        for subj in ('english', 'kiswahili'):
+            for level in ('upper_primary', 'junior_secondary'):
+                cfg = ensure_and_get(subj, level)
+                # If still None (unexpected), provide a non-breaking default for UI
+                if not cfg:
+                    cfg = {
+                        'subject_name': subj,
+                        'education_level': level,
+                        'is_composite': False,
+                        'component_1_name': 'Component 1' if subj == 'english' else 'Lugha',
+                        'component_1_weight': 50.0,
+                        'component_2_name': 'Component 2' if subj == 'english' else 'Insha',
+                        'component_2_weight': 50.0,
+                    }
+                configs.append(cfg)
+
+        print(f"✅ Loaded {len(configs)} configurations from DB (English & Kiswahili)")
+
+        return render_template(
+            'subject_configuration.html',
+            configurations=configs,
+            school_name="School Management System",
+        )
 
 
 
@@ -305,6 +303,7 @@ def subject_configuration_page():
         """, 500
 
 @subject_config_api.route('/api/subject-config/toggle', methods=['POST'])
+@csrf.exempt
 @admin_required
 def toggle_composite_mode():
     """Toggle composite mode for a subject."""
@@ -378,6 +377,7 @@ def toggle_composite_mode():
         }), 500
 
 @subject_config_api.route('/api/subject-config/update-component', methods=['POST'])
+@csrf.exempt
 @admin_required
 def update_component_weight():
     """Update component weight for a composite subject."""
@@ -442,6 +442,7 @@ def update_component_weight():
         }), 500
 
 @subject_config_api.route('/api/subject-config/save-all', methods=['POST'])
+@csrf.exempt
 @admin_required
 def save_all_configurations():
     """Save all configurations and sync with Subject table."""

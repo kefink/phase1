@@ -25,29 +25,40 @@
             --solar-blue: #268bd2;
             --solar-cyan: #2aa198;
             --solar-green: #859900;
+            /* Additional glass variables */
+            --solar-body-bg: var(--solar-base03);
+            --solar-body-color: var(--solar-base0);
+            --solar-card-bg: rgba(7, 54, 66, 0.95);
+            --solar-glass-border: rgba(131, 148, 150, 0.3);
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.35), 0 2px 4px -2px rgb(0 0 0 / 0.35);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
         }
 
         body {
-            background: linear-gradient(135deg, var(--solar-base3) 0%, var(--solar-base2) 100%);
-            color: var(--solar-base02);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--solar-body-bg);
+            color: var(--solar-body-color);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             margin: 0;
             padding: 0;
             min-height: 100vh;
         }
         .parent-dashboard {
-            padding: 20px;
+            padding: 24px;
             max-width: 1200px;
             margin: 0 auto;
         }
         
         .dashboard-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
+            background: var(--solar-card-bg);
+            color: var(--solar-base3);
+            border: 1px solid var(--solar-glass-border);
+            padding: 32px;
+            border-radius: var(--radius-2xl);
+            margin-bottom: 28px;
             text-align: center;
+            box-shadow: var(--shadow-lg);
         }
         
         .stats-grid {
@@ -58,23 +69,25 @@
         }
         
         .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: var(--solar-card-bg);
+            color: var(--solar-base3);
+            padding: 24px;
+            border-radius: var(--radius-2xl);
+            border: 1px solid var(--solar-glass-border);
+            box-shadow: var(--shadow-md);
             text-align: center;
-            border-left: 5px solid #667eea;
+            border-left: 5px solid var(--solar-yellow);
         }
         
         .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 2.25em;
+            font-weight: 800;
+            color: var(--solar-yellow);
             margin-bottom: 10px;
         }
         
         .stat-label {
-            color: #666;
+            color: var(--solar-base0);
             font-size: 1.1em;
         }
         
@@ -86,10 +99,12 @@
         }
         
         .action-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: var(--solar-card-bg);
+            color: var(--solar-base3);
+            padding: 24px;
+            border-radius: var(--radius-2xl);
+            border: 1px solid var(--solar-glass-border);
+            box-shadow: var(--shadow-md);
             text-align: center;
             transition: transform 0.3s ease;
         }
@@ -108,44 +123,48 @@
         
         .action-title {
             font-size: 1.3em;
-            font-weight: bold;
+            font-weight: 700;
             margin-bottom: 10px;
-            color: #333;
+            color: var(--solar-base3);
         }
         
         .action-desc {
-            color: #666;
+            color: var(--solar-base0);
             margin-bottom: 20px;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 25px;
+            background: linear-gradient(135deg, var(--solar-yellow) 0%, var(--solar-orange) 100%);
+            color: var(--solar-base3);
+            padding: 12px 22px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
         }
         
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(181, 137, 0, 0.25);
         }
         
         .recent-parents {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: var(--solar-card-bg);
+            color: var(--solar-base3);
+            padding: 24px;
+            border-radius: var(--radius-2xl);
+            border: 1px solid var(--solar-glass-border);
+            box-shadow: var(--shadow-md);
             margin-bottom: 30px;
         }
         
         .section-title {
             font-size: 1.5em;
-            font-weight: bold;
-            color: #333;
+            font-weight: 800;
+            color: var(--solar-base3);
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -162,12 +181,12 @@
             justify-content: between;
             align-items: center;
             padding: 15px;
-            border-bottom: 1px solid #eee;
-            transition: background-color 0.3s ease;
+            border-bottom: 1px solid var(--solar-glass-border);
+            transition: background-color 0.2s ease;
         }
         
         .parent-item:hover {
-            background-color: #f8f9fa;
+            background-color: rgba(181, 137, 0, 0.08);
         }
         
         .parent-info {
@@ -175,12 +194,12 @@
         }
         
         .parent-name {
-            font-weight: bold;
-            color: #333;
+            font-weight: 700;
+            color: var(--solar-base3);
         }
         
         .parent-email {
-            color: #666;
+            color: var(--solar-base0);
             font-size: 0.9em;
         }
         
@@ -194,40 +213,49 @@
             padding: 4px 8px;
             border-radius: 12px;
             font-size: 0.8em;
-            font-weight: bold;
+            font-weight: 700;
         }
         
         .status-active {
-            background-color: #d4edda;
-            color: #155724;
+            background: rgba(42, 161, 152, 0.15);
+            border: 1px solid rgba(42, 161, 152, 0.3);
+            color: var(--solar-cyan);
         }
         
         .status-inactive {
-            background-color: #f8d7da;
-            color: #721c24;
+            background: rgba(211, 54, 130, 0.15);
+            border: 1px solid rgba(211, 54, 130, 0.3);
+            color: var(--solar-magenta);
         }
         
         .status-verified {
-            background-color: #cce5ff;
-            color: #004085;
+            background: rgba(38, 139, 210, 0.15);
+            border: 1px solid rgba(38, 139, 210, 0.3);
+            color: var(--solar-blue);
         }
         
         .status-unverified {
-            background-color: #fff3cd;
-            color: #856404;
+            background: rgba(203, 75, 22, 0.15);
+            border: 1px solid rgba(203, 75, 22, 0.3);
+            color: var(--solar-orange);
         }
         
         .btn-view {
-            background-color: #17a2b8;
-            color: white;
+            background: var(--solar-blue);
+            color: var(--solar-base3);
             padding: 6px 12px;
-            border-radius: 6px;
+            border-radius: 8px;
             text-decoration: none;
             font-size: 0.9em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: filter 0.2s ease, transform 0.2s ease;
         }
         
         .btn-view:hover {
-            background-color: #138496;
+            filter: brightness(1.05);
+            transform: translateY(-1px);
         }
         
         .alerts-section {
@@ -237,16 +265,18 @@
         }
         
         .alert-card {
-            background: white;
+            background: var(--solar-card-bg);
+            color: var(--solar-base3);
             padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-left: 5px solid #ffc107;
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--solar-glass-border);
+            border-left: 5px solid var(--solar-yellow);
         }
         
         .alert-title {
-            font-weight: bold;
-            color: #333;
+            font-weight: 700;
+            color: var(--solar-base3);
             margin-bottom: 15px;
             display: flex;
             align-items: center;
@@ -270,10 +300,12 @@
         
         /* Enhanced Filters and Search */
         .filters-section {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: var(--solar-card-bg);
+            color: var(--solar-base3);
+            padding: 24px;
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--solar-glass-border);
             margin-bottom: 30px;
         }
         
@@ -290,22 +322,24 @@
         }
         
         .filter-label {
-            font-weight: bold;
-            color: #333;
+            font-weight: 700;
+            color: var(--solar-base3);
             margin-bottom: 5px;
             font-size: 0.9em;
         }
         
         .filter-input {
             padding: 10px 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
+            border: 1px solid var(--solar-glass-border);
+            background: rgba(7,54,66,0.6);
+            color: var(--solar-base3);
+            border-radius: 10px;
             font-size: 14px;
         }
         
         .filter-input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--solar-blue);
         }
         
         .filters-actions {
@@ -316,59 +350,66 @@
         }
         
         .btn-filter {
-            background: #667eea;
-            color: white;
+            background: linear-gradient(135deg, var(--solar-yellow) 0%, var(--solar-orange) 100%);
+            color: var(--solar-base3);
             padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 14px;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .btn-filter:hover {
-            background: #5a67d8;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(181,137,0,0.25);
         }
         
         .btn-clear {
-            background: #6c757d;
-            color: white;
+            background: var(--solar-base01);
+            color: var(--solar-base3);
             padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 14px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         
-        .btn-clear:hover {
-            background: #5a6268;
-        }
+        .btn-clear:hover { filter: brightness(1.05); transform: translateY(-1px); }
         
         .btn-export {
-            background: #28a745;
-            color: white;
+            background: var(--solar-green);
+            color: var(--solar-base3);
             padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 14px;
             text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: filter 0.2s ease, transform 0.2s ease;
         }
         
-        .btn-export:hover {
-            background: #218838;
-        }
+        .btn-export:hover { filter: brightness(1.05); transform: translateY(-1px); }
         
         /* Enhanced Lists */
         .enhanced-list {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: var(--solar-card-bg);
+            color: var(--solar-base3);
+            padding: 24px;
+            border-radius: var(--radius-2xl);
+            border: 1px solid var(--solar-glass-border);
+            box-shadow: var(--shadow-md);
             margin-bottom: 30px;
         }
         
@@ -378,13 +419,13 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 2px solid var(--solar-glass-border);
         }
         
         .list-title {
             font-size: 1.3em;
-            font-weight: bold;
-            color: #333;
+            font-weight: 700;
+            color: var(--solar-base3);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -438,23 +479,22 @@
         }
         
         .enhanced-table th {
-            background-color: #f8f9fa;
+            background-color: rgba(7,54,66,0.7);
             padding: 12px 15px;
             text-align: left;
-            font-weight: bold;
-            color: #333;
-            border-bottom: 2px solid #e1e5e9;
+            font-weight: 700;
+            color: var(--solar-base3);
+            border-bottom: 2px solid var(--solar-glass-border);
         }
         
         .enhanced-table td {
             padding: 12px 15px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--solar-glass-border);
             vertical-align: middle;
+            color: var(--solar-base0);
         }
         
-        .enhanced-table tr:hover {
-            background-color: #f8f9fa;
-        }
+        .enhanced-table tr:hover { background-color: rgba(181,137,0,0.08); }
         
         .student-checkbox {
             margin-right: 10px;
@@ -467,30 +507,24 @@
             gap: 10px;
             margin-top: 20px;
             padding-top: 20px;
-            border-top: 1px solid #e1e5e9;
+            border-top: 1px solid var(--solar-glass-border);
         }
         
         .pagination a, .pagination span {
             padding: 8px 12px;
             border-radius: 6px;
             text-decoration: none;
-            color: #667eea;
-            border: 1px solid #e1e5e9;
-            transition: all 0.3s ease;
+            color: var(--solar-yellow);
+            border: 1px solid var(--solar-glass-border);
+            transition: all 0.2s ease;
         }
         
-        .pagination a:hover {
-            background-color: #667eea;
-            color: white;
-        }
+        .pagination a:hover { background-color: rgba(181,137,0,0.15); color: var(--solar-base3); }
         
-        .pagination .current {
-            background-color: #667eea;
-            color: white;
-        }
+        .pagination .current { background-color: rgba(181,137,0,0.25); color: var(--solar-base3); }
         
         .pagination .disabled {
-            color: #ccc;
+            color: var(--solar-base01);
             cursor: not-allowed;
         }
         
@@ -501,26 +535,8 @@
             margin-left: auto;
         }
         
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 30px;
-            border-radius: 15px;
-            width: 80%;
-            max-width: 500px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,43,54,.55); backdrop-filter: blur(6px); }
+        .modal-content { background: var(--solar-card-bg); color: var(--solar-base3); margin: 10% auto; padding: 26px; border: 1px solid var(--solar-glass-border); border-radius: var(--radius-2xl); width: 90%; max-width: 560px; box-shadow: var(--shadow-lg); }
         
         .modal-header {
             display: flex;
@@ -528,58 +544,31 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 2px solid var(--solar-glass-border);
         }
         
         .modal-title {
             font-size: 1.3em;
-            font-weight: bold;
-            color: #333;
+            font-weight: 800;
+            color: var(--solar-base3);
         }
         
         .close {
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
-            color: #999;
+            color: var(--solar-base0);
         }
         
-        .close:hover {
-            color: #333;
-        }
+        .close:hover { color: var(--solar-base3); }
         
-        .search-parent-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
+        .search-parent-input { width: 100%; padding: 12px 15px; border: 1px solid var(--solar-glass-border); background: rgba(7,54,66,0.6); color: var(--solar-base3); border-radius: 10px; margin-bottom: 15px; font-size: 16px; }
         
-        .parent-search-results {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #e1e5e9;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
+        .parent-search-results { max-height: 200px; overflow-y: auto; border: 1px solid var(--solar-glass-border); border-radius: 10px; margin-bottom: 15px; }
         
-        .parent-option {
-            padding: 12px 15px;
-            cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
-            transition: background-color 0.3s ease;
-        }
-        
-        .parent-option:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .parent-option.selected {
-            background-color: #e3f2fd;
-            border-left: 4px solid #667eea;
-        }
+        .parent-option { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--solar-glass-border); transition: background-color 0.2s ease; color: var(--solar-base3); }
+        .parent-option:hover { background-color: rgba(38,139,210,0.12); }
+        .parent-option.selected { background-color: rgba(38,139,210,0.18); border-left: 4px solid var(--solar-blue); }
         
         /* Icon styling fixes */
         .section-icon {
@@ -951,11 +940,15 @@
                                class="btn-view" style="margin-left: 5px;">
                                 <i class="fas fa-eye"></i> View
                             </a>
-                            <form action="/parent_management/delete_parent/{{ parent.id }}" method="POST" style="display:inline-block; margin-left: 5px;" onsubmit="return confirm('Delete {{ parent.get_full_name() }}? This cannot be undone.');">
-                                <button type="submit" class="btn-view" style="background-color:#dc3545;">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </form>
+                            <!-- Soft-delete (Deactivate/Activate) toggle -->
+                            <a href="{{ url_for('parent_management.toggle_parent_status', parent_id=parent.id) }}"
+                               class="btn-view" style="margin-left: 5px; background-color:#6c757d;">
+                                <i class="fas fa-user-slash"></i> {{ 'Deactivate' if parent.is_active else 'Activate' }}
+                            </a>
+                            <!-- Open confirmation modal for permanent delete -->
+                            <button type="button" class="btn-view btn-delete-parent" data-parent-id="{{ parent.id }}" data-parent-name="{{ parent.get_full_name() }}" style="margin-left: 5px; background-color:#dc3545;">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -1268,6 +1261,103 @@
         // Initialize checkbox states
         document.addEventListener('DOMContentLoaded', function() {
             updateBulkActionButton();
+        });
+    </script>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Deletion</h3>
+                <span class="close" onclick="closeDeleteConfirmModal()">&times;</span>
+            </div>
+            <div style="margin: 10px 0;">
+                <p>Are you sure you want to permanently delete <strong id="deleteParentName"></strong>? This cannot be undone.</p>
+                <p style="font-size: 12px; color:#666;">CSRF token: <code id="csrfTokenDisplay"></code></p>
+            </div>
+            <!-- Hidden form used to submit the permanent delete -->
+            <form id="confirmDeleteForm" method="POST" style="display:none;"></form>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" class="btn-clear" onclick="closeDeleteConfirmModal()">Cancel</button>
+                <button type="button" class="btn-filter" id="softDeleteBtn">
+                    <svg class="btn-small-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Deactivate Instead
+                </button>
+                <button type="button" class="btn-filter" style="background:#dc3545;" id="confirmDeleteBtn">
+                    <svg class="btn-small-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"></path>
+                    </svg>
+                    Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Delete confirmation modal logic
+        const csrfToken = "{{ csrf_token() if csrf_token is defined else '' }}";
+        let pendingDelete = { id: null, name: '', deleteUrl: '', toggleUrl: '' };
+
+        function openDeleteConfirmModal(parentId, parentName) {
+            pendingDelete.id = parentId;
+            pendingDelete.name = parentName;
+            pendingDelete.deleteUrl = `/parent_management/delete_parent/${parentId}`;
+            pendingDelete.toggleUrl = `/parent_management/toggle_parent_status/${parentId}`;
+
+            document.getElementById('deleteParentName').textContent = parentName;
+            document.getElementById('csrfTokenDisplay').textContent = csrfToken;
+
+            // Prepare hidden form for delete
+            const form = document.getElementById('confirmDeleteForm');
+            form.action = pendingDelete.deleteUrl;
+            form.method = 'POST';
+            form.innerHTML = '';
+            if (csrfToken) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'csrf_token';
+                input.value = csrfToken;
+                form.appendChild(input);
+            }
+
+            document.getElementById('deleteConfirmModal').style.display = 'block';
+        }
+
+        function closeDeleteConfirmModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+            pendingDelete = { id: null, name: '', deleteUrl: '', toggleUrl: '' };
+        }
+
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn-delete-parent');
+            if (btn) {
+                const id = btn.getAttribute('data-parent-id');
+                const name = btn.getAttribute('data-parent-name');
+                openDeleteConfirmModal(id, name);
+            }
+        });
+
+        document.getElementById('softDeleteBtn').addEventListener('click', function() {
+            if (pendingDelete && pendingDelete.toggleUrl) {
+                window.location.href = pendingDelete.toggleUrl; // Soft-delete via existing toggle route (GET)
+            }
+        });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            const form = document.getElementById('confirmDeleteForm');
+            if (form && pendingDelete && pendingDelete.deleteUrl) {
+                form.submit();
+            }
+        });
+
+        // Close modal on outside click
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('deleteConfirmModal');
+            if (event.target === modal) {
+                closeDeleteConfirmModal();
+            }
         });
     </script>
 </body>

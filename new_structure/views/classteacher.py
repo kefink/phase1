@@ -2123,8 +2123,14 @@ def dashboard():
                         ).first()
                     print(f"🔍 DEBUG: Submit - Desktop stream lookup, found: {stream_obj}")
 
-                # Get other database objects
-                subject_obj = Subject.query.filter_by(name=subject).first()
+                # Get other database objects (disambiguate by education level when available)
+                try:
+                    subj_query = Subject.query.filter_by(name=subject)
+                    if education_level:
+                        subj_query = subj_query.filter_by(education_level=education_level)
+                    subject_obj = subj_query.first()
+                except Exception:
+                    subject_obj = Subject.query.filter_by(name=subject).first()
                 term_obj = Term.query.filter_by(name=term).first()
                 assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
@@ -2151,8 +2157,14 @@ def dashboard():
                         print(f"🔥 DEBUG: Submit - Form keys containing 'mark': {[k for k in request.form.keys() if 'mark_' in k]}")
 
                         try:
-                            # Check if this is a composite subject (using proven teacher.py logic)
-                            if subject_obj.is_composite:
+                            # Determine composite handling using flexible configuration first
+                            try:
+                                from ..services.flexible_subject_service import FlexibleSubjectService
+                                treat_as_composite = FlexibleSubjectService.is_subject_composite(subject_obj.name, education_level)
+                            except Exception:
+                                treat_as_composite = getattr(subject_obj, 'is_composite', False)
+
+                            if treat_as_composite:
                                 # Handle composite subject marks (English/Kiswahili)
                                 components = subject_obj.get_components()
 
@@ -2655,14 +2667,71 @@ def dashboard():
     from ..services.school_config_service import SchoolConfigService
     school_info = SchoolConfigService.get_school_info_dict()
 
-    # Organize subjects by education level for the template
+    # Organize subjects by education level for the template with flexible composite handling
+    # Parent vs components display per education level mirrors teacher page
     all_subjects = Subject.query.all()
-    subjects_by_education_level = {
-        'lower_primary': [s.name for s in all_subjects if s.education_level == 'lower_primary'],
-        'upper_primary': [s.name for s in all_subjects if s.education_level == 'upper_primary'],
-        'junior_secondary': [s.name for s in all_subjects if s.education_level == 'junior_secondary'],
-        'senior_secondary': [s.name for s in all_subjects if s.education_level == 'senior_secondary']
-    }
+    subjects_by_education_level = {}
+    try:
+        from ..services.flexible_subject_service import FlexibleSubjectService
+        # Keep canonical order if available
+        from ..utils.constants import EDUCATION_LEVELS_ORDER as _LEVELS
+        levels_iter = list(_LEVELS) if _LEVELS else ['lower_primary','upper_primary','junior_secondary','senior_secondary']
+        for lvl in levels_iter:
+            level_subjects = [s for s in all_subjects if s.education_level == lvl]
+
+            # Map composite parents to component Subject rows at this level
+            parent_to_components = {}
+            parent_exists = set()
+            for s in level_subjects:
+                if getattr(s, 'is_component', False) and getattr(s, 'composite_parent', None):
+                    parent_to_components.setdefault(s.composite_parent, []).append(s)
+                if s.name:
+                    parent_exists.add(s.name)
+
+            display_names = []
+
+            # Decide whether to show parent or components per config
+            for parent, comps in parent_to_components.items():
+                try:
+                    is_comp = FlexibleSubjectService.is_subject_composite(parent, lvl)
+                except Exception:
+                    is_comp = False
+                if is_comp:
+                    for c in comps:
+                        display_names.append(c.name)
+                else:
+                    if parent in parent_exists:
+                        display_names.append(parent)
+
+            # Add regular subjects (non-component and non-composite parents without components)
+            for s in level_subjects:
+                if getattr(s, 'is_component', False):
+                    continue  # handled above
+                if getattr(s, 'is_composite', False):
+                    if s.name in parent_to_components:
+                        # already handled depending on config
+                        continue
+                    # Composite with no registered components: include parent for single-exam entry
+                    display_names.append(s.name)
+                else:
+                    if s.name not in display_names:
+                        display_names.append(s.name)
+
+            # Sort with core subjects first
+            core_order = ['MATHEMATICS', 'ENGLISH', 'KISWAHILI', 'SCIENCE', 'INTEGRATED SCIENCE']
+            def _sort_key(x):
+                xu = (x or '').upper()
+                core_rank = 0 if any(c in xu for c in core_order) else 1
+                return (core_rank, x)
+            subjects_by_education_level[lvl] = sorted(display_names, key=_sort_key)
+    except Exception:
+        # Fallback to simple per-level listing
+        subjects_by_education_level = {
+            'lower_primary': [s.name for s in all_subjects if s.education_level == 'lower_primary'],
+            'upper_primary': [s.name for s in all_subjects if s.education_level == 'upper_primary'],
+            'junior_secondary': [s.name for s in all_subjects if s.education_level == 'junior_secondary'],
+            'senior_secondary': [s.name for s in all_subjects if s.education_level == 'senior_secondary']
+        }
 
     # Render the class teacher dashboard
     return render_template(
@@ -4546,35 +4615,68 @@ def get_streams_by_level(grade):
 @classteacher_bp.route('/get_subjects_by_education_level/<education_level>', methods=['GET'])
 @classteacher_required
 def get_subjects_by_education_level(education_level):
-    """API route to get subjects for a specific education level."""
+    """API route to get subjects for a specific education level.
+
+    Honors flexible configuration: if a parent (e.g., English/Kiswahili) is configured
+    as composite at this level, return its components; otherwise, return the parent.
+    """
     try:
-        # Get subjects for this education level
-        all_subjects = Subject.query.filter_by(education_level=education_level).all()
-
+        level = (education_level or '').strip()
+        all_subjects = Subject.query.filter_by(education_level=level).all()
         if not all_subjects:
-            return jsonify({"success": True, "message": f"No subjects found for {education_level}", "subjects": []})
+            return jsonify({"success": True, "message": f"No subjects found for {level}", "subjects": []})
 
-        # Define core subjects that should appear first
-        core_subjects = ["Mathematics", "English", "Kiswahili", "Science", "Integrated Science",
-                        "Science and Technology", "Integrated Science and Health Education"]
+        try:
+            from ..services.flexible_subject_service import FlexibleSubjectService
+        except Exception:
+            FlexibleSubjectService = None
 
-        # Sort subjects with core subjects first
-        sorted_subjects = []
+        # Build parent -> component Subject rows map
+        parent_to_components = {}
+        name_to_row = {}
+        for s in all_subjects:
+            name_to_row.setdefault(s.name, s)
+            if getattr(s, 'is_component', False) and getattr(s, 'composite_parent', None):
+                parent_to_components.setdefault(s.composite_parent, []).append(s)
 
-        # First add core subjects in the specified order
-        for core_subject in core_subjects:
-            for subject in all_subjects:
-                if subject.name == core_subject or subject.name.upper() == core_subject.upper():
-                    sorted_subjects.append(subject)
+        include_rows = []
+        handled_parents = set()
+        for parent, comps in parent_to_components.items():
+            treat_as_composite = False
+            if FlexibleSubjectService:
+                try:
+                    treat_as_composite = FlexibleSubjectService.is_subject_composite(parent, level)
+                except Exception:
+                    treat_as_composite = False
+            if treat_as_composite:
+                include_rows.extend(comps)
+            else:
+                if parent in name_to_row:
+                    include_rows.append(name_to_row[parent])
+            handled_parents.add(parent)
 
-        # Then add remaining subjects alphabetically
-        remaining_subjects = [s for s in all_subjects if s not in sorted_subjects]
-        remaining_subjects.sort(key=lambda x: x.name)
-        sorted_subjects.extend(remaining_subjects)
+        # Add remaining regular subjects
+        for s in all_subjects:
+            if getattr(s, 'is_component', False):
+                # handled through parent mapping above
+                continue
+            if s.name in handled_parents:
+                # already included parent (or omitted in favor of components)
+                continue
+            include_rows.append(s)
 
-        # Convert to list of dictionaries
-        subjects_data = [{"id": subject.id, "name": subject.name} for subject in sorted_subjects]
+        # Sort core subjects first
+        core_subjects = [
+            "Mathematics", "English", "Kiswahili", "Science", "Integrated Science",
+            "Science and Technology", "Integrated Science and Health Education"
+        ]
+        def _key(row):
+            up = (row.name or '').upper()
+            core_rank = 0 if any(c.upper() in up for c in core_subjects) else 1
+            return (core_rank, row.name)
+        include_rows = sorted(include_rows, key=_key)
 
+        subjects_data = [{"id": row.id, "name": row.name} for row in include_rows]
         return jsonify({"success": True, "subjects": subjects_data})
     except Exception as e:
         print(f"Error fetching subjects: {str(e)}")
@@ -10986,9 +11088,59 @@ def upload_class_marks(grade_id, stream_id, term_id, assessment_type_id):
             flash("You are not authorized to upload marks for this class.", "error")
             return redirect(url_for('classteacher.upload_marks'))
 
-        # Get subjects for this grade's education level using the new service
-        from ..services.composite_subject_service import CompositeSubjectService
-        subjects = CompositeSubjectService.get_subjects_for_upload(grade.education_level)
+        # Get subjects for this grade's education level driven by flexible configuration
+        subjects = []
+        try:
+            from ..services.flexible_subject_service import FlexibleSubjectService as _FSS
+            # Fetch all subjects at this level
+            all_level_subjects = Subject.query.filter_by(education_level=grade.education_level).all()
+            # Map parents to components
+            parent_to_components = {}
+            name_to_row = {}
+            for s in all_level_subjects:
+                name_to_row.setdefault(s.name, s)
+                if getattr(s, 'is_component', False) and getattr(s, 'composite_parent', None):
+                    parent_to_components.setdefault(s.composite_parent, []).append(s)
+
+            included_ids = set()
+            # Decide for each parent whether to include parent or components
+            for parent, comps in parent_to_components.items():
+                try:
+                    treat_as_comp = _FSS.is_subject_composite(parent, grade.education_level)
+                except Exception:
+                    treat_as_comp = False
+                if treat_as_comp:
+                    for c in comps:
+                        if c.id not in included_ids:
+                            subjects.append(c)
+                            included_ids.add(c.id)
+                else:
+                    row = name_to_row.get(parent)
+                    if row and row.id not in included_ids:
+                        subjects.append(row)
+                        included_ids.add(row.id)
+
+            # Add regular subjects not covered by parent mapping
+            for s in all_level_subjects:
+                if getattr(s, 'is_component', False):
+                    continue
+                if s.name in parent_to_components:
+                    # parent handled above
+                    continue
+                if s.id not in included_ids:
+                    subjects.append(s)
+                    included_ids.add(s.id)
+
+            # Optional: sort similar to upload selection UI
+            def _sort_key(subj):
+                if getattr(subj, 'is_component', False) and getattr(subj, 'composite_parent', None):
+                    return f"{subj.composite_parent}_{subj.name}"
+                return subj.name or ''
+            subjects.sort(key=_sort_key)
+        except Exception:
+            # Fallback to legacy inclusion of regular + component subjects
+            from ..services.composite_subject_service import CompositeSubjectService as _CSS
+            subjects = _CSS.get_subjects_for_upload(grade.education_level)
 
         # Get students in this stream
         students = Student.query.filter_by(stream_id=stream_id).order_by(Student.name).all()
@@ -11082,8 +11234,13 @@ def upload_single_subject_marks(grade_id, stream_id, subject_id, term_id, assess
         for mark in marks:
             existing_marks[mark.student_id] = mark
 
-        # Check if subject is composite
-        components = subject.get_components() if subject.is_composite else []
+        # Check if subject is composite (respect flexible configuration per level)
+        try:
+            from ..services.flexible_subject_service import FlexibleSubjectService as _FSS
+            treat_as_composite = _FSS.is_subject_composite(subject.name, grade.education_level)
+        except Exception:
+            treat_as_composite = getattr(subject, 'is_composite', False)
+        components = subject.get_components() if treat_as_composite else []
 
         upload_data = {
             'grade': grade,
@@ -11094,7 +11251,7 @@ def upload_single_subject_marks(grade_id, stream_id, subject_id, term_id, assess
             'students': students,
             'existing_marks': existing_marks,
             'components': components,
-            'is_composite': subject.is_composite,
+            'is_composite': treat_as_composite,
             'grade_id': grade_id,
             'stream_id': stream_id,
             'subject_id': subject_id,

@@ -113,6 +113,48 @@ class StudentPromotionService:
             # Get total count for pagination
             total_students = students_query.count()
 
+            # Compute distinct grade levels across full filtered dataset (not page-limited)
+            distinct_grades_total = db.session.query(Grade.id).join(
+                Student, Student.grade_id == Grade.id
+            )
+            if education_level:
+                distinct_grades_total = distinct_grades_total.filter(Grade.education_level == education_level)
+            if grade_id:
+                distinct_grades_total = distinct_grades_total.filter(Student.grade_id == grade_id)
+            if stream_id:
+                distinct_grades_total = distinct_grades_total.filter(Student.stream_id == stream_id)
+            distinct_grades_total = distinct_grades_total.distinct().count()
+
+            # Compute full-dataset summary totals (eligible and final) without pagination
+            try:
+                base_full = db.session.query(Student, Grade).join(Grade, Student.grade_id == Grade.id)
+                if education_level:
+                    base_full = base_full.filter(Grade.education_level == education_level)
+                if grade_id:
+                    base_full = base_full.filter(Student.grade_id == grade_id)
+                if stream_id:
+                    base_full = base_full.filter(Student.stream_id == stream_id)
+
+                eligible_total = 0
+                final_grade_total = 0
+                for s, g in base_full.all():
+                    is_final = (g.name == '9' or g.name == 'Grade 9' or ('grade 9' in (g.name or '').lower())) or getattr(s, 'is_final_grade', lambda: False)() if hasattr(s, 'is_final_grade') else False
+                    if is_final:
+                        final_grade_total += 1
+                    else:
+                        try:
+                            if hasattr(s, 'can_be_promoted') and s.can_be_promoted():
+                                eligible_total += 1
+                        except Exception:
+                            # If method not available or fails, skip eligibility increment
+                            pass
+
+                promotion_summary['eligible_for_promotion'] = eligible_total
+                promotion_summary['final_grade_students'] = final_grade_total
+            except Exception:
+                # Fallback: keep page-limited numbers already set later
+                pass
+
             # Apply pagination
             offset = (page - 1) * per_page
             students_query = students_query.order_by(
@@ -162,7 +204,7 @@ class StudentPromotionService:
                 students_by_grade[grade_name]['students'].append(student_data)
                 students_by_grade[grade_name]['total_count'] += 1
                 
-                # Update summary counts
+                # Update summary counts (per-page additions)
                 promotion_summary['total_students'] += 1
                 
                 if student.is_final_grade():
@@ -208,6 +250,10 @@ class StudentPromotionService:
                     'stream_id': stream_id
                 }
             }
+
+            # Override summary counts to reflect full filtered dataset totals where applicable
+            result_dict['promotion_summary']['total_students'] = total_students
+            result_dict['promotion_summary']['grade_levels_total'] = distinct_grades_total
 
             # Convert to object for template dot notation access
             # Convert to object for template dot notation access
