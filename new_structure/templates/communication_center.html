@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parent Communication Center - Hillview School</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/heroicons@2.0.18/24/outline/index.js"
+      type="module"
+    ></script>
+    <style>
+      :root {
+        /* Solar Theme Colors */
+        --solar-base03: #002b36;
+        --solar-base02: #073642;
+        --solar-base01: #586e75;
+        --solar-base00: #657b83;
+        --solar-base0: #839496;
+        --solar-base1: #93a1a1;
+        --solar-base2: #eee8d5;
+        --solar-base3: #fdf6e3;
+        --solar-yellow: #b58900;
+        --solar-orange: #cb4b16;
+        --solar-red: #dc322f;
+        --solar-magenta: #d33682;
+        --solar-violet: #6c71c4;
+        --solar-blue: #268bd2;
+        --solar-cyan: #2aa198;
+        --solar-green: #859900;
+      }
+
+      body {
+        background: var(--solar-base03);
+        color: var(--solar-base0);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+      .communication-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .communication-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .communication-header h1 {
+        color: #2d3748;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .communication-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .comm-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .card-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+        color: #667eea;
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin: 0;
+      }
+
+      .audience-selector {
+        margin-bottom: 1.5rem;
+      }
+
+      .audience-option {
+        background: #f7fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .audience-option:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+      }
+
+      .audience-option.selected {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+      }
+
+      .audience-option input[type="radio"] {
+        margin-right: 10px;
+      }
+
+      .filter-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: none;
+      }
+
+      .filter-section.active {
+        display: block;
+      }
+
+      .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .form-label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #4a5568;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .message-type-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .type-option {
+        background: #f7fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .type-option:hover {
+        border-color: #667eea;
+      }
+
+      .type-option.selected {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+      }
+
+      .type-option input[type="radio"] {
+        display: none;
+      }
+
+      .type-icon {
+        width: 32px;
+        height: 32px;
+        margin: 0 auto 8px;
+        color: #667eea;
+      }
+
+      .template-selector {
+        margin-bottom: 1.5rem;
+      }
+
+      .template-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .template-card {
+        background: #f8f9fa;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .template-card:hover {
+        border-color: #667eea;
+      }
+
+      .template-card.selected {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+      }
+
+      .template-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2d3748;
+      }
+
+      .template-description {
+        font-size: 0.9rem;
+        color: #718096;
+        margin-bottom: 1rem;
+      }
+
+      .template-preview {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-size: 0.85rem;
+        color: #4a5568;
+        font-style: italic;
+      }
+
+      .message-composer {
+        background: #fafafa;
+        border-radius: 12px;
+        padding: 1.5rem;
+      }
+
+      .composer-tabs {
+        display: flex;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .tab-button {
+        background: none;
+        border: none;
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        color: #718096;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s ease;
+      }
+
+      .tab-button.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .message-editor {
+        width: 100%;
+        min-height: 200px;
+        padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 14px;
+        resize: vertical;
+      }
+
+      .message-editor:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .variable-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .variable-tag {
+        background: #e2e8f0;
+        color: #4a5568;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .variable-tag:hover {
+        background: #667eea;
+        color: white;
+      }
+
+      .preview-section {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+      }
+
+      .delivery-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 1.5rem 0;
+      }
+
+      .delivery-option {
+        background: #f7fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+      }
+
+      .delivery-option input[type="checkbox"] {
+        margin-bottom: 0.5rem;
+      }
+
+      .recipient-count {
+        background: rgba(102, 126, 234, 0.1);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+        text-align: center;
+      }
+
+      .recipient-count-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+        display: block;
+      }
+
+      .send-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 1rem;
+      }
+
+      .send-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+
+      .send-button:disabled {
+        background: #a0aec0;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .history-section {
+        margin-top: 2rem;
+      }
+
+      .history-item {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .history-info {
+        flex: 1;
+      }
+
+      .history-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .history-meta {
+        font-size: 0.9rem;
+        color: #718096;
+      }
+
+      .history-stats {
+        text-align: right;
+        font-size: 0.9rem;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-left: 0.5rem;
+      }
+
+      .status-sent {
+        background: #c6f6d5;
+        color: #2f855a;
+      }
+
+      .status-pending {
+        background: #fef5e7;
+        color: #d69e2e;
+      }
+
+      .status-failed {
+        background: #fed7d7;
+        color: #c53030;
+      }
+
+      @media (max-width: 768px) {
+        .communication-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .filter-row {
+          grid-template-columns: 1fr;
+        }
+
+        .message-type-selector {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="communication-container">
+      <div class="communication-header">
+        <h1>
+          <svg
+            style="
+              display: inline-block;
+              width: 40px;
+              height: 40px;
+              margin-right: 10px;
+              vertical-align: middle;
+            "
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            ></path>
+          </svg>
+          Parent Communication Center
+        </h1>
+        <p style="color: #718096; font-size: 1.1rem">
+          Send targeted messages to parents via email and SMS
+        </p>
+      </div>
+
+      <div class="communication-grid">
+        <!-- Left Panel: Audience & Filters -->
+        <div class="comm-card">
+          <div class="card-header">
+            <svg
+              class="card-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+              ></path>
+            </svg>
+            <h3 class="card-title">Select Audience</h3>
+          </div>
+
+          <div class="audience-selector">
+            <div class="audience-option" onclick="selectAudience('all')">
+              <input
+                type="radio"
+                name="audience"
+                value="all"
+                id="audience_all"
+              />
+              <label for="audience_all"
+                ><strong>All Parents</strong><br />
+                <span style="color: #718096; font-size: 0.9rem"
+                  >Send to all active parent accounts</span
+                ></label
+              >
+            </div>
+
+            <div class="audience-option" onclick="selectAudience('grade')">
+              <input
+                type="radio"
+                name="audience"
+                value="grade"
+                id="audience_grade"
+              />
+              <label for="audience_grade"
+                ><strong>By Grade/Class</strong><br />
+                <span style="color: #718096; font-size: 0.9rem"
+                  >Filter by specific grades or classes</span
+                ></label
+              >
+            </div>
+
+            <div class="audience-option" onclick="selectAudience('custom')">
+              <input
+                type="radio"
+                name="audience"
+                value="custom"
+                id="audience_custom"
+              />
+              <label for="audience_custom"
+                ><strong>Custom Selection</strong><br />
+                <span style="color: #718096; font-size: 0.9rem"
+                  >Choose specific parents manually</span
+                ></label
+              >
+            </div>
+
+            <div class="audience-option" onclick="selectAudience('unverified')">
+              <input
+                type="radio"
+                name="audience"
+                value="unverified"
+                id="audience_unverified"
+              />
+              <label for="audience_unverified"
+                ><strong>Unverified Parents</strong><br />
+                <span style="color: #718096; font-size: 0.9rem"
+                  >Parents who haven't verified their accounts</span
+                ></label
+              >
+            </div>
+          </div>
+
+          <!-- Grade Filters -->
+          <div class="filter-section" id="grade-filters">
+            <h4 style="margin-bottom: 1rem; color: #4a5568">Select Classes</h4>
+            <div class="filter-row">
+              <div class="form-group">
+                <label class="form-label">Education Level</label>
+                <select
+                  class="form-control"
+                  id="education_level_filter"
+                  onchange="updateGradeOptions()"
+                >
+                  <option value="">All Levels</option>
+                  {% for level in education_levels %}
+                  <option value="{{ level }}">{{ level }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Grade</label>
+                <select
+                  class="form-control"
+                  id="grade_filter"
+                  onchange="updateStreamOptions()"
+                >
+                  <option value="">All Grades</option>
+                  {% for grade in grades %}
+                  <option
+                    value="{{ grade.id }}"
+                    data-level="{{ grade.education_level }}"
+                  >
+                    {{ grade.name }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Stream</label>
+                <select class="form-control" id="stream_filter">
+                  <option value="">All Streams</option>
+                  {% for stream in streams %}
+                  <option
+                    value="{{ stream.id }}"
+                    data-grade="{{ stream.grade_id }}"
+                  >
+                    {{ stream.name }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Parent Status</label>
+              <select class="form-control" id="parent_status_filter">
+                <option value="">All Parents</option>
+                <option value="verified">Verified Only</option>
+                <option value="unverified">Unverified Only</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Custom Selection -->
+          <div class="filter-section" id="custom-filters">
+            <h4 style="margin-bottom: 1rem; color: #4a5568">
+              Search & Select Parents
+            </h4>
+            <div class="form-group">
+              <label class="form-label">Search Parents</label>
+              <input
+                type="text"
+                class="form-control"
+                id="parent_search"
+                placeholder="Search by name, email..."
+                onkeyup="searchParents()"
+              />
+            </div>
+            <div
+              id="parent-selection-list"
+              style="
+                max-height: 300px;
+                overflow-y: auto;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 0.5rem;
+              "
+            >
+              <!-- Parent checkboxes will be populated here -->
+            </div>
+          </div>
+
+          <!-- Recipient Count -->
+          <div class="recipient-count" id="recipient-count">
+            <span class="recipient-count-number" id="recipient-number">0</span>
+            <span>Recipients Selected</span>
+          </div>
+        </div>
+
+        <!-- Right Panel: Message Composition -->
+        <div class="comm-card">
+          <div class="card-header">
+            <svg
+              class="card-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              ></path>
+            </svg>
+            <h3 class="card-title">Compose Message</h3>
+          </div>
+
+          <!-- Message Type Selection -->
+          <div class="message-type-selector">
+            <div
+              class="type-option selected"
+              onclick="selectMessageType('email')"
+            >
+              <input
+                type="radio"
+                name="message_type"
+                value="email"
+                checked
+                id="type_email"
+              />
+              <svg
+                class="type-icon"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                ></path>
+              </svg>
+              <div><strong>Email</strong></div>
+            </div>
+            <div class="type-option" onclick="selectMessageType('sms')">
+              <input
+                type="radio"
+                name="message_type"
+                value="sms"
+                id="type_sms"
+              />
+              <svg
+                class="type-icon"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                ></path>
+              </svg>
+              <div><strong>SMS</strong></div>
+            </div>
+            <div class="type-option" onclick="selectMessageType('both')">
+              <input
+                type="radio"
+                name="message_type"
+                value="both"
+                id="type_both"
+              />
+              <svg
+                class="type-icon"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                ></path>
+              </svg>
+              <div><strong>Both</strong></div>
+            </div>
+          </div>
+
+          <!-- Email Templates -->
+          <div class="template-selector" id="email-templates">
+            <h4 style="margin-bottom: 1rem; color: #4a5568">
+              Choose Template (Optional)
+            </h4>
+            <div class="template-grid">
+              <div class="template-card" onclick="selectTemplate('welcome')">
+                <div class="template-title">Welcome Message</div>
+                <div class="template-description">
+                  Welcome new parents to the system
+                </div>
+                <div class="template-preview">
+                  Welcome to Hillview School! We're excited to have you join our
+                  parent portal...
+                </div>
+              </div>
+              <div class="template-card" onclick="selectTemplate('event')">
+                <div class="template-title">Event Notification</div>
+                <div class="template-description">
+                  Announce upcoming school events
+                </div>
+                <div class="template-preview">
+                  Don't miss our upcoming event: {{event_name}} on
+                  {{event_date}}...
+                </div>
+              </div>
+              <div class="template-card" onclick="selectTemplate('reminder')">
+                <div class="template-title">General Reminder</div>
+                <div class="template-description">Send important reminders</div>
+                <div class="template-preview">
+                  This is a friendly reminder about {{subject}}. Please remember
+                  to...
+                </div>
+              </div>
+              <div class="template-card" onclick="selectTemplate('urgent')">
+                <div class="template-title">Urgent Notice</div>
+                <div class="template-description">
+                  Important or time-sensitive information
+                </div>
+                <div class="template-preview">
+                  URGENT: This is an important notice regarding {{subject}}...
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message Composer -->
+          <div class="message-composer">
+            <div class="composer-tabs">
+              <button class="tab-button active" onclick="switchTab('compose')">
+                Compose
+              </button>
+              <button class="tab-button" onclick="switchTab('preview')">
+                Preview
+              </button>
+            </div>
+
+            <div class="tab-content active" id="compose-tab">
+              <div class="form-group">
+                <label class="form-label">Subject Line</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="message_subject"
+                  placeholder="Enter email subject..."
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Message Content</label>
+                <textarea
+                  class="message-editor"
+                  id="message_content"
+                  placeholder="Type your message here..."
+                ></textarea>
+              </div>
+              <div class="variable-tags">
+                <span
+                  style="font-size: 0.9rem; color: #718096; margin-right: 1rem"
+                  >Quick Insert:</span
+                >
+                <span
+                  class="variable-tag"
+                  onclick="insertVariable('{{parent_name}}')"
+                  >{parent_name}</span
+                >
+                <span
+                  class="variable-tag"
+                  onclick="insertVariable('{{student_name}}')"
+                  >{student_name}</span
+                >
+                <span
+                  class="variable-tag"
+                  onclick="insertVariable('{{grade_name}}')"
+                  >{grade_name}</span
+                >
+                <span
+                  class="variable-tag"
+                  onclick="insertVariable('{{school_name}}')"
+                  >{school_name}</span
+                >
+                <span
+                  class="variable-tag"
+                  onclick="insertVariable('{{current_date}}')"
+                  >{current_date}</span
+                >
+              </div>
+            </div>
+
+            <div class="tab-content" id="preview-tab">
+              <div class="preview-section" id="message-preview">
+                <h4>Message Preview</h4>
+                <div id="preview-content">
+                  <p style="color: #718096; font-style: italic">
+                    Start typing to see preview...
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivery Options -->
+          <div class="delivery-options">
+            <div class="delivery-option">
+              <input type="checkbox" id="send_immediately" checked />
+              <label for="send_immediately"
+                ><strong>Send Immediately</strong></label
+              >
+              <p style="font-size: 0.9rem; color: #718096; margin-top: 0.5rem">
+                Deliver message right away
+              </p>
+            </div>
+            <div class="delivery-option">
+              <input type="checkbox" id="schedule_delivery" />
+              <label for="schedule_delivery"
+                ><strong>Schedule Delivery</strong></label
+              >
+              <input
+                type="datetime-local"
+                class="form-control"
+                id="scheduled_time"
+                style="margin-top: 0.5rem"
+                disabled
+              />
+            </div>
+            <div class="delivery-option">
+              <input type="checkbox" id="track_delivery" checked />
+              <label for="track_delivery"
+                ><strong>Track Delivery</strong></label
+              >
+              <p style="font-size: 0.9rem; color: #718096; margin-top: 0.5rem">
+                Monitor delivery status
+              </p>
+            </div>
+          </div>
+
+          <button
+            class="send-button"
+            id="send-message-btn"
+            onclick="sendMessage()"
+            disabled
+          >
+            <svg
+              style="width: 20px; height: 20px; margin-right: 8px"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              ></path>
+            </svg>
+            Send Message
+          </button>
+        </div>
+      </div>
+
+      <!-- Communication History -->
+      <div class="comm-card history-section">
+        <div class="card-header">
+          <svg
+            class="card-icon"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          <h3 class="card-title">Recent Communications</h3>
+        </div>
+
+        <div id="communication-history">
+          {% if recent_communications %} {% for comm in recent_communications %}
+          <div class="history-item">
+            <div class="history-info">
+              <div class="history-title">
+                {{ comm.subject or 'No Subject' }}
+              </div>
+              <div class="history-meta">
+                {{ comm.created_at.strftime('%B %d, %Y at %I:%M %p') }} • {{
+                comm.message_type.upper() }} • {{ comm.recipient_count }}
+                recipients
+              </div>
+            </div>
+            <div class="history-stats">
+              <div>
+                Delivered: {{ comm.delivered_count }}/{{ comm.recipient_count }}
+              </div>
+              <span class="status-badge status-{{ comm.status }}"
+                >{{ comm.status.title() }}</span
+              >
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <p style="text-align: center; color: #718096; padding: 2rem">
+            No communications sent yet. Start by composing your first message
+            above!
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let selectedAudience = "";
+      let selectedParents = new Set();
+      let selectedTemplate = "";
+      let messageType = "email";
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        updateRecipientCount();
+        setupEventListeners();
+      });
+
+      function setupEventListeners() {
+        // Schedule delivery toggle
+        document
+          .getElementById("schedule_delivery")
+          .addEventListener("change", function () {
+            document.getElementById("scheduled_time").disabled = !this.checked;
+            document.getElementById("send_immediately").checked = !this.checked;
+          });
+
+        document
+          .getElementById("send_immediately")
+          .addEventListener("change", function () {
+            if (this.checked) {
+              document.getElementById("schedule_delivery").checked = false;
+              document.getElementById("scheduled_time").disabled = true;
+            }
+          });
+
+        // Message content change listener
+        document
+          .getElementById("message_content")
+          .addEventListener("input", updatePreview);
+        document
+          .getElementById("message_subject")
+          .addEventListener("input", updatePreview);
+      }
+
+      function selectAudience(type) {
+        selectedAudience = type;
+
+        // Update radio button
+        document.getElementById(`audience_${type}`).checked = true;
+
+        // Update audience option styling
+        document.querySelectorAll(".audience-option").forEach((option) => {
+          option.classList.remove("selected");
+        });
+        document
+          .querySelector(`input[value="${type}"]`)
+          .closest(".audience-option")
+          .classList.add("selected");
+
+        // Show/hide appropriate filter sections
+        document.querySelectorAll(".filter-section").forEach((section) => {
+          section.classList.remove("active");
+        });
+
+        if (type === "grade") {
+          document.getElementById("grade-filters").classList.add("active");
+        } else if (type === "custom") {
+          document.getElementById("custom-filters").classList.add("active");
+          loadParentsList();
+        }
+
+        updateRecipientCount();
+        updateSendButton();
+      }
+
+      function selectMessageType(type) {
+        messageType = type;
+
+        // Update styling
+        document.querySelectorAll(".type-option").forEach((option) => {
+          option.classList.remove("selected");
+        });
+        document
+          .querySelector(`input[value="${type}"]`)
+          .closest(".type-option")
+          .classList.add("selected");
+
+        // Update radio button
+        document.getElementById(`type_${type}`).checked = true;
+
+        // Show/hide email-specific fields
+        const emailTemplates = document.getElementById("email-templates");
+        const subjectField = document
+          .getElementById("message_subject")
+          .closest(".form-group");
+
+        if (type === "sms") {
+          emailTemplates.style.display = "none";
+          subjectField.style.display = "none";
+        } else {
+          emailTemplates.style.display = "block";
+          subjectField.style.display = "block";
+        }
+
+        updateSendButton();
+      }
+
+      function selectTemplate(templateType) {
+        selectedTemplate = templateType;
+
+        // Update styling
+        document.querySelectorAll(".template-card").forEach((card) => {
+          card.classList.remove("selected");
+        });
+        event.target.closest(".template-card").classList.add("selected");
+
+        // Load template content
+        loadTemplate(templateType);
+      }
+
+      function loadTemplate(templateType) {
+        const templates = {
+          welcome: {
+            subject: "Welcome to Hillview School Parent Portal",
+            content: `Dear {{parent_name}},
+
+  Welcome to the Hillview School parent portal! We're excited to have you join our school community.
+
+  Your account has been created and you can now:
+  • View your child's academic progress
+  • Access important school announcements
+  • Communicate with teachers and staff
+  • Stay updated on school events
+
+  If you have any questions, please don't hesitate to contact us.
+
+  Best regards,
+  Hillview School Administration`,
+          },
+          event: {
+            subject: "Upcoming School Event: {{event_name}}",
+            content: `Dear {{parent_name}},
+
+  We're excited to announce an upcoming event at Hillview School:
+
+  Event: {{event_name}}
+  Date: {{event_date}}
+  Time: {{event_time}}
+  Location: {{event_location}}
+
+  {{event_description}}
+
+  We hope to see you and {{student_name}} there!
+
+  Best regards,
+  Hillview School`,
+          },
+          reminder: {
+            subject: "Important Reminder: {{subject}}",
+            content: `Dear {{parent_name}},
+
+  This is a friendly reminder about {{subject}}.
+
+  {{reminder_details}}
+
+  Please ensure that {{student_name}} is prepared and informed.
+
+  If you have any questions, please contact us.
+
+  Thank you,
+  Hillview School`,
+          },
+          urgent: {
+            subject: "URGENT: {{subject}}",
+            content: `Dear {{parent_name}},
+
+  This is an urgent notice regarding {{subject}}.
+
+  {{urgent_details}}
+
+  Please take immediate action as required. If you need assistance or have questions, contact us immediately.
+
+  Hillview School Administration
+  Phone: [School Phone]
+  Email: [School Email]`,
+          },
+        };
+
+        if (templates[templateType]) {
+          document.getElementById("message_subject").value =
+            templates[templateType].subject;
+          document.getElementById("message_content").value =
+            templates[templateType].content;
+          updatePreview();
+        }
+      }
+
+      function switchTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll(".tab-button").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        document
+          .querySelector(`[onclick="switchTab('${tabName}')"]`)
+          .classList.add("active");
+
+        // Update tab content
+        document.querySelectorAll(".tab-content").forEach((content) => {
+          content.classList.remove("active");
+        });
+        document.getElementById(`${tabName}-tab`).classList.add("active");
+
+        if (tabName === "preview") {
+          updatePreview();
+        }
+      }
+
+      function insertVariable(variable) {
+        const messageContent = document.getElementById("message_content");
+        const cursorPos = messageContent.selectionStart;
+        const textBefore = messageContent.value.substring(0, cursorPos);
+        const textAfter = messageContent.value.substring(cursorPos);
+
+        messageContent.value = textBefore + variable + textAfter;
+        messageContent.focus();
+        messageContent.setSelectionRange(
+          cursorPos + variable.length,
+          cursorPos + variable.length
+        );
+
+        updatePreview();
+      }
+
+      function updatePreview() {
+        const subject = document.getElementById("message_subject").value;
+        const content = document.getElementById("message_content").value;
+        const previewContent = document.getElementById("preview-content");
+
+        if (!subject && !content) {
+          previewContent.innerHTML =
+            '<p style="color: #718096; font-style: italic;">Start typing to see preview...</p>';
+          return;
+        }
+
+        let html = "";
+        if (messageType !== "sms" && subject) {
+          html += `<div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1rem;"><strong>Subject:</strong> ${subject}</div>`;
+        }
+
+        // Replace variables with sample data for preview
+        let previewContent_text = content
+          .replace(/\{\{parent_name\}\}/g, "John Doe")
+          .replace(/\{\{student_name\}\}/g, "Jane Doe")
+          .replace(/\{\{grade_name\}\}/g, "Grade 5A")
+          .replace(/\{\{school_name\}\}/g, "Hillview School")
+          .replace(/\{\{current_date\}\}/g, new Date().toLocaleDateString());
+
+        html += `<div style="white-space: pre-line;">${previewContent_text}</div>`;
+
+        previewContent.innerHTML = html;
+
+        updateSendButton();
+      }
+
+      function updateGradeOptions() {
+        const educationLevel = document.getElementById(
+          "education_level_filter"
+        ).value;
+        const gradeSelect = document.getElementById("grade_filter");
+        const gradeOptions = gradeSelect.querySelectorAll("option");
+
+        gradeOptions.forEach((option) => {
+          if (
+            option.value === "" ||
+            !educationLevel ||
+            option.dataset.level === educationLevel
+          ) {
+            option.style.display = "block";
+          } else {
+            option.style.display = "none";
+          }
+        });
+
+        // Reset grade and stream if they don't match the education level
+        if (
+          educationLevel &&
+          gradeSelect.selectedOptions[0] &&
+          gradeSelect.selectedOptions[0].dataset.level !== educationLevel
+        ) {
+          gradeSelect.value = "";
+          document.getElementById("stream_filter").value = "";
+        }
+
+        updateStreamOptions();
+        updateRecipientCount();
+      }
+
+      function updateStreamOptions() {
+        const gradeId = document.getElementById("grade_filter").value;
+        const streamSelect = document.getElementById("stream_filter");
+        const streamOptions = streamSelect.querySelectorAll("option");
+
+        streamOptions.forEach((option) => {
+          if (
+            option.value === "" ||
+            !gradeId ||
+            option.dataset.grade === gradeId
+          ) {
+            option.style.display = "block";
+          } else {
+            option.style.display = "none";
+          }
+        });
+
+        // Reset stream if it doesn't match the grade
+        if (
+          gradeId &&
+          streamSelect.selectedOptions[0] &&
+          streamSelect.selectedOptions[0].dataset.grade !== gradeId
+        ) {
+          streamSelect.value = "";
+        }
+
+        updateRecipientCount();
+      }
+
+      function loadParentsList() {
+        // This would be populated via AJAX call to get parents list
+        fetch(
+          '{{ url_for("parent_management.get_parents_for_communication") }}'
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            displayParentsList(data.parents);
+          })
+          .catch((error) => {
+            console.error("Error loading parents:", error);
+          });
+      }
+
+      function displayParentsList(parents) {
+        const container = document.getElementById("parent-selection-list");
+
+        let html = "";
+        parents.forEach((parent) => {
+          html += `
+              <div style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;">
+                  <label style="display: flex; align-items: center; cursor: pointer;">
+                      <input type="checkbox" value="${parent.id}" onchange="toggleParentSelection(${parent.id})" style="margin-right: 0.5rem;">
+                      <div>
+                          <strong>${parent.name}</strong><br>
+                          <small style="color: #718096;">${parent.email} • ${parent.children_count} child(ren)</small>
+                      </div>
+                  </label>
+              </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      }
+
+      function searchParents() {
+        const query = document.getElementById("parent_search").value;
+
+        if (query.length >= 2) {
+          fetch(
+            `{{ url_for("parent_management.search_parents_for_communication") }}?q=${encodeURIComponent(
+              query
+            )}`
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              displayParentsList(data.parents);
+            });
+        } else if (query.length === 0) {
+          loadParentsList();
+        }
+      }
+
+      function toggleParentSelection(parentId) {
+        if (selectedParents.has(parentId)) {
+          selectedParents.delete(parentId);
+        } else {
+          selectedParents.add(parentId);
+        }
+
+        updateRecipientCount();
+      }
+
+      function updateRecipientCount() {
+        let count = 0;
+
+        switch (selectedAudience) {
+          case "all":
+            count = parseInt("{{ total_active_parents | default(0) }}") || 0;
+            break;
+          case "grade":
+            // Would calculate based on selected filters
+            count = calculateGradeFilteredCount();
+            break;
+          case "custom":
+            count = selectedParents.size;
+            break;
+          case "unverified":
+            count =
+              parseInt("{{ unverified_parents_count | default(0) }}") || 0;
+            break;
+        }
+
+        document.getElementById("recipient-number").textContent = count;
+        updateSendButton();
+      }
+
+      function calculateGradeFilteredCount() {
+        // This would make an AJAX call to calculate the count based on filters
+        // For now, return a placeholder
+        return 0;
+      }
+
+      function updateSendButton() {
+        const btn = document.getElementById("send-message-btn");
+        const recipientCount = parseInt(
+          document.getElementById("recipient-number").textContent
+        );
+        const hasContent =
+          document.getElementById("message_content").value.trim().length > 0;
+        const hasSubject =
+          messageType === "sms" ||
+          document.getElementById("message_subject").value.trim().length > 0;
+
+        btn.disabled = !(
+          recipientCount > 0 &&
+          hasContent &&
+          hasSubject &&
+          selectedAudience
+        );
+      }
+
+      function sendMessage() {
+        const messageData = {
+          audience: selectedAudience,
+          message_type: messageType,
+          subject: document.getElementById("message_subject").value,
+          content: document.getElementById("message_content").value,
+          send_immediately: document.getElementById("send_immediately").checked,
+          scheduled_time: document.getElementById("scheduled_time").value,
+          track_delivery: document.getElementById("track_delivery").checked,
+        };
+
+        // Add audience-specific data
+        if (selectedAudience === "grade") {
+          messageData.filters = {
+            education_level: document.getElementById("education_level_filter")
+              .value,
+            grade_id: document.getElementById("grade_filter").value,
+            stream_id: document.getElementById("stream_filter").value,
+            parent_status: document.getElementById("parent_status_filter")
+              .value,
+          };
+        } else if (selectedAudience === "custom") {
+          messageData.parent_ids = Array.from(selectedParents);
+        }
+
+        // Confirm before sending
+        const recipientCount =
+          document.getElementById("recipient-number").textContent;
+        if (
+          !confirm(
+            `Are you sure you want to send this message to ${recipientCount} recipients?`
+          )
+        ) {
+          return;
+        }
+
+        // Disable send button and show loading
+        const sendBtn = document.getElementById("send-message-btn");
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = "Sending...";
+
+        fetch('{{ url_for("parent_management.send_bulk_communication") }}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(messageData),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert(
+                `Message sent successfully to ${data.sent_count} recipients!`
+              );
+              // Reset form or redirect
+              window.location.reload();
+            } else {
+              alert(`Error sending message: ${data.message}`);
+            }
+          })
+          .catch((error) => {
+            alert("Error sending message: " + error.message);
+          })
+          .finally(() => {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = `
+              <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
+              Send Message
+          `;
+          });
+      }
+    </script>
+  </body>
+</html>

@@ -187,14 +187,14 @@ def dashboard():
                 'logo_url': '/static/uploads/logos/optimized_school_logo_1750595986_hvs.jpg'
             }
 
-        # Get linked children with their class information
+        # Get linked children with their class information (include unassigned class via outer joins)
         children_query = db.session.query(
             ParentStudent, Student, Grade, Stream
         ).join(
             Student, ParentStudent.student_id == Student.id
-        ).join(
+        ).outerjoin(
             Grade, Student.grade_id == Grade.id
-        ).join(
+        ).outerjoin(
             Stream, Student.stream_id == Stream.id
         ).filter(
             ParentStudent.parent_id == parent.id
@@ -241,14 +241,14 @@ def children():
     try:
         parent = Parent.query.get(session['parent_id'])
         
-        # Get linked children with detailed information
+        # Get linked children with detailed information (outer joins to include unassigned)
         children_query = db.session.query(
             ParentStudent, Student, Grade, Stream
         ).join(
             Student, ParentStudent.student_id == Student.id
-        ).join(
+        ).outerjoin(
             Grade, Student.grade_id == Grade.id
-        ).join(
+        ).outerjoin(
             Stream, Student.stream_id == Stream.id
         ).filter(
             ParentStudent.parent_id == parent.id
@@ -344,8 +344,8 @@ def child_grades(child_id):
         
         # Get child information
         child_query = db.session.query(Student, Grade, Stream)\
-            .join(Grade, Student.grade_id == Grade.id)\
-            .join(Stream, Student.stream_id == Stream.id)\
+            .outerjoin(Grade, Student.grade_id == Grade.id)\
+            .outerjoin(Stream, Student.stream_id == Stream.id)\
             .filter(Student.id == child_id).first()
         
         if not child_query:
@@ -372,8 +372,8 @@ def child_grades(child_id):
             'id': child.id,
             'name': child.name,
             'admission_number': child.admission_number,
-            'grade': grade.name,
-            'stream': stream.name
+            'grade': (grade.name if grade else 'Unassigned'),
+            'stream': (stream.name if stream else 'Unassigned')
         }
         
         return render_template('parent_child_grades.html',
@@ -404,8 +404,8 @@ def child_progress(child_id):
         
         # Get child information
         child_query = db.session.query(Student, Grade, Stream)\
-            .join(Grade, Student.grade_id == Grade.id)\
-            .join(Stream, Student.stream_id == Stream.id)\
+            .outerjoin(Grade, Student.grade_id == Grade.id)\
+            .outerjoin(Stream, Student.stream_id == Stream.id)\
             .filter(Student.id == child_id).first()
         
         if not child_query:
@@ -794,3 +794,29 @@ def forgot_password():
             flash(f'Error processing request: {str(e)}', 'error')
     
     return render_template('parent_forgot_password.html')
+
+@parent_simple_bp.route('/debug-links')
+@parent_required
+def debug_links():
+    """Debug endpoint to inspect the logged-in parent's linked children."""
+    try:
+        pid = session.get('parent_id')
+        parent = Parent.query.get(pid)
+        links = ParentStudent.query.filter_by(parent_id=pid).all()
+        students = []
+        for link in links:
+            stu = Student.query.get(link.student_id)
+            students.append({
+                'student_id': link.student_id,
+                'student_name': stu.name if stu else None,
+                'relationship_type': link.relationship_type,
+                'is_primary_contact': link.is_primary_contact
+            })
+        return jsonify({
+            'parent_id': pid,
+            'parent_email': parent.email if parent else None,
+            'link_count': len(links),
+            'students': students
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)})

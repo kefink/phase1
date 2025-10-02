@@ -527,6 +527,15 @@
     {% endif %} {% endwith %}
 
     <script>
+      // Escape helper for safely embedding dynamic strings in HTML attributes
+      function jsEscape(val) {
+        if (val === null || val === undefined) return "";
+        return String(val)
+          .replace(/\\/g, "\\\\")
+          .replace(/'/g, "\\'")
+          .replace(/\"/g, '\\"')
+          .replace(/[\r\n\t]/g, " ");
+      }
       // Multiple parents selection support
       let selectedParentId = null;
       let selectedParents = []; // array of {id,name,email}
@@ -557,18 +566,16 @@
               if (data.parents && data.parents.length > 0) {
                 resultsDiv.innerHTML = data.parents
                   .map(
-                    (parent) =>
-                      `
+                    (parent) => `
                       <div class="item" onclick="selectParent(${
                         parent.id
-                      }, '${parent.name.replace(
-                        /'/g,
-                        "'"
-                      )}', '${parent.email.replace(/'/g, "'")}')">
+                      }, '${jsEscape(parent.name)}', '${jsEscape(
+                      parent.email
+                    )}')">
                         <div class="name">${parent.name}</div>
                         <div class="details">${parent.email} ${
-                        parent.phone ? "\u2022 " + parent.phone : ""
-                      }</div>
+                      parent.phone ? "\u2022 " + parent.phone : ""
+                    }</div>
                       </div>
                     `
                   )
@@ -608,9 +615,15 @@
                 resultsDiv.innerHTML = data.students
                   .map(
                     (student) => `
-                    <div class="item" onclick="selectStudent(${student.id}, '${student.name}', '${student.admission_number}', '${student.class}')">
+                    <div class="item" onclick="selectStudent(${
+                      student.id
+                    }, '${jsEscape(student.name)}', '${jsEscape(
+                      student.admission_number
+                    )}', '${jsEscape(student.class)}')">
                       <div class="name">${student.name}</div>
-                      <div class="details">${student.admission_number} \u2022 ${student.class}</div>
+                      <div class="details">${student.admission_number} \u2022 ${
+                      student.class
+                    }</div>
                     </div>
                   `
                   )

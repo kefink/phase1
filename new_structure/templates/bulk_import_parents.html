@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bulk Import Parents - Hillview School</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/heroicons@2.0.18/24/outline/index.js"
+      type="module"
+    ></script>
+    <style>
+      :root {
+        /* Solar Theme Colors */
+        --solar-base03: #002b36;
+        --solar-base02: #073642;
+        --solar-base01: #586e75;
+        --solar-base00: #657b83;
+        --solar-base0: #839496;
+        --solar-base1: #93a1a1;
+        --solar-base2: #eee8d5;
+        --solar-base3: #fdf6e3;
+        --solar-yellow: #b58900;
+        --solar-orange: #cb4b16;
+        --solar-red: #dc322f;
+        --solar-magenta: #d33682;
+        --solar-violet: #6c71c4;
+        --solar-blue: #268bd2;
+        --solar-cyan: #2aa198;
+        --solar-green: #859900;
+      }
+
+      body {
+        background: var(--solar-base03);
+        color: var(--solar-base0);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+      .import-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .import-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        margin-bottom: 2rem;
+      }
+
+      .import-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .import-header h1 {
+        color: #2d3748;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .upload-zone {
+        border: 2px dashed #cbd5e0;
+        border-radius: 15px;
+        padding: 3rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.05) 0%,
+          rgba(118, 75, 162, 0.05) 100%
+        );
+      }
+
+      .upload-zone:hover {
+        border-color: #667eea;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1) 0%,
+          rgba(118, 75, 162, 0.1) 100%
+        );
+      }
+
+      .upload-zone.dragover {
+        border-color: #667eea;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.15) 0%,
+          rgba(118, 75, 162, 0.15) 100%
+        );
+      }
+
+      .upload-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1rem;
+        color: #667eea;
+      }
+
+      .file-input {
+        display: none;
+      }
+
+      .upload-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .upload-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+
+      .template-section {
+        background: rgba(255, 248, 220, 0.8);
+        border: 1px solid #f6e05e;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .template-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .template-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 0.5rem;
+        color: #d69e2e;
+      }
+
+      .download-template {
+        background: #f6ad55;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .download-template:hover {
+        background: #ed8936;
+        transform: translateY(-1px);
+      }
+
+      .preview-section {
+        margin-top: 2rem;
+        display: none;
+      }
+
+      .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .preview-table th,
+      .preview-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .preview-table th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+      }
+
+      .validation-results {
+        margin-top: 1rem;
+      }
+
+      .validation-item {
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+      }
+
+      .validation-success {
+        background: #c6f6d5;
+        border: 1px solid #68d391;
+        color: #2f855a;
+      }
+
+      .validation-warning {
+        background: #fef5e7;
+        border: 1px solid #f6ad55;
+        color: #d69e2e;
+      }
+
+      .validation-error {
+        background: #fed7d7;
+        border: 1px solid #fc8181;
+        color: #c53030;
+      }
+
+      .validation-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+      }
+
+      .import-options {
+        background: rgba(237, 242, 247, 0.8);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+      }
+
+      .option-group {
+        margin-bottom: 1rem;
+      }
+
+      .option-label {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+
+      .option-checkbox {
+        margin-right: 8px;
+      }
+
+      .import-btn {
+        background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+      }
+
+      .import-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(56, 161, 105, 0.4);
+      }
+
+      .import-btn:disabled {
+        background: #a0aec0;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 1rem 0;
+        display: none;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transition: width 0.3s ease;
+        width: 0%;
+      }
+
+      .results-section {
+        display: none;
+        margin-top: 2rem;
+      }
+
+      .result-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+      }
+
+      .result-success {
+        border-left: 4px solid #38a169;
+      }
+
+      .result-error {
+        border-left: 4px solid #e53e3e;
+      }
+
+      @media (max-width: 768px) {
+        .import-container {
+          padding: 0 0.5rem;
+        }
+
+        .import-card {
+          padding: 1rem;
+        }
+
+        .upload-zone {
+          padding: 2rem 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="import-container">
+      <div class="import-card">
+        <div class="import-header">
+          <h1>
+            <svg
+              class="upload-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              style="
+                display: inline-block;
+                width: 40px;
+                height: 40px;
+                margin-right: 10px;
+                vertical-align: middle;
+              "
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              ></path>
+            </svg>
+            Bulk Import Parents
+          </h1>
+          <p style="color: #718096; font-size: 1.1rem">
+            Upload CSV file to import multiple parent accounts at once
+          </p>
+        </div>
+
+        <!-- Template Download Section -->
+        <div class="template-section">
+          <div class="template-header">
+            <svg
+              class="template-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
+            </svg>
+            <h3 style="margin: 0; color: #d69e2e">Download Template</h3>
+          </div>
+          <p style="margin-bottom: 1rem; color: #744210">
+            Use our template to ensure your data is formatted correctly.
+            Required columns: first_name, last_name, email. Optional: phone,
+            relationship_type.
+          </p>
+          <a
+            href="{{ url_for('parent_management.download_import_template') }}"
+            class="download-template"
+          >
+            <svg
+              style="width: 16px; height: 16px; margin-right: 5px"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
+            </svg>
+            Download CSV Template
+          </a>
+        </div>
+
+        <!-- File Upload Section -->
+        <div class="upload-zone" id="uploadZone">
+          <svg
+            class="upload-icon"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            ></path>
+          </svg>
+          <h3 style="margin-bottom: 1rem; color: #4a5568">
+            Drop your CSV file here or click to browse
+          </h3>
+          <button
+            type="button"
+            class="upload-btn"
+            onclick="document.getElementById('csvFile').click()"
+          >
+            Choose CSV File
+          </button>
+          <input
+            type="file"
+            id="csvFile"
+            class="file-input"
+            accept=".csv"
+            onchange="handleFileSelect(this)"
+          />
+          <p style="margin-top: 1rem; color: #718096; font-size: 0.9rem">
+            Supported formats: CSV files only • Max size: 10MB
+          </p>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewSection">
+          <h3 style="color: #4a5568; margin-bottom: 1rem">Data Preview</h3>
+          <div id="previewContent"></div>
+          <div class="validation-results" id="validationResults"></div>
+        </div>
+
+        <!-- Import Options -->
+        <div class="import-options" id="importOptions" style="display: none">
+          <h3 style="color: #4a5568; margin-bottom: 1rem">Import Options</h3>
+
+          <div class="option-group">
+            <label class="option-label">
+              <input
+                type="checkbox"
+                class="option-checkbox"
+                id="sendWelcomeEmails"
+                checked
+              />
+              Send welcome emails with login credentials
+            </label>
+          </div>
+
+          <div class="option-group">
+            <label class="option-label">
+              <input
+                type="checkbox"
+                class="option-checkbox"
+                id="skipDuplicates"
+                checked
+              />
+              Skip duplicate emails (don't create if email already exists)
+            </label>
+          </div>
+
+          <div class="option-group">
+            <label class="option-label">
+              <input
+                type="checkbox"
+                class="option-checkbox"
+                id="activateAccounts"
+                checked
+              />
+              Activate accounts immediately
+            </label>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <!-- Import Button -->
+        <button
+          type="button"
+          class="import-btn"
+          id="importBtn"
+          onclick="startImport()"
+          disabled
+        >
+          <svg
+            style="width: 20px; height: 20px; margin-right: 8px"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+            ></path>
+          </svg>
+          Import Parents
+        </button>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+          <h3 style="color: #4a5568; margin-bottom: 1rem">Import Results</h3>
+          <div id="resultsContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let csvData = [];
+      let validationResults = [];
+
+      // Drag and drop functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const uploadZone = document.getElementById("uploadZone");
+
+        ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+          uploadZone.addEventListener(eventName, preventDefaults, false);
+          document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ["dragenter", "dragover"].forEach((eventName) => {
+          uploadZone.addEventListener(eventName, highlight, false);
+        });
+
+        ["dragleave", "drop"].forEach((eventName) => {
+          uploadZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        uploadZone.addEventListener("drop", handleDrop, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      function highlight(e) {
+        document.getElementById("uploadZone").classList.add("dragover");
+      }
+
+      function unhighlight(e) {
+        document.getElementById("uploadZone").classList.remove("dragover");
+      }
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+
+        if (files.length > 0) {
+          handleFile(files[0]);
+        }
+      }
+
+      function handleFileSelect(input) {
+        if (input.files.length > 0) {
+          handleFile(input.files[0]);
+        }
+      }
+
+      function handleFile(file) {
+        if (!file.name.toLowerCase().endsWith(".csv")) {
+          alert("Please select a CSV file.");
+          return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+          // 10MB limit
+          alert("File size must be less than 10MB.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const csv = e.target.result;
+          parseCSV(csv);
+        };
+        reader.readAsText(file);
+      }
+
+      function parseCSV(csv) {
+        const lines = csv.split("\n").filter((line) => line.trim());
+        if (lines.length < 2) {
+          alert(
+            "CSV file must contain at least a header row and one data row."
+          );
+          return;
+        }
+
+        const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+        csvData = [];
+
+        // Required columns
+        const requiredCols = ["first_name", "last_name", "email"];
+        const missingCols = requiredCols.filter(
+          (col) => !headers.includes(col)
+        );
+
+        if (missingCols.length > 0) {
+          alert(`Missing required columns: ${missingCols.join(", ")}`);
+          return;
+        }
+
+        // Parse data rows
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i]
+            .split(",")
+            .map((v) => v.trim().replace(/^["']|["']$/g, ""));
+          const row = {};
+
+          headers.forEach((header, index) => {
+            row[header] = values[index] || "";
+          });
+
+          if (row.first_name || row.last_name || row.email) {
+            // Skip completely empty rows
+            csvData.push(row);
+          }
+        }
+
+        if (csvData.length === 0) {
+          alert("No valid data rows found in CSV file.");
+          return;
+        }
+
+        validateData();
+        showPreview();
+      }
+
+      function validateData() {
+        validationResults = [];
+        const emails = new Set();
+        let validRows = 0;
+
+        csvData.forEach((row, index) => {
+          const rowNum = index + 2; // Account for header row
+          let hasErrors = false;
+
+          // Check required fields
+          if (!row.first_name || !row.last_name || !row.email) {
+            validationResults.push({
+              type: "error",
+              message: `Row ${rowNum}: Missing required fields (first_name, last_name, email)`,
+            });
+            hasErrors = true;
+          }
+
+          // Validate email format
+          if (row.email && !isValidEmail(row.email)) {
+            validationResults.push({
+              type: "error",
+              message: `Row ${rowNum}: Invalid email format (${row.email})`,
+            });
+            hasErrors = true;
+          }
+
+          // Check for duplicate emails in file
+          if (row.email) {
+            if (emails.has(row.email.toLowerCase())) {
+              validationResults.push({
+                type: "warning",
+                message: `Row ${rowNum}: Duplicate email in file (${row.email})`,
+              });
+            } else {
+              emails.add(row.email.toLowerCase());
+            }
+          }
+
+          if (!hasErrors) {
+            validRows++;
+          }
+        });
+
+        validationResults.unshift({
+          type: validRows === csvData.length ? "success" : "warning",
+          message: `${validRows} of ${csvData.length} rows are valid and ready for import`,
+        });
+      }
+
+      function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      function showPreview() {
+        const previewSection = document.getElementById("previewSection");
+        const previewContent = document.getElementById("previewContent");
+        const validationResults = document.getElementById("validationResults");
+        const importOptions = document.getElementById("importOptions");
+        const importBtn = document.getElementById("importBtn");
+
+        // Show preview table
+        let html = '<table class="preview-table"><thead><tr>';
+        const headers = Object.keys(csvData[0]);
+        headers.forEach((header) => {
+          html += `<th>${header.replace("_", " ").toUpperCase()}</th>`;
+        });
+        html += "</tr></thead><tbody>";
+
+        // Show first 5 rows
+        csvData.slice(0, 5).forEach((row) => {
+          html += "<tr>";
+          headers.forEach((header) => {
+            html += `<td>${row[header] || ""}</td>`;
+          });
+          html += "</tr>";
+        });
+        html += "</tbody></table>";
+
+        if (csvData.length > 5) {
+          html += `<p style="margin-top: 1rem; color: #718096; font-style: italic;">Showing first 5 of ${csvData.length} rows</p>`;
+        }
+
+        previewContent.innerHTML = html;
+
+        // Show validation results
+        let validationHtml = "";
+        validationResults.forEach((result) => {
+          const iconSvg =
+            result.type === "success"
+              ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>'
+              : result.type === "warning"
+              ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>'
+              : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+
+          validationHtml += `
+            <div class="validation-item validation-${result.type}">
+                <svg class="validation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    ${iconSvg}
+                </svg>
+                ${result.message}
+            </div>
+        `;
+        });
+
+        validationResults.innerHTML = validationHtml;
+
+        // Show sections
+        previewSection.style.display = "block";
+        importOptions.style.display = "block";
+
+        // Enable import button if we have valid data
+        const hasValidData = validationResults.some(
+          (r) => r.type === "success" || r.type === "warning"
+        );
+        importBtn.disabled = !hasValidData;
+      }
+
+      function startImport() {
+        const importBtn = document.getElementById("importBtn");
+        const progressBar = document.getElementById("progressBar");
+        const progressFill = document.getElementById("progressFill");
+        const resultsSection = document.getElementById("resultsSection");
+
+        // Get options
+        const options = {
+          send_welcome_emails:
+            document.getElementById("sendWelcomeEmails").checked,
+          skip_duplicates: document.getElementById("skipDuplicates").checked,
+          activate_accounts:
+            document.getElementById("activateAccounts").checked,
+        };
+
+        // Disable button and show progress
+        importBtn.disabled = true;
+        importBtn.innerHTML = "Importing...";
+        progressBar.style.display = "block";
+
+        // Simulate progress and perform import
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += Math.random() * 15;
+          if (progress > 90) progress = 90;
+          progressFill.style.width = progress + "%";
+        }, 200);
+
+        // Perform actual import
+        fetch('{{ url_for("parent_management.process_bulk_import") }}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: csvData,
+            options: options,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            clearInterval(progressInterval);
+            progressFill.style.width = "100%";
+
+            setTimeout(() => {
+              progressBar.style.display = "none";
+              showResults(data);
+
+              // Reset button
+              importBtn.disabled = false;
+              importBtn.innerHTML = `
+                <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                Import Parents
+            `;
+            }, 500);
+          })
+          .catch((error) => {
+            clearInterval(progressInterval);
+            progressBar.style.display = "none";
+            alert("Import failed: " + error.message);
+
+            importBtn.disabled = false;
+            importBtn.innerHTML = "Import Parents";
+          });
+      }
+
+      function showResults(data) {
+        const resultsSection = document.getElementById("resultsSection");
+        const resultsContent = document.getElementById("resultsContent");
+
+        let html = "";
+
+        if (data.success) {
+          html += `
+            <div class="result-card result-success">
+                <h4 style="color: #38a169; margin-bottom: 1rem;">✅ Import Completed Successfully</h4>
+                <p><strong>Successfully imported:</strong> ${data.imported_count} parents</p>
+                <p><strong>Skipped duplicates:</strong> ${data.skipped_count}</p>
+                <p><strong>Errors:</strong> ${data.error_count}</p>
+            </div>
+        `;
+
+          if (data.welcome_emails_sent > 0) {
+            html += `
+                <div class="result-card result-success">
+                    <h4 style="color: #38a169; margin-bottom: 1rem;">📧 Welcome Emails Sent</h4>
+                    <p>Sent welcome emails to ${data.welcome_emails_sent} parents with their login credentials.</p>
+                </div>
+            `;
+          }
+        } else {
+          html += `
+            <div class="result-card result-error">
+                <h4 style="color: #e53e3e; margin-bottom: 1rem;">❌ Import Failed</h4>
+                <p><strong>Error:</strong> ${data.message}</p>
+            </div>
+        `;
+        }
+
+        if (data.errors && data.errors.length > 0) {
+          html += `
+            <div class="result-card result-error">
+                <h4 style="color: #e53e3e; margin-bottom: 1rem;">⚠️ Individual Row Errors</h4>
+                <ul style="margin: 0; padding-left: 1.5rem;">
+        `;
+          data.errors.forEach((error) => {
+            html += `<li>${error}</li>`;
+          });
+          html += "</ul></div>";
+        }
+
+        resultsContent.innerHTML = html;
+        resultsSection.style.display = "block";
+
+        // Scroll to results
+        resultsSection.scrollIntoView({ behavior: "smooth" });
+      }
+    </script>
+  </body>
+</html>

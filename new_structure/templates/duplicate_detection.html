@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Duplicate Detection - Hillview School</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/heroicons@2.0.18/24/outline/index.js"
+      type="module"
+    ></script>
+    <style>
+      :root {
+        /* Solar Theme Colors */
+        --solar-base03: #002b36;
+        --solar-base02: #073642;
+        --solar-base01: #586e75;
+        --solar-base00: #657b83;
+        --solar-base0: #839496;
+        --solar-base1: #93a1a1;
+        --solar-base2: #eee8d5;
+        --solar-base3: #fdf6e3;
+        --solar-yellow: #b58900;
+        --solar-orange: #cb4b16;
+        --solar-red: #dc322f;
+        --solar-magenta: #d33682;
+        --solar-violet: #6c71c4;
+        --solar-blue: #268bd2;
+        --solar-cyan: #2aa198;
+        --solar-green: #859900;
+      }
+
+      body {
+        background: var(--solar-base03);
+        color: var(--solar-base0);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+
+      .duplicate-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .duplicate-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .duplicate-header h1 {
+        color: #2d3748;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .duplicate-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        margin-bottom: 2rem;
+      }
+
+      .scan-controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .scan-option {
+        background: #f8f9fa;
+        border: 2px solid #e2e8f0;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .scan-option:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+      }
+
+      .scan-option.selected {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+      }
+
+      .scan-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 1rem;
+        color: #667eea;
+      }
+
+      .scan-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: #2d3748;
+      }
+
+      .scan-description {
+        font-size: 0.9rem;
+        color: #718096;
+      }
+
+      .scan-settings {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        display: none;
+      }
+
+      .scan-settings.active {
+        display: block;
+      }
+
+      .setting-group {
+        margin-bottom: 1rem;
+      }
+
+      .setting-label {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #4a5568;
+      }
+
+      .setting-checkbox {
+        margin-right: 8px;
+      }
+
+      .setting-slider {
+        width: 100%;
+        margin: 0.5rem 0;
+      }
+
+      .setting-value {
+        font-weight: 600;
+        color: #667eea;
+        margin-left: 10px;
+      }
+
+      .start-scan-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+      }
+
+      .start-scan-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+
+      .start-scan-btn:disabled {
+        background: #a0aec0;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .results-section {
+        display: none;
+      }
+
+      .results-section.active {
+        display: block;
+      }
+
+      .results-summary {
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1) 0%,
+          rgba(118, 75, 162, 0.1) 100%
+        );
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+      }
+
+      .summary-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .stat-item {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+        display: block;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: #718096;
+      }
+
+      .duplicate-group {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #f6ad55;
+      }
+
+      .group-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .duplicate-reason {
+        background: #fef5e7;
+        color: #d69e2e;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .confidence-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-left: 10px;
+      }
+
+      .confidence-high {
+        background: #fed7d7;
+        color: #c53030;
+      }
+
+      .confidence-medium {
+        background: #fef5e7;
+        color: #d69e2e;
+      }
+
+      .confidence-low {
+        background: #e6fffa;
+        color: #319795;
+      }
+
+      .parent-comparison {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+      }
+
+      .parent-card {
+        background: #f8f9fa;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        position: relative;
+      }
+
+      .parent-card.primary {
+        border-color: #38a169;
+        background: rgba(56, 161, 105, 0.05);
+      }
+
+      .parent-card.duplicate {
+        border-color: #e53e3e;
+        background: rgba(229, 62, 62, 0.05);
+      }
+
+      .parent-badge {
+        position: absolute;
+        top: -8px;
+        right: 10px;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .badge-primary {
+        background: #38a169;
+        color: white;
+      }
+
+      .badge-duplicate {
+        background: #e53e3e;
+        color: white;
+      }
+
+      .parent-info {
+        margin-bottom: 1rem;
+      }
+
+      .parent-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .parent-detail {
+        margin: 0.25rem 0;
+        font-size: 0.9rem;
+        color: #4a5568;
+      }
+
+      .parent-stats {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .action-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 20px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+      }
+
+      .btn-merge {
+        background: #38a169;
+        color: white;
+      }
+
+      .btn-merge:hover {
+        background: #2f855a;
+      }
+
+      .btn-ignore {
+        background: #e2e8f0;
+        color: #4a5568;
+      }
+
+      .btn-ignore:hover {
+        background: #cbd5e0;
+      }
+
+      .btn-review {
+        background: #f6ad55;
+        color: white;
+      }
+
+      .btn-review:hover {
+        background: #ed8936;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 1rem 0;
+        display: none;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transition: width 0.3s ease;
+        width: 0%;
+      }
+
+      .filters-section {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .form-label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #4a5568;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      @media (max-width: 768px) {
+        .scan-controls {
+          grid-template-columns: 1fr;
+        }
+
+        .parent-comparison {
+          grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="duplicate-container">
+      <div class="duplicate-header">
+        <h1>
+          <svg
+            style="
+              display: inline-block;
+              width: 40px;
+              height: 40px;
+              margin-right: 10px;
+              vertical-align: middle;
+            "
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          Smart Duplicate Detection
+        </h1>
+        <p style="color: #718096; font-size: 1.1rem">
+          Automatically identify and resolve duplicate parent accounts
+        </p>
+      </div>
+
+      <!-- Scan Configuration -->
+      <div class="duplicate-card">
+        <h3 style="margin-bottom: 1.5rem; color: #2d3748">Detection Method</h3>
+
+        <div class="scan-controls">
+          <div
+            class="scan-option selected"
+            onclick="selectScanMethod('quick')"
+            id="quick-scan"
+          >
+            <svg
+              class="scan-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              ></path>
+            </svg>
+            <div class="scan-title">Quick Scan</div>
+            <div class="scan-description">
+              Find obvious duplicates using email and phone matching
+            </div>
+          </div>
+
+          <div
+            class="scan-option"
+            onclick="selectScanMethod('smart')"
+            id="smart-scan"
+          >
+            <svg
+              class="scan-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+              ></path>
+            </svg>
+            <div class="scan-title">Smart Analysis</div>
+            <div class="scan-description">
+              Advanced fuzzy matching for names and contact details
+            </div>
+          </div>
+
+          <div
+            class="scan-option"
+            onclick="selectScanMethod('comprehensive')"
+            id="comprehensive-scan"
+          >
+            <svg
+              class="scan-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              ></path>
+            </svg>
+            <div class="scan-title">Comprehensive</div>
+            <div class="scan-description">
+              Deep analysis including children relationships and activity
+              patterns
+            </div>
+          </div>
+        </div>
+
+        <!-- Scan Settings -->
+        <div class="scan-settings" id="scan-settings">
+          <h4 style="margin-bottom: 1rem; color: #4a5568">
+            Detection Settings
+          </h4>
+
+          <div class="setting-group">
+            <label class="setting-label">
+              <input
+                type="checkbox"
+                class="setting-checkbox"
+                id="match_email"
+                checked
+              />
+              Match by Email Address
+            </label>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">
+              <input
+                type="checkbox"
+                class="setting-checkbox"
+                id="match_phone"
+                checked
+              />
+              Match by Phone Number
+            </label>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">
+              <input
+                type="checkbox"
+                class="setting-checkbox"
+                id="match_names"
+              />
+              Fuzzy Name Matching
+            </label>
+            <div>
+              <label for="name_similarity">Name Similarity Threshold:</label>
+              <input
+                type="range"
+                class="setting-slider"
+                id="name_similarity"
+                min="50"
+                max="95"
+                value="80"
+                onchange="updateSliderValue('name_similarity')"
+              />
+              <span class="setting-value" id="name_similarity_value">80%</span>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">
+              <input
+                type="checkbox"
+                class="setting-checkbox"
+                id="check_children"
+              />
+              Analyze Children Relationships
+            </label>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">
+              <input
+                type="checkbox"
+                class="setting-checkbox"
+                id="ignore_inactive"
+              />
+              Ignore Inactive Accounts
+            </label>
+          </div>
+        </div>
+
+        <div class="progress-bar" id="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <button
+          class="start-scan-btn"
+          id="start-scan-btn"
+          onclick="startDuplicateScan()"
+        >
+          <svg
+            style="width: 20px; height: 20px; margin-right: 8px"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            ></path>
+          </svg>
+          Start Duplicate Scan
+        </button>
+      </div>
+
+      <!-- Results Section -->
+      <div class="results-section" id="results-section">
+        <!-- Results Summary -->
+        <div class="duplicate-card">
+          <div class="results-summary">
+            <h3 style="color: #2d3748; margin-bottom: 1rem">Scan Results</h3>
+            <div class="summary-stats">
+              <div class="stat-item">
+                <span class="stat-number" id="total-scanned">0</span>
+                <span class="stat-label">Parents Scanned</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number" id="duplicates-found">0</span>
+                <span class="stat-label">Duplicate Groups</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number" id="accounts-affected">0</span>
+                <span class="stat-label">Accounts Affected</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number" id="confidence-score">0%</span>
+                <span class="stat-label">Avg. Confidence</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters for Results -->
+        <div class="duplicate-card">
+          <h3 style="margin-bottom: 1rem; color: #2d3748">Filter Results</h3>
+          <div class="filters-section">
+            <div class="filter-row">
+              <div class="form-group">
+                <label class="form-label">Confidence Level</label>
+                <select
+                  class="form-control"
+                  id="confidence-filter"
+                  onchange="filterResults()"
+                >
+                  <option value="">All Confidence Levels</option>
+                  <option value="high">High Confidence (90%+)</option>
+                  <option value="medium">Medium Confidence (70-89%)</option>
+                  <option value="low">Low Confidence (50-69%)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Match Type</label>
+                <select
+                  class="form-control"
+                  id="match-type-filter"
+                  onchange="filterResults()"
+                >
+                  <option value="">All Match Types</option>
+                  <option value="email">Email Match</option>
+                  <option value="phone">Phone Match</option>
+                  <option value="name">Name Match</option>
+                  <option value="children">Children Match</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select
+                  class="form-control"
+                  id="status-filter"
+                  onchange="filterResults()"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="pending">Pending Review</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="ignored">Ignored</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Duplicate Groups -->
+        <div id="duplicate-groups">
+          <!-- Duplicate groups will be populated here -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let scanMethod = "quick";
+      let duplicateResults = [];
+      let filteredResults = [];
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        updateSliderValues();
+        setupEventListeners();
+      });
+
+      function setupEventListeners() {
+        // Slider updates
+        document.querySelectorAll(".setting-slider").forEach((slider) => {
+          slider.addEventListener("input", function () {
+            updateSliderValue(this.id);
+          });
+        });
+      }
+
+      function selectScanMethod(method) {
+        scanMethod = method;
+
+        // Update visual selection
+        document.querySelectorAll(".scan-option").forEach((option) => {
+          option.classList.remove("selected");
+        });
+        document.getElementById(`${method}-scan`).classList.add("selected");
+
+        // Show/hide settings based on method
+        const settings = document.getElementById("scan-settings");
+        if (method === "quick") {
+          settings.classList.remove("active");
+          // Enable only basic settings for quick scan
+          document.getElementById("match_names").checked = false;
+          document.getElementById("check_children").checked = false;
+        } else {
+          settings.classList.add("active");
+          if (method === "smart") {
+            document.getElementById("match_names").checked = true;
+            document.getElementById("check_children").checked = false;
+          } else if (method === "comprehensive") {
+            document.getElementById("match_names").checked = true;
+            document.getElementById("check_children").checked = true;
+          }
+        }
+      }
+
+      function updateSliderValue(sliderId) {
+        const slider = document.getElementById(sliderId);
+        const valueSpan = document.getElementById(sliderId + "_value");
+        if (valueSpan) {
+          valueSpan.textContent = slider.value + "%";
+        }
+      }
+
+      function updateSliderValues() {
+        document.querySelectorAll(".setting-slider").forEach((slider) => {
+          updateSliderValue(slider.id);
+        });
+      }
+
+      function startDuplicateScan() {
+        const btn = document.getElementById("start-scan-btn");
+        const progressBar = document.getElementById("progress-bar");
+        const progressFill = document.getElementById("progress-fill");
+
+        // Prepare scan parameters
+        const scanParams = {
+          method: scanMethod,
+          match_email: document.getElementById("match_email").checked,
+          match_phone: document.getElementById("match_phone").checked,
+          match_names: document.getElementById("match_names").checked,
+          name_similarity: document.getElementById("name_similarity").value,
+          check_children: document.getElementById("check_children").checked,
+          ignore_inactive: document.getElementById("ignore_inactive").checked,
+        };
+
+        // Update UI
+        btn.disabled = true;
+        btn.innerHTML = "Scanning for Duplicates...";
+        progressBar.style.display = "block";
+
+        // Simulate progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += Math.random() * 10;
+          if (progress > 90) progress = 90;
+          progressFill.style.width = progress + "%";
+        }, 300);
+
+        // Perform actual scan
+        fetch('{{ url_for("parent_management.scan_duplicates") }}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(scanParams),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            clearInterval(progressInterval);
+            progressFill.style.width = "100%";
+
+            setTimeout(() => {
+              progressBar.style.display = "none";
+              displayResults(data);
+
+              // Reset button
+              btn.disabled = false;
+              btn.innerHTML = `
+                <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Start Duplicate Scan
+            `;
+            }, 1000);
+          })
+          .catch((error) => {
+            clearInterval(progressInterval);
+            progressBar.style.display = "none";
+            alert("Scan failed: " + error.message);
+
+            btn.disabled = false;
+            btn.innerHTML = "Start Duplicate Scan";
+          });
+      }
+
+      function displayResults(data) {
+        duplicateResults = data.duplicates || [];
+        filteredResults = [...duplicateResults];
+
+        // Update summary stats
+        document.getElementById("total-scanned").textContent =
+          data.total_scanned || 0;
+        document.getElementById("duplicates-found").textContent =
+          data.duplicate_groups || 0;
+        document.getElementById("accounts-affected").textContent =
+          data.accounts_affected || 0;
+        document.getElementById("confidence-score").textContent =
+          Math.round(data.avg_confidence || 0) + "%";
+
+        // Show results section
+        document.getElementById("results-section").classList.add("active");
+
+        // Display duplicate groups
+        displayDuplicateGroups();
+
+        // Scroll to results
+        document
+          .getElementById("results-section")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      function displayDuplicateGroups() {
+        const container = document.getElementById("duplicate-groups");
+
+        if (filteredResults.length === 0) {
+          container.innerHTML = `
+            <div class="duplicate-card" style="text-align: center; padding: 3rem;">
+                <svg style="width: 64px; height: 64px; margin: 0 auto 1rem; color: #38a169;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h3 style="color: #38a169; margin-bottom: 1rem;">No Duplicates Found!</h3>
+                <p style="color: #718096;">Your parent database is clean. No duplicate accounts were detected.</p>
+            </div>
+        `;
+          return;
+        }
+
+        let html = "";
+
+        filteredResults.forEach((group, index) => {
+          const confidenceClass =
+            group.confidence >= 90
+              ? "high"
+              : group.confidence >= 70
+              ? "medium"
+              : "low";
+
+          html += `
+            <div class="duplicate-card">
+                <div class="group-header">
+                    <div>
+                        <span class="duplicate-reason">${
+                          group.match_type
+                        } Match</span>
+                        <span class="confidence-badge confidence-${confidenceClass}">${
+            group.confidence
+          }% Confidence</span>
+                    </div>
+                    <div style="font-weight: 500; color: #4a5568;">Group ${
+                      index + 1
+                    }</div>
+                </div>
+                
+                <div class="parent-comparison">
+        `;
+
+          group.parents.forEach((parent, pIndex) => {
+            const isPrimary = pIndex === 0;
+            html += `
+                <div class="parent-card ${isPrimary ? "primary" : "duplicate"}">
+                    <div class="parent-badge ${
+                      isPrimary ? "badge-primary" : "badge-duplicate"
+                    }">
+                        ${isPrimary ? "Keep" : "Duplicate"}
+                    </div>
+                    
+                    <div class="parent-info">
+                        <div class="parent-name">${parent.name}</div>
+                        <div class="parent-detail"><strong>Email:</strong> ${
+                          parent.email
+                        }</div>
+                        <div class="parent-detail"><strong>Phone:</strong> ${
+                          parent.phone || "Not provided"
+                        }</div>
+                        <div class="parent-detail"><strong>Status:</strong> ${
+                          parent.is_active ? "Active" : "Inactive"
+                        } • ${
+              parent.is_verified ? "Verified" : "Unverified"
+            }</div>
+                        <div class="parent-detail"><strong>Created:</strong> ${new Date(
+                          parent.created_at
+                        ).toLocaleDateString()}</div>
+                    </div>
+                    
+                    <div class="parent-stats">
+                        <div style="font-weight: 500; margin-bottom: 0.5rem;">Account Stats</div>
+                        <div style="font-size: 0.9rem; color: #4a5568;">
+                            • ${parent.children_count} child(ren)<br>
+                            • Last login: ${parent.last_login || "Never"}<br>
+                            • Email notifications: ${
+                              parent.email_notifications
+                                ? "Enabled"
+                                : "Disabled"
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+          });
+
+          html += `
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn btn-merge" onclick="mergeParents(${index})">
+                        Merge Accounts
+                    </button>
+                    <button class="action-btn btn-ignore" onclick="ignoreDuplicate(${index})">
+                        Mark as Different
+                    </button>
+                    <button class="action-btn btn-review" onclick="reviewLater(${index})">
+                        Review Later
+                    </button>
+                </div>
+            </div>
+        `;
+        });
+
+        container.innerHTML = html;
+      }
+
+      function filterResults() {
+        const confidenceFilter =
+          document.getElementById("confidence-filter").value;
+        const matchTypeFilter =
+          document.getElementById("match-type-filter").value;
+        const statusFilter = document.getElementById("status-filter").value;
+
+        filteredResults = duplicateResults.filter((group) => {
+          // Confidence filter
+          if (confidenceFilter) {
+            if (confidenceFilter === "high" && group.confidence < 90)
+              return false;
+            if (
+              confidenceFilter === "medium" &&
+              (group.confidence < 70 || group.confidence >= 90)
+            )
+              return false;
+            if (confidenceFilter === "low" && group.confidence >= 70)
+              return false;
+          }
+
+          // Match type filter
+          if (
+            matchTypeFilter &&
+            group.match_type.toLowerCase() !== matchTypeFilter
+          )
+            return false;
+
+          // Status filter
+          if (statusFilter && group.status !== statusFilter) return false;
+
+          return true;
+        });
+
+        displayDuplicateGroups();
+      }
+
+      function mergeParents(groupIndex) {
+        const group = filteredResults[groupIndex];
+
+        if (
+          !confirm(
+            `Are you sure you want to merge ${group.parents.length} parent accounts? This action cannot be undone.`
+          )
+        ) {
+          return;
+        }
+
+        const primaryParent = group.parents[0];
+        const duplicateIds = group.parents.slice(1).map((p) => p.id);
+
+        fetch('{{ url_for("parent_management.merge_duplicate_parents") }}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            primary_id: primaryParent.id,
+            duplicate_ids: duplicateIds,
+            group_id: group.id,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert(
+                `Successfully merged ${duplicateIds.length} duplicate account(s) into ${primaryParent.name}'s account.`
+              );
+              // Remove this group from results
+              filteredResults.splice(groupIndex, 1);
+              displayDuplicateGroups();
+              updateSummaryStats();
+            } else {
+              alert(`Error merging accounts: ${data.message}`);
+            }
+          })
+          .catch((error) => {
+            alert("Error merging accounts: " + error.message);
+          });
+      }
+
+      function ignoreDuplicate(groupIndex) {
+        const group = filteredResults[groupIndex];
+
+        fetch('{{ url_for("parent_management.ignore_duplicate") }}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            group_id: group.id,
+            reason: "marked_as_different",
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert("Duplicate group marked as different accounts.");
+              // Remove from results
+              filteredResults.splice(groupIndex, 1);
+              displayDuplicateGroups();
+              updateSummaryStats();
+            } else {
+              alert(`Error: ${data.message}`);
+            }
+          })
+          .catch((error) => {
+            alert("Error: " + error.message);
+          });
+      }
+
+      function reviewLater(groupIndex) {
+        const group = filteredResults[groupIndex];
+
+        fetch('{{ url_for("parent_management.mark_for_review") }}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            group_id: group.id,
+            review_notes: "Marked for later review",
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert("Duplicate group marked for later review.");
+              // Update status in results
+              group.status = "review_later";
+            } else {
+              alert(`Error: ${data.message}`);
+            }
+          })
+          .catch((error) => {
+            alert("Error: " + error.message);
+          });
+      }
+
+      function updateSummaryStats() {
+        // Recalculate stats based on filtered results
+        const remainingGroups = filteredResults.length;
+        const remainingAccounts = filteredResults.reduce(
+          (sum, group) => sum + group.parents.length,
+          0
+        );
+
+        document.getElementById("duplicates-found").textContent =
+          remainingGroups;
+        document.getElementById("accounts-affected").textContent =
+          remainingAccounts;
+      }
+    </script>
+  </body>
+</html>

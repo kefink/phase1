@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document Management Hub - Parent Management</title>
+    <style>
+      :root {
+        /* Solar Theme Colors */
+        --solar-base03: #002b36;
+        --solar-base02: #073642;
+        --solar-base01: #586e75;
+        --solar-base00: #657b83;
+        --solar-base0: #839496;
+        --solar-base1: #93a1a1;
+        --solar-base2: #eee8d5;
+        --solar-base3: #fdf6e3;
+        --solar-yellow: #b58900;
+        --solar-orange: #cb4b16;
+        --solar-red: #dc322f;
+        --solar-magenta: #d33682;
+        --solar-violet: #6c71c4;
+        --solar-blue: #268bd2;
+        --solar-cyan: #2aa198;
+        --solar-green: #859900;
+      }
+
+      body {
+        background: var(--solar-base03);
+        color: var(--solar-base0);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+
+      .document-container {
+        padding: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .page-header {
+        background: rgba(7, 54, 66, 0.95);
+        color: var(--solar-base3);
+        border: 1px solid rgba(131, 148, 150, 0.3);
+        padding: 24px;
+        border-radius: 1rem;
+        margin-bottom: 24px;
+        text-align: center;
+      }
+
+      .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .stat-card {
+        background: rgba(7, 54, 66, 0.95);
+        border: 1px solid rgba(131, 148, 150, 0.3);
+        border-radius: 1rem;
+        padding: 20px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--solar-blue);
+      }
+
+      .stat-card.pending::before {
+        background: var(--solar-orange);
+      }
+      .stat-card.verified::before {
+        background: var(--solar-green);
+      }
+      .stat-card.overdue::before {
+        background: var(--solar-red);
+      }
+
+      .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--solar-yellow);
+        margin-bottom: 8px;
+      }
+
+      .stat-label {
+        color: var(--solar-base1);
+        font-size: 0.9rem;
+      }
+
+      .action-tabs {
+        display: flex;
+        background: rgba(7, 54, 66, 0.95);
+        border: 1px solid rgba(131, 148, 150, 0.3);
+        border-radius: 1rem;
+        margin-bottom: 24px;
+        padding: 4px;
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: 12px 16px;
+        background: none;
+        border: none;
+        color: var(--solar-base1);
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .tab-btn.active {
+        background: var(--solar-blue);
+        color: var(--solar-base3);
+      }
+
+      .tab-btn:hover:not(.active) {
+        background: rgba(131, 148, 150, 0.1);
+        color: var(--solar-base0);
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .document-requests-grid {
+        display: grid;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .request-card {
+        background: rgba(7, 54, 66, 0.95);
+        border: 1px solid rgba(131, 148, 150, 0.3);
+        border-radius: 1rem;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .request-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+        align-items: center;
+      }
+
+      .request-detail {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .request-label {
+        color: var(--solar-base1);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+
+      .request-value {
+        color: var(--solar-base3);
+        font-weight: 500;
+      }
+
+      .request-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .status-pending {
+        background: rgba(203, 75, 22, 0.2);
+        color: var(--solar-orange);
+      }
+
+      .status-submitted {
+        background: rgba(181, 137, 0, 0.2);
+        color: var(--solar-yellow);
+      }
+
+      .status-verified {
+        background: rgba(133, 153, 0, 0.2);
+        color: var(--solar-green);
+      }
+
+      .priority-badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+      }
+
+      .priority-high {
+        background: var(--solar-red);
+        color: var(--solar-base3);
+      }
+
+      .priority-medium {
+        background: var(--solar-orange);
+        color: var(--solar-base3);
+      }
+
+      .priority-low {
+        background: var(--solar-base01);
+        color: var(--solar-base1);
+      }
+
+      .btn {
+        background: var(--solar-blue);
+        color: var(--solar-base3);
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .btn:hover {
+        background: var(--solar-cyan);
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: var(--solar-base01);
+        color: var(--solar-base1);
+      }
+
+      .btn-secondary:hover {
+        background: var(--solar-base00);
+        color: var(--solar-base2);
+      }
+
+      .btn-success {
+        background: var(--solar-green);
+        color: var(--solar-base3);
+      }
+
+      .btn-danger {
+        background: var(--solar-red);
+        color: var(--solar-base3);
+      }
+
+      .request-form {
+        background: rgba(7, 54, 66, 0.95);
+        border: 1px solid rgba(131, 148, 150, 0.3);
+        border-radius: 1rem;
+        padding: 24px;
+        margin-bottom: 24px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-label {
+        color: var(--solar-base1);
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+
+      .form-input,
+      .form-select,
+      .form-textarea {
+        background: rgba(131, 148, 150, 0.1);
+        border: 1px solid rgba(131, 148, 150, 0.3);
+        color: var(--solar-base0);
+        padding: 10px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+      }
+
+      .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+
+      .form-input:focus,
+      .form-select:focus,
+      .form-textarea:focus {
+        outline: none;
+        border-color: var(--solar-blue);
+        background: rgba(38, 139, 210, 0.1);
+      }
+
+      .parent-selector {
+        background: rgba(131, 148, 150, 0.1);
+        border: 1px solid rgba(131, 148, 150, 0.3);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .parent-search {
+        width: 100%;
+        margin-bottom: 12px;
+      }
+
+      .selected-parents {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .parent-tag {
+        background: var(--solar-blue);
+        color: var(--solar-base3);
+        padding: 4px 8px;
+        border-radius: 16px;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .remove-tag {
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+
+      .document-types-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .doc-type-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: rgba(131, 148, 150, 0.1);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .doc-type-option:hover {
+        background: rgba(131, 148, 150, 0.2);
+      }
+
+      .doc-type-option input[type="checkbox"] {
+        margin: 0;
+      }
+
+      .back-btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(7, 54, 66, 0.95);
+        border: 1px solid rgba(131, 148, 150, 0.3);
+        color: var(--solar-base1);
+        padding: 10px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+
+      .back-btn:hover {
+        background: var(--solar-base02);
+        color: var(--solar-base3);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--solar-base1);
+      }
+
+      .empty-state svg {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+
+      @media (max-width: 768px) {
+        .document-container {
+          padding: 16px;
+        }
+
+        .request-card {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+
+        .request-info {
+          grid-template-columns: 1fr;
+        }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/parent_management/dashboard" class="back-btn">
+      <svg
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 19l-7-7 7-7"
+        ></path>
+      </svg>
+      Back to Dashboard
+    </a>
+
+    <div class="document-container">
+      <div class="page-header">
+        <h1>📁 Document Management Hub</h1>
+        <p>Digital document collection, verification, and secure storage</p>
+      </div>
+
+      <!-- Quick Statistics -->
+      <div class="quick-stats">
+        <div class="stat-card pending">
+          <div class="stat-number" id="pendingDocs">23</div>
+          <div class="stat-label">Pending Requests</div>
+        </div>
+        <div class="stat-card verified">
+          <div class="stat-number" id="verifiedDocs">147</div>
+          <div class="stat-label">Verified Documents</div>
+        </div>
+        <div class="stat-card overdue">
+          <div class="stat-number" id="overdueDocs">8</div>
+          <div class="stat-label">Overdue Submissions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalParentsWithDocs">89%</div>
+          <div class="stat-label">Parents with Complete Docs</div>
+        </div>
+      </div>
+
+      <!-- Action Tabs -->
+      <div class="action-tabs">
+        <button class="tab-btn active" onclick="switchTab('requests')">
+          <svg
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            ></path>
+          </svg>
+          View Requests
+        </button>
+        <button class="tab-btn" onclick="switchTab('create')">
+          <svg
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            ></path>
+          </svg>
+          Request Documents
+        </button>
+        <button class="tab-btn" onclick="switchTab('verify')">
+          <svg
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          Verify Documents
+        </button>
+        <button class="tab-btn" onclick="switchTab('archive')">
+          <svg
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+            ></path>
+          </svg>
+          Archive
+        </button>
+      </div>
+
+      <!-- View Requests Tab -->
+      <div id="requestsTab" class="tab-content active">
+        <div class="document-requests-grid" id="requestsGrid">
+          <!-- Document requests will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Request Documents Tab -->
+      <div id="createTab" class="tab-content">
+        <div class="request-form">
+          <h3 style="color: var(--solar-base3); margin-bottom: 20px">
+            Send Document Request
+          </h3>
+          <form id="documentRequestForm" onsubmit="sendDocumentRequest(event)">
+            <!-- Parent Selection -->
+            <div class="parent-selector">
+              <label class="form-label">Select Parents *</label>
+              <input
+                type="text"
+                class="form-input parent-search"
+                id="parentSearch"
+                placeholder="Search parents by name or email..."
+                oninput="searchParents(this.value)"
+              />
+              <div class="selected-parents" id="selectedParents">
+                <!-- Selected parents will appear here -->
+              </div>
+              <div
+                id="parentSearchResults"
+                style="max-height: 200px; overflow-y: auto"
+              ></div>
+            </div>
+
+            <!-- Document Types -->
+            <div class="form-group">
+              <label class="form-label">Required Documents *</label>
+              <div class="document-types-grid">
+                <div class="doc-type-option">
+                  <input type="checkbox" id="doc_id_copy" value="ID Copy" />
+                  <label for="doc_id_copy">ID Copy</label>
+                </div>
+                <div class="doc-type-option">
+                  <input
+                    type="checkbox"
+                    id="doc_birth_cert"
+                    value="Birth Certificate"
+                  />
+                  <label for="doc_birth_cert">Birth Certificate</label>
+                </div>
+                <div class="doc-type-option">
+                  <input
+                    type="checkbox"
+                    id="doc_medical"
+                    value="Medical Certificate"
+                  />
+                  <label for="doc_medical">Medical Certificate</label>
+                </div>
+                <div class="doc-type-option">
+                  <input
+                    type="checkbox"
+                    id="doc_address_proof"
+                    value="Address Proof"
+                  />
+                  <label for="doc_address_proof">Address Proof</label>
+                </div>
+                <div class="doc-type-option">
+                  <input
+                    type="checkbox"
+                    id="doc_emergency"
+                    value="Emergency Contact Form"
+                  />
+                  <label for="doc_emergency">Emergency Contact Form</label>
+                </div>
+                <div class="doc-type-option">
+                  <input
+                    type="checkbox"
+                    id="doc_consent"
+                    value="Photo Consent Form"
+                  />
+                  <label for="doc_consent">Photo Consent Form</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Submission Deadline</label>
+                <input
+                  type="date"
+                  class="form-input"
+                  id="docDeadline"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Priority Level</label>
+                <select class="form-select" id="docPriority">
+                  <option value="low">Low Priority</option>
+                  <option value="medium" selected>Medium Priority</option>
+                  <option value="high">High Priority</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px">
+              <label class="form-label">Additional Instructions</label>
+              <textarea
+                class="form-textarea"
+                id="docInstructions"
+                placeholder="Special instructions, acceptable formats, quality requirements..."
+              ></textarea>
+            </div>
+
+            <div style="display: flex; gap: 12px">
+              <button type="submit" class="btn">Send Document Requests</button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="resetDocumentForm()"
+              >
+                Clear Form
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Verify Documents Tab -->
+      <div id="verifyTab" class="tab-content">
+        <div class="document-requests-grid">
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <h3>Document Verification</h3>
+            <p>Submitted documents will appear here for verification.</p>
+            <p style="margin-top: 16px; color: var(--solar-base01)">
+              This feature will show documents that parents have uploaded and
+              are waiting for admin approval.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Archive Tab -->
+      <div id="archiveTab" class="tab-content">
+        <div class="document-requests-grid">
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+              ></path>
+            </svg>
+            <h3>Document Archive</h3>
+            <p>Completed and archived document requests will appear here.</p>
+            <p style="margin-top: 16px; color: var(--solar-base01)">
+              This provides a historical view of all document collection
+              activities.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentTab = "requests";
+      let selectedParents = new Set();
+
+      // Initialize page
+      document.addEventListener("DOMContentLoaded", function () {
+        loadDocumentRequests();
+
+        // Set minimum date to today
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("docDeadline").min = today;
+      });
+
+      function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll(".tab-content").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Remove active class from all buttons
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+
+        // Show selected tab and activate button
+        document.getElementById(tabName + "Tab").classList.add("active");
+        event.target.classList.add("active");
+
+        currentTab = tabName;
+
+        if (tabName === "requests") {
+          loadDocumentRequests();
+        }
+      }
+
+      async function loadDocumentRequests() {
+        try {
+          const response = await fetch(
+            "/parent_management/get_document_requests"
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            displayDocumentRequests(data.requests);
+          }
+        } catch (error) {
+          console.error("Error loading document requests:", error);
+          displayDocumentRequests([]); // Show empty state
+        }
+      }
+
+      function displayDocumentRequests(requests) {
+        const grid = document.getElementById("requestsGrid");
+
+        if (requests.length === 0) {
+          grid.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        <h3>No Document Requests</h3>
+                        <p>Click "Request Documents" to send document collection requests to parents.</p>
+                    </div>
+                `;
+          return;
+        }
+
+        grid.innerHTML = requests
+          .map(
+            (request) => `
+                <div class="request-card">
+                    <div class="request-info">
+                        <div class="request-detail">
+                            <div class="request-label">Parent</div>
+                            <div class="request-value">${
+                              request.parent_name
+                            }</div>
+                        </div>
+                        <div class="request-detail">
+                            <div class="request-label">Student</div>
+                            <div class="request-value">${
+                              request.student_name
+                            }</div>
+                        </div>
+                        <div class="request-detail">
+                            <div class="request-label">Document Type</div>
+                            <div class="request-value">${
+                              request.document_type
+                            }</div>
+                        </div>
+                        <div class="request-detail">
+                            <div class="request-label">Status</div>
+                            <div class="request-value">
+                                <span class="status-badge status-${
+                                  request.status
+                                }">${request.status}</span>
+                            </div>
+                        </div>
+                        <div class="request-detail">
+                            <div class="request-label">Priority</div>
+                            <div class="request-value">
+                                <span class="priority-badge priority-${
+                                  request.priority
+                                }">${request.priority}</span>
+                            </div>
+                        </div>
+                        <div class="request-detail">
+                            <div class="request-label">Requested Date</div>
+                            <div class="request-value">${
+                              request.requested_date
+                            }</div>
+                        </div>
+                    </div>
+                    <div class="request-actions">
+                        ${
+                          request.status === "submitted"
+                            ? `<button class="btn btn-success" onclick="verifyDocument(${request.id})">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Verify
+                             </button>
+                             <button class="btn btn-danger" onclick="rejectDocument(${request.id})">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Reject
+                             </button>`
+                            : `<button class="btn btn-secondary" onclick="sendReminder(${request.id})">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Remind
+                             </button>`
+                        }
+                        <button class="btn btn-secondary" onclick="viewDetails(${
+                          request.id
+                        })">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            Details
+                        </button>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      async function searchParents(query) {
+        if (query.length < 2) {
+          document.getElementById("parentSearchResults").innerHTML = "";
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `/parent_management/search_parents_for_communication?q=${encodeURIComponent(
+              query
+            )}`
+          );
+          const data = await response.json();
+
+          if (data.parents) {
+            const resultsDiv = document.getElementById("parentSearchResults");
+            resultsDiv.innerHTML = data.parents
+              .map(
+                (parent) => `
+                        <div style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid rgba(131, 148, 150, 0.1);" 
+                             onclick="selectParent(${parent.id}, '${parent.name}', '${parent.email}')">
+                            <strong>${parent.name}</strong> - ${parent.email}
+                            <br><small style="color: var(--solar-base1);">${parent.children_count} children</small>
+                        </div>
+                    `
+              )
+              .join("");
+          }
+        } catch (error) {
+          console.error("Error searching parents:", error);
+        }
+      }
+
+      function selectParent(id, name, email) {
+        if (selectedParents.has(id)) return;
+
+        selectedParents.add(id);
+        updateSelectedParentsDisplay();
+
+        // Clear search
+        document.getElementById("parentSearch").value = "";
+        document.getElementById("parentSearchResults").innerHTML = "";
+      }
+
+      function removeParent(id) {
+        selectedParents.delete(id);
+        updateSelectedParentsDisplay();
+      }
+
+      function updateSelectedParentsDisplay() {
+        const container = document.getElementById("selectedParents");
+
+        if (selectedParents.size === 0) {
+          container.innerHTML =
+            '<p style="color: var(--solar-base1); margin: 0;">No parents selected</p>';
+          return;
+        }
+
+        // For demo purposes, we'll show selected IDs. In a real app, you'd track the parent data
+        container.innerHTML = Array.from(selectedParents)
+          .map(
+            (id) => `
+                <div class="parent-tag">
+                    Parent ID: ${id}
+                    <span class="remove-tag" onclick="removeParent(${id})">×</span>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      async function sendDocumentRequest(event) {
+        event.preventDefault();
+
+        if (selectedParents.size === 0) {
+          alert("Please select at least one parent.");
+          return;
+        }
+
+        const documentTypes = [];
+        document
+          .querySelectorAll('.doc-type-option input[type="checkbox"]:checked')
+          .forEach((cb) => {
+            documentTypes.push(cb.value);
+          });
+
+        if (documentTypes.length === 0) {
+          alert("Please select at least one document type.");
+          return;
+        }
+
+        const formData = {
+          parent_ids: Array.from(selectedParents),
+          document_types: documentTypes,
+          deadline: document.getElementById("docDeadline").value,
+          priority: document.getElementById("docPriority").value,
+          message: document.getElementById("docInstructions").value,
+        };
+
+        try {
+          const response = await fetch("/parent_management/request_documents", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert("Document requests sent successfully!");
+            resetDocumentForm();
+            switchTab("requests");
+            loadDocumentRequests();
+          } else {
+            alert("Error sending document requests: " + result.message);
+          }
+        } catch (error) {
+          alert("Error sending document requests: " + error.message);
+        }
+      }
+
+      function resetDocumentForm() {
+        document.getElementById("documentRequestForm").reset();
+        selectedParents.clear();
+        updateSelectedParentsDisplay();
+        document.getElementById("parentSearchResults").innerHTML = "";
+      }
+
+      async function verifyDocument(requestId) {
+        if (confirm("Are you sure you want to verify this document?")) {
+          try {
+            const response = await fetch("/parent_management/verify_document", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                document_id: requestId,
+                action: "approve",
+                notes: "Document verified successfully",
+              }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              alert("Document verified successfully!");
+              loadDocumentRequests();
+            } else {
+              alert("Error verifying document: " + result.message);
+            }
+          } catch (error) {
+            alert("Error verifying document: " + error.message);
+          }
+        }
+      }
+
+      function rejectDocument(requestId) {
+        const reason = prompt("Please provide a reason for rejection:");
+        if (reason) {
+          // Implementation would be similar to verifyDocument but with 'reject' action
+          alert("Document rejection functionality will be implemented.");
+        }
+      }
+
+      function sendReminder(requestId) {
+        if (confirm("Send a reminder email to the parent?")) {
+          alert("Reminder sent successfully!");
+        }
+      }
+
+      function viewDetails(requestId) {
+        alert(
+          `View details functionality will be implemented for request ID: ${requestId}`
+        );
+      }
+
+      // Initialize selected parents display
+      updateSelectedParentsDisplay();
+    </script>
+  </body>
+</html>
