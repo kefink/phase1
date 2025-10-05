@@ -242,7 +242,7 @@
           color: var(--solar-dark);
           transform: translateY(-1px);
         }
-        
+
         .navbar-menu a:active {
           background: #d49600;
           transform: translateY(0);
@@ -826,7 +826,11 @@
         </button>
 
         <div class="navbar-menu" id="parentNav">
-          <a href="javascript:void(0)" class="nav-link" onclick="navigateTo('{{ url_for('parent.dashboard') }}')">
+          <a
+            href="javascript:void(0)"
+            class="nav-link"
+            onclick="navigateTo('{{ url_for('parent.dashboard') }}')"
+          >
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -839,7 +843,11 @@
             </svg>
             Dashboard
           </a>
-          <a href="javascript:void(0)" class="nav-link" onclick="navigateTo('{{ url_for('parent.children') }}')">
+          <a
+            href="javascript:void(0)"
+            class="nav-link"
+            onclick="navigateTo('{{ url_for('parent.children') }}')"
+          >
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -855,7 +863,11 @@
             </svg>
             My Children
           </a>
-          <a href="javascript:void(0)" class="nav-link" onclick="navigateTo('{{ url_for('parent.profile') }}')">
+          <a
+            href="javascript:void(0)"
+            class="nav-link"
+            onclick="navigateTo('{{ url_for('parent.profile') }}')"
+          >
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -868,16 +880,20 @@
             </svg>
             Profile
           </a>
-          <a href="javascript:void(0)" class="nav-link" onclick="navigateTo('{{ url_for('parent.logout') }}')">
+          <a
+            href="javascript:void(0)"
+            class="nav-link"
+            onclick="navigateTo('{{ url_for('parent.logout') }}')"
+          >
             <svg
               class="hi"
               viewBox="0 0 24 24"
               fill="currentColor"
               aria-hidden="true"
             >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16,17 21,12 16,7"/>
-              <line x1="21" x2="9" y1="12" y2="12"/>
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16,17 21,12 16,7" />
+              <line x1="21" x2="9" y1="12" y2="12" />
             </svg>
             Logout
           </a>
@@ -1209,7 +1225,7 @@
         if (iconSpan) iconSpan.textContent = "☰";
         document.body.style.overflow = "auto";
       }
-      
+
       // Debug function to test navigation
       function navigateTo(url) {
         console.log("Navigating to:", url);
