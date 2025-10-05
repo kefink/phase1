@@ -827,9 +827,8 @@
 
         <div class="navbar-menu" id="parentNav">
           <a
-            href="javascript:void(0)"
+            href="{{ url_for('parent.dashboard') }}"
             class="nav-link"
-            onclick="navigateTo('{{ url_for('parent.dashboard') }}')"
           >
             <svg
               class="hi"
@@ -844,9 +843,8 @@
             Dashboard
           </a>
           <a
-            href="javascript:void(0)"
+            href="{{ url_for('parent.children') }}"
             class="nav-link"
-            onclick="navigateTo('{{ url_for('parent.children') }}')"
           >
             <svg
               class="hi"
@@ -864,9 +862,8 @@
             My Children
           </a>
           <a
-            href="javascript:void(0)"
+            href="{{ url_for('parent.profile') }}"
             class="nav-link"
-            onclick="navigateTo('{{ url_for('parent.profile') }}')"
           >
             <svg
               class="hi"
@@ -881,9 +878,8 @@
             Profile
           </a>
           <a
-            href="javascript:void(0)"
+            href="{{ url_for('parent.logout') }}"
             class="nav-link"
-            onclick="navigateTo('{{ url_for('parent.logout') }}')"
           >
             <svg
               class="hi"
@@ -1232,6 +1228,18 @@
         closeParentNav();
         window.location.href = url;
       }
+
+      // Close mobile menu on link click but let the browser handle navigation via href
+      (function attachNavHandlers() {
+        const parentNav = document.getElementById('parentNav');
+        if (!parentNav) return;
+        parentNav.addEventListener('click', function (e) {
+          const link = e.target.closest('a.nav-link');
+          if (!link) return;
+          // Close the menu immediately for snappy UX; do not prevent default
+          closeParentNav();
+        });
+      })();
 
       // Handle window resize for parent nav
       window.addEventListener("resize", function () {
