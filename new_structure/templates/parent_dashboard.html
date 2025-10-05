@@ -24,54 +24,67 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
 
-    <!-- Legacy CSS -->
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}"
-    />
+    <!-- All styles are included inline for better performance and consistency -->
 
-    <!-- Mobile Responsive Dashboard Styles -->
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/mobile_responsive_dashboard.css') }}"
     />
 
     <style>
       :root {
-        --bg: #0b1220;
-        --card: rgba(17, 24, 39, 0.6);
-        --glass: rgba(255, 255, 255, 0.06);
-        --border: rgba(148, 163, 184, 0.2);
-        --text: #e5e7eb;
-        --muted: #94a3b8;
-        --primary: #22d3ee;
-        --primary-600: #06b6d4;
-        --success: #22c55e;
-        --warning: #f59e0b;
-        --danger: #ef4444;
-        --radius: 14px;
-        --shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+        --solar-primary: #b58900;
+        --solar-secondary: #839496;
+        --solar-success: #2aa198;
+        --solar-info: #268bd2;
+        --solar-warning: #cb4b16;
+        --solar-danger: #d33682;
+        --solar-light: #fdf6e3;
+        --solar-dark: #073642;
+        --solar-body-bg: #002b36;
+        --solar-body-color: #839496;
+        --solar-card-bg: rgba(7, 54, 66, 0.95);
+        --solar-glass: rgba(7, 54, 66, 0.85);
+        --solar-glass-border: rgba(131, 148, 150, 0.3);
+        --solar-hover: rgba(181, 137, 0, 0.1);
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --border-radius: 0.5rem;
+        --border-radius-lg: 1rem;
+        --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
       }
       html,
       body {
         height: 100%;
-      }
-      body {
         margin: 0;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
-          Arial, sans-serif;
-        color: var(--text);
-        background: radial-gradient(
-            1200px 800px at 10% 10%,
-            rgba(34, 211, 238, 0.12),
-            transparent 60%
-          ),
-          radial-gradient(
-            1000px 700px at 90% 20%,
-            rgba(245, 158, 11, 0.08),
-            transparent 60%
-          ),
-          linear-gradient(180deg, var(--bg) 0%, #0a0f1c 100%);
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: var(--solar-body-bg);
+        color: var(--solar-body-color);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-size: 14px;
       }
       .hi {
         width: 1.1em;
@@ -79,12 +92,14 @@
         vertical-align: -0.15em;
       }
       .navbar {
-        background: rgba(2, 6, 23, 0.55);
+        background: var(--solar-glass);
         backdrop-filter: blur(10px);
-        border-bottom: 1px solid var(--border);
-        box-shadow: var(--shadow);
-        color: var(--text);
-        padding: 14px 0;
+        border-bottom: 1px solid var(--solar-glass-border);
+        box-shadow: var(--box-shadow-lg);
+        color: var(--solar-body-color);
+        padding: var(--space-4) 0;
+        position: relative;
+        z-index: 1000;
       }
       .navbar-content {
         max-width: 1200px;
@@ -92,355 +107,461 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0 20px;
+        padding: 0 var(--space-4);
       }
+
       .navbar-brand {
         font-size: 1.25rem;
         font-weight: 700;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: var(--space-3);
+        color: var(--solar-primary);
+      }
+
+      .school-logo {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--border-radius);
+        object-fit: contain;
+        background: rgba(181, 137, 0, 0.1);
+        padding: 2px;
       }
       .navbar-menu {
         display: flex;
-        gap: 10px;
+        gap: var(--space-2);
         align-items: center;
       }
+
       .navbar-menu a {
-        color: var(--text);
+        color: var(--solar-secondary);
         text-decoration: none;
-        padding: 10px 12px;
-        border-radius: 10px;
+        padding: var(--space-2) var(--space-3);
+        border-radius: var(--border-radius);
         border: 1px solid transparent;
-        transition: 0.18s ease all;
+        transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: rgba(148, 163, 184, 0.06);
+        gap: var(--space-2);
+        font-weight: 500;
       }
+
       .navbar-menu a:hover {
-        background: rgba(148, 163, 184, 0.12);
-        border-color: var(--border);
+        background: var(--solar-hover);
+        color: var(--solar-primary);
       }
       .mobile-nav-toggle {
         display: none;
-        background: none;
-        border: none;
-        color: var(--text);
-        font-size: 1.1em;
+        background: var(--solar-primary);
+        border: 2px solid var(--solar-primary);
+        color: var(--solar-dark);
+        font-size: 1.2em;
         cursor: pointer;
-        border: 1px solid var(--border);
-        padding: 8px 10px;
-        border-radius: 10px;
-        background: rgba(148, 163, 184, 0.06);
+        padding: var(--space-2) var(--space-3);
+        border-radius: var(--border-radius);
+        font-weight: bold;
+        z-index: 10000;
+        position: relative;
+      }
+
+      .mobile-nav-toggle:hover {
+        background: #d49600;
+        border-color: #d49600;
+      }
+
+      .hi {
+        width: 16px;
+        height: 16px;
+        stroke-width: 2;
       }
       @media (max-width: 768px) {
         .navbar-content {
           position: relative;
+          flex-wrap: wrap;
         }
+
+        .mobile-nav-toggle {
+          display: block;
+        }
+
         .navbar-menu {
           display: none;
-          position: absolute;
-          top: 54px;
-          right: 20px;
-          background: var(--card);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          padding: 10px;
+          position: fixed;
+          top: 70px;
+          left: var(--space-4);
+          right: var(--space-4);
+          background: var(--solar-card-bg);
+          backdrop-filter: blur(20px);
+          border: 2px solid var(--solar-primary);
+          border-radius: var(--border-radius-lg);
+          padding: var(--space-4);
           flex-direction: column;
-          min-width: 220px;
-          box-shadow: var(--shadow);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+          z-index: 9999;
         }
+
         .navbar-menu.show {
           display: flex;
+        }
+
+        /* Mobile menu overlay */
+        .mobile-menu-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.3);
+          z-index: 9998;
+        }
+
+        .mobile-menu-overlay.show {
+          display: block;
+        }
+
+        .navbar-menu a {
+          width: 100%;
+          padding: var(--space-4);
+          text-align: center;
+          justify-content: center;
+          border-radius: var(--border-radius);
+          margin-bottom: var(--space-1);
+          background: var(--solar-glass);
+          border: 1px solid var(--solar-glass-border);
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          position: relative;
+          z-index: 10001;
+        }
+
+        .navbar-menu a:hover {
+          background: var(--solar-primary);
+          color: var(--solar-dark);
+          transform: translateY(-1px);
+        }
+        
+        .navbar-menu a:active {
+          background: #d49600;
+          transform: translateY(0);
         }
       }
       .dashboard-container {
         max-width: 1200px;
-        margin: 30px auto;
-        padding: 0 20px;
+        margin: var(--space-6) auto;
+        padding: 0 var(--space-4);
       }
+
       .welcome-section,
       .dashboard-card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
+        background: var(--solar-glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--solar-glass-border);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow-lg);
       }
       .welcome-section {
-        padding: 24px;
-        margin-bottom: 24px;
+        padding: var(--space-6);
+        margin-bottom: var(--space-6);
         text-align: center;
       }
+
       .welcome-title {
-        font-size: 1.6rem;
-        margin: 0 0 6px;
-        color: var(--text);
+        font-size: 2rem;
+        margin: 0 0 var(--space-2);
+        color: var(--solar-primary);
+        font-weight: 700;
       }
+
       .welcome-subtitle {
-        color: var(--muted);
-        font-size: 1rem;
+        color: var(--solar-secondary);
+        font-size: 1.1rem;
         margin: 0;
       }
       .dashboard-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 22px;
+        gap: var(--space-6);
       }
+
       .dashboard-card {
-        padding: 24px;
+        padding: var(--space-6);
       }
       .card-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 18px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--border);
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+        padding-bottom: var(--space-3);
+        border-bottom: 1px solid var(--solar-glass-border);
       }
+
       .card-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-600));
-        color: #001018;
+        width: 48px;
+        height: 48px;
+        border-radius: var(--border-radius);
+        background: var(--solar-primary);
+        color: var(--solar-dark);
         display: flex;
         align-items: center;
         justify-content: center;
       }
+
       .card-title {
-        font-size: 1.15rem;
+        font-size: 1.2rem;
         font-weight: 700;
         margin: 0;
+        color: var(--solar-primary);
       }
       .children-list {
         list-style: none;
         padding: 0;
         margin: 0;
       }
+
       .child-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 14px;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        margin-bottom: 12px;
-        background: rgba(2, 6, 23, 0.45);
-        transition: 0.18s ease all;
+        padding: var(--space-4);
+        border: 1px solid var(--solar-glass-border);
+        border-radius: var(--border-radius-lg);
+        margin-bottom: var(--space-3);
+        background: var(--solar-card-bg);
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
       }
+
       .child-item:hover {
-        background: rgba(148, 163, 184, 0.08);
-        transform: translateY(-1px);
+        background: var(--solar-hover);
+        transform: translateY(-2px);
       }
       .child-name {
         font-weight: 700;
-        color: var(--text);
-        font-size: 1.05rem;
-        margin-bottom: 4px;
+        color: var(--solar-body-color);
+        font-size: 1.1rem;
+        margin-bottom: var(--space-1);
       }
+
       .child-details {
-        color: var(--muted);
-        font-size: 0.92rem;
+        color: var(--solar-secondary);
+        font-size: 0.9rem;
       }
+
       .child-actions {
         display: flex;
-        gap: 10px;
+        gap: var(--space-2);
       }
+
       .btn-primary {
-        background: linear-gradient(135deg, var(--primary), var(--primary-600));
-        color: #001018;
-        padding: 8px 12px;
+        background: var(--solar-primary);
+        color: var(--solar-dark);
+        padding: var(--space-2) var(--space-4);
         border: 1px solid transparent;
-        border-radius: 10px;
+        border-radius: var(--border-radius);
         text-decoration: none;
         font-weight: 600;
-        transition: 0.18s ease all;
+        transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--space-2);
+        font-size: 0.9rem;
       }
+
       .btn-primary:hover {
+        background: #d49600;
         transform: translateY(-1px);
-        box-shadow: 0 12px 20px rgba(34, 211, 238, 0.18);
       }
       .no-children {
         text-align: center;
-        color: var(--muted);
-        padding: 30px 20px;
+        color: var(--solar-secondary);
+        padding: var(--space-6) var(--space-4);
       }
+
       .email-list {
         list-style: none;
         padding: 0;
         margin: 0;
       }
+
       .email-item {
-        padding: 14px;
-        border-left: 4px solid var(--primary);
-        background: rgba(148, 163, 184, 0.06);
-        margin-bottom: 10px;
-        border-radius: 0 10px 10px 0;
+        padding: var(--space-4);
+        border-left: 4px solid var(--solar-primary);
+        background: var(--solar-card-bg);
+        margin-bottom: var(--space-2);
+        border-radius: 0 var(--border-radius) var(--border-radius) 0;
       }
+
       .email-subject {
         font-weight: 700;
-        color: var(--text);
-        margin-bottom: 4px;
+        color: var(--solar-body-color);
+        margin-bottom: var(--space-1);
       }
+
       .email-meta {
-        color: var(--muted);
-        font-size: 0.92rem;
+        color: var(--solar-secondary);
+        font-size: 0.9rem;
         display: flex;
-        gap: 10px;
+        gap: var(--space-2);
         align-items: center;
       }
       .no-emails {
         text-align: center;
-        color: var(--muted);
-        padding: 24px 16px;
+        color: var(--solar-secondary);
+        padding: var(--space-6) var(--space-4);
         font-style: italic;
       }
+
       .quick-actions {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 14px;
-        margin-top: 12px;
+        gap: var(--space-4);
+        margin-top: var(--space-3);
       }
+
       .quick-action {
-        background: rgba(148, 163, 184, 0.08);
-        padding: 18px;
-        border-radius: 12px;
+        background: var(--solar-card-bg);
+        backdrop-filter: blur(5px);
+        padding: var(--space-4);
+        border-radius: var(--border-radius-lg);
         text-align: center;
         text-decoration: none;
-        color: var(--text);
-        border: 1px solid var(--border);
-        transition: 0.18s ease all;
+        color: var(--solar-body-color);
+        border: 1px solid var(--solar-glass-border);
+        transition: all 0.3s ease;
         display: grid;
         place-items: center;
-        gap: 10px;
+        gap: var(--space-2);
       }
+
       .quick-action:hover {
-        background: rgba(148, 163, 184, 0.14);
-        transform: translateY(-1px);
+        background: var(--solar-hover);
+        transform: translateY(-2px);
       }
       .quick-action-title {
         font-weight: 700;
         margin: 0;
+        font-size: 0.9rem;
       }
+
       .status-badge {
-        padding: 6px 10px;
+        padding: var(--space-2) var(--space-3);
         border-radius: 999px;
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--space-2);
       }
+
       .status-verified {
-        background: rgba(34, 197, 94, 0.15);
-        color: #22c55e;
-        border: 1px solid rgba(34, 197, 94, 0.35);
+        background: rgba(42, 161, 152, 0.15);
+        color: var(--solar-success);
+        border: 1px solid rgba(42, 161, 152, 0.35);
       }
+
       .status-unverified {
-        background: rgba(245, 158, 11, 0.16);
-        color: #f59e0b;
-        border: 1px solid rgba(245, 158, 11, 0.35);
+        background: rgba(203, 75, 22, 0.15);
+        color: var(--solar-warning);
+        border: 1px solid rgba(203, 75, 22, 0.35);
       }
 
       /* Mobile-First Responsive Enhancements for Parent Portal */
       @media (max-width: 480px) {
         /* Mobile Navigation */
         .navbar {
-          padding: 10px 0;
+          padding: var(--space-2) 0;
         }
 
         .navbar-content {
-          flex-direction: column;
-          gap: 15px;
-          padding: 0 15px;
+          padding: 0 var(--space-3);
         }
 
         .navbar-brand {
-          font-size: 1.2em;
-          text-align: center;
+          font-size: 1.1rem;
+          gap: var(--space-2);
+        }
+
+        .school-logo {
+          width: 28px;
+          height: 28px;
         }
 
         .navbar-menu {
-          flex-direction: column;
-          gap: 10px;
-          width: 100%;
+          margin: 0 var(--space-2);
+          top: 60px;
         }
 
         .navbar-menu a {
-          padding: 12px 15px;
-          text-align: center;
-          width: 100%;
-          border-radius: 8px;
-          background: rgba(255, 255, 255, 0.1);
+          padding: var(--space-4);
+          font-size: 0.9rem;
         }
 
         /* Mobile Container */
         .dashboard-container {
-          margin: 15px auto;
-          padding: 0 15px;
+          margin: var(--space-4) auto;
+          padding: 0 var(--space-3);
         }
 
         /* Mobile Welcome Section */
         .welcome-section {
-          padding: 20px 15px;
-          margin-bottom: 20px;
-          text-align: center;
+          padding: var(--space-5) var(--space-3);
+          margin-bottom: var(--space-5);
         }
 
         .welcome-title {
-          font-size: 1.5em;
-          margin-bottom: 8px;
+          font-size: 1.5rem;
+          margin-bottom: var(--space-2);
+          line-height: 1.3;
         }
 
         .welcome-subtitle {
-          font-size: 1em;
+          font-size: 0.95rem;
+          line-height: 1.4;
         }
 
         .status-badge {
-          display: block;
-          margin-top: 10px;
-          padding: 8px 12px;
-          font-size: 0.9em;
+          display: inline-block;
+          margin-top: var(--space-3);
+          padding: var(--space-2) var(--space-3);
+          font-size: 0.85rem;
         }
 
         /* Mobile Dashboard Grid */
         .dashboard-grid {
           grid-template-columns: 1fr;
-          gap: 20px;
+          gap: var(--space-5);
         }
 
         /* Mobile Dashboard Cards */
         .dashboard-card {
-          padding: 20px 15px;
-          margin-bottom: 0;
+          padding: var(--space-5) var(--space-3);
         }
 
         .card-header {
-          flex-direction: column;
-          text-align: center;
-          gap: 10px;
-          margin-bottom: 20px;
+          flex-direction: row;
+          text-align: left;
+          gap: var(--space-3);
+          margin-bottom: var(--space-4);
         }
 
         .card-icon {
           width: 40px;
           height: 40px;
-          font-size: 1.2em;
+          flex-shrink: 0;
         }
 
         .card-title {
-          font-size: 1.1em;
+          font-size: 1.1rem;
         }
 
         /* Mobile Children List */
         .child-item {
           flex-direction: column;
-          gap: 15px;
-          padding: 15px;
+          gap: var(--space-3);
+          padding: var(--space-4);
           text-align: center;
         }
 
@@ -449,11 +570,12 @@
         }
 
         .child-name {
-          font-size: 1em;
+          font-size: 1.05rem;
         }
 
         .child-details {
-          font-size: 0.85em;
+          font-size: 0.9rem;
+          margin-top: var(--space-1);
         }
 
         .child-actions {
@@ -462,55 +584,59 @@
         }
 
         .btn-primary {
-          padding: 10px 20px;
-          font-size: 0.9em;
-          width: 100%;
-          text-align: center;
+          padding: var(--space-3) var(--space-5);
+          font-size: 0.9rem;
+          min-width: 140px;
         }
 
         /* Mobile No Children */
         .no-children {
-          padding: 30px 15px;
-        }
-
-        .no-children i {
-          font-size: 3em;
+          padding: var(--space-6) var(--space-3);
         }
 
         /* Mobile Email List */
         .email-item {
-          padding: 12px;
-          margin-bottom: 8px;
+          padding: var(--space-3);
+          margin-bottom: var(--space-2);
         }
 
         .email-subject {
-          font-size: 0.9em;
-          margin-bottom: 8px;
+          font-size: 0.95rem;
+          margin-bottom: var(--space-2);
         }
 
         .email-meta {
-          font-size: 0.8em;
+          font-size: 0.85rem;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: var(--space-1);
+        }
+
+        .no-emails {
+          padding: var(--space-6) var(--space-3);
         }
 
         /* Mobile Quick Actions */
         .quick-actions {
           grid-template-columns: repeat(2, 1fr);
-          gap: 10px;
-          margin-top: 15px;
+          gap: var(--space-3);
+          margin-top: var(--space-4);
         }
 
         .quick-action {
-          padding: 15px 10px;
+          padding: var(--space-4) var(--space-2);
           text-align: center;
         }
 
-        .quick-action i {
-          font-size: 1.5em;
-          margin-bottom: 8px;
+        .quick-action .hi {
+          width: 20px;
+          height: 20px;
+          margin-bottom: var(--space-2);
         }
 
         .quick-action-title {
-          font-size: 0.85em;
+          font-size: 0.85rem;
+          line-height: 1.2;
         }
 
         /* Mobile Flash Messages */
@@ -523,96 +649,95 @@
       /* Small Mobile Devices */
       @media (max-width: 360px) {
         .navbar-content {
-          padding: 0 10px;
+          padding: 0 var(--space-2);
+        }
+
+        .navbar-brand {
+          font-size: 1rem;
+        }
+
+        .school-logo {
+          width: 24px;
+          height: 24px;
         }
 
         .dashboard-container {
-          padding: 0 10px;
+          padding: 0 var(--space-2);
         }
 
         .welcome-section {
-          padding: 15px 10px;
+          padding: var(--space-4) var(--space-2);
         }
 
         .welcome-title {
-          font-size: 1.3em;
+          font-size: 1.3rem;
         }
 
         .dashboard-card {
-          padding: 15px 10px;
+          padding: var(--space-4) var(--space-2);
         }
 
         .card-icon {
-          width: 35px;
-          height: 35px;
-          font-size: 1em;
+          width: 36px;
+          height: 36px;
         }
 
         .card-title {
-          font-size: 1em;
+          font-size: 1rem;
         }
 
         .child-item {
-          padding: 12px;
+          padding: var(--space-3);
         }
 
         .quick-actions {
           grid-template-columns: 1fr;
-          gap: 8px;
+          gap: var(--space-2);
         }
 
         .quick-action {
-          padding: 12px 8px;
+          padding: var(--space-3);
         }
 
-        .quick-action i {
-          font-size: 1.3em;
+        .quick-action .hi {
+          width: 18px;
+          height: 18px;
         }
 
         .quick-action-title {
-          font-size: 0.8em;
+          font-size: 0.8rem;
         }
       }
 
       /* Tablet Portrait */
       @media (max-width: 768px) and (min-width: 481px) {
         .navbar-content {
-          padding: 0 20px;
-        }
-
-        .navbar-menu {
-          flex-direction: row;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 15px;
-        }
-
-        .navbar-menu a {
-          width: auto;
-          min-width: 120px;
+          padding: 0 var(--space-4);
         }
 
         .dashboard-container {
-          padding: 0 20px;
+          padding: 0 var(--space-4);
         }
 
         .dashboard-grid {
           grid-template-columns: 1fr;
-          gap: 25px;
+          gap: var(--space-6);
         }
 
         .quick-actions {
-          grid-template-columns: repeat(4, 1fr);
-          gap: 15px;
+          grid-template-columns: repeat(2, 1fr);
+          gap: var(--space-4);
         }
 
         .child-item {
           flex-direction: row;
           text-align: left;
+          padding: var(--space-4);
         }
 
         .child-info {
           text-align: left;
+          flex: 1;
         }
 
         .child-actions {
@@ -622,23 +747,32 @@
 
         .btn-primary {
           width: auto;
+          min-width: 120px;
         }
       }
 
       /* Tablet Landscape */
       @media (max-width: 1024px) and (min-width: 769px) {
+        .navbar {
+          padding: var(--space-3) 0;
+        }
+
         .dashboard-container {
-          padding: 0 30px;
+          padding: 0 var(--space-6);
         }
 
         .dashboard-grid {
           grid-template-columns: repeat(2, 1fr);
-          gap: 30px;
+          gap: var(--space-6);
         }
 
         .quick-actions {
           grid-template-columns: repeat(4, 1fr);
-          gap: 20px;
+          gap: var(--space-4);
+        }
+
+        .welcome-title {
+          font-size: 1.8rem;
         }
       }
     </style>
@@ -648,16 +782,36 @@
     <nav class="navbar">
       <div class="navbar-content">
         <div class="navbar-brand">
+          <!-- Hillview School Logo SVG -->
           <svg
-            class="hi"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden="true"
+            class="school-logo"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <path
-              d="M3 7a1 1 0 0 1 .553-.894l8-4a1 1 0 0 1 .894 0l8 4A1 1 0 0 1 21 7v3a1 1 0 1 1-2 0V7.618l-7-3.5-7 3.5V17h6a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1V7Z"
+            <!-- Background circle -->
+            <circle cx="16" cy="16" r="16" fill="#b58900" />
+            <!-- School building -->
+            <rect x="8" y="12" width="16" height="12" fill="#002b36" />
+            <!-- Roof -->
+            <path d="M6 12 L16 6 L26 12 Z" fill="#073642" />
+            <!-- Door -->
+            <rect x="14" y="16" width="4" height="8" fill="#b58900" />
+            <!-- Windows -->
+            <rect x="10" y="14" width="2" height="2" fill="#2aa198" />
+            <rect x="20" y="14" width="2" height="2" fill="#2aa198" />
+            <rect x="10" y="18" width="2" height="2" fill="#2aa198" />
+            <rect x="20" y="18" width="2" height="2" fill="#2aa198" />
+            <!-- Flag pole -->
+            <line
+              x1="16"
+              y1="6"
+              x2="16"
+              y2="2"
+              stroke="#cb4b16"
+              stroke-width="1"
             />
-            <path d="M13 13a1 1 0 1 0-2 0v6a1 1 0 1 0 2 0v-6Z" />
+            <rect x="16" y="2" width="3" height="2" fill="#d33682" />
           </svg>
           {{ school_info.school_name or 'Hillview School' }} - Parent Portal
         </div>
@@ -672,7 +826,7 @@
         </button>
 
         <div class="navbar-menu" id="parentNav">
-          <a href="{{ url_for('parent.dashboard') }}">
+          <a href="javascript:void(0)" class="nav-link" onclick="navigateTo('{{ url_for('parent.dashboard') }}')">
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -685,7 +839,7 @@
             </svg>
             Dashboard
           </a>
-          <a href="{{ url_for('parent.children') }}">
+          <a href="javascript:void(0)" class="nav-link" onclick="navigateTo('{{ url_for('parent.children') }}')">
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -701,7 +855,7 @@
             </svg>
             My Children
           </a>
-          <a href="{{ url_for('parent.profile') }}">
+          <a href="javascript:void(0)" class="nav-link" onclick="navigateTo('{{ url_for('parent.profile') }}')">
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -714,25 +868,29 @@
             </svg>
             Profile
           </a>
-          <a href="{{ url_for('parent.logout') }}">
+          <a href="javascript:void(0)" class="nav-link" onclick="navigateTo('{{ url_for('parent.logout') }}')">
             <svg
               class="hi"
               viewBox="0 0 24 24"
               fill="currentColor"
               aria-hidden="true"
             >
-              <path
-                d="M13 4a1 1 0 1 0-2 0v6H6a1 1 0 1 0 0 2h5v6a1 1 0 1 0 2 0V4Z"
-              />
-              <path
-                d="M18.364 7.636a1 1 0 0 1 1.414 1.414L18.828 10H21a1 1 0 1 1 0 2h-2.172l.95.95a1 1 0 1 1-1.414 1.414L15 12l3.364-3.364Z"
-              />
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16,17 21,12 16,7"/>
+              <line x1="21" x2="9" y1="12" y2="12"/>
             </svg>
             Logout
           </a>
         </div>
       </div>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div
+      class="mobile-menu-overlay"
+      id="mobileMenuOverlay"
+      onclick="closeParentNav()"
+    ></div>
 
     <div class="dashboard-container">
       <!-- Welcome Section -->
@@ -1031,33 +1189,45 @@
       function toggleParentNav() {
         const parentNav = document.getElementById("parentNav");
         const iconSpan = document.getElementById("navToggleIcon");
+        const overlay = document.getElementById("mobileMenuOverlay");
         const open = parentNav.classList.toggle("show");
+        overlay.classList.toggle("show", open);
         iconSpan.textContent = open ? "✕" : "☰";
+
+        // Prevent body scroll when menu is open
+        document.body.style.overflow = open ? "hidden" : "auto";
       }
 
-      // Close mobile nav when clicking outside
-      document.addEventListener("click", function (event) {
-        const navbar = document.querySelector(".navbar");
+      // Simple function to close mobile nav without interfering with navigation
+      function closeParentNav() {
         const parentNav = document.getElementById("parentNav");
-        const toggleBtn = document.querySelector(".mobile-nav-toggle");
+        const overlay = document.getElementById("mobileMenuOverlay");
+        const iconSpan = document.getElementById("navToggleIcon");
 
-        if (
-          !navbar.contains(event.target) &&
-          parentNav.classList.contains("show")
-        ) {
-          parentNav.classList.remove("show");
-          toggleBtn.querySelector("i").className = "fas fa-bars";
-        }
-      });
+        if (parentNav) parentNav.classList.remove("show");
+        if (overlay) overlay.classList.remove("show");
+        if (iconSpan) iconSpan.textContent = "☰";
+        document.body.style.overflow = "auto";
+      }
+      
+      // Debug function to test navigation
+      function navigateTo(url) {
+        console.log("Navigating to:", url);
+        closeParentNav();
+        window.location.href = url;
+      }
 
       // Handle window resize for parent nav
       window.addEventListener("resize", function () {
         const parentNav = document.getElementById("parentNav");
-        const toggleBtn = document.querySelector(".mobile-nav-toggle i");
+        const overlay = document.getElementById("mobileMenuOverlay");
+        const iconSpan = document.getElementById("navToggleIcon");
 
         if (window.innerWidth > 768 && parentNav.classList.contains("show")) {
           parentNav.classList.remove("show");
-          toggleBtn.className = "fas fa-bars";
+          overlay.classList.remove("show");
+          iconSpan.textContent = "☰";
+          document.body.style.overflow = "auto";
         }
       });
 
@@ -1071,8 +1241,13 @@
             toggleBtn.style.display = "none";
             // Ensure nav is visible on larger screens
             const parentNav = document.getElementById("parentNav");
+            const overlay = document.getElementById("mobileMenuOverlay");
+            const iconSpan = document.getElementById("navToggleIcon");
             if (parentNav) {
               parentNav.classList.remove("show");
+              overlay.classList.remove("show");
+              iconSpan.textContent = "☰";
+              document.body.style.overflow = "auto";
             }
           }
         }
