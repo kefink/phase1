@@ -19,39 +19,53 @@
       href="{{ url_for('static', filename='css/solar_analytics_premium.css') }}"
     />
     <style>
+      /* Dark Solar Theme Variables */
+      :root {
+        --solar-primary: #b58900;
+        --solar-secondary: #2aa198;
+        --solar-accent: #dc322f;
+        --solar-body-bg: #002b36;
+        --solar-card-bg: rgba(0, 43, 54, 0.95);
+        --solar-text-primary: #fdf6e3;
+        --solar-text-secondary: #93a1a1;
+        --solar-glass-border: rgba(253, 246, 227, 0.1);
+        --solar-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+
       body {
         font-family: "Poppins", sans-serif;
         margin: 0;
         padding: 20px;
         min-height: 100vh;
-        color: var(--text-white, #fdf6e3);
+        background: linear-gradient(135deg, #002b36 0%, #073642 100%);
+        color: var(--solar-text-primary);
       }
 
       .report-container {
         max-width: 900px;
         margin: 0 auto;
-        background: var(--bg-card, rgba(0, 43, 54, 0.95));
+        background: var(--solar-card-bg);
         backdrop-filter: blur(20px);
         border-radius: 20px;
         padding: 40px;
-        box-shadow: var(--shadow-glass, 0 8px 32px rgba(0, 0, 0, 0.3));
-        border: 1px solid var(--glass-border, rgba(253, 246, 227, 0.1));
+        box-shadow: var(--solar-shadow);
+        border: 1px solid var(--solar-glass-border);
       }
 
-      /* Professional Marksheet Header Styles */
+      /* Solar Theme Marksheet Header */
       .marksheet-header {
         display: grid;
         grid-template-columns: 120px 1fr auto;
         align-items: center;
         gap: 20px;
         padding: 20px 30px;
-        background: linear-gradient(135deg, #e8f4f8 0%, #f5f9fa 100%);
-        border: 2px solid #2c5f7a;
+        background: linear-gradient(135deg, var(--solar-card-bg) 0%, rgba(7, 54, 66, 0.98) 100%);
+        border: 2px solid var(--solar-primary);
         border-radius: 12px;
         margin-bottom: 15px;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 15px rgba(44, 95, 122, 0.1);
+        box-shadow: var(--solar-shadow);
       }
 
       .marksheet-header::before {
@@ -63,7 +77,7 @@
         bottom: 0;
         background: linear-gradient(
           45deg,
-          rgba(255, 255, 255, 0.3) 0%,
+          rgba(181, 137, 0, 0.1) 0%,
           transparent 100%
         );
         pointer-events: none;
@@ -80,11 +94,11 @@
         width: 80px;
         height: 80px;
         border-radius: 50%;
-        border: 3px solid #2c5f7a;
+        border: 3px solid var(--solar-primary);
         object-fit: cover;
-        background: white;
+        background: rgba(253, 246, 227, 0.1);
         padding: 5px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
       }
 
       .school-info-center {
@@ -95,15 +109,15 @@
       .school-name {
         font-size: 28px;
         font-weight: 800;
-        color: #1a365d;
+        color: var(--solar-text-primary);
         margin: 0 0 8px 0;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         letter-spacing: 0.5px;
       }
 
       .school-address {
         font-size: 14px;
-        color: #2c5f7a;
+        color: var(--solar-text-secondary);
         margin: 0;
         font-weight: 600;
         line-height: 1.4;
@@ -117,29 +131,29 @@
       .marksheet-title {
         font-size: 22px;
         font-weight: 900;
-        color: #d69e2e;
+        color: var(--solar-primary);
         margin: 0;
         text-transform: uppercase;
         letter-spacing: 1px;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         padding: 8px 16px;
         background: linear-gradient(
           135deg,
-          rgba(214, 158, 46, 0.1),
-          rgba(214, 158, 46, 0.05)
+          rgba(181, 137, 0, 0.2),
+          rgba(181, 137, 0, 0.1)
         );
         border-radius: 8px;
-        border: 1px solid rgba(214, 158, 46, 0.3);
+        border: 1px solid var(--solar-primary);
       }
 
       /* Assessment Information Grid */
       .assessment-info-section {
-        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-        border: 1px solid #cbd5e0;
+        background: linear-gradient(135deg, rgba(0, 43, 54, 0.6) 0%, rgba(7, 54, 66, 0.8) 100%);
+        border: 1px solid var(--solar-glass-border);
         border-radius: 8px;
         padding: 15px;
         margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--solar-shadow);
       }
 
       .assessment-info-grid {
@@ -159,7 +173,7 @@
       .info-label {
         font-size: 12px;
         font-weight: 700;
-        color: #4a5568;
+        color: var(--solar-text-secondary);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 4px;
@@ -173,42 +187,39 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         border: 2px solid;
-        background: white;
+        background: rgba(0, 43, 54, 0.8);
         min-width: 80px;
         display: inline-block;
+        color: var(--solar-text-primary);
       }
 
       .info-grade {
-        color: #2b6cb0;
-        border-color: #2b6cb0;
-        background: linear-gradient(135deg, #e6f3ff, #f0f8ff);
+        border-color: var(--solar-primary);
+        background: linear-gradient(135deg, rgba(181, 137, 0, 0.2), rgba(181, 137, 0, 0.1));
       }
 
       .info-stream {
-        color: #2c5f7a;
-        border-color: #2c5f7a;
-        background: linear-gradient(135deg, #e6f1f5, #f0f6f8);
+        border-color: var(--solar-secondary);
+        background: linear-gradient(135deg, rgba(42, 161, 152, 0.2), rgba(42, 161, 152, 0.1));
       }
 
       .info-term {
-        color: #d69e2e;
-        border-color: #d69e2e;
-        background: linear-gradient(135deg, #fef5e7, #fffbf0);
+        border-color: var(--solar-primary);
+        background: linear-gradient(135deg, rgba(181, 137, 0, 0.2), rgba(181, 137, 0, 0.1));
       }
 
       .info-assessment {
-        color: #38a169;
-        border-color: #38a169;
-        background: linear-gradient(135deg, #f0fff4, #f7fffa);
+        border-color: var(--solar-secondary);
+        background: linear-gradient(135deg, rgba(42, 161, 152, 0.2), rgba(42, 161, 152, 0.1));
       }
 
-      /* Professional Marksheet Table Styles */
+      /* Solar Theme Marksheet Table */
       .marksheet-container {
-        background: white;
+        background: var(--solar-card-bg);
         border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        border: 2px solid #e2e8f0;
+        box-shadow: var(--solar-shadow);
+        border: 2px solid var(--solar-glass-border);
         margin-bottom: 20px;
       }
 
@@ -216,20 +227,20 @@
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: white;
+        font-family: "Poppins", sans-serif;
+        background: var(--solar-card-bg);
         border-radius: 12px;
         overflow: hidden;
         margin: 0;
       }
 
       .marks-table thead {
-        background: linear-gradient(135deg, #2c5f7a 0%, #4a90a4 100%);
+        background: linear-gradient(135deg, var(--solar-primary) 0%, var(--solar-secondary) 100%);
         position: relative;
       }
 
       .marks-table th {
-        color: white;
+        color: var(--solar-text-primary);
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -237,7 +248,7 @@
         text-align: center;
         border: none;
         font-size: 14px;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         position: relative;
       }
 
@@ -253,18 +264,18 @@
         top: 20%;
         bottom: 20%;
         width: 1px;
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(253, 246, 227, 0.3);
       }
 
       .marks-table tbody tr {
         transition: all 0.3s ease;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--solar-glass-border);
       }
 
       .marks-table tbody tr:hover {
-        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+        background: linear-gradient(135deg, rgba(7, 54, 66, 0.8) 0%, rgba(0, 43, 54, 0.9) 100%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       }
 
       .marks-table tbody tr:last-child {
@@ -278,7 +289,7 @@
         border: none;
         font-size: 15px;
         position: relative;
-        color: #2d3748;
+        color: var(--solar-text-primary);
         white-space: normal;
         word-break: break-word;
         overflow-wrap: anywhere;
@@ -288,12 +299,12 @@
         text-align: left;
         padding-left: 20px;
         font-weight: 700;
-        color: #2c5f7a;
+        color: var(--solar-text-primary);
       }
 
       /* Subject Name Styling */
       .subject-name {
-        color: #2c5f7a;
+        color: var(--solar-text-primary);
         font-weight: 800;
         font-size: 16px;
         display: flex;
@@ -305,7 +316,7 @@
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: #2c5f7a;
+        background: var(--solar-primary);
         display: inline-block;
       }
 
@@ -315,38 +326,39 @@
         font-size: 16px;
         padding: 4px 8px;
         border-radius: 6px;
-        background: linear-gradient(135deg, #f7fafc, #edf2f7);
-        border: 1px solid #cbd5e0;
+        background: linear-gradient(135deg, rgba(7, 54, 66, 0.8), rgba(0, 43, 54, 0.9));
+        border: 1px solid var(--solar-glass-border);
         display: inline-block;
         min-width: 45px;
+        color: var(--solar-text-primary);
       }
 
       /* Composite Subject Styling */
       .composite-subject {
-        background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
-        border-left: 4px solid #2b6cb0;
+        background: linear-gradient(135deg, rgba(42, 161, 152, 0.2) 0%, rgba(42, 161, 152, 0.1) 100%);
+        border-left: 4px solid var(--solar-secondary);
       }
 
       .composite-subject .subject-name {
-        color: #2b6cb0;
+        color: var(--solar-secondary);
         font-size: 17px;
         font-weight: 900;
       }
 
       .composite-subject .subject-icon {
-        background: #2b6cb0;
+        background: var(--solar-secondary);
         width: 10px;
         height: 10px;
       }
 
       /* Subject Component Styling */
       .subject-component {
-        background: linear-gradient(135deg, #fefefe 0%, #f8f9fa 100%);
-        border-left: 3px solid #cbd5e0;
+        background: linear-gradient(135deg, rgba(7, 54, 66, 0.6) 0%, rgba(0, 43, 54, 0.7) 100%);
+        border-left: 3px solid var(--solar-text-secondary);
       }
 
       .subject-component .subject-name {
-        color: #4a5568;
+        color: var(--solar-text-secondary);
         font-size: 15px;
         font-weight: 700;
         font-style: italic;
@@ -354,15 +366,15 @@
       }
 
       .subject-component .subject-icon {
-        background: #cbd5e0;
+        background: var(--solar-text-secondary);
         width: 6px;
         height: 6px;
       }
 
       /* Summary Styles */
       .summary-section {
-        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-        border-top: 3px solid #2c5f7a;
+        background: linear-gradient(135deg, rgba(0, 43, 54, 0.6) 0%, rgba(7, 54, 66, 0.8) 100%);
+        border-top: 3px solid var(--solar-primary);
         padding: 20px;
         margin-top: 0;
         border-radius: 0 0 12px 12px;
@@ -376,24 +388,24 @@
       }
 
       .summary-item {
-        background: white;
+        background: rgba(0, 43, 54, 0.8);
         padding: 15px;
         border-radius: 8px;
         text-align: center;
-        border: 2px solid #e2e8f0;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 2px solid var(--solar-glass-border);
+        box-shadow: var(--solar-shadow);
         transition: all 0.3s ease;
       }
 
       .summary-item:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
       }
 
       .summary-label {
         font-size: 12px;
         font-weight: 700;
-        color: #4a5568;
+        color: var(--solar-text-secondary);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 8px;
@@ -402,24 +414,24 @@
       .summary-value {
         font-size: 24px;
         font-weight: 900;
-        color: #2c5f7a;
+        color: var(--solar-text-primary);
       }
 
       /* Grade Styling in Summary */
       .summary-value.grade-a {
-        color: #38a169;
+        color: #2aa198;
       }
       .summary-value.grade-b {
-        color: #3182ce;
+        color: #268bd2;
       }
       .summary-value.grade-c {
-        color: #d69e2e;
+        color: #b58900;
       }
       .summary-value.grade-d {
-        color: #dd6b20;
+        color: #cb4b16;
       }
       .summary-value.grade-e {
-        color: #e53e3e;
+        color: #dc322f;
       }
 
       .student-details {
@@ -810,23 +822,50 @@
         gap: 10px;
         margin-bottom: 20px;
       }
-      @media (max-width: 900px) {
-        .report-container {
-          padding: 24px;
-          margin: 0 8px;
+      /* Enhanced Mobile Responsiveness */
+      @media (max-width: 1024px) {
+        .marksheet-header {
+          grid-template-columns: 100px 1fr;
+          gap: 15px;
         }
-        .header h1 {
-          font-size: 20px;
+        .marksheet-title-section {
+          grid-column: 1 / -1;
+          text-align: center;
+          margin-top: 10px;
         }
-        .header p {
-          font-size: 12px;
-        }
-        th,
-        td {
-          padding: 8px 6px;
-          font-size: 12px;
+        .assessment-info-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 15px;
         }
       }
+
+      @media (max-width: 900px) {
+        body {
+          padding: 15px;
+        }
+        .report-container {
+          padding: 24px;
+          margin: 0;
+        }
+        .marksheet-header {
+          padding: 15px 20px;
+        }
+        .school-name {
+          font-size: 24px;
+        }
+        .school-address {
+          font-size: 13px;
+        }
+        .marksheet-title {
+          font-size: 18px;
+        }
+        .marks-table th,
+        .marks-table td {
+          padding: 12px 8px;
+          font-size: 13px;
+        }
+      }
+
       @media (max-width: 768px) {
         body {
           padding: 10px;
@@ -835,88 +874,174 @@
           padding: 16px;
           border-radius: 14px;
         }
-        .header {
-          flex-direction: column;
-          align-items: center;
+        
+        /* Stack header vertically on mobile */
+        .marksheet-header {
+          grid-template-columns: 1fr;
           text-align: center;
-          gap: 12px;
+          gap: 10px;
         }
-        .logo-wrapper {
-          order: 0;
-          margin: 0;
-          padding: 0;
-        }
-        .header-logo {
-          max-width: 56px;
-          max-height: 56px;
-          padding: 4px;
-        }
-        .school-info {
+        
+        .logo-section {
           order: 1;
         }
-        .student-details {
-          padding: 10px;
+        .school-info-center {
+          order: 2;
         }
-        .student-details p {
+        .marksheet-title-section {
+          order: 3;
+          margin-top: 0;
+        }
+        
+        .school-logo {
+          width: 60px;
+          height: 60px;
+        }
+        .school-name {
+          font-size: 20px;
+        }
+        .school-address {
           font-size: 12px;
         }
+        .marksheet-title {
+          font-size: 16px;
+          padding: 6px 12px;
+        }
+        
+        /* Single column info grid on mobile */
+        .assessment-info-grid {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        
+        .student-details {
+          padding: 12px;
+        }
+        .student-details p {
+          font-size: 13px;
+        }
+        
+        /* Mobile-friendly actions */
         .actions-bar {
           flex-direction: column;
+          gap: 8px;
         }
         .actions-bar > * {
           width: 100%;
           text-align: center;
+          justify-content: center;
         }
-        table {
-          margin-bottom: 10px;
-        }
-        th {
+        
+        /* Compact table for mobile */
+        .marks-table th,
+        .marks-table td {
+          padding: 10px 6px;
           font-size: 12px;
         }
-        td {
+        .marks-table th:first-child,
+        .marks-table td:first-child {
+          padding-left: 12px;
+        }
+        
+        /* Smaller mark values on mobile */
+        .mark-value {
+          font-size: 14px;
+          padding: 3px 6px;
+          min-width: 35px;
+        }
+        
+        .subject-name {
+          font-size: 14px;
+        }
+        
+        /* Compact summary on mobile */
+        .summary-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+        .summary-value {
+          font-size: 20px;
+        }
+        
+        .remarks {
+          padding: 12px;
+        }
+        .remarks h3 {
+          font-size: 13px;
+        }
+        .remarks p {
           font-size: 11px;
         }
-        td:first-child {
-          text-align: left;
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 8px;
+        }
+        .report-container {
+          padding: 12px;
+          border-radius: 12px;
+        }
+        
+        .marksheet-header {
+          padding: 12px 15px;
+        }
+        
+        .school-logo {
+          width: 50px;
+          height: 50px;
+        }
+        .school-name {
+          font-size: 18px;
+        }
+        .school-address {
+          font-size: 11px;
+        }
+        .marksheet-title {
+          font-size: 14px;
+        }
+        
+        .marks-table th,
+        .marks-table td {
+          padding: 8px 4px;
+          font-size: 11px;
+        }
+        
+        .mark-value {
+          font-size: 12px;
+          padding: 2px 4px;
+          min-width: 30px;
+        }
+        
+        .subject-name {
+          font-size: 12px;
+        }
+        
+        .summary-grid {
+          grid-template-columns: 1fr;
         }
       }
-      /* Force high-contrast readability for the marks table */
-      .marksheet-container .marks-table {
-        background: #ffffff !important;
+      /* Enhanced mobile-friendly table scrolling */
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0;
+        border-radius: 12px;
       }
-      .marksheet-container .marks-table tbody td {
-        color: #1f2937 !important; /* slate-800 */
+      
+      .table-container .marks-table {
+        min-width: 700px; /* Ensure table doesn't get too cramped on mobile */
       }
-      .marksheet-container .marks-table tbody tr {
-        background: #ffffff !important;
-      }
-      .marksheet-container .marks-table tbody tr:nth-child(even) {
-        background: #f9fafb !important; /* very light zebra */
-      }
-      .marksheet-container .marks-table tbody tr:hover {
-        background: #f3f4f6 !important; /* light hover */
-      }
-      .marksheet-container .marks-table tbody tr.composite-subject {
-        background: #f0f8ff !important;
-        border-left: 4px solid #2b6cb0 !important;
-      }
-      .marksheet-container .marks-table tbody tr.subject-component {
-        background: #f9fafb !important;
-        border-left: 3px solid #cbd5e0 !important;
-      }
-      /* Make Subject Remarks and Teacher columns left-aligned for readability */
-      .marksheet-container .marks-table tbody td:nth-last-child(2),
-      .marksheet-container .marks-table tbody td:last-child {
+
+      /* Subject Remarks and Teacher columns alignment */
+      .marks-table tbody td:nth-last-child(2),
+      .marks-table tbody td:last-child {
         text-align: left !important;
-        color: #111827 !important; /* near-black for readability */
       }
-      .marksheet-container .marks-table tbody td.component-label {
-        color: #111827 !important;
+      
+      .marks-table tbody td.component-label {
         font-weight: 600;
-      }
-      /* Improve contrast in the narrative remarks section */
-      .remarks p {
-        color: #e6f1f5 !important;
+        color: var(--solar-text-secondary);
       }
     </style>
   </head>
@@ -1049,7 +1174,8 @@
       </div>
 
       <div class="marksheet-container">
-        <table class="marks-table">
+        <div class="table-container">
+          <table class="marks-table">
           <thead>
             <tr>
               <th>Subject</th>
@@ -1186,6 +1312,7 @@
             {% endfor %} {% endif %} {% endfor %}
           </tbody>
         </table>
+        </div>
 
         <!-- Professional Summary Section -->
         <div class="summary-section">
