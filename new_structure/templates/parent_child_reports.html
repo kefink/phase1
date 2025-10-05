@@ -4,95 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ child.name }}'s Reports - {{ school_info.school_name or 'Hillview School' }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
+        /* Solar Theme Variables */
         :root {
             --solar-primary: #b58900;
-            --solar-secondary: #cb4b16;
-            --solar-accent: #2aa198;
-            --solar-bg: #fdf6e3;
-            --solar-surface: #eee8d5;
-            --solar-text: #657b83;
-            --solar-text-dark: #073642;
-            --solar-shadow: rgba(181, 137, 0, 0.1);
+            --solar-secondary: #839496;
+            --solar-success: #2aa198;
+            --solar-info: #268bd2;
+            --solar-warning: #cb4b16;
+            --solar-danger: #d33682;
+            --solar-light: #fdf6e3;
+            --solar-dark: #073642;
+            --solar-body-bg: #002b36;
+            --solar-body-color: #839496;
+            --solar-card-bg: rgba(7, 54, 66, 0.95);
+            --solar-glass: rgba(7, 54, 66, 0.85);
+            --solar-glass-border: rgba(131, 148, 150, 0.3);
+            --solar-hover: rgba(181, 137, 0, 0.1);
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --border-radius: 0.5rem;
+            --border-radius-lg: 1rem;
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            background: linear-gradient(135deg, var(--solar-bg) 0%, var(--solar-surface) 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--solar-text);
-            margin: 0;
-            padding: 20px;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--solar-body-bg);
+            color: var(--solar-body-color);
+            line-height: 1.6;
             min-height: 100vh;
+            font-size: 14px;
+            padding: var(--space-4);
         }
 
+        /* Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px var(--solar-shadow);
-            padding: 30px;
         }
 
+        /* Header */
         .header {
+            background: var(--solar-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--solar-glass-border);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid var(--solar-primary);
+            box-shadow: var(--box-shadow-lg);
         }
 
         .header h1 {
-            color: var(--solar-text-dark);
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            color: var(--solar-primary);
+            font-size: 2rem;
             font-weight: 700;
+            margin-bottom: var(--space-2);
+        }
+
+        .header p {
+            color: var(--solar-secondary);
+            font-size: 1.1rem;
         }
 
         .child-info {
-            background: linear-gradient(135deg, var(--solar-primary), var(--solar-secondary));
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 30px;
+            background: var(--solar-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--solar-glass-border);
+            color: var(--solar-body-color);
+            padding: var(--space-6);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: var(--space-6);
             text-align: center;
+            box-shadow: var(--box-shadow-lg);
+        }
+
+        .child-info h2 {
+            color: var(--solar-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: var(--space-2);
+        }
+
+        .child-info p {
+            color: var(--solar-secondary);
+            margin-bottom: var(--space-1);
         }
 
         .reports-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
+            gap: var(--space-6);
         }
 
         .report-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 25px var(--solar-shadow);
-            border-left: 5px solid var(--solar-accent);
+            background: var(--solar-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--solar-glass-border);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--box-shadow-lg);
             transition: all 0.3s ease;
         }
 
         .report-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px var(--solar-shadow);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
         .report-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--solar-surface);
+            margin-bottom: var(--space-4);
+            padding-bottom: var(--space-3);
+            border-bottom: 1px solid var(--solar-glass-border);
         }
 
         .report-title {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            color: var(--solar-text-dark);
+            color: var(--solar-primary);
         }
 
         .report-status {
@@ -125,145 +180,207 @@
         .detail-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: var(--space-2);
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--solar-glass-border);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
         }
 
         .detail-label {
             font-weight: 500;
-            color: var(--solar-text);
+            color: var(--solar-secondary);
         }
 
         .detail-value {
             font-weight: 600;
-            color: var(--solar-text-dark);
+            color: var(--solar-body-color);
         }
 
         .report-actions {
             display: flex;
-            gap: 10px;
+            gap: var(--space-2);
             flex-wrap: wrap;
         }
 
         .action-btn {
             flex: 1;
-            min-width: 120px;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--border-radius);
             text-decoration: none;
-            text-align: center;
+            font-weight: 500;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
-            cursor: pointer;
+            min-width: 120px;
         }
 
         .btn-primary {
             background: var(--solar-primary);
-            color: white;
+            color: var(--solar-dark);
         }
 
         .btn-primary:hover {
-            background: var(--solar-secondary);
-            transform: translateY(-2px);
+            background: #d49600;
+            transform: translateY(-1px);
         }
 
         .btn-secondary {
-            background: var(--solar-surface);
-            color: var(--solar-text-dark);
+            background: var(--solar-info);
+            color: var(--solar-light);
         }
 
         .btn-secondary:hover {
-            background: #d0d7de;
+            background: #2a8ec2;
+            transform: translateY(-1px);
         }
 
         .btn-disabled {
-            background: #e0e0e0;
-            color: #999;
+            background: rgba(131, 148, 150, 0.2);
+            color: var(--solar-secondary);
             cursor: not-allowed;
         }
 
+        /* Back Button */
         .back-btn {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            background: var(--solar-primary);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
+            gap: var(--space-2);
+            color: var(--solar-secondary);
             text-decoration: none;
-            font-weight: 600;
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--border-radius);
             transition: all 0.3s ease;
-            margin-bottom: 20px;
+            margin-bottom: var(--space-4);
+            font-weight: 500;
         }
 
         .back-btn:hover {
-            background: var(--solar-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px var(--solar-shadow);
+            background: var(--solar-hover);
+            color: var(--solar-primary);
         }
 
         .filter-section {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 5px 15px var(--solar-shadow);
+            background: var(--solar-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--solar-glass-border);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            box-shadow: var(--box-shadow-lg);
         }
 
         .filter-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            gap: var(--space-4);
             align-items: end;
         }
 
         .filter-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: var(--space-2);
         }
 
         .filter-label {
             font-weight: 600;
-            color: var(--solar-text-dark);
+            color: var(--solar-primary);
+            font-size: 0.9rem;
         }
 
         .filter-select {
-            padding: 10px 12px;
-            border: 2px solid var(--solar-surface);
-            border-radius: 8px;
-            background: white;
-            color: var(--solar-text-dark);
+            padding: var(--space-3) var(--space-3);
+            border: 1px solid var(--solar-glass-border);
+            border-radius: var(--border-radius);
+            background: var(--solar-glass);
+            color: var(--solar-body-color);
             font-weight: 500;
+            backdrop-filter: blur(5px);
         }
 
         .filter-select:focus {
             outline: none;
             border-color: var(--solar-primary);
+            box-shadow: 0 0 0 2px rgba(181, 137, 0, 0.1);
         }
 
         .no-reports {
             text-align: center;
-            padding: 60px 20px;
-            color: var(--solar-text);
+            padding: var(--space-6);
+            background: var(--solar-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--solar-glass-border);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--box-shadow);
         }
 
         .no-reports-icon {
-            font-size: 4rem;
             color: var(--solar-primary);
-            margin-bottom: 20px;
+            margin-bottom: var(--space-4);
         }
 
+        .no-reports h3 {
+            color: var(--solar-primary);
+            font-size: 1.5rem;
+            margin-bottom: var(--space-3);
+        }
+
+        .no-reports p {
+            color: var(--solar-secondary);
+            margin-bottom: var(--space-2);
+        }
+
+        /* Icons */
+        .icon {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Status Badges */
+        .status-available {
+            background: rgba(42, 161, 152, 0.1);
+            border: 1px solid var(--solar-success);
+            color: var(--solar-success);
+        }
+
+        .status-pending {
+            background: rgba(203, 75, 22, 0.1);
+            border: 1px solid var(--solar-warning);
+            color: var(--solar-warning);
+        }
+
+        .status-processing {
+            background: rgba(38, 139, 210, 0.1);
+            border: 1px solid var(--solar-info);
+            color: var(--solar-info);
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                padding: 20px;
+            body {
+                padding: var(--space-3);
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
             }
             
             .reports-grid {
                 grid-template-columns: 1fr;
+                gap: var(--space-4);
             }
             
             .filter-grid {
@@ -273,18 +390,25 @@
             .report-actions {
                 flex-direction: column;
             }
+
+            .action-btn {
+                min-width: auto;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <a href="{{ url_for('parent.dashboard') }}" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="m15 18-6-6 6-6" />
+            </svg>
             Back to Dashboard
         </a>
 
         <div class="header">
-            <h1><i class="fas fa-file-alt"></i> Academic Reports</h1>
+            <h1>{{ child.name }}'s Academic Reports</h1>
+            <p>View your child's academic performance and report history</p>
         </div>
 
         <div class="child-info">
@@ -332,7 +456,12 @@
                     
                     <div class="filter-group">
                         <button type="button" onclick="clearFilters()" class="action-btn btn-secondary">
-                            <i class="fas fa-refresh"></i> Clear Filters
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M3 6h18" />
+                                <path d="m19 6-2 14H7L5 6" />
+                                <path d="m8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                            Clear Filters
                         </button>
                     </div>
                 </div>
@@ -391,20 +520,37 @@
                     {% if report.status == 'available' %}
                     <a href="{{ url_for('parent.view_individual_report', student_id=child.id, report_id=report.report_key if report.report_key else report.id) }}" 
                        class="action-btn btn-primary">
-                        <i class="fas fa-eye"></i> View Report
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        View Report
                     </a>
                     
                     <a href="{{ url_for('parent.download_report', student_id=child.id, report_id=report.report_key if report.report_key else report.id) }}" 
                        class="action-btn btn-secondary">
-                        <i class="fas fa-download"></i> Download PDF
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7,10 12,15 17,10" />
+                            <line x1="12" x2="12" y1="15" y2="3" />
+                        </svg>
+                        Download PDF
                     </a>
                     {% elif report.status == 'processing' %}
                     <button class="action-btn btn-disabled" disabled>
-                        <i class="fas fa-spinner fa-spin"></i> Processing...
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="animation: spin 1s linear infinite;">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" opacity="0.25" />
+                            <path fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z" opacity="0.75" />
+                        </svg>
+                        Processing...
                     </button>
                     {% else %}
                     <button class="action-btn btn-disabled" disabled>
-                        <i class="fas fa-clock"></i> Pending
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12,6 12,12 16,14" />
+                        </svg>
+                        Pending
                     </button>
                     {% endif %}
                 </div>
@@ -413,9 +559,13 @@
         </div>
         {% else %}
         <div class="no-reports">
-            <div class="no-reports-icon">
-                <i class="fas fa-file-alt"></i>
-            </div>
+            <svg class="no-reports-icon" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14,2 14,8 20,8" />
+                <line x1="16" x2="8" y1="13" y2="13" />
+                <line x1="16" x2="8" y1="17" y2="17" />
+                <polyline points="10,9 9,9 8,9" />
+            </svg>
             <h3>No Reports Available</h3>
             <p>Academic reports will appear here once they have been generated and published by the school.</p>
             {% if selected_year or selected_term or selected_assessment %}

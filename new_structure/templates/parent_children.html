@@ -274,6 +274,15 @@
         transform: translateY(-1px);
       }
 
+      /* Single action button styling */
+      .single-action {
+        max-width: 300px;
+        margin: 0 auto;
+        font-size: 1rem;
+        padding: var(--space-4) var(--space-6);
+        font-weight: 600;
+      }
+
       .btn-secondary {
         background: var(--solar-info);
         color: var(--solar-light);
@@ -496,44 +505,7 @@
           <div class="child-actions">
             <a
               href="{{ url_for('parent.child_reports', child_id=student.id) }}"
-              class="action-btn btn-primary"
-            >
-              <svg
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path d="M9 12l2 2 4-4" />
-                <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3" />
-                <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3" />
-                <path d="M3 21h18" />
-                <path d="M3 3h18" />
-              </svg>
-              Reports
-            </a>
-
-            <a
-              href="{{ url_for('parent.child_grades', child_id=student.id) }}"
-              class="action-btn btn-secondary"
-            >
-              <svg
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                <path
-                  d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
-                />
-              </svg>
-              Grades
-            </a>
-
-            <a
-              href="{{ url_for('parent.child_progress', child_id=student.id) }}"
-              class="action-btn btn-success"
+              class="action-btn btn-primary single-action"
             >
               <svg
                 class="icon"
@@ -542,10 +514,14 @@
                 stroke="currentColor"
               >
                 <path
-                  d="m22 12-4-4v3a8 8 0 0 0-8-8C4.47 3 0 7.47 0 12s4.47 9 10 9a8.44 8.44 0 0 0 6.08-2.58"
-                />
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                ></path>
+                <polyline points="14,2 14,8 20,8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10,9 9,9 8,9"></polyline>
               </svg>
-              Progress
+              View Reports & Grades
             </a>
           </div>
         </div>

@@ -759,7 +759,12 @@ def create_app(config_name='default'):
             # Strict role-based object access
             user_role = session.get('role', '').lower()
             # Let unauthenticated requests fall through to decorator-based 401 logic
-            if 'teacher_id' not in session:
+            # Allow both teacher and parent sessions
+            if 'teacher_id' not in session and 'parent_id' not in session:
+                return
+            
+            # For parent sessions, allow access to parent-related routes
+            if 'parent_id' in session and request.path.startswith('/parent/'):
                 return
 
             object_permissions = {
