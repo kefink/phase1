@@ -939,7 +939,9 @@
     </script>
     <div class="report-container">
       <div class="actions-bar {% if print_mode %}no-print{% endif %}">
-        <a href="{{ url_for('classteacher.dashboard') }}" class="back-btn"
+        <a
+          href="{{ back_url or url_for('classteacher.dashboard') }}"
+          class="back-btn"
           >Back to Dashboard</a
         >
         <button

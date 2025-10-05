@@ -68,8 +68,14 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
     # Get the students in the stream
     students = Student.query.filter_by(stream_id=stream_obj.id).all()
 
-    # Determine education level based on grade
-    grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+    # Determine education level based on grade (robust parsing)
+    try:
+        grade_num = int(grade.split()[1]) if len(str(grade).split()) > 1 else int(str(grade))
+    except Exception:
+        # Fallback: extract first number anywhere in the string (handles 'Grade_9_Stream_B_...')
+        import re
+        m = re.search(r"\d+", str(grade))
+        grade_num = int(m.group()) if m else 0
     if 1 <= grade_num <= 3:
         education_level = "lower_primary"
     elif 4 <= grade_num <= 6:

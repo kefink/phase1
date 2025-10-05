@@ -3937,6 +3937,8 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
 
     # Get class report data first
     class_data_result = get_class_report_data(grade, stream, term, assessment_type)
+    if isinstance(class_data_result, list):
+        class_data_result = {"class_data": class_data_result, "subjects": [], "total_marks": 100}
 
     if class_data_result.get("error"):
         flash(class_data_result.get("error"), "error")
@@ -4232,6 +4234,8 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
 
     # Get class report data first
     class_data_result = get_class_report_data(grade, stream, term, assessment_type)
+    if isinstance(class_data_result, list):
+        class_data_result = {"class_data": class_data_result, "subjects": [], "total_marks": 100}
 
     if class_data_result.get("error"):
         flash(class_data_result.get("error"), "error")

@@ -38,6 +38,43 @@ def parent_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# Internal helper: normalize term and assessment names to exact DB values (case-insensitive)
+def _normalize_term_and_assessment(term_candidate: str, assessment_candidate: str):
+    try:
+        from ..models.academic import Term as TermModel, AssessmentType as ATModel
+        term_obj = TermModel.query.filter(db.func.lower(TermModel.name) == (term_candidate or '').strip().lower()).first()
+        at_obj = ATModel.query.filter(db.func.lower(ATModel.name) == (assessment_candidate or '').strip().lower()).first()
+        norm_term = term_obj.name if term_obj else term_candidate
+        norm_assessment = at_obj.name if at_obj else assessment_candidate
+        return norm_term, norm_assessment
+    except Exception:
+        return term_candidate, assessment_candidate
+
+# Normalize various shapes returned by get_class_report_data to a consistent dict
+def _coerce_class_report_result(result):
+    """Coerce legacy return types from get_class_report_data into a dict.
+
+    - dict -> returned as-is
+    - list -> {"class_data": list, "subjects": [], "total_marks": 100}
+    - tuple(len=2/3) -> map to (class_data, subjects, total)
+    - other -> error shaped dict
+    """
+    try:
+        if result is None:
+            return {"class_data": [], "subjects": [], "total_marks": 100, "error": "No data"}
+        if isinstance(result, dict):
+            return result
+        if isinstance(result, list):
+            return {"class_data": result, "subjects": [], "total_marks": 100}
+        if isinstance(result, tuple):
+            if len(result) == 2 and isinstance(result[0], list):
+                return {"class_data": result[0], "subjects": result[1] or [], "total_marks": 100}
+            if len(result) == 3 and isinstance(result[0], list):
+                return {"class_data": result[0], "subjects": result[1] or [], "total_marks": result[2] or 100}
+        return {"class_data": [], "subjects": [], "total_marks": 100, "error": f"Unexpected type: {type(result).__name__}"}
+    except Exception as e:
+        return {"class_data": [], "subjects": [], "total_marks": 100, "error": str(e)}
+
 @parent_simple_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """Parent login page."""
@@ -328,61 +365,73 @@ def resend_verification():
 @parent_simple_bp.route('/child/<int:child_id>/grades')
 @parent_required
 def child_grades(child_id):
-    """View child's grades and academic performance."""
+    """Redirect to the student's latest available individual report in the exact class-teacher format."""
     try:
         parent = Parent.query.get(session['parent_id'])
-        
+
         # Verify this child belongs to this parent
         child_link = ParentStudent.query.filter_by(
-            parent_id=parent.id, 
+            parent_id=parent.id,
             student_id=child_id
         ).first()
-        
+
         if not child_link:
             flash('You do not have access to this child\'s records.', 'error')
             return redirect(url_for('parent.dashboard'))
-        
+
         # Get child information
-        child_query = db.session.query(Student, Grade, Stream)\
-            .outerjoin(Grade, Student.grade_id == Grade.id)\
-            .outerjoin(Stream, Student.stream_id == Stream.id)\
+        child_query = db.session.query(Student, Grade, Stream) \
+            .outerjoin(Grade, Student.grade_id == Grade.id) \
+            .outerjoin(Stream, Student.stream_id == Stream.id) \
             .filter(Student.id == child_id).first()
-        
+
         if not child_query:
             flash('Child not found.', 'error')
             return redirect(url_for('parent.dashboard'))
-        
-        child, grade, stream = child_query
-        
-        # For now, return mock data since we don't have marks table integration yet
-        # TODO: Integrate with actual marks/assessment tables when available
-        grades_data = [
-            {
-                'term': 'term_1',
-                'average': 85.5,
-                'subjects': [
-                    {'name': 'Mathematics', 'entrance': 88, 'mid_term': 85, 'end_term': 87, 'average': 86.7, 'remarks': 'Excellent work'},
-                    {'name': 'English', 'entrance': 82, 'mid_term': 84, 'end_term': 86, 'average': 84.0, 'remarks': 'Good progress'},
-                    {'name': 'Science', 'entrance': 90, 'mid_term': 88, 'end_term': 89, 'average': 89.0, 'remarks': 'Outstanding performance'},
-                ]
-            }
-        ]
-        
-        child_info = {
-            'id': child.id,
-            'name': child.name,
-            'admission_number': child.admission_number,
-            'grade': (grade.name if grade else 'Unassigned'),
-            'stream': (stream.name if stream else 'Unassigned')
-        }
-        
-        return render_template('parent_child_grades.html',
-                             child=child_info,
-                             grades_data=grades_data,
-                             parent=parent)
-    
+
+        student, grade, stream = child_query
+
+        # Find the latest reportable term + assessment for this student from marks
+        from new_structure.models.academic import Mark, Term, AssessmentType
+        from sqlalchemy import desc
+
+        latest = db.session.query(Term.name.label('term_name'),
+                                   Term.academic_year.label('academic_year'),
+                                   AssessmentType.name.label('assessment_name')) \
+            .join(Mark, Term.id == Mark.term_id) \
+            .join(AssessmentType, Mark.assessment_type_id == AssessmentType.id) \
+            .filter(Mark.student_id == student.id) \
+            .order_by(desc(Term.academic_year), desc(Term.name), desc(AssessmentType.name)) \
+            .first()
+
+        if not latest:
+            flash(f'No marks have been entered for {student.name} yet.', 'info')
+            return redirect(url_for('parent.child_reports', child_id=student.id))
+
+        term_name, assessment_name = _normalize_term_and_assessment(latest.term_name, latest.assessment_name)
+
+        # Build a robust report_id that our parser can understand (with explicit "Stream")
+        grade_name = (grade.name if grade else 'Grade')
+        stream_letter = (stream.name if stream else 'A')
+
+        # Tokenize term name (e.g., "Term 3" -> ["Term", "3"]) preserving original case
+        term_tokens = term_name.split()
+        if len(term_tokens) >= 2:
+            term_part = f"{term_tokens[0]}_{term_tokens[1]}"
+        else:
+            # Fallback
+            term_part = term_name.replace(' ', '_')
+
+        assessment_part = assessment_name.replace(' ', '_')
+        grade_part = grade_name.replace(' ', '_')
+
+        report_id = f"{grade_part}_Stream_{stream_letter}_{term_part}_{assessment_part}"
+
+        # Reuse the parent individual report renderer (exact template as class teacher)
+        return redirect(url_for('parent.view_individual_report', student_id=student.id, report_id=report_id))
+
     except Exception as e:
-        flash(f'Error loading grades: {str(e)}', 'error')
+        flash(f'Error loading latest report: {str(e)}', 'error')
         return redirect(url_for('parent.dashboard'))
 
 @parent_simple_bp.route('/child/<int:child_id>/progress')
@@ -414,30 +463,147 @@ def child_progress(child_id):
         
         child, grade, stream = child_query
         
-        # Mock progress data - TODO: Replace with real data from marks tables
-        progress_data = {
-            'overall_average': 85.5,
-            'class_rank': 5,
-            'attendance_rate': 95.2,
-            'total_subjects': 8,
-            'subjects_progress': [
-                {'name': 'Mathematics', 'current_score': 87, 'trend': 'up', 'trend_text': '+3% from last term'},
-                {'name': 'English', 'current_score': 84, 'trend': 'stable', 'trend_text': 'No change'},
-                {'name': 'Science', 'current_score': 89, 'trend': 'up', 'trend_text': '+5% from last term'},
-            ],
-            'total_attendance': 95.2,
-            'days_present': 190,
-            'days_absent': 10,
-            'school_days': 200,
-            'recommendations': [
-                {'area': 'Mathematics', 'suggestion': 'Focus on algebra concepts and practice more word problems'},
-                {'area': 'Study Habits', 'suggestion': 'Maintain consistent daily study schedule'}
-            ],
-            'teacher_comments': [
-                {'subject': 'Mathematics', 'teacher': 'Mr. Smith', 'comment': 'Shows great improvement in problem-solving', 'date': '2025-01-15'},
-                {'subject': 'English', 'teacher': 'Ms. Johnson', 'comment': 'Excellent reading comprehension skills', 'date': '2025-01-14'}
-            ]
-        }
+        # Get real progress data from marks tables
+        from new_structure.models.academic import Mark, Subject, Term, AssessmentType
+        
+        try:
+            # Get all terms and calculate overall progress
+            student_marks = db.session.query(Mark, Subject, Term, AssessmentType)\
+                .join(Subject, Mark.subject_id == Subject.id)\
+                .join(Term, Mark.term_id == Term.id)\
+                .join(AssessmentType, Mark.assessment_type_id == AssessmentType.id)\
+                .filter(Mark.student_id == child.id)\
+                .order_by(Term.academic_year.desc(), Term.name.desc(), Subject.name)\
+                .all()
+            
+            if not student_marks:
+                progress_data = {
+                    'overall_average': 0,
+                    'class_rank': None,
+                    'attendance_rate': 0,
+                    'total_subjects': 0,
+                    'subjects_progress': [],
+                    'total_attendance': 0,
+                    'days_present': 0,
+                    'days_absent': 0,
+                    'school_days': 0,
+                    'recommendations': [
+                        {'area': 'General', 'suggestion': 'No marks available yet. Speak with teachers about assessment schedule.'}
+                    ],
+                    'teacher_comments': [],
+                    'message': f'No academic data available for {child.name} yet.'
+                }
+            else:
+                # Calculate overall average across all marks
+                total_percentage = sum(mark.percentage or 0 for mark, _, _, _ in student_marks if mark.percentage)
+                marks_count = sum(1 for mark, _, _, _ in student_marks if mark.percentage is not None)
+                overall_average = (total_percentage / marks_count) if marks_count > 0 else 0
+                
+                # Get unique subjects for progress tracking
+                subjects_dict = {}
+                terms_list = []
+                
+                for mark, subject, term, assessment_type in student_marks:
+                    if subject.name not in subjects_dict:
+                        subjects_dict[subject.name] = []
+                    
+                    subjects_dict[subject.name].append({
+                        'term': term.name,
+                        'term_order': f"{term.academic_year}_{term.name}",
+                        'assessment': assessment_type.name,
+                        'percentage': mark.percentage or 0
+                    })
+                    
+                    if term.name not in terms_list:
+                        terms_list.append(term.name)
+                
+                # Calculate subject progress (trend analysis)
+                subjects_progress = []
+                for subject_name, subject_marks in subjects_dict.items():
+                    if len(subject_marks) >= 2:
+                        # Compare latest two assessments to determine trend
+                        sorted_marks = sorted(subject_marks, key=lambda x: x['term_order'], reverse=True)
+                        current_score = sorted_marks[0]['percentage']
+                        previous_score = sorted_marks[1]['percentage']
+                        
+                        diff = current_score - previous_score
+                        if diff > 2:
+                            trend = 'up'
+                            trend_text = f'+{diff:.1f}% improvement'
+                        elif diff < -2:
+                            trend = 'down'
+                            trend_text = f'{diff:.1f}% decline'
+                        else:
+                            trend = 'stable'
+                            trend_text = 'Stable performance'
+                        
+                        subjects_progress.append({
+                            'name': subject_name,
+                            'current_score': round(current_score, 1),
+                            'trend': trend,
+                            'trend_text': trend_text
+                        })
+                    elif len(subject_marks) == 1:
+                        subjects_progress.append({
+                            'name': subject_name,
+                            'current_score': round(subject_marks[0]['percentage'], 1),
+                            'trend': 'new',
+                            'trend_text': 'First assessment'
+                        })
+                
+                # Generate recommendations based on performance
+                recommendations = []
+                low_performing_subjects = [s for s in subjects_progress if s['current_score'] < 60]
+                if low_performing_subjects:
+                    for subject in low_performing_subjects[:2]:  # Limit to 2 recommendations
+                        recommendations.append({
+                            'area': subject['name'],
+                            'suggestion': f'Focus on improving {subject["name"]} - current score {subject["current_score"]}%'
+                        })
+                else:
+                    recommendations.append({
+                        'area': 'General',
+                        'suggestion': 'Maintain excellent performance across all subjects'
+                    })
+                
+                progress_data = {
+                    'overall_average': round(overall_average, 1),
+                    'class_rank': None,  # Would require class-wide comparison
+                    'attendance_rate': 95.0,  # Placeholder - would need attendance tracking
+                    'total_subjects': len(subjects_dict),
+                    'subjects_progress': subjects_progress,
+                    'total_attendance': 95.0,
+                    'days_present': 190,  # Placeholder values
+                    'days_absent': 10,
+                    'school_days': 200,
+                    'recommendations': recommendations,
+                    'teacher_comments': [
+                        {
+                            'subject': 'General',
+                            'teacher': 'Class Teacher',
+                            'comment': f'Overall academic performance: {overall_average:.1f}%',
+                            'date': datetime.utcnow().strftime('%Y-%m-%d')
+                        }
+                    ]
+                }
+        
+        except Exception as e:
+            progress_data = {
+                'overall_average': 0,
+                'class_rank': None,
+                'attendance_rate': 0,
+                'total_subjects': 0,
+                'subjects_progress': [],
+                'total_attendance': 0,
+                'days_present': 0,
+                'days_absent': 0,
+                'school_days': 0,
+                'recommendations': [
+                    {'area': 'System', 'suggestion': f'Error loading progress data: {str(e)}'}
+                ],
+                'teacher_comments': [],
+                'error': str(e)
+            }
         
         child_info = {
             'id': child.id,
@@ -484,36 +650,176 @@ def child_reports(child_id):
             return redirect(url_for('parent.dashboard'))
         
         child, grade, stream = child_query
+
+        # Branding/config used by template
+        try:
+            from ..services.school_config_service import SchoolConfigService
+            school_info = SchoolConfigService.get_school_info_dict()
+        except Exception:
+            school_info = {
+                'school_name': 'Hillview School',
+                'logo_url': '/static/uploads/logos/optimized_school_logo_1750595986_hvs.jpg'
+            }
         
         # Get filter parameters
         selected_year = request.args.get('year', '')
         selected_term = request.args.get('term', '')
         selected_assessment = request.args.get('assessment', '')
         
-        # Mock reports data - TODO: Replace with real report data
-        available_years = ['2024', '2025']
-        reports = [
-            {
-                'id': 1,
-                'title': 'Term 1 Mid-Term Report',
-                'term': 'term_1',
-                'assessment_type': 'mid_term',
-                'status': 'available',
-                'generated_date': datetime(2025, 1, 15),
-                'overall_average': 85.5,
-                'class_rank': 5
-            },
-            {
-                'id': 2,
-                'title': 'Term 1 End-Term Report',
-                'term': 'term_1',
-                'assessment_type': 'end_term',
-                'status': 'processing',
+        # Get real reports data using classteacher report service
+        available_years = []
+        reports = []
+        
+        try:
+            from new_structure.services import get_class_report_data
+            from new_structure.models.academic import Mark, Term, AssessmentType
+            
+            # Get available years from terms
+            terms = Term.query.distinct(Term.academic_year).all()
+            available_years = [term.academic_year for term in terms]
+            if not available_years:
+                available_years = ['2024', '2025']  # Fallback
+            
+            # Determine latest term/assessment for this child for UI highlighting
+            from sqlalchemy import desc
+            latest_pair = db.session.query(
+                Term.name.label('term_name'),
+                AssessmentType.name.label('assessment_name')
+            ).join(Mark, Term.id == Mark.term_id) \
+             .join(AssessmentType, Mark.assessment_type_id == AssessmentType.id) \
+             .filter(Mark.student_id == child.id) \
+             .order_by(desc(Term.academic_year), desc(Term.name), desc(AssessmentType.name)) \
+             .first()
+            current_term_name = latest_pair.term_name if latest_pair else ''
+            current_assessment_name = latest_pair.assessment_name if latest_pair else ''
+
+            # Find reports where this child appears in the real report data
+            # Get all unique grade/stream/term/assessment combinations that have marks
+            from sqlalchemy import func
+            unique_reports = db.session.query(
+                Grade.name.label('grade_name'),
+                Stream.name.label('stream_name'), 
+                Term.name.label('term_name'),
+                Term.academic_year.label('academic_year'),
+                AssessmentType.name.label('assessment_name'),
+                func.count(Mark.id).label('marks_count')
+            ).select_from(Mark)\
+             .join(Student, Mark.student_id == Student.id)\
+             .join(Stream, Student.stream_id == Stream.id)\
+             .join(Grade, Student.grade_id == Grade.id)\
+             .join(Term, Mark.term_id == Term.id)\
+             .join(AssessmentType, Mark.assessment_type_id == AssessmentType.id)\
+             .filter(Mark.student_id == child.id)\
+             .group_by(Grade.name, Stream.name, Term.name, Term.academic_year, AssessmentType.name)\
+             .order_by(Term.academic_year.desc(), Term.name.desc(), AssessmentType.name)\
+             .all()
+            
+            # Apply filters if provided
+            if selected_year:
+                unique_reports = [r for r in unique_reports if r.academic_year == selected_year]
+            if selected_term:
+                unique_reports = [r for r in unique_reports if r.term_name == selected_term]
+            if selected_assessment:
+                unique_reports = [r for r in unique_reports if r.assessment_name == selected_assessment]
+            
+            # Convert to reports format using real classteacher report structure
+            for idx, report in enumerate(unique_reports, start=1):
+                if report.marks_count > 0:
+                    # Get the actual report data to calculate averages
+                    grade_str = report.grade_name
+                    stream_str = f"Stream {report.stream_name}"
+                    
+                    try:
+                        # Normalize names to exact DB values and fetch report data
+                        _term_norm, _assess_norm = _normalize_term_and_assessment(report.term_name, report.assessment_name)
+                        class_data_result = _coerce_class_report_result(
+                            get_class_report_data(
+                                grade_str, stream_str, _term_norm, _assess_norm
+                            )
+                        )
+                        
+                        # Find this child's data in the class report (case-insensitive match)
+                        def _name_eq(a, b):
+                            return (a or "").strip().lower() == (b or "").strip().lower()
+
+                        child_avg = None
+                        if class_data_result and not class_data_result.get("error"):
+                            for student_data in class_data_result.get("class_data", []):
+                                if _name_eq(student_data.get("student"), child.name):
+                                    child_avg = student_data.get("average_percentage")
+                                    break
+
+                        # Build robust report id including 'Stream'
+                        _report_id = f"{report.grade_name.replace(' ', '_')}_Stream_{report.stream_name}_{_term_norm.replace(' ', '_')}_{_assess_norm.replace(' ', '_')}"
+
+                        reports.append({
+                            'id': idx,  # keep numeric id for templates that cast to int
+                            'report_key': _report_id,  # string key containing full identifier
+                            'title': f'{report.term_name} {report.assessment_name} Report - {report.grade_name} {report.stream_name}',
+                            'term': report.term_name,
+                            'assessment_type': report.assessment_name,
+                            'grade': report.grade_name,
+                            'stream': report.stream_name,
+                            'status': 'available',
+                            'generated_date': datetime.utcnow(),
+                            'overall_average': round(child_avg, 1) if child_avg else None,
+                            'class_rank': None,  # Could be calculated from class_data_result
+                            'marks_count': report.marks_count,
+                            'academic_year': report.academic_year,
+                            'is_latest': (report.term_name == current_term_name and report.assessment_name == current_assessment_name),
+                            'parent_report_url': url_for('parent.view_individual_report', student_id=child.id, report_id=_report_id)
+                        })
+                        
+                    except Exception as report_error:
+                        print(f"Error getting report data: {report_error}")
+                        # Still add the report entry even if we can't get detailed data
+                        _report_id = f"{report.grade_name.replace(' ', '_')}_Stream_{report.stream_name}_{_term_norm.replace(' ', '_')}_{_assess_norm.replace(' ', '_')}"
+                        reports.append({
+                            'id': idx,
+                            'report_key': _report_id,
+                            'title': f'{report.term_name} {report.assessment_name} Report - {report.grade_name} {report.stream_name}',
+                            'term': report.term_name,
+                            'assessment_type': report.assessment_name,
+                            'grade': report.grade_name,
+                            'stream': report.stream_name,
+                            'status': 'available',
+                            'generated_date': datetime.utcnow(),
+                            'overall_average': None,
+                            'class_rank': None,
+                            'marks_count': report.marks_count,
+                            'academic_year': report.academic_year,
+                            'is_latest': (report.term_name == current_term_name and report.assessment_name == current_assessment_name),
+                            'error': str(report_error)
+                        })
+            
+            # If no real data, provide helpful message
+            if not reports:
+                reports = [{
+                    'id': 'no_data',
+                    'title': 'No Reports Available',
+                    'term': '',
+                    'assessment_type': '',
+                    'status': 'unavailable',
+                    'generated_date': None,
+                    'overall_average': None,
+                    'class_rank': None,
+                    'message': f'No marks have been entered for {child.name} yet. Check if they are enrolled in the correct grade and stream.'
+                }]
+                
+        except Exception as e:
+            # Fallback to error message
+            available_years = ['2024', '2025']
+            reports = [{
+                'id': 'error',
+                'title': 'Error Loading Reports',
+                'term': '',
+                'assessment_type': '',
+                'status': 'error',
                 'generated_date': None,
                 'overall_average': None,
-                'class_rank': None
-            }
-        ]
+                'class_rank': None,
+                'message': f'Error loading reports: {str(e)}'
+            }]
         
         child_info = {
             'id': child.id,
@@ -522,24 +828,77 @@ def child_reports(child_id):
             'grade': grade.name,
             'stream': stream.name
         }
-        
-        return render_template('parent_child_reports.html',
-                             child=child_info,
-                             reports=reports,
-                             available_years=available_years,
-                             selected_year=selected_year,
-                             selected_term=selected_term,
-                             selected_assessment=selected_assessment,
-                             parent=parent)
+
+        return render_template(
+            'parent_child_reports.html',
+            child=child_info,
+            reports=reports,
+            available_years=available_years,
+            selected_year=selected_year,
+            selected_term=selected_term,
+            selected_assessment=selected_assessment,
+            current_term=current_term_name,
+            current_assessment=current_assessment_name,
+            parent=parent,
+            school_info=school_info
+        )
     
     except Exception as e:
         flash(f'Error loading reports: {str(e)}', 'error')
         return redirect(url_for('parent.dashboard'))
 
-@parent_simple_bp.route('/student/<int:student_id>/report/<int:report_id>')
+@parent_simple_bp.route('/preview_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
+@parent_required
+def preview_individual_report_direct(grade, stream, term, assessment_type, student_name):
+    """Direct access to individual report using classteacher-style URL pattern."""
+    try:
+        parent = Parent.query.get(session['parent_id'])
+        
+        # Find the student by name and verify parent has access
+        from ..models.academic import Stream as StreamModel, Grade as GradeModel
+        
+        # Extract stream letter from "Stream X" format
+        stream_letter = stream.split()[-1] if 'Stream' in stream else stream[-1]
+        
+        # Find the student
+        student_query = db.session.query(Student, GradeModel, StreamModel)\
+            .join(GradeModel, Student.grade_id == GradeModel.id)\
+            .join(StreamModel, Student.stream_id == StreamModel.id)\
+            .filter(Student.name == student_name)\
+            .filter(GradeModel.name == grade)\
+            .filter(StreamModel.name == stream_letter)\
+            .first()
+        
+        if not student_query:
+            flash(f'Student {student_name} not found in {grade} {stream}', 'error')
+            return redirect(url_for('parent.dashboard'))
+        
+        student, grade_obj, stream_obj = student_query
+        
+        # Verify this child belongs to this parent
+        child_link = ParentStudent.query.filter_by(
+            parent_id=parent.id, 
+            student_id=student.id
+        ).first()
+        
+        if not child_link:
+            flash('You do not have access to this student\'s records.', 'error')
+            return redirect(url_for('parent.dashboard'))
+
+        # Create report_id in the expected format for the existing function (include explicit 'Stream')
+        report_id = f"{grade.replace(' ', '_')}_Stream_{stream_letter}_{term.replace(' ', '_')}_{assessment_type.replace(' ', '_')}"
+
+        # Call the existing view_individual_report function
+        return view_individual_report(student.id, report_id)
+        
+    except Exception as e:
+        flash(f'Error accessing report: {str(e)}', 'error')
+        return redirect(url_for('parent.dashboard'))
+
+@parent_simple_bp.route('/student/<int:student_id>/report/<string:report_id>')
 @parent_required
 def view_individual_report(student_id, report_id):
-    """View individual student report."""
+    """View individual student report within parent context."""
     try:
         parent = Parent.query.get(session['parent_id'])
         
@@ -564,65 +923,291 @@ def view_individual_report(student_id, report_id):
             return redirect(url_for('parent.dashboard'))
         
         student, grade, stream = student_query
-        
-        # Mock report data - TODO: Replace with real report data from marks tables
-        report_data = {
-            'student_name': student.name,
-            'admission_no': student.admission_number,
-            'grade': grade.name,
-            'stream': stream.name,
-            'term': 'term_1',
-            'assessment_type': 'mid_term',
-            'academic_year': '2025',
-            'avg_percentage': 85.5,
-            'total': 683,
-            'total_possible_marks': 800,
-            'mean_points': 7.2,
-            'table_data': [
-                {
-                    'subject': 'Mathematics',
-                    'entrance': 88, 'mid_term': 85, 'end_term': 87, 'avg': 87,
-                    'current_assessment': 85,
-                    'grade': 'ME1',
-                    'remarks': 'Good performance'
-                },
-                {
-                    'subject': 'English',
-                    'entrance': 82, 'mid_term': 84, 'end_term': 86, 'avg': 84,
-                    'current_assessment': 84,
-                    'grade': 'ME1',
-                    'remarks': 'Steady progress'
-                },
-                {
-                    'subject': 'Science',
-                    'entrance': 90, 'mid_term': 88, 'end_term': 89, 'avg': 89,
-                    'current_assessment': 88,
-                    'grade': 'EE2',
-                    'remarks': 'Excellent work'
+
+        # Parse report_id to get grade, stream, term and assessment type
+        try:
+            # Accept both formats:
+            #  A) Grade_9_Stream_B_Term_3_Midterm_3_2025
+            #  B) Grade_9_B_Term_3_Midterm_3_2025 (legacy without the literal 'Stream')
+            parts = report_id.split('_') if '_' in report_id else []
+            if parts and len(parts) >= 5:
+                # Determine indices by locating tokens
+                def _idx(token: str):
+                    try:
+                        return parts.index(token)
+                    except ValueError:
+                        return -1
+
+                grade_name = None
+                stream_letter = None
+                term_name = None
+                assessment_name = None
+
+                # Grade always assumed as first two tokens e.g., ["Grade", "9"]
+                if len(parts) >= 2 and parts[0].lower() == 'grade':
+                    grade_name = f"{parts[0]} {parts[1]}"
+
+                stream_idx = _idx('Stream')
+                if stream_idx != -1 and stream_idx + 1 < len(parts):
+                    stream_letter = parts[stream_idx + 1]
+                    after_stream = parts[stream_idx + 2:]
+                else:
+                    # Legacy: next token after grade number is the stream letter
+                    stream_letter = parts[2] if len(parts) > 2 else None
+                    after_stream = parts[3:]
+
+                # Expect term as two tokens like ["Term", "3"]
+                term_idx = None
+                for i in range(len(after_stream) - 1):
+                    if after_stream[i].lower() == 'term':
+                        term_idx = i
+                        break
+                if term_idx is not None:
+                    term_name = f"{after_stream[term_idx]} {after_stream[term_idx + 1]}"
+                    assessment_tokens = after_stream[term_idx + 2:]
+                else:
+                    # Fallback: use remaining; this may fail later if invalid
+                    term_name = ' '.join(after_stream[:2]) if len(after_stream) >= 2 else (after_stream[0] if after_stream else '')
+                    assessment_tokens = after_stream[2:] if len(after_stream) >= 3 else []
+
+                assessment_name = ' '.join(assessment_tokens) if assessment_tokens else ''
+                
+                # Get report data using the same service as classteacher but within parent context
+                from new_structure.services import get_class_report_data
+
+                # Normalize names to exact DB values (case-insensitive)
+                term_name, assessment_name = _normalize_term_and_assessment(term_name, assessment_name)
+
+                # Attempt 1: use the same service as classteacher
+                class_data_result = None
+                try:
+                    class_data_result = _coerce_class_report_result(
+                        get_class_report_data(
+                            grade_name, f"Stream {stream_letter}", term_name, assessment_name
+                        )
+                    )
+                except Exception:
+                    class_data_result = None
+
+                def _name_eq(a, b):
+                    return (a or "").strip().lower() == (b or "").strip().lower()
+
+                student_row = None
+                subject_names = []
+                composite_structure = {}
+
+                # Attempt 2: if service is present, locate this student in class data
+                if class_data_result and not class_data_result.get('error'):
+                    for sd in class_data_result.get('class_data', []) or []:
+                        if _name_eq(sd.get('student'), student.name):
+                            student_row = sd
+                            break
+                    subject_names = class_data_result.get('subjects', []) or []
+
+                # If we have a row but no subjects provided, try to derive from keys
+                if student_row and not subject_names:
+                    try:
+                        subject_names = sorted(list((student_row.get('filtered_marks') or student_row.get('marks') or {}).keys()))
+                    except Exception:
+                        subject_names = []
+
+                # Attempt 3: build from Mark table directly if needed (no row or no marks)
+                def _build_from_db_marks():
+                    from new_structure.models.academic import Mark, Subject, Term, AssessmentType
+                    marks = db.session.query(Mark, Subject) \
+                        .join(Subject, Mark.subject_id == Subject.id) \
+                        .join(Term, Mark.term_id == Term.id) \
+                        .join(AssessmentType, Mark.assessment_type_id == AssessmentType.id) \
+                        .filter(Mark.student_id == student.id) \
+                        .filter(db.func.lower(Term.name) == term_name.strip().lower()) \
+                        .filter(db.func.lower(AssessmentType.name) == assessment_name.strip().lower()) \
+                        .all()
+                    filtered = {}
+                    local_subjects = []
+                    for mk, subj in marks:
+                        if mk.percentage is not None:
+                            filtered[subj.name] = float(mk.percentage)
+                            if subj.name not in local_subjects:
+                                local_subjects.append(subj.name)
+                    if filtered:
+                        return {
+                            'student': student.name,
+                            'filtered_marks': filtered,
+                            'average_percentage': sum(filtered.values()) / max(1, len(filtered))
+                        }, local_subjects
+                    return None, []
+
+                if not student_row:
+                    student_row, derived_subjects = _build_from_db_marks()
+                    subject_names = subject_names or derived_subjects
+                else:
+                    # If row exists but has no marks, build from DB
+                    if not (student_row.get('filtered_marks') or student_row.get('marks')):
+                        rebuilt, derived_subjects = _build_from_db_marks()
+                        if rebuilt:
+                            student_row = rebuilt
+                            subject_names = subject_names or derived_subjects
+
+                if not student_row:
+                    # As a last resort, render an empty yet valid report shell so the page doesn't just refresh
+                    student_row = {
+                        'student': student.name,
+                        'filtered_marks': {},
+                        'average_percentage': 0
+                    }
+                    subject_names = subject_names or []
+
+                # Compute metrics and table from available source
+                from new_structure.utils import get_grade_and_points
+
+                # Education level based on grade
+                education_level = ""
+                try:
+                    grade_num = int(grade.name.split()[1]) if len(grade.name.split()) > 1 else int(grade.name)
+                    if 1 <= grade_num <= 3:
+                        education_level = "lower primary"
+                    elif 4 <= grade_num <= 6:
+                        education_level = "upper primary"
+                    elif 7 <= grade_num <= 9:
+                        education_level = "junior secondary"
+                except:
+                    education_level = "primary"
+
+                # Prefer filtered_marks; fall back to 'marks' structure from service
+                filtered_marks = (student_row or {}).get('filtered_marks') or (student_row or {}).get('marks') or {}
+                avg_percentage = student_row.get('average_percentage', 0)
+
+                table_data = []
+                total_marks = 0
+                total_possible_marks = 0
+                total_points = 0
+
+                for subject_name in subject_names:
+                    mark_val = filtered_marks.get(subject_name)
+                    if mark_val is None:
+                        continue
+                    mark_disp = int(round(mark_val)) if mark_val == int(mark_val) else round(mark_val, 1)
+                    subject_grade, subject_points = get_grade_and_points(mark_val)
+                    row = {
+                        'subject': subject_name,
+                        'grade': subject_grade,
+                        'points': subject_points,
+                        'remarks': None
+                    }
+                    # Fill columns according to template expectations
+                    if assessment_name.lower() in ('end term', 'endterm', 'end_term'):
+                        # Query other assessments to populate entrance/midterm if available
+                        try:
+                            from new_structure.models.academic import Mark as Mk, Subject as Subj, Term as Tm, AssessmentType as AT
+                            def _get_mark_for(bucket):
+                                at = db.session.query(AT).filter(db.func.lower(AT.name).like(f"%{bucket}%")).first()
+                                if not at:
+                                    return 0
+                                m = db.session.query(Mk) \
+                                    .join(Subj, Mk.subject_id == Subj.id) \
+                                    .join(Tm, Mk.term_id == Tm.id) \
+                                    .filter(Mk.student_id == student.id) \
+                                    .filter(db.func.lower(Tm.name) == term_name.strip().lower()) \
+                                    .filter(Mk.assessment_type_id == at.id) \
+                                    .filter(db.func.lower(Subj.name) == subject_name.strip().lower()) \
+                                    .first()
+                                return float(m.percentage) if m and m.percentage is not None else 0
+                            entrance_m = _get_mark_for('entrance')
+                            mid_m = _get_mark_for('mid')
+                            end_m = mark_val
+                            avg_m = round((entrance_m + mid_m + end_m) / max(1, (1 if entrance_m else 0) + (1 if mid_m else 0) + (1 if end_m else 0)), 1)
+                            row.update({
+                                'entrance': entrance_m,
+                                'mid_term': mid_m,
+                                'end_term': end_m,
+                                'avg': avg_m
+                            })
+                        except Exception:
+                            row.update({'entrance': 0, 'mid_term': 0, 'end_term': mark_val, 'avg': mark_val})
+                    else:
+                        row['current_assessment'] = mark_disp
+
+                    table_data.append(row)
+                    total_marks += mark_val
+                    total_possible_marks += 100
+                    total_points += subject_points
+
+                # Composite rows if any (none when building from raw marks)
+                composite_data = {}
+                for comp_name, _ in (composite_structure or {}).items():
+                    comp_mark = filtered_marks.get(comp_name)
+                    if comp_mark is not None:
+                        comp_grade, comp_points = get_grade_and_points(comp_mark)
+                        composite_data[comp_name] = {
+                            'name': comp_name,
+                            'mark': comp_mark,
+                            'grade': comp_grade,
+                            'points': comp_points,
+                            'components': {}
+                        }
+
+                # School info
+                try:
+                    from new_structure.services.school_config_service import SchoolConfigService
+                    school_info = SchoolConfigService.get_school_info_dict()
+                except Exception:
+                    school_info = {
+                        'school_name': 'Hillview School',
+                        'address': '123 Education Street',
+                        'phone': '+254-123-456789',
+                        'email': 'info@hillviewschool.ac.ke'
+                    }
+
+                from datetime import datetime
+                current_date = datetime.now().strftime('%B %d, %Y')
+                academic_year = '2025'
+                admission_no = getattr(student, 'admission_number', 'N/A')
+                staff_info = {'class_teacher': 'N/A', 'head_teacher': 'N/A'}
+                term_info = {
+                    'next_term_opening_date': 'TBA',
+                    'current_term': term_name,
+                    'academic_year': academic_year
                 }
-            ],
-            'subject_teachers': {
-                'Mathematics': {'full_name': 'Mr. John Smith', 'username': 'j.smith'},
-                'English': {'full_name': 'Ms. Jane Johnson', 'username': 'j.johnson'},
-                'Science': {'full_name': 'Dr. Mary Wilson', 'username': 'm.wilson'}
-            },
-            'class_teacher_comment': 'Shows consistent effort and improvement across all subjects.',
-            'headteacher_comment': 'Keep up the excellent work!',
-            'general_remarks': 'A dedicated student with great potential.',
-            'term_info': {'next_term_opening_date': '2025-02-15'},
-            'school_info': {
-                'school_name': 'Hillview School',
-                'address': '123 Education Street',
-                'phone': '+254-123-456789',
-                'email': 'info@hillviewschool.ac.ke',
-                'logo': None
-            }
-        }
-        
-        return render_template('parent_individual_report.html',
-                             student_id=student_id,
-                             report_id=report_id,
-                             **report_data)
+                logo_url = '/static/images/school_logo.png'
+                subject_teachers = {}
+
+                return render_template(
+                    'preview_individual_report.html',
+                    student=student,
+                    student_data=student_row,
+                    grade=grade.name,
+                    stream=f"Stream {stream.name}",
+                    term=term_name,
+                    assessment_type=assessment_name,
+                    education_level=education_level,
+                    current_date=current_date,
+                    table_data=table_data,
+                    composite_data=composite_data,
+                    total=total_marks,
+                    avg_percentage=avg_percentage,
+                    mean_grade=get_grade_and_points(avg_percentage)[0] if avg_percentage is not None else '-',
+                    mean_points=get_grade_and_points(avg_percentage)[1] if avg_percentage is not None else 0,
+                    total_possible_marks=total_possible_marks,
+                    total_points=total_points,
+                    admission_no=admission_no,
+                    academic_year=academic_year,
+                    print_mode=False,
+                    school_info=school_info,
+                    logo_url=logo_url,
+                    staff_info=staff_info,
+                    term_info=term_info,
+                    subject_teachers=subject_teachers,
+                    calculator_legends=None,
+                    back_url=url_for('parent.child_reports', child_id=student_id)
+                )
+                
+            else:
+                flash('Invalid report ID format.', 'error')
+                return redirect(url_for('parent.child_reports', child_id=student_id))
+                
+        except (ValueError, TypeError, IndexError) as e:
+            flash(f'Invalid report ID: {str(e)}', 'error')
+            return redirect(url_for('parent.child_reports', child_id=student_id))
     
     except Exception as e:
         flash(f'Error loading report: {str(e)}', 'error')
@@ -719,7 +1304,7 @@ def reports_archive():
         flash(f'Error loading reports archive: {str(e)}', 'error')
         return redirect(url_for('parent.dashboard'))
 
-@parent_simple_bp.route('/download/report/<int:student_id>/<int:report_id>')
+@parent_simple_bp.route('/download/report/<int:student_id>/<path:report_id>')
 @parent_required
 def download_report(student_id, report_id):
     """Download individual report as PDF."""
