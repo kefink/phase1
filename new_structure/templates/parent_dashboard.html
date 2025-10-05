@@ -826,10 +826,7 @@
         </button>
 
         <div class="navbar-menu" id="parentNav">
-          <a
-            href="{{ url_for('parent.dashboard') }}"
-            class="nav-link"
-          >
+          <a href="{{ url_for('parent.dashboard') }}" class="nav-link" target="_self">
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -842,10 +839,7 @@
             </svg>
             Dashboard
           </a>
-          <a
-            href="{{ url_for('parent.children') }}"
-            class="nav-link"
-          >
+          <a href="{{ url_for('parent.children') }}" class="nav-link" target="_self">
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -861,10 +855,7 @@
             </svg>
             My Children
           </a>
-          <a
-            href="{{ url_for('parent.profile') }}"
-            class="nav-link"
-          >
+          <a href="{{ url_for('parent.profile') }}" class="nav-link" target="_self">
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -877,10 +868,7 @@
             </svg>
             Profile
           </a>
-          <a
-            href="{{ url_for('parent.logout') }}"
-            class="nav-link"
-          >
+          <a href="{{ url_for('parent.logout') }}" class="nav-link" target="_self">
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -1231,13 +1219,14 @@
 
       // Close mobile menu on link click but let the browser handle navigation via href
       (function attachNavHandlers() {
-        const parentNav = document.getElementById('parentNav');
+        const parentNav = document.getElementById("parentNav");
         if (!parentNav) return;
-        parentNav.addEventListener('click', function (e) {
-          const link = e.target.closest('a.nav-link');
+        parentNav.addEventListener("click", function (e) {
+          const link = e.target.closest("a.nav-link");
           if (!link) return;
-          // Close the menu immediately for snappy UX; do not prevent default
-          closeParentNav();
+          // iOS Safari may cancel navigation if DOM is modified synchronously.
+          // Defer closing the menu slightly to let navigation start first.
+          setTimeout(closeParentNav, 150);
         });
       })();
 
