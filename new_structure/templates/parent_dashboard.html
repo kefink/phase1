@@ -1217,18 +1217,7 @@
         window.location.href = url;
       }
 
-      // Close mobile menu on link click but let the browser handle navigation via href
-      (function attachNavHandlers() {
-        const parentNav = document.getElementById("parentNav");
-        if (!parentNav) return;
-        parentNav.addEventListener("click", function (e) {
-          const link = e.target.closest("a.nav-link");
-          if (!link) return;
-          // iOS Safari may cancel navigation if DOM is modified synchronously.
-          // Defer closing the menu slightly to let navigation start first.
-          setTimeout(closeParentNav, 150);
-        });
-      })();
+      // Let default browser navigation handle link clicks; no JS interception
 
       // Handle window resize for parent nav
       window.addEventListener("resize", function () {
