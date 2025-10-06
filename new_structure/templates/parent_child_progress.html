@@ -9,10 +9,6 @@
     </title>
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}"
-    />
-    <link
-      rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
     <style>
@@ -277,7 +273,10 @@
   </head>
   <body>
     <div class="container">
-      <a href="{{ url_for('parent.dashboard') }}" class="back-btn">
+      <a
+        href="{{ url_for('parent.dashboard', _external=True) }}"
+        class="back-btn"
+      >
         <i class="fas fa-arrow-left"></i>
         Back to Dashboard
       </a>
@@ -346,7 +345,7 @@
             <div class="progress-bar">
               <div
                 class="progress-fill"
-                style="width: {{ subject.current_score }}%"
+                data-width="{{ subject.current_score }}"
               ></div>
             </div>
 
@@ -445,11 +444,11 @@
       document.addEventListener("DOMContentLoaded", function () {
         const progressBars = document.querySelectorAll(".progress-fill");
         progressBars.forEach((bar) => {
-          const width = bar.style.width;
+          const width = bar.getAttribute("data-width") || "0";
           bar.style.width = "0%";
           setTimeout(() => {
-            bar.style.width = width;
-          }, 500);
+            bar.style.width = `${width}%`;
+          }, 300);
         });
       });
     </script>

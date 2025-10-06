@@ -430,7 +430,10 @@
       {% endif %} {% endwith %}
 
       <!-- Back to Dashboard -->
-      <a href="{{ url_for('parent.dashboard') }}" class="back-btn">
+      <a
+        href="{{ url_for('parent.dashboard', _external=True) }}"
+        class="back-btn"
+      >
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path d="m15 18-6-6 6-6" />
         </svg>
@@ -445,14 +448,24 @@
 
       <!-- Navigation -->
       <div class="nav-bar">
-        <a href="{{ url_for('parent.dashboard') }}" class="nav-link"
+        <a
+          href="{{ url_for('parent.dashboard', _external=True) }}"
+          class="nav-link"
           >Dashboard</a
         >
-        <a href="{{ url_for('parent.children') }}" class="nav-link active"
+        <a
+          href="{{ url_for('parent.children', _external=True) }}"
+          class="nav-link active"
           >My Children</a
         >
-        <a href="{{ url_for('parent.profile') }}" class="nav-link">Profile</a>
-        <a href="{{ url_for('parent.reports_archive') }}" class="nav-link"
+        <a
+          href="{{ url_for('parent.profile', _external=True) }}"
+          class="nav-link"
+          >Profile</a
+        >
+        <a
+          href="{{ url_for('parent.reports_archive', _external=True) }}"
+          class="nav-link"
           >Reports Archive</a
         >
       </div>
@@ -504,7 +517,7 @@
 
           <div class="child-actions">
             <a
-              href="{{ url_for('parent.child_reports', child_id=student.id) }}"
+              href="{{ url_for('parent.child_reports', child_id=student.id, _external=True) }}"
               class="action-btn btn-primary single-action"
             >
               <svg

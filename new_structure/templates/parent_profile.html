@@ -428,7 +428,10 @@
       {% endif %} {% endwith %}
 
       <!-- Back to Dashboard -->
-      <a href="{{ url_for('parent.dashboard') }}" class="back-btn">
+      <a
+        href="{{ url_for('parent.dashboard', _external=True) }}"
+        class="back-btn"
+      >
         <svg
           class="icon-sm"
           viewBox="0 0 24 24"
@@ -448,16 +451,24 @@
 
       <!-- Navigation -->
       <div class="nav-bar">
-        <a href="{{ url_for('parent.dashboard') }}" class="nav-link"
+        <a
+          href="{{ url_for('parent.dashboard', _external=True) }}"
+          class="nav-link"
           >Dashboard</a
         >
-        <a href="{{ url_for('parent.children') }}" class="nav-link"
+        <a
+          href="{{ url_for('parent.children', _external=True) }}"
+          class="nav-link"
           >My Children</a
         >
-        <a href="{{ url_for('parent.profile') }}" class="nav-link active"
+        <a
+          href="{{ url_for('parent.profile', _external=True) }}"
+          class="nav-link active"
           >Profile</a
         >
-        <a href="{{ url_for('parent.reports_archive') }}" class="nav-link"
+        <a
+          href="{{ url_for('parent.reports_archive', _external=True) }}"
+          class="nav-link"
           >Reports Archive</a
         >
       </div>
@@ -665,7 +676,8 @@
           )
         ) {
           // Redirect to the resend verification route
-          window.location.href = "{{ url_for('parent.resend_verification') }}";
+          window.location.href =
+            "{{ url_for('parent.resend_verification', _external=True) }}";
         }
       }
     </script>

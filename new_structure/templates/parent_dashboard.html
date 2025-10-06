@@ -153,20 +153,28 @@
       .mobile-nav-toggle {
         display: none;
         background: var(--solar-primary);
-        border: 2px solid var(--solar-primary);
+        border: none;
         color: var(--solar-dark);
-        font-size: 1.2em;
+        font-size: 1.4em;
         cursor: pointer;
-        padding: var(--space-2) var(--space-3);
-        border-radius: var(--border-radius);
+        padding: 12px 16px;
+        border-radius: 8px;
         font-weight: bold;
-        z-index: 10000;
+        z-index: 1100;
         position: relative;
+        width: 48px;
+        height: 48px;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.3s ease;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
       }
 
-      .mobile-nav-toggle:hover {
+      .mobile-nav-toggle:hover,
+      .mobile-nav-toggle:active {
         background: #d49600;
-        border-color: #d49600;
+        transform: scale(0.95);
       }
 
       .hi {
@@ -184,68 +192,50 @@
           display: block;
         }
 
+        /* Simple Dropdown Mobile Menu */
         .navbar-menu {
-          display: none;
-          position: fixed;
-          top: 70px;
-          left: var(--space-4);
-          right: var(--space-4);
+          position: absolute;
+          top: 100%;
+          right: 0;
+          width: 250px;
           background: var(--solar-card-bg);
-          backdrop-filter: blur(20px);
           border: 2px solid var(--solar-primary);
-          border-radius: var(--border-radius-lg);
-          padding: var(--space-4);
+          border-radius: 8px;
+          padding: 10px 0;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+          z-index: 1050;
+          display: none;
           flex-direction: column;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-          z-index: 9999;
         }
 
         .navbar-menu.show {
           display: flex;
         }
 
-        /* Mobile menu overlay */
-        .mobile-menu-overlay {
-          display: none;
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.3);
-          z-index: 9998;
-        }
-
-        .mobile-menu-overlay.show {
-          display: block;
-        }
-
+        /* Menu Links */
         .navbar-menu a {
-          width: 100%;
-          padding: var(--space-4);
-          text-align: center;
-          justify-content: center;
-          border-radius: var(--border-radius);
-          margin-bottom: var(--space-1);
-          background: var(--solar-glass);
-          border: 1px solid var(--solar-glass-border);
-          text-decoration: none;
           display: flex;
           align-items: center;
-          cursor: pointer;
-          position: relative;
-          z-index: 10001;
+          gap: 12px;
+          padding: 15px 20px;
+          color: var(--solar-body-color);
+          text-decoration: none;
+          transition: all 0.2s ease;
+          -webkit-tap-highlight-color: rgba(0,0,0,0);
+          border: none;
+          background: none;
         }
 
-        .navbar-menu a:hover {
+        .navbar-menu a:hover,
+        .navbar-menu a:active {
           background: var(--solar-primary);
           color: var(--solar-dark);
-          transform: translateY(-1px);
         }
 
-        .navbar-menu a:active {
-          background: #d49600;
-          transform: translateY(0);
+        .navbar-menu a svg {
+          width: 18px;
+          height: 18px;
+          flex-shrink: 0;
         }
       }
       .dashboard-container {
@@ -819,65 +809,47 @@
         <!-- Mobile Navigation Toggle -->
         <button
           class="mobile-nav-toggle"
-          onclick="toggleParentNav()"
+          id="mobileNavToggle"
           aria-label="Toggle navigation"
         >
-          <span id="navToggleIcon">☰</span>
+          ☰
         </button>
 
         <div class="navbar-menu" id="parentNav">
-          <a href="{{ url_for('parent.dashboard') }}" class="nav-link" target="_self">
-            <svg
-              class="hi"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-            >
+          <div class="mobile-menu-header">
+            <span class="mobile-menu-title">Navigation Menu</span>
+            <button class="mobile-menu-close" id="mobileMenuClose">✕</button>
+          </div>
+
+          <a href="{{ url_for('parent.dashboard') }}" class="nav-link" onclick="closeMobileMenu()">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path
                 d="M12.97 2.72a1.5 1.5 0 0 0-1.94 0l-7 5.833A1.5 1.5 0 0 0 3.5 10.7V20a1 1 0 0 0 1 1h5.5v-6h4v6H19a1 1 0 0 0 1-1v-9.3a1.5 1.5 0 0 0-.53-1.147l-7-5.833Z"
               />
             </svg>
             Dashboard
           </a>
-          <a href="{{ url_for('parent.children') }}" class="nav-link" target="_self">
-            <svg
-              class="hi"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                d="M8 10a3 3 0 1 0-6 0 3 3 0 0 0 6 0Zm14 0a3 3 0 1 0-6 0 3 3 0 0 0 6 0ZM12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
-              />
-              <path
-                d="M2 20a4 4 0 0 1 4-4h2.5a4 4 0 0 1 4 4v1H2v-1Zm12.5-4H17a4 4 0 0 1 4 4v1h-6.5v-1a4 4 0 0 0-1.5-3.107c.472-.562 1.17-.893 2.5-.893Z"
-              />
+
+          <a href="{{ url_for('parent.children') }}">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 10a3 3 0 1 0-6 0 3 3 0 0 0 6 0Zm14 0a3 3 0 1 0-6 0 3 3 0 0 0 6 0ZM12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
+              <path d="M2 20a4 4 0 0 1 4-4h2.5a4 4 0 0 1 4 4v1H2v-1Zm12.5-4H17a4 4 0 0 1 4 4v1h-6.5v-1a4 4 0 0 0-1.5-3.107c.472-.562 1.17-.893 2.5-.893Z"/>
             </svg>
             My Children
           </a>
-          <a href="{{ url_for('parent.profile') }}" class="nav-link" target="_self">
-            <svg
-              class="hi"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                d="M12 13c3.866 0 7 1.79 7 4v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2c0-2.21 3.134-4 7-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"
-              />
+
+          <a href="{{ url_for('parent.profile') }}">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 13c3.866 0 7 1.79 7 4v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2c0-2.21 3.134-4 7-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/>
             </svg>
             Profile
           </a>
-          <a href="{{ url_for('parent.logout') }}" class="nav-link" target="_self">
-            <svg
-              class="hi"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16,17 21,12 16,7" />
-              <line x1="21" x2="9" y1="12" y2="12" />
+
+          <a href="{{ url_for('parent.logout') }}">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16,17 21,12 16,7"/>
+              <line x1="21" x2="9" y1="12" y2="12"/>
             </svg>
             Logout
           </a>
@@ -885,12 +857,7 @@
       </div>
     </nav>
 
-    <!-- Mobile Menu Overlay -->
-    <div
-      class="mobile-menu-overlay"
-      id="mobileMenuOverlay"
-      onclick="closeParentNav()"
-    ></div>
+
 
     <div class="dashboard-container">
       <!-- Welcome Section -->
@@ -989,7 +956,7 @@
               </div>
               <div class="child-actions">
                 <a
-                  href="{{ url_for('parent.child_grades', child_id=student.id) }}"
+                  href="{{ url_for('parent.child_grades', child_id=student.id, _external=True) }}"
                   class="btn-primary"
                 >
                   <svg
@@ -1115,7 +1082,10 @@
         </div>
 
         <div class="quick-actions">
-          <a href="{{ url_for('parent.children') }}" class="quick-action">
+          <a
+            href="{{ url_for('parent.children', _external=True) }}"
+            class="quick-action"
+          >
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -1131,7 +1101,10 @@
             </svg>
             <p class="quick-action-title">View Children</p>
           </a>
-          <a href="{{ url_for('parent.profile') }}" class="quick-action">
+          <a
+            href="{{ url_for('parent.profile', _external=True) }}"
+            class="quick-action"
+          >
             <svg
               class="hi"
               viewBox="0 0 24 24"
@@ -1185,79 +1158,48 @@
         });
       }, 5000);
 
-      // Mobile Navigation Toggle for Parent Portal
-      function toggleParentNav() {
-        const parentNav = document.getElementById("parentNav");
-        const iconSpan = document.getElementById("navToggleIcon");
-        const overlay = document.getElementById("mobileMenuOverlay");
-        const open = parentNav.classList.toggle("show");
-        overlay.classList.toggle("show", open);
-        iconSpan.textContent = open ? "✕" : "☰";
-
-        // Prevent body scroll when menu is open
-        document.body.style.overflow = open ? "hidden" : "auto";
-      }
-
-      // Simple function to close mobile nav without interfering with navigation
-      function closeParentNav() {
-        const parentNav = document.getElementById("parentNav");
-        const overlay = document.getElementById("mobileMenuOverlay");
-        const iconSpan = document.getElementById("navToggleIcon");
-
-        if (parentNav) parentNav.classList.remove("show");
-        if (overlay) overlay.classList.remove("show");
-        if (iconSpan) iconSpan.textContent = "☰";
-        document.body.style.overflow = "auto";
-      }
-
-      // Debug function to test navigation
-      function navigateTo(url) {
-        console.log("Navigating to:", url);
-        closeParentNav();
-        window.location.href = url;
-      }
-
-      // Let default browser navigation handle link clicks; no JS interception
-
-      // Handle window resize for parent nav
-      window.addEventListener("resize", function () {
-        const parentNav = document.getElementById("parentNav");
-        const overlay = document.getElementById("mobileMenuOverlay");
-        const iconSpan = document.getElementById("navToggleIcon");
-
-        if (window.innerWidth > 768 && parentNav.classList.contains("show")) {
-          parentNav.classList.remove("show");
-          overlay.classList.remove("show");
-          iconSpan.textContent = "☰";
-          document.body.style.overflow = "auto";
-        }
-      });
-
-      // Show/hide mobile nav toggle based on screen size
-      function updateParentMobileNavToggle() {
-        const toggleBtn = document.querySelector(".mobile-nav-toggle");
-        if (toggleBtn) {
-          if (window.innerWidth <= 768) {
-            toggleBtn.style.display = "block";
-          } else {
-            toggleBtn.style.display = "none";
-            // Ensure nav is visible on larger screens
-            const parentNav = document.getElementById("parentNav");
-            const overlay = document.getElementById("mobileMenuOverlay");
-            const iconSpan = document.getElementById("navToggleIcon");
-            if (parentNav) {
-              parentNav.classList.remove("show");
-              overlay.classList.remove("show");
-              iconSpan.textContent = "☰";
-              document.body.style.overflow = "auto";
+      // Simplest Possible Mobile Menu
+      document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('mobileNavToggle');
+        const menu = document.getElementById('parentNav');
+        
+        if (toggle && menu) {
+          // Toggle menu on hamburger click
+          toggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+            toggle.innerHTML = menu.style.display === 'flex' ? '✕' : '☰';
+          });
+          
+          // Close menu when clicking anywhere else
+          document.addEventListener('click', function() {
+            menu.style.display = 'none';
+            toggle.innerHTML = '☰';
+          });
+          
+          // Don't close menu when clicking inside it
+          menu.addEventListener('click', function(e) {
+            e.stopPropagation();
+          });
+          
+          // Handle window resize
+          window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+              toggle.style.display = 'none';
+              menu.style.display = 'none';
+            } else {
+              toggle.style.display = 'flex';
             }
+          });
+          
+          // Initial setup
+          if (window.innerWidth <= 768) {
+            toggle.style.display = 'flex';
+          } else {
+            toggle.style.display = 'none';
           }
         }
-      }
-
-      // Initialize mobile nav toggle visibility
-      updateParentMobileNavToggle();
-      window.addEventListener("resize", updateParentMobileNavToggle);
+      });
     </script>
   </body>
 </html>
