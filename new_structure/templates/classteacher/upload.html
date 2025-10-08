@@ -206,22 +206,39 @@
         padding: 0.5rem;
         border: 1px solid var(--border-color);
         border-radius: var(--radius);
-        transition: border-color 0.3s ease;
+        transition: border-color 0.3s ease, background 0.2s ease, color 0.2s ease;
+        /* High-contrast defaults for dark background */
+        background: rgba(255, 255, 255, 0.06);
+        color: #e6f0f3; /* light text for readability */
+        font-weight: 600;
+        caret-color: #e6f0f3;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
       }
 
       .mark-input:focus {
         border-color: var(--primary-color);
         outline: none;
-        box-shadow: 0 0 0 2px rgba(38, 139, 210, 0.2);
+        box-shadow: 0 0 0 2px rgba(38, 139, 210, 0.25);
+        background: rgba(255, 255, 255, 0.1);
       }
 
       .mark-input.has-value {
         border-color: #28a745;
-        background: rgba(40, 167, 69, 0.05);
+        /* Subtle success tint without sacrificing contrast */
+        background: rgba(40, 167, 69, 0.12);
+        color: #f0faf3; /* keep text bright on tinted bg */
       }
 
       .mark-input.mark-updated {
         animation: markUpdate 0.5s ease;
+      }
+
+      /* Improve placeholder and selection contrast */
+      .mark-input::placeholder {
+        color: rgba(230, 240, 243, 0.6);
+      }
+      .mark-input::selection {
+        background: rgba(38, 139, 210, 0.35);
       }
 
       @keyframes markUpdate {
@@ -238,6 +255,7 @@
         min-width: 60px;
         text-align: center;
         transition: all 0.3s ease;
+        color: #e6f0f3; /* keep label text readable in dark mode */
       }
 
       /* Performance color indicators */
