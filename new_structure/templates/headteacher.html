@@ -2519,6 +2519,14 @@
             clone.style.border = "1px solid rgba(181,137,0,0.25)";
             clone.style.borderRadius = "8px";
             clone.style.background = "rgba(0,0,0,0.1)";
+
+            // Add click event listener to close drawer when navigation link is clicked
+            clone.addEventListener("click", (e) => {
+              // Close the drawer immediately when clicking a navigation link
+              closeDrawer();
+              // Allow the navigation to proceed naturally
+            });
+
             li.appendChild(clone);
             list.appendChild(li);
           });

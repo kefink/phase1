@@ -53,11 +53,27 @@ def rotate_session():
         session[k] = v
 
 def register_successful_login(teacher_obj, username, role):
+    """Finalize a successful login by initializing a secure, valid session.
+
+    Important: Our max-security middleware enforces both an activity
+    timestamp (last_activity) and IP binding (ip_address). If these are not
+    initialized at login time, the first request after login will consider
+    the session expired or invalid and clear it, leading to an immediate 401.
+    """
     rotate_session()
     session['teacher_id'] = teacher_obj.id
     session['username'] = username
     session['role'] = role
     session['login_at'] = datetime.utcnow().isoformat()
+    # Initialize required security fields so the first GET after login passes
+    try:
+        import time
+        from flask import request
+        session['last_activity'] = time.time()
+        session['ip_address'] = request.remote_addr
+    except Exception:
+        # Best-effort; middleware will set them if missing on subsequent requests
+        pass
     session.permanent = True
     # Update teacher security metadata
     try:

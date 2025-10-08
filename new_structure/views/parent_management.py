@@ -6,6 +6,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from functools import wraps
 from ..services.auth_service import is_authenticated, get_role
 from ..models import db
+from ..security.security_manager import secure_headteacher_route, comprehensive_security
+from ..security.csrf_protection import csrf_protect
+from ..extensions import limiter
 from sqlalchemy import exists, and_, func
 try:
     from ..models.parent import Parent, ParentStudent, ParentEmailLog, EmailTemplate
@@ -14,11 +17,12 @@ except ImportError:
     ParentEmailLog = None  # Optional when email logs are not enabled
 from ..models.academic import Student, Grade, Stream
 from ..models.user import Teacher
-from datetime import datetime
+from datetime import datetime, timedelta
 import secrets
 import string
 import io
 import csv
+import time
 from ..services.parent_email_service import ParentEmailService
 from difflib import SequenceMatcher
 import tempfile
@@ -29,11 +33,33 @@ from flask import send_file
 parent_management_bp = Blueprint('parent_management', __name__, url_prefix='/parent_management')
 
 def headteacher_required(f):
-    """Decorator to require headteacher authentication."""
+    """Enhanced decorator with comprehensive security protections."""
     @wraps(f)
+    @limiter.limit("30 per minute")  # Rate limiting
+    @csrf_protect  # CSRF protection
+    @comprehensive_security()  # Full security stack
     def decorated_function(*args, **kwargs):
-        if not is_authenticated(session) or get_role(session) != 'headteacher':
+        # Session validation
+        if not session.get('teacher_id'):
+            flash('Authentication required', 'error')
             return redirect(url_for('auth.admin_login'))
+        
+        # Role validation
+        if not is_authenticated(session) or get_role(session) != 'headteacher':
+            flash('Headteacher access required', 'error')
+            return redirect(url_for('auth.admin_login'))
+        
+        # Session security checks
+        if 'ip_address' in session and session['ip_address'] != request.remote_addr:
+            session.clear()
+            flash('Session security violation detected', 'error')
+            return redirect(url_for('auth.admin_login'))
+        
+        # Update session activity
+        import time
+        session['last_activity'] = time.time()
+        session['ip_address'] = request.remote_addr
+        
         return f(*args, **kwargs)
     return decorated_function
 

@@ -4,9 +4,10 @@ This module handles parent authentication and dashboard functionality.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 import secrets
 import string
+import time
 
 from ..models import db
 # ParentEmailLog may not exist yet; import defensively
@@ -17,23 +18,62 @@ except ImportError:
     ParentEmailLog = None  # Optional feature not yet available
 from ..models.academic import Student, Grade, Stream
 from ..services.parent_email_service import ParentEmailService
+from ..security.security_manager import comprehensive_security
+from ..security.csrf_protection import csrf_protect
+from ..extensions import limiter
 
 # Create blueprint for parent portal
 parent_simple_bp = Blueprint('parent', __name__, url_prefix='/parent')
 
 def parent_required(f):
-    """Decorator to require parent authentication."""
+    """Enhanced decorator with maximum security for parent authentication."""
     @wraps(f)
+    @limiter.limit("60 per minute")  # Rate limiting
+    @comprehensive_security()  # Full security stack
     def decorated_function(*args, **kwargs):
+        # Session validation
         if 'parent_id' not in session:
+            flash('Please log in to access your dashboard.', 'info')
             return redirect(url_for('parent.login'))
         
-        # Check if parent account is active
+        # Check if parent account exists and is active
         parent = Parent.query.get(session['parent_id'])
         if not parent or not parent.is_active:
             session.clear()
             flash('Your account has been deactivated. Please contact the school.', 'error')
             return redirect(url_for('parent.login'))
+        
+        # Enhanced session security checks
+        current_time = time.time()
+        
+        # Session timeout (2 hours)
+        last_activity = session.get('last_activity', 0)
+        if current_time - last_activity > 7200:  # 2 hours
+            session.clear()
+            flash('Your session has expired. Please log in again.', 'info')
+            return redirect(url_for('parent.login'))
+        
+        # IP binding for security
+        if 'ip_address' not in session:
+            session['ip_address'] = request.remote_addr
+        elif session['ip_address'] != request.remote_addr:
+            # IP changed - potential security violation
+            session.clear()
+            flash('Security violation detected. Please log in again.', 'error')
+            return redirect(url_for('parent.login'))
+        
+        # User agent consistency check
+        if 'user_agent' not in session:
+            session['user_agent'] = request.headers.get('User-Agent', '')
+        elif session['user_agent'] != request.headers.get('User-Agent', ''):
+            # User agent changed - potential security risk
+            session.clear()
+            flash('Security violation detected. Please log in again.', 'error')
+            return redirect(url_for('parent.login'))
+        
+        # Update session activity
+        session['last_activity'] = current_time
+        session.permanent = True
         
         return f(*args, **kwargs)
     return decorated_function
@@ -1333,6 +1373,7 @@ def download_report(student_id, report_id):
 
 @parent_simple_bp.route('/download/multiple', methods=['POST'])
 @parent_required
+@csrf_protect
 def download_multiple_reports():
     """Download multiple reports as ZIP file."""
     try:
@@ -1351,6 +1392,7 @@ def download_multiple_reports():
         return redirect(url_for('parent.reports_archive'))
 
 @parent_simple_bp.route('/forgot-password', methods=['GET', 'POST'])
+@csrf_protect
 def forgot_password():
     """Forgot password page."""
     if request.method == 'POST':

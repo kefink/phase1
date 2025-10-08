@@ -14,6 +14,28 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#667eea" />
+    <!-- Maximum Security Headers -->
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' fonts.googleapis.com fonts.gstatic.com cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com data:; img-src 'self' data: {{ url_for('static', filename='', _external=True) }}; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+    />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta
+      http-equiv="Strict-Transport-Security"
+      content="max-age=31536000; includeSubDomains; preload"
+    />
+    <meta
+      http-equiv="Permissions-Policy"
+      content="geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), speaker=(), fullscreen=(self)"
+    />
+    <meta
+      name="robots"
+      content="noindex, nofollow, noarchive, nosnippet, noimageindex"
+    />
 
     <title>
       Parent Dashboard - {{ school_info.school_name or 'Hillview School' }}
@@ -221,7 +243,7 @@
           color: var(--solar-body-color);
           text-decoration: none;
           transition: all 0.2s ease;
-          -webkit-tap-highlight-color: rgba(0,0,0,0);
+          -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
           border: none;
           background: none;
         }
@@ -821,7 +843,11 @@
             <button class="mobile-menu-close" id="mobileMenuClose">✕</button>
           </div>
 
-          <a href="{{ url_for('parent.dashboard') }}" class="nav-link" onclick="closeMobileMenu()">
+          <a
+            href="{{ url_for('parent.dashboard') }}"
+            class="nav-link"
+            onclick="closeMobileMenu()"
+          >
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path
                 d="M12.97 2.72a1.5 1.5 0 0 0-1.94 0l-7 5.833A1.5 1.5 0 0 0 3.5 10.7V20a1 1 0 0 0 1 1h5.5v-6h4v6H19a1 1 0 0 0 1-1v-9.3a1.5 1.5 0 0 0-.53-1.147l-7-5.833Z"
@@ -832,32 +858,36 @@
 
           <a href="{{ url_for('parent.children') }}">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M8 10a3 3 0 1 0-6 0 3 3 0 0 0 6 0Zm14 0a3 3 0 1 0-6 0 3 3 0 0 0 6 0ZM12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
-              <path d="M2 20a4 4 0 0 1 4-4h2.5a4 4 0 0 1 4 4v1H2v-1Zm12.5-4H17a4 4 0 0 1 4 4v1h-6.5v-1a4 4 0 0 0-1.5-3.107c.472-.562 1.17-.893 2.5-.893Z"/>
+              <path
+                d="M8 10a3 3 0 1 0-6 0 3 3 0 0 0 6 0Zm14 0a3 3 0 1 0-6 0 3 3 0 0 0 6 0ZM12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
+              />
+              <path
+                d="M2 20a4 4 0 0 1 4-4h2.5a4 4 0 0 1 4 4v1H2v-1Zm12.5-4H17a4 4 0 0 1 4 4v1h-6.5v-1a4 4 0 0 0-1.5-3.107c.472-.562 1.17-.893 2.5-.893Z"
+              />
             </svg>
             My Children
           </a>
 
           <a href="{{ url_for('parent.profile') }}">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 13c3.866 0 7 1.79 7 4v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2c0-2.21 3.134-4 7-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/>
+              <path
+                d="M12 13c3.866 0 7 1.79 7 4v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2c0-2.21 3.134-4 7-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"
+              />
             </svg>
             Profile
           </a>
 
           <a href="{{ url_for('parent.logout') }}">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16,17 21,12 16,7"/>
-              <line x1="21" x2="9" y1="12" y2="12"/>
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16,17 21,12 16,7" />
+              <line x1="21" x2="9" y1="12" y2="12" />
             </svg>
             Logout
           </a>
         </div>
       </div>
     </nav>
-
-
 
     <div class="dashboard-container">
       <!-- Welcome Section -->
@@ -1158,45 +1188,101 @@
         });
       }, 5000);
 
+      // Security: Session timeout warning
+      let sessionWarned = false;
+      setTimeout(function () {
+        if (!sessionWarned) {
+          sessionWarned = true;
+          alert(
+            "Your session will expire in 5 minutes. Please save any work and refresh the page to continue."
+          );
+        }
+      }, 115 * 60 * 1000); // 115 minutes (5 min before 2-hour timeout)
+
+      // Security: Automatic logout after 2 hours
+      setTimeout(function () {
+        alert(
+          "Your session has expired for security reasons. You will be redirected to login."
+        );
+        window.location.href = "/parent/login";
+      }, 120 * 60 * 1000); // 120 minutes (2 hours)
+
+      // Security: CSRF token validation
+      const csrfToken = document.querySelector('meta[name="csrf-token"]');
+      if (!csrfToken || !csrfToken.content) {
+        console.error("Security: CSRF token missing");
+      }
+
+      // Security: Rate limiting for navigation
+      const navigationLimiter = new Map();
+      document.addEventListener("click", function (e) {
+        const link = e.target.closest("a");
+        if (link && link.href) {
+          const now = Date.now();
+          const lastClick = navigationLimiter.get(link.href) || 0;
+
+          if (now - lastClick < 500) {
+            // 500ms between same link clicks
+            e.preventDefault();
+            return false;
+          }
+
+          navigationLimiter.set(link.href, now);
+        }
+      });
+
+      // Security: Monitor for suspicious activity
+      let suspiciousActivity = 0;
+      document.addEventListener("keydown", function (e) {
+        // Detect rapid key presses (potential bot activity)
+        if (e.repeat) {
+          suspiciousActivity++;
+          if (suspiciousActivity > 50) {
+            console.warn("Suspicious activity detected");
+          }
+        }
+      });
+
       // Simplest Possible Mobile Menu
-      document.addEventListener('DOMContentLoaded', function() {
-        const toggle = document.getElementById('mobileNavToggle');
-        const menu = document.getElementById('parentNav');
-        
+      document.addEventListener("DOMContentLoaded", function () {
+        const toggle = document.getElementById("mobileNavToggle");
+        const menu = document.getElementById("parentNav");
+
         if (toggle && menu) {
           // Toggle menu on hamburger click
-          toggle.addEventListener('click', function(e) {
+          toggle.addEventListener("click", function (e) {
             e.stopPropagation();
-            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-            toggle.innerHTML = menu.style.display === 'flex' ? '✕' : '☰';
+            menu.style.display =
+              menu.style.display === "flex" ? "none" : "flex";
+            toggle.innerHTML = menu.style.display === "flex" ? "✕" : "☰";
           });
-          
+
           // Close menu when clicking anywhere else
-          document.addEventListener('click', function() {
-            menu.style.display = 'none';
-            toggle.innerHTML = '☰';
+          document.addEventListener("click", function () {
+            menu.style.display = "none";
+            toggle.innerHTML = "☰";
           });
-          
+
           // Don't close menu when clicking inside it
-          menu.addEventListener('click', function(e) {
+          menu.addEventListener("click", function (e) {
             e.stopPropagation();
           });
-          
+
           // Handle window resize
-          window.addEventListener('resize', function() {
+          window.addEventListener("resize", function () {
             if (window.innerWidth > 768) {
-              toggle.style.display = 'none';
-              menu.style.display = 'none';
+              toggle.style.display = "none";
+              menu.style.display = "none";
             } else {
-              toggle.style.display = 'flex';
+              toggle.style.display = "flex";
             }
           });
-          
+
           // Initial setup
           if (window.innerWidth <= 768) {
-            toggle.style.display = 'flex';
+            toggle.style.display = "flex";
           } else {
-            toggle.style.display = 'none';
+            toggle.style.display = "none";
           }
         }
       });

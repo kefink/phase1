@@ -1034,6 +1034,9 @@
                                                 </select>
                                             </td>
                                             <td>
+                                                <button type="button" class="update-btn" onclick="openTransferModal({{ student.id }}, '{{ student.name|e }}')" title="Transfer to another stream" style="margin-right:8px;">
+                                                    Transfer
+                                                </button>
                                                 <form method="POST" action="{{ url_for('classteacher.manage_students') }}" style="display:inline;">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                                     <input type="hidden" name="action" value="delete_student">
@@ -1089,6 +1092,42 @@
             {% else %}
                 <p>No students added yet.</p>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div id="transferModal" style="display:none; position:fixed; inset:0; z-index:2000;">
+        <div class="mobile-drawer-backdrop" style="position:absolute; inset:0; background:rgba(0,0,0,.5)" onclick="closeTransferModal()"></div>
+        <div style="position:relative; width:min(520px, 92vw); margin:10vh auto; background: var(--card-bg); border:1px solid var(--border-color); border-radius:16px; box-shadow: var(--shadow-lg); padding:22px; color: var(--text-primary);">
+            <h3 style="margin:0 0 14px; color: var(--text-emphasis);">Transfer Learner</h3>
+            <p id="transferStudentName" style="margin:0 0 16px; color: var(--text-dim);"></p>
+            <form id="transferForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <input type="hidden" id="transfer_student_id" name="student_id" />
+                <div class="form-group">
+                    <label for="transfer_grade">Target Grade</label>
+                    <select id="transfer_grade" required>
+                        <option value="">Select Grade</option>
+                        {% for grade_obj in grades %}
+                            <option value="{{ grade_obj.id }}">{{ grade_obj.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transfer_stream">Target Stream</label>
+                    <select id="transfer_stream" required disabled>
+                        <option value="">Select Stream</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transfer_reason">Reason (optional)</label>
+                    <input type="text" id="transfer_reason" placeholder="e.g., Class balancing, parent request" />
+                </div>
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
+                    <button type="button" class="reset-btn" onclick="closeTransferModal()">Cancel</button>
+                    <button type="submit" class="manage-btn">Transfer</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1158,6 +1197,75 @@
             });
         }
 
+
+        // --- Transfer modal logic ---
+        const transferModal = document.getElementById('transferModal');
+        const transferStudentIdEl = document.getElementById('transfer_student_id');
+        const transferStudentNameEl = document.getElementById('transferStudentName');
+        const transferGradeEl = document.getElementById('transfer_grade');
+        const transferStreamEl = document.getElementById('transfer_stream');
+        const transferForm = document.getElementById('transferForm');
+
+        function openTransferModal(studentId, studentName) {
+            transferStudentIdEl.value = String(studentId);
+            transferStudentNameEl.textContent = `Student: ${studentName}`;
+            transferGradeEl.value = '';
+            transferStreamEl.innerHTML = '<option value="">Select Stream</option>';
+            transferStreamEl.disabled = true;
+            transferModal.style.display = 'block';
+        }
+        window.openTransferModal = openTransferModal;
+
+        function closeTransferModal() {
+            transferModal.style.display = 'none';
+        }
+        window.closeTransferModal = closeTransferModal;
+
+        // Load streams when grade changes (reuse existing API under bulk assignments)
+        transferGradeEl && transferGradeEl.addEventListener('change', async () => {
+            const gid = transferGradeEl.value;
+            transferStreamEl.innerHTML = '<option value="">Select Stream</option>';
+            transferStreamEl.disabled = true;
+            if (!gid) return;
+            try {
+                const res = await fetch(`/get_streams_by_grade?grade_id=${encodeURIComponent(gid)}`, { credentials: 'same-origin' });
+                const data = await res.json();
+                const streams = normalizeStreamsFromResponse(data, gid);
+                appendStreamOptions(transferStreamEl, streams);
+                transferStreamEl.disabled = streams.length === 0;
+            } catch (e) {
+                console.warn('Failed to load streams', e);
+            }
+        });
+
+        // Submit transfer
+        transferForm && transferForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const sid = transferStudentIdEl.value;
+            const gid = transferGradeEl.value;
+            const tid = transferStreamEl.value;
+            const reason = document.getElementById('transfer_reason').value || '';
+            if (!sid || !gid || !tid) return alert('Please choose both grade and stream');
+            try {
+                const res = await fetch(`/classteacher/transfer_student`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ student_id: sid, target_stream_id: tid, reason })
+                });
+                const data = await res.json().catch(()=>({success:false, message:'Unexpected response'}));
+                if (res.ok && data && data.success) {
+                    closeTransferModal();
+                    // Simple UI feedback and refresh to reflect new stream
+                    alert(data.message || 'Learner transferred successfully');
+                    location.reload();
+                } else {
+                    alert(data.message || 'Transfer failed');
+                }
+            } catch (err) {
+                alert('Network error during transfer');
+            }
+        });
         document.addEventListener('DOMContentLoaded', function() {
             // Wire up action buttons and select-all
             const selectAll = document.getElementById('select-all');

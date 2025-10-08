@@ -353,6 +353,24 @@ def dashboard():
         - Protected against SQL injection
         - Session-based access control
     """
+    # DEBUG: Check session state before applying decorators
+    if request.args.get('debug') == '1':
+        session_data = dict(session)
+        auth_status = is_authenticated(session)
+        role_status = get_role(session)
+        return f"""
+        <h1>🔍 Session Debug Info</h1>
+        <p><strong>Session Data:</strong> {session_data}</p>
+        <p><strong>Is Authenticated:</strong> {auth_status}</p>
+        <p><strong>Role:</strong> {role_status}</p>
+        <p><strong>Expected Role:</strong> headteacher</p>
+        <p><strong>Auth Check Result:</strong> {auth_status and role_status == 'headteacher'}</p>
+        """
+    
+    # Apply authentication check manually for debugging
+    if not is_authenticated(session) or get_role(session) != 'headteacher':
+        return redirect(url_for('auth.admin_login'))
+    
     # TEMPORARY TEST: Return simple message to verify code is being executed
     if request.args.get('test') == '1':
         return "<h1>🧪 ADMIN DASHBOARD CODE IS WORKING!</h1><p>This confirms the admin.py file is being executed correctly.</p>"
