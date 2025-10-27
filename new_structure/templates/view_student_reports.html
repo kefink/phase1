@@ -363,86 +363,34 @@
             downloadBtn.style.pointerEvents = 'none';
             downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating ZIP...';
             
-            // Use setTimeout to ensure UI updates before starting the async operation
-            setTimeout(async () => {
-                let fallbackAnchor = null;
-
-                try {
-                    console.log('Starting ZIP download request');
-                    const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        credentials: 'same-origin',
-                        headers: { 
-                            'X-Requested-With': 'XMLHttpRequest', 
-                            'Accept': 'application/zip,application/json,text/plain,*/*' 
-                        }
-                    });
-
-        if (!response.ok) {
-          let serverMessage = '';
-          const ct = response.headers.get('Content-Type') || '';
-          try {
-            if (ct.includes('application/json')) {
-              const data = await response.json();
-              serverMessage = data.error || JSON.stringify(data);
-            } else {
-              serverMessage = (await response.text()).slice(0, 500);
-            }
-          } catch { /* swallow */ }
-          throw new Error(serverMessage || `Server responded with status ${response.status}`);
-        }
-
-        const contentType = response.headers.get('Content-Type') || '';
-        console.log('Response Content-Type:', contentType);
-        if (!contentType.includes('application/zip')) {
-          throw new Error('Unexpected response type (expected ZIP). Ensure students have marks and try again.');
-        }
-
-        const contentDisposition = response.headers.get('Content-Disposition');
-        let filename = `Individual_Reports_${grade.replace(/\s+/g, '_')}_${stream}_${term}_${assessmentType}_${new Date().toISOString().slice(0,10)}.zip`;
-        if (contentDisposition) {
-          const match = /filename="?([^";]+)"?/i.exec(contentDisposition);
-          if (match) filename = match[1];
-        }
-
-        const blob = await response.blob();
-        console.log('Blob created, size:', blob.size);
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          URL.revokeObjectURL(blobUrl);
-          a.remove();
-        }, 2000);
-        showNotification(`ZIP downloaded (${filename})`, 'success');
-
-      } catch (error) {
-        console.error('Download error:', error);
-        showNotification(error.message || 'Error downloading ZIP file. Please try again.', 'error');
-        // Provide a fallback anchor so user can attempt a standard navigation download
-        try {
-          const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
-          fallbackAnchor = document.createElement('a');
-          fallbackAnchor.href = url;
-          fallbackAnchor.textContent = 'Click here to try a direct download';
-          fallbackAnchor.style.display = 'inline-block';
-          fallbackAnchor.style.marginTop = '10px';
-          fallbackAnchor.style.fontSize = '0.9rem';
-          downloadBtn.insertAdjacentElement('afterend', fallbackAnchor);
-        } catch { /* ignore */ }
-      } finally {
-        // Reset everything
-        downloadBtn.innerHTML = originalText;
-        downloadBtn.disabled = false;
-        downloadBtn.style.pointerEvents = 'auto';
-        isDownloading = false; // Reset the global flag
-        console.log('Download process completed, flag reset');
-      }
-            }, 100); // Small delay to ensure UI updates
+            // Show notification that generation is starting
+            showNotification('Generating ZIP file... This may take 2-3 minutes for all reports.', 'info');
+            
+            // Use direct navigation download instead of fetch+blob to ensure browser downloads properly
+            const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
+            
+            // Create hidden iframe for download (prevents page navigation)
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            
+            // Reset button after reasonable delay (ZIP generation takes ~2-3 minutes)
+            setTimeout(() => {
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+                downloadBtn.style.pointerEvents = 'auto';
+                isDownloading = false;
+                showNotification('ZIP file should download shortly. Check your Downloads folder.', 'success');
+                console.log('Download initiated, button reset');
+                
+                // Remove iframe after download starts
+                setTimeout(() => {
+                    if (iframe && iframe.parentNode) {
+                        iframe.parentNode.removeChild(iframe);
+                    }
+                }, 5000);
+            }, 180000); // 3 minutes - enough time for ZIP generation
             
             return false; // Prevent any default action
         }
