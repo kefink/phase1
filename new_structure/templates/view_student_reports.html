@@ -363,34 +363,40 @@
             downloadBtn.style.pointerEvents = 'none';
             downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating ZIP...';
             
-            // Show notification that generation is starting
-            showNotification('Generating ZIP file... This may take 2-3 minutes for all reports.', 'info');
-            
-            // Use direct navigation download instead of fetch+blob to ensure browser downloads properly
-            const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
-            
-            // Create hidden iframe for download (prevents page navigation)
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = url;
-            document.body.appendChild(iframe);
-            
-            // Reset button after reasonable delay (ZIP generation takes ~2-3 minutes)
-            setTimeout(() => {
-                downloadBtn.innerHTML = originalText;
-                downloadBtn.disabled = false;
-                downloadBtn.style.pointerEvents = 'auto';
-                isDownloading = false;
-                showNotification('ZIP file should download shortly. Check your Downloads folder.', 'success');
-                console.log('Download initiated, button reset');
-                
-                // Remove iframe after download starts
-                setTimeout(() => {
-                    if (iframe && iframe.parentNode) {
-                        iframe.parentNode.removeChild(iframe);
-                    }
-                }, 5000);
-            }, 180000); // 3 minutes - enough time for ZIP generation
+      // Show notification that generation is starting
+      showNotification('Generating ZIP file... This may take 2-3 minutes for all reports.', 'info');
+
+      // Build URL for download
+      const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
+
+      // Try window.open first (most reliable for downloads)
+      try {
+        const win = window.open(url, '_blank');
+        if (!win) {
+          // Popup blocked - fallback to hidden iframe
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = url;
+          document.body.appendChild(iframe);
+        }
+      } catch (e) {
+        // Last resort: create a temporary anchor and click it
+        const tempA = document.createElement('a');
+        tempA.href = url;
+        tempA.target = '_blank';
+        document.body.appendChild(tempA);
+        tempA.click();
+        setTimeout(() => tempA.remove(), 1000);
+      }
+
+      // Reset button shortly after initiating download
+      setTimeout(() => {
+        downloadBtn.innerHTML = originalText;
+        downloadBtn.disabled = false;
+        downloadBtn.style.pointerEvents = 'auto';
+        isDownloading = false;
+        console.log('Download initiation attempted, button reset');
+      }, 5000);
             
             return false; // Prevent any default action
         }
