@@ -137,6 +137,21 @@
         background: rgba(147, 161, 161, 0.08);
       }
 
+      /* Faded placeholder text for selects until a valid option is chosen */
+      select.form-control:invalid {
+        color: var(--text-secondary);
+        opacity: 0.85;
+      }
+      /* Cross-browser helper class toggled by JS */
+      select.form-control.placeholder-active {
+        color: var(--text-secondary);
+        opacity: 0.85;
+      }
+      /* Ensure the placeholder option also appears faded in dropdowns */
+      select.form-control option[value=""] {
+        color: var(--text-secondary);
+      }
+
       .btn {
         padding: 0.75rem 1.5rem;
         border: none;
@@ -206,39 +221,22 @@
         padding: 0.5rem;
         border: 1px solid var(--border-color);
         border-radius: var(--radius);
-        transition: border-color 0.3s ease, background 0.2s ease, color 0.2s ease;
-        /* High-contrast defaults for dark background */
-        background: rgba(255, 255, 255, 0.06);
-        color: #e6f0f3; /* light text for readability */
-        font-weight: 600;
-        caret-color: #e6f0f3;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+        transition: border-color 0.3s ease;
       }
 
       .mark-input:focus {
         border-color: var(--primary-color);
         outline: none;
-        box-shadow: 0 0 0 2px rgba(38, 139, 210, 0.25);
-        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 2px rgba(38, 139, 210, 0.2);
       }
 
       .mark-input.has-value {
         border-color: #28a745;
-        /* Subtle success tint without sacrificing contrast */
-        background: rgba(40, 167, 69, 0.12);
-        color: #f0faf3; /* keep text bright on tinted bg */
+        background: rgba(40, 167, 69, 0.05);
       }
 
       .mark-input.mark-updated {
         animation: markUpdate 0.5s ease;
-      }
-
-      /* Improve placeholder and selection contrast */
-      .mark-input::placeholder {
-        color: rgba(230, 240, 243, 0.6);
-      }
-      .mark-input::selection {
-        background: rgba(38, 139, 210, 0.35);
       }
 
       @keyframes markUpdate {
@@ -255,7 +253,6 @@
         min-width: 60px;
         text-align: center;
         transition: all 0.3s ease;
-        color: #e6f0f3; /* keep label text readable in dark mode */
       }
 
       /* Performance color indicators */
@@ -294,9 +291,10 @@
   .hero-icon { width:18px; height:18px; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
   .btn .hero-icon, .tab-button .hero-icon { width:19px; height:19px; }
 
-  @media (max-width: 768px) {
+      @media (max-width: 768px) {
         .container {
           padding: 1rem;
+          padding-top: calc(70px + env(safe-area-inset-top, 0px)); /* space for hamburger menu */
         }
 
         .method-tabs {
@@ -308,6 +306,18 @@
           gap: 0.5rem;
         }
 
+        /* Mobile form groups need extra spacing to prevent overlap */
+        .form-group {
+          margin-bottom: 2.5rem;
+          position: relative;
+          z-index: 1;
+        }
+        
+        /* When a select is focused, increase its z-index */
+        .form-group:focus-within {
+          z-index: 1000;
+        }
+
         /* Prevent overlapping dropdown options and ensure readability */
         select.form-control {
           font-size: 1rem;
@@ -315,27 +325,49 @@
           background: rgba(147,161,161,0.12);
           color: var(--text-primary) !important;
           max-width: 100%;
+          position: relative;
+          z-index: 10;
         }
+        
+        /* When select is open/focused, ensure it's above everything */
+        select.form-control:focus,
+        select.form-control:active {
+          z-index: 1001;
+          position: relative;
+        }
+        
         select.form-control option {
           color: #000; /* ensure visible in native dropdown */
           background: #f8f9fa;
+          padding: 0.75rem 0.5rem;
         }
         body[data-theme="dark"] select.form-control option {
           color: #e5e7eb;
           background: #0f172a;
         }
+        
         /* Wrap long option text on very narrow screens */
         @supports (-webkit-touch-callout: none) {
           select.form-control { white-space: normal; }
         }
+        
         /* Fix potential stacking / overlap by forcing block layout */
         .form-group select.form-control {
           display: block;
           width: 100%;
         }
-      }
-
-      /* High-contrast selected text inside select (desktop & mobile) */
+        
+        /* Add breathing room between form sections */
+        .upload-form {
+          padding: 1.5rem 1rem;
+        }
+        
+        /* Ensure labels are clearly separated */
+        .form-group label {
+          margin-bottom: 0.75rem;
+          font-weight: 600;
+        }
+      }      /* High-contrast selected text inside select (desktop & mobile) */
       select.form-control:focus, select.form-control:active {
         color: var(--text-emphasis);
       }
@@ -350,8 +382,9 @@
         .ct-select { position: relative; }
         .ct-select-toggle { width: 100%; text-align: left; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border:1px solid var(--border-color); border-radius: var(--radius); background: rgba(147,161,161,0.1); color: var(--text-primary); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:space-between; }
         .ct-select-toggle:focus { outline:none; border-color: var(--primary-color); box-shadow:0 0 0 3px rgba(38,139,210,0.15); }
-        .ct-select-toggle .placeholder { opacity:0.7; }
-        .ct-select-panel { position:absolute; left:0; right:0; top:100%; margin-top:4px; background: var(--card-bg); border:1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); z-index: 200; max-height:320px; display:flex; flex-direction:column; }
+  .ct-select-toggle .placeholder { opacity:0.7; }
+  .ct-select-toggle .label.placeholder { color: var(--text-secondary); opacity: 0.8; }
+        .ct-select-panel { position:absolute; left:0; right:0; top:100%; margin-top:4px; background: var(--card-bg); border:1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); z-index: 1050; max-height:320px; display:flex; flex-direction:column; overflow: hidden; }
         .ct-select-search { border:none; border-bottom:1px solid var(--border-color); padding:0.6rem 0.75rem; background:rgba(147,161,161,0.08); color:var(--text-primary); font-size:0.95rem; }
         .ct-select-search:focus { outline:none; background:rgba(147,161,161,0.12); }
         .ct-options { list-style:none; margin:0; padding:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
@@ -415,6 +448,23 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
             <div class="form-group">
+              <label for="education_level">Education Level</label>
+              <select
+                name="education_level"
+                id="education_level"
+                class="form-control"
+                required
+                onchange="filterGradesByEducationLevel()"
+              >
+                <option value="">Select Education Level</option>
+                <option value="lower_primary" {% if selected_education_level == 'lower_primary' %}selected{% endif %}>Lower Primary (PP1, PP2, Grade 1-3)</option>
+                <option value="upper_primary" {% if selected_education_level == 'upper_primary' %}selected{% endif %}>Upper Primary (Grade 4-6)</option>
+                <option value="junior_secondary" {% if selected_education_level == 'junior_secondary' %}selected{% endif %}>Junior Secondary (Grade 7-9)</option>
+                <option value="senior_secondary" {% if selected_education_level == 'senior_secondary' %}selected{% endif %}>Senior Secondary (Grade 10-12)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
               <label for="grade">Grade</label>
               <div class="enhanced-select-wrapper" id="gradeSelectWrapper">
                 <select
@@ -426,7 +476,10 @@
                 >
                   <option value="">Select Grade</option>
                   {% for grade in grades %}
-                  <option value="{{ grade.id }}">{{ grade.name }}</option>
+      <option value="{{ grade.id }}"
+        data-education-level="{% if grade.name in ['PP1', 'PP2', 'Grade 1', 'Grade 2', 'Grade 3'] %}lower_primary{% elif grade.name in ['Grade 4','Grade 5','Grade 6'] %}upper_primary{% elif grade.name in ['Grade 7','Grade 8','Grade 9'] %}junior_secondary{% elif grade.name in ['Grade 10','Grade 11','Grade 12'] %}senior_secondary{% endif %}">
+                    {{ grade.name }}
+                  </option>
                   {% endfor %}
                 </select>
                 <!-- Mobile enhanced version injected by JS -->
@@ -516,6 +569,7 @@
                 name="assessment_type"
                 value="{{ selected_assessment }}"
               />
+              <input type="hidden" name="education_level" value="{{ selected_education_level|default('') }}" />
               <input type="hidden" name="max_marks" value="{{ max_marks }}" />
 
               <div class="students-grid header">
@@ -627,6 +681,56 @@
 
   // Abort controller for stream fetch to avoid duplicate population
   let streamFetchController = null;
+  // Education level -> grade filtering
+  function filterGradesByEducationLevel() {
+    const levelSelect = document.getElementById('education_level');
+    const gradeSelect = document.getElementById('grade');
+    if (!levelSelect || !gradeSelect) return;
+
+    const level = levelSelect.value;
+    // Use preserved full options list to allow switching between levels freely
+    const allOptions = (window.__allGradeOptions || []).map(o => o.cloneNode(true));
+    if (!allOptions.length) return;
+
+    // Preserve placeholder
+    const placeholder = allOptions.find(o => o.value === "");
+    const others = allOptions.filter(o => o.value !== "");
+
+    // Clear current options
+    gradeSelect.innerHTML = '';
+    if (placeholder) gradeSelect.appendChild(placeholder);
+
+    // Filter by data-education-level attribute if a level is chosen
+    const filtered = level
+      ? others.filter(o => (o.getAttribute('data-education-level') || '') === level)
+      : others;
+
+    // Append filtered options
+    filtered.forEach(o => gradeSelect.appendChild(o));
+
+    // Reset grade and stream when level changes
+    gradeSelect.value = '';
+    const streamSelect = document.getElementById('stream');
+    if (streamSelect) streamSelect.innerHTML = '<option value="">Select Stream</option>';
+
+    // Sync mobile enhanced dropdown label if present
+    const wrapper = document.getElementById('gradeSelectWrapper');
+    const label = wrapper && wrapper.querySelector('.ct-select-toggle .label');
+    if (label) { label.textContent = 'Select Grade'; label.classList.add('placeholder'); }
+  }
+
+  // Auto-apply filter if server provided a preselected education level
+  document.addEventListener('DOMContentLoaded', () => {
+    const levelSelect = document.getElementById('education_level');
+    const gradeSelect = document.getElementById('grade');
+    if (gradeSelect && !window.__allGradeOptions) {
+      // Preserve full list at startup
+      window.__allGradeOptions = Array.from(gradeSelect.options).map(o => o.cloneNode(true));
+    }
+    if (levelSelect && levelSelect.value) {
+      filterGradesByEducationLevel();
+    }
+  });
       // Progressive enhancement: build custom searchable dropdown for Grade on mobile (<768px)
       (function() {
         const isMobile = window.matchMedia('(max-width: 768px)').matches;
@@ -660,12 +764,19 @@
         let optionData = [];
         function render(filter='') {
           if (!loaded) {
-            optionData = Array.from(nativeSelect.options).map(o => ({ value: o.value, text: o.textContent }));
+            optionData = Array.from(nativeSelect.options).map(o => ({ value: o.value, text: o.textContent, level: o.getAttribute('data-education-level') || '' }));
             loaded = true;
           }
           list.innerHTML = '';
           const term = filter.trim().toLowerCase();
-          const filtered = optionData.filter(o => o.text.toLowerCase().includes(term));
+          const levelSelect = document.getElementById('education_level');
+          const currentLevel = levelSelect ? levelSelect.value : '';
+          const filtered = optionData.filter(o => {
+            if (o.value === '') return false; // skip placeholder
+            const textMatch = o.text.toLowerCase().includes(term);
+            const levelMatch = currentLevel ? (o.level === currentLevel) : true;
+            return textMatch && levelMatch;
+          });
           if (filtered.length === 0) {
             const li = document.createElement('li');
             li.textContent = 'No results';
@@ -674,7 +785,6 @@
             return;
           }
           filtered.forEach(o => {
-            if (o.value === '') return; // skip placeholder option
             const li = document.createElement('li');
             li.textContent = o.text;
             li.setAttribute('role','option');
@@ -701,7 +811,10 @@
         }
 
         function open() {
-          panel.hidden = false; comp.classList.add('open'); toggle.setAttribute('aria-expanded','true'); search.focus();
+          panel.hidden = false; comp.classList.add('open'); toggle.setAttribute('aria-expanded','true');
+          // Blur Education Level native select to avoid overlapping UIs on mobile
+          var lvl = document.getElementById('education_level'); if (lvl) { try { lvl.blur(); } catch(e){} }
+          search.focus();
         }
         function close() {
           panel.hidden = true; comp.classList.remove('open'); toggle.setAttribute('aria-expanded','false');
@@ -731,8 +844,11 @@
         });
 
         // Show selected tab
-        document.getElementById(tabName + "-tab").classList.add("active");
-        event.target.classList.add("active");
+        var t = document.getElementById(tabName + "-tab");
+        if (t) t.classList.add("active");
+        Array.from(document.querySelectorAll('.tab-button')).forEach(function(b){
+          if ((b.getAttribute('onclick')||'').includes("'"+tabName+"'")) b.classList.add('active');
+        });
       }
 
   function updateStreams(done) {
@@ -840,6 +956,58 @@
         markInputs.forEach(input => {
           if (input.value) {
             updatePercentage(input);
+          }
+        });
+
+        // Ensure faded placeholder styling across browsers
+        const selects = ['education_level','grade','stream','subject','assessment_type']
+          .map(id => document.getElementById(id))
+          .filter(Boolean);
+        function refreshPlaceholderState(sel){
+          if (!sel) return;
+          if (!sel.value) sel.classList.add('placeholder-active');
+          else sel.classList.remove('placeholder-active');
+        }
+        selects.forEach(sel => {
+          refreshPlaceholderState(sel);
+          sel.addEventListener('change', () => refreshPlaceholderState(sel));
+        });
+
+        // Prevent overlap: when any select opens, close other enhanced panels and blur other selects
+        const allSelects = ['education_level', 'grade', 'stream', 'subject', 'assessment_type'];
+        
+        function closeAllEnhancedPanels(exceptId) {
+          const wrap = document.getElementById('gradeSelectWrapper');
+          if (!wrap) return;
+          const comp = wrap.querySelector('.ct-select');
+          if (comp && comp.classList.contains('open')) {
+            comp.classList.remove('open');
+            const panel = comp.querySelector('.ct-select-panel');
+            if (panel) panel.hidden = true;
+          }
+        }
+        
+        function blurOtherSelects(activeId) {
+          allSelects.forEach(id => {
+            if (id !== activeId) {
+              const el = document.getElementById(id);
+              if (el && el !== document.activeElement) {
+                try { el.blur(); } catch(e) {}
+              }
+            }
+          });
+        }
+        
+        // Add event listeners to all selects
+        allSelects.forEach(selectId => {
+          const selectEl = document.getElementById(selectId);
+          if (selectEl) {
+            ['focus', 'click', 'touchstart'].forEach(ev => {
+              selectEl.addEventListener(ev, () => {
+                closeAllEnhancedPanels(selectId);
+                setTimeout(() => blurOtherSelects(selectId), 50);
+              }, { passive: true });
+            });
           }
         });
       });

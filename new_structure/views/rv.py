@@ -3,10 +3,8 @@ Class Teacher views for the Hillview School Management System.
 """
 import json
 import logging
-import time  # added for timing metrics in report preview
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, send_file, jsonify, make_response, abort
-from security_helpers import secure_endpoint, ValidationError, wants_json, audit_log, validate_uploaded_file
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, send_file, jsonify, make_response
 from werkzeug.security import generate_password_hash
 from sqlalchemy import text
 import pandas as pd
@@ -15,16 +13,13 @@ import traceback
 from io import BytesIO
 from werkzeug.utils import secure_filename
 from ..models import Grade, Stream, Subject, Term, AssessmentType, Student, Mark, Teacher, TeacherSubjectAssignment
-from ..utils.safe_get import safe_get
 from ..models.academic import SubjectMarksStatus, ComponentMark
 from ..utils.constants import educational_level_mapping
 from ..services import is_authenticated, get_role, get_class_report_data, generate_individual_report, generate_class_report_pdf, RoleBasedDataService
-from ..security.authorization import enforce
 from ..services.report_service import generate_class_report_pdf_from_html
 from ..services.mark_conversion_service import MarkConversionService
 from ..services.subject_aggregation_service import aggregate_subjects_for_display, get_aggregated_abbreviated_subjects
-from ..extensions import db, limiter, csrf
-from ..utils.error_responses import error_response
+from ..extensions import db
 from ..utils import get_performance_category, get_performance_remarks
 from ..services.cache_service import (
     cache_marksheet, get_cached_marksheet,
@@ -40,152 +35,63 @@ from ..utils.database_health import check_database_health, create_missing_tables
 from ..services.permission_service import PermissionService
 from ..models.function_permission import DefaultFunctionPermissions
 from ..services.flexible_marks_service import FlexibleMarksService
-from ..services.grade_marksheet_service import GradeMarksheetService
 from functools import wraps
-from .decorators import dev_only
+from ..security.file_upload_security import secure_file_upload
 
 # Create a blueprint for class teacher routes
 classteacher_bp = Blueprint('classteacher', __name__, url_prefix='/classteacher')
 
 # Set up logger
 logger = logging.getLogger(__name__)
+# Security logger — route-level prints should go to the security logger instead
+security_logger = logging.getLogger('security')
 
-# --- Flexible resolvers for Term and AssessmentType names ---
-def _resolve_term_object(term_input):
-    """Resolve a Term row from flexible input like 'term 3', 'Term 3', 'T3', etc.
-
-    Strategy:
-    - Try exact (case-insensitive) match
-    - Try to extract a term number and match any Term containing that number
-    - Fallback: partial case-insensitive contains
-    Returns (term_obj, canonical_name) where canonical_name is term_obj.name if found else None.
-    """
+# Override module-level print to prevent accidental stdout leakage; forward to security logger
+def _module_print(*args, **kwargs):
     try:
-        if not term_input:
-            return None, None
-        term_raw = (term_input or '').strip()
-        term_lc = term_raw.lower()
-        # Exact (case-insensitive)
-        term_obj = Term.query.filter(db.func.lower(Term.name) == term_lc).first()
-        if term_obj:
-            return term_obj, term_obj.name
-        # Extract a number (e.g., 'term 3' -> 3)
-        import re
-        m = re.search(r'(?:term\s*)?(\d+)', term_lc)
-        if m:
-            num = m.group(1)
-            cand = Term.query.filter(db.func.lower(Term.name).like(f"%{num}%")).first()
-            if cand:
-                return cand, cand.name
-        # Fallback: partial contains
-        cand = Term.query.filter(db.func.lower(Term.name).like(f"%{term_lc}%")).first()
-        if cand:
-            return cand, cand.name
+        security_logger.debug(' '.join(str(a) for a in args))
     except Exception:
-        pass
-    return None, None
+        security_logger.debug('print called with non-stringable args')
 
-def _normalize_assessment_bucket(text: str):
-    """Map arbitrary assessment text to a canonical bucket: 'entrance' | 'midterm' | 'endterm'."""
-    if not text:
-        return None
-    t = (text or '').lower()
-    import re
-    # Remove years and numbers; unify separators
-    t = re.sub(r'\d{4}', ' ', t)  # remove likely years
-    t = re.sub(r'\d+', ' ', t)
-    t = t.replace('_', ' ').replace('-', ' ')
-    tokens = set([tok for tok in t.split() if tok])
-    # Entrance/opener
-    if {'opener'} & tokens or {'entrance'} & tokens or {'opening'} & tokens or ({'start', 'term'} <= tokens):
-        return 'entrance'
-    # Midterm
-    if {'midterm'} & tokens or ({'mid', 'term'} <= tokens):
-        return 'midterm'
-    # Endterm/final
-    if {'endterm'} & tokens or ({'end', 'term'} <= tokens) or {'final'} & tokens or {'overall'} & tokens or {'closing'} & tokens:
-        return 'endterm'
-    # Last resort: simple heuristics
-    s = ' '.join(tokens)
-    if 'mid' in s:
-        return 'midterm'
-    if 'end' in s or 'final' in s or 'overall' in s:
-        return 'endterm'
-    if 'open' in s or 'entrance' in s or 'start' in s:
-        return 'entrance'
-    return None
+# NOTE: Module-level print override forwards to security logger as a short-term mitigation.
+print = _module_print
 
-def _resolve_assessment_type_object(assessment_input):
-    """Resolve an AssessmentType row from flexible input like 'midterm 3 2025', 'Mid Term', 'final', etc.
-
-    Strategy:
-    - Compute bucket for input (entrance/midterm/endterm)
-    - For all AssessmentType rows, compute bucket from their name and pick the first matching
-    - Fallback: case-insensitive exact or contains
-    Returns (assessment_obj, canonical_name) where canonical_name is assessment_obj.name if found else None.
-    """
-    try:
-        if not assessment_input:
-            return None, None
-        bucket = _normalize_assessment_bucket(assessment_input)
-        types = AssessmentType.query.all()
-        for at in types:
-            if _normalize_assessment_bucket(at.name) == bucket and bucket is not None:
-                return at, at.name
-        # Fallbacks
-        at_lc = (assessment_input or '').strip().lower()
-        at = AssessmentType.query.filter(db.func.lower(AssessmentType.name) == at_lc).first()
-        if at:
-            return at, at.name
-        at = AssessmentType.query.filter(db.func.lower(AssessmentType.name).like(f"%{at_lc}%")).first()
-        if at:
-            return at, at.name
-    except Exception:
-        pass
-    return None, None
-
-# Register template filter for education level (blueprint scope)
+# Register template filter for education level
 @classteacher_bp.app_template_filter('get_education_level')
 def get_education_level_blueprint(grade):
-    """Return canonical education level code for a given grade name."""
-    try:
-        from ..utils.constants import get_education_level_for_grade_name
-        return get_education_level_for_grade_name(grade)
-    except Exception:
-        return ''
+    """Filter to determine the education level for a grade (blueprint version)."""
+    education_level_mapping = {
+        'lower_primary': ['Grade 1', 'Grade 2', 'Grade 3'],
+        'upper_primary': ['Grade 4', 'Grade 5', 'Grade 6'],
+        'junior_secondary': ['Grade 7', 'Grade 8', 'Grade 9']
+    }
 
-def classteacher_required(_func=None, *, allowed_roles=("classteacher", "headteacher")):
-    """Decorator enforcing authentication, role restriction & session integrity.
+    for level, grades in education_level_mapping.items():
+        if grade in grades:
+            return level
+    return ''
 
-    Can be used as:
-        @classteacher_required
-        def view(): ...
-
-        @classteacher_required(allowed_roles=("headteacher",))
-        def view(): ...
+# Enhanced decorator for requiring class teacher authentication with function permissions
+def classteacher_required(f):
     """
-    def decorator(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            if not is_authenticated(session):
-                if request.accept_mimetypes.accept_json or request.is_json:
-                    return jsonify({"error": "Authentication required"}), 401
-                return redirect(url_for('auth.classteacher_login'))
-            role = (session.get('role') or '').lower()
-            if role not in allowed_roles:
-                if request.accept_mimetypes.accept_json or request.is_json:
-                    return jsonify({"error": "Forbidden"}), 403
-                abort(403)
-            teacher_id = session.get('teacher_id')
-            if not isinstance(teacher_id, int):
-                if request.accept_mimetypes.accept_json or request.is_json:
-                    return jsonify({"error": "Invalid session"}), 401
-                return redirect(url_for('auth.classteacher_login'))
-            return f(*args, **kwargs)
-        return wrapper
-    if _func is not None and callable(_func):
-        return decorator(_func)
-    return decorator
+    TEMPORARY: Simplified decorator with ALL PERMISSIONS BYPASSED for development.
+    Only checks basic authentication - allows all authenticated users to access all functions.
+    TODO: Re-implement proper role-based and function-level permissions later.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # TEMPORARY BYPASS - Only check basic authentication
+        print(f"🚀 BYPASSED PERMISSIONS: Allowing access to {f.__name__}")
+        
+        if not is_authenticated(session):
+            # Check if this is an AJAX/API request
+            if request.is_json or request.headers.get('Content-Type') == 'application/json' or 'api' in request.endpoint or request.path.startswith('/classteacher/get_'):
+                return jsonify({"success": False, "message": "Authentication required", "redirect": url_for('auth.classteacher_login')}), 401
+            return redirect(url_for('auth.classteacher_login'))
+
+        # BYPASS ALL PERMISSION CHECKS - Allow access if authenticated
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Decorator for requiring class teacher OR teacher authentication (for shared routes)
 def teacher_or_classteacher_required(f):
@@ -195,430 +101,746 @@ def teacher_or_classteacher_required(f):
         if not is_authenticated(session):
             return redirect(url_for('auth.teacher_login'))
 
-        try:
-            role = get_role(session)
-        except Exception:
-            role = None
+        role = get_role(session)
 
-        # Allow both roles; fallback deny if role unexpected
-        if role not in ('teacher', 'classteacher'):
-            return redirect(url_for('auth.teacher_login'))
+        # HEADTEACHER UNIVERSAL ACCESS - Always allow headteachers
+        if role == 'headteacher':
+            # Set the universal access flag if not already set
+            if not session.get('headteacher_universal_access'):
+                session['headteacher_universal_access'] = True
+                session.permanent = True  # Ensure session persists
+            return f(*args, **kwargs)
 
+        if role not in ['teacher', 'classteacher']:
+            # Redirect to appropriate login based on current role attempt
+            if role == 'teacher':
+                return redirect(url_for('auth.teacher_login'))
+            else:
+                return redirect(url_for('auth.classteacher_login'))
         return f(*args, **kwargs)
     return decorated_function
 
-# ---------------------------------------------------------------------------
-# Overview Route (placed after decorators to ensure definitions exist)
-# ---------------------------------------------------------------------------
-@classteacher_bp.route('/class_overview', methods=['GET'])
-@limiter.limit("60 per minute")
-@classteacher_required()
-def class_overview():
-    """Lightweight class overview page referenced in templates.
-
-    Builds minimal class assignment cards so existing template renders.
-    """
-    from ..services.school_config_service import SchoolConfigService
+@classteacher_bp.route('/permission_denied')
+def permission_denied():
+    """Enhanced permission denied page with guidance."""
+    function_name = request.args.get('function_name', 'unknown function')
     teacher_id = session.get('teacher_id')
-    teacher = safe_get(Teacher, teacher_id) if teacher_id else None
 
-    classes_data = []
-    try:  # Build richer overview data with per-subject status
-        if teacher_id:
-            # Resolve assignments (fallback to teacher's own stream if no explicit assignment records)
-            direct_stream = safe_get(Stream, teacher.stream_id) if (teacher and teacher.stream_id) else None
-            try:
-                assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
-            except Exception:
-                assignment_summary = {}
-            class_assignments = assignment_summary.get('class_teacher_assignments', []) if assignment_summary else []
-            if not class_assignments and direct_stream:
-                g_obj = safe_get(Grade, direct_stream.grade_id) if direct_stream else None
-                class_assignments = [{
-                    'grade_id': g_obj.id if g_obj else None,
-                    'grade_name': g_obj.name if g_obj else '',
-                    'stream_id': direct_stream.id,
-                    'stream_name': direct_stream.name
-                }]
+    # Get teacher info
+    teacher = Teacher.query.get(teacher_id) if teacher_id else None
 
-            # Current term & default assessment (prefer current/active)
-            current_term = Term.query.filter_by(is_current=True).first() or Term.query.first()
-            default_assessment = AssessmentType.query.filter_by(is_active=True).order_by(AssessmentType.id.asc()).first() or AssessmentType.query.first()
+    # Get function category and description
+    function_category = DefaultFunctionPermissions.get_function_category(function_name)
 
-            for assignment in class_assignments:
-                grade_id = assignment.get('grade_id') or assignment.get('gradeId')
-                stream_id = assignment.get('stream_id') or assignment.get('streamId')
-                if not (grade_id and stream_id):
-                    continue
-                grade_obj = safe_get(Grade, grade_id)
-                stream_obj = safe_get(Stream, stream_id)
-                if not stream_obj:
-                    continue
+    # Check if function is restricted or unknown
+    is_restricted = DefaultFunctionPermissions.is_restricted(function_name)
+    is_default_allowed = DefaultFunctionPermissions.is_default_allowed(function_name)
 
-                # Robust grade name resolution (avoid <Grade 21> repr leaking to UI)
-                raw_grade_name = assignment.get('grade_name') or assignment.get('grade') or ''
-                if hasattr(raw_grade_name, 'name') and not grade_obj:
-                    # raw_grade_name might itself be a Grade instance
-                    try:  # pragma: no cover - defensive
-                        raw_grade_name = raw_grade_name.name
-                    except Exception:
-                        raw_grade_name = ''
-                # Use DB name if available
-                display_grade_name = grade_obj.name if grade_obj and hasattr(grade_obj, 'name') else raw_grade_name
-                if isinstance(display_grade_name, str):
-                    # Normalize casing (e.g., GRADE 9 -> Grade 9)
-                    if display_grade_name.upper().startswith('GRADE '):
-                        parts = display_grade_name.strip().split()
-                        if len(parts) == 2 and parts[1].isdigit():
-                            display_grade_name = f"Grade {parts[1]}"
-                    elif display_grade_name.upper() in ('PP1', 'PP2'):
-                        display_grade_name = display_grade_name.upper()
-                else:
-                    display_grade_name = str(display_grade_name)
+    # Get teacher's current permissions
+    current_permissions = []
+    if teacher_id:
+        current_permissions = EnhancedPermissionService.get_teacher_function_summary(teacher_id)
 
-                term_obj = current_term
-                assess_obj = default_assessment
-                term_name = term_obj.name if term_obj else 'Term'
-                assessment_name = assess_obj.name if assess_obj else 'Assessment'
+    return render_template('permission_denied.html',
+                         function_name=function_name,
+                         function_category=function_category,
+                         is_restricted=is_restricted,
+                         is_default_allowed=is_default_allowed,
+                         teacher=teacher,
+                         current_permissions=current_permissions)
 
-                # Subjects constrained by grade's education level if available
-                if grade_obj and grade_obj.education_level:
-                    subjects_query = Subject.query.filter_by(education_level=grade_obj.education_level)
-                else:
-                    subjects_query = Subject.query
-                subjects_list = subjects_query.all()
-                total_subjects = len(subjects_list)
+@classteacher_bp.route('/test_components')
+@classteacher_required
+def test_components():
+    """Test route to display components."""
+    from ..models.academic import Subject
 
-                # Preload students in stream for per-subject completion percentage
-                student_ids = [s.id for s in Student.query.filter_by(stream_id=stream_id).all()]
-                student_count = len(student_ids)
+    # Get all subjects
+    subjects = Subject.query.all()
 
-                # Fetch marks for this stream / term / assessment once to avoid N+1
-                marks = Mark.query.filter(
-                    Mark.stream_id == stream_id,
-                    Mark.term_id == (term_obj.id if term_obj else Mark.term_id),
-                    Mark.assessment_type_id == (assess_obj.id if assess_obj else Mark.assessment_type_id)
-                ).all()
+    return render_template('test_components.html', subjects=subjects)
 
-                # Organize marks by subject -> set(student_id)
-                marks_by_subject = {}
-                for m in marks:
-                    marks_by_subject.setdefault(m.subject_id, set()).add(m.student_id)
+@classteacher_bp.route('/test_edit_marks', methods=['GET', 'POST'])
+@classteacher_required
+def test_edit_marks():
+    """Test route to display edit marks page."""
+    from ..models.academic import Subject
 
-                subject_status = []
-                completed_subjects_counter = 0
-                for subj in subjects_list:
-                    student_marks = marks_by_subject.get(subj.id, set())
-                    subj_completion_pct = (len(student_marks) / student_count * 100) if student_count else 0
-                    is_uploaded = subj_completion_pct > 0
-                    if is_uploaded:
-                        completed_subjects_counter += 1
-                    subject_status.append({
-                        'id': subj.id,
-                        'name': subj.name,
-                        'is_uploaded': is_uploaded,
-                        'completion_percentage': subj_completion_pct
-                    })
+    # Get all subjects
+    subject_objects = Subject.query.all()
 
-                overall_completion_percentage = (completed_subjects_counter / total_subjects * 100) if total_subjects else 0
-
-                classes_data.append({
-                    'grade': display_grade_name,
-                    'grade_id': grade_id,
-                    'stream': stream_obj.name if stream_obj else (assignment.get('stream_name') or ''),
-                    'stream_id': stream_id,
-                    'term_name': term_name,
-                    'term_id': term_obj.id if term_obj else None,
-                    'assessment_name': assessment_name,
-                    'assessment_type_id': assess_obj.id if assess_obj else None,
-                    'total_subjects': total_subjects,
-                    'completed_subjects': completed_subjects_counter,
-                    'completion_percentage': overall_completion_percentage,
-                    'subjects': subject_status,
-                    # Enable report only when all subjects have some marks (100%)
-                    'can_generate_report': overall_completion_percentage >= 100
-                })
-    except Exception as e:  # pragma: no cover
-        print(f"⚠️ class_overview generation issue: {e}")
-
-    try:
-        school_info = SchoolConfigService.get_school_info_dict()
-    except Exception:
-        school_info = {}
-
-    return render_template(
-        'classteacher/class_overview.html',
-        teacher=teacher,
-        classes_data=classes_data,
-        school_info=school_info
-    )
-@classteacher_bp.route('/preview_class_report/<grade>/<stream>/<term>/<assessment_type>', methods=['GET', 'POST'])
-@secure_endpoint(roles=['headteacher','classteacher','teacher'], rate=(20,60), audit_event='report.class.preview')
-def preview_class_report(grade, stream, term, assessment_type):
-    """Unified class report route (refactored to service).
-
-    Behavior should remain consistent with previous implementation; logic has
-    been extracted to `ClassReportBuilder` for maintainability.
-    """
-    # --- Input validation (path params) ---
-    from flask import current_app as _ca
-    _log = _ca.logger
-    start_time = time.time()
-    _log.debug('preview_class_report.enter', extra={'grade': grade, 'stream': stream, 'term': term, 'assessment_type': assessment_type, 'session_role': session.get('role'), 'session_teacher_id': session.get('teacher_id')})
-    validation_warning = False
-    from ..services.validation_schemas import ClassReportPathSchema
-    from marshmallow import ValidationError as _VE
-    schema = ClassReportPathSchema()
-    try:
-        schema.load({'grade': grade, 'stream': stream, 'term': term, 'assessment_type': assessment_type})
-    except _VE as ve:  # true validation error
-        validation_warning = True
-        try:
-            _log.debug('preview_class_report.validation_warning', extra={'error': str(ve), 'details': getattr(ve, 'messages', None)})
-        except Exception:
-            pass
-        # Only block when obvious length constraints are violated; otherwise continue
-        too_long = (
-            (isinstance(grade, str) and len(grade) > 100) or
-            (isinstance(stream, str) and len(stream) > 50) or
-            (isinstance(term, str) and len(term) > 50) or
-            (isinstance(assessment_type, str) and len(assessment_type) > 50)
-        )
-        if too_long and (request.accept_mimetypes.accept_json or request.is_json):
-            from ..utils.error_responses import error_response
-            details = getattr(ve, 'messages', None)
-            return error_response('INVALID_PATH_PARAMS', 'Invalid path parameters', 400, details=details)
-        # Otherwise proceed with best-effort values (for both HTML and JSON)
-    except Exception as ve:  # non-validation issue (e.g., import/version); log and continue
-        validation_warning = True
-        try:
-            _log.debug('preview_class_report.validation_nonvalidation_exception', extra={'error': str(ve)})
-        except Exception:
-            pass
-        # Proceed for both HTML and JSON to avoid blocking legitimate requests due to env issues
-    from ..services.class_report_builder import ClassReportBuilder  # local import to avoid circulars
-
-    # Handle subject selection form submission
+    # Handle form submission
     if request.method == 'POST':
-        selected_subjects = []
-        for key, value in request.form.items():
-            if key.startswith('include_subject_') and value:
-                try:
-                    selected_subjects.append(int(value))
-                except Exception:
-                    pass
-        session['selected_subjects'] = selected_subjects
+        # Process the form data
+        flash("Form submitted successfully! This is just a test page.", "success")
+        return redirect(url_for('classteacher.test_edit_marks'))
 
-    selected_subjects = session.get('selected_subjects', [])
+    return render_template('test_edit_marks.html',
+                          grade="Grade 7",
+                          stream="Stream Y",
+                          term="Term 1",
+                          assessment_type="Mid Term",
+                          subject_objects=subject_objects)
 
-    # If a plain subject teacher (not classteacher) restrict to assigned subjects
-    try:
-        role = get_role(session)
-    except Exception:
-        role = None
-    if role == 'teacher':
-        teacher_id = session.get('teacher_id')
-        if teacher_id:
-            stream_obj_temp = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
-            if stream_obj_temp:
-                grade_obj_temp = stream_obj_temp.grade
-                assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher_id, grade_id=grade_obj_temp.id) \
-                    .filter((TeacherSubjectAssignment.stream_id == stream_obj_temp.id) | (TeacherSubjectAssignment.stream_id == None)).all()
-                teacher_subject_ids = [a.subject_id for a in assignments]
-                selected_subjects = teacher_subject_ids
-                session['selected_subjects'] = selected_subjects
 
-    # --- IDOR / ownership enforcement ---
-    try:
-        teacher_id = session.get('teacher_id')
-        role = (session.get('role') or '').lower()
-        from ..services.role_based_data_service import RoleBasedDataService as _RBDS
-        assignment_summary = _RBDS.get_teacher_assignments_summary(teacher_id, role)
-        class_assignments = assignment_summary.get('class_teacher_assignments', []) if assignment_summary and not assignment_summary.get('error') else []
-        stream_fragment = stream.split()[-1]
-        grade_obj = Grade.query.filter_by(name=grade).first()
-        stream_obj = Stream.query.filter_by(name=stream_fragment, grade_id=grade_obj.id).first() if grade_obj else None
-        authorized = True if role == 'headteacher' else False
-        if role == 'classteacher' and grade_obj and stream_obj:
-            # Accept either explicit class_teacher_assignment OR direct stream_id linkage
-            for a in class_assignments:
-                if a.get('grade_id') == grade_obj.id and a.get('stream_id') == stream_obj.id:
-                    authorized = True
-                    break
-            # Fallback: direct teacher.stream_id association
-            if not authorized:
-                from ..models import Teacher as _T
-                t = safe_get(_T, teacher_id)
-                if t and t.stream_id == stream_obj.id:
-                    authorized = True
-        if not authorized:
-            _log.debug('preview_class_report.unauthorized', extra={'teacher_id': teacher_id, 'role': role, 'grade': grade, 'stream_fragment': stream_fragment})
-            if request.accept_mimetypes.accept_json or request.is_json:
-                from ..utils.error_responses import error_response
-                return error_response('FORBIDDEN', 'Forbidden: not assigned to this class', 403)
-            # Return explicit 403 instead of abort redirect pattern to satisfy tests
-            return ('Forbidden', 403)
-    except Exception as _auth_exc:  # Fallback protection
-        if role == 'classteacher':
-            if request.accept_mimetypes.accept_json or request.is_json:
-                from ..utils.error_responses import error_response
-                return error_response('FORBIDDEN', 'Forbidden', 403)
-            abort(403)
-
-    ctx = ClassReportBuilder.build(grade, stream, term, assessment_type, selected_subject_ids=selected_subjects)
-    if ctx.get('error'):
-        if request.accept_mimetypes.accept_json or request.is_json:
-            from ..utils.error_responses import error_response
-            return error_response('REPORT_BUILD_FAILED', ctx['error'], 400)
-        _log.debug('preview_class_report.build_failed', extra={'error': ctx['error']})
-        # Legacy behavior: still render template (status 200) with minimal context & error banner
-        try:
-            student_count = 0
-            subject_count = 0
-            elapsed_ms = int((time.time() - start_time) * 1000)
-            from ..security_helpers import audit_log
-            audit_log('report.class.preview:metrics', elapsed_ms=elapsed_ms, students=student_count, subjects=subject_count, degraded=True)
-        except Exception:
-            pass
-        # Provide robust fallback context so legacy template variables resolve
-        # Derive education_level using centralized helper
-        try:
-            from ..utils.constants import get_education_level_for_grade_name
-            level_code = get_education_level_for_grade_name(grade) if isinstance(grade, str) else ''
-        except Exception:
-            level_code = ''
-        education_level = level_code.replace('_', ' ').title() if level_code else ''
-        placeholder_ctx = dict(
-            education_level=education_level,
-            education_level_code=level_code,
-            total_students=0,
-            student_count=0,
-            total_subjects=0,
-            subject_rows=[],
-            students=[],
-            assessment_summary=[],
-            class_mean=0,
-            grade_boundaries={},
-            stream_name=stream.split()[-1] if isinstance(stream, str) else stream,
-            grade_name=grade,
-        )
-        # Render minimal degraded page instead of full template to avoid missing variable errors
-        try:
-            from flask import make_response
-            minimal_html = f"""
-            <html><head><title>Class Report (Degraded)</title></head>
-            <body>
-              <h1>Class Report Preview (Degraded)</h1>
-              <p>Grade: {grade} | Stream: {stream} | Term: {term} | Assessment: {assessment_type}</p>
-              <p>Status: <strong>Unavailable</strong></p>
-              <p>Error: {ctx['error']}</p>
-              <p>This simplified view is shown because the report builder could not generate full data.</p>
-            </body></html>
-            """
-            return make_response(minimal_html, 200)
-        except Exception:
-            return (ctx['error'], 200)
-
-    # Add form subjects list (was `subjects` earlier – all subjects at level)
-    if ctx.get('education_level_code'):
-        subjects_for_form = Subject.query.filter_by(education_level=ctx['education_level_code']).all()
-    else:
-        subjects_for_form = Subject.query.all()
-
-    # Metrics audit enrichment
-    try:
-        student_count = ctx.get('student_count') or len(ctx.get('students', []) or [])
-        subject_count = ctx.get('subject_count') or len(ctx.get('subject_rows', []) or [])
-        elapsed_ms = int((time.time() - start_time) * 1000)
-        from ..security_helpers import audit_log
-        audit_log('report.class.preview:metrics', elapsed_ms=elapsed_ms, students=student_count, subjects=subject_count)
-    except Exception:  # pragma: no cover
-        pass
+@classteacher_bp.route('/simplified')
+@classteacher_required
+def simplified_dashboard():
+    """Simplified class teacher dashboard with clean UX."""
+    teacher_id = session.get('teacher_id')
+    
+    # Get comprehensive teacher portal summary
+    portal_summary = FlexibleMarksService.get_teacher_portal_summary(teacher_id)
+    
+    if 'error' in portal_summary:
+        flash(f"Error loading teacher information: {portal_summary['error']}", "error")
+        portal_summary = {}
+    
+    # Get role-based assignment summary
+    assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, session.get('role', 'classteacher'))
+    
+    if 'error' in assignment_summary:
+        assignment_summary = {'total_subjects_taught': 0, 'grades_involved': []}
+    
+    # Get recent reports
+    marks_query = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType).order_by(Mark.created_at.desc())
+    marks = marks_query.limit(50).all()
+    
+    recent_reports = []
+    seen_combinations = set()
+    for mark in marks:
+        combination = (mark.student.stream.grade.name, mark.student.stream.name, mark.term.name, mark.assessment_type.name)
+        if combination not in seen_combinations:
+            seen_combinations.add(combination)
+            
+            # Get mark count for this combination
+            mark_count = Mark.query.join(Student).join(Stream).join(Grade).join(Term).join(AssessmentType).filter(
+                Grade.name == mark.student.stream.grade.name,
+                Stream.name == mark.student.stream.name,
+                Term.name == mark.term.name,
+                AssessmentType.name == mark.assessment_type.name
+            ).count()
+            
+            recent_reports.append({
+                'grade': mark.student.stream.grade.name,
+                'stream': f"Stream {mark.student.stream.name}",
+                'term': mark.term.name,
+                'assessment_type': mark.assessment_type.name,
+                'date': mark.created_at.strftime('%Y-%m-%d') if mark.created_at else 'N/A',
+                'mark_count': mark_count
+            })
+            
+            if len(recent_reports) >= 10:
+                break
+    
+    # Get data for forms
+    grades = [grade.name for grade in Grade.query.all()]
+    terms = [term.name for term in Term.query.all()]
+    assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
+    
+    # Get management statistics
+    total_students = Student.query.count()
+    
+    # Get school information
+    from ..services.school_config_service import SchoolConfigService
+    school_info = SchoolConfigService.get_school_info_dict()
+    
     return render_template(
-        'preview_class_report.html',
-        grade=grade,
-        stream=stream,
-        term=term,
-        assessment_type=assessment_type,
-        subjects=subjects_for_form,
-        **{k: v for k, v in ctx.items() if k not in ('education_level_code',)}
+        "classteacher_simplified.html",
+        school_info=school_info,
+        assignment_summary=assignment_summary,
+        portal_summary=portal_summary,
+        total_subjects_taught=assignment_summary.get('total_subjects_taught', 0),
+        total_students=total_students,
+        recent_reports=recent_reports,
+        grades=grades,
+        terms=terms,
+        assessment_types=assessment_types
     )
 
-@classteacher_bp.route('/api/class/<int:grade_id>/<int:stream_id>/students/<int:student_id>/flag', methods=['POST'])
-@limiter.limit("10 per minute")
-@classteacher_required()
-def flag_student_note(grade_id, stream_id, student_id):
-    """Example mutation endpoint demonstrating:
-    - Path param validation (implicit int casting by converter + schema)
-    - Ownership / authorization (classteacher or headteacher)
-    - Safe DB access with db.session.get (SQLAlchemy 2.x style)
-    """
-    from marshmallow import Schema, fields, ValidationError, validate
-    from ..models.academic import Student, Grade, Stream
-    from ..models import Teacher as _Teacher
-    from ..services.role_based_data_service import RoleBasedDataService as _RBDS
-    class _FlagSchema(Schema):
-        # Use built-in length validator to avoid signature mismatch issues with custom validator
-        note = fields.Str(required=True, validate=validate.Length(max=500, error='note too long (max 500 chars)'))
-    from ..utils.error_responses import error_response
-    from werkzeug.exceptions import BadRequest
+@classteacher_bp.route('/class_overview')
+@classteacher_required
+def class_overview():
+    """Show overview of all classes assigned to this teacher with subject upload status"""
     try:
-        payload = request.get_json(silent=False)
-    except BadRequest:
-        return error_response('MALFORMED_JSON', 'Malformed JSON body', 400)
-    if payload is None:
-        payload = {}
+        teacher_id = session.get('teacher_id')
+        if not teacher_id:
+            flash("Please log in to access this page.", "error")
+            return redirect(url_for('auth.classteacher_login'))
+
+        # Find all classes where this teacher is marked as class teacher
+        class_assignments = TeacherSubjectAssignment.query.filter_by(
+            teacher_id=teacher_id,
+            is_class_teacher=True
+        ).all()
+
+        if not class_assignments:
+            flash("You are not assigned as a class teacher to any classes.", "warning")
+            return redirect(url_for('classteacher.dashboard'))
+
+        classes_data = []
+        for assignment in class_assignments:
+            grade = assignment.grade
+            stream = assignment.stream
+
+            # Prefer the most recent mark's period for this stream
+            latest_mark = (
+                Mark.query
+                .join(Student, Mark.student_id == Student.id)
+                .filter(Student.stream_id == stream.id)
+                .order_by(Mark.created_at.desc(), Mark.id.desc())
+                .first()
+            )
+
+            selected_term = latest_mark.term if latest_mark and latest_mark.term_id else None
+            selected_assessment = latest_mark.assessment_type if latest_mark and latest_mark.assessment_type_id else None
+
+            # Fallbacks: current term by config, then newest by id
+            if not selected_term or not selected_assessment:
+                from ..services.school_config_service import SchoolConfigService
+                current_term_name = SchoolConfigService.get_current_term()
+                if not selected_term and current_term_name:
+                    selected_term = Term.query.filter_by(name=current_term_name).first()
+                if not selected_assessment:
+                    selected_assessment = (
+                        AssessmentType.query.filter_by(is_active=True).order_by(AssessmentType.id.desc()).first()
+                        or AssessmentType.query.order_by(AssessmentType.id.desc()).first()
+                    )
+
+            latest_term = selected_term or Term.query.order_by(Term.id.desc()).first()
+            latest_assessment = selected_assessment or AssessmentType.query.order_by(AssessmentType.id.desc()).first()
+
+            if not (latest_term and latest_assessment):
+                # Skip class if we cannot determine period
+                continue
+
+            status_data = CollaborativeMarksService.get_class_marks_status(
+                grade.id, stream.id, latest_term.id, latest_assessment.id, teacher_id
+            )
+
+            classes_data.append({
+                'grade': grade.name,
+                'stream': stream.name,
+                'grade_id': grade.id,
+                'stream_id': stream.id,
+                'term_id': latest_term.id,
+                'assessment_type_id': latest_assessment.id,
+                'term_name': latest_term.name,
+                'assessment_name': latest_assessment.name,
+                'total_subjects': status_data.get('total_subjects', 0),
+                'completed_subjects': status_data.get('completed_subjects', 0),
+                'completion_percentage': status_data.get('overall_completion', 0),
+                'can_generate_report': status_data.get('can_generate_report', False),
+                'subjects': status_data.get('subjects', [])
+            })
+
+        from ..services.school_config_service import SchoolConfigService
+        school_info = SchoolConfigService.get_school_info_dict()
+        return render_template('classteacher/class_overview.html', classes_data=classes_data, school_info=school_info)
+    except Exception as e:
+        print(f"Error in class overview: {str(e)}")
+        flash("Error loading class overview.", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+@classteacher_bp.route('/test_debug')
+def test_debug():
+    """Simple test route"""
+    return "<h1>Debug Route Working!</h1>"
+
+@classteacher_bp.route('/debug_subjects_public')
+def debug_subjects_public():
+    """Public debug route to check subject status"""
     try:
-        data = _FlagSchema().load(payload)
-    except ValidationError as ve:
-        return error_response('INVALID_PAYLOAD', 'Invalid payload', 400, details=ve.messages)
+        english_subjects = Subject.query.filter(Subject.name.like('%English%')).all()
+        
+        results = []
+        results.append("🔍 English Subject Configuration")
+        results.append("=" * 50)
+        
+        for subject in english_subjects:
+            results.append(f"\nSubject: {subject.name}")
+            results.append(f"  Education Level: {subject.education_level}")
+            results.append(f"  Is Composite: {subject.is_composite}")
+            results.append(f"  Is Component: {getattr(subject, 'is_component', 'N/A')}")
+            results.append(f"  Composite Parent: {getattr(subject, 'composite_parent', 'N/A')}")
+            results.append(f"  Component Weight: {getattr(subject, 'component_weight', 'N/A')}")
+            
+            # Check marks count
+            mark_count = Mark.query.filter_by(subject_id=subject.id).count()
+            results.append(f"  Marks in Database: {mark_count}")
+        
+        # Check what gets returned for Grade 9 B class report
+        results.append(f"\n🎯 Grade 9 B Subject Analysis:")
+        education_level_code = "junior_secondary"
+        all_subjects = Subject.query.filter_by(education_level=education_level_code).all()
+        
+        results.append(f"Total subjects for {education_level_code}: {len(all_subjects)}")
+        for subject in all_subjects:
+            if 'English' in subject.name:
+                results.append(f"  ✅ {subject.name} (composite: {subject.is_composite}, component: {getattr(subject, 'is_component', 'N/A')})")
+        
+        return f"<pre>{'<br>'.join(results)}</pre>"
+    except Exception as e:
+        return f"<pre>Error: {str(e)}</pre>"
+    """Debug route to check composite subject status"""
+    subjects = Subject.query.all()
+    debug_info = []
 
-    teacher_id = session.get('teacher_id')
-    role = (session.get('role') or '').lower()
-    if not teacher_id:
-        return error_response('UNAUTHORIZED', 'Authentication required', 401)
+    for subject in subjects:
+        components = subject.get_components() if subject.is_composite else []
+        component_info = []
 
-    # Fetch objects using modern session.get pattern
-    g_obj = db.session.get(Grade, grade_id)
-    s_obj = db.session.get(Stream, stream_id)
-    st_obj = db.session.get(Student, student_id)
-    if not all([g_obj, s_obj, st_obj]) or s_obj.grade_id != g_obj.id or st_obj.grade_id != g_obj.id or st_obj.stream_id != s_obj.id:
-        return error_response('NOT_FOUND', 'Resource not found', 404)
+        for component in components:
+            component_info.append({
+                'name': component.name,
+                'weight': component.weight,
+                'max_raw_mark': component.max_raw_mark
+            })
 
-    # Ownership / authorization: headteacher always ok, classteacher must own class
-    if role not in ('headteacher', 'classteacher'):
-        # Maintain backward compatible simple error string expected by existing tests
-        return jsonify({'error': 'Forbidden'}), 403
-    if role == 'classteacher':
-        assignment_summary = _RBDS.get_teacher_assignments_summary(teacher_id, role)
-        class_assignments = assignment_summary.get('class_teacher_assignments', []) if assignment_summary and not assignment_summary.get('error') else []
-        authorized = False
-        for a in class_assignments:
-            if a.get('grade_id') == g_obj.id and a.get('stream_id') == s_obj.id:
-                authorized = True
-                break
-        if not authorized:
-            # fallback direct stream linkage
-            t = db.session.get(_Teacher, teacher_id)
-            if t and t.stream_id == s_obj.id:
-                authorized = True
-        if not authorized:
-            # Maintain backward compatible simple error string expected by existing tests
-            return jsonify({'error': 'Forbidden: not assigned to this class'}), 403
+        debug_info.append({
+            'subject_name': subject.name,
+            'is_composite': subject.is_composite,
+            'is_component': getattr(subject, 'is_component', False),
+            'education_level': subject.education_level,
+            'components': component_info
+        })
 
-    # For demonstration we do not persist new column; instead log note
-    from flask import current_app as _ca
-    _ca.logger.info("Flag note added", extra={
-        'student_id': student_id,
-        'teacher_id': teacher_id,
-        'grade_id': grade_id,
-        'stream_id': stream_id,
-        'note_excerpt': data['note'][:120]
-    })
-    return jsonify({'status': 'ok', 'student_id': student_id, 'note_saved': True}), 200
+    return f"<pre>{json.dumps(debug_info, indent=2)}</pre>"
+
+@classteacher_bp.route('/fix_independent_subjects')
+def fix_independent_subjects():
+    """Fix English Grammar and English Composition to be independent subjects"""
+    try:
+        results = []
+        results.append("🔧 Converting to Independent Subject Upload")
+        results.append("=" * 60)
+
+        # Education levels to process
+        education_levels = ['lower_primary', 'upper_primary', 'junior_secondary']
+        
+        subjects_to_convert = [
+            'English Grammar', 
+            'English Composition',
+            'Kiswahili Lugha',
+            'Kiswahili Insha'
+        ]
+
+        for education_level in education_levels:
+            results.append(f"\n📚 Processing {education_level}...")
+            
+            for subject_name in subjects_to_convert:
+                subject = Subject.query.filter_by(
+                    name=subject_name,
+                    education_level=education_level
+                ).first()
+                
+                if subject:
+                    # Convert to independent subject
+                    old_composite = subject.is_composite
+                    old_component = getattr(subject, 'is_component', False)
+                    
+                    subject.is_composite = False
+                    subject.is_component = False
+                    
+                    # Clear composite relationships
+                    if hasattr(subject, 'composite_parent'):
+                        subject.composite_parent = None
+                    if hasattr(subject, 'component_weight'):
+                        subject.component_weight = None
+                    
+                    results.append(f"   ✅ {subject_name}: composite={old_composite}→False, component={old_component}→False")
+                else:
+                    results.append(f"   ❌ {subject_name}: Not found")
+
+        # Commit changes
+        db.session.commit()
+        results.append("\n✅ Database changes committed successfully!")
+        
+        # Check current marks for these subjects
+        results.append(f"\n📊 Current marks status:")
+        for subject_name in subjects_to_convert:
+            subject = Subject.query.filter_by(name=subject_name).first()
+            if subject:
+                mark_count = Mark.query.filter_by(subject_id=subject.id).count()
+                results.append(f"   - {subject_name}: {mark_count} marks in database")
+
+        results.append(f"\n🎉 Conversion completed successfully!")
+        results.append("✅ English Grammar and English Composition are now independent subjects")
+        results.append("✅ Kiswahili Lugha and Kiswahili Insha are now independent subjects")
+        results.append("✅ All subjects can be uploaded and displayed independently")
+        
+        results.append(f"\n📝 Next steps:")
+        results.append("1. Visit any class report to see individual subject columns")
+        results.append("2. Upload marks for each subject independently")
+        results.append("3. Refresh any cached reports to see the changes")
+
+        return f"<pre>{'<br>'.join(results)}</pre>"
+
+    except Exception as e:
+        db.session.rollback()
+        return f"<pre>❌ Error during conversion: {str(e)}</pre>"
+
+@classteacher_bp.route('/implement_composite_fix')
+@classteacher_required
+def implement_composite_fix():
+    """Implement the composite subject fix via web interface"""
+    try:
+        # Define the composite mappings we want
+        composite_mappings = {
+            'English': ['English Grammar', 'English Composition'],
+            'Kiswahili': ['Kiswahili Lugha', 'Kiswahili Insha']
+        }
+
+        results = []
+        results.append("🎯 Implementing Composite Subject Architecture Fix")
+        results.append("=" * 60)
+
+        # Process each education level
+        education_levels = ['lower_primary', 'upper_primary', 'junior_secondary']
+
+        for education_level in education_levels:
+            results.append(f"\n📚 Processing {education_level}...")
+
+            for composite_name, component_names in composite_mappings.items():
+                # Check if composite subject exists
+                composite_subject = Subject.query.filter_by(
+                    name=composite_name,
+                    education_level=education_level
+                ).first()
+
+                if composite_subject:
+                    results.append(f"   ✅ Updating composite subject: {composite_name}")
+                    composite_subject.is_composite = True
+                    composite_subject.is_component = False
+                else:
+                    results.append(f"   ➕ Creating composite subject: {composite_name}")
+                    composite_subject = Subject(
+                        name=composite_name,
+                        education_level=education_level,
+                        is_composite=True,
+                        is_component=False
+                    )
+                    db.session.add(composite_subject)
+
+                # Create/update component subjects
+                weights = [0.6, 0.4]  # Grammar/Lugha: 60%, Composition/Insha: 40%
+
+                for i, component_name in enumerate(component_names):
+                    component_subject = Subject.query.filter_by(
+                        name=component_name,
+                        education_level=education_level
+                    ).first()
+
+                    if component_subject:
+                        results.append(f"   ✅ Updating component subject: {component_name}")
+                        component_subject.is_component = True
+                        component_subject.is_composite = False
+                        component_subject.composite_parent = composite_name
+                        component_subject.component_weight = weights[i]
+                    else:
+                        results.append(f"   ➕ Creating component subject: {component_name}")
+                        component_subject = Subject(
+                            name=component_name,
+                            education_level=education_level,
+                            is_composite=False,
+                            is_component=True,
+                            composite_parent=composite_name,
+                            component_weight=weights[i]
+                        )
+                        db.session.add(component_subject)
+
+        # Commit changes
+        db.session.commit()
+        results.append("\n✅ Database changes committed successfully!")
+
+        # Verify the setup
+        results.append("\n🔍 Verifying the setup...")
+
+        for education_level in education_levels:
+            results.append(f"\n📚 {education_level}:")
+
+            for composite_name in composite_mappings.keys():
+                composite_subject = Subject.query.filter_by(
+                    name=composite_name,
+                    education_level=education_level,
+                    is_composite=True
+                ).first()
+
+                if composite_subject:
+                    results.append(f"   ✅ {composite_name} (composite)")
+
+                    # Check components
+                    components = Subject.query.filter_by(
+                        composite_parent=composite_name,
+                        education_level=education_level,
+                        is_component=True
+                    ).all()
+
+                    for component in components:
+                        weight_percent = int(component.component_weight * 100) if component.component_weight else 0
+                        results.append(f"      └─ {component.name} (weight: {weight_percent}%)")
+                else:
+                    results.append(f"   ❌ {composite_name} not found")
+
+        results.append("\n🎉 Implementation completed successfully!")
+        results.append("=" * 60)
+        results.append("📋 What was implemented:")
+        results.append("✅ English Grammar and English Composition are now separate uploadable subjects")
+        results.append("✅ Kiswahili Lugha and Kiswahili Insha are now separate uploadable subjects")
+        results.append("✅ All subjects properly configured with composite relationships")
+        results.append("✅ Component weights set (Grammar/Lugha: 60%, Composition/Insha: 40%)")
+
+        results.append("\n📝 Next steps:")
+        results.append("1. Test uploading marks for English Grammar separately")
+        results.append("2. Test uploading marks for English Composition separately")
+        results.append("3. Generate a class report to see the new structure")
+        results.append("4. Verify that marks combine properly in reports")
+
+        return f"<pre>{'<br>'.join(results)}</pre>"
+
+    except Exception as e:
+        db.session.rollback()
+        return f"<pre>❌ Error during implementation: {str(e)}</pre>"
+
+@classteacher_bp.route('/verify_composite_setup')
+@classteacher_required
+def verify_composite_setup():
+    """Verify the composite subject setup"""
+    try:
+        results = []
+        results.append("🔍 Composite Subject Setup Verification")
+        results.append("=" * 50)
+
+        education_levels = ['lower_primary', 'upper_primary', 'junior_secondary']
+        composite_mappings = {
+            'English': ['English Grammar', 'English Composition'],
+            'Kiswahili': ['Kiswahili Lugha', 'Kiswahili Insha']
+        }
+
+        for education_level in education_levels:
+            results.append(f"\n📚 {education_level}:")
+
+            for composite_name, component_names in composite_mappings.items():
+                # Check composite subject
+                composite_subject = Subject.query.filter_by(
+                    name=composite_name,
+                    education_level=education_level,
+                    is_composite=True
+                ).first()
+
+                if composite_subject:
+                    results.append(f"   ✅ {composite_name} (composite)")
+
+                    # Check components
+                    for component_name in component_names:
+                        component_subject = Subject.query.filter_by(
+                            name=component_name,
+                            education_level=education_level,
+                            is_component=True
+                        ).first()
+
+                        if component_subject:
+                            weight_percent = int(component_subject.component_weight * 100) if component_subject.component_weight else 0
+                            results.append(f"      └─ {component_name} (weight: {weight_percent}%)")
+                        else:
+                            results.append(f"      ❌ {component_name} NOT FOUND")
+                else:
+                    results.append(f"   ❌ {composite_name} NOT FOUND")
+
+        # Check for uploadable subjects
+        results.append(f"\n📝 Uploadable Subjects (Components):")
+        component_subjects = Subject.query.filter_by(is_component=True).all()
+
+        for subject in component_subjects:
+            results.append(f"   - {subject.name} ({subject.education_level}) -> {subject.composite_parent}")
+
+        results.append(f"\n📊 Summary:")
+        results.append(f"   - Total composite subjects: {Subject.query.filter_by(is_composite=True).count()}")
+        results.append(f"   - Total component subjects: {Subject.query.filter_by(is_component=True).count()}")
+        results.append(f"   - Total regular subjects: {Subject.query.filter_by(is_composite=False, is_component=False).count()}")
+
+        return f"<pre>{'<br>'.join(results)}</pre>"
+
+    except Exception as e:
+        return f"<pre>❌ Error during verification: {str(e)}</pre>"
+
+@classteacher_bp.route('/enhanced_class_report/<grade>/<stream>/<term>/<assessment_type>')
+@teacher_or_classteacher_required
+def enhanced_class_report(grade, stream, term, assessment_type):
+    """Enhanced class report using the new composite subject architecture."""
+    try:
+        # Debug parameters
+        print(f"🔍 Enhanced Report Parameters:")
+        print(f"   Grade: '{grade}'")
+        print(f"   Stream: '{stream}'")
+        print(f"   Term: '{term}'")
+        print(f"   Assessment Type: '{assessment_type}'")
+
+        # Parse stream name - handle both "Stream A" and "A" formats
+        if stream.startswith('Stream '):
+            stream_name = stream.split(' ')[-1]  # Get "A" from "Stream A"
+        else:
+            stream_name = stream  # Already just "A"
+
+        print(f"   Parsed Stream Name: '{stream_name}'")
+
+        # Get basic objects
+        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_name).first()
+        term_obj = Term.query.filter_by(name=term).first()
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+        print(f"   Stream Object: {stream_obj}")
+        print(f"   Term Object: {term_obj}")
+        print(f"   Assessment Type Object: {assessment_type_obj}")
+
+        if not (stream_obj and term_obj and assessment_type_obj):
+            flash("Invalid grade, stream, term, or assessment type", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+        # Determine education level
+        grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+        if 1 <= grade_num <= 3:
+            education_level = "lower_primary"
+        elif 4 <= grade_num <= 6:
+            education_level = "upper_primary"
+        elif 7 <= grade_num <= 9:
+            education_level = "junior_secondary"
+        else:
+            education_level = "upper_primary"  # default
+
+        # Import the enhanced composite service
+        from ..services.enhanced_composite_service import EnhancedCompositeService
+
+        # Get students in this stream
+        students = Student.query.filter_by(stream_id=stream_obj.id).all()
+
+        # Get report structure
+        report_structure = EnhancedCompositeService.get_report_subjects_structure(education_level)
+
+        # Get class composite data
+        enhanced_composite_data = EnhancedCompositeService.get_class_composite_data(
+            grade, stream[-1], term_obj.id, assessment_type_obj.id, education_level
+        )
+
+        # Build class data
+        class_data = []
+        for i, student in enumerate(students, 1):
+            # Get regular subject marks
+            regular_marks = {}
+            total_marks = 0
+            subject_count = 0
+
+            for subject_name in report_structure['regular_subjects']:
+                subject = Subject.query.filter_by(
+                    name=subject_name,
+                    education_level=education_level,
+                    is_component=False,
+                    is_composite=False
+                ).first()
+
+                if subject:
+                    mark = Mark.query.filter_by(
+                        student_id=student.id,
+                        subject_id=subject.id,
+                        term_id=term_obj.id,
+                        assessment_type_id=assessment_type_obj.id
+                    ).first()
+
+                    if mark and mark.percentage is not None:
+                        regular_marks[subject_name] = mark.percentage
+                        total_marks += mark.percentage
+                        subject_count += 1
+                    else:
+                        regular_marks[subject_name] = 0
+                else:
+                    regular_marks[subject_name] = 0
+
+            # Add composite subject totals to overall total
+            student_composite_data = enhanced_composite_data.get(student.id, {})
+            for composite_name in report_structure['composite_subjects']:
+                composite_data = student_composite_data.get(composite_name, {})
+                if composite_data.get('has_marks', False):
+                    total_marks += composite_data.get('total', 0)
+                    subject_count += 1
+
+            # Calculate average
+            average = total_marks / subject_count if subject_count > 0 else 0
+
+            # Get grade
+            from ..utils import get_grade_and_points
+            grade_letter, _ = get_grade_and_points(average)
+
+            class_data.append({
+                'index': i,
+                'student': student.name,
+                'student_id': student.id,
+                'subjects': regular_marks,
+                'total_marks': total_marks,
+                'average': average,
+                'grade': grade_letter,
+                'rank': i  # Will be updated after sorting
+            })
+
+        # Sort by total marks and update ranks
+        class_data.sort(key=lambda x: x['total_marks'], reverse=True)
+        for i, student_data in enumerate(class_data, 1):
+            student_data['rank'] = i
+
+        # Calculate statistics
+        if class_data:
+            averages = [s['average'] for s in class_data]
+            stats = {
+                'class_average': sum(averages) / len(averages),
+                'highest_average': max(averages),
+                'lowest_average': min(averages)
+            }
+        else:
+            stats = {'class_average': 0, 'highest_average': 0, 'lowest_average': 0}
+
+        # Calculate subject averages
+        subject_averages = {}
+        for subject_name in report_structure['regular_subjects']:
+            marks = [s['subjects'].get(subject_name, 0) for s in class_data if s['subjects'].get(subject_name, 0) > 0]
+            subject_averages[subject_name] = sum(marks) / len(marks) if marks else 0
+
+        # Calculate composite averages
+        composite_averages = {}
+        for composite_name in report_structure['composite_subjects']:
+            totals = []
+            for student_data in class_data:
+                student_composite = enhanced_composite_data.get(student_data['student_id'], {})
+                composite_data = student_composite.get(composite_name, {})
+                if composite_data.get('has_marks', False):
+                    totals.append(composite_data.get('total', 0))
+            composite_averages[composite_name] = sum(totals) / len(totals) if totals else 0
+
+        # Get current date
+        from datetime import datetime
+        current_date = datetime.now().strftime("%B %d, %Y")
+
+        # Render the enhanced template
+        return render_template('enhanced_class_report.html',
+                             grade=grade,
+                             stream=stream,
+                             term=term,
+                             assessment_type=assessment_type,
+                             class_data=class_data,
+                             stats=stats,
+                             report_structure=report_structure,
+                             enhanced_composite_data=enhanced_composite_data,
+                             subject_averages=subject_averages,
+                             composite_averages=composite_averages,
+                             current_date=current_date,
+                             school_info={'school_name': 'Hillview School'})
+
+    except Exception as e:
+        flash(f"Error generating enhanced report: {str(e)}", "error")
+        import traceback
+        traceback.print_exc()
+        return redirect(url_for('classteacher.dashboard'))
 
 @classteacher_bp.route('/test_component_upload')
-@secure_endpoint(roles=['classteacher','headteacher'], debug_only=True, audit_event='debug.test_component_upload')
+@classteacher_required
 def test_component_upload():
     """Test route to verify component subjects are available for upload."""
     try:
@@ -626,22 +848,21 @@ def test_component_upload():
         results.append("🧪 Testing Component Subject Upload Availability")
         results.append("=" * 60)
 
-        # Check each education level in canonical order (limited to supported flows)
-        from ..utils.constants import EDUCATION_LEVELS_ORDER
-        education_levels = [lv for lv in EDUCATION_LEVELS_ORDER if lv in {'lower_primary', 'upper_primary', 'junior_secondary'}]
+        # Check each education level
+        education_levels = ['lower_primary', 'upper_primary', 'junior_secondary']
 
-        from ..services.enhanced_composite_service import EnhancedCompositeService
         for education_level in education_levels:
             results.append(f"\n📚 {education_level}:")
 
             # Get uploadable subjects (components + regular subjects)
+            from ..services.enhanced_composite_service import EnhancedCompositeService
             uploadable_subjects = EnhancedCompositeService.get_subjects_for_upload(education_level)
 
             results.append(f"   📝 Uploadable subjects ({len(uploadable_subjects)}):")
 
             for subject in uploadable_subjects:
-                if getattr(subject, 'is_component', False):
-                    results.append(f"      ✅ {subject.name} (component of {getattr(subject, 'composite_parent', 'N/A')})")
+                if subject.is_component:
+                    results.append(f"      ✅ {subject.name} (component of {subject.composite_parent})")
                 else:
                     results.append(f"      📄 {subject.name} (regular subject)")
 
@@ -662,6 +883,7 @@ def test_component_upload():
             # Check if there are any existing marks
             existing_marks = Mark.query.filter_by(subject_id=english_grammar.id).count()
             results.append(f"   📈 Existing marks: {existing_marks}")
+
         else:
             results.append(f"   ❌ English Grammar subject not found!")
 
@@ -682,6 +904,7 @@ def test_component_upload():
             # Check if there are any existing marks
             existing_marks = Mark.query.filter_by(subject_id=english_composition.id).count()
             results.append(f"   📈 Existing marks: {existing_marks}")
+
         else:
             results.append(f"   ❌ English Composition subject not found!")
 
@@ -693,15 +916,13 @@ def test_component_upload():
         results.append(f"5. Upload marks for English Composition separately")
         results.append(f"6. Generate enhanced class report to see combined results")
 
-        # Content negotiation: JSON summary if requested
-        if 'application/json' in (request.headers.get('Accept') or '').lower():
-            return jsonify({'status': 'ok', 'lines': results[:15], 'total_lines': len(results)})
         return f"<pre>{'<br>'.join(results)}</pre>"
+
     except Exception as e:
         return f"<pre>❌ Error during testing: {str(e)}</pre>"
 
 @classteacher_bp.route('/debug_marks_data/<grade>/<stream>/<term>/<assessment_type>')
-@dev_only
+@classteacher_required
 def debug_marks_data(grade, stream, term, assessment_type):
     """Debug route to check what marks data exists."""
     try:
@@ -723,8 +944,8 @@ def debug_marks_data(grade, stream, term, assessment_type):
 
         # Get objects
         stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_name).first()
-        term_obj, term_name = _resolve_term_object(term)
-        assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
+        term_obj = Term.query.filter_by(name=term).first()
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
         results.append(f"\nDatabase Objects:")
         results.append(f"  Stream Object: {stream_obj}")
@@ -753,7 +974,7 @@ def debug_marks_data(grade, stream, term, assessment_type):
         # Group marks by subject
         marks_by_subject = {}
         for mark in all_marks:
-            subject = safe_get(Subject, mark.subject_id)
+            subject = Subject.query.get(mark.subject_id)
             if subject:
                 if subject.name not in marks_by_subject:
                     marks_by_subject[subject.name] = []
@@ -806,47 +1027,301 @@ def debug_marks_data(grade, stream, term, assessment_type):
         return f"<pre>❌ Error during debugging: {str(e)}<br><br>{traceback.format_exc()}</pre>"
 
 @classteacher_bp.route('/fixed_class_report/<grade>/<stream>/<term>/<assessment_type>')
-@dev_only
+@teacher_or_classteacher_required
 def fixed_class_report(grade, stream, term, assessment_type):
-    """Deprecated legacy endpoint – redirects to unified preview route.
+    """Fixed class report that works with the new composite structure."""
+    try:
+        # Parse stream name
+        if stream.startswith('Stream '):
+            stream_name = stream.split(' ')[-1]
+        else:
+            stream_name = stream
 
-    Retained temporarily (dev-only) for any lingering manual checks. Will be
-    removed after verification window.
-    """
-    flash('fixed_class_report has been merged into preview_class_report – redirecting.', 'info')
-    return redirect(url_for('classteacher.preview_class_report', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
+        # Get basic objects
+        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_name).first()
+        term_obj = Term.query.filter_by(name=term).first()
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
-@classteacher_bp.route('/dev/report_probe/<grade>/<stream>/<term>/<assessment_type>')
-@dev_only
-def report_probe(grade, stream, term, assessment_type):
-    """Lightweight JSON probe to inspect builder output without rendering template."""
-    from ..services.class_report_builder import ClassReportBuilder
-    from flask import jsonify
-    ctx = ClassReportBuilder.build(grade, stream, term, assessment_type, selected_subject_ids=session.get('selected_subjects', []))
-    if ctx.get('error'):
-        return jsonify({'error': ctx['error']}), 400
-    # Trim large arrays for probe
-    sample_students = ctx.get('class_data', [])[:5]
-    return jsonify({
-        'grade': grade,
-        'stream': stream,
-        'term': term,
-        'assessment_type': assessment_type,
-        'subjects': ctx.get('subject_names', []),
-        'student_sample_count': len(sample_students),
-        'first_student': sample_students[0] if sample_students else None,
-        'class_average': ctx.get('class_average'),
-        'subject_averages': ctx.get('subject_averages'),
-    })
+        if not (stream_obj and term_obj and assessment_type_obj):
+            flash("Invalid grade, stream, term, or assessment type", "error")
+            return redirect(url_for('classteacher.dashboard'))
+
+        # Determine education level
+        grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+        if 1 <= grade_num <= 3:
+            education_level = "lower_primary"
+        elif 4 <= grade_num <= 6:
+            education_level = "upper_primary"
+        elif 7 <= grade_num <= 9:
+            education_level = "junior_secondary"
+        else:
+            education_level = "upper_primary"
+
+        # Get students
+        students = Student.query.filter_by(stream_id=stream_obj.id).all()
+
+        # Get all subjects for this education level
+        all_subjects = Subject.query.filter_by(education_level=education_level).all()
+
+        # Separate composite and component subjects
+        composite_subjects = [s for s in all_subjects if s.is_composite]
+        component_subjects = [s for s in all_subjects if s.is_component]
+        regular_subjects = [s for s in all_subjects if not s.is_composite and not s.is_component]
+
+        # Build class data
+        class_data = []
+        subject_names = []
+
+        # Add regular subjects to subject names
+        for subject in regular_subjects:
+            subject_names.append(subject.name)
+
+        # Add composite subjects to subject names (they will show as combined)
+        for subject in composite_subjects:
+            subject_names.append(subject.name)
+
+        # Process each student
+        for i, student in enumerate(students, 1):
+            student_marks = {}
+            total_marks = 0
+            subject_count = 0
+
+            # Get regular subject marks
+            for subject in regular_subjects:
+                mark = Mark.query.filter_by(
+                    student_id=student.id,
+                    subject_id=subject.id,
+                    term_id=term_obj.id,
+                    assessment_type_id=assessment_type_obj.id
+                ).first()
+
+                if mark and mark.percentage is not None:
+                    student_marks[subject.name] = mark.percentage
+                    total_marks += mark.percentage
+                    subject_count += 1
+                else:
+                    student_marks[subject.name] = 0
+
+            # Get composite subject marks (calculated from components)
+            for composite in composite_subjects:
+                # Get component subjects for this composite
+                components = [s for s in component_subjects if s.composite_parent == composite.name]
+
+                if components:
+                    weighted_total = 0
+                    total_weight = 0
+                    has_marks = False
+
+                    for component in components:
+                        mark = Mark.query.filter_by(
+                            student_id=student.id,
+                            subject_id=component.id,
+                            term_id=term_obj.id,
+                            assessment_type_id=assessment_type_obj.id
+                        ).first()
+
+                        if mark and mark.percentage is not None:
+                            weight = component.component_weight or 0.5  # Default weight
+                            weighted_total += mark.percentage * weight
+                            total_weight += weight
+                            has_marks = True
+
+                    if has_marks and total_weight > 0:
+                        composite_percentage = weighted_total / total_weight
+                        student_marks[composite.name] = composite_percentage
+                        total_marks += composite_percentage
+                        subject_count += 1
+                    else:
+                        student_marks[composite.name] = 0
+                else:
+                    student_marks[composite.name] = 0
+
+            # Calculate average
+            average = total_marks / subject_count if subject_count > 0 else 0
+
+            # Get grade
+            from ..utils import get_grade_and_points
+            grade_letter, _ = get_grade_and_points(average)
+
+            class_data.append({
+                'index': i,
+                'student': student.name,
+                'student_id': student.id,
+                'marks': student_marks,
+                'total': total_marks,
+                'average_percentage': average,
+                'grade': grade_letter,
+                'rank': i
+            })
+
+        # Sort by total marks and update ranks
+        class_data.sort(key=lambda x: x['total'], reverse=True)
+        for i, student_data in enumerate(class_data, 1):
+            student_data['rank'] = i
+
+        # Calculate statistics
+        if class_data:
+            averages = [s['average_percentage'] for s in class_data]
+            stats = {
+                'class_average': sum(averages) / len(averages),
+                'highest_average': max(averages),
+                'lowest_average': min(averages)
+            }
+        else:
+            stats = {'class_average': 0, 'highest_average': 0, 'lowest_average': 0}
+
+        # Get current date
+        from datetime import datetime
+        current_date = datetime.now().strftime("%B %d, %Y")
+
+        # Render using the existing preview template
+        return render_template('preview_class_report.html',
+                             grade=grade,
+                             stream=stream,
+                             term=term,
+                             assessment_type=assessment_type,
+                             class_data=class_data,
+                             stats=stats,
+                             subject_names=subject_names,
+                             current_date=current_date,
+                             total_marks=100,
+                             education_level=education_level.replace('_', ' '),
+                             filtered_subjects=all_subjects,
+                             subject_components={},  # Empty for now
+                             component_marks_data={},  # Empty for now
+                             abbreviated_subjects=[s[:4].upper() for s in subject_names])
+
+    except Exception as e:
+        flash(f"Error generating fixed report: {str(e)}", "error")
+        import traceback
+        traceback.print_exc()
+        return redirect(url_for('classteacher.dashboard'))
 
 @classteacher_bp.route('/create_test_marks')
-@dev_only
+@classteacher_required
 def create_test_marks():
-    return ("<h2>🛑 Disabled</h2><p>Composite subject manual fix removed. "
-            "Any structural adjustments must go through Alembic migrations.</p>")
+    """Create some test marks for English Grammar and Composition to demonstrate the system."""
+    try:
+        results = []
+        results.append("🧪 Creating Test Marks for Composite Subjects")
+        results.append("=" * 60)
+
+        # Get Grade 1 Stream A students
+        stream_obj = Stream.query.join(Grade).filter(Grade.name == 'Grade 1', Stream.name == 'A').first()
+        term_obj = Term.query.filter_by(name='Term 1').first()
+        assessment_type_obj = AssessmentType.query.filter_by(name='Mid Term').first()
+
+        if not (stream_obj and term_obj and assessment_type_obj):
+            results.append("❌ Could not find Grade 1 Stream A, Term 1, or Mid Term")
+            return f"<pre>{'<br>'.join(results)}</pre>"
+
+        students = Student.query.filter_by(stream_id=stream_obj.id).all()
+        results.append(f"📚 Found {len(students)} students in Grade 1 Stream A")
+
+        # Get English Grammar and Composition subjects
+        english_grammar = Subject.query.filter_by(
+            name="English Grammar",
+            education_level="lower_primary",
+            is_component=True
+        ).first()
+
+        english_composition = Subject.query.filter_by(
+            name="English Composition",
+            education_level="lower_primary",
+            is_component=True
+        ).first()
+
+        if not english_grammar:
+            results.append("❌ English Grammar subject not found")
+            return f"<pre>{'<br>'.join(results)}</pre>"
+
+        if not english_composition:
+            results.append("❌ English Composition subject not found")
+            return f"<pre>{'<br>'.join(results)}</pre>"
+
+        results.append(f"✅ Found English Grammar (ID: {english_grammar.id})")
+        results.append(f"✅ Found English Composition (ID: {english_composition.id})")
+
+        # Create test marks
+        import random
+        marks_created = 0
+
+        for i, student in enumerate(students):
+            # Create English Grammar mark (typically higher - 80-95)
+            grammar_percentage = random.randint(80, 95)
+            grammar_raw = int(grammar_percentage)  # Assuming out of 100
+
+            # Check if mark already exists
+            existing_grammar = Mark.query.filter_by(
+                student_id=student.id,
+                subject_id=english_grammar.id,
+                term_id=term_obj.id,
+                assessment_type_id=assessment_type_obj.id
+            ).first()
+
+            if not existing_grammar:
+                grammar_mark = Mark(
+                    student_id=student.id,
+                    subject_id=english_grammar.id,
+                    term_id=term_obj.id,
+                    assessment_type_id=assessment_type_obj.id,
+                    raw_mark=grammar_raw,
+                    max_raw_mark=100,
+                    percentage=grammar_percentage
+                )
+                db.session.add(grammar_mark)
+                marks_created += 1
+                results.append(f"   📝 {student.name}: Grammar = {grammar_percentage}%")
+
+            # Create English Composition mark (typically lower - 70-90)
+            composition_percentage = random.randint(70, 90)
+            composition_raw = int(composition_percentage)
+
+            # Check if mark already exists
+            existing_composition = Mark.query.filter_by(
+                student_id=student.id,
+                subject_id=english_composition.id,
+                term_id=term_obj.id,
+                assessment_type_id=assessment_type_obj.id
+            ).first()
+
+            if not existing_composition:
+                composition_mark = Mark(
+                    student_id=student.id,
+                    subject_id=english_composition.id,
+                    term_id=term_obj.id,
+                    assessment_type_id=assessment_type_obj.id,
+                    raw_mark=composition_raw,
+                    max_raw_mark=100,
+                    percentage=composition_percentage
+                )
+                db.session.add(composition_mark)
+                marks_created += 1
+                results.append(f"   ✍️ {student.name}: Composition = {composition_percentage}%")
+
+        # Commit the marks
+        if marks_created > 0:
+            db.session.commit()
+            results.append(f"\n✅ Created {marks_created} test marks successfully!")
+        else:
+            results.append(f"\n⚠️ No new marks created (marks may already exist)")
+
+        results.append(f"\n🎯 Next Steps:")
+        results.append(f"1. Visit the fixed class report to see the results:")
+        results.append(f"   /classteacher/fixed_class_report/Grade%201/Stream%20A/Term%201/Mid%20Term")
+        results.append(f"2. Visit the enhanced class report to see composite columns:")
+        results.append(f"   /classteacher/enhanced_class_report/Grade%201/Stream%20A/Term%201/Mid%20Term")
+        results.append(f"3. Check the debug route to see the marks data:")
+        results.append(f"   /classteacher/debug_marks_data/Grade%201/Stream%20A/Term%201/Mid%20Term")
+
+        return f"<pre>{'<br>'.join(results)}</pre>"
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        return f"<pre>❌ Error creating test marks: {str(e)}<br><br>{traceback.format_exc()}</pre>"
 
 @classteacher_bp.route('/test_report_debug')
-@dev_only
 def test_report_debug():
     """Debug route to test report calculations without authentication."""
     try:
@@ -940,8 +1415,7 @@ def clear_cache():
     return redirect(url_for('classteacher.dashboard'))
 
 @classteacher_bp.route('/analytics')
-@limiter.limit("30 per minute")
-@classteacher_required()
+@classteacher_required
 def analytics_dashboard():
     """Dedicated analytics page for classteachers."""
     print("🔍 ANALYTICS ROUTE HIT!")
@@ -956,7 +1430,7 @@ def analytics_dashboard():
             return redirect(url_for('auth.classteacher_login'))
 
         # Get teacher information
-        teacher = safe_get(Teacher, teacher_id)
+        teacher = Teacher.query.get(teacher_id)
         if not teacher:
             print("🚨 Teacher not found in database")
             flash('Teacher not found.', 'error')
@@ -1052,41 +1526,16 @@ def analytics_dashboard():
                 requested_limit = request.args.get('limit', type=int)
                 top_limit = requested_limit if requested_limit else (999 if show_all else 5)
 
-                # Subject controls: top N and view (rank vs average)
-                top_subjects = request.args.get('top_subjects', type=int)
-                view_mode = request.args.get('subject_view', default='average')  # 'rank' or 'average'
-
                 print(f"🔍 Filters -> term_id: {selected_term_id}, assessment_type_id: {selected_assessment_type_id}, grade_id: {selected_grade_id}, stream_id: {selected_stream_id}")
 
-                # Prefer analytics derived from the Class Report (single source of truth)
-                try:
-                    comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics_from_report(
-                        grade_id=selected_grade_id,
-                        stream_id=selected_stream_id,
-                        term_id=selected_term_id,
-                        assessment_type_id=selected_assessment_type_id,
-                        top_performers_limit=top_limit,
-                        top_subjects_limit=top_subjects,
-                    )
-                    # If report-based path yields no data, fall back to legacy DB-driven method
-                    if not comprehensive_analytics or comprehensive_analytics.get('error') or not comprehensive_analytics.get('summary', {}).get('has_sufficient_data'):
-                        print("ℹ️ Falling back to legacy analytics computation")
-                        comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics(
-                            grade_id=selected_grade_id,
-                            stream_id=selected_stream_id,
-                            term_id=selected_term_id,
-                            assessment_type_id=selected_assessment_type_id,
-                            top_performers_limit=top_limit,
-                        )
-                except Exception as _e:
-                    print(f"⚠️ Report-based analytics failed: {_e}")
-                    comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics(
-                        grade_id=selected_grade_id,
-                        stream_id=selected_stream_id,
-                        term_id=selected_term_id,
-                        assessment_type_id=selected_assessment_type_id,
-                        top_performers_limit=top_limit,
-                    )
+                # Get comprehensive analytics for the teacher's class with filters
+                comprehensive_analytics = AcademicAnalyticsService.get_comprehensive_analytics(
+                    grade_id=selected_grade_id,
+                    stream_id=selected_stream_id,
+                    term_id=selected_term_id,  # None = current/all depending on service
+                    assessment_type_id=selected_assessment_type_id,  # None = all assessments
+                    top_performers_limit=top_limit
+                )
 
                 print(f"🔍 Comprehensive analytics result: {comprehensive_analytics}")
                 print(f"🔍 Analytics keys: {list(comprehensive_analytics.keys()) if comprehensive_analytics else 'None'}")
@@ -1172,51 +1621,25 @@ def analytics_dashboard():
 
         print(f"🔍 Filter options - Terms: {len(terms)}, Assessments: {len(assessment_types)}, Grades: {len(grades)}")
 
-        try:
-            # Guarantee required summary keys to avoid template KeyErrors
-            summary_defaults = {
-                'students_analyzed': 0,
-                'subjects_analyzed': 0,
-                'best_subject_average': 0,
-                'top_student_average': 0,
-                'has_sufficient_data': False
-            }
-            analytics_data.setdefault('summary', {})
-            for k,v in summary_defaults.items():
-                analytics_data['summary'].setdefault(k, v)
-            analytics_data.setdefault('top_performers', analytics_data.get('topPerformers', []))
-            analytics_data.setdefault('subject_analytics', analytics_data.get('subjectAnalytics', []))
-
-            # Ensure safe defaults for optional UI controls
-            top_subjects_safe = top_subjects if 'top_subjects' in locals() and isinstance(top_subjects, int) else 0
-            view_mode_safe = view_mode if 'view_mode' in locals() and view_mode in ('average', 'rank') else 'average'
-
-            return render_template(
-                'classteacher_analytics.html',
-                teacher=teacher,
-                analytics_data=analytics_data,
-                terms=terms,
-                assessment_types=assessment_types,
-                grades=grades,
-                # Effective filters reflect defaults when none selected
-                effective_term_filter=selected_term_id if 'selected_term_id' in locals() else request.args.get('term', type=int),
-                effective_assessment_filter=selected_assessment_type_id if 'selected_assessment_type_id' in locals() else request.args.get('assessment_type', type=int),
-                effective_grade_filter=selected_grade_id if 'selected_grade_id' in locals() else request.args.get('grade', type=int),
-                effective_stream_filter=selected_stream_id if 'selected_stream_id' in locals() else request.args.get('stream', type=int),
-                current_term_filter=request.args.get('term', type=int),
-                current_assessment_filter=request.args.get('assessment_type', type=int),
-                current_grade_filter=request.args.get('grade', type=int),
-                show_all=show_all if 'show_all' in locals() else False,
-                current_limit=(requested_limit if 'requested_limit' in locals() else None),
-                top_subjects=top_subjects_safe,
-                subject_view=view_mode_safe,
-                page_title="Academic Performance Analytics",
-            )
-        except Exception as render_err:
-            print(f"🚨 Template render error analytics_dashboard: {render_err}")
-            import traceback; traceback.print_exc()
-            flash('Analytics page rendering error.', 'error')
-            return redirect(url_for('classteacher.dashboard'))
+        return render_template(
+            'classteacher_analytics.html',
+            teacher=teacher,
+            analytics_data=analytics_data,
+            terms=terms,
+            assessment_types=assessment_types,
+            grades=grades,
+            # Effective filters reflect defaults when none selected
+            effective_term_filter=selected_term_id if 'selected_term_id' in locals() else request.args.get('term', type=int),
+            effective_assessment_filter=selected_assessment_type_id if 'selected_assessment_type_id' in locals() else request.args.get('assessment_type', type=int),
+            effective_grade_filter=selected_grade_id if 'selected_grade_id' in locals() else request.args.get('grade', type=int),
+            effective_stream_filter=selected_stream_id if 'selected_stream_id' in locals() else request.args.get('stream', type=int),
+            current_term_filter=request.args.get('term', type=int),
+            current_assessment_filter=request.args.get('assessment_type', type=int),
+            current_grade_filter=request.args.get('grade', type=int),
+            show_all=show_all if 'show_all' in locals() else False,
+            current_limit=(requested_limit if 'requested_limit' in locals() else None),
+            page_title="Academic Performance Analytics",
+        )
 
     except Exception as e:
         print(f"🚨 Error in analytics route: {e}")
@@ -1226,506 +1649,9 @@ def analytics_dashboard():
         return redirect(url_for('classteacher.dashboard'))
 
 
-@classteacher_bp.route('/analytics/data')
-@limiter.limit("60 per minute")
-@classteacher_required()
-def analytics_data_api():
-    """Lightweight JSON endpoint returning comprehensive analytics for async fetch.
-
-    Mirrors filter logic from analytics_dashboard but returns JSON only.
-    Front-end can call this to refresh charts without full page reload.
-    """
-    try:
-        teacher_id = session.get('teacher_id')
-        role = (session.get('role') or '').lower()
-        # Allow headteachers to query without a bound teacher_id (shared UI scenario)
-        if not teacher_id and role != 'headteacher':
-            return jsonify({'error': 'Not authenticated'}), 401
-
-        from ..services.role_based_data_service import RoleBasedDataService
-        from ..services.academic_analytics_service import AcademicAnalyticsService
-
-        # Determine role; headteacher can query any class via params (no assignment required)
-    # role already computed above
-
-        # Default values from first assignment (classteacher), but don't block headteacher when none
-        assigned_classes = []
-        if teacher_id:
-            assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
-            if 'error' in assignment_summary:
-                # For headteacher, proceed with provided params; otherwise return error
-                if role != 'headteacher':
-                    return jsonify({'error': assignment_summary['error']}), 400
-                assigned_classes = []
-            else:
-                assigned_classes = assignment_summary.get('class_teacher_assignments', [])
-
-        # Defaults from first assignment (classteacher only)
-        default_grade_id = None
-        default_stream_id = None
-        if assigned_classes:
-            first_class = assigned_classes[0]
-            default_grade_id = first_class.get('grade_id')
-            default_stream_id = first_class.get('stream_id')
-
-        # Query params (ensure consistent indentation inside route)
-        # For headteacher, do not fall back to classteacher defaults unless present
-        grade_id = request.args.get('grade', type=int) or (default_grade_id if default_grade_id and role != 'headteacher' else None)
-        stream_id = request.args.get('stream', type=int) or (default_stream_id if default_stream_id and role != 'headteacher' else None)
-        term_id = request.args.get('term', type=int)
-        assessment_type_id = request.args.get('assessment_type', type=int)
-        limit = request.args.get('limit', type=int)
-        show_all = request.args.get('show_all', type=int) == 1
-        top_limit = limit if limit else (999 if show_all else 5)
-
-        # Subject controls
-        top_subjects = request.args.get('top_subjects', type=int)
-        view_mode = request.args.get('subject_view', default='average')
-
-        # Prefer report-driven analytics; fall back to legacy
-        try:
-            data = AcademicAnalyticsService.get_comprehensive_analytics_from_report(
-                grade_id=grade_id,
-                stream_id=stream_id,
-                term_id=term_id,
-                assessment_type_id=assessment_type_id,
-                top_performers_limit=top_limit,
-                top_subjects_limit=top_subjects,
-            )
-            if (not data) or data.get('error') or not data.get('summary', {}).get('has_sufficient_data'):
-                data = AcademicAnalyticsService.get_comprehensive_analytics(
-                    grade_id=grade_id,
-                    stream_id=stream_id,
-                    term_id=term_id,
-                    assessment_type_id=assessment_type_id,
-                    top_performers_limit=top_limit
-                )
-        except Exception:
-            data = AcademicAnalyticsService.get_comprehensive_analytics(
-                grade_id=grade_id,
-                stream_id=stream_id,
-                term_id=term_id,
-                assessment_type_id=assessment_type_id,
-                top_performers_limit=top_limit
-            )
-
-        # If critical identifiers are missing, return a friendly empty payload
-        if not grade_id or not stream_id:
-            return jsonify({
-                'top_performers': [],
-                'top_students': [],
-                'subject_analytics': [],
-                'summary': {
-                    'students_analyzed': 0,
-                    'subjects_analyzed': 0,
-                    'best_subject_average': 0,
-                    'top_student_average': 0,
-                    'has_sufficient_data': False
-                },
-                'has_data': False,
-                'applied_filters': {
-                    'grade_id': grade_id,
-                    'stream_id': stream_id,
-                    'term_id': term_id,
-                    'assessment_type_id': assessment_type_id,
-                    'top_limit': top_limit,
-                    'top_subjects': top_subjects,
-                    'subject_view': view_mode,
-                }
-            })
-
-        if data and not data.get('error'):
-            # Normalize field names for front-end
-            if 'top_students' not in data and 'top_performers' in data:
-                data['top_students'] = data.get('top_performers', [])
-            # Ensure alias for top_subject for clients that use camelCase
-            if 'topSubject' not in data and 'top_subject' in data:
-                data['topSubject'] = data.get('top_subject')
-            summary = data.get('summary', {})
-            data['has_data'] = summary.get('has_sufficient_data', False)
-            data['applied_filters'] = {
-                'grade_id': grade_id,
-                'stream_id': stream_id,
-                'term_id': term_id,
-                'assessment_type_id': assessment_type_id,
-                'top_limit': top_limit,
-                'top_subjects': top_subjects,
-                'subject_view': view_mode,
-            }
-            # Also provide IDs directly for building drill-down links
-            data['context_ids'] = {
-                'grade_id': grade_id,
-                'stream_id': stream_id,
-                'term_id': term_id,
-                'assessment_type_id': assessment_type_id,
-            }
-
-            # Compute Class vs Grade vs School benchmarks if filters sufficient
-            try:
-                if term_id and assessment_type_id:
-                    from sqlalchemy import func
-                    # Student-level averages scoped by optional class/grade
-                    student_avg = db.session.query(
-                        Student.id.label('student_id'),
-                        func.avg(Mark.percentage).label('avg_percentage')
-                    ).join(Mark, Student.id == Mark.student_id)
-                    if stream_id:
-                        student_avg = student_avg.filter(Student.stream_id == stream_id)
-                    elif grade_id:
-                        student_avg = student_avg.join(Stream, Student.stream_id == Stream.id).filter(Stream.grade_id == grade_id)
-                    student_avg = student_avg.filter(
-                        Mark.term_id == term_id,
-                        Mark.assessment_type_id == assessment_type_id,
-                        Mark.percentage.isnot(None)
-                    ).group_by(Student.id).subquery()
-
-                    class_avg = None
-                    if stream_id:
-                        class_avg = db.session.query(func.avg(student_avg.c.avg_percentage)).scalar()
-
-                    grade_avg = None
-                    if grade_id:
-                        grade_student_avg = db.session.query(
-                            Student.id.label('student_id'), func.avg(Mark.percentage).label('avg_percentage')
-                        ).join(Mark, Student.id == Mark.student_id).join(Stream, Student.stream_id == Stream.id).filter(
-                            Stream.grade_id == grade_id,
-                            Mark.term_id == term_id,
-                            Mark.assessment_type_id == assessment_type_id,
-                            Mark.percentage.isnot(None)
-                        ).group_by(Student.id).subquery()
-                        grade_avg = db.session.query(func.avg(grade_student_avg.c.avg_percentage)).scalar()
-
-                    school_student_avg = db.session.query(
-                        Student.id.label('student_id'), func.avg(Mark.percentage).label('avg_percentage')
-                    ).join(Mark, Student.id == Mark.student_id).filter(
-                        Mark.term_id == term_id,
-                        Mark.assessment_type_id == assessment_type_id,
-                        Mark.percentage.isnot(None)
-                    ).group_by(Student.id).subquery()
-                    school_avg = db.session.query(func.avg(school_student_avg.c.avg_percentage)).scalar()
-
-                    data['benchmarks'] = {
-                        'class_avg': float(class_avg) if class_avg is not None else None,
-                        'grade_avg': float(grade_avg) if grade_avg is not None else None,
-                        'school_avg': float(school_avg) if school_avg is not None else None,
-                    }
-            except Exception as _be:
-                logger.debug(f"Benchmark computation (JSON) failed: {_be}")
-            return jsonify(data)
-        else:
-            return jsonify({'error': data.get('error', 'No data'), 'has_data': False}), 200
-    except Exception as e:  # pragma: no cover
-        logger.exception("Analytics data API error")
-        return jsonify({'error': str(e), 'has_data': False}), 500
-
-@classteacher_bp.route('/analytics/export_pdf')
-@limiter.limit("20 per minute")
-@classteacher_required()
-def analytics_export_pdf():
-    """Generate a PDF of Top/Bottom N learners for the current filters.
-
-    Query params:
-    - kind: 'top' or 'bottom'
-    - n: integer (e.g., 3,5,10)
-    - term, assessment_type, grade, stream: same as analytics filters
-    """
-    try:
-        # Inputs
-        kind = request.args.get('kind', 'top')
-        n = request.args.get('n', type=int) or 5
-        if kind not in ('top', 'bottom'):
-            kind = 'top'
-        if not isinstance(n, int) or n <= 0:
-            n = 5
-        n = min(max(n, 1), 100)
-
-        teacher_id = session.get('teacher_id')
-        if not teacher_id:
-            return jsonify({'error': 'Not authenticated'}), 401
-
-        from ..services.role_based_data_service import RoleBasedDataService
-        from ..services.academic_analytics_service import AcademicAnalyticsService
-
-        assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
-        role = (session.get('role') or '').lower()
-        if 'error' in assignment_summary and role != 'headteacher':
-            return jsonify({'error': assignment_summary['error']}), 400
-        assigned_classes = [] if 'error' in assignment_summary else assignment_summary.get('class_teacher_assignments', [])
-
-        # Defaults when classteacher; headteacher can pass params directly
-        default_grade_id = assigned_classes[0].get('grade_id') if assigned_classes else None
-        default_stream_id = assigned_classes[0].get('stream_id') if assigned_classes else None
-
-        grade_id = request.args.get('grade', type=int) or default_grade_id
-        stream_id = request.args.get('stream', type=int) or default_stream_id
-        term_id = request.args.get('term', type=int)
-        assessment_type_id = request.args.get('assessment_type', type=int)
-
-        # If identifiers are missing, return an informative empty PDF
-        if not grade_id or not stream_id:
-            empty_buf = BytesIO()
-            from reportlab.lib.pagesizes import A4
-            from reportlab.lib.styles import getSampleStyleSheet
-            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-            doc = SimpleDocTemplate(empty_buf, pagesize=A4)
-            styles = getSampleStyleSheet()
-            story = [Paragraph('Missing selection', styles['Title']), Paragraph('Please choose Grade and Stream to export.', styles['Normal'])]
-            story.append(Spacer(1, 12))
-            doc.build(story)
-            empty_buf.seek(0)
-            return send_file(empty_buf, mimetype='application/pdf', as_attachment=True, download_name='Analytics_Select_Class.pdf')
-
-        # Fetch analytics with no performer slicing to get full rank list
-        try:
-            data = AcademicAnalyticsService.get_comprehensive_analytics_from_report(
-                grade_id=grade_id,
-                stream_id=stream_id,
-                term_id=term_id,
-                assessment_type_id=assessment_type_id,
-                top_performers_limit=None,
-                top_subjects_limit=None,
-            )
-            if (not data) or data.get('error') or not data.get('summary', {}).get('has_sufficient_data'):
-                data = AcademicAnalyticsService.get_comprehensive_analytics(
-                    grade_id=grade_id,
-                    stream_id=stream_id,
-                    term_id=term_id,
-                    assessment_type_id=assessment_type_id,
-                    top_performers_limit=999
-                )
-        except Exception:
-            data = AcademicAnalyticsService.get_comprehensive_analytics(
-                grade_id=grade_id,
-                stream_id=stream_id,
-                term_id=term_id,
-                assessment_type_id=assessment_type_id,
-                top_performers_limit=999
-            )
-
-        performers = (data or {}).get('top_performers') or []
-        context = (data or {}).get('context') or {}
-
-        # Select items
-        if kind == 'top':
-            selected = performers[:n]
-            title = f"Top {n} Learners"
-        else:
-            # bottom n by average asc
-            selected = sorted(performers, key=lambda x: float(x.get('average_percentage', 0)))[:n]
-            title = f"Least {n} Performing Learners"
-
-        # Build PDF
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib import colors
-        from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-
-        buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
-        styles = getSampleStyleSheet()
-        story = []
-
-        story.append(Paragraph(title, styles['Title']))
-        try:
-            ctx_line = f"{context.get('grade','')} {('Stream ' + context.get('stream')) if context.get('stream') else ''} • {context.get('term','')} • {context.get('assessment_type','')}"
-            story.append(Paragraph(ctx_line, styles['Normal']))
-        except Exception:
-            pass
-        story.append(Spacer(1, 12))
-
-        table_data = [["Rank", "Student", "Average %", "Grade"]]
-        for it in selected:
-            try:
-                rank_val = it.get('rank') if it.get('rank') is not None else ''
-                name_val = it.get('name') or it.get('student_name') or ''
-                avg_val = f"{float(it.get('average_percentage', 0)):.1f}%"
-                grade_letter = it.get('grade_letter', '')
-            except Exception:
-                rank_val, name_val, avg_val, grade_letter = '', '', '0.0%', ''
-            table_data.append([rank_val, name_val, avg_val, grade_letter])
-
-        tbl = Table(table_data, colWidths=[50, 280, 90, 60])
-        tbl.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f5f5f5')),
-            ('TEXTCOLOR', (0,0), (-1,0), colors.black),
-            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-            ('ALIGN', (1,1), (1,-1), 'LEFT'),
-            ('GRID', (0,0), (-1,-1), 0.4, colors.grey),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-            ('BOTTOMPADDING', (0,0), (-1,0), 8),
-        ]))
-        story.append(tbl)
-
-        # Footer
-        story.append(Spacer(1, 12))
-        try:
-            gen_time = datetime.now().strftime('%Y-%m-%d %H:%M')
-            story.append(Paragraph(f"Generated on {gen_time}", styles['Italic']))
-        except Exception:
-            pass
-
-        doc.build(story)
-        buffer.seek(0)
-        filename = f"{title.replace(' ', '_')}.pdf"
-        return send_file(buffer, mimetype='application/pdf', as_attachment=True, download_name=filename)
-    except Exception as e:  # pragma: no cover
-        logger.exception("Analytics export PDF error")
-        return jsonify({'error': str(e)}), 500
-
-@classteacher_bp.route('/analytics/export_subjects_pdf')
-@limiter.limit("20 per minute")
-@classteacher_required()
-def analytics_export_subjects_pdf():
-    """Generate a PDF of the Subject Performance grid for the current filters.
-
-    Query params:
-    - top_subjects: optional integer to slice Top N subjects (3,5,10)
-    - subject_view: 'average' (default) or 'rank' to control first column
-    - term, assessment_type, grade, stream: same as analytics filters
-    """
-    try:
-        teacher_id = session.get('teacher_id')
-        if not teacher_id:
-            return jsonify({'error': 'Not authenticated'}), 401
-
-        top_subjects = request.args.get('top_subjects', type=int)
-        subject_view = request.args.get('subject_view', default='average')
-        if subject_view not in ('average', 'rank'):
-            subject_view = 'average'
-
-        from ..services.role_based_data_service import RoleBasedDataService
-        from ..services.academic_analytics_service import AcademicAnalyticsService
-
-        assignment_summary = RoleBasedDataService.get_teacher_assignments_summary(teacher_id, 'classteacher')
-        role = (session.get('role') or '').lower()
-        if 'error' in assignment_summary and role != 'headteacher':
-            return jsonify({'error': assignment_summary['error']}), 400
-        assigned_classes = [] if 'error' in assignment_summary else assignment_summary.get('class_teacher_assignments', [])
-
-        default_grade_id = assigned_classes[0].get('grade_id') if assigned_classes else None
-        default_stream_id = assigned_classes[0].get('stream_id') if assigned_classes else None
-
-        grade_id = request.args.get('grade', type=int) or default_grade_id
-        stream_id = request.args.get('stream', type=int) or default_stream_id
-        term_id = request.args.get('term', type=int)
-        assessment_type_id = request.args.get('assessment_type', type=int)
-
-        if not grade_id or not stream_id:
-            empty_buf = BytesIO()
-            from reportlab.lib.pagesizes import A4
-            from reportlab.lib.styles import getSampleStyleSheet
-            from reportlab.platypus import SimpleDocTemplate, Paragraph
-            doc = SimpleDocTemplate(empty_buf, pagesize=A4)
-            styles = getSampleStyleSheet()
-            doc.build([Paragraph('Missing selection', styles['Title']), Paragraph('Choose Grade and Stream to export.', styles['Normal'])])
-            empty_buf.seek(0)
-            return send_file(empty_buf, mimetype='application/pdf', as_attachment=True, download_name='Subject_Performance_Select_Class.pdf')
-
-        # Fetch analytics; apply top_subjects slicing using service support
-        try:
-            data = AcademicAnalyticsService.get_comprehensive_analytics_from_report(
-                grade_id=grade_id,
-                stream_id=stream_id,
-                term_id=term_id,
-                assessment_type_id=assessment_type_id,
-                top_performers_limit=None,
-                top_subjects_limit=top_subjects,
-            )
-            if (not data) or data.get('error') or not data.get('summary', {}).get('has_sufficient_data'):
-                # Legacy fallback doesn't support per-subject enrichments fully
-                data = AcademicAnalyticsService.get_comprehensive_analytics(
-                    grade_id=grade_id,
-                    stream_id=stream_id,
-                    term_id=term_id,
-                    assessment_type_id=assessment_type_id,
-                    top_performers_limit=None
-                )
-        except Exception:
-            data = AcademicAnalyticsService.get_comprehensive_analytics(
-                grade_id=grade_id,
-                stream_id=stream_id,
-                term_id=term_id,
-                assessment_type_id=assessment_type_id,
-                top_performers_limit=None
-            )
-
-        subjects = (data or {}).get('subject_analytics') or []
-        context = (data or {}).get('context') or {}
-
-        # Build PDF
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib import colors
-        from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-
-        buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
-        styles = getSampleStyleSheet()
-        story = []
-
-        story.append(Paragraph('Subject Performance', styles['Title']))
-        try:
-            ctx_line = f"{context.get('grade','')} {('Stream ' + context.get('stream')) if context.get('stream') else ''} • {context.get('term','')} • {context.get('assessment_type','')}"
-            story.append(Paragraph(ctx_line, styles['Normal']))
-        except Exception:
-            pass
-        story.append(Paragraph(f"View: {'Rank' if subject_view=='rank' else 'Average'}" + (f" • Top {top_subjects}" if top_subjects else ''), styles['Normal']))
-        story.append(Spacer(1, 12))
-
-        # Table header depends on subject_view
-        first_col = 'Rank' if subject_view == 'rank' else 'Average %'
-        table_data = [[first_col, 'Subject', 'Teacher', 'Students', 'Assessments', 'Prev Term %', 'Δ', 'Status']]
-
-        for s in subjects:
-            try:
-                avg = float(s.get('average_percentage', 0) or 0.0)
-                rank_val = s.get('rank') if s.get('rank') is not None else ''
-                prev = s.get('previous_average')
-                delta = s.get('trend_delta') if s.get('trend_delta') is not None else ''
-                status = s.get('performance_category') or ''
-                teacher = s.get('teacher_name') or ''
-                subject_name = s.get('subject_name') or s.get('name') or ''
-                students_count = s.get('student_count') or s.get('students_count') or s.get('students_with_marks') or 0
-                assess_count = s.get('total_marks') or s.get('total_assessments') or 0
-                first_val = (f"#{rank_val}" if subject_view == 'rank' and rank_val != '' else f"{avg:.1f}%")
-                prev_val = (f"{float(prev):.1f}%" if prev is not None else '')
-                delta_val = (f"{float(delta):.1f}" if isinstance(delta, (float, int)) else '')
-                table_data.append([first_val, subject_name, teacher, students_count, assess_count, prev_val, delta_val, status])
-            except Exception:
-                continue
-
-        col_widths = [70, 170, 130, 60, 80, 80, 40, 80]
-        tbl = Table(table_data, colWidths=col_widths)
-        tbl.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f5f5f5')),
-            ('TEXTCOLOR', (0,0), (-1,0), colors.black),
-            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-            ('ALIGN', (1,1), (1,-1), 'LEFT'),
-            ('ALIGN', (2,1), (2,-1), 'LEFT'),
-            ('GRID', (0,0), (-1,-1), 0.4, colors.grey),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-            ('BOTTOMPADDING', (0,0), (-1,0), 8),
-        ]))
-        story.append(tbl)
-
-        story.append(Spacer(1, 12))
-        try:
-            gen_time = datetime.now().strftime('%Y-%m-%d %H:%M')
-            story.append(Paragraph(f"Generated on {gen_time}", styles['Italic']))
-        except Exception:
-            pass
-
-        doc.build(story)
-        buffer.seek(0)
-        filename = 'Subject_Performance.pdf' if not top_subjects else f'Subject_Performance_Top_{top_subjects}.pdf'
-        return send_file(buffer, mimetype='application/pdf', as_attachment=True, download_name=filename)
-    except Exception as e:  # pragma: no cover
-        logger.exception("Subject analytics export PDF error")
-        return jsonify({'error': str(e)}), 500
-
 @classteacher_bp.route('/', methods=['GET', 'POST'])
-@limiter.limit("30 per minute")
-@classteacher_required()
+@classteacher_required
+@secure_file_upload(allowed_extensions=['.csv', '.xlsx', '.xls'], max_size=10 * 1024 * 1024)
 def dashboard():
     """Route for the class teacher dashboard."""
     print(f"🔍 DASHBOARD ROUTE HIT!")
@@ -1795,9 +1721,9 @@ def dashboard():
 
     # Check if teacher is assigned to a stream (direct assignment)
     if teacher.stream_id:
-        stream = safe_get(Stream, teacher.stream_id)
+        stream = Stream.query.get(teacher.stream_id)
         if stream:
-            grade = safe_get(Grade, stream.grade_id)
+            grade = Grade.query.get(stream.grade_id)
             if grade:
                 grade_level = grade.name
                 stream_name = f"Stream {stream.name}"
@@ -1997,7 +1923,7 @@ def dashboard():
                 # Check if stream is a numeric ID (from mobile form)
                 if stream_name.isdigit():
                     stream_id = int(stream_name)
-                    stream_obj = safe_get(Stream, stream_id)
+                    stream_obj = Stream.query.get(stream_id)
                     print(f"🔍 DEBUG: Looking up stream ID {stream_id}, found: {stream_obj}")
 
                     # Validate that the stream belongs to the selected grade
@@ -2006,7 +1932,7 @@ def dashboard():
                         if grade_level.isdigit():
                             # Mobile form submits grade ID
                             grade_id = int(grade_level)
-                            grade_obj = safe_get(Grade, grade_id)
+                            grade_obj = Grade.query.get(grade_id)
                             print(f"🔍 DEBUG: Looking up grade ID {grade_id}, found: {grade_obj}")
                         else:
                             # Desktop form submits grade name
@@ -2084,7 +2010,7 @@ def dashboard():
                 # Check if stream is a numeric ID (from mobile form)
                 if stream_name.isdigit():
                     stream_id = int(stream_name)
-                    stream_obj = safe_get(Stream, stream_id)
+                    stream_obj = Stream.query.get(stream_id)
                     print(f"🔍 DEBUG: Submit - Looking up stream ID {stream_id}, found: {stream_obj}")
 
                     # Validate that the stream belongs to the selected grade
@@ -2093,7 +2019,7 @@ def dashboard():
                         if grade_level.isdigit():
                             # Mobile form submits grade ID
                             grade_id = int(grade_level)
-                            grade_obj = safe_get(Grade, grade_id)
+                            grade_obj = Grade.query.get(grade_id)
                             print(f"🔍 DEBUG: Submit - Looking up grade ID {grade_id}, found: {grade_obj}")
                         else:
                             # Desktop form submits grade name
@@ -2341,8 +2267,6 @@ def dashboard():
 
                                 # Option 1: Redirect to Subject Report for immediate feedback and validation
                                 flash(f"✅ Marks saved successfully for {subject_name} - {grade_level} {stream_name}!", "success")
-                                # Ensure selected_subject is defined for redirect
-                                selected_subject = subject_obj.id
                                 return redirect(url_for('classteacher.subject_report',
                                                       grade_id=grade_obj.id,
                                                       stream_id=stream_obj.id,
@@ -2711,86 +2635,209 @@ def dashboard():
     )
 
 @classteacher_bp.route('/all_reports', methods=['GET'])
-@limiter.limit("60 per minute")
-@classteacher_required()
+@classteacher_required
 def all_reports():
-    """Redirect /all_reports to /view_all_reports; always return a valid response (adds safeguards)."""
-    try:
-        target = url_for('classteacher.view_all_reports')
-        if request.query_string:
-            qs = request.query_string.decode('utf-8')
-            target = f"{target}?{qs}"
-        resp = redirect(target)
-        # Ensure Flask Response
-        from werkzeug.wrappers import Response as _Resp
-        if not isinstance(resp, _Resp):
-            return redirect(target)  # attempt again
-        return resp
-    except Exception as e:
-        logger.error(f"all_reports redirect failed: {e}")
-        # Fallback: try to call the view function directly
-        try:
-            return view_all_reports()
-        except Exception as inner:
-            logger.error(f"all_reports fallback failed: {inner}")
-            return jsonify({"error":"Unable to load reports"}), 500
+    """Route for viewing all reports with advanced filtering and efficient database-level pagination."""
+    # Get filter and sort parameters
+    sort_by = request.args.get('sort', 'date')
+    filter_grade = request.args.get('filter_grade', '')
+    filter_term = request.args.get('filter_term', '')
+    filter_assessment = request.args.get('filter_assessment', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 20  # Number of reports per page
 
-@classteacher_bp.route('/debug_grades', methods=['GET'])
-def debug_grades_route():
-    """Debug route to check what grades are in the database"""
-    try:
-        from ..models.academic import Grade
-        grades = Grade.query.all()
-        
-        result = "<h2>Grades in Database</h2><ul>"
-        for grade in grades:
-            result += f"<li>ID: {grade.id}, Name: '{grade.name}', Level: {grade.education_level}</li>"
-        result += f"</ul><p>Total: {len(grades)} grades</p>"
-        
-        # Check educational level mapping
-        from ..utils.constants import educational_level_mapping
-        educational_level_mapping_ui = educational_level_mapping.copy()
-        educational_level_mapping_ui['pre_primary'] = ['PP1', 'PP2']
-        educational_level_mapping_ui['lower_primary'] = ['Grade 1', 'Grade 2', 'Grade 3']
-        
-        result += "<h2>Educational Level Mapping Results</h2>"
-        grade_names = [g.name for g in grades]
-        for level, expected_grades in educational_level_mapping_ui.items():
-            matches = [name for name in expected_grades if name in grade_names]
-            result += f"<p><strong>{level}:</strong> Expected {expected_grades} → Found {matches}</p>"
-        
-        return result
-        
-    except Exception as e:
-        return f"<h2>Error</h2><p>{str(e)}</p>"
+    # Import SQLAlchemy functions for advanced queries
+    from sqlalchemy import func, distinct
+    from sqlalchemy.sql import text
 
-@classteacher_bp.route('/debug_reinitialize', methods=['GET'])
-def debug_reinitialize_db():
-    """Debug route to reinitialize database with updated structure"""
-    try:
-        from ..models.academic import Grade, Stream
-        from ..utils.database_init import initialize_database_completely
-        
-        # Drop and recreate all tables
-        initialize_database_completely()
-        
-        # Check what grades we now have
-        grades = Grade.query.all()
-        grades_data = [(g.name, g.education_level) for g in grades]
-        
-        return f"""
-        <h1>Database Reinitialized Successfully</h1>
-        <p>Grades available: {grades_data}</p>
-        <p>Total grades: {len(grades)}</p>
-        <a href="/classteacher/debug_grades">Check Grades Now</a>
-        """
-    except Exception as e:
-        import traceback
-        return f"Error reinitializing database: {str(e)}<br><pre>{traceback.format_exc()}</pre>"
+    # Create a subquery to get unique combinations with the most recent date
+    # This uses a Common Table Expression (CTE) approach for better performance
+    subquery = db.session.query(
+        Grade.id.label('grade_id'),
+        Grade.name.label('grade_level'),
+        Stream.id.label('stream_id'),
+        Stream.name.label('stream_name'),
+        Term.id.label('term_id'),
+        Term.name.label('term_name'),
+        AssessmentType.id.label('assessment_id'),
+        AssessmentType.name.label('assessment_name'),
+        Mark.subject_id.label('subject_id'),  # Add subject_id
+        func.max(Mark.created_at).label('latest_date')
+    ).join(
+        Student, Mark.student_id == Student.id
+    ).join(
+        Stream, Student.stream_id == Stream.id
+    ).join(
+        Grade, Stream.grade_id == Grade.id
+    ).join(
+        Term, Mark.term_id == Term.id
+    ).join(
+        AssessmentType, Mark.assessment_type_id == AssessmentType.id
+    )
+
+    # Apply filters
+    if filter_grade:
+        subquery = subquery.filter(Grade.name == filter_grade)
+    if filter_term:
+        subquery = subquery.filter(Term.name == filter_term)
+    if filter_assessment:
+        subquery = subquery.filter(AssessmentType.name == filter_assessment)
+
+    # Group by the combination fields to get unique combinations
+    subquery = subquery.group_by(
+        Grade.id,
+        Grade.name,
+        Stream.id,
+        Stream.name,
+        Term.id,
+        Term.name,
+        AssessmentType.id,
+        AssessmentType.name,
+        Mark.subject_id  # Add subject_id to group by
+    )
+
+    # Apply sorting to the subquery
+    if sort_by == 'grade':
+        subquery = subquery.order_by(Grade.name)
+    elif sort_by == 'term':
+        subquery = subquery.order_by(Term.name)
+    else:  # Default to date
+        subquery = subquery.order_by(func.max(Mark.created_at).desc())
+
+    # Convert to a subquery object
+    subquery = subquery.subquery()
+
+    # Main query to get the report data with counts
+    main_query = db.session.query(
+        subquery.c.grade_id,
+        subquery.c.grade_level,
+        subquery.c.stream_id,
+        subquery.c.stream_name,
+        subquery.c.term_id,
+        subquery.c.term_name,
+        subquery.c.assessment_id,
+        subquery.c.assessment_name,
+        subquery.c.subject_id,  # Add subject_id
+        subquery.c.latest_date,
+        func.count(Mark.id).label('mark_count')
+    ).join(
+        Student, Mark.student_id == Student.id
+    ).join(
+        Stream, Student.stream_id == Stream.id
+    ).join(
+        Grade, Stream.grade_id == Grade.id
+    ).join(
+        Term, Mark.term_id == Term.id
+    ).join(
+        AssessmentType, Mark.assessment_type_id == AssessmentType.id
+    ).filter(
+        Grade.id == subquery.c.grade_id,
+        Stream.id == subquery.c.stream_id,
+        Term.id == subquery.c.term_id,
+        AssessmentType.id == subquery.c.assessment_id,
+        Mark.subject_id == subquery.c.subject_id  # Add subject_id filter
+    ).group_by(
+        subquery.c.grade_id,
+        subquery.c.grade_level,
+        subquery.c.stream_id,
+        subquery.c.stream_name,
+        subquery.c.term_id,
+        subquery.c.term_name,
+        subquery.c.assessment_id,
+        subquery.c.assessment_name,
+        subquery.c.subject_id,  # Add subject_id to group by
+        subquery.c.latest_date
+    )
+
+    # Apply the same sorting to the main query
+    if sort_by == 'grade':
+        main_query = main_query.order_by(subquery.c.grade_level)
+    elif sort_by == 'term':
+        main_query = main_query.order_by(subquery.c.term_name)
+    else:  # Default to date
+        main_query = main_query.order_by(subquery.c.latest_date.desc())
+
+    # Get the total count for pagination
+    total_count = main_query.count()
+
+    # Apply pagination at the database level
+    paginated_query = main_query.paginate(page=page, per_page=per_page, error_out=False)
+
+    # Get current classteacher's subject_id
+    current_user_id = session.get('user_id')
+    teacher_assignment = TeacherSubjectAssignment.query.filter_by(teacher_id=current_user_id, is_class_teacher=True).first()
+    subject_id = teacher_assignment.subject_id if teacher_assignment else None
+
+    # If no class teacher assignment found, try to get any subject assignment
+    if not subject_id:
+        any_assignment = TeacherSubjectAssignment.query.filter_by(teacher_id=current_user_id).first()
+        subject_id = any_assignment.subject_id if any_assignment else None
+
+    # Format the results
+    reports = []
+    for idx, (grade_id, grade_level, stream_id, stream_name, term_id, term_name, assessment_id, assessment_name, report_subject_id, created_at, mark_count) in enumerate(paginated_query.items, start=1):
+        # Generate download URL for the report - use the actual subject_id from the report
+        if report_subject_id:
+            # If report has a subject, link to subject report
+            download_url = url_for('classteacher.subject_report',
+                                 grade_id=grade_id,
+                                 stream_id=stream_id,
+                                 subject_id=report_subject_id,
+                                 term_id=term_id,
+                                 assessment_type_id=assessment_id)
+        else:
+            # Otherwise, link to class report
+            download_url = url_for('classteacher.preview_class_report',
+                                 grade=grade_level,
+                                 stream=f"Stream {stream_name}",
+                                 term=term_name,
+                                 assessment_type=assessment_name)
+
+        reports.append({
+            'id': (page - 1) * per_page + idx,
+            'grade_id': grade_id,
+            'grade': grade_level,
+            'stream_id': stream_id,
+            'stream': f"Stream {stream_name}",
+            'term_id': term_id,
+            'term': term_name,
+            'subject_id': report_subject_id,  # Use the actual subject_id from the report
+            'assessment_type_id': assessment_id,
+            'assessment_type': assessment_name,
+            'date': created_at.strftime('%Y-%m-%d') if created_at else 'N/A',
+            'mark_count': mark_count,
+            'download_url': download_url  # Add the download URL
+        })
+
+    # Get all grades, terms, and assessment types for the filter dropdowns
+    grades = [grade.name for grade in Grade.query.all()]
+    terms = [term.name for term in Term.query.all()]
+    assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
+
+    return render_template(
+        'all_reports.html',
+        reports=reports,
+        pagination=paginated_query,
+        total_reports=total_count,
+        page=page,
+        per_page=per_page,
+        total_pages=paginated_query.pages,
+        has_next=paginated_query.has_next,
+        has_prev=paginated_query.has_prev,
+        next_page=paginated_query.next_num,
+        prev_page=paginated_query.prev_num,
+        grades=grades,
+        terms=terms,
+        assessment_types=assessment_types,
+        sort_by=sort_by,
+        filter_grade=filter_grade,
+        filter_term=filter_term,
+        filter_assessment=filter_assessment
+    )
 
 @classteacher_bp.route('/manage_students', methods=['GET', 'POST'])
-@limiter.limit("30 per minute")
-@classteacher_required()
+@classteacher_required
+@secure_file_upload(allowed_extensions=['.csv', '.xlsx', '.xls'], max_size=10 * 1024 * 1024)
 def manage_students():
     """Route for managing students."""
     print("Entering manage_students route")
@@ -2799,7 +2846,7 @@ def manage_students():
     teacher_id = session.get('teacher_id')
     print(f"Teacher ID: {teacher_id}")
 
-    teacher = safe_get(Teacher, teacher_id)
+    teacher = Teacher.query.get(teacher_id)
     print(f"Teacher: {teacher}")
 
     if not teacher:
@@ -2807,9 +2854,12 @@ def manage_students():
         flash("Teacher not found.", "error")
         return redirect(url_for('classteacher.dashboard'))
 
-    # Define canonical educational level mapping and order for UI
-    from ..utils.constants import educational_level_mapping, EDUCATION_LEVELS_ORDER
-    educational_level_mapping_ui = educational_level_mapping
+    # Define educational level mapping (moved to top to avoid UnboundLocalError)
+    educational_level_mapping = {
+        "lower_primary": ["Grade 1", "Grade 2", "Grade 3"],
+        "upper_primary": ["Grade 4", "Grade 5", "Grade 6"],
+        "junior_secondary": ["Grade 7", "Grade 8", "Grade 9"]
+    }
 
     # Initialize variables
     stream = None
@@ -2818,9 +2868,9 @@ def manage_students():
 
     # Check if teacher is assigned to a stream
     if teacher.stream_id:
-        stream = safe_get(Stream, teacher.stream_id)
+        stream = Stream.query.get(teacher.stream_id)
         if stream:
-            grade = safe_get(Grade, stream.grade_id)
+            grade = Grade.query.get(stream.grade_id)
             stream_id = stream.id
             print(f"Stream: {stream}")
             print(f"Grade: {grade}")
@@ -2834,13 +2884,13 @@ def manage_students():
     # If a stream_id is provided in the URL, use it instead of the teacher's assigned stream
     if stream_id_filter:
         stream_id = stream_id_filter
-    stream = safe_get(Stream, stream_id)
-    if stream:
-        grade = safe_get(Grade, stream.grade_id)
+        stream = Stream.query.get(stream_id)
+        if stream:
+            grade = Grade.query.get(stream.grade_id)
 
     # If a grade_id is provided in the URL, use it for filtering
     if grade_id:
-        grade = safe_get(Grade, grade_id)
+        grade = Grade.query.get(grade_id)
 
     # Get pagination parameters
     page = request.args.get('page', 1, type=int)
@@ -2872,7 +2922,7 @@ def manage_students():
     # Filter by educational level if specified
     if educational_level:
         # Get all grades for this educational level
-        allowed_grades = educational_level_mapping_ui.get(educational_level, [])
+        allowed_grades = educational_level_mapping.get(educational_level, [])
         grades = Grade.query.filter(Grade.name.in_(allowed_grades)).all()
         grade_ids = [g.id for g in grades]
 
@@ -2893,12 +2943,6 @@ def manage_students():
 
     # Get all grades for the template
     grades = [{"id": grade.id, "name": grade.name} for grade in Grade.query.all()]
-    
-    # DEBUG: Print what grades we're sending to the template
-    print("=== DEBUG: manage_students grades data ===")
-    print(f"Grades being sent to template: {grades}")
-    print(f"Educational level mapping: {educational_level_mapping_ui}")
-    print("===========================================")
 
     # Handle form submissions
     if request.method == 'POST':
@@ -2929,7 +2973,7 @@ def manage_students():
                     # Get grade_id from stream if stream_id is provided
                     grade_id = None
                     if final_stream_id:
-                        stream = safe_get(Stream, final_stream_id)
+                        stream = Stream.query.get(final_stream_id)
                         if stream:
                             grade_id = stream.grade_id
 
@@ -2950,7 +2994,7 @@ def manage_students():
         elif action == 'delete_student':
             student_id = request.form.get('student_id')
             if student_id:
-                student = safe_get(Student, student_id)
+                student = Student.query.get(student_id)
                 if student:
                     try:
                         # TEMPORARY FIX: Use raw SQL to avoid parent email log schema issues
@@ -3009,7 +3053,7 @@ def manage_students():
                 deleted_count = 0
                 try:
                     for student_id in student_ids:
-                        student = safe_get(Student, student_id)
+                        student = Student.query.get(student_id)
                         if student:
                             # TEMPORARY FIX: Use raw SQL to avoid parent email log schema issues
 
@@ -3073,7 +3117,7 @@ def manage_students():
             for key, value in request.form.items():
                 if key.startswith('gender_') and value:
                     student_id = key.replace('gender_', '')
-                    student = safe_get(Student, student_id)
+                    student = Student.query.get(student_id)
                     if student and student.gender != value.lower():
                         student.gender = value.lower()
                         updated_count += 1
@@ -3104,7 +3148,7 @@ def manage_students():
 
                 updated_count = 0
                 for student_id in student_ids:
-                    student = safe_get(Student, student_id)
+                    student = Student.query.get(student_id)
                     if student:
                         student.gender = gender.lower()
                         updated_count += 1
@@ -3125,7 +3169,7 @@ def manage_students():
                     return redirect(url_for('classteacher.manage_students'))
 
                 # Verify that the stream belongs to the selected grade
-                stream = safe_get(Stream, stream_id)
+                stream = Stream.query.get(stream_id)
                 if not stream or str(stream.grade_id) != grade_id:
                     flash('Invalid stream selected.', 'error')
                     return redirect(url_for('classteacher.manage_students'))
@@ -3145,52 +3189,6 @@ def manage_students():
 
             else:
                 flash('Invalid edit type.', 'error')
-
-            return redirect(url_for('classteacher.manage_students'))
-
-        # Transfer student to different grade/stream
-        elif action == 'transfer_student':
-            student_id = request.form.get('student_id')
-            new_grade_id = request.form.get('new_grade_id')
-            new_stream_id = request.form.get('new_stream_id')
-
-            if not student_id or not new_grade_id or not new_stream_id:
-                flash('Please select a student, grade, and stream for transfer.', 'error')
-                return redirect(url_for('classteacher.manage_students'))
-
-            try:
-                student = Student.query.get(student_id)
-                if not student:
-                    flash('Student not found.', 'error')
-                    return redirect(url_for('classteacher.manage_students'))
-
-                # Verify that the stream belongs to the selected grade
-                stream = Stream.query.get(new_stream_id)
-                grade = Grade.query.get(new_grade_id)
-                
-                if not stream or not grade:
-                    flash('Invalid grade or stream selected.', 'error')
-                    return redirect(url_for('classteacher.manage_students'))
-
-                if stream.grade_id != int(new_grade_id):
-                    flash('The selected stream does not belong to the selected grade.', 'error')
-                    return redirect(url_for('classteacher.manage_students'))
-
-                # Store old information for the flash message
-                old_grade_name = student.stream.grade.name if student.stream and student.stream.grade else "Unknown Grade"
-                old_stream_name = student.stream.name if student.stream else "Unknown Stream"
-
-                # Update student's grade and stream
-                student.grade_id = new_grade_id
-                student.stream_id = new_stream_id
-                
-                db.session.commit()
-                
-                flash(f"Student '{student.name}' successfully transferred from {old_grade_name} Stream {old_stream_name} to {grade.name} Stream {stream.name}.", "success")
-
-            except Exception as e:
-                db.session.rollback()
-                flash(f"Error transferring student: {str(e)}", "error")
 
             return redirect(url_for('classteacher.manage_students'))
 
@@ -3395,73 +3393,498 @@ def manage_students():
         grade=grade.name if grade else "",
         stream=stream.name if stream else "",
         grades=grades,
-        educational_level_mapping=educational_level_mapping_ui,
-        educational_levels=EDUCATION_LEVELS_ORDER,
-        selected_level=educational_level
+        educational_level_mapping=educational_level_mapping,
+        educational_levels=list(educational_level_mapping.keys())
     )
 
-
-@classteacher_bp.route('/transfer_student', methods=['POST'])
-@csrf.exempt
-@classteacher_required
-def transfer_student():
-    """Route for transferring a student to a different grade/stream via JSON API."""
+@classteacher_bp.route('/preview_class_report/<grade>/<stream>/<term>/<assessment_type>', methods=['GET', 'POST'])
+@teacher_or_classteacher_required
+def preview_class_report(grade, stream, term, assessment_type):
+    """Route for previewing class reports."""
+    
+    # Invalidate any existing cache for this report to ensure fresh data with composite fixes
     try:
-        print("🔄 transfer_student endpoint hit")
-        # Get JSON data from request
-        data = request.get_json()
-        if not data:
-            return jsonify({'success': False, 'message': 'No data provided'}), 400
+        invalidate_cache(grade, stream, term, assessment_type)
+    except Exception as cache_error:
+        print(f"Warning: Could not invalidate cache: {cache_error}")
+    
+    # Check if this is a form submission for subject selection
+    if request.method == 'POST':
+        # Get the selected subjects from the form
+        selected_subjects = []
+        for key, value in request.form.items():
+            if key.startswith('include_subject_') and value:
+                try:
+                    subject_id = int(value)
+                    selected_subjects.append(subject_id)
+                except (ValueError, TypeError):
+                    pass
 
-        student_id = data.get('student_id')
-        target_stream_id = data.get('target_stream_id')
-        reason = data.get('reason', '')
+        # Store the selected subjects in the session
+        session['selected_subjects'] = selected_subjects
 
-        if not student_id or not target_stream_id:
-            return jsonify({'success': False, 'message': 'Student ID and target stream ID are required'}), 400
+    # Get the selected subjects from the session if available
+    selected_subjects = session.get('selected_subjects', [])
 
-        # Get student
-        student = Student.query.get(student_id)
-        if not student:
-            return jsonify({'success': False, 'message': 'Student not found'}), 404
+    # Check if this is a subject teacher (role = 'teacher') and filter subjects accordingly
+    current_role = get_role(session)
+    if current_role == 'teacher':
+        # For subject teachers, only show subjects they are assigned to teach
+        teacher_id = session.get('teacher_id')
+        if teacher_id:
+            # Get the grade and stream objects
+            stream_obj_temp = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
 
-        # Get target stream and grade
-        target_stream = Stream.query.get(target_stream_id)
-        if not target_stream:
-            return jsonify({'success': False, 'message': 'Target stream not found'}), 404
+            if stream_obj_temp:
+                grade_obj_temp = stream_obj_temp.grade
 
-        target_grade = target_stream.grade
-        if not target_grade:
-            return jsonify({'success': False, 'message': 'Target grade not found'}), 404
+                # Get subjects assigned to this teacher for this grade/stream
+                teacher_assignments = TeacherSubjectAssignment.query.filter_by(
+                    teacher_id=teacher_id,
+                    grade_id=grade_obj_temp.id
+                ).filter(
+                    (TeacherSubjectAssignment.stream_id == stream_obj_temp.id) |
+                    (TeacherSubjectAssignment.stream_id == None)  # Assignments for all streams
+                ).all()
 
-        # Store old information for the response message
-        old_grade_name = student.stream.grade.name if student.stream and student.stream.grade else "Unknown Grade"
-        old_stream_name = student.stream.name if student.stream else "Unknown Stream"
+                # Get subject IDs from assignments
+                teacher_subject_ids = [assignment.subject_id for assignment in teacher_assignments]
 
-        # Update student's grade and stream
-        student.grade_id = target_grade.id
-        student.stream_id = target_stream_id
-        
-        db.session.commit()
-        
-        message = f"Student '{student.name}' successfully transferred from {old_grade_name} Stream {old_stream_name} to {target_grade.name} Stream {target_stream.name}."
-        if reason:
-            message += f" Reason: {reason}"
+                # Override selected_subjects to only include teacher's assigned subjects
+                selected_subjects = teacher_subject_ids
 
-        return jsonify({
-            'success': True, 
-            'message': message,
-            'student_name': student.name,
-            'old_grade': old_grade_name,
-            'old_stream': old_stream_name,
-            'new_grade': target_grade.name,
-            'new_stream': target_stream.name
+                # Store in session for consistency
+                session['selected_subjects'] = selected_subjects
+
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if not (stream_obj and term_obj and assessment_type_obj):
+        flash("Invalid grade, stream, term, or assessment type", "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Get class report data with selected subjects
+    report_data = get_class_report_data(grade, stream, term, assessment_type, selected_subject_ids=selected_subjects)
+
+    if not report_data or report_data.get("error"):
+        error_msg = report_data.get("error") if report_data and report_data.get("error") else f"No marks found for {grade} Stream {stream[-1]} in {term} {assessment_type}"
+        flash(error_msg, "error")
+        return redirect(url_for('classteacher.dashboard'))
+
+    # Note: Subject aggregation disabled to show individual subjects in composite layout
+
+    # Get education level from report_data or determine based on grade
+    if report_data.get("education_level"):
+        education_level_code = report_data.get("education_level")
+        if education_level_code == "lower_primary":
+            education_level = "lower primary"
+        elif education_level_code == "upper_primary":
+            education_level = "upper primary"
+        elif education_level_code == "junior_secondary":
+            education_level = "junior secondary"
+        else:
+            education_level = ""
+    else:
+        # Fallback to determining education level based on grade
+        education_level = ""
+        grade_num = int(grade.split()[1]) if len(grade.split()) > 1 else int(grade)
+        if 1 <= grade_num <= 3:
+            education_level = "lower primary"
+        elif 4 <= grade_num <= 6:
+            education_level = "upper primary"
+        elif 7 <= grade_num <= 9:
+            education_level = "junior secondary"
+
+    # Get current date for the report
+    from datetime import datetime
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    # Get the class data from the report
+    class_data = report_data.get("class_data", [])
+
+    # Get subjects for this grade based on education level
+    grade_obj = Grade.query.filter_by(name=grade).first()
+
+    # Get all subjects that have marks for this grade/stream/term/assessment
+    stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
+
+    if grade_obj and stream_obj and term_obj and assessment_type_obj:
+        # Get students in this stream
+        students = Student.query.filter_by(stream_id=stream_obj.id).all()
+        student_ids = [student.id for student in students]
+
+        # First, get subjects for this education level
+        if education_level == "lower primary":
+            education_level_code = "lower_primary"
+        elif education_level == "upper primary":
+            education_level_code = "upper_primary"
+        elif education_level == "junior secondary":
+            education_level_code = "junior_secondary"
+        else:
+            education_level_code = ""
+
+        # Get subjects for this education level - INCLUDE ALL SUBJECTS (composite, component, and regular)
+        if education_level_code:
+            all_education_subjects = Subject.query.filter_by(education_level=education_level_code).all()
+        else:
+            all_education_subjects = Subject.query.all()
+
+        # For independent subject upload system, we want to show ALL subjects individually
+        # This includes subjects that were previously marked as components
+        print(f"DEBUG: Found {len(all_education_subjects)} subjects for {education_level_code}")
+        for subject in all_education_subjects:
+            if 'English' in subject.name:
+                print(f"DEBUG: {subject.name} - composite: {subject.is_composite}, component: {getattr(subject, 'is_component', False)}")
+
+        # Filter subjects based on selected subjects if available
+        if selected_subjects:
+            # Only include subjects that are both in the education level and selected
+            filtered_subjects = [subject for subject in all_education_subjects if subject.id in selected_subjects]
+        else:
+            # If no subjects selected, use all subjects for this education level
+            filtered_subjects = all_education_subjects
+
+        # Get subject IDs for filtering marks
+        filtered_subject_ids = [subject.id for subject in filtered_subjects]
+
+        # Get all marks for these students in this term/assessment for the filtered subjects
+        all_marks = Mark.query.filter(
+            Mark.student_id.in_(student_ids),
+            Mark.subject_id.in_(filtered_subject_ids),
+            Mark.term_id == term_obj.id,
+            Mark.assessment_type_id == assessment_type_obj.id
+        ).all()
+
+        # Get subject names
+        subject_names = [subject.name for subject in filtered_subjects]
+
+        # Create a dictionary of marks by student_id and subject_id for quick lookup
+        marks_dict = {}
+        for mark in all_marks:
+            if mark.student_id not in marks_dict:
+                marks_dict[mark.student_id] = {}
+
+            # Use percentage if available, otherwise use raw mark
+            if hasattr(mark, 'percentage') and mark.percentage is not None:
+                marks_dict[mark.student_id][mark.subject_id] = mark.percentage
+            else:
+                # Calculate percentage from raw mark
+                raw_mark = mark.raw_mark if hasattr(mark, 'raw_mark') and mark.raw_mark is not None else mark.mark
+                max_raw_mark = mark.max_raw_mark if hasattr(mark, 'max_raw_mark') and mark.max_raw_mark is not None else (mark.total_marks if mark.total_marks > 0 else 100)
+                percentage = (raw_mark / max_raw_mark) * 100
+
+                # Ensure percentage doesn't exceed 100%
+                if percentage > 100:
+                    percentage = 100.0
+
+                marks_dict[mark.student_id][mark.subject_id] = percentage
+
+        # Filter class data to only include these subjects
+        for student_data in class_data:
+            student = Student.query.filter_by(name=student_data["student"]).first()
+            if student:
+                # Add student ID to the data
+                student_data["student_id"] = student.id
+
+                # Get marks for this student from the database
+                filtered_marks = {}
+                subject_count = 0
+                total_marks_value = 0
+
+                for subject in filtered_subjects:
+                    # UPDATED: Handle ALL subjects as independent (including previously composite subjects)
+                    # This allows English Grammar and English Composition to show up independently
+                    
+                    if student.id in marks_dict and subject.id in marks_dict[student.id]:
+                        mark_value = marks_dict[student.id][subject.id]
+                        # Convert raw mark to percentage
+                        mark_obj = Mark.query.filter_by(
+                            student_id=student.id,
+                            subject_id=subject.id,
+                            term_id=term_obj.id,
+                            assessment_type_id=assessment_type_obj.id
+                        ).first()
+
+                        if mark_obj and hasattr(mark_obj, 'percentage') and mark_obj.percentage is not None:
+                            # Use the percentage value directly
+                            percentage_value = mark_obj.percentage
+                        else:
+                            # Calculate percentage from raw mark
+                            total_marks = mark_obj.total_marks if mark_obj and mark_obj.total_marks > 0 else 100
+                            percentage_value = (mark_value / total_marks) * 100
+
+                        # Ensure percentage doesn't exceed 100%
+                        if percentage_value > 100:
+                            percentage_value = 100.0
+
+                        filtered_marks[subject.name] = percentage_value
+                        subject_count += 1
+                        total_marks_value += percentage_value
+                        print(f"DEBUG: {student.name} - {subject.name}: {percentage_value}%")
+                    else:
+                        filtered_marks[subject.name] = 0
+                        print(f"DEBUG: {student.name} - {subject.name}: No mark found")
+            else:
+                # Fallback to report data if student not found
+                student_data["student_id"] = 0
+                filtered_marks = {}
+                subject_count = 0
+                total_marks_value = 0
+
+                for subject_name in subject_names:
+                    mark_value = student_data["marks"].get(subject_name, 0)
+                    filtered_marks[subject_name] = mark_value
+                    if mark_value > 0:
+                        subject_count += 1
+                        total_marks_value += mark_value
+
+            student_data["filtered_marks"] = filtered_marks
+            student_data["filtered_total"] = total_marks_value
+
+            # Calculate total possible marks based on number of subjects
+            total_possible = report_data.get("total_marks", 100)
+            total_possible_marks = len(subject_names) * total_possible
+            student_data["total_possible_marks"] = total_possible_marks
+
+            # Recalculate average percentage
+            if subject_count > 0 and total_possible > 0:
+                student_data["filtered_average"] = (total_marks_value / (subject_count * total_possible)) * 100
+            else:
+                student_data["filtered_average"] = 0
+    else:
+        # Use subjects from report data if grade not found
+        subject_names = report_data.get("subjects", [])
+
+    # Create abbreviated subject names for the report header
+    abbreviated_subjects = []
+    for subject in subject_names:
+        words = subject.split()
+        if len(words) > 1:
+            abbreviated = ''.join(word[0].upper() for word in words)
+        else:
+            abbreviated = subject[:3].upper()
+        abbreviated_subjects.append(abbreviated)
+
+    # Sort students by filtered_total in descending order
+    class_data.sort(key=lambda x: x.get("filtered_total", 0), reverse=True)
+
+    # Add performance category and rank to each student's data
+    for i, student_data in enumerate(class_data, 1):
+        student_data["index"] = i
+        student_data["rank"] = i  # Assign rank based on sorted position
+
+        avg = student_data.get("filtered_average", 0)
+        if avg >= 90:
+            student_data["performance_category"] = "EE1"
+        elif avg >= 75:
+            student_data["performance_category"] = "EE2"
+        elif avg >= 58:
+            student_data["performance_category"] = "ME1"
+        elif avg >= 41:
+            student_data["performance_category"] = "ME2"
+        elif avg >= 31:
+            student_data["performance_category"] = "AE1"
+        elif avg >= 21:
+            student_data["performance_category"] = "AE2"
+        elif avg >= 11:
+            student_data["performance_category"] = "BE1"
+        else:
+            student_data["performance_category"] = "BE2"
+
+    # Debug: Print class_data to see what's being passed to the template
+    print("\n\nDEBUG - Class Data:")
+    for student in class_data:
+        print(f"Student: {student['student']}")
+        print(f"Filtered Marks: {student.get('filtered_marks', {})}")
+        print(f"Filtered Total: {student.get('filtered_total', 0)}")
+        print(f"Filtered Average: {student.get('filtered_average', 0)}")
+        print("---")
+
+    # Debug: Print subject names
+    print("\nDEBUG - Subject Names:", subject_names)
+    print("DEBUG - Subject Names Length:", len(subject_names))
+    print("DEBUG - All Education Level Subjects:", [s.name for s in all_education_subjects])
+    print("DEBUG - Filtered Subjects:", [s.name for s in filtered_subjects])
+    
+    # NEW DEBUG: Check what subjects are being displayed
+    subjects_with_marks = []
+    subjects_without_marks = []
+    for subject in filtered_subjects:
+        has_marks = any(student_data.get('filtered_marks', {}).get(subject.name, 0) > 0 for student_data in class_data)
+        if has_marks:
+            subjects_with_marks.append(subject.name)
+        else:
+            subjects_without_marks.append(subject.name)
+    
+    print("DEBUG - Subjects WITH marks:", subjects_with_marks)
+    print("DEBUG - Subjects WITHOUT marks:", subjects_without_marks)
+
+    # Calculate subject averages here in Python code for debugging
+    subject_averages = {}
+    for subject in subject_names:
+        subject_total = 0
+        subject_count = 0
+        for student_data in class_data:
+            mark = student_data.get('filtered_marks', {}).get(subject, 0)
+            if mark > 0:
+                subject_total += mark
+                subject_count += 1
+
+        if subject_count > 0:
+            subject_averages[subject] = round(subject_total / subject_count, 2)
+        else:
+            subject_averages[subject] = 0
+
+    # Debug: Print calculated subject averages
+    print("\nDEBUG - Calculated Subject Averages:", subject_averages)
+
+    # Calculate class average
+    class_total = 0
+    student_count = 0
+    for student_data in class_data:
+        if student_data['filtered_total'] > 0:
+            class_total += student_data['filtered_total']
+            student_count += 1
+
+    class_average = round(class_total / student_count, 2) if student_count > 0 else 0
+    print("\nDEBUG - Calculated Class Average:", class_average)
+
+    # Get all subjects for the subject selection form
+    all_subjects = []
+    if education_level_code:
+        all_subjects = Subject.query.filter_by(education_level=education_level_code).all()
+    else:
+        all_subjects = Subject.query.all()
+
+    # Get component data for composite subjects
+    subject_components = {}
+    component_marks_data = {}
+    component_averages = {}
+
+    for subject in filtered_subjects:
+        if subject.is_composite:
+            components = subject.get_components()
+            subject_components[subject.name] = components
+
+            # Initialize component averages for this subject
+            component_averages[subject.name] = {}
+            for component in components:
+                component_averages[subject.name][component.name] = 0
+
+            # Get component marks for each student
+            component_totals = {}
+            component_counts = {}
+
+            for student_data in class_data:
+                student = Student.query.filter_by(name=student_data["student"]).first()
+                if student:
+                    student_id = student.id
+                    if student_id not in component_marks_data:
+                        component_marks_data[student_id] = {}
+
+                    component_marks_data[student_id][subject.name] = {}
+
+                    for component in components:
+                        # Get component mark from database
+                        from ..models.academic import ComponentMark
+                        component_mark = ComponentMark.query.filter_by(
+                            component_id=component.id
+                        ).join(
+                            Mark, ComponentMark.mark_id == Mark.id
+                        ).filter(
+                            Mark.student_id == student_id,
+                            Mark.term_id == term_obj.id,
+                            Mark.assessment_type_id == assessment_type_obj.id
+                        ).first()
+
+                        if component_mark:
+                            # Display the raw mark, not the percentage
+                            raw_mark = component_mark.raw_mark
+                            component_marks_data[student_id][subject.name][component.name] = raw_mark
+
+                            # Add to totals for average calculation
+                            if component.name not in component_totals:
+                                component_totals[component.name] = 0
+                                component_counts[component.name] = 0
+                            component_totals[component.name] += raw_mark
+                            component_counts[component.name] += 1
+                        else:
+                            component_marks_data[student_id][subject.name][component.name] = 0
+
+            # Calculate component averages
+            for component in components:
+                if component.name in component_counts and component_counts[component.name] > 0:
+                    component_averages[subject.name][component.name] = round(
+                        component_totals[component.name] / component_counts[component.name], 1
+                    )
+
+    # Get staff information for the report
+    from ..services.staff_assignment_service import StaffAssignmentService
+    # Extract stream letter (e.g., "Stream B" -> "B", "B" -> "B")
+    if stream.startswith("Stream "):
+        stream_letter = stream.replace("Stream ", "")
+    else:
+        # Handle cases like "B" or extract last character for other formats
+        stream_letter = stream[-1] if len(stream) > 1 else stream
+    staff_info = StaffAssignmentService.get_report_staff_info(grade, stream_letter)
+
+    # Get school information for dynamic display
+    from ..services.school_config_service import SchoolConfigService
+    school_info = SchoolConfigService.get_school_info_dict()
+
+    # Get dynamic logo URL from school setup
+    logo_path = SchoolConfigService.get_school_logo_path()
+    logo_url = url_for('static', filename=logo_path)
+
+    # Get report configuration and visibility settings
+    from ..services.report_config_service import ReportConfigService
+    report_config_data = ReportConfigService.get_comprehensive_report_data(grade, stream_letter, term)
+    if report_config_data:
+        visibility = report_config_data.get('visibility', {
+            'show_class_teacher': True,
+            'show_headteacher': True,
+            'show_deputy_headteacher': False,  # Default to False if not configured
+            'show_principal': False
         })
+    else:
+        # Default visibility settings
+        visibility = {
+            'show_class_teacher': True,
+            'show_headteacher': True,
+            'show_deputy_headteacher': False,
+            'show_principal': False
+        }
 
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'message': f'Error transferring student: {str(e)}'}), 500
-
+    return render_template(
+        'preview_class_report.html',
+        grade=grade,
+        stream=stream,
+        term=term,
+        assessment_type=assessment_type,
+        report_data=report_data,
+        education_level=education_level,
+        current_date=current_date,
+        subjects=all_subjects,  # Pass all subjects for the selection form
+        subject_names=subject_names,
+        abbreviated_subjects=abbreviated_subjects,
+        class_data=class_data,
+        stats=report_data.get("stats", {}),
+        subject_averages=subject_averages,  # Pass pre-calculated subject averages
+        class_average=class_average,  # Pass pre-calculated class average
+        class_total=class_total,  # Pass total marks sum
+        subject_components=subject_components,  # Pass component data
+        component_marks_data=component_marks_data,  # Pass component marks
+        component_averages=component_averages,  # Pass component averages
+        filtered_subjects=filtered_subjects,  # Pass filtered subject objects
+        staff_info=staff_info,  # Pass staff information
+        school_info=school_info,  # Pass school information
+        logo_url=logo_url,  # Pass dynamic logo URL
+        visibility=visibility,  # Pass visibility settings
+        is_aggregated=report_data.get("is_aggregated", False)  # Pass aggregation flag
+    )
 
 @classteacher_bp.route('/edit_class_marks/<grade>/<stream>/<term>/<assessment_type>')
 @classteacher_required
@@ -3660,7 +4083,7 @@ def edit_class_marks(grade, stream, term, assessment_type):
     )
 
 @classteacher_bp.route('/update_class_marks/<grade>/<stream>/<term>/<assessment_type>', methods=['POST'])
-@enforce('marks', 'write', class_scope=True, grade_arg='grade', stream_arg='stream')
+@classteacher_required
 def update_class_marks(grade, stream, term, assessment_type):
     """Route for updating class marks."""
     stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
@@ -3773,7 +4196,7 @@ def update_class_marks(grade, stream, term, assessment_type):
                           grade=grade, stream=stream, term=term, assessment_type=assessment_type))
 
 @classteacher_bp.route('/download_class_report/<grade>/<stream>/<term>/<assessment_type>')
-@enforce('class_report', 'read', class_scope=True, grade_arg='grade', stream_arg='stream')
+@teacher_or_classteacher_required
 def download_class_report(grade, stream, term, assessment_type):
     """Route for downloading class reports as PDF."""
     # Check if we have a cached PDF
@@ -4027,88 +4450,25 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
     from ..utils import get_grade_and_points
     mean_grade, mean_points = get_grade_and_points(avg_percentage)
 
-    # Build composite-aware context using ClassReportBuilder
-    from ..services.class_report_builder import ClassReportBuilder
-    builder_ctx = ClassReportBuilder.build(grade, stream, term, assessment_type, selected_subject_ids=session.get('selected_subjects', []), invalidate=False)
-    # Local helper to expand abbreviations to full remarks
-    def _full_remarks(code: str) -> str:
-        mapping = {
-            'EE1': 'Exceeding Expectation 1',
-            'EE2': 'Exceeding Expectation 2',
-            'ME1': 'Meeting Expectation 1',
-            'ME2': 'Meeting Expectation 2',
-            'AE1': 'Approaching Expectation 1',
-            'AE2': 'Approaching Expectation 2',
-            'BE1': 'Below Expectation 1',
-            'BE2': 'Below Expectation 2',
-        }
-        return mapping.get(str(code), str(code))
-
-    composite_structure = builder_ctx.get('composite_structure', {}) or {}
-    subject_names = builder_ctx.get('subject_names', class_data_result.get('subjects', []))
-
-    # Find this student's filtered marks from builder (includes composite totals and component marks)
-    student_filtered = None
-    for sd in builder_ctx.get('class_data', []) or []:
-        if sd.get('student') == student.name:
-            student_filtered = sd
-            break
-    filtered_marks = (student_filtered or {}).get('filtered_marks', {})
-
-    # Prepare table data using builder subject order and filtered marks
+    # Prepare table data for the report
     table_data = []
-    visible_count = 0
-    for subject_name in subject_names:
-        mark = filtered_marks.get(subject_name, 0)
-        if not mark or mark == 0:
-            continue
-        # Normalize to int where appropriate
-        if isinstance(mark, float):
-            mark_disp = int(round(mark)) if mark == int(mark) else round(mark, 1)
-        else:
-            mark_disp = int(mark)
-
-        # Single-assessment display for print (rendered as current/avg the same)
+    for subject in class_data_result.get("subjects", []):
+        mark = student_data.get("marks", {}).get(subject, 0)
+        # For now, we'll use the same mark for all assessment types
         table_data.append({
-            "subject": subject_name,
-            "entrance": mark_disp,
-            "mid_term": mark_disp,
-            "end_term": mark_disp,
-            "current_assessment": mark_disp,
-            "avg": mark_disp,
+            "subject": subject,
+            "entrance": mark,
+            "mid_term": mark,
+            "end_term": mark,
+            "current_assessment": mark,  # Add current_assessment field
+            "avg": mark,  # Use 'avg' to match preview route
             "remarks": get_performance_remarks(mark, class_data_result.get("total_marks", 100))
         })
-        visible_count += 1
 
-    # Build composite_data for English/Kiswahili from builder structure using display labels
-    composite_data = {}
-    for main_name, info in composite_structure.items():
-        comp_names = info.get('component_names', [])
-        display_labels = info.get('component_display', [])
-        components_map = {}
-        for idx, comp_name in enumerate(comp_names):
-            disp = display_labels[idx] if idx < len(display_labels) else comp_name
-            comp_mark = filtered_marks.get(comp_name, 0) or 0
-            # Normalize display
-            if isinstance(comp_mark, float):
-                comp_mark_disp = int(round(comp_mark)) if comp_mark == int(comp_mark) else round(comp_mark, 1)
-            else:
-                comp_mark_disp = int(comp_mark)
-            components_map[disp] = {
-                'mark': comp_mark_disp,
-                'max_mark': 100,
-                'percentage': round(comp_mark, 1) if isinstance(comp_mark, (int, float)) else 0,
-                'remarks': get_performance_remarks(comp_mark, 100)
-            }
-        composite_data[main_name] = {
-            'components': components_map,
-            'total': filtered_marks.get(main_name, 0) or 0
-        }
-
-    # Calculate total marks and points based on visible subjects
-    total_marks = student_filtered.get('filtered_total', student_data.get('total_marks', 0)) if student_filtered else student_data.get('total_marks', 0)
-    total_possible_marks = visible_count * class_data_result.get("total_marks", 100)
-    total_points = mean_points * visible_count
+    # Calculate total marks and points
+    total_marks = student_data.get("total_marks", 0)
+    total_possible_marks = len(class_data_result.get("subjects", [])) * class_data_result.get("total_marks", 100)
+    total_points = mean_points * len(class_data_result.get("subjects", []))
 
     # Generate admission number if not available
     admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
@@ -4144,7 +4504,7 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         grade_obj = GradeModel.query.filter_by(name=grade).first()
         if grade_obj and stream_obj:
             # Determine candidate subject names that might be composites (appear in report subjects but not real Subject rows)
-            candidate_names = subject_names  # list from builder
+            candidate_names = subjects  # list of subject strings from report
             for cname in candidate_names:
                 if cname in subject_teachers:
                     continue
@@ -4175,7 +4535,8 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         # Non-fatal: continue without composite teacher aggregation
         pass
 
-    # composite_data populated above
+    # Initialize composite_data as empty dict (will be populated if needed)
+    composite_data = {}
 
     # Get term information from report configuration
     from ..services.report_config_service import ReportConfigService
@@ -4196,13 +4557,6 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         'academic_year': academic_year
     }
 
-    # Legends for grading/weights/status (non-invasive; templates may opt-in)
-    try:
-        from ..services.mark_calculator_adapter import build_legends  # local import to avoid cycles
-        _calc_legends = build_legends()
-    except Exception:
-        _calc_legends = None
-
     return render_template(
         'preview_individual_report.html',
         student=student,
@@ -4213,8 +4567,8 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         assessment_type=assessment_type,
         education_level=education_level,
         current_date=current_date,
-    table_data=table_data,
-    composite_data=composite_data,
+        table_data=table_data,
+        composite_data=composite_data,
         total=total_marks,
         avg_percentage=avg_percentage,
         mean_grade=mean_grade,
@@ -4228,15 +4582,13 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         logo_url=logo_url,
         staff_info=staff_info,
         term_info=term_info,
-        subject_teachers=subject_teachers,
-        # Optional legends for templates
-        calculator_legends=_calc_legends
+        subject_teachers=subject_teachers
     )
 
 @classteacher_bp.route('/preview_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
 @classteacher_required
 def preview_individual_report(grade, stream, term, assessment_type, student_name):
-    # Flags
+    # Check if this is a print request
     print_mode = request.args.get('print', '0') == '1'
     if print_mode:
         return redirect(url_for('classteacher.print_individual_report',
@@ -4292,101 +4644,167 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
     from ..utils import get_grade_and_points
     mean_grade, mean_points = get_grade_and_points(avg_percentage)
 
-    # Use ClassReportBuilder to derive composite structure and filtered marks
-    from ..services.class_report_builder import ClassReportBuilder
-    builder_ctx = ClassReportBuilder.build(grade, stream, term, assessment_type, selected_subject_ids=session.get('selected_subjects', []), invalidate=False)
-    composite_structure = builder_ctx.get('composite_structure', {}) or {}
-    subject_names = builder_ctx.get('subject_names', class_data_result.get('subjects', []))
-
-    # Pull this student's filtered marks (includes composite totals and components)
-    student_filtered = None
-    for sd in builder_ctx.get('class_data', []) or []:
-        if sd.get('student') == student.name:
-            student_filtered = sd
-            break
-    filtered_marks = (student_filtered or {}).get('filtered_marks', {})
-
-    # Local helper to expand remarks codes to full descriptive text
-    def _full_remarks(code: str) -> str:
-        mapping = {
-            'EE1': 'Exceeding Expectation 1',
-            'EE2': 'Exceeding Expectation 2',
-            'ME1': 'Meeting Expectation 1',
-            'ME2': 'Meeting Expectation 2',
-            'AE1': 'Approaching Expectation 1',
-            'AE2': 'Approaching Expectation 2',
-            'BE1': 'Below Expectation 1',
-            'BE2': 'Below Expectation 2',
-        }
-        return mapping.get(str(code), str(code))
-
-    # Build table data in builder order; render per assessment mode as before
+    # Prepare table data for the report with composite subject handling
     table_data = []
-    visible_count = 0
-    for subject_name in subject_names:
-        mark_val = filtered_marks.get(subject_name, 0)
-        if not mark_val or mark_val == 0:
-            continue
-        # Normalize display
-        if isinstance(mark_val, float):
-            mark_disp = int(round(mark_val)) if mark_val == int(mark_val) else round(mark_val, 1)
-        else:
-            mark_disp = int(mark_val)
+    composite_data = {}
 
-        entrance_mark = mid_term_mark = end_term_mark = 0
-        if assessment_type.lower() in ['end_term', 'endterm']:
-            # For preview, we don't requery; show same value across columns and compute avg accordingly
-            entrance_mark = mid_term_mark = end_term_mark = mark_disp
-            avg_mark = mark_disp
+    # Get only subjects that have marks in the class report data
+    subjects_with_marks = class_data_result.get("subjects", [])
+
+    # Define subject order - core subjects first (with variations)
+    subject_order = [
+        "Mathematics", "MATHEMATICS", "Math", "MATH",
+        "English", "ENGLISH", "English Language", "ENGLISH LANGUAGE",
+        "Kiswahili", "KISWAHILI", "Kiswahili Language", "KISWAHILI LANGUAGE",
+        "Religious", "RELIGIOUS", "Religious Education", "RELIGIOUS EDUCATION", "CRE", "IRE",
+        "Integrated Science", "INTEGRATED SCIENCE", "Science", "SCIENCE",
+        "Social Studies", "SOCIAL STUDIES", "Social Science", "SOCIAL SCIENCE",
+        "Agriculture", "AGRICULTURE", "Agricultural Science", "AGRICULTURAL SCIENCE",
+        "Creative Art and Sports", "CREATIVE ART AND SPORTS", "Creative Arts", "CREATIVE ARTS"
+    ]
+
+    # Sort subjects according to the defined order, but only include those with marks
+    ordered_subject_names = []
+    # First add subjects in the specified order if they have marks
+    for subject_name in subject_order:
+        if subject_name in subjects_with_marks and subject_name not in ordered_subject_names:
+            ordered_subject_names.append(subject_name)
+
+    # Then add any remaining subjects with marks alphabetically
+    remaining_subject_names = [s for s in subjects_with_marks if s not in ordered_subject_names]
+    remaining_subject_names.sort()
+    ordered_subject_names.extend(remaining_subject_names)
+
+    from ..models.academic import Subject, ComponentMark
+
+    for subject_name in ordered_subject_names:
+        # Try to get the Subject model (may not exist for new-arch composite names)
+        subject = Subject.query.filter_by(name=subject_name).first()
+
+        # Get mark using both the provided name and the DB name (if available)
+        marks_dict = student_data.get("marks", {})
+        mark = marks_dict.get(subject_name)
+        if mark is None and subject is not None:
+            mark = marks_dict.get(subject.name, 0)
+        if mark is None:
+            mark = 0
+
+    # Include subjects even when marks are 0 so the table always lists all subjects
+    # This improves transparency and ensures subject teacher/remarks columns display consistently
+
+        # Clean up decimal precision and show whole numbers
+        if isinstance(mark, float):
+            mark = int(round(mark)) if mark == int(mark) else round(mark, 1)
         else:
+            mark = int(mark)
+
+        # Attempt to gather composite component data only when we have a real Subject and it's composite
+        if subject is not None and hasattr(subject, 'is_composite') and subject.is_composite:
+            components = subject.get_components()
+            component_marks = {}
+
+            mark_record = Mark.query.filter_by(
+                student_id=student.id,
+                subject_id=subject.id,
+                term_id=term_obj.id,
+                assessment_type_id=assessment_type_obj.id
+            ).first()
+
+            if mark_record:
+                for component in components:
+                    component_mark = ComponentMark.query.filter_by(
+                        component_id=component.id,
+                        mark_id=mark_record.id
+                    ).first()
+
+                    clean_component_name = component.name
+                    if clean_component_name.startswith("L "):
+                        clean_component_name = clean_component_name[2:]
+
+                    if component_mark:
+                        component_max_mark = component_mark.max_raw_mark if component_mark.max_raw_mark else (component.max_raw_mark if hasattr(component, 'max_raw_mark') and component.max_raw_mark else 100)
+                        component_percentage = (component_mark.raw_mark / component_max_mark) * 100 if component_max_mark > 0 else 0
+                        component_raw_mark = component_mark.raw_mark
+                        if isinstance(component_raw_mark, float):
+                            component_raw_mark = int(round(component_raw_mark)) if component_raw_mark == int(component_raw_mark) else round(component_raw_mark, 1)
+                        else:
+                            component_raw_mark = int(component_raw_mark)
+
+                        component_marks[clean_component_name] = {
+                            'mark': component_raw_mark,
+                            'max_mark': int(component_max_mark),
+                            'percentage': round(component_percentage, 1),
+                            'remarks': get_performance_remarks(component_percentage, 100)
+                        }
+                    else:
+                        component_max_mark = component.max_raw_mark if hasattr(component, 'max_raw_mark') and component.max_raw_mark else 100
+                        component_marks[clean_component_name] = {
+                            'mark': 0,
+                            'max_mark': component_max_mark,
+                            'percentage': 0,
+                            'remarks': get_performance_remarks(0, 100)
+                        }
+
+            composite_data[subject.name] = {
+                'components': component_marks,
+                'total': mark
+            }
+
+        # Initialize marks for all assessment types
+        entrance_mark = 0
+        mid_term_mark = 0
+        end_term_mark = 0
+
+        if assessment_type.lower() in ['end_term', 'endterm']:
+            if subject is not None:
+                # Fetch marks for known Subject across assessments
+                all_assessment_types = AssessmentType.query.all()
+                for at in all_assessment_types:
+                    mark_record = Mark.query.filter_by(
+                        student_id=student.id,
+                        subject_id=subject.id,
+                        term_id=term_obj.id,
+                        assessment_type_id=at.id
+                    ).first()
+                    if mark_record:
+                        mark_value = mark_record.percentage or 0
+                        if at.name.lower() in ['entrance', 'opener']:
+                            entrance_mark = mark_value
+                        elif at.name.lower() in ['mid_term', 'midterm']:
+                            mid_term_mark = mark_value
+                        elif at.name.lower() in ['end_term', 'endterm']:
+                            end_term_mark = mark_value
+                available_marks = [m for m in [entrance_mark, mid_term_mark, end_term_mark] if m > 0]
+                avg_mark = sum(available_marks) / len(available_marks) if available_marks else 0
+            else:
+                # Fallback: we only know the current mark
+                end_term_mark = mark
+                avg_mark = mark
+        else:
+            # For single assessment types, show only current assessment
             if assessment_type.lower() in ['entrance', 'opener']:
-                entrance_mark = mark_disp
+                entrance_mark = mark
             elif assessment_type.lower() in ['mid_term', 'midterm']:
-                mid_term_mark = mark_disp
+                mid_term_mark = mark
             elif assessment_type.lower() in ['end_term', 'endterm']:
-                end_term_mark = mark_disp
-            avg_mark = mark_disp
+                end_term_mark = mark
+            # For other single assessment types (e.g., Assignment), use current
+            avg_mark = mark
 
         table_data.append({
-            "subject": subject_name,
+            "subject": subject.name if subject is not None else subject_name,
             "entrance": entrance_mark,
             "mid_term": mid_term_mark,
             "end_term": end_term_mark,
-            "current_assessment": mark_disp,
+            "current_assessment": mark,
             "avg": avg_mark,
-            "remarks": _full_remarks(get_performance_remarks(avg_mark if assessment_type.lower() in ['end_term', 'endterm'] else mark_disp, class_data_result.get("total_marks", 100)))
+            "remarks": get_performance_remarks(avg_mark if assessment_type.lower() in ['end_term', 'endterm'] else mark, class_data_result.get("total_marks", 100))
         })
-        visible_count += 1
 
-    # Build composite component breakdown using builder component names and display labels
-    composite_data = {}
-    for main_name, info in composite_structure.items():
-        comp_names = info.get('component_names', [])
-        display_labels = info.get('component_display', [])
-        components_map = {}
-        for idx, comp_name in enumerate(comp_names):
-            label = display_labels[idx] if idx < len(display_labels) else comp_name
-            val = filtered_marks.get(comp_name, 0) or 0
-            # Normalize
-            if isinstance(val, float):
-                val_disp = int(round(val)) if val == int(val) else round(val, 1)
-            else:
-                val_disp = int(val)
-            components_map[label] = {
-                'mark': val_disp,
-                'max_mark': 100,
-                'percentage': round(val, 1) if isinstance(val, (int, float)) else 0,
-                'remarks': _full_remarks(get_performance_remarks(val, 100))
-            }
-        composite_data[main_name] = {
-            'components': components_map,
-            'total': filtered_marks.get(main_name, 0) or 0
-        }
-
-    # Totals based on visible subjects in preview
-    total_marks = student_filtered.get('filtered_total', student_data.get('total_marks', 0)) if student_filtered else student_data.get('total_marks', 0)
-    total_possible_marks = visible_count * class_data_result.get("total_marks", 100)
-    total_points = mean_points * visible_count
+    # Calculate total marks and points based on subjects with marks
+    total_marks = student_data.get("total_marks", 0)
+    total_possible_marks = len(subjects_with_marks) * class_data_result.get("total_marks", 100)
+    total_points = mean_points * len(subjects_with_marks)
 
     # Generate admission number if not available
     admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
@@ -4422,7 +4840,7 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
         grade_obj = GradeModel.query.filter_by(name=grade).first()
         if grade_obj and stream_obj:
             # Determine candidate subject names that might be composites (appear in report subjects but not real Subject rows)
-            candidate_names = subject_names  # list from builder
+            candidate_names = subjects_with_marks  # list of subject strings from report
             for cname in candidate_names:
                 if cname in subject_teachers:
                     continue
@@ -4472,13 +4890,6 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
         'academic_year': academic_year
     }
 
-    # Legends for grading/weights/status (non-invasive; templates may opt-in)
-    try:
-        from ..services.mark_calculator_adapter import build_legends  # local import to avoid cycles
-        _calc_legends = build_legends()
-    except Exception:
-        _calc_legends = None
-
     return render_template(
         'preview_individual_report.html',
         student=student,
@@ -4504,9 +4915,7 @@ def preview_individual_report(grade, stream, term, assessment_type, student_name
         logo_url=logo_url,       # Pass dynamic logo URL
         staff_info=staff_info,   # Pass staff information
         term_info=term_info,     # Pass term information
-        subject_teachers=subject_teachers,  # Pass subject teachers mapping
-        # Optional legends for templates
-        calculator_legends=_calc_legends
+        subject_teachers=subject_teachers  # Pass subject teachers mapping
     )
 
 @classteacher_bp.route('/api/check_stream_status/<grade>/<term>/<assessment_type>', methods=['GET'])
@@ -4521,8 +4930,8 @@ def check_stream_status(grade, term, assessment_type):
             return jsonify({"success": False, "message": f"Grade {grade} not found", "streams": []})
 
         # Get the term and assessment type objects
-        term_obj, term_name = _resolve_term_object(term)
-        assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
+        term_obj = Term.query.filter_by(name=term).first()
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
         if not term_obj or not assessment_type_obj:
             return jsonify({"success": False, "message": "Invalid term or assessment type", "streams": []})
@@ -4844,7 +5253,7 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
         # Check if we have a cached PDF
         cached_pdf = get_cached_pdf(grade, "all", term, assessment_type, "marksheet")
         if cached_pdf:
-            return render_template(
+            return send_file(
                 cached_pdf,
                 as_attachment=True,
                 download_name=f"{grade}_{term}_{assessment_type}_Grade_Marksheet.xlsx",
@@ -4864,6 +5273,7 @@ def generate_grade_marksheet(grade, term, assessment_type, action):
         flash("Invalid term or assessment type", "error")
         return redirect(url_for('classteacher.dashboard'))
 
+    # Fetch all streams for the grade
     streams = Stream.query.filter_by(grade_id=grade_obj.id).all()
     if not streams:
         flash(f"No streams found for grade {grade}", "error")
@@ -5089,27 +5499,21 @@ def download_grade_marksheet(grade, term, assessment_type):
                            action='download'))
 
 @classteacher_bp.route('/delete_marksheet/<grade>/<stream>/<term>/<assessment_type>', methods=['POST'])
-@enforce('marksheet', 'delete', class_scope=True, grade_arg='grade', stream_arg='stream', roles=(
-    'headteacher', 'admin'
-))
+@classteacher_required
 def delete_marksheet(grade, stream, term, assessment_type):
     """Route for deleting a class marksheet (all marks for a grade/stream/term/assessment combination)."""
     try:
         # Get the stream object
-        stream_letter = stream.split()[-1] if " " in stream else stream[-1]
-        stream_obj = (
-            Stream.query.join(Grade)
-            .filter(Grade.name == grade, Stream.name == stream_letter)
-            .first()
-        )
+        stream_letter = stream[-1] if stream.startswith("Stream ") else stream[-1]
+        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream_letter).first()
 
         if not stream_obj:
             flash(f"Stream {stream} not found for grade {grade}", "error")
             return redirect(url_for('classteacher.dashboard'))
 
-        # Get the term and assessment type objects (flexible resolution)
-        term_obj, term_name = _resolve_term_object(term)
-        assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
+        # Get the term and assessment type objects
+        term_obj = Term.query.filter_by(name=term).first()
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
         if not (term_obj and assessment_type_obj):
             flash("Invalid term or assessment type", "error")
@@ -5143,20 +5547,20 @@ def delete_marksheet(grade, stream, term, assessment_type):
         subject_ids = [subject.id for subject in subjects]
 
         # Get marks to delete first (to handle component marks)
-        marks_to_delete = (
-            Mark.query.filter(
-                Mark.student_id.in_(student_ids),
-                Mark.subject_id.in_(subject_ids),
-                Mark.term_id == term_obj.id,
-                Mark.assessment_type_id == assessment_type_obj.id,
-            ).all()
-        )
+        marks_to_delete = Mark.query.filter(
+            Mark.student_id.in_(student_ids),
+            Mark.subject_id.in_(subject_ids),
+            Mark.term_id == term_obj.id,
+            Mark.assessment_type_id == assessment_type_obj.id
+        ).all()
 
         deleted_count = len(marks_to_delete)
 
         # Delete component marks first, then marks
         for mark in marks_to_delete:
+            # Delete component marks first
             ComponentMark.query.filter_by(mark_id=mark.id).delete()
+            # Delete the mark
             db.session.delete(mark)
 
         # Commit the changes
@@ -5167,24 +5571,19 @@ def delete_marksheet(grade, stream, term, assessment_type):
 
         # Create a detailed success message
         if deleted_count > 0:
-            success_message = (
-                f"Successfully deleted {deleted_count} marks for {grade} Stream {stream_letter} in {term} {assessment_type}. "
-                f"The marksheet has been completely removed."
-            )
+            success_message = f"Successfully deleted {deleted_count} marks for {grade} Stream {stream_letter} in {term} {assessment_type}. The marksheet has been completely removed."
+            # Store a session variable to indicate a successful deletion
             session['marksheet_deleted'] = True
             session['deleted_marksheet_info'] = {
                 'grade': grade,
                 'stream': stream,
                 'term': term,
                 'assessment_type': assessment_type,
-                'count': deleted_count,
+                'count': deleted_count
             }
             flash(success_message, "success")
         else:
-            flash(
-                f"No marks were found to delete for {grade} Stream {stream_letter} in {term} {assessment_type}.",
-                "info",
-            )
+            flash(f"No marks were found to delete for {grade} Stream {stream_letter} in {term} {assessment_type}.", "info")
 
         return redirect(url_for('classteacher.dashboard'))
 
@@ -5199,15 +5598,8 @@ def get_streams(grade_id):
     """API endpoint to get streams for a specific grade."""
     try:
         grade_id = int(grade_id)
-        # Return only streams for this grade, sorted by name
-        streams = Stream.query.filter_by(grade_id=grade_id).order_by(Stream.name.asc()).all()
-        # Include grade_id for client-side validation if needed
-        return jsonify({
-            "streams": [
-                {"id": stream.id, "name": stream.name, "grade_id": stream.grade_id}
-                for stream in streams
-            ]
-        })
+        streams = Stream.query.filter_by(grade_id=grade_id).all()
+        return jsonify({"streams": [{"id": stream.id, "name": stream.name} for stream in streams]})
     except ValueError:
         return jsonify({"error": "Invalid grade ID"}), 400
     except Exception as e:
@@ -5276,8 +5668,8 @@ def view_student_reports(grade, stream, term, assessment_type):
     """Route for viewing a list of students with options to view their individual reports."""
     # Get the stream object
     stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
-    term_obj, _ = _resolve_term_object(term)
-    assessment_type_obj, _ = _resolve_assessment_type_object(assessment_type)
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
     if not (stream_obj and term_obj and assessment_type_obj):
         flash("Invalid grade, stream, term, or assessment type", "error")
@@ -5326,7 +5718,7 @@ def view_student_reports(grade, stream, term, assessment_type):
     )
 
 @classteacher_bp.route('/download_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
-@enforce('individual_report', 'read', class_scope=True, grade_arg='grade', stream_arg='stream')
+@classteacher_required
 def download_individual_report(grade, stream, term, assessment_type, student_name):
     """Route for downloading an individual student report as PDF using the same format as preview."""
     # Check if we have a cached PDF for this student
@@ -5341,8 +5733,8 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
 
     # If no cache or cache miss, generate the report
     stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
-    term_obj, term_name = _resolve_term_object(term)
-    assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
+    term_obj = Term.query.filter_by(name=term).first()
+    assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
     if not (stream_obj and term_obj and assessment_type_obj):
         flash("Invalid grade, stream, term, or assessment type", "error")
@@ -5355,7 +5747,7 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
 
     # Generate PDF using the same format as preview
     pdf_file = generate_individual_report_pdf_like_preview(
-        student, grade, stream, (term_name or term), (at_name or assessment_type),
+        student, grade, stream, term, assessment_type,
         stream_obj, term_obj, assessment_type_obj
     )
 
@@ -5396,10 +5788,7 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
             education_level = "junior secondary"
 
         # Get class report data first (same as preview)
-        # Normalize names to match service expectations
-        _, term_name = _resolve_term_object(term)
-        _, at_name = _resolve_assessment_type_object(assessment_type)
-        class_data_result = get_class_report_data(grade, stream, (term_name or term), (at_name or assessment_type))
+        class_data_result = get_class_report_data(grade, stream, term, assessment_type)
 
         if class_data_result.get("error"):
             return None
@@ -5686,10 +6075,7 @@ def generate_simple_individual_report_pdf(student, grade, stream, term, assessme
         from datetime import datetime
 
         # Get class report data first (same as preview)
-        # Normalize names for resilience
-        _, term_name = _resolve_term_object(term)
-        _, at_name = _resolve_assessment_type_object(assessment_type)
-        class_data_result = get_class_report_data(grade, stream, (term_name or term), (at_name or assessment_type))
+        class_data_result = get_class_report_data(grade, stream, term, assessment_type)
 
         if class_data_result.get("error"):
             return None
@@ -5983,20 +6369,6 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
         logo_path = SchoolConfigService.get_school_logo_path()
         logo_url = url_for('static', filename=logo_path)
 
-        # Prepare term_info for template (required by preview_individual_report.html)
-        term_info = {
-            'next_term_opening_date': 'TBD'  # Default value since this is for individual reports
-        }
-
-        # Get staff info for template (required by preview_individual_report.html)
-        staff_info = {
-            'class_teacher': None,
-            'headteacher': None
-        }
-
-        # Get subject teachers info (required by template)
-        subject_teachers = {}
-
         # Read the template file and render it (same as preview)
         template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'preview_individual_report.html')
         with open(template_path, 'r', encoding='utf-8') as f:
@@ -6023,9 +6395,6 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
             total_points=total_points,
             admission_no=admission_no,
             academic_year=academic_year,
-            term_info=term_info,  # Add missing term_info
-            staff_info=staff_info,  # Add missing staff_info
-            subject_teachers=subject_teachers,  # Add missing subject_teachers
             print_mode=True,  # Enable print mode for clean output
             school_info=school_info,  # Pass school information
             logo_url=logo_url  # Pass dynamic logo URL
@@ -6038,6 +6407,7 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
         if pdf_available:
             # Try to generate PDF
             try:
+                import pdfkit
                 filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}_{timestamp}.pdf"
                 pdf_path = os.path.join(temp_dir, filename)
 
@@ -6045,132 +6415,25 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
                 print_css = """
                 <style>
                 @page { size: A4; margin: 1cm; }
-                body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; background: white; }
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
                 .action-buttons, .print-controls, .delete-btn, .modal { display: none !important; }
-                .report-container { max-width: none; margin: 0; padding: 20px; background: white; }
-                table { border-collapse: collapse; width: 100%; margin: 20px 0; }
-                th, td { border: 1px solid #333; padding: 8px; text-align: center; color: #000; }
-                th { background-color: #f0f0f0; }
+                .report-container { max-width: none; margin: 0; padding: 20px; }
                 </style>
                 """
-                
-                # SECURITY: Sanitize HTML content before PDF generation (remove dangerous elements only, don't escape)
-                def sanitize_html_for_pdf(html_content):
-                    """Sanitize HTML content to prevent command injection in PDF generation."""
-                    import re
-                    
-                    # Remove potentially dangerous HTML elements/attributes (but don't escape valid HTML)
-                    dangerous_patterns = [
-                        r'<script[^>]*>.*?</script>',
-                        r'<iframe[^>]*>.*?</iframe>', 
-                        r'<object[^>]*>.*?</object>',
-                        r'<embed[^>]*>.*?</embed>',
-                        r'on\w+\s*=\s*["\'][^"\']*["\']',  # onclick, onload, etc.
-                        r'javascript\s*:',
-                        r'vbscript\s*:',
-                        r'data\s*:\s*text/html'
-                    ]
-                    
-                    for pattern in dangerous_patterns:
-                        html_content = re.sub(pattern, '', html_content, flags=re.IGNORECASE | re.DOTALL)
-                    
-                    return html_content
-                
-                # Sanitize the HTML before adding CSS
-                safe_html = sanitize_html_for_pdf(rendered_html)
-                html_with_css = safe_html.replace('</head>', f'{print_css}</head>')
+                html_with_css = rendered_html.replace('</head>', f'{print_css}</head>')
 
-                # Use pdfkit (same as class reports) for better Windows compatibility
-                try:
-                    import pdfkit
-                    import os
-                    
-                    # Configure pdfkit with explicit wkhtmltopdf path for Windows
-                    WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
-                    
-                    if os.path.exists(WKHTMLTOPDF_PATH):
-                        config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
-                        print(f"Using wkhtmltopdf at: {WKHTMLTOPDF_PATH}")
-                    else:
-                        # Fallback to default configuration
-                        config = pdfkit.configuration()
-                        print("Using default pdfkit configuration")
-                    
-                    options = {
-                        'page-size': 'A4',
-                        'orientation': 'Portrait',
-                        'margin-top': '0.75in',
-                        'margin-right': '0.75in',
-                        'margin-bottom': '0.75in',
-                        'margin-left': '0.75in',
-                        'encoding': 'UTF-8',
-                        'no-outline': None,
-                        'enable-local-file-access': True,
-                        'print-media-type': None,
-                        # SECURITY: Disable JavaScript execution in PDF generation
-                        'disable-javascript': None,
-                        'disable-plugins': None,
-                        # Prevent external resource loading
-                        'disable-external-links': None,
-                        'disable-internal-links': None,
-                        # Be tolerant of missing images/assets to avoid hard failures
-                        'load-error-handling': 'ignore',
-                        'load-media-error-handling': 'ignore'
-                    }
-                    
-                    # SECURITY: Use secure PDF generation with input validation
-                    def secure_pdf_generation(html_content, output_path, pdf_options, pdf_config):
-                        """Securely generate PDF with additional validation."""
-                        import tempfile
-                        import os
-                        
-                        # Create temporary HTML file with restricted permissions
-                        with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as temp_html:
-                            temp_html.write(html_content)
-                            temp_html_path = temp_html.name
-                        
-                        try:
-                            # Set restrictive file permissions (Windows compatible)
-                            if hasattr(os, 'chmod'):
-                                os.chmod(temp_html_path, 0o600)  # Read/write for owner only
-                            
-                            # Generate PDF from temporary file (safer than from_string)
-                            pdfkit.from_file(temp_html_path, output_path, options=pdf_options, configuration=pdf_config)
-                            
-                        finally:
-                            # Always clean up temporary file
-                            try:
-                                os.unlink(temp_html_path)
-                            except OSError:
-                                pass
-                    
-                    # Use secure PDF generation with a light retry in case wkhtmltopdf crashes intermittently
-                    last_error = None
-                    for attempt in range(1, 3):
-                        try:
-                            secure_pdf_generation(html_with_css, pdf_path, options, config)
-                            print(f"Created PDF report (pdfkit): {pdf_path} (attempt {attempt})")
-                            return pdf_path
-                        except Exception as attempt_err:
-                            last_error = attempt_err
-                            print(f"wkhtmltopdf attempt {attempt} failed for {student.name}: {attempt_err}")
-                            try:
-                                import time as _t
-                                _t.sleep(0.5)
-                            except Exception:
-                                pass
-                    # After attempts failed, raise to trigger fallback
-                    raise last_error
-                except Exception as pdfkit_error:
-                    print(f"pdfkit failed: {pdfkit_error}")
-                    # Fallback to WeasyPrint if pdfkit fails
-                    try:
-                        import weasyprint
-                        weasyprint.HTML(string=html_with_css).write_pdf(pdf_path)
-                        print(f"Created PDF report (WeasyPrint fallback): {pdf_path}")
-                        return pdf_path
-                    except Exception as weasy_error:
-                        print(f"WeasyPrint also failed: {weasy_error}. Falling back to HTML output for {student.name}.")
+                options = {
+                    'page-size': 'A4',
+                    'orientation': 'Portrait',
+                    'margin-top': '0.75in',
+                    'margin-right': '0.75in',
+                    'margin-bottom': '0.75in',
+                    'margin-left': '0.75in',
+                    'encoding': 'UTF-8',
+                    'no-outline': None
+                }
+                pdfkit.from_string(html_with_css, pdf_path, options=options)
+                return pdf_path
             except Exception as e:
                 print(f"PDF generation failed: {e}")
                 # Fall through to HTML generation
@@ -6209,208 +6472,147 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
 @classteacher_bp.route('/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type>')
 @classteacher_required
 def generate_all_individual_reports(grade, stream, term, assessment_type):
-    """Generate and return a ZIP containing all individual reports for a stream.
-
-    Hardened version: robust stream resolution, improved error handling, safety headers,
-    and explicit JSON responses for AJAX requests. Falls back gracefully when no data.
-    """
-    def is_ajax():
-        return request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in (request.headers.get('Accept') or '')
-
-    def json_or_flash(message, code=400):
-        if is_ajax():
-            return jsonify({'error': message}), code
-        flash(message, 'error')
-        return redirect(url_for('classteacher.dashboard'))
-
-    # Session-based locking with short per-session throttle and better cleanup
-    request_key = f"zip_generation_{grade}_{stream}_{term}_{assessment_type}"
-    lock_timestamp_key = f"{request_key}_timestamp"
-    last_success_key = f"{request_key}_last_success"
-    current_time = time.time()
-    
-    print(f"🔒 Checking session lock for key: {request_key}")
-    print(f"🔒 Current session keys: {list(session.keys())}")
-    
-    # Throttle: if a successful generation just happened within 60s, block
-    last_success_time = session.get(last_success_key)
-    if last_success_time and (current_time - last_success_time) < 60:
-        wait_for = int(60 - (current_time - last_success_time))
-        print(f"🚫 Throttled: last successful generation {int(current_time - last_success_time)}s ago. Wait {wait_for}s")
-        if is_ajax():
-            return jsonify({'error': f'Please wait {wait_for} seconds before generating again.'}), 429
-        flash(f"Please wait {wait_for} seconds before generating again.", 'warning')
-        return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
-
-    # Check only for active locks
-    existing_lock = session.get(request_key)
-    
-    if existing_lock:
-        print(f"🚫 Request blocked - already in progress for key: {request_key}")
-        return json_or_flash("Report generation already in progress. Please wait.", 429)
-    
-    print(f"✅ Setting session lock for key: {request_key}")
-    session[request_key] = True
-    session[lock_timestamp_key] = current_time
-    session.modified = True  # Force session save
-    
+    """Route for generating and downloading all individual reports as a ZIP file using the same format as preview."""
     try:
-        print(
-            f"🚀 Starting ZIP generation for grade='{grade}', stream='{stream}', term='{term}', assessment='{assessment_type}'"
-        )
+        print(f"🚀 Starting ZIP generation for {grade} {stream} {term} {assessment_type}")
 
-        # Attempt to resolve the stream more intelligently instead of using stream[-1]
-        raw_stream = stream
-        stream_name_candidates = {raw_stream}
-        parts = raw_stream.split()
-        if len(parts) > 1:
-            stream_name_candidates.add(parts[-1])
-        if parts:
-            stream_name_candidates.add(parts[-1].upper())
-            stream_name_candidates.add(parts[-1].lower())
-
-        print(f"🔍 Stream name candidates: {stream_name_candidates}")
-
-        stream_obj = (
-            Stream.query.join(Grade)
-            .filter(Grade.name == grade, Stream.name.in_(stream_name_candidates))
-            .first()
-        )
-
-        # Resolve term and assessment type flexibly
-        term_obj, term_name = _resolve_term_object(term)
-        assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
+        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
+        term_obj = Term.query.filter_by(name=term).first()
+        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type).first()
 
         if not (stream_obj and term_obj and assessment_type_obj):
-            return json_or_flash("Invalid grade, stream, term, or assessment type", 400)
+            error_msg = "Invalid grade, stream, term, or assessment type"
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                return jsonify({'error': error_msg}), 400
+            flash(error_msg, "error")
+            return redirect(url_for('classteacher.dashboard'))
 
+        # Get students in this stream
         students = Student.query.filter_by(stream_id=stream_obj.id).all()
-        print(f"📊 Found {len(students)} students for stream id={stream_obj.id} ({stream_obj.name})")
+        print(f"📊 Found {len(students)} students in {grade} Stream {stream[-1]}")
 
         if not students:
-            return json_or_flash(f"No students found for {grade} Stream {stream_obj.name}", 400)
+            error_msg = f"No students found for {grade} Stream {stream[-1]}"
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                return jsonify({'error': error_msg}), 400
+            flash(error_msg, "error")
+            return redirect(url_for('classteacher.dashboard'))
 
-        # Detect PDF generation capability
-        pdf_available = True  # Re-enable PDF generation using pdfkit like class reports
-        print("ℹ️ PDF generation enabled - using pdfkit like class reports")
+        # Check if we can generate PDFs (optional - will fallback to text if not available)
+        pdf_available = False
+        try:
+            import pdfkit
+            import os
+            # Test if wkhtmltopdf is working
+            test_html = "<html><body><h1>Test</h1></body></html>"
+            temp_test_file = os.path.join(tempfile.gettempdir(), "wkhtmltopdf_test.pdf")
+            pdfkit.from_string(test_html, temp_test_file, options={'page-size': 'A4'})
+            if os.path.exists(temp_test_file):
+                os.remove(temp_test_file)
+                pdf_available = True
+                print("✅ PDF generation available")
+            else:
+                print("⚠️ wkhtmltopdf not working, will use text fallback")
+        except Exception as e:
+            print(f"⚠️ PDF generation not available: {e}, will use text fallback")
 
+        # Import necessary modules
         import zipfile
-        import tempfile as tmp_module2  # Use different alias for second import
+        import tempfile
+        import os
         from datetime import datetime
 
-        temp_dir = tmp_module2.mkdtemp()
-        print(f"📁 Using temp directory: {temp_dir}")
+        # Create a temporary directory to store the PDFs
+        temp_dir = tempfile.mkdtemp()
+        print(f"📁 Created temp directory: {temp_dir}")
 
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        safe_grade = grade.replace(' ', '_')
-        zip_filename = f"Individual_Reports_{safe_grade}_{stream}_{term}_{assessment_type}_{timestamp}.zip"
+        # Create a ZIP file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        zip_filename = f"Individual_Reports_{grade.replace(' ', '_')}_{stream}_{term}_{assessment_type}_{timestamp}.zip"
         zip_path = os.path.join(temp_dir, zip_filename)
-        print(f"📦 Will create ZIP at: {zip_path}")
+        print(f"📦 Creating ZIP file: {zip_filename}")
 
+        # Generate PDFs for each student and add them to the ZIP file
         successful_reports = 0
         failed_reports = 0
 
         with zipfile.ZipFile(zip_path, 'w') as zipf:
-            for i, student in enumerate(students, start=1):
+            for i, student in enumerate(students, 1):
                 try:
-                    print(f"📄 ({i}/{len(students)}) Generating report for: {student.name}")
+                    print(f"📄 Processing student {i}/{len(students)}: {student.name}")
+
+                    # Use the same format as preview - generate report file (PDF or HTML)
                     report_file = generate_individual_report_like_preview_for_zip(
-                        student, grade, stream, (term_name or term), (at_name or assessment_type),
+                        student, grade, stream, term, assessment_type,
                         stream_obj, term_obj, assessment_type_obj, pdf_available
                     )
+
                     if report_file and os.path.exists(report_file):
-                        ext = os.path.splitext(report_file)[1]
-                        safe_student = student.name.replace(' ', '_')
-                        internal_name = f"Individual_Report_{safe_grade}_{stream}_{safe_student}{ext}"
-                        zipf.write(report_file, internal_name)
+                        # Determine file extension from the actual file
+                        file_extension = os.path.splitext(report_file)[1]  # Gets .pdf, .html, or .txt
+                        report_filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}{file_extension}"
+                        zipf.write(report_file, report_filename)
                         successful_reports += 1
-                        print(f"✅ Added {internal_name}")
+                        print(f"✅ Generated report for {student.name}")
+
+                        # Clean up individual report file
                         try:
                             os.remove(report_file)
-                        except OSError:
+                        except:
                             pass
                     else:
                         failed_reports += 1
-                        print(f"⚠️ No data / report skipped for {student.name}")
+                        print(f"⚠️ No report generated for {student.name} (no marks found)")
+
                 except Exception as e:
                     failed_reports += 1
-                    print(f"❌ Exception building report for {student.name}: {e}")
+                    print(f"❌ Error generating report for {student.name}: {str(e)}")
                     continue
 
-        print(f"📊 Summary: success={successful_reports}, failed={failed_reports}")
+        print(f"📊 Generation complete: {successful_reports} successful, {failed_reports} failed")
 
         if successful_reports == 0:
-            return json_or_flash(f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}.", 400)
+            error_msg = f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}."
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                return jsonify({'error': error_msg}), 400
+            flash(error_msg, "error")
+            return redirect(url_for('classteacher.dashboard'))
 
-        if not os.path.exists(zip_path):
-            return json_or_flash("ZIP file was not created due to an internal error.", 500)
+        flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", "success")
 
-        print(f"✅ ZIP file created successfully at: {zip_path}, size: {os.path.getsize(zip_path)} bytes")
-
-        # Success flash only for non-AJAX flow
-        if not is_ajax():
-            flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", 'success')
-
-        # Read the ZIP file into memory to avoid file locking issues
-        with open(zip_path, 'rb') as f:
-            zip_data = f.read()
-        
-        # Clean up temp files immediately after reading
-        try:
-            os.remove(zip_path)
-            import shutil
-            shutil.rmtree(temp_dir, ignore_errors=True)
-            print(f"🗑️ Cleaned up temp files")
-        except Exception as cleanup_error:
-            print(f"⚠️ Warning: Could not cleanup temp files: {cleanup_error}")
-        
-        # Create response from in-memory data
-        from io import BytesIO
-        response = send_file(
-            BytesIO(zip_data),
+        # Return the ZIP file
+        return send_file(
+            zip_path,
             as_attachment=True,
             download_name=zip_filename,
             mimetype='application/zip'
         )
-        
-        # Set comprehensive headers for ZIP download
-        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        response.headers['Content-Type'] = 'application/zip'
-        response.headers['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
-        response.headers['Content-Length'] = str(len(zip_data))
-        
-        print(f"📤 Sending ZIP response: {zip_filename} ({len(zip_data)} bytes)")
-        # Mark last successful generation time for throttling
-        session[last_success_key] = current_time
-        session.modified = True
-        
-        return response
 
     except Exception as e:
-        print(f"💥 Critical error in ZIP generation: {e}")
+        print(f"💥 Critical error in ZIP generation: {str(e)}")
         import traceback
         traceback.print_exc()
-        if is_ajax():
-            return jsonify({'error': f'Error generating reports: {str(e)}'}), 500
-        flash(f"Error generating reports: {str(e)}", 'error')
+        error_msg = f"Error generating reports: {str(e)}"
+        # Check if this is an AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'error': error_msg}), 500
+        flash(error_msg, "error")
         return redirect(url_for('classteacher.dashboard'))
-    finally:
-        # Always remove the lock to prevent future blocking
-        print(f"🔓 Cleaning up session lock for key: {request_key}")
-        session.pop(request_key, None)
-        session.pop(lock_timestamp_key, None)
-        session.modified = True
 
 @classteacher_bp.route('/download_class_list', methods=['GET'])
 @classteacher_required
 def download_class_list():
     """Route to download class lists as CSV files."""
 
-    # Use centralized canonical mapping
-    from ..utils.constants import educational_level_mapping as educational_level_mapping_ui
+    # Define educational level mapping
+    educational_level_mapping = {
+        "lower_primary": ["Grade 1", "Grade 2", "Grade 3"],
+        "upper_primary": ["Grade 4", "Grade 5", "Grade 6"],
+        "junior_secondary": ["Grade 7", "Grade 8", "Grade 9"]
+    }
 
     # Get filter parameters
     educational_level = request.args.get('educational_level', '')
@@ -6450,7 +6652,7 @@ def download_class_list():
     # Filter by educational level if specified
     elif educational_level:
         # Get all grades for this educational level
-        allowed_grades = educational_level_mapping_ui.get(educational_level, [])
+        allowed_grades = educational_level_mapping.get(educational_level, [])
         grades = Grade.query.filter(Grade.name.in_(allowed_grades)).all()
         grade_ids = [g.id for g in grades]
 
@@ -6605,72 +6807,82 @@ def export_subjects():
         mimetype=mimetype
     )
 
-def _validate_bulk_subject_import():
-    from flask import current_app
-    cfg = current_app.config
-    allowed = cfg.get('FILE_ALLOWED_DATA_EXTENSIONS', {'.csv', '.xlsx', '.xls'})
-    max_bytes = cfg.get('FILE_UPLOAD_MAX_BYTES', 5 * 1024 * 1024)
-    meta = validate_uploaded_file('subject_file', allowed_exts=allowed, max_bytes=max_bytes)
-    return {'filename': meta['filename'], 'ext': meta['ext'], 'size': meta['size']}
-
 @classteacher_bp.route('/bulk_import_subjects', methods=['POST'])
-@secure_endpoint(roles=['classteacher','headteacher'], rate=(5,300), validator=_validate_bulk_subject_import, audit_event='subjects.bulk_import')
-def bulk_import_subjects(_validated):
+@classteacher_required
+@secure_file_upload(allowed_extensions=['.csv', '.xlsx', '.xls'], max_size=10 * 1024 * 1024)
+def bulk_import_subjects():
+    """Route for bulk importing subjects."""
+    if 'subject_file' not in request.files:
+        flash("No file selected.", "error")
+        return redirect(url_for('classteacher.manage_subjects'))
+
     file = request.files['subject_file']
-    ext = _validated['ext']
+
+    if file.filename == '':
+        flash("No file selected.", "error")
+        return redirect(url_for('classteacher.manage_subjects'))
+
+    # Check file extension
+    file_ext = os.path.splitext(file.filename)[1].lower()
+
     try:
-        if ext == '.csv':
+        # Read the file into a pandas DataFrame
+        if file_ext == '.csv':
             df = pd.read_csv(file)
-        else:
+        elif file_ext in ['.xlsx', '.xls']:
             df = pd.read_excel(file)
+        else:
+            flash("Unsupported file format. Please upload a CSV or Excel file.", "error")
+            return redirect(url_for('classteacher.manage_subjects'))
+
+        # Check if the required columns are present
         required_columns = ['name', 'education_level']
-        missing = [c for c in required_columns if c not in df.columns]
-        if missing:
-            raise ValidationError('Missing required columns', {'missing': missing})
+        for col in required_columns:
+            if col not in df.columns:
+                flash(f"Missing required column: {col}", "error")
+                return redirect(url_for('classteacher.manage_subjects'))
+
+        # Process the subjects
         added_count = 0
         skipped_count = 0
-        # Accept only canonical levels; normalize simple variants
-        from ..utils.constants import EDUCATION_LEVELS_ORDER
-        canonical_levels = set(EDUCATION_LEVELS_ORDER)  # includes pre_primary and senior_secondary too
+
         for _, row in df.iterrows():
-            name = str(row['name']).strip()
-            edu_raw = str(row['education_level']).strip()
-            edu = edu_raw.replace(' ', '_').lower()
-            if edu not in canonical_levels:
+            subject_name = row['name'].strip()
+            education_level = row['education_level'].strip()
+
+            # Validate education level
+            if education_level not in ['lower_primary', 'upper_primary', 'junior_secondary']:
                 skipped_count += 1
                 continue
-            existing = Subject.query.filter_by(name=name, education_level=edu).first()
-            if existing:
+
+            # Check if subject already exists
+            existing_subject = Subject.query.filter_by(name=subject_name, education_level=education_level).first()
+            if existing_subject:
                 skipped_count += 1
                 continue
-            db.session.add(Subject(name=name, education_level=edu))
+
+            # Add the new subject
+            new_subject = Subject(name=subject_name, education_level=education_level)
+            db.session.add(new_subject)
             added_count += 1
+
+        # Commit the changes
         db.session.commit()
-        if wants_json(request):
-            return jsonify({'status':'ok','added':added_count,'skipped':skipped_count,'file':_validated['filename']}), 200
-        if added_count:
-            flash(f"Added {added_count} subject(s); skipped {skipped_count}.", 'success')
+
+        if added_count > 0:
+            flash(f"Successfully added {added_count} new subject(s). {skipped_count} subject(s) were skipped because they already exist or had invalid data.", "success")
         else:
-            flash(f"No new subjects added; skipped {skipped_count}.", 'info')
+            flash(f"No new subjects were added. {skipped_count} subject(s) were skipped because they already exist or had invalid data.", "info")
+
         return redirect(url_for('classteacher.manage_subjects'))
-    except ValidationError as ve:
-        if wants_json(request):
-            return jsonify({'error':{'code':'INVALID_REQUEST','message':str(ve),'details':ve.details}}), 422
-        flash(str(ve), 'error')
-        return redirect(url_for('classteacher.manage_subjects'))
-    except Exception as e:  # pragma: no cover - unexpected path
-        try:
-            from flask import current_app
-            current_app.logger.exception('Bulk import failure')
-        except Exception:
-            pass
-        if wants_json(request):
-            return jsonify({'error':{'code':'SERVER_ERROR','message':'Unexpected error'}}), 500
-        flash('Unexpected error during import', 'error')
+
+    except Exception as e:
+        flash(f"Error processing file: {str(e)}", "error")
         return redirect(url_for('classteacher.manage_subjects'))
 
 @classteacher_bp.route('/manage_subjects', methods=['GET', 'POST'])
 @classteacher_required
+@secure_file_upload(allowed_extensions=['.csv', '.xlsx', '.xls'], max_size=10 * 1024 * 1024)
 def manage_subjects():
     """Route for managing subjects."""
     error_message = None
@@ -6700,14 +6912,9 @@ def manage_subjects():
     pagination = subjects_query.paginate(page=page, per_page=per_page, error_out=False)
     subjects = pagination.items
 
-    # Get all unique education levels for the filter dropdown (ordered canonically)
+    # Get all unique education levels for the filter dropdown
     all_education_levels = db.session.query(Subject.education_level).distinct().all()
     education_levels = [level[0] for level in all_education_levels if level[0]]
-    try:
-        from ..utils.constants import order_levels
-        education_levels = order_levels(education_levels)
-    except Exception:
-        pass
 
     # Calculate statistics
     total_subjects = Subject.query.count()
@@ -7299,7 +7506,7 @@ def cleanup_duplicate_assignments():
         return 0
 
 @classteacher_bp.route('/manage_teacher_assignments', methods=['GET', 'POST'])
-@classteacher_required(allowed_roles=("classteacher","headteacher","teacher"))
+@classteacher_required
 def manage_teacher_assignments():
     """Route for managing teacher assignments, transfers, and reassignments."""
     error_message = None
@@ -7320,38 +7527,19 @@ def manage_teacher_assignments():
     subjects = Subject.query.all()
     grades = Grade.query.all()
 
-    # Determine scope (mine | all). Default is 'mine' for safety.
-    scope = request.args.get('scope', 'mine').lower()
-    if scope not in ('mine', 'all'):
-        scope = 'mine'
-    # Authorize access to global scope; only allow privileged roles
-    requested_scope = scope
-    try:
-        user_role = get_role(session)
-    except Exception:
-        user_role = None
-    # Roles allowed to view ALL assignments (add or remove as policy evolves)
-    allowed_global_roles = {'classteacher', 'admin', 'superadmin', 'headteacher'}
-    if requested_scope == 'all' and user_role not in allowed_global_roles:
-        # Fallback silently to 'mine' to avoid information disclosure
-        scope = 'mine'
-
-    # Get current teacher context (always needed for 'mine')
-    current_teacher_id = session.get('teacher_id')
-    current_teacher = Teacher.query.get(current_teacher_id) if current_teacher_id else None
-
-    # Get class teacher assignments respecting scope
+    # Get all class teacher assignments
     class_teacher_assignments = []
     try:
-        if scope == 'all':
-            assignments = TeacherSubjectAssignment.query.filter_by(
-                is_class_teacher=True
-            ).all()
-        else:
-            assignments = TeacherSubjectAssignment.query.filter_by(
-                teacher_id=current_teacher_id,
-                is_class_teacher=True
-            ).all()
+        # Get the current teacher ID
+        current_teacher_id = session.get('teacher_id')
+        current_teacher = Teacher.query.get(current_teacher_id)
+
+        # Only show class teacher assignments for the current teacher
+        # This ensures a teacher only sees their own class teacher assignments
+        assignments = TeacherSubjectAssignment.query.filter_by(
+            teacher_id=current_teacher_id,
+            is_class_teacher=True
+        ).all()
 
         # Use a set to track unique grade-stream combinations to avoid duplicates
         seen_combinations = set()
@@ -7404,22 +7592,18 @@ def manage_teacher_assignments():
     except Exception as e:
         print(f"Error fetching class teacher assignments: {str(e)}")
 
-    # Get subject assignments respecting scope
+    # Get all subject assignments
     subject_assignments = []
     try:
-        if scope == 'all':
-            assignments = TeacherSubjectAssignment.query.filter_by(
-                is_class_teacher=False
-            ).all()
-        else:
-            assignments = TeacherSubjectAssignment.query.filter_by(
-                teacher_id=current_teacher_id,
-                is_class_teacher=False
-            ).all()
+        # Only show subject assignments for the current teacher
+        # This ensures a teacher only sees their own subject assignments
+        assignments = TeacherSubjectAssignment.query.filter_by(
+            teacher_id=current_teacher_id,
+            is_class_teacher=False
+        ).all()
 
         # Use a set to track unique subject-grade-stream combinations to avoid duplicates
         seen_subject_combinations = set()
-        allow_dup_flag = request.args.get('allow_duplicates_for_pagination') == '1'
 
         for assignment in assignments:
             teacher = Teacher.query.get(assignment.teacher_id)
@@ -7430,11 +7614,11 @@ def manage_teacher_assignments():
             # Create a unique key for this subject-grade-stream combination
             subject_combination_key = (assignment.subject_id, assignment.grade_id, assignment.stream_id)
 
-            # Skip if we've already seen this combination (unless testing flag bypasses it)
-            if not allow_dup_flag:
-                if subject_combination_key in seen_subject_combinations:
-                    continue
-                seen_subject_combinations.add(subject_combination_key)
+            # Skip if we've already seen this combination
+            if subject_combination_key in seen_subject_combinations:
+                continue
+
+            seen_subject_combinations.add(subject_combination_key)
 
             subject_assignments.append({
                 "id": assignment.id,
@@ -7456,111 +7640,15 @@ def manage_teacher_assignments():
     if 'assignment_success' in session:
         clear_session = True
 
-    # ---- Pagination Logic ----
-    # Query params for pages / per-page (independent for class & subject tables)
-    try:
-        class_page = int(request.args.get('class_page', 1))
-    except ValueError:
-        class_page = 1
-    try:
-        subject_page = int(request.args.get('subject_page', 1))
-    except ValueError:
-        subject_page = 1
-    try:
-        per_page_class = int(request.args.get('per_page_class', 10))
-    except ValueError:
-        per_page_class = 10
-    try:
-        per_page_subject = int(request.args.get('per_page_subject', 25))
-    except ValueError:
-        per_page_subject = 25
-
-    # Enforce sensible bounds
-    per_page_class = max(1, min(per_page_class, 100))
-    per_page_subject = max(1, min(per_page_subject, 200))
-    class_page = max(1, class_page)
-    subject_page = max(1, subject_page)
-
-    # Sort deterministically (grade, stream, subject, teacher) before slicing
-    def natural_teacher_key(username: str):
-        if not username:
-            return (username, -1)
-        if username.startswith('t_'):
-            try:
-                return ('t_', int(username.split('_', 1)[1]))
-            except ValueError:
-                return (username, -1)
-        return (username, -1)
-    def natural_stream_key(stream_name: str):
-        if not stream_name:
-            return (stream_name, -1)
-        # Pattern S<number>
-        if stream_name.startswith('S'):
-            try:
-                return ('S', int(stream_name[1:]))
-            except ValueError:
-                return (stream_name, -1)
-        return (stream_name, -1)
-
-    class_teacher_assignments.sort(key=lambda a: (
-        a.get('grade_level') or '',
-        natural_stream_key(a.get('stream_name') or ''),
-        natural_teacher_key(a.get('teacher_username'))
-    ))
-    subject_assignments.sort(key=lambda a: (
-        a.get('subject_name') or '',
-        a.get('grade_level') or '',
-        natural_stream_key(a.get('stream_name') or ''),
-        natural_teacher_key(a.get('teacher_username'))
-    ))
-
-    total_class_assignment_count = len(class_teacher_assignments)
-    total_subject_assignment_count = len(subject_assignments)
-    total_combined_assignment_count = total_class_assignment_count + total_subject_assignment_count
-
-    def paginate(list_, page, per_page):
-        total = len(list_)
-        start = (page - 1) * per_page
-        end = start + per_page
-        items = list_[start:end]
-        total_pages = (total + per_page - 1) // per_page if per_page else 1
-        return items, {
-            'page': page,
-            'per_page': per_page,
-            'total': total,
-            'total_pages': total_pages,
-            'has_prev': page > 1,
-            'has_next': page < total_pages,
-            'prev_page': page - 1 if page > 1 else None,
-            'next_page': page + 1 if page < total_pages else None
-        }
-
-    class_teacher_assignments_page, class_pagination = paginate(class_teacher_assignments, class_page, per_page_class)
-    subject_assignments_page, subject_pagination = paginate(subject_assignments, subject_page, per_page_subject)
-
-    # Global (unfiltered) totals for badge/tooltips (server-side authoritative counts)
-    agg_class_total = TeacherSubjectAssignment.query.filter_by(is_class_teacher=True).count()
-    agg_subject_total = TeacherSubjectAssignment.query.filter_by(is_class_teacher=False).count()
-
     response = render_template(
         'manage_teacher_assignments.html',
         teachers=teachers,
         subjects=subjects,
         grades=grades,
-        class_teacher_assignments=class_teacher_assignments_page,
-        subject_assignments=subject_assignments_page,
+        class_teacher_assignments=class_teacher_assignments,
+        subject_assignments=subject_assignments,
         error_message=error_message,
-        success_message=success_message,
-        view_scope=scope,
-        total_class_assignment_count=total_class_assignment_count,
-        total_subject_assignment_count=total_subject_assignment_count,
-        total_combined_assignment_count=total_combined_assignment_count,
-        aggregate_class_count=agg_class_total,
-        aggregate_subject_count=agg_subject_total,
-        requested_scope=requested_scope,
-        user_role=user_role,
-        class_pagination=class_pagination,
-        subject_pagination=subject_pagination
+        success_message=success_message
     )
 
     # Clear session variables after rendering the template
@@ -7674,28 +7762,22 @@ def clear_assignment_session():
         session.pop('assigned_teacher_id', None)
     return '', 204  # No content response
 
-def _validate_add_term_ajax():
-    term_name = request.form.get("term_name")
-    if not term_name:
-        raise ValidationError('Missing required fields', {'term_name':'required'})
-    if Term.query.filter_by(name=term_name).first():
-        raise ValidationError('Term name already exists')
-    return {
-        'term_name': term_name,
-        'term_start_date': request.form.get("term_start_date"),
-        'term_end_date': request.form.get("term_end_date"),
-        'academic_year': request.form.get("academic_year"),
-        'is_current_term': "is_current_term" in request.form
-    }
-
 @classteacher_bp.route('/add_term_ajax', methods=['POST'])
-@secure_endpoint(roles=['headteacher','classteacher'], rate=(25,60), validator=_validate_add_term_ajax, audit_event='term.add')
-def add_term_ajax(_validated):
-    term_name = _validated['term_name']
-    term_start_date = _validated['term_start_date']
-    term_end_date = _validated['term_end_date']
-    academic_year = _validated['academic_year']
-    is_current_term = _validated['is_current_term']
+@classteacher_required
+def add_term_ajax():
+    """AJAX route for adding a new term."""
+    term_name = request.form.get("term_name")
+    term_start_date = request.form.get("term_start_date")
+    term_end_date = request.form.get("term_end_date")
+    academic_year = request.form.get("academic_year")
+    is_current_term = "is_current_term" in request.form
+
+    if not term_name:
+        return jsonify({"success": False, "message": "Please fill in the term name."})
+
+    existing_term = Term.query.filter_by(name=term_name).first()
+    if existing_term:
+        return jsonify({"success": False, "message": f"Term '{term_name}' already exists."})
 
     # Create new term with additional fields if they exist in the model
     new_term = Term(name=term_name)
@@ -7769,59 +7851,65 @@ def add_term_ajax(_validated):
         "stats": stats
     })
 
-def _validate_delete_term_ajax():
+@classteacher_bp.route('/delete_term_ajax', methods=['POST'])
+@classteacher_required
+def delete_term_ajax():
+    """AJAX route for deleting a term."""
     term_id = request.form.get("term_id")
+
     if not term_id:
-        raise ValidationError('Missing required fields', {'term_id': 'required'})
+        return jsonify({"success": False, "message": "Term ID is required."})
+
     term = Term.query.get(term_id)
     if not term:
-        raise ValidationError('Term not found')
+        return jsonify({"success": False, "message": "Term not found."})
+
     # Check if term has marks
     marks = Mark.query.filter_by(term_id=term.id).all()
     if marks:
-        raise ValidationError("Term has marks and cannot be deleted", {'blocked': True})
-    return {'term': term}
+        return jsonify({"success": False, "message": f"Cannot delete term '{term.name}' because it has marks associated with it."})
 
-@classteacher_bp.route('/delete_term_ajax', methods=['POST'])
-@secure_endpoint(roles=['headteacher','classteacher'], rate=(30,60), validator=_validate_delete_term_ajax, audit_event='term.delete')
-def delete_term_ajax(_validated):
-    term = _validated['term']
+    # Store the name for the success message
     term_name = term.name
+
+    # Delete the term
     db.session.delete(term)
     db.session.commit()
 
+    # Get updated statistics
     terms = Term.query.all()
     assessment_types = AssessmentType.query.all()
     current_term = "None"
-    for t in terms:
-        if hasattr(t, 'is_current') and t.is_current:
-            current_term = t.name
+
+    # Find the current term if any
+    for term in terms:
+        if hasattr(term, 'is_current') and term.is_current:
+            current_term = term.name
             break
+
+    # Prepare statistics for JSON response
     stats = {
         "total_terms": len(terms),
         "total_assessments": len(assessment_types),
         "current_term": current_term
     }
+
     return jsonify({
         "success": True,
         "message": f"Term '{term_name}' deleted successfully!",
         "stats": stats
     })
 
-def _validate_delete_assessment_ajax():
-    assessment_id = request.form.get("assessment_id")
-    if not assessment_id:
-        raise ValidationError('Missing required fields', {'assessment_id':'required'})
-    return {
-        'assessment_id': assessment_id,
-        'force_delete': request.form.get("force_delete") == "true"
-    }
-
 @classteacher_bp.route('/delete_assessment_ajax', methods=['POST'])
-@secure_endpoint(roles=['headteacher','classteacher'], rate=(30,60), validator=_validate_delete_assessment_ajax, audit_event='assessment.delete')
-def delete_assessment_ajax(_validated):
-    assessment_id = _validated['assessment_id']
-    force_delete = _validated['force_delete']
+@classteacher_required
+def delete_assessment_ajax():
+    """AJAX route for deleting an assessment type."""
+    assessment_id = request.form.get("assessment_id")
+    force_delete = request.form.get("force_delete") == "true"
+
+    if not assessment_id:
+        return jsonify({"success": False, "message": "Assessment ID is required."})
+
     assessment = AssessmentType.query.get(assessment_id)
     if not assessment:
         return jsonify({"success": False, "message": "Assessment type not found."})
@@ -7891,41 +7979,32 @@ def delete_assessment_ajax(_validated):
         "stats": stats
     })
 
-def _validate_edit_term_ajax():
+@classteacher_bp.route('/edit_term_ajax', methods=['POST'])
+@classteacher_required
+def edit_term_ajax():
+    """AJAX route for editing a term."""
     term_id = request.form.get("term_id")
     term_name = request.form.get("term_name")
+    term_start_date = request.form.get("term_start_date")
+    term_end_date = request.form.get("term_end_date")
+    academic_year = request.form.get("academic_year")
+    is_current_term = "is_current_term" in request.form
+
     if not term_id or not term_name:
-        missing = {}
-        if not term_id: missing['term_id'] = 'required'
-        if not term_name: missing['term_name'] = 'required'
-        raise ValidationError('Missing required fields', missing)
+        return jsonify({"success": False, "message": "Missing required information."})
+
     term = Term.query.get(term_id)
     if not term:
-        raise ValidationError('Term not found')
+        return jsonify({"success": False, "message": "Term not found."})
+
+    # Check if another term with the same name already exists
     existing_term = Term.query.filter(
         Term.name == term_name,
         Term.id != term.id
     ).first()
-    if existing_term:
-        raise ValidationError('Term name already exists')
-    return {
-        'term': term,
-        'term_name': term_name,
-        'term_start_date': request.form.get("term_start_date"),
-        'term_end_date': request.form.get("term_end_date"),
-        'academic_year': request.form.get("academic_year"),
-        'is_current_term': "is_current_term" in request.form
-    }
 
-@classteacher_bp.route('/edit_term_ajax', methods=['POST'])
-@secure_endpoint(roles=['headteacher','classteacher'], rate=(30,60), validator=_validate_edit_term_ajax, audit_event='term.edit')
-def edit_term_ajax(_validated):
-    term = _validated['term']
-    term_name = _validated['term_name']
-    term_start_date = _validated['term_start_date']
-    term_end_date = _validated['term_end_date']
-    academic_year = _validated['academic_year']
-    is_current_term = _validated['is_current_term']
+    if existing_term:
+        return jsonify({"success": False, "message": f"Term '{term_name}' already exists."})
 
     # Update the term
     term.name = term_name
@@ -8001,67 +8080,72 @@ def edit_term_ajax(_validated):
         "stats": stats
     })
 
-def _validate_edit_assessment_ajax():
+@classteacher_bp.route('/edit_assessment_ajax', methods=['POST'])
+@classteacher_required
+def edit_assessment_ajax():
+    """AJAX route for editing an assessment type."""
     assessment_id = request.form.get("assessment_id")
     assessment_name = request.form.get("assessment_name")
+    assessment_weight = request.form.get("assessment_weight")
+    assessment_group = request.form.get("assessment_group")
+    show_on_reports = "show_on_reports" in request.form
+
     if not assessment_id or not assessment_name:
-        missing = {}
-        if not assessment_id: missing['assessment_id'] = 'required'
-        if not assessment_name: missing['assessment_name'] = 'required'
-        raise ValidationError('Missing required fields', missing)
+        return jsonify({"success": False, "message": "Missing required information."})
+
     assessment = AssessmentType.query.get(assessment_id)
     if not assessment:
-        raise ValidationError('Assessment type not found')
+        return jsonify({"success": False, "message": "Assessment type not found."})
+
+    # Check if another assessment with the same name already exists
     existing_assessment = AssessmentType.query.filter(
         AssessmentType.name == assessment_name,
         AssessmentType.id != assessment.id
     ).first()
-    if existing_assessment:
-        raise ValidationError('Assessment type already exists')
-    assessment_weight = request.form.get("assessment_weight")
-    assessment_group = request.form.get("assessment_group")
-    show_on_reports = "show_on_reports" in request.form
-    return {
-        'assessment': assessment,
-        'assessment_name': assessment_name,
-        'assessment_weight': assessment_weight,
-        'assessment_group': assessment_group,
-        'show_on_reports': show_on_reports
-    }
 
-@classteacher_bp.route('/edit_assessment_ajax', methods=['POST'])
-@secure_endpoint(roles=['headteacher','classteacher'], rate=(30,60), validator=_validate_edit_assessment_ajax, audit_event='assessment.edit')
-def edit_assessment_ajax(_validated):
-    assessment = _validated['assessment']
-    assessment_name = _validated['assessment_name']
-    assessment_weight = _validated['assessment_weight']
-    assessment_group = _validated['assessment_group']
-    show_on_reports = _validated['show_on_reports']
+    if existing_assessment:
+        return jsonify({"success": False, "message": f"Assessment type '{assessment_name}' already exists."})
+
+    # Update the assessment
     assessment.name = assessment_name
+
+    # Update additional fields if they exist in the model
     if hasattr(AssessmentType, 'weight'):
         assessment.weight = assessment_weight if assessment_weight else None
+
     if hasattr(AssessmentType, 'group'):
         assessment.group = assessment_group if assessment_group else None
+
     if hasattr(AssessmentType, 'show_on_reports'):
         assessment.show_on_reports = show_on_reports
+
     db.session.commit()
+
+    # Get updated statistics
     terms = Term.query.all()
     assessment_types = AssessmentType.query.all()
     current_term = "None"
+
+    # Find the current term if any
     for term in terms:
         if hasattr(term, 'is_current') and term.is_current:
             current_term = term.name
             break
+
+    # Prepare assessment data for JSON response
     assessment_data = {
         "id": assessment.id,
         "name": assessment.name,
         "weight": assessment.weight if hasattr(assessment, 'weight') and assessment.weight else None
     }
+
+    # Prepare statistics for JSON response
     stats = {
         "total_terms": len(terms),
         "total_assessments": len(assessment_types),
         "current_term": current_term
     }
+
     return jsonify({
         "success": True,
         "message": f"Assessment type '{assessment_name}' updated successfully!",
@@ -8069,65 +8153,75 @@ def edit_assessment_ajax(_validated):
         "stats": stats
     })
 
-def _validate_add_assessment_ajax():
+@classteacher_bp.route('/add_assessment_ajax', methods=['POST'])
+@classteacher_required
+def add_assessment_ajax():
+    """AJAX route for adding a new assessment type."""
     assessment_name = request.form.get("assessment_name")
+    assessment_weight = request.form.get("assessment_weight")
+    assessment_group = request.form.get("assessment_group")
+    show_on_reports = "show_on_reports" in request.form
+
     if not assessment_name:
-        raise ValidationError('Missing required fields', {'assessment_name':'required'})
+        return jsonify({"success": False, "message": "Please fill in the assessment type name."})
+
     existing_assessment = AssessmentType.query.filter_by(name=assessment_name).first()
     if existing_assessment:
-        raise ValidationError('Assessment type already exists')
-    assessment_weight = request.form.get("assessment_weight")
-    weight_value = 100.0
-    if assessment_weight:
-        try:
-            weight_value = float(assessment_weight)
-        except (ValueError, TypeError):
-            weight_value = 100.0
-    return {
-        'assessment_name': assessment_name,
-        'weight_value': weight_value,
-        'assessment_group': request.form.get("assessment_group"),
-        'show_on_reports': "show_on_reports" in request.form
-    }
+        return jsonify({"success": False, "message": f"Assessment type '{assessment_name}' already exists."})
 
-@classteacher_bp.route('/add_assessment_ajax', methods=['POST'])
-@secure_endpoint(roles=['headteacher','classteacher'], rate=(30,60), validator=_validate_add_assessment_ajax, audit_event='assessment.add')
-def add_assessment_ajax(_validated):
-    assessment_name = _validated['assessment_name']
-    weight_value = _validated['weight_value']
-    assessment_group = _validated['assessment_group']
-    show_on_reports = _validated['show_on_reports']
+    # Create new assessment with proper field handling
     try:
+        # Convert weight to float if provided, otherwise use default
+        weight_value = None
+        if assessment_weight:
+            try:
+                weight_value = float(assessment_weight)
+            except (ValueError, TypeError):
+                weight_value = 100.0  # Default weight
+        else:
+            weight_value = 100.0  # Default weight if not provided
+
         new_assessment = AssessmentType(
             name=assessment_name,
             weight=weight_value,
             category=assessment_group if assessment_group else 'General'
         )
+
+        # Add additional fields if they exist in the model
         if hasattr(AssessmentType, 'show_on_reports'):
             new_assessment.show_on_reports = show_on_reports
+
         db.session.add(new_assessment)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": f"Error creating assessment type: {str(e)}"})
 
+    # Get updated statistics
     terms = Term.query.all()
     assessment_types = AssessmentType.query.all()
     current_term = "None"
+
+    # Find the current term if any
     for term in terms:
         if hasattr(term, 'is_current') and term.is_current:
             current_term = term.name
             break
+
+    # Prepare assessment data for JSON response
     assessment_data = {
         "id": new_assessment.id,
         "name": new_assessment.name,
         "weight": new_assessment.weight if hasattr(new_assessment, 'weight') and new_assessment.weight else None
     }
+
+    # Prepare statistics for JSON response
     stats = {
         "total_terms": len(terms),
         "total_assessments": len(assessment_types),
         "current_term": current_term
     }
+
     return jsonify({
         "success": True,
         "message": f"Assessment type '{assessment_name}' added successfully!",
@@ -8590,14 +8684,6 @@ def bulk_transfer_assignments():
     to_teacher_id = request.form.get('to_teacher_id')
     transfer_class_teacher = 'transfer_class_teacher' in request.form
     transfer_subject_assignments = 'transfer_subject_assignments' in request.form
-    # New: optional explicit selection list (comma separated IDs) for granular transfer
-    raw_selected_ids = request.form.get('selected_assignment_ids', '').strip()
-    selected_ids = []
-    if raw_selected_ids:
-        for part in raw_selected_ids.split(','):
-            part = part.strip()
-            if part.isdigit():
-                selected_ids.append(int(part))
 
     if not from_teacher_id or not to_teacher_id:
         flash("Please select both source and destination teachers.", "error")
@@ -8607,9 +8693,8 @@ def bulk_transfer_assignments():
         flash("Source and destination teachers cannot be the same.", "error")
         return redirect(url_for('classteacher.manage_teacher_assignments'))
 
-    # If no broad category flags and no explicit IDs, reject
-    if not transfer_class_teacher and not transfer_subject_assignments and not selected_ids:
-        flash("Please select at least one type of assignment or specific assignments to transfer.", "error")
+    if not transfer_class_teacher and not transfer_subject_assignments:
+        flash("Please select at least one type of assignment to transfer.", "error")
         return redirect(url_for('classteacher.manage_teacher_assignments'))
 
     try:
@@ -8624,74 +8709,40 @@ def bulk_transfer_assignments():
         # Track statistics
         class_teacher_count = 0
         subject_count = 0
-        skipped_duplicates = 0
 
-        # Helper: determine if duplicate exists already for destination
-        def already_exists(a: TeacherSubjectAssignment):
-            return TeacherSubjectAssignment.query.filter_by(
-                teacher_id=to_teacher_id,
-                grade_id=a.grade_id,
-                stream_id=a.stream_id,
-                subject_id=a.subject_id,
-                is_class_teacher=a.is_class_teacher
-            ).first() is not None
-
-        # If explicit selection provided, ignore broad flags and move only those
-        if selected_ids:
-            assignments = TeacherSubjectAssignment.query.filter(
-                TeacherSubjectAssignment.teacher_id==from_teacher_id,
-                TeacherSubjectAssignment.id.in_(selected_ids)
+        # Transfer class teacher assignments if selected
+        if transfer_class_teacher:
+            class_teacher_assignments = TeacherSubjectAssignment.query.filter_by(
+                teacher_id=from_teacher_id,
+                is_class_teacher=True
             ).all()
-            for assignment in assignments:
-                if already_exists(assignment):
-                    skipped_duplicates += 1
-                    continue
-                if assignment.is_class_teacher:
-                    class_teacher_count += 1
-                else:
-                    subject_count += 1
+
+            for assignment in class_teacher_assignments:
                 assignment.teacher_id = to_teacher_id
-        else:
-            # Transfer class teacher assignments if selected
-            if transfer_class_teacher:
-                class_teacher_assignments = TeacherSubjectAssignment.query.filter_by(
-                    teacher_id=from_teacher_id,
-                    is_class_teacher=True
-                ).all()
-                for assignment in class_teacher_assignments:
-                    if already_exists(assignment):
-                        skipped_duplicates += 1
-                        continue
-                    assignment.teacher_id = to_teacher_id
-                    class_teacher_count += 1
-            # Transfer subject assignments if selected
-            if transfer_subject_assignments:
-                subject_assignments = TeacherSubjectAssignment.query.filter_by(
-                    teacher_id=from_teacher_id,
-                    is_class_teacher=False
-                ).all()
-                for assignment in subject_assignments:
-                    if already_exists(assignment):
-                        skipped_duplicates += 1
-                        continue
-                    assignment.teacher_id = to_teacher_id
-                    subject_count += 1
+                class_teacher_count += 1
+
+        # Transfer subject assignments if selected
+        if transfer_subject_assignments:
+            subject_assignments = TeacherSubjectAssignment.query.filter_by(
+                teacher_id=from_teacher_id,
+                is_class_teacher=False
+            ).all()
+
+            for assignment in subject_assignments:
+                assignment.teacher_id = to_teacher_id
+                subject_count += 1
 
         # Commit the changes
         db.session.commit()
 
         # Create success message
-        message = f"Transferred from {from_teacher.username} to {to_teacher.username}: "
-        parts = []
-        if class_teacher_count:
-            parts.append(f"{class_teacher_count} class teacher")
-        if subject_count:
-            parts.append(f"{subject_count} subject")
-        if not parts:
-            parts.append("0 assignments")
-        message += ", ".join(parts)
-        if skipped_duplicates:
-            message += f" (skipped {skipped_duplicates} duplicates)"
+        message = f"Successfully transferred assignments from {from_teacher.username} to {to_teacher.username}: "
+        if transfer_class_teacher:
+            message += f"{class_teacher_count} class teacher assignments"
+        if transfer_class_teacher and transfer_subject_assignments:
+            message += " and "
+        if transfer_subject_assignments:
+            message += f"{subject_count} subject assignments"
 
         flash(message, "success")
     except Exception as e:
@@ -8699,28 +8750,6 @@ def bulk_transfer_assignments():
         flash("Error transferring assignments. Please try again.", "error")
 
     return redirect(url_for('classteacher.manage_teacher_assignments'))
-
-@classteacher_bp.route('/api/teacher_assignments/<int:teacher_id>')
-@classteacher_required
-def api_teacher_assignments(teacher_id):
-    """Return JSON of a teacher's assignments for granular bulk transfer UI."""
-    assignments = TeacherSubjectAssignment.query.filter_by(teacher_id=teacher_id).all()
-    data = []
-    for a in assignments:
-        grade = Grade.query.get(a.grade_id) if a.grade_id else None
-        stream = Stream.query.get(a.stream_id) if a.stream_id else None
-        subject = Subject.query.get(a.subject_id) if a.subject_id else None
-        data.append({
-            'id': a.id,
-            'grade_id': a.grade_id,
-            'grade_name': grade.name if grade else None,
-            'stream_id': a.stream_id,
-            'stream_name': stream.name if stream else None,
-            'subject_id': a.subject_id,
-            'subject_name': subject.name if subject else None,
-            'is_class_teacher': a.is_class_teacher
-        })
-    return jsonify(data)
 
 @classteacher_bp.route('/teacher_management_hub', methods=['GET'])
 @classteacher_required
@@ -8737,7 +8766,7 @@ def teacher_management_hub():
     # Sample recent activities (you can expand this with real data)
     recent_activities = [
         {
-            'icon': '👨‍🏫',
+            'icon': '👨🏫',
             'text': 'New teacher profile created',
             'time': '2 hours ago'
         },
@@ -9543,22 +9572,6 @@ def enhanced_bulk_assign_subjects():
         print(f"Error in enhanced bulk assignment: {str(e)}")
         flash(f"Error creating assignments: {str(e)}", "error")
 
-    # If this is an AJAX (fetch) request expecting JSON, return structured response instead of redirect
-    wants_json = (
-        request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-        or 'application/json' in (request.headers.get('Accept') or '')
-    )
-    if wants_json:
-        status = 'success' if assignments_created > 0 else 'warning'
-        return jsonify({
-            'status': status,
-            'created': assignments_created,
-            'skipped': assignments_skipped,
-            'class_teacher_conflicts': class_teacher_conflicts,
-            'errors': errors,
-            'message': "; ".join(message_parts) if assignments_created > 0 else ("; ".join(message_parts[1:]) if message_parts else "No changes applied")
-        })
-
     return redirect(url_for('classteacher.assign_subjects'))
 
 def create_single_assignment(teacher_id, subject_id, grade_id, stream_id, is_class_teacher):
@@ -9761,7 +9774,7 @@ def api_get_streams_by_id(grade_id):
 
 
 @classteacher_bp.route('/api/test_streams')
-@dev_only
+@classteacher_required
 def api_test_streams():
     """Simple test endpoint to check API connectivity."""
     return jsonify({"status": "ok", "message": "API is working", "test_streams": ["Stream A", "Stream B", "Stream C"]})
@@ -9819,7 +9832,6 @@ def view_all_reports():
 
     # Get unique combinations of grade, stream, term, assessment_type
     from sqlalchemy import func
-        # --- CLASS-LEVEL REPORTS (existing logic) ---
     unique_combinations = db.session.query(
         Grade.name,
         Stream.name,
@@ -9891,70 +9903,9 @@ def view_all_reports():
     terms = [term.name for term in Term.query.all()]
     assessment_types = [assessment_type.name for assessment_type in AssessmentType.query.all()]
 
-    # --- SUBJECT-LEVEL REPORTS (new) ---
-    # Build a query to group by subject as well so we can offer Subject Report buttons
-    from ..models import Subject  # local import to avoid circulars higher up
-    subject_combos = db.session.query(
-        Grade.name.label('grade_name'),
-        Stream.name.label('stream_name'),
-        Term.name.label('term_name'),
-        AssessmentType.name.label('assessment_type_name'),
-        Subject.name.label('subject_name'),
-        func.count(Mark.id).label('mark_count'),
-        func.max(Mark.created_at).label('latest_date')
-    ).join(Student, Mark.student_id == Student.id) \
-     .join(Stream, Student.stream_id == Stream.id) \
-     .join(Grade, Stream.grade_id == Grade.id) \
-     .join(Term, Mark.term_id == Term.id) \
-     .join(AssessmentType, Mark.assessment_type_id == AssessmentType.id) \
-     .join(Subject, Mark.subject_id == Subject.id) \
-     .group_by(Grade.name, Stream.name, Term.name, AssessmentType.name, Subject.name)
-
-    if filter_grade:
-        subject_combos = subject_combos.filter(Grade.name == filter_grade)
-    if filter_term:
-        subject_combos = subject_combos.filter(Term.name == filter_term)
-    if filter_assessment:
-        subject_combos = subject_combos.filter(AssessmentType.name == filter_assessment)
-
-    # Use same sort preference
-    if sort_by == 'grade':
-        subject_combos = subject_combos.order_by(Grade.name, Subject.name)
-    elif sort_by == 'term':
-        subject_combos = subject_combos.order_by(Term.name, Subject.name)
-    else:
-        subject_combos = subject_combos.order_by(func.max(Mark.created_at).desc())
-
-    subject_reports = []
-    for grade_name, stream_name, term_name, assessment_type_name, subject_name, mark_count, latest_date in subject_combos.limit(200):  # safety cap
-        grade_obj = Grade.query.filter_by(name=grade_name).first()
-        stream_obj = Stream.query.join(Grade).filter(Grade.name == grade_name, Stream.name == stream_name).first()
-        term_obj = Term.query.filter_by(name=term_name).first()
-        assessment_type_obj = AssessmentType.query.filter_by(name=assessment_type_name).first()
-        subject_obj = Subject.query.filter_by(name=subject_name).first()
-        if not all([grade_obj, stream_obj, term_obj, assessment_type_obj, subject_obj]):
-            continue
-        subject_reports.append({
-            'id': len(subject_reports) + 1,
-            'grade': grade_name,
-            'stream': f"Stream {stream_name}",
-            'term': term_name,
-            'assessment_type': assessment_type_name,
-            'subject': subject_name,
-            'mark_count': mark_count,
-            'date': latest_date.strftime('%Y-%m-%d') if latest_date else 'N/A',
-            'grade_id': grade_obj.id,
-            'stream_id': stream_obj.id,
-            'term_id': term_obj.id,
-            'assessment_type_id': assessment_type_obj.id,
-            'subject_id': subject_obj.id,
-            'download_url': url_for('classteacher.subject_report', grade_id=grade_obj.id, stream_id=stream_obj.id, subject_id=subject_obj.id, term_id=term_obj.id, assessment_type_id=assessment_type_obj.id)
-        })
-
     return render_template(
         'all_reports.html',
         reports=reports,
-        subject_reports=subject_reports,
         pagination=pagination,
         sort_by=sort_by,
         filter_grade=filter_grade,
@@ -10021,9 +9972,7 @@ def delete_report(grade, stream, term, assessment_type):
         return redirect(url_for('classteacher.dashboard'))
 
 @classteacher_bp.route('/delete_subject_report', methods=['POST'])
-@enforce('marks', 'delete', class_scope=True, roles=(
-    'headteacher', 'admin'
-))
+@classteacher_required
 def delete_subject_report():
     """Route for deleting marks for a specific subject in a grade/stream/term/assessment combination."""
     try:
@@ -10732,7 +10681,6 @@ def cleanup_invalid_marks():
 
 # TEMPORARY ROUTE TO FIX KEVIN'S ASSIGNMENT
 @classteacher_bp.route('/fix_kevin_assignment')
-@dev_only
 def fix_kevin_assignment():
     """Temporary route to fix Kevin's class teacher assignment."""
     try:
@@ -10846,6 +10794,7 @@ def fix_kevin_assignment():
 
 @classteacher_bp.route('/upload', methods=['GET', 'POST'])
 @classteacher_required
+@secure_file_upload(allowed_extensions=['.csv'], max_size=10 * 1024 * 1024)
 def upload_marks():
     """Handle both manual marks entry and bulk CSV upload"""
     try:
@@ -11084,7 +11033,7 @@ def upload_marks():
 
 
 @classteacher_bp.route('/upload_test')
-@dev_only
+@classteacher_required
 def upload_test():
     """Simple test route to verify routing works"""
     return "<h1>Upload Test Route Works!</h1><p><a href='/classteacher/'>Back to Dashboard</a></p>"
@@ -11402,131 +11351,93 @@ def download_template():
 
 
 @classteacher_bp.route('/subject_report/<int:grade_id>/<int:stream_id>/<int:subject_id>/<int:term_id>/<int:assessment_type_id>')
-@secure_endpoint(roles=['headteacher','classteacher','teacher'], rate=(40,60), audit_event='report.subject.view')
+@classteacher_required
 def subject_report(grade_id, stream_id, subject_id, term_id, assessment_type_id):
-    """Generate subject-specific report with grading analysis.
-
-    Hardened for OWASP Top 10 aspects:
-    - A01: Broken Access Control -> Verify teacher assignment to subject when role == 'teacher'.
-    - A03: Injection -> Path params are int via converter; use safe_get & parameterized queries only.
-    - A05: Security Misconfiguration -> Unified error handling, logging, rate limiting.
-    - A07: Identification & AuthZ -> Explicit authorization check with clear denied response.
-    - A09: Logging & Monitoring -> Structured security log entries for failures.
-    - A03/A04: Input validation -> Existence checks on all referenced entities.
-    """
-
-    from flask import current_app
-    log = current_app.logger
-
-    def _wants_json():
-        return (request.accept_mimetypes.best == 'application/json' and
-                request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']) or request.is_json
-    start_time = time.time()
+    """Generate subject-specific report with grading analysis for class teachers."""
+    print(f"🔍 CLASS TEACHER SUBJECT_REPORT CALLED")
+    print(f"Parameters: grade_id={grade_id}, stream_id={stream_id}, subject_id={subject_id}, term_id={term_id}, assessment_type_id={assessment_type_id}")
 
     try:
-        # Fetch objects safely (avoid deprecated Query.get warnings elsewhere)
-        grade_obj = safe_get(Grade, grade_id)
-        stream_obj = safe_get(Stream, stream_id)
-        subject_obj = safe_get(Subject, subject_id)
-        term_obj = safe_get(Term, term_id)
-        assessment_type_obj = safe_get(AssessmentType, assessment_type_id)
+        # Get database objects
+        grade_obj = Grade.query.get(grade_id)
+        stream_obj = Stream.query.get(stream_id)
+        subject_obj = Subject.query.get(subject_id)
+        term_obj = Term.query.get(term_id)
+        assessment_type_obj = AssessmentType.query.get(assessment_type_id)
 
-        missing = [name for name, obj in [
-            ('grade', grade_obj), ('stream', stream_obj), ('subject', subject_obj),
-            ('term', term_obj), ('assessment_type', assessment_type_obj)
-        ] if obj is None]
-        if missing:
-            log.warning("subject_report.invalid_parameters", extra={
-                'grade_id': grade_id, 'stream_id': stream_id, 'subject_id': subject_id,
-                'term_id': term_id, 'assessment_type_id': assessment_type_id, 'missing': missing
-            })
-            if _wants_json():
-                return error_response('INVALID_REFERENCE', 'One or more referenced entities were not found.', 400, details={'missing': missing})
+        if not all([grade_obj, stream_obj, subject_obj, term_obj, assessment_type_obj]):
             flash("Invalid parameters for report generation", "error")
             return redirect(url_for('classteacher.dashboard'))
 
-        # Authorization: if plain subject teacher ensure assignment exists
-        role = session.get('role')
-        teacher_id = session.get('teacher_id')
-        if role == 'teacher' and teacher_id:
-            assignment = TeacherSubjectAssignment.query.filter_by(
-                teacher_id=teacher_id,
-                subject_id=subject_id,
-                grade_id=grade_id
-            ).filter(
-                (TeacherSubjectAssignment.stream_id == stream_id) | (TeacherSubjectAssignment.stream_id == None)
-            ).first()
-            if not assignment:
-                log.warning("subject_report.unauthorized_access", extra={
-                    'teacher_id': teacher_id, 'subject_id': subject_id,
-                    'grade_id': grade_id, 'stream_id': stream_id
-                })
-                if _wants_json():
-                    return error_response('FORBIDDEN', 'You are not assigned to this subject for the specified class/stream.', 403)
-                flash('You are not authorized to view this subject report.', 'error')
-                return redirect(url_for('classteacher.dashboard'))
-
-        # Query marks (JOIN only on Student to avoid N+1 on names)
-        marks = (Mark.query.filter_by(
+        # Get marks for this specific combination
+        marks = Mark.query.filter_by(
             grade_id=grade_id,
             stream_id=stream_id,
             subject_id=subject_id,
             term_id=term_id,
             assessment_type_id=assessment_type_id
-        ).join(Student).all())
+        ).join(Student).all()
 
         if not marks:
-            log.info("subject_report.no_marks", extra={
-                'grade_id': grade_id, 'stream_id': stream_id, 'subject_id': subject_id,
-                'term_id': term_id, 'assessment_type_id': assessment_type_id
-            })
-            if _wants_json():
-                return error_response('NO_MARKS', 'No marks found for this subject and assessment.', 404)
             flash("No marks found for this subject and assessment", "warning")
             return redirect(url_for('classteacher.dashboard'))
 
-        # Compute statistics efficiently
-        total_marks_list = [m.raw_mark for m in marks if m.raw_mark is not None]
-        max_possible = marks[0].raw_total_marks if marks[0].raw_total_marks else 100
-        total_marks_sum = sum(total_marks_list)
-        stats_count = len(total_marks_list)
+        # Calculate statistics
+        total_marks_list = [mark.raw_mark for mark in marks if mark.raw_mark is not None]
+        max_possible = marks[0].raw_total_marks if marks else 100
 
         statistics = {
             'total_students': len(marks),
-            'students_with_marks': stats_count,
-            'average': total_marks_sum / stats_count if stats_count else 0,
-            'highest': max(total_marks_list) if stats_count else 0,
-            'lowest': min(total_marks_list) if stats_count else 0,
+            'students_with_marks': len(total_marks_list),
+            'average': sum(total_marks_list) / len(total_marks_list) if total_marks_list else 0,
+            'highest': max(total_marks_list) if total_marks_list else 0,
+            'lowest': min(total_marks_list) if total_marks_list else 0,
             'max_possible': max_possible,
-            'average_percentage': (total_marks_sum / stats_count / max_possible * 100) if stats_count and max_possible else 0
+            'average_percentage': (sum(total_marks_list) / len(total_marks_list) / max_possible * 100) if total_marks_list and max_possible else 0
         }
 
-        # Grade distribution (CBC system)
-        grade_distribution = {k: 0 for k in ['EE1','EE2','ME1','ME2','AE1','AE2','BE1','BE2']}
-        for m in marks:
-            p = m.percentage
-            if p is None:
-                continue
-            if p >= 90: grade_distribution['EE1'] += 1
-            elif p >= 75: grade_distribution['EE2'] += 1
-            elif p >= 58: grade_distribution['ME1'] += 1
-            elif p >= 41: grade_distribution['ME2'] += 1
-            elif p >= 31: grade_distribution['AE1'] += 1
-            elif p >= 21: grade_distribution['AE2'] += 1
-            elif p >= 11: grade_distribution['BE1'] += 1
-            else: grade_distribution['BE2'] += 1
+        # Grade distribution using CBC grading system
+        grade_distribution = {
+            'EE1': 0,  # Exceeds Expectations 1 (90-100%)
+            'EE2': 0,  # Exceeds Expectations 2 (80-89%)
+            'ME1': 0,  # Meets Expectations 1 (70-79%)
+            'ME2': 0,  # Meets Expectations 2 (60-69%)
+            'AE1': 0,  # Approaches Expectations 1 (50-59%)
+            'AE2': 0,  # Approaches Expectations 2 (40-49%)
+            'BE1': 0,  # Below Expectations 1 (30-39%)
+            'BE2': 0   # Below Expectations 2 (0-29%)
+        }
 
+        for mark in marks:
+            if mark.percentage is not None:
+                percentage = mark.percentage
+                if percentage >= 90: grade_distribution['EE1'] += 1
+                elif percentage >= 75: grade_distribution['EE2'] += 1
+                elif percentage >= 58: grade_distribution['ME1'] += 1
+                elif percentage >= 41: grade_distribution['ME2'] += 1
+                elif percentage >= 31: grade_distribution['AE1'] += 1
+                elif percentage >= 21: grade_distribution['AE2'] += 1
+                elif percentage >= 11: grade_distribution['BE1'] += 1
+                else: grade_distribution['BE2'] += 1
+
+        # Prepare students data with marks
         from ..utils.performance import get_performance_category
-        students_data = [{
-            'id': m.student.id,
-            'name': m.student.name,
-            'admission_number': m.student.admission_number,
-            'raw_mark': m.raw_mark,
-            'percentage': m.percentage,
-            'grade': get_performance_category(m.percentage) if m.percentage is not None else 'N/A'
-        } for m in marks]
+        students_data = []
+        for mark in marks:
+            student = mark.student
+            students_data.append({
+                'id': student.id,
+                'name': student.name,
+                'admission_number': student.admission_number,
+                'raw_mark': mark.raw_mark,
+                'percentage': mark.percentage,
+                'grade': get_performance_category(mark.percentage) if mark.percentage is not None else 'N/A'
+            })
+
+        # Sort by percentage descending
         students_data.sort(key=lambda x: x['percentage'] if x['percentage'] is not None else 0, reverse=True)
 
+        # Get school info
         from ..services.school_config_service import SchoolConfigService
         school_info = SchoolConfigService.get_school_info_dict()
 
@@ -11542,27 +11453,14 @@ def subject_report(grade_id, stream_id, subject_id, term_id, assessment_type_id)
             'students': students_data,
             'report_title': f'{subject_obj.name} Report - {grade_obj.name} {stream_obj.name}',
             'report_subtitle': f'{term_obj.name} • {assessment_type_obj.name} • Generated: {datetime.now().strftime("%B %d, %Y")}',
-            'show_actions': True
+            'show_actions': True  # Show action buttons for class teachers
         }
 
-        log.info("subject_report.render", extra={
-            'subject_id': subject_id, 'grade_id': grade_id, 'stream_id': stream_id,
-            'students': len(students_data)
-        })
-        if _wants_json():
-            return jsonify({'report': report_data})
-        try:
-            elapsed_ms = int((time.time() - start_time) * 1000)
-            from ..security_helpers import audit_log
-            audit_log('report.subject.view:metrics', elapsed_ms=elapsed_ms, students=len(students_data))
-        except Exception:
-            pass
+        print(f"🔍 Rendering subject report with {len(students_data)} students")
         return render_template('classteacher/subject_report.html', **report_data)
 
     except Exception as e:
-        log.exception("subject_report.error")
-        if _wants_json():
-            return error_response('REPORT_ERROR', 'Unexpected error generating subject report.', 500)
+        print(f"🚨 Error in subject_report: {str(e)}")
         flash(f"Error generating subject report: {str(e)}", "error")
         return redirect(url_for('classteacher.dashboard'))
 
@@ -11579,7 +11477,6 @@ def get_letter_grade(percentage):
 
 # TEST ROUTE - Remove this after testing
 @classteacher_bp.route('/test-analytics')
-@dev_only
 def test_analytics_dashboard():
     """Test analytics page without authentication for debugging."""
     print("🔍 TEST ANALYTICS ROUTE HIT!")
@@ -11711,208 +11608,3 @@ def test_analytics_dashboard():
         import traceback
         traceback.print_exc()
         return f"<h1>Error in Test Analytics</h1><pre>{str(e)}</pre><pre>{traceback.format_exc()}</pre>"
-
-
-# ============================================================================
-# GRADE MARKSHEET GENERATION (Combined streams for assigned grades)
-# ============================================================================
-
-@classteacher_bp.route('/grade_marksheets')
-@classteacher_required()
-def grade_marksheets():
-    """Show available grade marksheets for the classteacher's assigned grades."""
-    try:
-        teacher_id = session.get('teacher_id')
-        if not teacher_id:
-            flash('Session expired. Please log in again.', 'error')
-            return redirect(url_for('auth.classteacher_login'))
-        
-        # Get grades accessible by this teacher
-        accessible_grades = GradeMarksheetService.get_teacher_accessible_grades(teacher_id)
-        
-        # Get available terms and assessment types for filters
-        terms = Term.query.all()
-        assessment_types = AssessmentType.query.all()
-        
-        return render_template(
-            'classteacher_grade_marksheets.html',
-            accessible_grades=accessible_grades,
-            terms=terms,
-            assessment_types=assessment_types,
-            teacher_id=teacher_id
-        )
-        
-    except Exception as e:
-        logger.error(f"Error loading grade marksheets: {e}")
-        flash(f'Error loading grade marksheets: {str(e)}', 'error')
-        return redirect(url_for('classteacher.dashboard'))
-
-
-@classteacher_bp.route('/api/check_grade_marksheet_eligibility')
-@classteacher_required()
-def check_grade_marksheet_eligibility():
-    """Check if a teacher can generate a grade marksheet for given parameters."""
-    try:
-        teacher_id = session.get('teacher_id')
-        grade_id = request.args.get('grade_id', type=int)
-        term = request.args.get('term')
-        assessment_type = request.args.get('assessment_type')
-        
-        if not all([teacher_id, grade_id, term, assessment_type]):
-            return jsonify({
-                'success': False,
-                'message': 'Missing required parameters'
-            })
-        
-        can_generate, details = GradeMarksheetService.can_generate_grade_marksheet(
-            teacher_id, grade_id, term, assessment_type
-        )
-        
-        if can_generate:
-            return jsonify({
-                'success': True,
-                'can_generate': True,
-                'message': 'Grade marksheet can be generated',
-                'details': details
-            })
-        else:
-            return jsonify({
-                'success': True,
-                'can_generate': False,
-                'message': details.get('error', 'Cannot generate marksheet'),
-                'reason': details.get('reason'),
-                'details': details
-            })
-            
-    except Exception as e:
-        logger.error(f"Error checking grade marksheet eligibility: {e}")
-        return jsonify({
-            'success': False,
-            'message': f'System error: {str(e)}'
-        })
-
-
-@classteacher_bp.route('/api/grade_marksheet_preview')
-@classteacher_required()
-def grade_marksheet_preview():
-    """Get preview data for a grade marksheet."""
-    try:
-        teacher_id = session.get('teacher_id')
-        grade_id = request.args.get('grade_id', type=int)
-        term = request.args.get('term')
-        assessment_type = request.args.get('assessment_type')
-        
-        if not all([teacher_id, grade_id, term, assessment_type]):
-            return jsonify({
-                'success': False,
-                'message': 'Missing required parameters'
-            })
-        
-        # Check permission first
-        can_generate, details = GradeMarksheetService.can_generate_grade_marksheet(
-            teacher_id, grade_id, term, assessment_type
-        )
-        
-        if not can_generate:
-            return jsonify({
-                'success': False,
-                'message': details.get('error', 'Cannot generate marksheet'),
-                'reason': details.get('reason')
-            })
-        
-        # Get marksheet data
-        marksheet_data = GradeMarksheetService.get_grade_marksheet_data(
-            grade_id, term, assessment_type
-        )
-        
-        if not marksheet_data:
-            return jsonify({
-                'success': False,
-                'message': 'Failed to retrieve grade data'
-            })
-        
-        return jsonify({
-            'success': True,
-            'data': marksheet_data
-        })
-        
-    except Exception as e:
-        logger.error(f"Error getting grade marksheet preview: {e}")
-        return jsonify({
-            'success': False,
-            'message': f'System error: {str(e)}'
-        })
-
-
-@classteacher_bp.route('/generate_combined_grade_marksheet')
-@classteacher_required()
-def generate_combined_grade_marksheet():
-    """Generate and download a grade marksheet (all streams combined)."""
-    try:
-        teacher_id = session.get('teacher_id')
-        grade_id = request.args.get('grade_id', type=int)
-        term = request.args.get('term')
-        assessment_type = request.args.get('assessment_type')
-        format_type = request.args.get('format', 'pdf').lower()
-        
-        if not all([teacher_id, grade_id, term, assessment_type]):
-            flash('Missing required parameters for grade marksheet generation', 'error')
-            return redirect(url_for('classteacher.grade_marksheets'))
-        
-        # Generate the marksheet
-        success, result = GradeMarksheetService.generate_grade_marksheet(
-            teacher_id, grade_id, term, assessment_type, format_type
-        )
-        
-        if success and isinstance(result, dict) and 'file_path' in result:
-            try:
-                # For now, just redirect back with success message
-                # In real implementation, this would send the actual file
-                flash(f'Grade marksheet generated successfully for {result["marksheet_data"]["grade_name"]}', 'success')
-                return redirect(url_for('classteacher.grade_marksheets'))
-            except Exception as e:
-                logger.error(f"Error sending grade marksheet file: {e}")
-                flash('Generated file could not be sent', 'error')
-        else:
-            error_msg = result if isinstance(result, str) else 'Failed to generate grade marksheet'
-            flash(error_msg, 'error')
-        
-        return redirect(url_for('classteacher.grade_marksheets'))
-        
-    except Exception as e:
-        logger.error(f"Error generating grade marksheet: {e}")
-        flash(f'Error generating grade marksheet: {str(e)}', 'error')
-        return redirect(url_for('classteacher.grade_marksheets'))
-
-
-@classteacher_bp.route('/api/grade_report_status')
-@classteacher_required()
-def grade_report_status():
-    """Get the status of individual class reports for a grade."""
-    try:
-        grade_id = request.args.get('grade_id', type=int)
-        term = request.args.get('term')
-        assessment_type = request.args.get('assessment_type')
-        
-        if not all([grade_id, term, assessment_type]):
-            return jsonify({
-                'success': False,
-                'message': 'Missing required parameters'
-            })
-        
-        reports_exist, report_status = GradeMarksheetService.check_class_reports_exist(
-            grade_id, term, assessment_type
-        )
-        
-        return jsonify({
-            'success': True,
-            'reports_exist': reports_exist,
-            'status': report_status
-        })
-        
-    except Exception as e:
-        logger.error(f"Error checking grade report status: {e}")
-        return jsonify({
-            'success': False,
-            'message': f'System error: {str(e)}'
-        })

@@ -325,7 +325,7 @@
         // Global flag and timestamp to prevent multiple simultaneous requests
         let isDownloading = false;
         let lastDownloadTime = 0;
-        const DOWNLOAD_COOLDOWN = 10000; // 10 seconds cooldown
+  const DOWNLOAD_COOLDOWN = 60000; // 60 seconds cooldown to avoid accidental double runs
 
         // Function to download all individual reports as ZIP
         function downloadAllIndividualReports(grade, stream, term, assessmentType) {
@@ -366,8 +366,9 @@
       // Show notification that generation is starting
       showNotification('Generating ZIP file... This may take 2-3 minutes for all reports.', 'info');
 
-      // Build URL for download
-      const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
+  // Build URL for download with a cache-busting param so download managers don't treat it as a duplicate
+  const cacheBuster = `v=${Date.now()}`;
+  const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}?${cacheBuster}`;
 
       // Try window.open first (most reliable for downloads)
       try {
@@ -389,14 +390,14 @@
         setTimeout(() => tempA.remove(), 1000);
       }
 
-      // Reset button shortly after initiating download
+      // Reset button after a short while (not too short to discourage repeat clicks)
       setTimeout(() => {
         downloadBtn.innerHTML = originalText;
         downloadBtn.disabled = false;
         downloadBtn.style.pointerEvents = 'auto';
         isDownloading = false;
         console.log('Download initiation attempted, button reset');
-      }, 5000);
+      }, 15000);
             
             return false; // Prevent any default action
         }
