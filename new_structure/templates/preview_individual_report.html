@@ -687,32 +687,43 @@
           max-width: none !important;
           width: 100% !important;
           margin: 0 !important;
-          padding: 2mm 3mm !important;
+          padding: 1.5mm 2.5mm !important;
           background: white !important;
           color: #000000 !important;
           box-shadow: none !important;
           border: 2pt solid #000000 !important; /* All sides */
           border-right: 2pt solid #000000 !important; /* Ensure right border */
-          border-radius: 0 !important;
+          border-radius: 4px !important;
           page-break-inside: avoid !important;
-          transform: scale(0.98) !important;
+          transform: scale(0.96) !important;
           transform-origin: top center !important;
           box-sizing: border-box !important;
+        }
+        
+        .report-container * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
 
         /* IMPROVED HEADER - Match your exact design with 3 columns */
         .marksheet-header {
           display: grid !important;
           grid-template-columns: 60px 1fr auto !important;
-          gap: 4mm !important;
-          padding: 3mm !important;
-          margin-bottom: 2mm !important;
+          gap: 3mm !important;
+          padding: 2mm !important;
+          margin-bottom: 1.5mm !important;
           border: 2pt solid #000000 !important;
           background: white !important;
           color: #000000 !important;
-          border-radius: 0 !important;
+          border-radius: 4px !important;
           page-break-inside: avoid !important;
           align-items: center !important;
+        }
+        
+        .marksheet-header * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          opacity: 1 !important;
         }
 
         .logo-section {
@@ -736,8 +747,8 @@
         }
 
         .school-name {
-          font-size: 13pt !important;
-          margin: 0 0 1mm 0 !important;
+          font-size: 12pt !important;
+          margin: 0 0 0.5mm 0 !important;
           font-weight: 900 !important;
           color: #000000 !important; /* Solid black - NO FADING */
           -webkit-print-color-adjust: exact !important;
@@ -748,13 +759,13 @@
         }
 
         .school-address {
-          font-size: 7.5pt !important;
+          font-size: 7pt !important;
           margin: 0 !important;
           font-weight: 600 !important;
           color: #000000 !important; /* Solid black - NO FADING */
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
-          line-height: 1.3 !important;
+          line-height: 1.2 !important;
           opacity: 1 !important;
         }
 
@@ -765,19 +776,19 @@
         }
 
         .marksheet-title {
-          font-size: 10pt !important;
-          padding: 3mm 5mm !important;
-          line-height: 1.2 !important;
+          font-size: 9pt !important;
+          padding: 2.5mm 4mm !important;
+          line-height: 1.1 !important;
           background: white !important;
           color: #000000 !important; /* Solid black - NO FADING */
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
           border: 2pt solid #000000 !important;
-          border-radius: 6px !important;
+          border-radius: 4px !important;
           font-weight: 900 !important;
           text-align: center !important;
           text-transform: uppercase !important;
-          letter-spacing: 0.3mm !important;
+          letter-spacing: 0.2mm !important;
           white-space: nowrap !important;
           opacity: 1 !important;
         }
@@ -806,7 +817,13 @@
           page-break-after: avoid !important;
           background: white !important;
           border: 1.5pt solid #000000 !important; /* Visible black border */
-          border-radius: 0 !important;
+          border-radius: 4px !important;
+        }
+        
+        .assessment-info-section * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          opacity: 1 !important;
         }
 
         .assessment-info-grid {
@@ -824,72 +841,96 @@
         }
 
         .info-label {
-          font-size: 6.5pt !important;
+          font-size: 6pt !important;
           margin-bottom: 0.5mm !important;
           color: #000000 !important; /* Solid black */
-          font-weight: 700 !important;
+          font-weight: 800 !important;
           text-transform: uppercase !important;
           opacity: 1 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
 
         .info-value {
-          font-size: 8pt !important;
-          padding: 1mm 2mm !important;
-          min-width: 50px !important;
+          font-size: 7.5pt !important;
+          padding: 0.8mm 1.5mm !important;
+          min-width: 45px !important;
           background: white !important;
           color: #000000 !important; /* Solid black */
           border: 1.5pt solid #000000 !important;
-          border-radius: 0 !important;
-          font-weight: 800 !important;
+          border-radius: 3px !important;
+          font-weight: 900 !important;
           opacity: 1 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
 
         /* Ultra-compact student details - INK SAVER with visible borders */
         .student-details {
-          padding: 2mm !important;
-          margin-bottom: 1.5mm !important;
+          padding: 1.5mm !important;
+          margin-bottom: 1mm !important;
           page-break-inside: avoid !important;
           page-break-after: avoid !important;
           background: white !important;
           border: 1.5pt solid #000000 !important; /* Visible black border */
-          border-radius: 0 !important;
+          border-radius: 4px !important;
+        }
+        
+        .student-details * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          opacity: 1 !important;
         }
 
         .student-details p {
-          font-size: 7.5pt !important;
-          margin: 0.5mm 0 !important;
-          line-height: 1.25 !important;
+          font-size: 7pt !important;
+          margin: 0.4mm 0 !important;
+          line-height: 1.2 !important;
           color: #000000 !important; /* Solid black */
-          font-weight: 600 !important;
+          font-weight: 700 !important;
           opacity: 1 !important;
+        }
+
+        .student-details strong {
+          font-weight: 900 !important;
+          color: #000000 !important;
         }
 
         /* CRITICAL: Ultra-compact table - INK SAVER */
         table {
-          margin-bottom: 1.5mm !important;
-          font-size: 7pt !important;
+          margin-bottom: 1mm !important;
+          font-size: 6.5pt !important;
           page-break-inside: avoid !important;
           border-collapse: collapse !important;
           width: 100% !important;
           background: white !important;
         }
+        
+        table * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          opacity: 1 !important;
+        }
 
         th,
         td {
-          padding: 1mm 0.8mm !important;
-          font-size: 7pt !important;
-          line-height: 1.15 !important;
-          border: 0.5pt solid #cccccc !important;
+          padding: 0.8mm 0.7mm !important;
+          font-size: 6.5pt !important;
+          line-height: 1.1 !important;
+          border: 0.5pt solid #999999 !important;
           color: #000000 !important; /* Black text - NOT FADED */
-          font-weight: 500 !important;
+          font-weight: 600 !important;
         }
 
         th {
           background-color: white !important;
           color: #000000 !important; /* Black text - BOLD NOT FADED */
           font-weight: 900 !important;
-          padding: 1.5mm 0.8mm !important;
+          padding: 1.2mm 0.7mm !important;
           border-bottom: 2pt solid #000000 !important; /* Bold bottom border */
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          opacity: 1 !important;
         }
 
         .component-row {
@@ -897,26 +938,36 @@
         }
 
         .subject-name {
-          font-size: 7.5pt !important;
-          font-weight: 700 !important;
+          font-size: 7pt !important;
+          font-weight: 800 !important;
           color: #000000 !important; /* Black - NOT FADED */
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          opacity: 1 !important;
         }
 
         .mark-value {
-          font-size: 7.5pt !important;
-          padding: 0.8mm 1.5mm !important;
-          min-width: 22px !important;
-          font-weight: 600 !important;
+          font-size: 7pt !important;
+          padding: 0.6mm 1mm !important;
+          min-width: 20px !important;
+          font-weight: 700 !important;
+          color: #000000 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          opacity: 1 !important;
         }
 
         .grade-badge {
-          font-size: 7pt !important;
-          padding: 0.8mm 2.5mm !important;
-          border-radius: 0 !important;
+          font-size: 6.5pt !important;
+          padding: 0.7mm 2mm !important;
+          border-radius: 3px !important;
           background: white !important;
           border: 1.5pt solid #000000 !important;
           color: #000000 !important; /* Black text - BOLD */
-          font-weight: 800 !important;
+          font-weight: 900 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          opacity: 1 !important;
         }
 
         /* Remove colored backgrounds from grade badges for ink saving */
@@ -932,22 +983,28 @@
 
         /* Ultra-compact summary - INK SAVER with visible borders */
         .summary-section {
-          padding: 2.5mm !important;
-          margin-top: 1.5mm !important;
-          margin-bottom: 1.5mm !important;
+          padding: 2mm !important;
+          margin-top: 1mm !important;
+          margin-bottom: 1mm !important;
           page-break-inside: avoid !important;
           background: white !important;
           border: 1.5pt solid #000000 !important; /* Visible black border */
-          border-radius: 0 !important;
+          border-radius: 4px !important;
+        }
+        
+        .summary-section * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          opacity: 1 !important;
         }
 
         .summary-section h3 {
-          font-size: 9pt !important;
-          margin-bottom: 1.5mm !important;
+          font-size: 8.5pt !important;
+          margin-bottom: 1.2mm !important;
           color: #000000 !important; /* Solid black - NO FADING */
           font-weight: 900 !important;
           border-bottom: 2pt solid #000000 !important;
-          padding-bottom: 1mm !important;
+          padding-bottom: 0.8mm !important;
           text-transform: uppercase !important;
           opacity: 1 !important;
           -webkit-print-color-adjust: exact !important;
@@ -955,49 +1012,59 @@
         }
 
         .summary-grid {
-          gap: 1.5mm !important;
+          gap: 1.2mm !important;
         }
 
         .summary-item {
-          padding: 2mm !important;
+          padding: 1.5mm !important;
           background: white !important;
           border: 1.5pt solid #000000 !important; /* Visible black border */
-          border-radius: 0 !important;
+          border-radius: 3px !important;
         }
 
         .summary-label {
-          font-size: 6.5pt !important;
+          font-size: 6pt !important;
           color: #000000 !important; /* Solid black */
-          margin-bottom: 0.8mm !important;
-          font-weight: 700 !important;
+          margin-bottom: 0.6mm !important;
+          font-weight: 800 !important;
           text-transform: uppercase !important;
           opacity: 1 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
 
         .summary-value {
-          font-size: 8.5pt !important;
+          font-size: 8pt !important;
           color: #000000 !important; /* Solid black */
           font-weight: 900 !important;
           opacity: 1 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
 
         /* Ultra-compact remarks - INK SAVER with visible borders */
         .remarks {
-          padding: 2mm !important;
+          padding: 1.5mm !important;
           margin-top: 1mm !important;
           page-break-inside: avoid !important;
           background: white !important;
           border: 1.5pt solid #000000 !important; /* Visible black border */
-          border-radius: 0 !important;
+          border-radius: 4px !important;
+        }
+        
+        .remarks * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          opacity: 1 !important;
         }
 
         .remarks h3 {
-          font-size: 8.5pt !important;
-          margin-bottom: 1mm !important;
+          font-size: 8pt !important;
+          margin-bottom: 0.8mm !important;
           color: #000000 !important; /* Solid black - NO FADING */
           font-weight: 900 !important;
           border-bottom: 1.5pt solid #000000 !important;
-          padding-bottom: 0.8mm !important;
+          padding-bottom: 0.6mm !important;
           opacity: 1 !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
@@ -1010,12 +1077,14 @@
         .remarks p,
         .remarks ul,
         .remarks li {
-          font-size: 7pt !important;
-          margin: 0.8mm 0 !important;
-          line-height: 1.25 !important;
+          font-size: 6.5pt !important;
+          margin: 0.6mm 0 !important;
+          line-height: 1.2 !important;
           color: #000000 !important; /* Solid black */
-          font-weight: 500 !important;
+          font-weight: 600 !important;
           opacity: 1 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
 
         /* Minimal footer - INK SAVER */
