@@ -6065,6 +6065,30 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
                 
                 # Sanitize the HTML (template already has @media print CSS, don't override it)
                 html_with_css = sanitize_html_for_pdf(rendered_html)
+                
+                # Convert relative /static/ URLs to absolute file:// paths for wkhtmltopdf
+                import re as re_module
+                static_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static')
+                
+                def replace_static_url(match):
+                    """Replace /static/... URLs with file:// paths"""
+                    relative_path = match.group(1)
+                    absolute_path = os.path.join(static_folder, relative_path).replace('\\', '/')
+                    return f'file:///{absolute_path}'
+                
+                # Replace all /static/ references with absolute file paths
+                html_with_css = re_module.sub(
+                    r'["\']?/static/([^"\'>\s]+)["\']?',
+                    lambda m: f'"{replace_static_url(m)}"',
+                    html_with_css
+                )
+                
+                # Also handle url() in CSS
+                html_with_css = re_module.sub(
+                    r'url\(["\']?/static/([^"\')\s]+)["\']?\)',
+                    lambda m: f'url("{replace_static_url(m)}")',
+                    html_with_css
+                )
 
                 # Use pdfkit (same as class reports) for better Windows compatibility
                 try:
@@ -6085,23 +6109,27 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
                     options = {
                         'page-size': 'A4',
                         'orientation': 'Portrait',
-                        'margin-top': '0.75in',
-                        'margin-right': '0.75in',
-                        'margin-bottom': '0.75in',
-                        'margin-left': '0.75in',
+                        'margin-top': '0.5in',
+                        'margin-right': '0.5in',
+                        'margin-bottom': '0.5in',
+                        'margin-left': '0.5in',
                         'encoding': 'UTF-8',
                         'no-outline': None,
-                        'enable-local-file-access': True,
+                        'enable-local-file-access': None,
                         'print-media-type': None,
                         # SECURITY: Disable JavaScript execution in PDF generation
                         'disable-javascript': None,
-                        'disable-plugins': None,
-                        # Prevent external resource loading
-                        'disable-external-links': None,
-                        'disable-internal-links': None,
-                        # Be tolerant of missing images/assets to avoid hard failures
+                        # Allow images and CSS to load properly
+                        'no-stop-slow-scripts': None,
+                        'debug-javascript': None,
+                        # Zoom slightly to fit better on one page
+                        'zoom': '0.95',
+                        # Be tolerant of missing assets but still try to load them
                         'load-error-handling': 'ignore',
-                        'load-media-error-handling': 'ignore'
+                        'load-media-error-handling': 'ignore',
+                        # Enable modern web features for better CSS support
+                        'enable-smart-shrinking': None,
+                        'minimum-font-size': '8'
                     }
                     
                     # SECURITY: Use secure PDF generation with input validation
