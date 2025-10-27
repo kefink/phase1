@@ -6211,7 +6211,7 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         flash(message, 'error')
         return redirect(url_for('classteacher.dashboard'))
 
-    # Prevent duplicate requests with session-based locking
+    # Session-based locking with shorter cooldown and better cleanup
     request_key = f"zip_generation_{grade}_{stream}_{term}_{assessment_type}"
     lock_timestamp_key = f"{request_key}_timestamp"
     current_time = time.time()
@@ -6219,21 +6219,17 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
     print(f"🔒 Checking session lock for key: {request_key}")
     print(f"🔒 Current session keys: {list(session.keys())}")
     
-    # Check if request is in progress or was very recently completed (within 10 seconds)
+    # Check only for active locks, not timestamp (removed cooldown check)
     existing_lock = session.get(request_key)
-    last_request_time = session.get(lock_timestamp_key, 0)
-    time_since_last = current_time - last_request_time
     
-    if existing_lock or time_since_last < 10:  # 10-second cooldown
-        if existing_lock:
-            print(f"🚫 Request blocked - already in progress for key: {request_key}")
-        else:
-            print(f"🚫 Request blocked - too recent ({time_since_last:.1f}s ago) for key: {request_key}")
-        return json_or_flash("Request already in progress or too recent. Please wait.", 429)
+    if existing_lock:
+        print(f"🚫 Request blocked - already in progress for key: {request_key}")
+        return json_or_flash("Report generation already in progress. Please wait.", 429)
     
     print(f"✅ Setting session lock for key: {request_key}")
     session[request_key] = True
     session[lock_timestamp_key] = current_time
+    session.modified = True  # Force session save
     
     try:
         print(
@@ -6326,37 +6322,44 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         if not os.path.exists(zip_path):
             return json_or_flash("ZIP file was not created due to an internal error.", 500)
 
+        print(f"✅ ZIP file created successfully at: {zip_path}, size: {os.path.getsize(zip_path)} bytes")
+
         # Success flash only for non-AJAX flow
         if not is_ajax():
             flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", 'success')
 
-        # Ensure proper response headers for ZIP download
+        # Read the ZIP file into memory to avoid file locking issues
+        with open(zip_path, 'rb') as f:
+            zip_data = f.read()
+        
+        # Clean up temp files immediately after reading
+        try:
+            os.remove(zip_path)
+            import shutil
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            print(f"🗑️ Cleaned up temp files")
+        except Exception as cleanup_error:
+            print(f"⚠️ Warning: Could not cleanup temp files: {cleanup_error}")
+        
+        # Create response from in-memory data
+        from io import BytesIO
         response = send_file(
-            zip_path,
+            BytesIO(zip_data),
             as_attachment=True,
             download_name=zip_filename,
             mimetype='application/zip'
         )
         
         # Set comprehensive headers for ZIP download
-        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         response.headers['Pragma'] = 'no-cache'
         response.headers['Expires'] = '0'
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Content-Type'] = 'application/zip'
         response.headers['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+        response.headers['Content-Length'] = str(len(zip_data))
         
-        # Add cleanup callback to remove temp file after download
-        @response.call_on_close
-        def cleanup_temp_files():
-            try:
-                if os.path.exists(zip_path):
-                    os.remove(zip_path)
-                if os.path.exists(temp_dir):
-                    import shutil
-                    shutil.rmtree(temp_dir, ignore_errors=True)
-            except Exception as cleanup_error:
-                print(f"Warning: Could not cleanup temp files: {cleanup_error}")
+        print(f"📤 Sending ZIP response: {zip_filename} ({len(zip_data)} bytes)")
         
         return response
 
@@ -6369,11 +6372,11 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         flash(f"Error generating reports: {str(e)}", 'error')
         return redirect(url_for('classteacher.dashboard'))
     finally:
-        # Remove the active lock but keep timestamp for cooldown period
+        # Always remove the lock to prevent future blocking
         print(f"🔓 Cleaning up session lock for key: {request_key}")
         session.pop(request_key, None)
-        # Keep timestamp to prevent immediate duplicate requests
-        session[lock_timestamp_key] = time.time()
+        session.pop(lock_timestamp_key, None)
+        session.modified = True
 
 @classteacher_bp.route('/download_class_list', methods=['GET'])
 @classteacher_required
