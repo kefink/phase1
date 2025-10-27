@@ -6040,19 +6040,6 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
             try:
                 filename = f"Individual_Report_{grade.replace(' ', '_')}_{stream}_{student.name.replace(' ', '_')}_{timestamp}.pdf"
                 pdf_path = os.path.join(temp_dir, filename)
-
-                # Add print-specific CSS for PDF
-                print_css = """
-                <style>
-                @page { size: A4; margin: 1cm; }
-                body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; background: white; }
-                .action-buttons, .print-controls, .delete-btn, .modal { display: none !important; }
-                .report-container { max-width: none; margin: 0; padding: 20px; background: white; }
-                table { border-collapse: collapse; width: 100%; margin: 20px 0; }
-                th, td { border: 1px solid #333; padding: 8px; text-align: center; color: #000; }
-                th { background-color: #f0f0f0; }
-                </style>
-                """
                 
                 # SECURITY: Sanitize HTML content before PDF generation (remove dangerous elements only, don't escape)
                 def sanitize_html_for_pdf(html_content):
@@ -6076,9 +6063,8 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
                     
                     return html_content
                 
-                # Sanitize the HTML before adding CSS
-                safe_html = sanitize_html_for_pdf(rendered_html)
-                html_with_css = safe_html.replace('</head>', f'{print_css}</head>')
+                # Sanitize the HTML (template already has @media print CSS, don't override it)
+                html_with_css = sanitize_html_for_pdf(rendered_html)
 
                 # Use pdfkit (same as class reports) for better Windows compatibility
                 try:
