@@ -637,13 +637,12 @@
         font-size: 0.85em;
       }
 
-      /* Print styles for single-page optimization */
+      /* ULTRA-COMPACT SINGLE-PAGE PRINT - INK SAVER MODE */
       @media print {
-        /* Single page setup with minimal margins */
+        /* Single page setup with MINIMAL margins */
         @page {
           size: A4 portrait;
-          margin: 0.4cm;
-          /* Remove headers and footers completely */
+          margin: 0.3cm 0.5cm;
           @top-left {
             content: "";
           }
@@ -664,195 +663,414 @@
           }
         }
 
-        /* Reset all styles for clean printing */
+        /* DISABLE color preservation to save ink */
         * {
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
+          -webkit-print-color-adjust: economy !important;
+          print-color-adjust: economy !important;
+          color-adjust: economy !important;
         }
 
+        /* INK SAVER: White background for printing */
         html,
         body {
           margin: 0 !important;
           padding: 0 !important;
           height: auto !important;
-          font-size: 8.8pt !important;
+          background: white !important;
+          color: #000000 !important;
+          font-size: 7pt !important;
+          overflow: visible !important;
         }
 
+        /* INK SAVER: White container with proper borders ALL SIDES */
         .report-container {
           max-width: none !important;
+          width: 100% !important;
           margin: 0 !important;
-          padding: 4px 6px !important;
+          padding: 2mm 3mm !important;
           background: white !important;
+          color: #000000 !important;
           box-shadow: none !important;
-          border: none !important;
+          border: 2pt solid #000000 !important; /* All sides */
+          border-right: 2pt solid #000000 !important; /* Ensure right border */
           border-radius: 0 !important;
-          page-break-inside: avoid;
+          page-break-inside: avoid !important;
+          transform: scale(0.98) !important;
+          transform-origin: top center !important;
+          box-sizing: border-box !important;
         }
 
-        /* Compact header for print */
+        /* IMPROVED HEADER - Match your exact design with 3 columns */
         .marksheet-header {
-          padding: 8px 10px !important;
-          gap: 8px !important;
+          display: grid !important;
+          grid-template-columns: 60px 1fr auto !important;
+          gap: 4mm !important;
+          padding: 3mm !important;
+          margin-bottom: 2mm !important;
+          border: 2pt solid #000000 !important;
+          background: white !important;
+          color: #000000 !important;
+          border-radius: 0 !important;
+          page-break-inside: avoid !important;
+          align-items: center !important;
         }
+
+        .logo-section {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+
         .school-logo {
-          width: 56px !important;
-          height: 56px !important;
-        }
-        .school-name {
-          font-size: 16pt !important;
-          margin: 0 0 4px 0 !important;
-        }
-        .school-address {
-          font-size: 8pt !important;
-        }
-        .marksheet-title {
-          font-size: 11pt !important;
-          padding: 4px 8px !important;
+          width: 55px !important;
+          height: 55px !important;
+          flex-shrink: 0 !important;
+          border: 2pt solid #000000 !important;
+          border-radius: 50% !important;
         }
 
-        .header {
-          margin-bottom: 10px !important;
-          padding: 10px 0 !important;
-          page-break-inside: avoid;
-        }
-
-        .header h1 {
-          font-size: 18pt !important;
-          margin: 0 0 5px 0 !important;
-        }
-
-        .header p {
-          font-size: 10pt !important;
-          margin: 2px 0 !important;
-        }
-
-        .student-details {
-          padding: 8px !important;
-          margin-bottom: 8px !important;
-          page-break-inside: avoid;
-        }
-
-        .student-details p {
-          font-size: 10pt !important;
-          margin: 2px 0 !important;
-        }
-
-        table {
-          margin-bottom: 8px !important;
-          font-size: 8.2pt !important;
-          page-break-inside: avoid;
-        }
-
-        th,
-        td {
-          padding: 2px 2px !important;
-          font-size: 8.2pt !important;
-        }
-
-        .remarks {
-          margin-top: 8px !important;
-          padding: 6px !important;
-          page-break-inside: avoid;
-        }
-
-        .remarks h3 {
-          font-size: 11pt !important;
-          margin-bottom: 4px !important;
-        }
-
-        .remarks p {
-          font-size: 9pt !important;
-          margin: 3px 0 !important;
-          line-height: 1.2 !important;
-        }
-
-        .footer {
-          margin-top: 8px !important;
-          padding: 4px !important;
-          page-break-inside: avoid;
-        }
-
-        .footer p {
-          font-size: 8pt !important;
-          margin: 1px 0 !important;
-        }
-
-        .back-btn {
-          display: none !important;
-        }
-
-        /* Ensure no page breaks within critical sections */
-        .header,
-
-        /* Hide non-essential sections to ensure single-page print */
-        .summary-section,
-        .remarks {
-          display: none !important;
-        }
-        .student-details,
-        table,
-        .remarks,
-        .footer {
-          page-break-inside: avoid;
-        }
-      }
-
-      @media print {
-        body {
-          background-color: white !important;
+        .school-info-center {
+          text-align: center !important;
           padding: 0 !important;
           margin: 0 !important;
-          font-size: 12pt !important;
-          font-family: Arial, sans-serif !important;
+        }
+
+        .school-name {
+          font-size: 13pt !important;
+          margin: 0 0 1mm 0 !important;
+          font-weight: 900 !important;
+          color: #000000 !important; /* Solid black - NO FADING */
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
+          line-height: 1.1 !important;
+          text-transform: none !important;
+          opacity: 1 !important;
         }
 
-        .report-container {
-          box-shadow: none !important;
-          padding: 0 !important;
-          max-width: 100% !important;
+        .school-address {
+          font-size: 7.5pt !important;
           margin: 0 !important;
-          background-color: white !important;
+          font-weight: 600 !important;
+          color: #000000 !important; /* Solid black - NO FADING */
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          line-height: 1.3 !important;
+          opacity: 1 !important;
         }
 
+        .marksheet-title-section {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: flex-end !important;
+        }
+
+        .marksheet-title {
+          font-size: 10pt !important;
+          padding: 3mm 5mm !important;
+          line-height: 1.2 !important;
+          background: white !important;
+          color: #000000 !important; /* Solid black - NO FADING */
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          border: 2pt solid #000000 !important;
+          border-radius: 6px !important;
+          font-weight: 900 !important;
+          text-align: center !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.3mm !important;
+          white-space: nowrap !important;
+          opacity: 1 !important;
+        }
+
+        /* Hide elements not in your design */
+        .school-details,
+        .school-subtitle,
+        .school-motto {
+          display: none !important;
+        }
+
+        /* Hide all buttons and non-essential elements */
         .back-btn,
         .no-print,
-        button {
+        button,
+        .actions-bar {
           display: none !important;
           visibility: hidden !important;
         }
 
-        .logo-container img {
-          max-width: 120px !important;
-          height: auto !important;
+        /* Ultra-compact assessment info - INK SAVER with visible borders */
+        .assessment-info-section {
+          padding: 1.5mm !important;
+          margin-bottom: 1mm !important;
+          page-break-inside: avoid !important;
+          page-break-after: avoid !important;
+          background: white !important;
+          border: 1.5pt solid #000000 !important; /* Visible black border */
+          border-radius: 0 !important;
         }
 
-        /* Ensure colors print correctly */
+        .assessment-info-grid {
+          display: grid !important;
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 1.5mm !important;
+          align-items: center !important;
+        }
+
+        .info-group {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          text-align: center !important;
+        }
+
+        .info-label {
+          font-size: 6.5pt !important;
+          margin-bottom: 0.5mm !important;
+          color: #000000 !important; /* Solid black */
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          opacity: 1 !important;
+        }
+
+        .info-value {
+          font-size: 8pt !important;
+          padding: 1mm 2mm !important;
+          min-width: 50px !important;
+          background: white !important;
+          color: #000000 !important; /* Solid black */
+          border: 1.5pt solid #000000 !important;
+          border-radius: 0 !important;
+          font-weight: 800 !important;
+          opacity: 1 !important;
+        }
+
+        /* Ultra-compact student details - INK SAVER with visible borders */
+        .student-details {
+          padding: 2mm !important;
+          margin-bottom: 1.5mm !important;
+          page-break-inside: avoid !important;
+          page-break-after: avoid !important;
+          background: white !important;
+          border: 1.5pt solid #000000 !important; /* Visible black border */
+          border-radius: 0 !important;
+        }
+
+        .student-details p {
+          font-size: 7.5pt !important;
+          margin: 0.5mm 0 !important;
+          line-height: 1.25 !important;
+          color: #000000 !important; /* Solid black */
+          font-weight: 600 !important;
+          opacity: 1 !important;
+        }
+
+        /* CRITICAL: Ultra-compact table - INK SAVER */
+        table {
+          margin-bottom: 1.5mm !important;
+          font-size: 7pt !important;
+          page-break-inside: avoid !important;
+          border-collapse: collapse !important;
+          width: 100% !important;
+          background: white !important;
+        }
+
+        th,
+        td {
+          padding: 1mm 0.8mm !important;
+          font-size: 7pt !important;
+          line-height: 1.15 !important;
+          border: 0.5pt solid #cccccc !important;
+          color: #000000 !important; /* Black text - NOT FADED */
+          font-weight: 500 !important;
+        }
+
         th {
-          background-color: var(--primary-color, #b58900) !important;
-          color: var(--text-white, #fdf6e3) !important;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
+          background-color: white !important;
+          color: #000000 !important; /* Black text - BOLD NOT FADED */
+          font-weight: 900 !important;
+          padding: 1.5mm 0.8mm !important;
+          border-bottom: 2pt solid #000000 !important; /* Bold bottom border */
         }
 
         .component-row {
-          background-color: rgba(42, 161, 152, 0.08) !important;
+          background-color: white !important;
+        }
+
+        .subject-name {
+          font-size: 7.5pt !important;
+          font-weight: 700 !important;
+          color: #000000 !important; /* Black - NOT FADED */
+        }
+
+        .mark-value {
+          font-size: 7.5pt !important;
+          padding: 0.8mm 1.5mm !important;
+          min-width: 22px !important;
+          font-weight: 600 !important;
+        }
+
+        .grade-badge {
+          font-size: 7pt !important;
+          padding: 0.8mm 2.5mm !important;
+          border-radius: 0 !important;
+          background: white !important;
+          border: 1.5pt solid #000000 !important;
+          color: #000000 !important; /* Black text - BOLD */
+          font-weight: 800 !important;
+        }
+
+        /* Remove colored backgrounds from grade badges for ink saving */
+        .grade-ee,
+        .grade-me,
+        .grade-ae,
+        .grade-be {
+          background: white !important;
+          color: #000000 !important;
+          border: 1.5pt solid #000000 !important;
+          font-weight: 800 !important;
+        }
+
+        /* Ultra-compact summary - INK SAVER with visible borders */
+        .summary-section {
+          padding: 2.5mm !important;
+          margin-top: 1.5mm !important;
+          margin-bottom: 1.5mm !important;
+          page-break-inside: avoid !important;
+          background: white !important;
+          border: 1.5pt solid #000000 !important; /* Visible black border */
+          border-radius: 0 !important;
+        }
+
+        .summary-section h3 {
+          font-size: 9pt !important;
+          margin-bottom: 1.5mm !important;
+          color: #000000 !important; /* Solid black - NO FADING */
+          font-weight: 900 !important;
+          border-bottom: 2pt solid #000000 !important;
+          padding-bottom: 1mm !important;
+          text-transform: uppercase !important;
+          opacity: 1 !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
 
-        table {
-          page-break-inside: auto !important;
+        .summary-grid {
+          gap: 1.5mm !important;
         }
 
+        .summary-item {
+          padding: 2mm !important;
+          background: white !important;
+          border: 1.5pt solid #000000 !important; /* Visible black border */
+          border-radius: 0 !important;
+        }
+
+        .summary-label {
+          font-size: 6.5pt !important;
+          color: #000000 !important; /* Solid black */
+          margin-bottom: 0.8mm !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          opacity: 1 !important;
+        }
+
+        .summary-value {
+          font-size: 8.5pt !important;
+          color: #000000 !important; /* Solid black */
+          font-weight: 900 !important;
+          opacity: 1 !important;
+        }
+
+        /* Ultra-compact remarks - INK SAVER with visible borders */
+        .remarks {
+          padding: 2mm !important;
+          margin-top: 1mm !important;
+          page-break-inside: avoid !important;
+          background: white !important;
+          border: 1.5pt solid #000000 !important; /* Visible black border */
+          border-radius: 0 !important;
+        }
+
+        .remarks h3 {
+          font-size: 8.5pt !important;
+          margin-bottom: 1mm !important;
+          color: #000000 !important; /* Solid black - NO FADING */
+          font-weight: 900 !important;
+          border-bottom: 1.5pt solid #000000 !important;
+          padding-bottom: 0.8mm !important;
+          opacity: 1 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        .remarks h3::before {
+          content: "" !important; /* Remove emoji */
+        }
+
+        .remarks p,
+        .remarks ul,
+        .remarks li {
+          font-size: 7pt !important;
+          margin: 0.8mm 0 !important;
+          line-height: 1.25 !important;
+          color: #000000 !important; /* Solid black */
+          font-weight: 500 !important;
+          opacity: 1 !important;
+        }
+
+        /* Minimal footer - INK SAVER */
+        .footer {
+          margin-top: 1mm !important;
+          padding: 1mm !important;
+          page-break-inside: avoid !important;
+          border-top: 1pt solid #cccccc !important;
+          background: white !important;
+        }
+
+        .footer p {
+          font-size: 6pt !important;
+          margin: 0 !important;
+          line-height: 1.1 !important;
+          color: #333333 !important; /* Dark gray */
+        }
+
+        /* Ensure thead repeats if needed */
+        thead {
+          display: table-header-group !important;
+        }
+
+        /* Prevent breaks within rows */
         tr {
           page-break-inside: avoid !important;
           page-break-after: auto !important;
         }
 
-        thead {
-          display: table-header-group !important;
+        /* Remove all extra spacing */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        p {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Hide decorative elements */
+        .marksheet-header::before,
+        .marksheet-header::after {
+          display: none !important;
+        }
+
+        /* Scale content slightly if still too large */
+        .report-container {
+          transform: scale(0.98) !important;
+          transform-origin: top center !important;
         }
       }
 
@@ -862,13 +1080,25 @@
         -webkit-overflow-scrolling: touch;
         margin: 0 0 15px 0;
       }
+
       .table-container table {
         min-width: 720px; /* allow horizontal scroll on narrow screens */
       }
+
       .actions-bar {
         display: flex;
         gap: 10px;
         margin-bottom: 20px;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 0 15px 0;
+      }
+
+      .table-container table {
+        min-width: 720px;
       }
       /* Enhanced Mobile Responsiveness */
       @media (max-width: 1024px) {

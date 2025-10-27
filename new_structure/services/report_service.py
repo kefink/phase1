@@ -288,10 +288,18 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
     for i, student_data in enumerate(class_data, 1):
         student_data['rank'] = i
 
-    # Calculate statistics
-    stats = {'exceeding': 0, 'meeting': 0, 'approaching': 0, 'below': 0}
+    # Calculate statistics - Enhanced with specific grade breakdown
+    stats = {
+        'exceeding': 0, 'meeting': 0, 'approaching': 0, 'below': 0,
+        # Specific grade breakdowns
+        'EE1': 0, 'EE2': 0,  # Exceeding: 90-100, 75-89
+        'ME1': 0, 'ME2': 0,  # Meeting: 60-74, 41-59
+        'AE1': 0, 'AE2': 0,  # Approaching: 30-40, 21-29
+        'BE1': 0, 'BE2': 0   # Below: 11-20, 0-10
+    }
     for student_data in class_data:
         avg = student_data['average_percentage']
+        # Broad categories (kept for backward compatibility)
         if avg >= 75:
             stats['exceeding'] += 1
         elif 41 <= avg < 75:
@@ -300,6 +308,24 @@ def get_class_report_data(grade, stream, term, assessment_type, selected_subject
             stats['approaching'] += 1
         else:
             stats['below'] += 1
+        
+        # Specific grade breakdown
+        if avg >= 90:
+            stats['EE1'] += 1
+        elif avg >= 75:
+            stats['EE2'] += 1
+        elif avg >= 60:
+            stats['ME1'] += 1
+        elif avg >= 41:
+            stats['ME2'] += 1
+        elif avg >= 30:
+            stats['AE1'] += 1
+        elif avg >= 21:
+            stats['AE2'] += 1
+        elif avg >= 11:
+            stats['BE1'] += 1
+        else:
+            stats['BE2'] += 1
 
     # Build the final subjects list including composite subjects
     final_subjects = []
