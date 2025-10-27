@@ -6066,6 +6066,40 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
                 # Sanitize the HTML (template already has @media print CSS, don't override it)
                 html_with_css = sanitize_html_for_pdf(rendered_html)
                 
+                # Force print styles by adding explicit override CSS before </head>
+                force_print_css = """
+                <style>
+                /* Force all print CSS to apply */
+                @page { size: A4; margin: 0.4in; }
+                body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                
+                /* Force grayscale/ink-saver */
+                body, .report-container { background: white !important; color: black !important; }
+                .marksheet-header, .assessment-info-section, .summary-section { 
+                    background: white !important; 
+                    color: black !important;
+                    border-color: black !important;
+                }
+                .marksheet-title { background: white !important; color: black !important; border-color: black !important; }
+                .info-value { background: white !important; color: black !important; border-color: black !important; }
+                table, th, td { background: white !important; color: black !important; border-color: black !important; }
+                .marks-table thead { background: #f0f0f0 !important; color: black !important; }
+                .marks-table tbody tr:nth-child(even) { background: #f9f9f9 !important; }
+                .subject-name { color: black !important; }
+                h1, h2, h3, h4, h5, h6, p, span, div { color: black !important; }
+                
+                /* Hide non-print elements */
+                .action-buttons, .print-controls, .delete-btn, .modal, button { display: none !important; }
+                
+                /* Ensure borders are visible */
+                .marksheet-header, .assessment-info-section, .marksheet-container, .summary-section, .remarks {
+                    border: 2px solid black !important;
+                }
+                </style>
+                """
+                html_with_css = html_with_css.replace('</head>', f'{force_print_css}</head>')
+                
                 # Convert relative /static/ URLs to absolute file:// paths for wkhtmltopdf
                 import re as re_module
                 static_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static')
@@ -6109,27 +6143,27 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
                     options = {
                         'page-size': 'A4',
                         'orientation': 'Portrait',
-                        'margin-top': '0.5in',
-                        'margin-right': '0.5in',
-                        'margin-bottom': '0.5in',
-                        'margin-left': '0.5in',
+                        'margin-top': '0.4in',
+                        'margin-right': '0.4in',
+                        'margin-bottom': '0.4in',
+                        'margin-left': '0.4in',
                         'encoding': 'UTF-8',
                         'no-outline': None,
                         'enable-local-file-access': None,
-                        'print-media-type': None,
+                        # Force print mode
+                        '--print-media-type': '',
+                        # Force grayscale
+                        'grayscale': None,
                         # SECURITY: Disable JavaScript execution in PDF generation
                         'disable-javascript': None,
-                        # Allow images and CSS to load properly
-                        'no-stop-slow-scripts': None,
-                        'debug-javascript': None,
-                        # Zoom slightly to fit better on one page
-                        'zoom': '0.95',
-                        # Be tolerant of missing assets but still try to load them
+                        # Zoom to fit on one page
+                        'zoom': '0.96',
+                        # Be tolerant of missing assets
                         'load-error-handling': 'ignore',
                         'load-media-error-handling': 'ignore',
-                        # Enable modern web features for better CSS support
+                        # Enable shrinking
                         'enable-smart-shrinking': None,
-                        'minimum-font-size': '8'
+                        'minimum-font-size': '7'
                     }
                     
                     # SECURITY: Use secure PDF generation with input validation
