@@ -5367,28 +5367,33 @@ def view_student_reports(grade, stream, term, assessment_type):
 @enforce('individual_report', 'read', class_scope=True, grade_arg='grade', stream_arg='stream')
 def download_individual_report(grade, stream, term, assessment_type, student_name):
     """Route for downloading an individual student report as PDF - uses unified generator."""
-    # TEMPORARILY DISABLED CACHE - Force regeneration with new white background theme
-    # This ensures old dark-themed cached PDFs are not served
-    # TODO: Re-enable cache after verifying all PDFs have white backgrounds
+    print(f"\n🔍 DOWNLOAD INDIVIDUAL REPORT CALLED:")
+    print(f"   Student: {student_name}")
+    print(f"   Grade: {grade}, Stream: {stream}, Term: {term}, Assessment: {assessment_type}")
+    print(f"   Session selected_subjects: {session.get('selected_subjects', [])}")
+    
+    # TEMPORARILY DISABLE CACHE to ensure fresh generation with fixes
+    # Check if we have a cached PDF for this student
+    cached_pdf = None  # Disable cache temporarily for debugging
     # cached_pdf = get_cached_pdf(grade, stream, term, assessment_type, f"student_{student_name.replace(' ', '_')}")
-    # if cached_pdf:
-    #     # Check if cached_pdf is a file path (string) or bytes
-    #     if isinstance(cached_pdf, str):
-    #         # It's a file path - read the file
-    #         return send_file(
-    #             cached_pdf,
-    #             as_attachment=True,
-    #             download_name=f"Individual_Report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf",
-    #             mimetype='application/pdf'
-    #         )
-    #     else:
-    #         # It's bytes - wrap in BytesIO
-    #         return send_file(
-    #             BytesIO(cached_pdf),
-    #             as_attachment=True,
-    #             download_name=f"Individual_Report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf",
-    #             mimetype='application/pdf'
-    #         )
+    if cached_pdf:
+        # Check if cached_pdf is a file path (string) or bytes
+        if isinstance(cached_pdf, str):
+            # It's a file path - read the file
+            return send_file(
+                cached_pdf,
+                as_attachment=True,
+                download_name=f"Individual_Report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf",
+                mimetype='application/pdf'
+            )
+        else:
+            # It's bytes - wrap in BytesIO
+            return send_file(
+                BytesIO(cached_pdf),
+                as_attachment=True,
+                download_name=f"Individual_Report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf",
+                mimetype='application/pdf'
+            )
 
     # Resolve stream, term, and assessment type
     stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
@@ -5404,11 +5409,19 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
         flash(f"No data available for student {student_name}.", "error")
         return redirect(url_for('classteacher.dashboard'))
 
+    print(f"   Calling generate_student_report_pdf_bytes with:")
+    print(f"   - Original term: {term}, normalized: {term_name}")
+    print(f"   - Original assessment: {assessment_type}, normalized: {at_name}")
+    print(f"   - Will pass to builder: term={term}, assessment={assessment_type} (as-is, same as preview)")
+    
     # 🔥 UNIFIED PDF GENERATION - Returns (pdf_bytes, filename) or (None, error_message)
+    # IMPORTANT: Pass term/assessment_type as-is (not normalized) to match preview behavior
     result = generate_student_report_pdf_bytes(
-        student, grade, stream, (term_name or term), (at_name or assessment_type),
+        student, grade, stream, term, assessment_type,  # Pass original values, same as preview
         stream_obj, term_obj, assessment_type_obj
     )
+    
+    print(f"   PDF Generation result: {'SUCCESS' if result[0] is not None else 'FAILED'}")
 
     if result[0] is None:
         flash(f"Failed to generate report: {result[1]}", "error")
@@ -5439,7 +5452,7 @@ def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_t
         import tempfile
         import os
         from datetime import datetime
-        from flask import render_template_string
+        from flask import render_template_string, session
         import pdfkit
 
         # Get education level based on grade
@@ -5452,53 +5465,61 @@ def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_t
         elif 7 <= grade_num <= 9:
             education_level = "junior secondary"
 
-        # Get class report data first (same as preview)
-        # Normalize names to match service expectations
-        _, term_name = _resolve_term_object(term)
-        _, at_name = _resolve_assessment_type_object(assessment_type)
-        class_data_result = get_class_report_data(grade, stream, (term_name or term), (at_name or assessment_type))
-
-        if class_data_result.get("error"):
-            return None
-
-        # Find student data in the class report
-        student_data = None
-        for data in class_data_result["class_data"]:
-            if data["student"] == student.name:
-                student_data = data
-                break
-
-        if not student_data:
-            return None
-
-        # Calculate mean grade and points (same as preview)
-        avg_percentage = student_data.get("average_percentage", 0)
-        from ..utils import get_grade_and_points, get_performance_remarks
-        mean_grade, mean_points = get_grade_and_points(avg_percentage)
-
-        # USE CLASSREPORTBUILDER TO GET EXACT SAME DATA AS PREVIEW (fixes mark mismatch)
+        # USE ClassReportBuilder ONLY - same as preview (SINGLE SOURCE OF TRUTH)
+        # Pass parameters EXACTLY as preview does (no normalization - builder handles it)
         from ..services.class_report_builder import ClassReportBuilder
-        from flask import session
         
+        # Get selected subjects from session (same as preview)
+        selected_subjects = session.get('selected_subjects', [])
+        
+        # Use EXACT same parameters as preview - pass term/assessment_type as-is
         builder_ctx = ClassReportBuilder.build(
-            grade, stream, term, assessment_type,
-            selected_subject_ids=session.get('selected_subjects', []),
-            invalidate=False
+            grade, stream, term, assessment_type,  # Pass as-is, same as preview
+            selected_subject_ids=selected_subjects,
+            invalidate=True  # Match preview behavior - ensure fresh calculation
         )
         
-        composite_structure = builder_ctx.get('composite_structure', {}) or {}
-        subject_names = builder_ctx.get('subject_names', class_data_result.get('subjects', []))
+        if builder_ctx.get("error"):
+            return None, builder_ctx.get("error", "Failed to build report")
         
-        # Get this student's filtered marks (includes composite totals and components)
+        # Extract student data from builder context (SAME AS PREVIEW)
+        class_data_list = builder_ctx.get('class_data', []) or []
+        print(f"📊 Class data has {len(class_data_list)} students")
+        
         student_filtered = None
-        for sd in builder_ctx.get('class_data', []) or []:
+        for idx, sd in enumerate(class_data_list):
             if sd.get('student') == student.name:
                 student_filtered = sd
+                print(f"✅ Found student {student.name} at index {idx}")
+                print(f"   Student rank: {sd.get('rank')}, index: {sd.get('index')}")
+                print(f"   Student filtered_total: {sd.get('filtered_total')}")
                 break
         
-        filtered_marks = (student_filtered or {}).get('filtered_marks', {})
+        if not student_filtered:
+            # Debug: Print all student names to see what's available
+            print(f"❌ Student {student.name} not found. Available students:")
+            for sd in class_data_list[:5]:  # Print first 5
+                print(f"   - {sd.get('student')} (rank: {sd.get('rank')}, total: {sd.get('filtered_total')})")
+            return None, f"Student {student.name} not found in class report"
         
-        # Helper to expand remarks codes
+        # Use filtered data from builder (SAME AS PREVIEW)
+        filtered_marks = student_filtered.get('filtered_marks', {})
+        filtered_total = student_filtered.get('filtered_total', 0)
+        filtered_average = student_filtered.get('filtered_average', 0)
+        
+        # Calculate mean grade and points using filtered_average (SAME AS PREVIEW)
+        from ..utils import get_grade_and_points, get_performance_remarks
+        mean_grade, mean_points = get_grade_and_points(filtered_average)
+        
+        # Extract other data from builder context
+        composite_structure = builder_ctx.get('composite_structure', {}) or {}
+        subject_names = builder_ctx.get('subject_names', [])
+        report_data = builder_ctx.get('report_data', {})
+        
+        # Get total_marks per subject from report_data
+        total_marks_per_subject = report_data.get("total_marks", 100) or 100
+
+        # Local helper to expand remarks codes to full descriptive text (SAME AS PREVIEW)
         def _full_remarks(code: str) -> str:
             mapping = {
                 'EE1': 'Exceeding Expectation 1',
@@ -5511,23 +5532,23 @@ def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_t
                 'BE2': 'Below Expectation 2',
             }
             return mapping.get(str(code), str(code))
-        
-        # Build table data using builder order (SAME AS PREVIEW)
+
+        # Build table data in builder order - CONSISTENT FOR ALL STUDENTS
+        # Include ALL subjects from subject_names to ensure same layout for all students
         table_data = []
-        composite_data = {}
-        
+        visible_count = 0
         for subject_name in subject_names:
-            # Get mark from filtered_marks (EXACT SAME AS CLASS REPORT)
-            mark_val = filtered_marks.get(subject_name, 0)
-            if not mark_val or mark_val == 0:
-                continue
+            mark_val = filtered_marks.get(subject_name, 0) or 0
             
-            # Always convert to whole numbers - no decimals in reports
-            mark_disp = int(round(mark_val)) if mark_val else 0
-            
-            # Build assessment columns (same as preview)
+            # Normalize display (even if 0, we still show the row for consistency)
+            if isinstance(mark_val, float):
+                mark_disp = int(round(mark_val)) if mark_val == int(mark_val) else round(mark_val, 1)
+            else:
+                mark_disp = int(mark_val) if mark_val else 0
+
             entrance_mark = mid_term_mark = end_term_mark = 0
             if assessment_type.lower() in ['end_term', 'endterm']:
+                # For PDF, we don't requery; show same value across columns and compute avg accordingly
                 entrance_mark = mid_term_mark = end_term_mark = mark_disp
                 avg_mark = mark_disp
             else:
@@ -5538,7 +5559,8 @@ def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_t
                 elif assessment_type.lower() in ['end_term', 'endterm']:
                     end_term_mark = mark_disp
                 avg_mark = mark_disp
-            
+
+            # ALWAYS add subject to table_data for consistent layout (even if mark is 0)
             table_data.append({
                 "subject": subject_name,
                 "entrance": entrance_mark,
@@ -5546,39 +5568,94 @@ def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_t
                 "end_term": end_term_mark,
                 "current_assessment": mark_disp,
                 "avg": avg_mark,
-                "remarks": _full_remarks(get_performance_remarks(avg_mark if assessment_type.lower() in ['end_term', 'endterm'] else mark_disp, class_data_result.get("total_marks", 100)))
+                "remarks": _full_remarks(get_performance_remarks(avg_mark if assessment_type.lower() in ['end_term', 'endterm'] else mark_disp, total_marks_per_subject)) if mark_disp > 0 else '-'
             })
-        
-        # Build composite component breakdown using builder data (SAME AS PREVIEW)
+            if mark_disp > 0:
+                visible_count += 1
+
+        # Build composite component breakdown using CLASS-LEVEL composite structure (CONSISTENT FOR ALL STUDENTS)
+        # This ensures all students show the same composite structure, even if they don't have marks
+        composite_data = {}
         for main_name, info in composite_structure.items():
             comp_names = info.get('component_names', [])
             display_labels = info.get('component_display', [])
             components_map = {}
-            
             for idx, comp_name in enumerate(comp_names):
                 label = display_labels[idx] if idx < len(display_labels) else comp_name
+                # Get component mark for THIS student (may be 0)
                 val = filtered_marks.get(comp_name, 0) or 0
-                
-                # Always convert to whole numbers
-                val_disp = int(round(val)) if val else 0
-                
+                # Normalize
+                if isinstance(val, float):
+                    val_disp = int(round(val)) if val == int(val) else round(val, 1)
+                else:
+                    val_disp = int(val) if val else 0
                 components_map[label] = {
                     'mark': val_disp,
                     'max_mark': 100,
-                    'percentage': round(val, 1) if isinstance(val, (int, float)) else 0,
-                    'remarks': _full_remarks(get_performance_remarks(val, 100))
+                    'percentage': round(val, 1) if isinstance(val, (int, float)) and val > 0 else 0,
+                    'remarks': _full_remarks(get_performance_remarks(val, 100)) if val > 0 else '-'
                 }
-            
             composite_data[main_name] = {
                 'components': components_map,
                 'total': filtered_marks.get(main_name, 0) or 0
             }
 
-        # Calculate totals (same as preview) - Round to whole numbers, no decimals
-        total_marks = int(round(student_data.get("total_marks", 0)))
-        # Use the actual total from class report
-        total_possible_marks = class_data_result.get("total_possible_marks", len(subject_names) * 100)
-        total_points = int(round(mean_points * len(subject_names)))
+        # Use filtered_total from builder (SAME AS PREVIEW) - this ensures exact match with class report
+        # DEBUG: Verify we're using the exact same data as preview
+        print(f"🔍 PDF Generation Debug for {student.name}:")
+        print(f"   filtered_total from builder: {filtered_total}")
+        print(f"   filtered_average from builder: {filtered_average}")
+        print(f"   filtered_marks keys: {list(filtered_marks.keys())}")
+        print(f"   filtered_marks values: {list(filtered_marks.values())}")
+        print(f"   subject_names: {subject_names}")
+        print(f"   visible_count: {visible_count}")
+        
+        total_marks = filtered_total
+        total_possible_marks = student_filtered.get('total_possible_marks', visible_count * total_marks_per_subject)
+        
+        # Get student's position/rank in class (from builder's sorted class_data)
+        # Debug: Check what rank values are available
+        student_rank = student_filtered.get('rank')
+        student_index = student_filtered.get('index')
+        print(f"🔍 Rank extraction for {student.name}:")
+        print(f"   student_filtered keys: {list(student_filtered.keys())}")
+        print(f"   rank value: {student_rank}")
+        print(f"   index value: {student_index}")
+        print(f"   filtered_total: {filtered_total}")
+        
+        # Verify rank is actually set (should be 1-based from builder)
+        if student_rank is None and student_index is None:
+            # Fallback: Calculate rank from sorted class_data (same logic as builder)
+            print(f"⚠️ Rank not found in student_filtered, calculating from class_data...")
+            # Sort exactly like builder does: by filtered_total descending
+            sorted_class = sorted(class_data_list, key=lambda x: x.get("filtered_total", 0), reverse=True)
+            # Assign ranks sequentially (1-based) like builder does
+            for i, sd in enumerate(sorted_class, 1):
+                if sd.get('student') == student.name:
+                    student_position = i
+                    print(f"   Calculated position: {student_position} (total: {sd.get('filtered_total')})")
+                    # Also show some context - what rank do other students have?
+                    print(f"   Sample ranks from sorted class:")
+                    for j, other_sd in enumerate(sorted_class[:5], 1):
+                        print(f"      {j}. {other_sd.get('student')[:20]}: total={other_sd.get('filtered_total')}, rank={other_sd.get('rank')}")
+                    break
+            else:
+                student_position = 0
+                print(f"   ERROR: Student not found in sorted class_data!")
+        else:
+            student_position = student_rank or student_index or 0
+            # Verify the rank makes sense
+            if student_position > 0:
+                # Check if other students have the same rank (might indicate ties or issue)
+                same_rank_count = sum(1 for sd in class_data_list if (sd.get('rank') == student_position or sd.get('index') == student_position))
+                if same_rank_count > 1:
+                    print(f"⚠️ Warning: {same_rank_count} students have rank {student_position} (possible ties)")
+        
+        # Keep total_points for backward compatibility but use position instead
+        # Note: We'll pass student_position to template and update template to show "Position" instead of "Total Points"
+        total_points = student_position  # This will be displayed as Position/Rank
+        
+        print(f"   Final total_marks: {total_marks}, avg_percentage: {filtered_average}, position: {student_position}")
 
         # Generate admission number (same as preview)
         admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
@@ -5606,23 +5683,83 @@ def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_t
 
         # Get staff information for dynamic teacher names
         from ..services.staff_assignment_service import StaffAssignmentService
-        staff_info = StaffAssignmentService.get_report_staff_info(grade, stream)
+        # Extract stream letter (e.g., "Stream B" -> "B")
+        stream_letter = stream.replace("Stream ", "") if stream.startswith("Stream ") else (stream[-1] if len(stream) > 1 else stream)
+        staff_info = StaffAssignmentService.get_report_staff_info(grade, stream_letter)
 
         # Get subject teachers mapping for the teacher column
-        subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream)
+        subject_teachers = StaffAssignmentService.get_subject_teachers(grade, stream_letter)
+        
+        # Also map composite (logical) subjects to teachers by aggregating component subject teachers (SAME AS PREVIEW)
+        try:
+            from ..models import Grade as GradeModel, TeacherSubjectAssignment
+            from ..models.academic import Subject
+            # Build once
+            grade_obj = GradeModel.query.filter_by(name=grade).first()
+            if grade_obj and stream_obj:
+                # Determine candidate subject names that might be composites (appear in report subjects but not real Subject rows)
+                candidate_names = subject_names  # list from builder
+                for cname in candidate_names:
+                    if cname in subject_teachers:
+                        continue
+                    # If no exact Subject exists, treat as composite name
+                    subj_obj = Subject.query.filter_by(name=cname).first()
+                    if subj_obj is None:
+                        # Find component subjects bound to this composite name
+                        component_subjects = Subject.query.filter_by(composite_parent=cname, is_component=True).all()
+                        if component_subjects:
+                            # Collect teacher names assigned to these components for this grade/stream
+                            names = []
+                            for cs in component_subjects:
+                                assignments = TeacherSubjectAssignment.query.filter_by(
+                                    grade_id=grade_obj.id,
+                                    stream_id=stream_obj.id,
+                                    subject_id=cs.id
+                                ).all()
+                                for a in assignments:
+                                    if a.teacher:
+                                        tname = getattr(a.teacher, 'full_name', None) or getattr(a.teacher, 'username', None) or ''
+                                        if tname and tname not in names:
+                                            names.append(tname)
+                            if names:
+                                label = ", ".join(names)
+                                # Insert a dict compatible with template attribute access
+                                subject_teachers[cname] = { 'full_name': label, 'username': label }
+        except Exception as _e:
+            # Non-fatal: continue without composite teacher aggregation
+            pass
 
-        # Get term information (placeholder for future implementation)
+        # Get term information from report configuration (SAME AS PREVIEW)
+        from ..services.report_config_service import ReportConfigService
+        report_config_data = ReportConfigService.get_comprehensive_report_data(grade, stream_letter, term)
+        if report_config_data and report_config_data.get('term_info'):
+            term_config = report_config_data['term_info']
+            next_term_opening = term_config.get('opening_date')
+            if next_term_opening:
+                next_term_opening_str = next_term_opening.strftime('%B %d, %Y') if hasattr(next_term_opening, 'strftime') else str(next_term_opening)
+            else:
+                next_term_opening_str = 'TBD'
+        else:
+            next_term_opening_str = 'TBD'
+
         term_info = {
-            'next_term_opening_date': 'TBD',  # This can be configured later
+            'next_term_opening_date': next_term_opening_str,
             'current_term': term,
             'academic_year': academic_year
         }
+        
+        # Legends for grading/weights/status (SAME AS PREVIEW)
+        try:
+            from ..services.mark_calculator_adapter import build_legends  # local import to avoid cycles
+            _calc_legends = build_legends()
+        except Exception:
+            _calc_legends = None
 
-        # Render the template with the same data as preview
+        # Render the template with the same data as preview (using filtered data from builder)
         html_content = render_template_string(
             template_content,
             student=student,
-            student_data=student_data,
+            student_data=student_filtered,  # Use filtered student data from builder
             grade=grade,
             stream=stream,
             term=term,
@@ -5631,12 +5768,13 @@ def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_t
             current_date=current_date,
             table_data=table_data,
             composite_data=composite_data,
-            total=total_marks,
-            avg_percentage=avg_percentage,
+            total=total_marks,  # Use filtered_total from builder
+            avg_percentage=filtered_average,  # Use filtered_average from builder (SAME AS PREVIEW)
             mean_grade=mean_grade,
             mean_points=mean_points,
             total_possible_marks=total_possible_marks,
-            total_points=total_points,
+            total_points=student_position,  # Pass position/rank (will be displayed as Position)
+            student_position=student_position,  # Also pass explicitly for clarity
             admission_no=admission_no,
             academic_year=academic_year,
             print_mode=True,
@@ -5644,7 +5782,8 @@ def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_t
             logo_url=logo_url,       # Pass dynamic logo URL
             staff_info=staff_info,   # Pass staff information
             term_info=term_info,     # Pass term information
-            subject_teachers=subject_teachers  # Pass subject teachers mapping
+            subject_teachers=subject_teachers,  # Pass subject teachers mapping
+            calculator_legends=_calc_legends  # Optional legends for templates
         )
 
         # 🔥 UNIFIED PDF GENERATION using standardized utilities
@@ -5657,80 +5796,7 @@ def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_t
         # Convert static URLs to file paths
         html_content = convert_static_urls_to_file_paths(html_content, static_folder)
         
-        # CRITICAL: Add ULTRA-AGGRESSIVE CSS override to force white background
-        # This prevents ANY dark theme CSS from bleeding through
-        # BUT preserves border-radius and box-shadow for premium look
-        white_bg_override = '''<style type="text/css">
-            /* FORCE WHITE BACKGROUND - PROFESSIONAL PDF - ULTRA AGGRESSIVE */
-            html, html *, body, body *, div, div *, span, span *, p, p *, td, td *, th, th *, tr, tr * {
-                background: white !important;
-                background-color: white !important;
-                background-image: none !important;
-                color: #000 !important;
-            }
-            
-            /* Override ALL possible background properties but keep rounded corners */
-            * {
-                background: white !important;
-                background-color: white !important;
-                background-image: none !important;
-                color: #000 !important;
-            }
-            
-            /* Force for all states */
-            *:before, *:after {
-                background: white !important;
-                background-color: white !important;
-                color: #000 !important;
-            }
-            
-            /* Print media overrides */
-            @media print {
-                * { 
-                    background: white !important; 
-                    background-color: white !important;
-                    background-image: none !important;
-                    color: #000 !important;
-                }
-            }
-            
-            /* Allow specific backgrounds for premium styling */
-            .summary-box, .student-info, .remarks-section {
-                background: #f8f8f8 !important;
-                background-color: #f8f8f8 !important;
-            }
-            
-            .info-value {
-                background: #f9f9f9 !important;
-                background-color: #f9f9f9 !important;
-            }
-            
-            /* Specific overrides for table headers */
-            .marks-table th, table th {
-                background: #e0e0e0 !important;
-                background-color: #e0e0e0 !important;
-                color: #000 !important;
-            }
-            
-            /* Composite subject styling */
-            .composite-subject {
-                background: #f0f8ff !important;
-                background-color: #f0f8ff !important;
-            }
-            
-            .subject-component {
-                background: #fafafa !important;
-                background-color: #fafafa !important;
-            }
-        </style>'''
-        
-        # Insert override CSS at the beginning of the HTML
-        if '<head>' in html_content:
-            html_content = html_content.replace('<head>', f'<head>{white_bg_override}', 1)
-        elif '<html>' in html_content:
-            html_content = html_content.replace('<html>', f'<html><head>{white_bg_override}</head>', 1)
-        
-        # Generate PDF with enhanced options
+        # Generate PDF with minimal options (no CSS injection needed)
         config = pdfkit.configuration(wkhtmltopdf='C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe')
         options = {
             'enable-local-file-access': None,
@@ -5738,8 +5804,6 @@ def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_t
             'no-stop-slow-scripts': '',
             'javascript-delay': 1000,
             'encoding': 'UTF-8',
-            'print-media-type': None,  # Use print CSS
-            'no-background': False,    # Allow white backgrounds
         }
         
         pdf_bytes = pdfkit.from_string(html_content, False, configuration=config, options=options)
@@ -6080,9 +6144,8 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
         # Get subject teachers info (required by template)
         subject_teachers = {}
 
-        # Read the PRINT template file (NOT the preview template - avoid dark theme)
-        # Use the same template as single downloads for consistency
-        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'print_individual_report.html')
+        # Read the template file and render it (same as preview)
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'preview_individual_report.html')
         with open(template_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
 
@@ -6147,89 +6210,42 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
                     
                     return html_content
                 
-                # Sanitize the HTML
+                # Sanitize the HTML (template already has @media print CSS, don't override it)
                 html_with_css = sanitize_html_for_pdf(rendered_html)
                 
-                # CRITICAL: Force white background - ULTRA AGGRESSIVE CSS
-                # This ensures professional, parent-ready PDFs with NO dark theme
-                # BUT preserves border-radius and box-shadow for premium look
-                force_white_bg_css = '''
-                <style type="text/css">
-                /* FORCE WHITE BACKGROUND - PROFESSIONAL PDF - ULTRA AGGRESSIVE */
-                html, html *, body, body *, div, div *, span, span *, p, p *, td, td *, th, th *, tr, tr * {
-                    background: white !important;
-                    background-color: white !important;
-                    background-image: none !important;
-                    color: #000 !important;
-                }
+                # Force print styles by adding explicit override CSS before </head>
+                force_print_css = """
+                <style>
+                /* Force all print CSS to apply */
+                @page { size: A4; margin: 0.4in; }
+                body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                 
-                /* Override ALL possible background properties but keep rounded corners */
-                * {
-                    background: white !important;
-                    background-color: white !important;
-                    background-image: none !important;
-                    color: #000 !important;
+                /* Force grayscale/ink-saver */
+                body, .report-container { background: white !important; color: black !important; }
+                .marksheet-header, .assessment-info-section, .summary-section { 
+                    background: white !important; 
+                    color: black !important;
+                    border-color: black !important;
                 }
-                
-                /* Force for all states */
-                *:before, *:after {
-                    background: white !important;
-                    background-color: white !important;
-                    color: #000 !important;
-                }
-                
-                /* Print media overrides */
-                @media print {
-                    * { 
-                        background: white !important; 
-                        background-color: white !important;
-                        background-image: none !important;
-                        color: #000 !important;
-                    }
-                }
-                
-                /* Page setup */
-                @page { size: A4; margin: 0.5in; }
-                
-                /* Allow specific backgrounds for premium styling */
-                .summary-box, .student-info, .remarks-section {
-                    background: #f8f8f8 !important;
-                    background-color: #f8f8f8 !important;
-                }
-                
-                .info-value {
-                    background: #f9f9f9 !important;
-                    background-color: #f9f9f9 !important;
-                }
-                
-                /* Specific overrides for table headers */
-                .marks-table th, table th {
-                    background: #e0e0e0 !important;
-                    background-color: #e0e0e0 !important;
-                    color: #000 !important;
-                }
-                
-                /* Composite subject styling */
-                .composite-subject {
-                    background: #f0f8ff !important;
-                    background-color: #f0f8ff !important;
-                }
-                
-                .subject-component {
-                    background: #fafafa !important;
-                    background-color: #fafafa !important;
-                }
+                .marksheet-title { background: white !important; color: black !important; border-color: black !important; }
+                .info-value { background: white !important; color: black !important; border-color: black !important; }
+                table, th, td { background: white !important; color: black !important; border-color: black !important; }
+                .marks-table thead { background: #f0f0f0 !important; color: black !important; }
+                .marks-table tbody tr:nth-child(even) { background: #f9f9f9 !important; }
+                .subject-name { color: black !important; }
+                h1, h2, h3, h4, h5, h6, p, span, div { color: black !important; }
                 
                 /* Hide non-print elements */
                 .action-buttons, .print-controls, .delete-btn, .modal, button { display: none !important; }
-                </style>
-                '''
                 
-                # Insert at the beginning of <head> to override any existing styles
-                if '<head>' in html_with_css:
-                    html_with_css = html_with_css.replace('<head>', f'<head>{force_white_bg_css}', 1)
-                elif '<html>' in html_with_css:
-                    html_with_css = html_with_css.replace('<html>', f'<html><head>{force_white_bg_css}</head>', 1)
+                /* Ensure borders are visible */
+                .marksheet-header, .assessment-info-section, .marksheet-container, .summary-section, .remarks {
+                    border: 2px solid black !important;
+                }
+                </style>
+                """
+                html_with_css = html_with_css.replace('</head>', f'{force_print_css}</head>')
                 
                 # Convert relative /static/ URLs to absolute file:// paths for wkhtmltopdf
                 import re as re_module
