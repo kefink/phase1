@@ -6009,7 +6009,6 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
             'current_term': term,
             'academic_year': academic_year
         }
-
         # Render the template with the same data as preview
         html_content = render_template_string(
             template_content,
@@ -6038,6 +6037,30 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
             term_info=term_info,     # Pass term information
             subject_teachers=subject_teachers  # Pass subject teachers mapping
         )
+        # Force print-safe, light theme CSS to avoid dark background in wkhtmltopdf
+        force_print_css = """
+        <style>
+        /* Ensure print styles apply consistently */
+        @page { size: A4; margin: 0.75in; }
+        html, body { background: #ffffff !important; color: #000000 !important; }
+        /* Hide UI-only controls */
+        .action-buttons, .print-controls, .delete-btn, .modal, button { display: none !important; }
+        /* Force light backgrounds and solid borders for all key sections */
+        .report-container, .marksheet-header, .assessment-info-section, .summary-section, .remarks,
+        table, .marks-table, .marks-table thead, .marks-table tbody, th, td {
+          background: #ffffff !important;
+          color: #000000 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .marks-table thead, th { border-bottom: 2pt solid #000000 !important; }
+        .report-container, .marksheet-header, .assessment-info-section, .summary-section, .remarks,
+        table, th, td { border-color: #000000 !important; }
+        /* Keep layout width stable for PDF */
+        .report-container { max-width: none !important; margin: 0 !important; padding: 20px !important; }
+        </style>
+        """
+        html_content = html_content.replace('</head>', f'{force_print_css}</head>')
 
         # Generate PDF
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -6544,9 +6567,9 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
                     print(f"📄 Processing student {i}/{len(students)}: {student.name}")
 
                     # Use the same format as preview - generate report file (PDF or HTML)
-                    report_file = generate_individual_report_like_preview_for_zip(
+                    report_file = generate_individual_report_pdf_like_preview(
                         student, grade, stream, term, assessment_type,
-                        stream_obj, term_obj, assessment_type_obj, pdf_available
+                        stream_obj, term_obj, assessment_type_obj
                     )
 
                     if report_file and os.path.exists(report_file):

@@ -4,6 +4,7 @@ Class Teacher views for the Hillview School Management System.
 import json
 import logging
 import time  # added for timing metrics in report preview
+import threading
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, send_file, jsonify, make_response, abort
 from security_helpers import secure_endpoint, ValidationError, wants_json, audit_log, validate_uploaded_file
@@ -44,6 +45,41 @@ from ..services.grade_marksheet_service import GradeMarksheetService
 from functools import wraps
 from .decorators import dev_only
 
+# In-memory progress tracker for long-running ZIP generations
+_zip_generation_progress = {}
+_zip_progress_lock = threading.Lock()
+
+
+def _set_zip_progress(key: str, **kwargs):
+    """Merge progress data for a given key in a thread-safe manner."""
+    with _zip_progress_lock:
+        current = _zip_generation_progress.get(key, {}).copy()
+        current.update(kwargs)
+        current.setdefault('updated_at', time.time())
+        _zip_generation_progress[key] = current
+        return current.copy()
+
+
+def _get_zip_progress(key: str):
+    """Return a shallow copy of progress for a key."""
+    with _zip_progress_lock:
+        return _zip_generation_progress.get(key, {}).copy()
+
+
+def _clear_zip_progress(key: str):
+    with _zip_progress_lock:
+        _zip_generation_progress.pop(key, None)
+
+
+def _schedule_zip_progress_cleanup(key: str, delay_seconds: int = 15):
+    """Schedule asynchronous cleanup of a progress entry once finished."""
+    def _cleanup():
+        _clear_zip_progress(key)
+
+    timer = threading.Timer(delay_seconds, _cleanup)
+    timer.daemon = True
+    timer.start()
+
 # Create a blueprint for class teacher routes
 classteacher_bp = Blueprint('classteacher', __name__, url_prefix='/classteacher')
 
@@ -52,35 +88,46 @@ logger = logging.getLogger(__name__)
 
 # --- Flexible resolvers for Term and AssessmentType names ---
 def _resolve_term_object(term_input):
-    """Resolve a Term row from flexible input like 'term 3', 'Term 3', 'T3', etc.
+    """Resolve a Term row from flexible input like 'term 3', 'Term 3', 'T3', 'III', etc.
 
-    Strategy:
-    - Try exact (case-insensitive) match
-    - Try to extract a term number and match any Term containing that number
-    - Fallback: partial case-insensitive contains
-    Returns (term_obj, canonical_name) where canonical_name is term_obj.name if found else None.
+    Returns a tuple: (Term object or None, canonical term name or None)
     """
     try:
-        if not term_input:
+        if term_input is None:
             return None, None
-        term_raw = (term_input or '').strip()
-        term_lc = term_raw.lower()
-        # Exact (case-insensitive)
-        term_obj = Term.query.filter(db.func.lower(Term.name) == term_lc).first()
-        if term_obj:
-            return term_obj, term_obj.name
-        # Extract a number (e.g., 'term 3' -> 3)
+        s = str(term_input).strip()
+        if not s:
+            return None, None
+        sl = s.lower()
         import re
-        m = re.search(r'(?:term\s*)?(\d+)', term_lc)
+        # Determine term number if possible
+        n = None
+        m = re.search(r'(\d)', sl)
         if m:
-            num = m.group(1)
-            cand = Term.query.filter(db.func.lower(Term.name).like(f"%{num}%")).first()
-            if cand:
-                return cand, cand.name
-        # Fallback: partial contains
-        cand = Term.query.filter(db.func.lower(Term.name).like(f"%{term_lc}%")).first()
-        if cand:
-            return cand, cand.name
+            d = int(m.group(1))
+            if d in (1, 2, 3):
+                n = d
+        if n is None:
+            if any(tok in sl for tok in ("t1", "term 1", "term i")) or sl in ("i", "one"):
+                n = 1
+            elif any(tok in sl for tok in ("t2", "term 2", "term ii")) or sl in ("ii", "two"):
+                n = 2
+            elif any(tok in sl for tok in ("t3", "term 3", "term iii")) or sl in ("iii", "three"):
+                n = 3
+
+        if n:
+            target = f"Term {n}"
+            term = Term.query.filter(db.func.lower(Term.name) == target.lower()).first()
+            if term:
+                return term, term.name
+
+        # Fallbacks: exact lower and partial ILIKE
+        term = Term.query.filter(db.func.lower(Term.name) == sl).first()
+        if term:
+            return term, term.name
+        term = Term.query.filter(Term.name.ilike(f"%{s}%")).first()
+        if term:
+            return term, term.name
     except Exception:
         pass
     return None, None
@@ -99,30 +146,19 @@ def _normalize_assessment_bucket(text: str):
     # Entrance/opener
     if {'opener'} & tokens or {'entrance'} & tokens or {'opening'} & tokens or ({'start', 'term'} <= tokens):
         return 'entrance'
+
     # Midterm
-    if {'midterm'} & tokens or ({'mid', 'term'} <= tokens):
+    if {'mid', 'midterm', 'mid_term'} & tokens or ({'middle', 'term'} <= tokens):
         return 'midterm'
-    # Endterm/final
-    if {'endterm'} & tokens or ({'end', 'term'} <= tokens) or {'final'} & tokens or {'overall'} & tokens or {'closing'} & tokens:
+    # Endterm/closing
+    if {'endterm', 'end_term', 'closing', 'final'} & tokens or ({'end', 'term'} <= tokens):
         return 'endterm'
-    # Last resort: simple heuristics
-    s = ' '.join(tokens)
-    if 'mid' in s:
-        return 'midterm'
-    if 'end' in s or 'final' in s or 'overall' in s:
-        return 'endterm'
-    if 'open' in s or 'entrance' in s or 'start' in s:
-        return 'entrance'
     return None
 
 def _resolve_assessment_type_object(assessment_input):
-    """Resolve an AssessmentType row from flexible input like 'midterm 3 2025', 'Mid Term', 'final', etc.
+    """Resolve an AssessmentType row from flexible input like 'opener', 'midterm', 'end term', etc.
 
-    Strategy:
-    - Compute bucket for input (entrance/midterm/endterm)
-    - For all AssessmentType rows, compute bucket from their name and pick the first matching
-    - Fallback: case-insensitive exact or contains
-    Returns (assessment_obj, canonical_name) where canonical_name is assessment_obj.name if found else None.
+    Returns a tuple: (AssessmentType object or None, canonical name or None)
     """
     try:
         if not assessment_input:
@@ -130,14 +166,15 @@ def _resolve_assessment_type_object(assessment_input):
         bucket = _normalize_assessment_bucket(assessment_input)
         types = AssessmentType.query.all()
         for at in types:
-            if _normalize_assessment_bucket(at.name) == bucket and bucket is not None:
+            if bucket is not None and _normalize_assessment_bucket(at.name) == bucket:
                 return at, at.name
         # Fallbacks
-        at_lc = (assessment_input or '').strip().lower()
-        at = AssessmentType.query.filter(db.func.lower(AssessmentType.name) == at_lc).first()
+        s = str(assessment_input).strip()
+        sl = s.lower()
+        at = AssessmentType.query.filter(db.func.lower(AssessmentType.name) == sl).first()
         if at:
             return at, at.name
-        at = AssessmentType.query.filter(db.func.lower(AssessmentType.name).like(f"%{at_lc}%")).first()
+        at = AssessmentType.query.filter(AssessmentType.name.ilike(f"%{s}%")).first()
         if at:
             return at, at.name
     except Exception:
@@ -4203,8 +4240,9 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
     except Exception:
         _calc_legends = None
 
+    # Render the PROFESSIONAL print template instead of the Solar Theme preview
     return render_template(
-        'preview_individual_report.html',
+        'print_individual_report.html',
         student=student,
         student_data=student_data,  # Add student_data like preview route
         grade=grade,
@@ -4213,8 +4251,8 @@ def print_individual_report(grade, stream, term, assessment_type, student_name):
         assessment_type=assessment_type,
         education_level=education_level,
         current_date=current_date,
-    table_data=table_data,
-    composite_data=composite_data,
+        table_data=table_data,
+        composite_data=composite_data,
         total=total_marks,
         avg_percentage=avg_percentage,
         mean_grade=mean_grade,
@@ -5328,18 +5366,31 @@ def view_student_reports(grade, stream, term, assessment_type):
 @classteacher_bp.route('/download_individual_report/<grade>/<stream>/<term>/<assessment_type>/<student_name>')
 @enforce('individual_report', 'read', class_scope=True, grade_arg='grade', stream_arg='stream')
 def download_individual_report(grade, stream, term, assessment_type, student_name):
-    """Route for downloading an individual student report as PDF using the same format as preview."""
-    # Check if we have a cached PDF for this student
-    cached_pdf = get_cached_pdf(grade, stream, term, assessment_type, f"student_{student_name.replace(' ', '_')}")
-    if cached_pdf:
-        return send_file(
-            cached_pdf,
-            as_attachment=True,
-            download_name=f"Individual_Report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf",
-            mimetype='application/pdf'
-        )
+    """Route for downloading an individual student report as PDF - uses unified generator."""
+    # TEMPORARILY DISABLED CACHE - Force regeneration with new white background theme
+    # This ensures old dark-themed cached PDFs are not served
+    # TODO: Re-enable cache after verifying all PDFs have white backgrounds
+    # cached_pdf = get_cached_pdf(grade, stream, term, assessment_type, f"student_{student_name.replace(' ', '_')}")
+    # if cached_pdf:
+    #     # Check if cached_pdf is a file path (string) or bytes
+    #     if isinstance(cached_pdf, str):
+    #         # It's a file path - read the file
+    #         return send_file(
+    #             cached_pdf,
+    #             as_attachment=True,
+    #             download_name=f"Individual_Report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf",
+    #             mimetype='application/pdf'
+    #         )
+    #     else:
+    #         # It's bytes - wrap in BytesIO
+    #         return send_file(
+    #             BytesIO(cached_pdf),
+    #             as_attachment=True,
+    #             download_name=f"Individual_Report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf",
+    #             mimetype='application/pdf'
+    #         )
 
-    # If no cache or cache miss, generate the report
+    # Resolve stream, term, and assessment type
     stream_obj = Stream.query.join(Grade).filter(Grade.name == grade, Stream.name == stream[-1]).first()
     term_obj, term_name = _resolve_term_object(term)
     assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
@@ -5353,31 +5404,37 @@ def download_individual_report(grade, stream, term, assessment_type, student_nam
         flash(f"No data available for student {student_name}.", "error")
         return redirect(url_for('classteacher.dashboard'))
 
-    # Generate PDF using the same format as preview
-    pdf_file = generate_individual_report_pdf_like_preview(
+    # 🔥 UNIFIED PDF GENERATION - Returns (pdf_bytes, filename) or (None, error_message)
+    result = generate_student_report_pdf_bytes(
         student, grade, stream, (term_name or term), (at_name or assessment_type),
         stream_obj, term_obj, assessment_type_obj
     )
 
-    if not pdf_file:
-        flash(f"No marks found for {student_name} in {term} {assessment_type}", "error")
+    if result[0] is None:
+        flash(f"Failed to generate report: {result[1]}", "error")
         return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
 
-    # Cache the PDF file
-    with open(pdf_file, 'rb') as f:
-        pdf_data = f.read()
-    cache_pdf(grade, stream, term, assessment_type, f"student_{student_name.replace(' ', '_')}", pdf_data)
+    pdf_bytes, filename = result
 
-    # Return the PDF file
+    # Cache the PDF bytes
+    cache_pdf(grade, stream, term, assessment_type, f"student_{student_name.replace(' ', '_')}", pdf_bytes)
+
+    # Return the PDF file from bytes
     return send_file(
-        pdf_file,
+        BytesIO(pdf_bytes),
         as_attachment=True,
-        download_name=f"Individual_Report_{grade}_{stream}_{student_name.replace(' ', '_')}.pdf",
+        download_name=filename,
         mimetype='application/pdf'
     )
 
-def generate_individual_report_pdf_like_preview(student, grade, stream, term, assessment_type, stream_obj, term_obj, assessment_type_obj):
-    """Generate individual report PDF using the same format as the preview."""
+def generate_student_report_pdf_bytes(student, grade, stream, term, assessment_type, stream_obj, term_obj, assessment_type_obj):
+    """
+    UNIFIED PDF GENERATOR - Single Source of Truth
+    Generate individual report PDF bytes using standardized configuration.
+    Called by both single download and batch ZIP routes to guarantee format parity.
+    
+    Returns: (pdf_bytes, filename) or (None, error_message)
+    """
     try:
         import tempfile
         import os
@@ -5419,147 +5476,109 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
         from ..utils import get_grade_and_points, get_performance_remarks
         mean_grade, mean_points = get_grade_and_points(avg_percentage)
 
-        # Prepare table data for the report with composite subject handling (same as preview)
+        # USE CLASSREPORTBUILDER TO GET EXACT SAME DATA AS PREVIEW (fixes mark mismatch)
+        from ..services.class_report_builder import ClassReportBuilder
+        from flask import session
+        
+        builder_ctx = ClassReportBuilder.build(
+            grade, stream, term, assessment_type,
+            selected_subject_ids=session.get('selected_subjects', []),
+            invalidate=False
+        )
+        
+        composite_structure = builder_ctx.get('composite_structure', {}) or {}
+        subject_names = builder_ctx.get('subject_names', class_data_result.get('subjects', []))
+        
+        # Get this student's filtered marks (includes composite totals and components)
+        student_filtered = None
+        for sd in builder_ctx.get('class_data', []) or []:
+            if sd.get('student') == student.name:
+                student_filtered = sd
+                break
+        
+        filtered_marks = (student_filtered or {}).get('filtered_marks', {})
+        
+        # Helper to expand remarks codes
+        def _full_remarks(code: str) -> str:
+            mapping = {
+                'EE1': 'Exceeding Expectation 1',
+                'EE2': 'Exceeding Expectation 2',
+                'ME1': 'Meeting Expectation 1',
+                'ME2': 'Meeting Expectation 2',
+                'AE1': 'Approaching Expectation 1',
+                'AE2': 'Approaching Expectation 2',
+                'BE1': 'Below Expectation 1',
+                'BE2': 'Below Expectation 2',
+            }
+            return mapping.get(str(code), str(code))
+        
+        # Build table data using builder order (SAME AS PREVIEW)
         table_data = []
         composite_data = {}
-
-        # Get only subjects that have marks in the class report data
-        subjects_with_marks = class_data_result.get("subjects", [])
-
-        # Define subject order - core subjects first (same as preview)
-        subject_order = [
-            "Mathematics", "MATHEMATICS", "Math", "MATH",
-            "English", "ENGLISH", "English Language", "ENGLISH LANGUAGE",
-            "Kiswahili", "KISWAHILI", "Kiswahili Language", "KISWAHILI LANGUAGE",
-            "Religious", "RELIGIOUS", "Religious Education", "RELIGIOUS EDUCATION", "CRE", "IRE",
-            "Integrated Science", "INTEGRATED SCIENCE", "Science", "SCIENCE",
-            "Social Studies", "SOCIAL STUDIES", "Social Science", "SOCIAL SCIENCE",
-            "Agriculture", "AGRICULTURE", "Agricultural Science", "AGRICULTURAL SCIENCE",
-            "Creative Art and Sports", "CREATIVE ART AND SPORTS", "Creative Arts", "CREATIVE ARTS"
-        ]
-
-        # Sort subjects according to the defined order (same as preview)
-        ordered_subject_names = []
-        for subject_name in subject_order:
-            if subject_name in subjects_with_marks and subject_name not in ordered_subject_names:
-                ordered_subject_names.append(subject_name)
-
-        remaining_subject_names = [s for s in subjects_with_marks if s not in ordered_subject_names]
-        remaining_subject_names.sort()
-        ordered_subject_names.extend(remaining_subject_names)
-
-        from ..models.academic import Subject, ComponentMark
-
-        # Process subjects (same logic as preview)
-        for subject_name in ordered_subject_names:
-            subject = Subject.query.filter_by(name=subject_name).first()
-            if not subject:
+        
+        for subject_name in subject_names:
+            # Get mark from filtered_marks (EXACT SAME AS CLASS REPORT)
+            mark_val = filtered_marks.get(subject_name, 0)
+            if not mark_val or mark_val == 0:
                 continue
-            mark = student_data.get("marks", {}).get(subject.name, 0)
-
-            if not mark or mark == 0:
-                continue
-
-            # Clean up decimal precision
-            if isinstance(mark, float):
-                mark = int(round(mark)) if mark == int(mark) else round(mark, 1)
-            else:
-                mark = int(mark)
-
-            # Handle composite subjects (same as preview)
-            if hasattr(subject, 'is_composite') and subject.is_composite:
-                components = subject.get_components()
-                component_marks = {}
-
-                mark_record = Mark.query.filter_by(
-                    student_id=student.id,
-                    subject_id=subject.id,
-                    term_id=term_obj.id,
-                    assessment_type_id=assessment_type_obj.id
-                ).first()
-
-                if mark_record:
-                    for component in components:
-                        component_mark = ComponentMark.query.filter_by(
-                            component_id=component.id,
-                            mark_id=mark_record.id
-                        ).first()
-
-                        if component_mark:
-                            clean_component_name = component.name
-                            if clean_component_name.startswith("L "):
-                                clean_component_name = clean_component_name[2:]
-
-                            component_max_mark = component_mark.max_raw_mark if component_mark.max_raw_mark else (component.max_raw_mark if hasattr(component, 'max_raw_mark') and component.max_raw_mark else 100)
-                            component_percentage = (component_mark.raw_mark / component_max_mark) * 100
-
-                            component_raw_mark = component_mark.raw_mark
-                            if isinstance(component_raw_mark, float):
-                                component_raw_mark = int(round(component_raw_mark)) if component_raw_mark == int(component_raw_mark) else round(component_raw_mark, 1)
-                            else:
-                                component_raw_mark = int(component_raw_mark)
-
-                            component_marks[clean_component_name] = {
-                                'mark': component_raw_mark,
-                                'max_mark': int(component_max_mark),
-                                'percentage': round(component_percentage, 1),
-                                'remarks': get_performance_remarks(component_percentage, 100)
-                            }
-
-                composite_data[subject.name] = {
-                    'components': component_marks,
-                    'total': mark
-                }
-
-            # Add to table data (same logic as preview)
-            entrance_mark = 0
-            mid_term_mark = 0
-            end_term_mark = 0
-
+            
+            # Always convert to whole numbers - no decimals in reports
+            mark_disp = int(round(mark_val)) if mark_val else 0
+            
+            # Build assessment columns (same as preview)
+            entrance_mark = mid_term_mark = end_term_mark = 0
             if assessment_type.lower() in ['end_term', 'endterm']:
-                all_assessment_types = AssessmentType.query.all()
-                for at in all_assessment_types:
-                    mark_record = Mark.query.filter_by(
-                        student_id=student.id,
-                        subject_id=subject.id,
-                        term_id=term_obj.id,
-                        assessment_type_id=at.id
-                    ).first()
-
-                    if mark_record:
-                        mark_value = mark_record.percentage or 0
-                        if at.name.lower() in ['entrance', 'opener']:
-                            entrance_mark = mark_value
-                        elif at.name.lower() in ['mid_term', 'midterm']:
-                            mid_term_mark = mark_value
-                        elif at.name.lower() in ['end_term', 'endterm']:
-                            end_term_mark = mark_value
-
-                available_marks = [m for m in [entrance_mark, mid_term_mark, end_term_mark] if m > 0]
-                avg_mark = sum(available_marks) / len(available_marks) if available_marks else 0
+                entrance_mark = mid_term_mark = end_term_mark = mark_disp
+                avg_mark = mark_disp
             else:
                 if assessment_type.lower() in ['entrance', 'opener']:
-                    entrance_mark = mark
+                    entrance_mark = mark_disp
                 elif assessment_type.lower() in ['mid_term', 'midterm']:
-                    mid_term_mark = mark
+                    mid_term_mark = mark_disp
                 elif assessment_type.lower() in ['end_term', 'endterm']:
-                    end_term_mark = mark
-                avg_mark = mark
-
+                    end_term_mark = mark_disp
+                avg_mark = mark_disp
+            
             table_data.append({
-                "subject": subject.name,
+                "subject": subject_name,
                 "entrance": entrance_mark,
                 "mid_term": mid_term_mark,
                 "end_term": end_term_mark,
-                "current_assessment": mark,
+                "current_assessment": mark_disp,
                 "avg": avg_mark,
-                "remarks": get_performance_remarks(avg_mark if assessment_type.lower() in ['end_term', 'endterm'] else mark, class_data_result.get("total_marks", 100))
+                "remarks": _full_remarks(get_performance_remarks(avg_mark if assessment_type.lower() in ['end_term', 'endterm'] else mark_disp, class_data_result.get("total_marks", 100)))
             })
+        
+        # Build composite component breakdown using builder data (SAME AS PREVIEW)
+        for main_name, info in composite_structure.items():
+            comp_names = info.get('component_names', [])
+            display_labels = info.get('component_display', [])
+            components_map = {}
+            
+            for idx, comp_name in enumerate(comp_names):
+                label = display_labels[idx] if idx < len(display_labels) else comp_name
+                val = filtered_marks.get(comp_name, 0) or 0
+                
+                # Always convert to whole numbers
+                val_disp = int(round(val)) if val else 0
+                
+                components_map[label] = {
+                    'mark': val_disp,
+                    'max_mark': 100,
+                    'percentage': round(val, 1) if isinstance(val, (int, float)) else 0,
+                    'remarks': _full_remarks(get_performance_remarks(val, 100))
+                }
+            
+            composite_data[main_name] = {
+                'components': components_map,
+                'total': filtered_marks.get(main_name, 0) or 0
+            }
 
-        # Calculate totals (same as preview)
-        total_marks = student_data.get("total_marks", 0)
-        total_possible_marks = len(subjects_with_marks) * class_data_result.get("total_marks", 100)
-        total_points = mean_points * len(subjects_with_marks)
+        # Calculate totals (same as preview) - Round to whole numbers, no decimals
+        total_marks = int(round(student_data.get("total_marks", 0)))
+        # Use the actual total from class report
+        total_possible_marks = class_data_result.get("total_possible_marks", len(subject_names) * 100)
+        total_points = int(round(mean_points * len(subject_names)))
 
         # Generate admission number (same as preview)
         admission_no = student.admission_number if hasattr(student, 'admission_number') and student.admission_number else f"KPS{grade}{stream[-1]}{student.id}"
@@ -5578,34 +5597,12 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
         logo_path = SchoolConfigService.get_school_logo_path()
         logo_url = url_for('static', filename=logo_path)
 
-        # Read the template file
-        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'preview_individual_report.html')
+        # Read the NEW professional template file (not the Solar Theme preview template)
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'print_individual_report.html')
         with open(template_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
 
-        # Add print-specific CSS
-        print_css = """
-        <style>
-        @page {
-            size: A4;
-            margin: 1cm;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .action-buttons, .print-controls, .delete-btn, .modal {
-            display: none !important;
-        }
-        .report-container {
-            max-width: none;
-            margin: 0;
-            padding: 20px;
-        }
-        </style>
-        """
-        template_content = template_content.replace('</head>', f'{print_css}</head>')
+        # This template is already optimized for PDF - no CSS injection needed!
 
         # Get staff information for dynamic teacher names
         from ..services.staff_assignment_service import StaffAssignmentService
@@ -5650,33 +5647,113 @@ def generate_individual_report_pdf_like_preview(student, grade, stream, term, as
             subject_teachers=subject_teachers  # Pass subject teachers mapping
         )
 
-        # Generate PDF
+        # 🔥 UNIFIED PDF GENERATION using standardized utilities
+        # This ensures 100% format parity between single and batch downloads
+        static_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static')
+        
+        # Generate PDF bytes - template is already print-ready, minimal processing needed
+        from ..utils.pdf_generator import convert_static_urls_to_file_paths, get_standard_pdf_options
+        
+        # Convert static URLs to file paths
+        html_content = convert_static_urls_to_file_paths(html_content, static_folder)
+        
+        # CRITICAL: Add ULTRA-AGGRESSIVE CSS override to force white background
+        # This prevents ANY dark theme CSS from bleeding through
+        # BUT preserves border-radius and box-shadow for premium look
+        white_bg_override = '''<style type="text/css">
+            /* FORCE WHITE BACKGROUND - PROFESSIONAL PDF - ULTRA AGGRESSIVE */
+            html, html *, body, body *, div, div *, span, span *, p, p *, td, td *, th, th *, tr, tr * {
+                background: white !important;
+                background-color: white !important;
+                background-image: none !important;
+                color: #000 !important;
+            }
+            
+            /* Override ALL possible background properties but keep rounded corners */
+            * {
+                background: white !important;
+                background-color: white !important;
+                background-image: none !important;
+                color: #000 !important;
+            }
+            
+            /* Force for all states */
+            *:before, *:after {
+                background: white !important;
+                background-color: white !important;
+                color: #000 !important;
+            }
+            
+            /* Print media overrides */
+            @media print {
+                * { 
+                    background: white !important; 
+                    background-color: white !important;
+                    background-image: none !important;
+                    color: #000 !important;
+                }
+            }
+            
+            /* Allow specific backgrounds for premium styling */
+            .summary-box, .student-info, .remarks-section {
+                background: #f8f8f8 !important;
+                background-color: #f8f8f8 !important;
+            }
+            
+            .info-value {
+                background: #f9f9f9 !important;
+                background-color: #f9f9f9 !important;
+            }
+            
+            /* Specific overrides for table headers */
+            .marks-table th, table th {
+                background: #e0e0e0 !important;
+                background-color: #e0e0e0 !important;
+                color: #000 !important;
+            }
+            
+            /* Composite subject styling */
+            .composite-subject {
+                background: #f0f8ff !important;
+                background-color: #f0f8ff !important;
+            }
+            
+            .subject-component {
+                background: #fafafa !important;
+                background-color: #fafafa !important;
+            }
+        </style>'''
+        
+        # Insert override CSS at the beginning of the HTML
+        if '<head>' in html_content:
+            html_content = html_content.replace('<head>', f'<head>{white_bg_override}', 1)
+        elif '<html>' in html_content:
+            html_content = html_content.replace('<html>', f'<html><head>{white_bg_override}</head>', 1)
+        
+        # Generate PDF with enhanced options
+        config = pdfkit.configuration(wkhtmltopdf='C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe')
+        options = {
+            'enable-local-file-access': None,
+            'quiet': '',
+            'no-stop-slow-scripts': '',
+            'javascript-delay': 1000,
+            'encoding': 'UTF-8',
+            'print-media-type': None,  # Use print CSS
+            'no-background': False,    # Allow white backgrounds
+        }
+        
+        pdf_bytes = pdfkit.from_string(html_content, False, configuration=config, options=options)
+        
+        # Generate filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"Individual_Report_{grade}_{stream}_{student.name.replace(' ', '_')}_{timestamp}.pdf"
-        temp_dir = tempfile.gettempdir()
-        pdf_path = os.path.join(temp_dir, filename)
-
-        # Configure pdfkit options
-        options = {
-            'page-size': 'A4',
-            'orientation': 'Portrait',
-            'margin-top': '0.75in',
-            'margin-right': '0.75in',
-            'margin-bottom': '0.75in',
-            'margin-left': '0.75in',
-            'encoding': 'UTF-8',
-            'no-outline': None,
-            'enable-local-file-access': True,
-            'print-media-type': None
-        }
-
-        # Convert HTML to PDF
-        pdfkit.from_string(html_content, pdf_path, options=options)
-        return pdf_path
+        
+        return pdf_bytes, filename
 
     except Exception as e:
-        print(f"Error generating individual report PDF: {str(e)}")
-        return None
+        error_msg = f"Error generating individual report PDF: {str(e)}"
+        print(error_msg)
+        return None, error_msg
 
 def generate_simple_individual_report_pdf(student, grade, stream, term, assessment_type, stream_obj, term_obj, assessment_type_obj, pdf_available=False):
     """Generate individual report PDF using a simpler approach."""
@@ -5900,19 +5977,25 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
         from flask import render_template_string
 
         # Get class report data first (same as preview)
+        print(f"🔍 Calling get_class_report_data with: grade='{grade}', stream='{stream}', term='{term}', assessment='{assessment_type}'")
         class_data_result = get_class_report_data(grade, stream, term, assessment_type)
 
         if class_data_result.get("error"):
+            print(f"❌ get_class_report_data returned error: {class_data_result.get('error')}")
             return None
 
         # Find student data in the class report
         student_data = None
-        for data in class_data_result["class_data"]:
+        class_data_list = class_data_result.get("class_data", [])
+        print(f"📊 get_class_report_data returned {len(class_data_list)} students")
+        
+        for data in class_data_list:
             if data["student"] == student.name:
                 student_data = data
                 break
 
         if not student_data:
+            print(f"⚠️ Student '{student.name}' not found in class_data")
             return None
 
         # Get education level based on grade (same as preview)
@@ -5997,8 +6080,9 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
         # Get subject teachers info (required by template)
         subject_teachers = {}
 
-        # Read the template file and render it (same as preview)
-        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'preview_individual_report.html')
+        # Read the PRINT template file (NOT the preview template - avoid dark theme)
+        # Use the same template as single downloads for consistency
+        template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'print_individual_report.html')
         with open(template_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
 
@@ -6063,42 +6147,89 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
                     
                     return html_content
                 
-                # Sanitize the HTML (template already has @media print CSS, don't override it)
+                # Sanitize the HTML
                 html_with_css = sanitize_html_for_pdf(rendered_html)
                 
-                # Force print styles by adding explicit override CSS before </head>
-                force_print_css = """
-                <style>
-                /* Force all print CSS to apply */
-                @page { size: A4; margin: 0.4in; }
-                body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                
-                /* Force grayscale/ink-saver */
-                body, .report-container { background: white !important; color: black !important; }
-                .marksheet-header, .assessment-info-section, .summary-section { 
-                    background: white !important; 
-                    color: black !important;
-                    border-color: black !important;
+                # CRITICAL: Force white background - ULTRA AGGRESSIVE CSS
+                # This ensures professional, parent-ready PDFs with NO dark theme
+                # BUT preserves border-radius and box-shadow for premium look
+                force_white_bg_css = '''
+                <style type="text/css">
+                /* FORCE WHITE BACKGROUND - PROFESSIONAL PDF - ULTRA AGGRESSIVE */
+                html, html *, body, body *, div, div *, span, span *, p, p *, td, td *, th, th *, tr, tr * {
+                    background: white !important;
+                    background-color: white !important;
+                    background-image: none !important;
+                    color: #000 !important;
                 }
-                .marksheet-title { background: white !important; color: black !important; border-color: black !important; }
-                .info-value { background: white !important; color: black !important; border-color: black !important; }
-                table, th, td { background: white !important; color: black !important; border-color: black !important; }
-                .marks-table thead { background: #f0f0f0 !important; color: black !important; }
-                .marks-table tbody tr:nth-child(even) { background: #f9f9f9 !important; }
-                .subject-name { color: black !important; }
-                h1, h2, h3, h4, h5, h6, p, span, div { color: black !important; }
+                
+                /* Override ALL possible background properties but keep rounded corners */
+                * {
+                    background: white !important;
+                    background-color: white !important;
+                    background-image: none !important;
+                    color: #000 !important;
+                }
+                
+                /* Force for all states */
+                *:before, *:after {
+                    background: white !important;
+                    background-color: white !important;
+                    color: #000 !important;
+                }
+                
+                /* Print media overrides */
+                @media print {
+                    * { 
+                        background: white !important; 
+                        background-color: white !important;
+                        background-image: none !important;
+                        color: #000 !important;
+                    }
+                }
+                
+                /* Page setup */
+                @page { size: A4; margin: 0.5in; }
+                
+                /* Allow specific backgrounds for premium styling */
+                .summary-box, .student-info, .remarks-section {
+                    background: #f8f8f8 !important;
+                    background-color: #f8f8f8 !important;
+                }
+                
+                .info-value {
+                    background: #f9f9f9 !important;
+                    background-color: #f9f9f9 !important;
+                }
+                
+                /* Specific overrides for table headers */
+                .marks-table th, table th {
+                    background: #e0e0e0 !important;
+                    background-color: #e0e0e0 !important;
+                    color: #000 !important;
+                }
+                
+                /* Composite subject styling */
+                .composite-subject {
+                    background: #f0f8ff !important;
+                    background-color: #f0f8ff !important;
+                }
+                
+                .subject-component {
+                    background: #fafafa !important;
+                    background-color: #fafafa !important;
+                }
                 
                 /* Hide non-print elements */
                 .action-buttons, .print-controls, .delete-btn, .modal, button { display: none !important; }
-                
-                /* Ensure borders are visible */
-                .marksheet-header, .assessment-info-section, .marksheet-container, .summary-section, .remarks {
-                    border: 2px solid black !important;
-                }
                 </style>
-                """
-                html_with_css = html_with_css.replace('</head>', f'{force_print_css}</head>')
+                '''
+                
+                # Insert at the beginning of <head> to override any existing styles
+                if '<head>' in html_with_css:
+                    html_with_css = html_with_css.replace('<head>', f'<head>{force_white_bg_css}', 1)
+                elif '<html>' in html_with_css:
+                    html_with_css = html_with_css.replace('<html>', f'<html><head>{force_white_bg_css}</head>', 1)
                 
                 # Convert relative /static/ URLs to absolute file:// paths for wkhtmltopdf
                 import re as re_module
@@ -6150,20 +6281,13 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
                         'encoding': 'UTF-8',
                         'no-outline': None,
                         'enable-local-file-access': None,
-                        # Force print mode
-                        '--print-media-type': '',
-                        # Force grayscale
-                        'grayscale': None,
+                        # Force print mode to apply @media print CSS
+                        'print-media-type': None,
                         # SECURITY: Disable JavaScript execution in PDF generation
                         'disable-javascript': None,
-                        # Zoom to fit on one page
-                        'zoom': '0.96',
                         # Be tolerant of missing assets
                         'load-error-handling': 'ignore',
                         'load-media-error-handling': 'ignore',
-                        # Enable shrinking
-                        'enable-smart-shrinking': None,
-                        'minimum-font-size': '7'
                     }
                     
                     # SECURITY: Use secure PDF generation with input validation
@@ -6254,53 +6378,171 @@ def generate_individual_report_like_preview_for_zip(student, grade, stream, term
         print(f"Error generating individual report like preview: {str(e)}")
         return None
 
+@classteacher_bp.route('/get_zip_generation_progress/<grade>/<stream>/<term>/<assessment_type>')
+@classteacher_required
+@limiter.exempt
+def get_zip_generation_progress(grade, stream, term, assessment_type):
+    """Get the current progress of ZIP generation for real-time updates."""
+    request_key = f"zip_generation_{grade}_{stream}_{term}_{assessment_type}"
+    progress = _get_zip_progress(request_key)
+
+    if not progress:
+        progress = {
+            'current': 0,
+            'total': 0,
+            'status': 'pending'
+        }
+
+    return jsonify(progress)
+
+@classteacher_bp.route('/download_selected_reports/<grade>/<stream>/<term>/<assessment_type>', methods=['POST'])
+@classteacher_required
+def download_selected_reports(grade, stream, term, assessment_type):
+    """
+    Generate and return a ZIP containing individual reports for SELECTED students only.
+    This uses the exact same PDF generation as single downloads, guaranteeing format parity.
+    """
+    print(f"🎯 Selective ZIP Generation Started: {grade} {stream} {term} {assessment_type}")
+    
+    try:
+        # Get selected student names from form data
+        student_names = request.form.getlist('student_names')
+        
+        if not student_names:
+            flash("No students selected", 'error')
+            return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
+        
+        print(f"📋 Selected {len(student_names)} students: {student_names}")
+        
+        # Resolve stream, term, and assessment type
+        stream_candidates = {stream}
+        parts = stream.split()
+        if len(parts) > 1:
+            stream_candidates.add(parts[-1])
+        
+        stream_obj = Stream.query.join(Grade).filter(
+            Grade.name == grade,
+            Stream.name.in_(stream_candidates)
+        ).first()
+        
+        term_obj, term_name = _resolve_term_object(term)
+        assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
+        
+        if not (stream_obj and term_obj and assessment_type_obj):
+            flash("Invalid grade, stream, term, or assessment type", 'error')
+            return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
+        
+        # Get student objects for selected names
+        students = Student.query.filter(
+            Student.stream_id == stream_obj.id,
+            Student.name.in_(student_names)
+        ).all()
+        
+        print(f"📊 Found {len(students)} matching student records")
+        
+        if not students:
+            flash("No matching students found", 'error')
+            return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
+        
+        # Create ZIP in memory
+        import zipfile
+        import tempfile
+        from datetime import datetime
+        
+        temp_dir = tempfile.mkdtemp()
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        safe_grade = grade.replace(' ', '_')
+        zip_filename = f"Selected_Reports_{safe_grade}_{stream}_{len(students)}students_{timestamp}.zip"
+        zip_path = os.path.join(temp_dir, zip_filename)
+        
+        successful_reports = 0
+        failed_reports = 0
+        grade_for_service = grade
+        stream_for_service = stream_obj.name
+        
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            for i, student in enumerate(students, start=1):
+                try:
+                    print(f"📄 ({i}/{len(students)}) Generating report for: {student.name}")
+                    
+                    # 🔥 UNIFIED PDF GENERATION - Same function as single download
+                    result = generate_student_report_pdf_bytes(
+                        student,
+                        grade_for_service,
+                        stream_for_service,
+                        (term_name or term),
+                        (at_name or assessment_type),
+                        stream_obj,
+                        term_obj,
+                        assessment_type_obj
+                    )
+                    
+                    if result[0] is None:
+                        failed_reports += 1
+                        print(f"⚠️ PDF generation failed for {student.name}: {result[1]}")
+                        continue
+                    
+                    pdf_bytes, filename = result
+                    zipf.writestr(filename, pdf_bytes)
+                    successful_reports += 1
+                    print(f"✅ Added {filename}")
+                    
+                except Exception as e:
+                    failed_reports += 1
+                    print(f"❌ Exception building report for {student.name}: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    continue
+        
+        print(f"📊 Summary: success={successful_reports}, failed={failed_reports}")
+        
+        if successful_reports == 0:
+            flash(f"No reports could be generated", 'error')
+            return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
+        
+        # Read ZIP into memory and send
+        with open(zip_path, 'rb') as f:
+            zip_data = f.read()
+        
+        # Clean up
+        try:
+            os.remove(zip_path)
+            import shutil
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            print(f"🗑️ Cleaned up temp files")
+        except Exception as cleanup_error:
+            print(f"⚠️ Warning: Could not cleanup temp files: {cleanup_error}")
+        
+        print(f"📤 Sending ZIP: {zip_filename} ({len(zip_data)} bytes)")
+        
+        # Create response
+        response = send_file(
+            BytesIO(zip_data),
+            as_attachment=True,
+            download_name=zip_filename,
+            mimetype='application/zip'
+        )
+        
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Content-Type'] = 'application/zip'
+        response.headers['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+        
+        flash(f"Successfully generated {successful_reports} report(s)!", 'success')
+        return response
+        
+    except Exception as e:
+        print(f"💥 Critical error in selective ZIP generation: {e}")
+        import traceback
+        traceback.print_exc()
+        flash(f"Error generating reports: {str(e)}", 'error')
+        return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
+
+
 @classteacher_bp.route('/generate_all_individual_reports/<grade>/<stream>/<term>/<assessment_type>')
 @classteacher_required
 def generate_all_individual_reports(grade, stream, term, assessment_type):
-    """Generate and return a ZIP containing all individual reports for a stream.
-
-    Hardened version: robust stream resolution, improved error handling, safety headers,
-    and explicit JSON responses for AJAX requests. Falls back gracefully when no data.
-    """
-    def is_ajax():
-        return request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in (request.headers.get('Accept') or '')
-
-    def json_or_flash(message, code=400):
-        if is_ajax():
-            return jsonify({'error': message}), code
-        flash(message, 'error')
-        return redirect(url_for('classteacher.dashboard'))
-
-    # Session-based locking with short per-session throttle and better cleanup
-    request_key = f"zip_generation_{grade}_{stream}_{term}_{assessment_type}"
-    lock_timestamp_key = f"{request_key}_timestamp"
-    last_success_key = f"{request_key}_last_success"
-    current_time = time.time()
-    
-    print(f"🔒 Checking session lock for key: {request_key}")
-    print(f"🔒 Current session keys: {list(session.keys())}")
-    
-    # Throttle: if a successful generation just happened within 60s, block
-    last_success_time = session.get(last_success_key)
-    if last_success_time and (current_time - last_success_time) < 60:
-        wait_for = int(60 - (current_time - last_success_time))
-        print(f"🚫 Throttled: last successful generation {int(current_time - last_success_time)}s ago. Wait {wait_for}s")
-        if is_ajax():
-            return jsonify({'error': f'Please wait {wait_for} seconds before generating again.'}), 429
-        flash(f"Please wait {wait_for} seconds before generating again.", 'warning')
-        return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
-
-    # Check only for active locks
-    existing_lock = session.get(request_key)
-    
-    if existing_lock:
-        print(f"🚫 Request blocked - already in progress for key: {request_key}")
-        return json_or_flash("Report generation already in progress. Please wait.", 429)
-    
-    print(f"✅ Setting session lock for key: {request_key}")
-    session[request_key] = True
-    session[lock_timestamp_key] = current_time
-    session.modified = True  # Force session save
+    """Generate and return a ZIP containing all individual reports for a stream - SIMPLIFIED VERSION."""
+    print(f"🎯 ZIP Generation Started: {grade} {stream} {term} {assessment_type}")
     
     try:
         print(
@@ -6330,17 +6572,15 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         assessment_type_obj, at_name = _resolve_assessment_type_object(assessment_type)
 
         if not (stream_obj and term_obj and assessment_type_obj):
-            return json_or_flash("Invalid grade, stream, term, or assessment type", 400)
+            flash("Invalid grade, stream, term, or assessment type", 'error')
+            return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
 
         students = Student.query.filter_by(stream_id=stream_obj.id).all()
         print(f"📊 Found {len(students)} students for stream id={stream_obj.id} ({stream_obj.name})")
 
         if not students:
-            return json_or_flash(f"No students found for {grade} Stream {stream_obj.name}", 400)
-
-        # Detect PDF generation capability
-        pdf_available = True  # Re-enable PDF generation using pdfkit like class reports
-        print("ℹ️ PDF generation enabled - using pdfkit like class reports")
+            flash(f"No students found for {grade} Stream {stream_obj.name}", 'error')
+            return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
 
         import zipfile
         import tempfile as tmp_module2  # Use different alias for second import
@@ -6358,28 +6598,41 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         successful_reports = 0
         failed_reports = 0
 
+        # For get_class_report_data(), we need the FULL grade name ("Grade 9") and stream letter ("G")
+        # grade already comes as "Grade 9" from the route parameter
+        # stream_obj.name is the single letter "G"
+        grade_for_service = grade  # Keep full "Grade 9" format
+        stream_for_service = stream_obj.name  # Use actual stream letter "G" from database
+
         with zipfile.ZipFile(zip_path, 'w') as zipf:
             for i, student in enumerate(students, start=1):
                 try:
                     print(f"📄 ({i}/{len(students)}) Generating report for: {student.name}")
-                    report_file = generate_individual_report_like_preview_for_zip(
-                        student, grade, stream, (term_name or term), (at_name or assessment_type),
-                        stream_obj, term_obj, assessment_type_obj, pdf_available
+
+                    # 🔥 UNIFIED PDF GENERATION - Call the EXACT SAME function as single download
+                    # This guarantees 100% format parity between single and batch downloads
+                    result = generate_student_report_pdf_bytes(
+                        student,
+                        grade_for_service,
+                        stream_for_service,
+                        (term_name or term),
+                        (at_name or assessment_type),
+                        stream_obj,
+                        term_obj,
+                        assessment_type_obj
                     )
-                    if report_file and os.path.exists(report_file):
-                        ext = os.path.splitext(report_file)[1]
-                        safe_student = student.name.replace(' ', '_')
-                        internal_name = f"Individual_Report_{safe_grade}_{stream}_{safe_student}{ext}"
-                        zipf.write(report_file, internal_name)
-                        successful_reports += 1
-                        print(f"✅ Added {internal_name}")
-                        try:
-                            os.remove(report_file)
-                        except OSError:
-                            pass
-                    else:
+
+                    if result[0] is None:
                         failed_reports += 1
-                        print(f"⚠️ No data / report skipped for {student.name}")
+                        print(f"⚠️ PDF generation failed for {student.name}: {result[1]}")
+                        continue
+
+                    pdf_bytes, filename = result
+                    
+                    # Write PDF bytes directly to ZIP
+                    zipf.writestr(filename, pdf_bytes)
+                    successful_reports += 1
+                    print(f"✅ Added {filename}")
                 except Exception as e:
                     failed_reports += 1
                     print(f"❌ Exception building report for {student.name}: {e}")
@@ -6388,16 +6641,15 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         print(f"📊 Summary: success={successful_reports}, failed={failed_reports}")
 
         if successful_reports == 0:
-            return json_or_flash(f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}.", 400)
+            flash(f"No reports could be generated. Please ensure students have marks for {term} {assessment_type}.", 'error')
+            return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
 
         if not os.path.exists(zip_path):
-            return json_or_flash("ZIP file was not created due to an internal error.", 500)
+            flash("ZIP file was not created due to an internal error.", 'error')
+            return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
 
         print(f"✅ ZIP file created successfully at: {zip_path}, size: {os.path.getsize(zip_path)} bytes")
-
-        # Success flash only for non-AJAX flow
-        if not is_ajax():
-            flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", 'success')
+        flash(f"Successfully generated {successful_reports} individual reports in ZIP format!", 'success')
 
         # Read the ZIP file into memory to avoid file locking issues
         with open(zip_path, 'rb') as f:
@@ -6431,9 +6683,6 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         response.headers['Content-Length'] = str(len(zip_data))
         
         print(f"📤 Sending ZIP response: {zip_filename} ({len(zip_data)} bytes)")
-        # Mark last successful generation time for throttling
-        session[last_success_key] = current_time
-        session.modified = True
         
         return response
 
@@ -6441,16 +6690,8 @@ def generate_all_individual_reports(grade, stream, term, assessment_type):
         print(f"💥 Critical error in ZIP generation: {e}")
         import traceback
         traceback.print_exc()
-        if is_ajax():
-            return jsonify({'error': f'Error generating reports: {str(e)}'}), 500
         flash(f"Error generating reports: {str(e)}", 'error')
-        return redirect(url_for('classteacher.dashboard'))
-    finally:
-        # Always remove the lock to prevent future blocking
-        print(f"🔓 Cleaning up session lock for key: {request_key}")
-        session.pop(request_key, None)
-        session.pop(lock_timestamp_key, None)
-        session.modified = True
+        return redirect(url_for('classteacher.view_student_reports', grade=grade, stream=stream, term=term, assessment_type=assessment_type))
 
 @classteacher_bp.route('/download_class_list', methods=['GET'])
 @classteacher_required

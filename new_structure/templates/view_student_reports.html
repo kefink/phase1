@@ -250,11 +250,32 @@
       </div>
 
       {% if students %}
+      <!-- Selection Controls for Multiple Individual Downloads -->
+      <div class="selection-controls" style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <button onclick="selectAll()" class="btn-select" style="padding: 8px 16px; margin-right: 10px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              Select All
+            </button>
+            <button onclick="deselectAll()" class="btn-select" style="padding: 8px 16px; margin-right: 10px; background-color: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              Deselect All
+            </button>
+            <span id="selectedCount" style="margin-left: 15px; font-weight: 600; color: #2c3e50;">0 students selected</span>
+          </div>
+          <button onclick="downloadSelectedIndividually()" id="downloadSelectedBtn" class="download-all-btn" style="padding: 10px 20px;" disabled>
+            Download Selected Reports
+          </button>
+        </div>
+      </div>
+
       <table class="students-table">
         <thead>
           <tr>
+            <th style="width: 5%">
+              <input type="checkbox" id="selectAllCheckbox" onchange="toggleAll(this)" />
+            </th>
             <th style="width: 5%">#</th>
-            <th style="width: 40%">Student Name</th>
+            <th style="width: 35%">Student Name</th>
             <th style="width: 15%">Admission No.</th>
             <th style="width: 15%">Average</th>
             <th style="width: 25%">Actions</th>
@@ -263,6 +284,15 @@
         <tbody>
           {% for student in students %}
           <tr>
+            <td>
+              <input 
+                type="checkbox" 
+                class="student-checkbox" 
+                data-student-id="{{ student.id }}"
+                data-student-name="{{ student.name }}"
+                onchange="updateSelectedCount()"
+              />
+            </td>
             <td>{{ loop.index + (page-1) * per_page }}</td>
             <td>{{ student.name }}</td>
             <td>{{ student.admission_number }}</td>
@@ -281,11 +311,11 @@
                 View Report
               </a>
               <a
-                href="{{ url_for('classteacher.print_individual_report', grade=grade, stream=stream, term=term, assessment_type=assessment_type, student_name=student.name) }}"
+                href="{{ url_for('classteacher.download_individual_report', grade=grade, stream=stream, term=term, assessment_type=assessment_type, student_name=student.name) }}"
                 class="print-btn"
-                target="_blank"
+                download
               >
-                Print Report
+                Download PDF
               </a>
             </td>
           </tr>
@@ -325,28 +355,193 @@
         // Global flag and timestamp to prevent multiple simultaneous requests
         let isDownloading = false;
         let lastDownloadTime = 0;
-  const DOWNLOAD_COOLDOWN = 60000; // 60 seconds cooldown to avoid accidental double runs
+        const DOWNLOAD_COOLDOWN = 5000; // 5 seconds cooldown
 
-        // Function to download all individual reports as ZIP
+        // Selection management functions
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+            const count = checkboxes.length;
+            document.getElementById('selectedCount').textContent = count + ' student' + (count !== 1 ? 's' : '') + ' selected';
+            document.getElementById('downloadSelectedBtn').disabled = count === 0;
+            
+            // Update "select all" checkbox state
+            const allCheckboxes = document.querySelectorAll('.student-checkbox');
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            selectAllCheckbox.checked = count === allCheckboxes.length && count > 0;
+        }
+
+        function toggleAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.student-checkbox');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+            updateSelectedCount();
+        }
+
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('.student-checkbox');
+            checkboxes.forEach(cb => cb.checked = true);
+            document.getElementById('selectAllCheckbox').checked = true;
+            updateSelectedCount();
+        }
+
+        function deselectAll() {
+            const checkboxes = document.querySelectorAll('.student-checkbox');
+            checkboxes.forEach(cb => cb.checked = false);
+            document.getElementById('selectAllCheckbox').checked = false;
+            updateSelectedCount();
+        }
+
+        // Download selected students' reports individually (one PDF per student)
+        function downloadSelectedIndividually() {
+            const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Please select at least one student');
+                return;
+            }
+
+            const grade = '{{ grade }}';
+            const stream = '{{ stream }}';
+            const term = '{{ term }}';
+            const assessmentType = '{{ assessment_type }}';
+
+            // Show notification
+            showNotification(`Starting download of ${checkboxes.length} report(s)...`, 'info');
+
+            const btn = document.getElementById('downloadSelectedBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+
+            let completed = 0;
+            const total = checkboxes.length;
+
+            // Download each PDF with delay between downloads
+            checkboxes.forEach((checkbox, index) => {
+                const studentName = checkbox.dataset.studentName;
+                
+                setTimeout(() => {
+                    // Create temporary download link and click it
+                    const downloadUrl = `/classteacher/download_individual_report/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}/${encodeURIComponent(studentName)}`;
+                    
+                    console.log(`Downloading report ${index + 1}/${total} for ${studentName}:`, downloadUrl);
+                    
+                    // Create and click download link
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = `${studentName.replace(/\s+/g, '_')}_Report.pdf`;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    // Clean up link after short delay
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                    }, 100);
+
+                    // Update progress
+                    completed++;
+                    btn.textContent = `Downloading ${completed}/${total}...`;
+                    console.log(`Progress: ${completed}/${total}`);
+
+                    // If last download, reset button
+                    if (completed === total) {
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.disabled = false;
+                            showNotification(`Successfully downloaded ${total} report(s)! Check your Downloads folder.`, 'success');
+                            console.log(`All ${total} reports downloaded successfully`);
+                        }, 1000);
+                    }
+                }, index * 2000); // 2 second delay between each download to avoid browser blocking
+            });
+        }
+
+        // Download selected students' reports as ZIP (legacy function - kept for backward compatibility)
+        function downloadSelected() {
+            const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Please select at least one student');
+                return;
+            }
+
+            const now = Date.now();
+            if (now - lastDownloadTime < DOWNLOAD_COOLDOWN) {
+                const remaining = Math.ceil((DOWNLOAD_COOLDOWN - (now - lastDownloadTime)) / 1000);
+                alert(`Please wait ${remaining} seconds before downloading again`);
+                return;
+            }
+
+            if (isDownloading) {
+                alert('Download already in progress, please wait...');
+                return;
+            }
+
+            isDownloading = true;
+            lastDownloadTime = now;
+
+            // Get selected student names
+            const studentNames = Array.from(checkboxes).map(cb => cb.dataset.studentName);
+
+            const grade = '{{ grade }}';
+            const stream = '{{ stream }}';
+            const term = '{{ term }}';
+            const assessmentType = '{{ assessment_type }}';
+
+            // Show loading state
+            const btn = document.getElementById('downloadSelectedBtn');
+            const originalText = btn.textContent;
+            btn.textContent = `Generating ${studentNames.length} report(s)...`;
+            btn.disabled = true;
+
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/classteacher/download_selected_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
+            
+            // Add CSRF token
+            const csrfToken = '{{ csrf_token() }}';
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+
+            // Add student names
+            studentNames.forEach(name => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'student_names';
+                input.value = name;
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+
+            // Reset button after delay
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                isDownloading = false;
+                document.body.removeChild(form);
+            }, 3000);
+        }
+
+        // Legacy function for "Download All" button
         function downloadAllIndividualReports(grade, stream, term, assessmentType) {
             const now = Date.now();
             
-            // Check timestamp-based cooldown
             if (now - lastDownloadTime < DOWNLOAD_COOLDOWN) {
                 const remaining = Math.ceil((DOWNLOAD_COOLDOWN - (now - lastDownloadTime)) / 1000);
                 console.log(`Download blocked - cooldown active (${remaining}s remaining)`);
-                showNotification(`Please wait ${remaining} seconds before downloading again`, 'warning');
+                alert(`Please wait ${remaining} seconds before downloading again`);
                 return false;
             }
             
-            // Prevent duplicate requests - exit immediately if already downloading
             if (isDownloading) {
                 console.log('Download already in progress - blocking duplicate request');
-                showNotification('Download already in progress, please wait...', 'warning');
+                alert('Download already in progress, please wait...');
                 return false;
             }
 
-            // Set the flag and timestamp immediately to block any other requests
             isDownloading = true;
             lastDownloadTime = now;
             
@@ -358,46 +553,132 @@
             
             const originalText = downloadBtn.innerHTML;
             
-            // Disable button immediately
+            // Disable button and show generating message
             downloadBtn.disabled = true;
-            downloadBtn.style.pointerEvents = 'none';
             downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating ZIP...';
             
-      // Show notification that generation is starting
-      showNotification('Generating ZIP file... This may take 2-3 minutes for all reports.', 'info');
+            // Show notification
+            showNotification('Generating ZIP file... This may take 2-3 minutes. Please wait.', 'info');
 
-  // Build URL for download with a cache-busting param so download managers don't treat it as a duplicate
-  const cacheBuster = `v=${Date.now()}`;
-  const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}?${cacheBuster}`;
-
-      // Try window.open first (most reliable for downloads)
-      try {
-        const win = window.open(url, '_blank');
-        if (!win) {
-          // Popup blocked - fallback to hidden iframe
-          const iframe = document.createElement('iframe');
-          iframe.style.display = 'none';
-          iframe.src = url;
-          document.body.appendChild(iframe);
-        }
-      } catch (e) {
-        // Last resort: create a temporary anchor and click it
-        const tempA = document.createElement('a');
-        tempA.href = url;
-        tempA.target = '_blank';
-        document.body.appendChild(tempA);
-        tempA.click();
-        setTimeout(() => tempA.remove(), 1000);
-      }
-
-      // Reset button after a short while (not too short to discourage repeat clicks)
+            // Build URL for download
+            const url = `/classteacher/generate_all_individual_reports/${encodeURIComponent(grade)}/${encodeURIComponent(stream)}/${encodeURIComponent(term)}/${encodeURIComponent(assessmentType)}`;
+            
+            // Create a temporary link and click it (simple approach)
+            const tempLink = document.createElement('a');
+            tempLink.href = url;
+            tempLink.style.display = 'none';
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            
+            // Remove the link after a short delay
+            setTimeout(() => {
+                document.body.removeChild(tempLink);
+            }, 1000);
+      
+            // Reset button after 3 minutes (generation should complete by then)
+            setTimeout(() => {
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+                downloadBtn.style.pointerEvents = 'auto';
+                isDownloading = false;
+            }, 180000); // 3 minutes      // Start polling for progress updates
+      let progressInterval = null;
+      let progressStarted = false;
+      
+    const updateProgress = async () => {
+          try {
+        const response = await fetch(`${progressUrl}?_=${Date.now()}`, {
+          credentials: 'same-origin',
+          cache: 'no-store'
+        });
+              if (response.ok) {
+                  const progress = await response.json();
+                  
+                  if (progress.status === 'generating' || progress.status === 'starting') {
+                      progressStarted = true;
+                      const current = progress.current || 0;
+                      const total = progress.total || 0;
+                      if (total > 0) {
+              const name = progress.student_name ? ` – ${progress.student_name}` : '';
+              downloadBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating ${current}/${total}${name}`;
+                      }
+                  } else if (progress.status === 'complete') {
+                      downloadBtn.innerHTML = '<i class="fas fa-check"></i> Complete!';
+                      if (progressInterval) {
+                          clearInterval(progressInterval);
+                          progressInterval = null;
+                      }
+                      // Reset button after showing success
+                      setTimeout(() => {
+                          downloadBtn.innerHTML = originalText;
+                          downloadBtn.disabled = false;
+                          downloadBtn.style.pointerEvents = 'auto';
+                          isDownloading = false;
+                      }, 3000);
+          } else if (progress.status === 'error') {
+            downloadBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Failed';
+            if (progressInterval) {
+              clearInterval(progressInterval);
+              progressInterval = null;
+            }
+            setTimeout(() => {
+              downloadBtn.innerHTML = originalText;
+              downloadBtn.disabled = false;
+              downloadBtn.style.pointerEvents = 'auto';
+              isDownloading = false;
+            }, 5000);
+            const message = progress.message || 'An error occurred while generating reports.';
+            showNotification(message, 'error');
+          }
+              }
+          } catch (err) {
+              console.error('Progress update failed:', err);
+              // Don't stop interval on error - server might be busy
+          }
+      };
+      
+  // Kick off progress polling (poll once immediately, then every 1s)
+  updateProgress();
+  progressInterval = setInterval(updateProgress, 1000);
+      
+      // Use hidden iframe for download - stays on current page, works cross-browser
+      console.log('📥 Creating iframe for ZIP download:', url);
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.style.position = 'absolute';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      iframe.onload = function() {
+        console.log('✅ Iframe loaded successfully');
+      };
+      iframe.onerror = function() {
+        console.error('❌ Iframe load error');
+      };
+      iframe.src = url;
+      document.body.appendChild(iframe);
+      console.log('✅ Iframe added to DOM');
+      
+      // Clean up iframe after download starts
       setTimeout(() => {
-        downloadBtn.innerHTML = originalText;
-        downloadBtn.disabled = false;
-        downloadBtn.style.pointerEvents = 'auto';
-        isDownloading = false;
-        console.log('Download initiation attempted, button reset');
-      }, 15000);
+        if (iframe && iframe.parentNode) {
+          iframe.parentNode.removeChild(iframe);
+        }
+      }, 35000); // Keep for 35s to allow download to start
+
+      // Fallback: Reset button after timeout if progress didn't complete
+      setTimeout(() => {
+        if (progressInterval) {
+            clearInterval(progressInterval);
+        }
+        if (isDownloading) {
+            downloadBtn.innerHTML = originalText;
+            downloadBtn.disabled = false;
+            downloadBtn.style.pointerEvents = 'auto';
+            isDownloading = false;
+            console.log('Download timeout - button reset');
+        }
+      }, 180000); // 3 minutes max
             
             return false; // Prevent any default action
         }

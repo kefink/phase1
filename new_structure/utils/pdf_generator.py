@@ -1,5 +1,6 @@
 """
 PDF generation utilities for the Hillview School Management System.
+Unified PDF generation for guaranteed format parity between single and batch downloads.
 """
 from reportlab.lib.pagesizes import letter, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
@@ -7,9 +8,198 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 from datetime import datetime
+import os
+import re
+import tempfile
+import pdfkit
+from flask import current_app
 
 # Fixed relative import: this module resides inside the top-level 'utils' package, so use a single-dot relative import.
 from .performance import get_performance_category, get_grade_and_points
+
+
+# ============================================================================
+# UNIFIED PDF GENERATION - Single Source of Truth
+# ============================================================================
+
+def inject_print_css(html):
+    """
+    Minimal CSS injection for PDF generation - preserves template's original styling.
+    Only adds print-specific tweaks: hide interactive elements, enforce print mode.
+    """
+    import re
+    
+    # DO NOT remove external stylesheets or existing styles - let template CSS work!
+    # Only inject minimal print-mode CSS
+    
+    # Step 1: Add minimal print CSS that works alongside existing styles
+    minimal_print_css = """
+    <style type="text/css" media="print">
+        /* Minimal print-mode CSS - preserves template styling */
+        @page {
+            size: A4 portrait;
+            margin: 0.5in;
+        }
+        
+        @media print {
+            /* Hide interactive elements only */
+            .action-buttons,
+            .print-controls,
+            .delete-btn,
+            .modal,
+            button:not(.keep-for-print),
+            .btn:not(.keep-for-print),
+            .navigation,
+            nav,
+            .back-button {
+                display: none !important;
+            }
+            
+            /* Ensure content fits on page */
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Prevent page breaks in critical sections */
+            .report-container,
+            .marks-table,
+            table,
+            .summary-section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+    """
+    
+    # Step 2: Inject our minimal CSS at the end of <head>
+    if '</head>' in html:
+        html = html.replace('</head>', f'{minimal_print_css}</head>')
+    elif '<body' in html:
+        # If no </head>, inject right before body
+        html = html.replace('<body', f'{minimal_print_css}<body', 1)
+    else:
+        # Last resort: prepend to entire document
+        html = minimal_print_css + html
+    
+    return html
+
+
+def convert_static_urls_to_file_paths(html: str, static_folder: str) -> str:
+    """
+    Convert /static/... URLs to file:/// absolute paths for wkhtmltopdf.
+    Prevents HostNotFoundError and ensures local asset loading.
+    """
+    def _replace_static_attr(m):
+        rel = m.group(1)
+        abs_path = os.path.join(static_folder, rel).replace('\\', '/')
+        return f'"file:///{abs_path}"'
+    
+    def _replace_static_url_in_css(m):
+        rel = m.group(1)
+        abs_path = os.path.join(static_folder, rel).replace('\\', '/')
+        return f'url("file:///{abs_path}")'
+    
+    # Replace src/href attributes
+    html = re.sub(r'["\']?/static/([^"\'>\s]+)["\']?', lambda m: _replace_static_attr(m), html)
+    
+    # Replace CSS url() references
+    html = re.sub(
+        r'url\(["\']?/static/([^"\')\s]+)["\']?\)',
+        lambda m: _replace_static_url_in_css(m),
+        html
+    )
+    
+    return html
+
+
+def get_standard_pdf_options() -> dict:
+    """
+    Centralized wkhtmltopdf configuration.
+    MUST be identical for single and batch generation to ensure format parity.
+    """
+    return {
+        'page-size': 'A4',
+        'orientation': 'Portrait',
+        'margin-top': '0.75in',
+        'margin-right': '0.75in',
+        'margin-bottom': '0.75in',
+        'margin-left': '0.75in',
+        'encoding': 'UTF-8',
+        'no-outline': None,
+        'enable-local-file-access': None,
+        
+        # 🔥 CRITICAL: Force print media type for white background
+        'print-media-type': None,
+        
+        'disable-javascript': None,
+        'load-error-handling': 'ignore',
+        'load-media-error-handling': 'ignore',
+        
+        # Ensure consistent rendering
+        'dpi': 96,
+        'image-quality': 100,
+        
+        # Background rendering (crucial for white background)
+        'background': None,
+    }
+
+
+def get_wkhtmltopdf_config():
+    """
+    Get wkhtmltopdf configuration with explicit path for Windows.
+    """
+    WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+    
+    if os.path.exists(WKHTMLTOPDF_PATH):
+        current_app.logger.info(f"Using wkhtmltopdf at: {WKHTMLTOPDF_PATH}")
+        return pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
+    else:
+        current_app.logger.warning("wkhtmltopdf not found at standard path, using default configuration")
+        return pdfkit.configuration()
+
+
+def render_pdf_from_html(html: str, static_folder: str) -> bytes:
+    """
+    Convert HTML to PDF bytes using wkhtmltopdf with standardized configuration.
+    
+    Args:
+        html: HTML content to convert
+        static_folder: Path to static assets folder
+        
+    Returns:
+        PDF content as bytes
+    """
+    # Step 1: Inject print CSS
+    html = inject_print_css(html)
+    
+    # Step 2: Convert /static URLs to file:/// paths
+    html = convert_static_urls_to_file_paths(html, static_folder)
+    
+    # Step 3: Get standardized wkhtmltopdf configuration
+    config = get_wkhtmltopdf_config()
+    options = get_standard_pdf_options()
+    
+    # Step 4: Render via temporary HTML file for stability on Windows
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as temp_html:
+        temp_html.write(html)
+        temp_html_path = temp_html.name
+    
+    try:
+        # Generate PDF and return bytes
+        pdf_bytes = pdfkit.from_file(temp_html_path, False, options=options, configuration=config)
+        return pdf_bytes
+    finally:
+        # Clean up temp file
+        try:
+            os.unlink(temp_html_path)
+        except OSError:
+            pass
+
+
+# ============================================================================
+# Legacy ReportLab PDF Generation (Original)
+# ============================================================================
 
 def generate_individual_report_pdf(grade, stream, term, assessment_type, student_name, class_data, education_level, total_marks, subjects):
     """
