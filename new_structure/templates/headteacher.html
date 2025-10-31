@@ -1853,16 +1853,16 @@
           const v = Math.max(0, Math.min(100, val));
           if (v < 60) {
             const ratio = v / 60;
-            const r = Math.round(220 - ratio * 40);
-            const g = Math.round(90 + ratio * 80);
-            const b = Math.round(90 + ratio * 45);
-            return `rgba(${r}, ${g}, ${b}, 0.35)`;
+            const r = Math.round(255 - ratio * 30);
+            const g = Math.round(170 + ratio * 70);
+            const b = Math.round(155 + ratio * 50);
+            return `rgba(${r}, ${g}, ${b}, 0.55)`;
           } else {
             const ratio = (v - 60) / 40;
-            const r = Math.round(190 - ratio * 70);
-            const g = Math.round(180 + ratio * 50);
-            const b = Math.round(130 - ratio * 80);
-            return `rgba(${r}, ${g}, ${b}, 0.4)`;
+            const r = Math.round(225 - ratio * 80);
+            const g = Math.round(245 - ratio * 120);
+            const b = Math.round(190 - ratio * 80);
+            return `rgba(${r}, ${g}, ${b}, 0.6)`;
           }
         };
 
@@ -2345,7 +2345,7 @@
             .heatmap-tile {
               border-radius: 16px;
               border: 1px solid rgba(255, 255, 255, 0.18);
-              color: ${Solar.base3()};
+              color: ${Solar.base03()};
               padding: 1rem 1.25rem;
               backdrop-filter: saturate(130%) blur(10px);
               box-shadow: 0 18px 28px rgba(0, 0, 0, 0.25);
@@ -2371,7 +2371,7 @@
               font-size: 0.95rem;
             }
             #drillDownContainer {
-              color: ${Solar.base3()};
+              color: ${Solar.base03()};
             }
             #drillDownContainer h4 {
               margin-bottom: 0.4rem;
@@ -2829,7 +2829,8 @@
         try {
           const isMobile = (window.innerWidth || 1024) <= 768;
           const hasOpened = sessionStorage.getItem("htDrawerVisited");
-          if (isMobile && !hasOpened) {
+          const openedManually = sessionStorage.getItem("htDrawerManual");
+          if (isMobile && !hasOpened && !openedManually) {
             setTimeout(() => {
               openDrawer();
               sessionStorage.setItem("htDrawerVisited", "1");
