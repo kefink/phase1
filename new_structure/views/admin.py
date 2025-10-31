@@ -491,6 +491,36 @@ def dashboard():
             # Build performance_data for class comparison/table using comprehensive aggregation
             try:
                 performance_data = generate_performance_assessment_data()
+                
+                # Update top_class and top_class_score using ClassReportBuilder data
+                # This ensures we use the same data source as the generated class reports
+                if performance_data:
+                    # Find the class with the highest class_average_raw (actual mean score)
+                    best_class_data = max(performance_data, key=lambda x: x.get('class_average_raw', 0))
+                    if best_class_data.get('class_average_raw', 0) > 0:
+                        top_class = f"{best_class_data['grade']} {best_class_data['stream']}"
+                        top_class_score = best_class_data.get('class_average_raw', 0)  # Use raw mean score, not percentage
+                        print(f"✅ Updated top_class: {top_class}, top_class_score: {top_class_score}")
+                    
+                    # Calculate school average from all class averages (using mean_percentage)
+                    # This gives the overall school performance percentage
+                    if performance_data:
+                        total_students_for_avg = sum([d.get('total_students', 0) for d in performance_data])
+                        weighted_sum = sum([d.get('mean_percentage', 0) * d.get('total_students', 0) for d in performance_data])
+                        if total_students_for_avg > 0:
+                            avg_performance = round(weighted_sum / total_students_for_avg, 1)
+                            print(f"✅ Calculated school average: {avg_performance}% from {len(performance_data)} classes")
+                    
+                    # Aggregate performance distribution from performance_data
+                    # Count students in each category across all classes
+                    performance_distribution = {"EE": 0, "ME": 0, "AE": 0, "BE": 0}
+                    for data in performance_data:
+                        counts = data.get('performance_counts', {})
+                        performance_distribution["EE"] += (counts.get('EE1', 0) or 0) + (counts.get('EE2', 0) or 0)
+                        performance_distribution["ME"] += (counts.get('ME1', 0) or 0) + (counts.get('ME2', 0) or 0)
+                        performance_distribution["AE"] += (counts.get('AE1', 0) or 0) + (counts.get('AE2', 0) or 0)
+                        performance_distribution["BE"] += (counts.get('BE1', 0) or 0) + (counts.get('BE2', 0) or 0)
+                    print(f"✅ Aggregated performance distribution: {performance_distribution}")
             except Exception as inner_e:
                 # Don't break the dashboard if aggregation fails
                 print(f"Error generating performance_data: {inner_e}")
@@ -1672,12 +1702,16 @@ def manage_terms_assessments():
 def generate_performance_assessment_data():
     """
     Generate dynamic performance assessment data based on actual reports in the database.
+    Uses ClassReportBuilder to ensure consistency with generated class reports.
 
     Returns:
         List of dictionaries containing performance data for each grade/stream/term/assessment combination.
     """
     performance_data = []
-    print("DEBUG: Starting performance data generation...")
+    print("DEBUG: Starting performance data generation using ClassReportBuilder...")
+
+    # Import ClassReportBuilder to use as source of truth
+    from ..services.class_report_builder import ClassReportBuilder
 
     # Get all unique combinations of grade, stream, term, and assessment type
     # We'll calculate student averages per assessment to avoid counting multiple subjects per student
@@ -1712,7 +1746,7 @@ def generate_performance_assessment_data():
     for combo in combinations[:3]:  # Show first 3
         print(f"DEBUG: Combo - Grade: {combo.grade}, Stream: {combo.stream}, Term: {combo.term}, Assessment: {combo.assessment_type}")
 
-    # For each combination, calculate student averages to avoid double counting
+    # For each combination, use ClassReportBuilder to get accurate class mean score
     for combo in combinations:
         # Get all students in this grade/stream who have marks for this term/assessment
         students_with_marks = db.session.query(
@@ -1738,44 +1772,93 @@ def generate_performance_assessment_data():
         if not students_with_marks:
             continue
 
-        # Calculate statistics for this combination
-        student_percentages = [student.avg_percentage for student in students_with_marks]
-        total_raw_marks = sum([student.total_raw_marks for student in students_with_marks])
-        total_possible_marks = sum([student.total_max_marks for student in students_with_marks])
-
-        # Calculate mean percentage per student and use it as class_average for charts (0-100 scale)
-        mean_percentage = round(sum(student_percentages) / len(student_percentages), 2) if student_percentages else 0
-        # Preserve raw-marks average separately for any future needs
-        class_average_raw = round(total_raw_marks / len(students_with_marks), 2) if students_with_marks else 0
-
-        print(f"DEBUG: {combo.grade} {combo.stream} {combo.term} {combo.assessment_type}: {len(students_with_marks)} students")
-        print(f"DEBUG: Class mean%: {mean_percentage}, Avg raw: {int(round(class_average_raw, 0))}, Raw total: {int(round(total_raw_marks, 0))}/{int(round(total_possible_marks, 0))}")
-
-        # Calculate detailed performance counts using the established grading system
-        # Count students, not individual subject marks
+        # Initialize variables
+        class_data_list = None
+        class_average_raw = 0
+        mean_percentage = 0
         performance_counts = {
             'EE1': 0, 'EE2': 0, 'ME1': 0, 'ME2': 0,
             'AE1': 0, 'AE2': 0, 'BE1': 0, 'BE2': 0
         }
+        builder_stats = None
 
-        for student in students_with_marks:
-            percentage = student.avg_percentage
-            if percentage >= 90:
-                performance_counts['EE1'] += 1
-            elif percentage >= 75:
-                performance_counts['EE2'] += 1
-            elif percentage >= 58:
-                performance_counts['ME1'] += 1
-            elif percentage >= 41:
-                performance_counts['ME2'] += 1
-            elif percentage >= 31:
-                performance_counts['AE1'] += 1
-            elif percentage >= 21:
-                performance_counts['AE2'] += 1
-            elif percentage >= 11:
-                performance_counts['BE1'] += 1
+        # Use ClassReportBuilder to get the actual class mean score (same as generated reports)
+        try:
+            builder_ctx = ClassReportBuilder.build(
+                grade=combo.grade,
+                stream=combo.stream,
+                term=combo.term,
+                assessment_type=combo.assessment_type,
+                selected_subject_ids=None,  # Use all subjects
+                invalidate=False  # Use cache if available
+            )
+            
+            # Extract class average from builder (this is the source of truth)
+            class_average_raw = builder_ctx.get('class_average', 0)  # This is the actual mean score (e.g., 469.13)
+            
+            # Extract class_data from builder to get accurate performance counts
+            class_data_list = builder_ctx.get('class_data', [])
+            builder_stats = builder_ctx.get('stats', {}) or {}
+            
+            if builder_stats:
+                # Use stats from the builder (identical to class report summary)
+                performance_counts = {
+                    'EE1': int(builder_stats.get('EE1') or 0),
+                    'EE2': int(builder_stats.get('EE2') or 0),
+                    'ME1': int(builder_stats.get('ME1') or 0),
+                    'ME2': int(builder_stats.get('ME2') or 0),
+                    'AE1': int(builder_stats.get('AE1') or 0),
+                    'AE2': int(builder_stats.get('AE2') or 0),
+                    'BE1': int(builder_stats.get('BE1') or 0),
+                    'BE2': int(builder_stats.get('BE2') or 0)
+                }
             else:
-                performance_counts['BE2'] += 1
+                # Fallback: calculate from class_data (only students with marks)
+                for student_record in class_data_list:
+                    if student_record.get('filtered_total', 0) > 0:
+                        perf_cat = student_record.get('performance_category', '')
+                        if perf_cat in performance_counts:
+                            performance_counts[perf_cat] += 1
+            
+            # Calculate mean percentage for display (use filtered_average from builder)
+            filtered_averages = [sd.get('filtered_average', 0) for sd in class_data_list if sd.get('filtered_total', 0) > 0]
+            mean_percentage = round(sum(filtered_averages) / len(filtered_averages), 2) if filtered_averages else 0
+            
+            print(f"✅ Using ClassReportBuilder for {combo.grade} {combo.stream} {combo.term} {combo.assessment_type}")
+            print(f"   Class mean score (from builder): {class_average_raw}")
+            print(f"   Mean percentage: {mean_percentage}%")
+            print(f"   Performance counts: {performance_counts}")
+            
+        except Exception as builder_error:
+            # Fallback to calculation if builder fails
+            print(f"⚠️ ClassReportBuilder failed for {combo.grade} {combo.stream}, using fallback calculation: {builder_error}")
+            import traceback
+            traceback.print_exc()
+            
+            student_percentages = [student.avg_percentage for student in students_with_marks]
+            total_raw_marks = sum([student.total_raw_marks for student in students_with_marks])
+            mean_percentage = round(sum(student_percentages) / len(student_percentages), 2) if student_percentages else 0
+            class_average_raw = round(total_raw_marks / len(students_with_marks), 2) if students_with_marks else 0
+            
+            # Fallback performance counts using avg_percentage
+            for student in students_with_marks:
+                percentage = student.avg_percentage
+                if percentage >= 90:
+                    performance_counts['EE1'] += 1
+                elif percentage >= 75:
+                    performance_counts['EE2'] += 1
+                elif percentage >= 58:
+                    performance_counts['ME1'] += 1
+                elif percentage >= 41:
+                    performance_counts['ME2'] += 1
+                elif percentage >= 31:
+                    performance_counts['AE1'] += 1
+                elif percentage >= 21:
+                    performance_counts['AE2'] += 1
+                elif percentage >= 11:
+                    performance_counts['BE1'] += 1
+                else:
+                    performance_counts['BE2'] += 1
 
         # Determine overall performance category
         if mean_percentage >= 75:
@@ -1787,6 +1870,14 @@ def generate_performance_assessment_data():
         else:
             performance_category = "Below Average"
 
+        # Get total students count from builder's class_data (same as class report)
+        if builder_stats:
+            total_students_count = sum(performance_counts.values())
+        elif class_data_list:
+            total_students_count = len([sd for sd in class_data_list if sd.get('filtered_total', 0) > 0])
+        else:
+            total_students_count = len(students_with_marks)
+        
         performance_data.append({
             'grade': combo.grade,
             'stream': combo.stream,
@@ -1794,12 +1885,10 @@ def generate_performance_assessment_data():
             'assessment_type': combo.assessment_type,
             'mean_percentage': mean_percentage,
             'class_average': mean_percentage,  # Bar/table expect percentage (0-100)
-            'total_raw_marks': int(round(total_raw_marks, 0)),  # Show as whole numbers
-            'total_possible_marks': int(round(total_possible_marks, 0)),  # Show as whole numbers
-            'class_average_raw': int(round(class_average_raw, 0)),
+            'class_average_raw': round(class_average_raw, 2),  # Actual mean score from ClassReportBuilder (e.g., 469.13)
             'performance_category': performance_category,
             'performance_counts': performance_counts,
-            'total_students': len(students_with_marks)  # Count unique students only
+            'total_students': total_students_count  # Count from builder's class_data (matches class report)
         })
 
     # Sort by grade, then stream, then term, then assessment type

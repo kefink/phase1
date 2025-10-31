@@ -738,7 +738,7 @@
               </div>
               <div class="stat-label">School Average</div>
               <div class="stat-trend">
-                {% if dashboard_stats.avg_performance >= 80 %}
+                {% if (dashboard_stats.avg_performance or 0) >= 80 %}
                 <!-- Heroicon: trophy (solid) -->
                 <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                   <path
@@ -747,7 +747,7 @@
                     clip-rule="evenodd"
                   />
                 </svg>
-                Excellent performance {% elif dashboard_stats.avg_performance >=
+                Excellent performance {% elif (dashboard_stats.avg_performance or 0) >=
                 60 %}
                 <!-- Heroicon: check-circle (solid) -->
                 <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
@@ -950,7 +950,7 @@
             </div>
             <div class="stat-content">
               <div class="stat-number" id="top-class-score">
-                {{ "%.1f"|format(top_class_score or 0) }}%
+                {{ "%.2f"|format(top_class_score or 0) }}
               </div>
               <div class="stat-label">Top Performing Class</div>
               <div class="stat-trend">
@@ -1276,9 +1276,9 @@
                   <td class="student-count">{{ data.total_students }}</td>
                   <td class="class-average">
                     <span
-                      class="average-badge {% if data.class_average >= 80 %}average-excellent{% elif data.class_average >= 60 %}average-good{% elif data.class_average >= 40 %}average-needs-improvement{% else %}average-poor{% endif %}"
+                      class="average-badge {% if (data.class_average or 0) >= 80 %}average-excellent{% elif (data.class_average or 0) >= 60 %}average-good{% elif (data.class_average or 0) >= 40 %}average-needs-improvement{% else %}average-poor{% endif %}"
                     >
-                      {{ "%.1f"|format(data.class_average) }}%
+                      {{ "%.2f"|format(data.class_average_raw or 0) }}
                     </span>
                   </td>
                   <td class="performance-cell">
@@ -1780,22 +1780,26 @@
         for (const row of data) {
           const key = `${row.grade} ${row.stream}`;
           const total = Number(row.total_students) || 0;
-          const avg = Number(row.class_average) || 0;
+          // Use mean_percentage from ClassReportBuilder (accurate class average)
+          const avg = Number(row.mean_percentage || row.class_average) || 0;
           const counts = row.performance_counts || {};
           const ee = (Number(counts.EE1) || 0) + (Number(counts.EE2) || 0);
           const me = (Number(counts.ME1) || 0) + (Number(counts.ME2) || 0);
           if (!byClass[key])
-            byClass[key] = { total: 0, weighted: 0, ee: 0, me: 0 };
+            byClass[key] = { total: 0, weighted: 0, ee: 0, me: 0, count: 0 };
           byClass[key].total += total;
           byClass[key].weighted += avg * total;
           byClass[key].ee += ee;
           byClass[key].me += me;
+          byClass[key].count += 1; // Track number of assessments for this class
         }
 
         const items = Object.entries(byClass).map(([cls, v]) => {
-          const average = v.total ? v.weighted / v.total : 0;
-          const excellence = v.total ? (v.ee / v.total) * 100 : 0;
-          const mastery = v.total ? (v.me / v.total) * 100 : 0;
+          // Calculate weighted average correctly
+          const average = v.total > 0 ? v.weighted / v.total : 0;
+          // Calculate percentages correctly (students, not marks)
+          const excellence = v.total > 0 ? (v.ee / v.total) * 100 : 0;
+          const mastery = v.total > 0 ? (v.me / v.total) * 100 : 0;
           let value = average;
           let sub = "Class Average";
           if (metric === "excellence") {
@@ -1808,11 +1812,11 @@
           }
           return {
             cls,
-            value,
+            value: Math.round(value * 10) / 10, // Round to 1 decimal
             sub,
-            average,
-            excellence,
-            mastery,
+            average: Math.round(average * 10) / 10,
+            excellence: Math.round(excellence * 10) / 10,
+            mastery: Math.round(mastery * 10) / 10,
             total: v.total,
           };
         });
@@ -2240,6 +2244,10 @@
               options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                  intersect: false,
+                  mode: 'index',
+                },
                 plugins: {
                   legend: {
                     position: "bottom",
@@ -2252,19 +2260,57 @@
                       },
                     },
                   },
+                  tooltip: {
+                    enabled: true,
+                    callbacks: {
+                      label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                        return `${label}: ${value} students (${percentage}%)`;
+                      }
+                    }
+                  }
                 },
-              },
-              onClick: (evt, elements) => {
-                const idx =
-                  elements && elements[0] ? elements[0].index : undefined;
-                if (typeof idx !== "number") return;
-                const label =
-                  ["Exceeds", "Meets", "Approaches", "Below"][idx] ||
-                  "Performance";
-                const value = chartData[idx] || 0;
-                populateDrillDown(
-                  `<h4 style=\"margin:0 0 .25rem 0;\">${label} Expectations</h4><div style=\"color:${Solar.base01()}\">Count: ${value}</div>`
-                );
+                onClick: (evt, elements) => {
+                  if (!elements || elements.length === 0) return;
+                  const idx = elements[0].index;
+                  if (typeof idx !== "number") return;
+                  
+                  const labels = ["Exceeds Expectations", "Meets Expectations", "Approaches Expectations", "Below Expectations"];
+                  const keys = ["EE", "ME", "AE", "BE"];
+                  const label = labels[idx] || "Performance";
+                  const key = keys[idx] || "";
+                  const value = chartData[idx] || 0;
+                  
+                  // Get detailed breakdown from performance data
+                  const perfData = Array.isArray(window.performanceData) ? window.performanceData : [];
+                  let detailHtml = `<h4 style="margin:0 0 .5rem 0;">${label}</h4>`;
+                  detailHtml += `<div style="color:${Solar.base01()}; margin-bottom:.5rem;">Total Students: ${value}</div>`;
+                  
+                  if (key && perfData.length > 0) {
+                    detailHtml += `<div style="color:${Solar.base02()}; margin-top:.5rem;"><strong>Breakdown by Class:</strong></div>`;
+                    detailHtml += `<ul style="margin:.5rem 0; padding-left:1rem; color:${Solar.base02()}; max-height:200px; overflow-y:auto;">`;
+                    
+                    perfData.forEach(item => {
+                      const counts = item.performance_counts || {};
+                      let count = 0;
+                      if (key === "EE") count = (counts.EE1 || 0) + (counts.EE2 || 0);
+                      else if (key === "ME") count = (counts.ME1 || 0) + (counts.ME2 || 0);
+                      else if (key === "AE") count = (counts.AE1 || 0) + (counts.AE2 || 0);
+                      else if (key === "BE") count = (counts.BE1 || 0) + (counts.BE2 || 0);
+                      
+                      if (count > 0) {
+                        detailHtml += `<li>${item.grade} ${item.stream}: ${count} students</li>`;
+                      }
+                    });
+                    
+                    detailHtml += `</ul>`;
+                  }
+                  
+                  populateDrillDown(detailHtml);
+                },
               },
             });
             window.donutChart = donutChart;
