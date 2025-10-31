@@ -1782,24 +1782,42 @@
           const total = Number(row.total_students) || 0;
           // Use mean_percentage from ClassReportBuilder (accurate class average)
           const avg = Number(row.mean_percentage || row.class_average) || 0;
+          const rawAvg = Number(row.class_average_raw || 0) || 0;
           const counts = row.performance_counts || {};
           const ee = (Number(counts.EE1) || 0) + (Number(counts.EE2) || 0);
           const me = (Number(counts.ME1) || 0) + (Number(counts.ME2) || 0);
+          const approaching = (Number(counts.AE1) || 0) + (Number(counts.AE2) || 0);
+          const below = (Number(counts.BE1) || 0) + (Number(counts.BE2) || 0);
           if (!byClass[key])
-            byClass[key] = { total: 0, weighted: 0, ee: 0, me: 0, count: 0 };
+            byClass[key] = {
+              total: 0,
+              weighted: 0,
+              rawWeighted: 0,
+              ee: 0,
+              me: 0,
+              approaching: 0,
+              below: 0,
+              count: 0,
+            };
           byClass[key].total += total;
           byClass[key].weighted += avg * total;
+          byClass[key].rawWeighted += rawAvg * total;
           byClass[key].ee += ee;
           byClass[key].me += me;
+          byClass[key].approaching += approaching;
+          byClass[key].below += below;
           byClass[key].count += 1; // Track number of assessments for this class
         }
 
         const items = Object.entries(byClass).map(([cls, v]) => {
           // Calculate weighted average correctly
           const average = v.total > 0 ? v.weighted / v.total : 0;
+          const rawAverage = v.total > 0 ? v.rawWeighted / v.total : 0;
           // Calculate percentages correctly (students, not marks)
           const excellence = v.total > 0 ? (v.ee / v.total) * 100 : 0;
           const mastery = v.total > 0 ? (v.me / v.total) * 100 : 0;
+          const approachingRate = v.total > 0 ? (v.approaching / v.total) * 100 : 0;
+          const belowRate = v.total > 0 ? (v.below / v.total) * 100 : 0;
           let value = average;
           let sub = "Class Average";
           if (metric === "excellence") {
@@ -1815,8 +1833,11 @@
             value: Math.round(value * 10) / 10, // Round to 1 decimal
             sub,
             average: Math.round(average * 10) / 10,
+            rawAverage: Math.round(rawAverage * 100) / 100,
             excellence: Math.round(excellence * 10) / 10,
             mastery: Math.round(mastery * 10) / 10,
+            approachingRate: Math.round(approachingRate * 10) / 10,
+            belowRate: Math.round(belowRate * 10) / 10,
             total: v.total,
           };
         });
@@ -1831,17 +1852,17 @@
         const toColor = (val) => {
           const v = Math.max(0, Math.min(100, val));
           if (v < 60) {
-            const t = v / 60; // 0..1
-            const r = 220;
-            const g = Math.round(50 + t * (137 - 50));
-            const b = Math.round(47 + t * (0 - 47));
-            return `rgba(${r}, ${g}, ${b}, 0.18)`; // reddish -> amber
+            const ratio = v / 60;
+            const r = Math.round(220 - ratio * 40);
+            const g = Math.round(90 + ratio * 80);
+            const b = Math.round(90 + ratio * 45);
+            return `rgba(${r}, ${g}, ${b}, 0.35)`;
           } else {
-            const t = (v - 60) / 40; // 0..1
-            const r = Math.round(181 - t * 48);
-            const g = Math.round(137 + t * 16);
-            const b = 0;
-            return `rgba(${r}, ${g}, ${b}, 0.18)`; // amber -> green
+            const ratio = (v - 60) / 40;
+            const r = Math.round(190 - ratio * 70);
+            const g = Math.round(180 + ratio * 50);
+            const b = Math.round(130 - ratio * 80);
+            return `rgba(${r}, ${g}, ${b}, 0.4)`;
           }
         };
 
@@ -1857,7 +1878,9 @@
               `;
           div.title = `${e.cls} — Avg: ${e.average.toFixed(
             1
-          )}%, Excellence: ${e.excellence.toFixed(
+          )}%, Mean Score: ${e.rawAverage.toFixed(
+            2
+          )}, Excellence: ${e.excellence.toFixed(
             1
           )}%, Mastery: ${e.mastery.toFixed(1)}%`;
           div.addEventListener("click", () => {
@@ -1868,13 +1891,35 @@
               } • ${e.value.toFixed(1)}%</div>
                    <ul style="margin:0; padding-left:1rem; color:${Solar.base02()};">
                      <li>Class Average: ${e.average.toFixed(1)}%</li>
+                     <li>Mean Score: ${e.rawAverage.toFixed(2)}</li>
                      <li>Excellence Rate: ${e.excellence.toFixed(1)}%</li>
                      <li>Mastery Rate: ${e.mastery.toFixed(1)}%</li>
+                     <li>Approaching Rate: ${e.approachingRate.toFixed(1)}%</li>
+                     <li>Below Expectation Rate: ${e.belowRate.toFixed(1)}%</li>
                      <li>Students: ${e.total}</li>
                    </ul>`
             );
           });
           container.appendChild(div);
+        }
+
+        if (items.length) {
+          const first = items[0];
+          populateDrillDown(
+            `<h4 style="margin:0 0 .25rem 0;">${first.cls}</h4>
+               <div style="color:${Solar.base01()}; margin-bottom:.5rem;">${
+              first.sub
+            } • ${first.value.toFixed(1)}%</div>
+               <ul style="margin:0; padding-left:1rem; color:${Solar.base02()};">
+                 <li>Class Average: ${first.average.toFixed(1)}%</li>
+                 <li>Mean Score: ${first.rawAverage.toFixed(2)}</li>
+                 <li>Excellence Rate: ${first.excellence.toFixed(1)}%</li>
+                 <li>Mastery Rate: ${first.mastery.toFixed(1)}%</li>
+                 <li>Approaching Rate: ${first.approachingRate.toFixed(1)}%</li>
+                 <li>Below Expectation Rate: ${first.belowRate.toFixed(1)}%</li>
+                 <li>Students: ${first.total}</li>
+               </ul>`
+          );
         }
       }
 
@@ -1903,8 +1948,29 @@
           } • ${r.assessment_type}</div>
                   <div style="display:flex;gap:1rem;flex-wrap:wrap;color:${Solar.base01()};">
                     <div><strong>Students:</strong> ${r.total_students}</div>
-                    <div><strong>Average:</strong> ${Number(
+                    <div><strong>Class Average:</strong> ${Number(
                       r.class_average || 0
+                    ).toFixed(1)}%</div>
+                    <div><strong>Mean Score:</strong> ${Number(
+                      r.class_average_raw || 0
+                    ).toFixed(2)}</div>
+                  </div>
+                  <div style="margin-top:.35rem;color:${Solar.base01()};display:flex;flex-wrap:wrap;gap:1rem;">
+                    <div><strong>Excellence:</strong> ${(
+                      (((c.EE1 || 0) + (c.EE2 || 0)) /
+                        (r.total_students || 1)) * 100
+                    ).toFixed(1)}%</div>
+                    <div><strong>Mastery:</strong> ${(
+                      (((c.ME1 || 0) + (c.ME2 || 0)) /
+                        (r.total_students || 1)) * 100
+                    ).toFixed(1)}%</div>
+                    <div><strong>Approaching:</strong> ${(
+                      (((c.AE1 || 0) + (c.AE2 || 0)) /
+                        (r.total_students || 1)) * 100
+                    ).toFixed(1)}%</div>
+                    <div><strong>Below:</strong> ${(
+                      (((c.BE1 || 0) + (c.BE2 || 0)) /
+                        (r.total_students || 1)) * 100
                     ).toFixed(1)}%</div>
                   </div>
                   <div style="margin-top:.5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem;font-size:.9rem;">
@@ -1932,19 +1998,103 @@
 
       function generatePerformanceAlerts() {
         const alertsContainer = document.getElementById("performanceAlerts");
-        alertsContainer.innerHTML =
-          '<div class="loading">Generating alerts...</div>';
+        if (!alertsContainer) return;
 
-        setTimeout(() => {
+        const data = Array.isArray(window.performanceData)
+          ? window.performanceData
+          : [];
+
+        if (!data.length) {
           alertsContainer.innerHTML = `
-                <div class="performance-alert alert-warning">
-                  ⚠️ Grade 8A showing declining trend in Mathematics
+            <div class="no-alerts">
+              No performance data available yet.
+            </div>`;
+          return;
+        }
+
+        const alerts = [];
+
+        data.forEach((record) => {
+          const counts = record.performance_counts || {};
+          const total = Number(record.total_students) || 0;
+          if (!total) return;
+
+          const masteryCount = (counts.ME1 || 0) + (counts.ME2 || 0);
+          const excellenceCount = (counts.EE1 || 0) + (counts.EE2 || 0);
+          const approachingCount = (counts.AE1 || 0) + (counts.AE2 || 0);
+          const belowCount = (counts.BE1 || 0) + (counts.BE2 || 0);
+
+          const masteryRate = (masteryCount / total) * 100;
+          const excellenceRate = (excellenceCount / total) * 100;
+          const approachingRate = (approachingCount / total) * 100;
+          const belowRate = (belowCount / total) * 100;
+          const classAverage = Number(record.class_average || 0);
+
+          if (classAverage < 45 || masteryRate < 50) {
+            alerts.push({
+              severity:
+                classAverage < 40 || masteryRate < 45 ? "danger" : "warning",
+              title:
+                classAverage < 40 || masteryRate < 45
+                  ? "Critical Performance"
+                  : "Focus Class",
+              message: `Class average is ${classAverage.toFixed(
+                1
+              )}%. Mastery rate is ${masteryRate.toFixed(1)}%.`,
+              detail: `${record.grade} ${record.stream} • Term ${record.term} • ${record.assessment_type}`,
+              recommendation:
+                classAverage < 40 || masteryRate < 45
+                  ? "Urgent intervention required. Engage subject teachers for immediate remediation."
+                  : "Monitor progress closely and provide targeted support for struggling learners.",
+            });
+          } else if (excellenceRate >= 60) {
+            alerts.push({
+              severity: "success",
+              title: "High Performing Class",
+              message: `Excellence rate is ${excellenceRate.toFixed(
+                1
+              )}% with mastery at ${masteryRate.toFixed(1)}%.`,
+              detail: `${record.grade} ${record.stream} • Term ${record.term} • ${record.assessment_type}`,
+              recommendation:
+                "Celebrate learner success and document best practices for other classes.",
+            });
+          } else if (approachingRate > 35 || belowRate > 15) {
+            alerts.push({
+              severity: "warning",
+              title: "Learners Approaching Expectations",
+              message: `${approachingRate.toFixed(
+                1
+              )}% of learners are approaching expectations.`,
+              detail: `${record.grade} ${record.stream} • Term ${record.term} • ${record.assessment_type}`,
+              recommendation:
+                "Plan coaching sessions to lift these learners into mastery.",
+            });
+          }
+        });
+
+        if (!alerts.length) {
+          alertsContainer.innerHTML = `
+            <div class="no-alerts">
+              No performance alerts — all monitored classes are within expected ranges.
+            </div>`;
+          return;
+        }
+
+        alertsContainer.innerHTML = alerts
+          .map((alert) => {
+            return `
+              <div class="alert-card ${alert.severity}">
+                <div class="alert-heading">
+                  <span class="alert-title">${alert.title}</span>
+                  <span class="alert-grade">${alert.detail}</span>
                 </div>
-                <div class="performance-alert alert-info">
-                  ℹ️ Grade 10B exceeding expectations in Science
+                <div class="alert-body">
+                  <p>${alert.message}</p>
+                  <p class="alert-action">${alert.recommendation}</p>
                 </div>
-              `;
-        }, 1000);
+              </div>`;
+          })
+          .join("");
       }
 
       async function exportChartsAsPDF() {
@@ -2191,6 +2341,7 @@
         initializeSolarCharts();
         initializePerformanceTable();
         updateHeatmap();
+        generatePerformanceAlerts();
         initMobileDrawer();
       });
 
