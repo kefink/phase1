@@ -2809,7 +2809,10 @@
           btn.setAttribute("aria-expanded", "false");
         };
 
-        btn.addEventListener("click", openDrawer);
+        btn.addEventListener("click", () => {
+          sessionStorage.setItem("htDrawerManual", "1");
+          openDrawer();
+        });
         closeBtn.addEventListener("click", closeDrawer);
         backdrop.addEventListener("click", closeDrawer);
 
@@ -2822,11 +2825,15 @@
             closeDrawer();
         });
 
-        // Auto-open on mobile immediately on page load
+        // Auto-open on first mobile visit only
         try {
           const isMobile = (window.innerWidth || 1024) <= 768;
-          if (isMobile) {
-            setTimeout(() => openDrawer(), 150);
+          const hasOpened = sessionStorage.getItem("htDrawerVisited");
+          if (isMobile && !hasOpened) {
+            setTimeout(() => {
+              openDrawer();
+              sessionStorage.setItem("htDrawerVisited", "1");
+            }, 180);
           }
         } catch {}
       }
